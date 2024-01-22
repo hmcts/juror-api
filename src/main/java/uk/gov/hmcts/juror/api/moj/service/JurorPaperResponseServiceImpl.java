@@ -26,7 +26,7 @@ import uk.gov.hmcts.juror.api.moj.domain.SpecialNeeds;
 import uk.gov.hmcts.juror.api.moj.domain.SummonsSnapshot;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCJSEmployment;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.exception.JurorPaperResponseException;
@@ -38,7 +38,7 @@ import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCJSEmploymentRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -64,7 +64,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     @NonNull
     private final JurorPaperResponseRepositoryMod paperResponseRepository;
     @NonNull
-    private final JurorResponseCJSEmploymentRepositoryMod jurorResponseCjsEmploymentRepository;
+    private final JurorResponseCjsEmploymentRepositoryMod jurorResponseCjsEmploymentRepository;
     @NonNull
     private final JurorReasonableAdjustmentRepository reasonableAdjustmentsRepository;
     @NonNull
@@ -240,7 +240,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     private void copyCjsEmploymentToDto(PaperResponse jurorPaperResponse,
                                         JurorPaperResponseDetailDto jurorPaperResponseDetailDto) {
 
-        List<JurorResponseCJSEmployment> jurorPaperResponseCjsList = jurorPaperResponse.getCjsEmployments();
+        List<JurorResponseCjsEmployment> jurorPaperResponseCjsList = jurorPaperResponse.getCjsEmployments();
 
         if (jurorPaperResponseCjsList.isEmpty()) {
             return;
@@ -442,7 +442,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                                     JurorPaperResponseDto jurorPaperResponseDto) {
 
         List<JurorPaperResponseDto.CJSEmployment> cjsEmployment = jurorPaperResponseDto.getCjsEmployment();
-        List<JurorResponseCJSEmployment> cjsEmployments = new ArrayList<>();
+        List<JurorResponseCjsEmployment> cjsEmployments = new ArrayList<>();
         final String jurorNumber = jurorPaperResponseDto.getJurorNumber();
 
         // List to ensure same employment isn't added more than once
@@ -453,13 +453,13 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
             final List<String> cjsTypes = getCjsTypes();
 
             cjsEmployment.forEach(cjsEmp -> {
-                JurorResponseCJSEmployment jurorPaperResponseCjs = new JurorResponseCJSEmployment();
-                jurorPaperResponseCjs.setJurorNumber(jurorNumber);
+                JurorResponseCjsEmployment jurorPaperResponseCjsList = new JurorResponseCjsEmployment();
+                jurorPaperResponseCjsList.setJurorNumber(jurorNumber);
 
                 String employer = cjsEmp.getCjsEmployer();
 
                 if (cjsTypes.contains(employer) && !addedCjsEmployment.contains(employer)) {
-                    jurorPaperResponseCjs.setCjsEmployer(cjsEmp.getCjsEmployer());
+                    jurorPaperResponseCjsList.setCjsEmployer(cjsEmp.getCjsEmployer());
                     addedCjsEmployment.add(employer);
                     log.debug(String.format("Adding CJS employer, %s, for Juror %s", employer, jurorNumber));
                 } else {
@@ -467,8 +467,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                     throw new JurorPaperResponseException.InvalidCjsEmploymentEntry();
                 }
 
-                jurorPaperResponseCjs.setCjsEmployerDetails(cjsEmp.getCjsEmployerDetails());
-                cjsEmployments.add(jurorPaperResponseCjs);
+                jurorPaperResponseCjsList.setCjsEmployerDetails(cjsEmp.getCjsEmployerDetails());
+                cjsEmployments.add(jurorPaperResponseCjsList);
             });
 
             jurorPaperResponse.setCjsEmployments(cjsEmployments);
@@ -550,7 +550,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         getJurorPaperResponseForWrite(payload, jurorNumber);
 
         // get list of current CJS Employers for juror
-        List<JurorResponseCJSEmployment> jurorPaperResponseCjsList
+        List<JurorResponseCjsEmployment> jurorPaperResponseCjsList
             = jurorResponseCjsEmploymentRepository.findByJurorNumber(jurorNumber);
 
         if (cjsEmploymentDetailsDto.getCjsEmployment() == null || cjsEmploymentDetailsDto.getCjsEmployment()
@@ -582,13 +582,13 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                     throw new JurorPaperResponseException.InvalidCjsEmploymentEntry();
                 }
 
-                JurorResponseCJSEmployment jurorPaperResponseCjs =
+                JurorResponseCjsEmployment jurorPaperResponseCjsEmployment =
                     jurorResponseCjsEmploymentRepository.findByJurorNumberAndCjsEmployer(
                         jurorNumber, employer);
 
-                if (jurorPaperResponseCjs != null) {
+                if (jurorPaperResponseCjsEmployment != null) {
                     //record already exists, just update it
-                    jurorPaperResponseCjs.setCjsEmployerDetails(cjs.getCjsEmployerDetails());
+                    jurorPaperResponseCjsEmployment.setCjsEmployerDetails(cjs.getCjsEmployerDetails());
                     log.debug(String.format("Updating CJS employer, %s, for Juror %s",
                         employer, jurorNumber
                     ));
@@ -598,17 +598,17 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                         log.error(String.format(INVALID_CJS_EMPLOYMENT_ERROR_MESSAGE, jurorNumber));
                         throw new JurorPaperResponseException.InvalidCjsEmploymentEntry();
                     }
-                    jurorPaperResponseCjs = new JurorResponseCJSEmployment();
-                    jurorPaperResponseCjs.setJurorNumber(jurorNumber);
-                    jurorPaperResponseCjs.setCjsEmployer(employer);
-                    jurorPaperResponseCjs.setCjsEmployerDetails(cjs.getCjsEmployerDetails());
+                    jurorPaperResponseCjsEmployment = new JurorResponseCjsEmployment();
+                    jurorPaperResponseCjsEmployment.setJurorNumber(jurorNumber);
+                    jurorPaperResponseCjsEmployment.setCjsEmployer(employer);
+                    jurorPaperResponseCjsEmployment.setCjsEmployerDetails(cjs.getCjsEmployerDetails());
                     log.debug(String.format("Adding CJS employer, %s, for Juror %s",
                         employer, jurorNumber
                     ));
                     addedCjsEmployment.add(employer);
                 }
 
-                jurorResponseCjsEmploymentRepository.save(jurorPaperResponseCjs);
+                jurorResponseCjsEmploymentRepository.save(jurorPaperResponseCjsEmployment);
             });
         }
 

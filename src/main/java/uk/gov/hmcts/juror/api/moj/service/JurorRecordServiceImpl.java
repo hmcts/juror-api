@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
+import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorCJS;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeed;
 import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
@@ -61,6 +62,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
@@ -832,6 +834,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         // This part is temporary until a single approach for serving up juror response data is implemented across
         // the whole codebase
         setBureauJurorDetailYesNoFlags(jurorDetails, bureauJurorDetails);
+        setBureauDetailCjsEmployment(jurorDetails, bureauJurorDetails);
         setBureauDetailReasonableAdjustments(jurorDetails, bureauJurorDetails);
 
         BureauJurorDetailDto responseDto = bureauService.mapJurorDetailsToDto(bureauJurorDetails);
@@ -844,15 +847,29 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         for (JurorReasonableAdjustment adjustment :
             jurorDetail.getReasonableAdjustments()) {
             BureauJurorSpecialNeed bureauReasonableAdjustment = new BureauJurorSpecialNeed();
+            bureauReasonableAdjustment.setDetail(adjustment.getReasonableAdjustmentDetail());
             TSpecial bureauReasonableAdjustmentType = new TSpecial();
-            BeanUtils.copyProperties(adjustment, bureauReasonableAdjustment);
-            BeanUtils.copyProperties(adjustment.getReasonableAdjustment(), bureauReasonableAdjustmentType);
+            bureauReasonableAdjustmentType.setCode(adjustment.getReasonableAdjustment().getCode());
+            bureauReasonableAdjustmentType.setDescription(adjustment.getReasonableAdjustment().getDescription());
             bureauReasonableAdjustment.setSpecialNeed(bureauReasonableAdjustmentType);
             bureauReasonableAdjustments.add(bureauReasonableAdjustment);
         }
         bureauJurorDetail.setSpecialNeeds(bureauReasonableAdjustments);
         bureauJurorDetail.setSpecialNeedsArrangements(jurorDetail.getReasonableAdjustmentsArrangements());
     }
+
+    private void setBureauDetailCjsEmployment(ModJurorDetail jurorDetail, BureauJurorDetail bureauJurorDetail) {
+        List<BureauJurorCJS> bureauJurorCjs = new ArrayList<>();
+        for (JurorResponseCjsEmployment cjs :
+            jurorDetail.getCjsEmployments()) {
+            BureauJurorCJS temp = new BureauJurorCJS();
+            temp.setEmployer(cjs.getCjsEmployer());
+            temp.setDetails(cjs.getCjsEmployerDetails());
+            bureauJurorCjs.add(temp);
+        }
+        bureauJurorDetail.setCjsEmployments(bureauJurorCjs);
+    }
+
 
     private void setBureauJurorDetailYesNoFlags(ModJurorDetail jurorDetail, BureauJurorDetail bureauJurorDetail) {
         bureauJurorDetail.setResidency(convertBooleanToYesNo(jurorDetail.getResidency()));

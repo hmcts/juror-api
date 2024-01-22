@@ -32,7 +32,7 @@ import uk.gov.hmcts.juror.api.moj.domain.SpecialNeeds;
 import uk.gov.hmcts.juror.api.moj.domain.SummonsSnapshot;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCJSEmployment;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.exception.JurorPaperResponseException;
@@ -45,7 +45,7 @@ import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCJSEmploymentRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -70,7 +70,7 @@ public class JurorPaperResponseServiceImplTest {
     @Mock
     private JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     @Mock
-    private JurorResponseCJSEmploymentRepositoryMod jurorResponseCJSRepository;
+    private JurorResponseCjsEmploymentRepositoryMod jurorResponseCJSRepository;
     @Mock
     private JurorReasonableAdjustmentRepository jurorReasonableAdjustmentsRepository;
     @Mock
@@ -1479,7 +1479,7 @@ public class JurorPaperResponseServiceImplTest {
         response.setBail(false);
         response.setConvictions(false);
 
-        JurorResponseCJSEmployment cjsEmployment = new JurorResponseCJSEmployment();
+        JurorResponseCjsEmployment cjsEmployment = new JurorResponseCjsEmployment();
         cjsEmployment.setJurorNumber(jurorNumber);
         cjsEmployment.setCjsEmployer("Test Employer");
         cjsEmployment.setCjsEmployerDetails("Some test details");
@@ -1532,7 +1532,7 @@ public class JurorPaperResponseServiceImplTest {
         Assertions.assertThat(eligibility.getConvicted()).isEqualTo(jurorPaperResponse.getConvictions());
 
         JurorPaperResponseDetailDto.CJSEmployment actualCjsEmployment = responseDto.getCjsEmployment().get(0);
-        JurorResponseCJSEmployment expectedCjsEmployment = jurorPaperResponse.getCjsEmployments().get(0);
+        JurorResponseCjsEmployment expectedCjsEmployment = jurorPaperResponse.getCjsEmployments().get(0);
         Assertions.assertThat(actualCjsEmployment.getCjsEmployer()).isEqualTo(expectedCjsEmployment.getCjsEmployer());
         Assertions.assertThat(actualCjsEmployment.getCjsEmployerDetails())
             .isEqualTo(expectedCjsEmployment.getCjsEmployerDetails());

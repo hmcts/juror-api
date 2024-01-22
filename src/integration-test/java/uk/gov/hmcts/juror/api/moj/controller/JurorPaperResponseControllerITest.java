@@ -34,7 +34,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.SummonsSnapshot;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCJSEmployment;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.letter.DisqualificationLetterMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
@@ -46,7 +46,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.SummonsSnapshotRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCJSEmploymentRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.StraightThroughProcessorService;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -82,7 +82,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     @Autowired
     private JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     @Autowired
-    private JurorResponseCJSEmploymentRepositoryMod jurorPaperResponseCjsRepository;
+    private JurorResponseCjsEmploymentRepositoryMod jurorPaperResponseCjsRepository;
     @Autowired
     private JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;
     @Autowired
@@ -1328,11 +1328,11 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
-        List<JurorResponseCJSEmployment> cjsEmploymentListDB = jurorPaperResponseCjsRepository
+        List<JurorResponseCjsEmployment> cjsEmploymentListDB = jurorPaperResponseCjsRepository
             .findByJurorNumber("123456789");
         assertThat(cjsEmploymentListDB.size()).isEqualTo(1);  // we need a record to be present
 
-        JurorResponseCJSEmployment cjsEmploymentDB = cjsEmploymentListDB.get(0);
+        JurorResponseCjsEmployment cjsEmploymentDB = cjsEmploymentListDB.get(0);
         assertThat(cjsEmploymentDB.getCjsEmployer()).isEqualTo(cjsEmployment.getCjsEmployer());
         assertThat(cjsEmploymentDB.getCjsEmployerDetails()).isEqualTo(cjsEmployment.getCjsEmployerDetails());
 
@@ -1361,11 +1361,11 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
-        List<JurorResponseCJSEmployment> cjsEmploymentListDB = jurorPaperResponseCjsRepository
+        List<JurorResponseCjsEmployment> cjsEmploymentListDB = jurorPaperResponseCjsRepository
             .findByJurorNumber("987654321");
         assertThat(cjsEmploymentListDB.size()).isEqualTo(1);  // we need a record to be present
 
-        JurorResponseCJSEmployment cjsEmploymentDB = cjsEmploymentListDB.get(0);
+        JurorResponseCjsEmployment cjsEmploymentDB = cjsEmploymentListDB.get(0);
         assertThat(cjsEmploymentDB.getCjsEmployer()).isEqualTo(cjsEmployment.getCjsEmployer());
         assertThat(cjsEmploymentDB.getCjsEmployerDetails()).isEqualTo(cjsEmployment.getCjsEmployerDetails());
 
@@ -1866,10 +1866,10 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         assertThat(responseDetailDto.getAddressCounty()).isEqualTo(jurorPaperResponse.getAddressLine5());
         assertThat(responseDetailDto.getAddressPostcode()).isEqualTo(jurorPaperResponse.getPostcode());
 
-        List<JurorResponseCJSEmployment> cjsEmployments =
+        List<JurorResponseCjsEmployment> cjsEmployments =
             jurorPaperResponseCjsRepository.findByJurorNumber(responseDetailDto.getJurorNumber());
         if (cjsEmployments != null && !cjsEmployments.isEmpty()) {
-            JurorResponseCJSEmployment actualCjs = cjsEmployments.get(0);
+            JurorResponseCjsEmployment actualCjs = cjsEmployments.get(0);
             JurorPaperResponseDetailDto.CJSEmployment expectedCjs = responseDetailDto.getCjsEmployment().get(0);
             assertThat(expectedCjs.getCjsEmployer()).isEqualTo(actualCjs.getCjsEmployer());
             assertThat(expectedCjs.getCjsEmployerDetails()).isEqualTo(actualCjs.getCjsEmployerDetails());
@@ -1991,10 +1991,10 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         assertThat(jurorPaperResponse.getDeferral()).isEqualTo(requestDto.getDeferral());
         assertThat(jurorPaperResponse.getSigned()).isEqualTo(requestDto.getSigned());
 
-        List<JurorResponseCJSEmployment> cjsEmployments =
+        List<JurorResponseCjsEmployment> cjsEmployments =
             jurorPaperResponseCjsRepository.findByJurorNumber(requestDto.getJurorNumber());
         if (cjsEmployments.size() == 1) {
-            JurorResponseCJSEmployment actualCjsEmployment = cjsEmployments.get(0);
+            JurorResponseCjsEmployment actualCjsEmployment = cjsEmployments.get(0);
             JurorPaperResponseDto.CJSEmployment expectedCjsEmployment = requestDto.getCjsEmployment().get(0);
             assertThat(actualCjsEmployment.getCjsEmployer()).isEqualTo(expectedCjsEmployment.getCjsEmployer());
             assertThat(actualCjsEmployment.getCjsEmployerDetails()).isEqualTo(

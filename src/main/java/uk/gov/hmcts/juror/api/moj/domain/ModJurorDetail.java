@@ -15,11 +15,11 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorCJS;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
 import uk.gov.hmcts.juror.api.bureau.domain.ChangeLog;
 import uk.gov.hmcts.juror.api.bureau.domain.PhoneLog;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -286,7 +286,7 @@ public class ModJurorDetail implements Serializable {
     private List<PhoneLog> phoneLogs = new ArrayList<>();
 
     @OneToMany(mappedBy = "jurorNumber")
-    private List<BureauJurorCJS> cjsEmployments = new ArrayList<>();
+    private List<JurorResponseCjsEmployment> cjsEmployments = new ArrayList<>();
 
     @OneToMany(mappedBy = "jurorNumber")
     private List<JurorReasonableAdjustment> reasonableAdjustments = new ArrayList<>();

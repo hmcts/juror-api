@@ -15,7 +15,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.jurorresponse.ReasonableAdjustment
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCJSEmploymentRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -33,7 +33,7 @@ public class JurorResponseITest {
     JurorDigitalResponseRepositoryMod digitalResponseRepository;
 
     @Autowired
-    JurorResponseCJSEmploymentRepositoryMod cjsEmploymentRepository;
+    JurorResponseCjsEmploymentRepositoryMod cjsEmploymentRepository;
 
     @Autowired
     JurorReasonableAdjustmentRepository reasonableAdjustmentRepository;
@@ -90,8 +90,8 @@ public class JurorResponseITest {
         return reasonableAdjustments;
     }
 
-    private JurorResponseCJSEmployment createTestCjsEmployment(String jurorNumber) {
-        JurorResponseCJSEmployment cjsEmployment = new JurorResponseCJSEmployment();
+    private JurorResponseCjsEmployment createTestCjsEmployment(String jurorNumber) {
+        JurorResponseCjsEmployment cjsEmployment = new JurorResponseCjsEmployment();
         cjsEmployment.setCjsEmployer("CJS Employer");
         cjsEmployment.setJurorNumber(jurorNumber);
         cjsEmployment.setCjsEmployerDetails("Some details");

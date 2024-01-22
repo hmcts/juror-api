@@ -149,10 +149,10 @@ public class AbstractJurorResponse extends Address implements Serializable {
     private List<JurorReasonableAdjustment> reasonableAdjustments = new ArrayList<>();
 
     /**
-     * List of {@link JurorResponseCJSEmployment} entities associated with this entity.
+     * List of {@link JurorResponseCjsEmployment} entities associated with this entity.
      */
     @OneToMany(mappedBy = "jurorNumber")
-    private List<JurorResponseCJSEmployment> cjsEmployments = new ArrayList<>();
+    private List<JurorResponseCjsEmployment> cjsEmployments = new ArrayList<>();
     /**
      * Flag that this response is urgent.
      */

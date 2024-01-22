@@ -28,7 +28,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCJSEmploymentRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseServiceImpl;
 
 import java.time.LocalDate;
@@ -51,7 +51,7 @@ public class JurorResponseServiceImplTest extends TestCase {
     private JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
 
     @Mock
-    private JurorResponseCJSEmploymentRepositoryMod jurorResponseCjsRepository;
+    private JurorResponseCjsEmploymentRepositoryMod jurorResponseCjsRepository;
 
     @Mock
     private JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;

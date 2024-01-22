@@ -27,11 +27,10 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
-import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCJSEmploymentRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.letter.LetterService;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -53,7 +52,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
     @Autowired
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     @Autowired
-    private final JurorResponseCJSEmploymentRepositoryMod jurorResponseCJSRepository;
+    private final JurorResponseCjsEmploymentRepositoryMod jurorResponseCJSRepository;
     @Autowired
     private final JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;
     @Autowired
@@ -77,7 +76,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
     @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
     public StraightThroughProcessorServiceImpl(
         @NonNull final JurorPaperResponseRepositoryMod jurorPaperResponseRepository,
-        @NonNull final JurorResponseCJSEmploymentRepositoryMod jurorResponseCJSRepository,
+        @NonNull final JurorResponseCjsEmploymentRepositoryMod jurorResponseCJSRepository,
         @NonNull final JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository,
         @NonNull final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository,
         @NonNull final JurorRepository jurorRepository,

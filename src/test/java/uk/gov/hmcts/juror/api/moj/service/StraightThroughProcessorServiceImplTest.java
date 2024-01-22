@@ -18,7 +18,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCJSEmployment;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.domain.letter.DisqualificationLetterMod;
@@ -30,7 +30,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCJSEmploymentRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.letter.DisqualificationLetterServiceImpl;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
@@ -49,7 +49,7 @@ public class StraightThroughProcessorServiceImplTest {
     @Mock
     private JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     @Mock
-    private JurorResponseCJSEmploymentRepositoryMod jurorResponseCjsEmploymentRepository;
+    private JurorResponseCjsEmploymentRepositoryMod jurorResponseCjsEmploymentRepository;
     @Mock
     private JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;
     @Mock
@@ -1255,7 +1255,7 @@ public class StraightThroughProcessorServiceImplTest {
         paperResponse.setProcessingStatus(ProcessingStatus.TODO);
         setPaperResponseDetails(paperResponse);
 
-        JurorResponseCJSEmployment cjsEmployment = new JurorResponseCJSEmployment();
+        JurorResponseCjsEmployment cjsEmployment = new JurorResponseCjsEmployment();
         cjsEmployment.setJurorNumber(jurorNumber);
         cjsEmployment.setCjsEmployer("POLICE");
 

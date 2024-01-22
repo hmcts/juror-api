@@ -49,7 +49,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseR
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCJSEmploymentRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -106,7 +106,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
     private final JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;
-    private final JurorResponseCJSEmploymentRepositoryMod jurorResponseCjsEmploymentRepository;
+    private final JurorResponseCjsEmploymentRepositoryMod jurorResponseCjsEmploymentRepository;
     private final JurorPoolRepository jurorPoolRepository;
     private final JurorHistoryRepository jurorHistoryRepository;
     private final DisqualifyLetterModRepository disqualifyLetterRepository;

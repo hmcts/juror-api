@@ -14,7 +14,7 @@ import java.io.Serializable;
 @Entity
 @Table(name = "juror_response_cjs_employment", schema = "juror_mod")
 @Data
-public class JurorResponseCJSEmployment implements Serializable {
+public class JurorResponseCjsEmployment implements Serializable {
     @Id
     @GeneratedValue(generator = "juror_response_cjs_employment_gen")
     @Column(name = "id")
