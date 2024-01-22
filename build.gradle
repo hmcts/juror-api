@@ -60,15 +60,7 @@ jacoco {
     toolVersion = "0.8.8"
 }
 
-def getVersionFromFile() {
-    file(projectDir.absolutePath + '/VERSION').getText().split('=')[1].trim()
-}
-
-project.version = getVersionFromFile()
-
-
-println(project.version)
-
+version = '0.0.1'
 
 repositories {
     mavenLocal()
