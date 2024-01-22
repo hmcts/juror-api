@@ -1,0 +1,200 @@
+-- create a pool for court location 415
+insert into juror_mod.pool (owner, pool_no, return_date, total_no_required, no_requested, pool_type, loc_code,
+new_request, attend_time)
+values ('400', '415230101', '2023-01-05', 5, 5, 'CRO', '415','N', '2023-01-05 09:30:00.000');
+
+-- create juror records
+insert into juror_mod.juror (juror_number, last_name, first_name, dob, address_line_1, address_line_4, postcode, responded) values
+('641500020', 'Lnametwozero', 'Fnametwozero', current_date - interval '20 years', '520 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500021', 'Lnametwoone', 'Fnametwoone', current_date - interval '21 years', '521 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500022', 'Lnametwotwo', 'Fnametwotwo', current_date - interval '22 years', '522 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500023', 'Lnametwothree', 'Fnametwothree', current_date - interval '23 years', '523 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500024', 'Lnametwofour', 'Fnametwofour', current_date - interval '24 years', '524 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500025', 'Lnametwofive', 'Fnametwofive', current_date - interval '25 years', '525 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500026', 'Lnametwosix', 'Fnametwosix', current_date - interval '26 years', '526 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500027', 'Lnametwoseven', 'Fnametwoseven', current_date - interval '27 years', '527 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500028', 'Lnametwoeight', 'Fnametwoeight', current_date - interval '28 years', '528 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500029', 'Lnametwonine', 'Fnametwonine', current_date - interval '29 years', '529 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500030', 'Lnamethreezero', 'Fnamethreezero', current_date - interval '30 years', '530 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500031', 'Lnamethreeone', 'Fnamethreeone', current_date - interval '31 years', '531 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500032', 'Lnamethreetwo', 'Fnamethreetwo', current_date - interval '32 years', '532 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500033', 'Lnamethreethree', 'Fnamethreethree', current_date - interval '33 years', '533 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500034', 'Lnamethreefour', 'Fnamethreefour', current_date - interval '34 years', '534 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500035', 'Lnamethreefive', 'Fnamethreefive', current_date - interval '35 years', '535 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500036', 'Lnamethreesix', 'Fnamethreesix', current_date - interval '36 years', '536 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500037', 'Lnamethreeseven', 'Fnamethreeseven', current_date - interval '37 years', '537 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500038', 'Lnamethreeeight', 'Fnamethreeeight', current_date - interval '38 years', '538 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500039', 'Lnamethreenine', 'Fnamethreenine', current_date - interval '39 years', '539 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500040', 'Lnamefourzero', 'Fnamefourzero', current_date - interval '40 years', '540 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500041', 'Lnamefourone', 'Fnamefourone', current_date - interval '41 years', '541 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500042', 'Lnamefourtwo', 'Fnamefourtwo', current_date - interval '42 years', '542 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500043', 'Lnamefourthree', 'Fnamefourthree', current_date - interval '43 years', '543 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500044', 'Lnamefourfour', 'Fnamefourfour', current_date - interval '44 years', '544 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500045', 'Lnamefourfive', 'Fnamefourfive', current_date - interval '45 years', '545 Street Name', 'Any town', 'CH1 2AN', 'Y'),
+('641500046', 'Lnamefoursix', 'Fnamefoursix', current_date - interval '46 years', '546 Street Name', 'Any town', 'CH1 2AN', 'Y');
+
+-- create juror_pool associative records
+insert into juror_mod.juror_pool (owner, juror_number, pool_number, status, is_active) values
+('415', '641500020', '415230101', 2, true),
+('415', '641500021', '415230101', 2, true),
+('415', '641500022', '415230101', 2, true),
+('415', '641500023', '415230101', 2, true),
+('415', '641500024', '415230101', 2, true),
+('415', '641500025', '415230101', 2, true),
+('415', '641500026', '415230101', 2, true),
+('415', '641500027', '415230101', 2, true),
+('415', '641500028', '415230101', 2, true),
+('415', '641500029', '415230101', 2, true),
+('415', '641500030', '415230101', 2, true),
+('415', '641500031', '415230101', 2, true),
+('415', '641500032', '415230101', 2, true),
+('415', '641500033', '415230101', 2, true),
+('415', '641500034', '415230101', 2, true),
+('415', '641500035', '415230101', 2, true),
+('415', '641500036', '415230101', 2, true),
+('415', '641500037', '415230101', 2, true),
+('415', '641500038', '415230101', 2, true),
+('415', '641500039', '415230101', 2, true),
+('415', '641500040', '415230101', 2, true),
+('415', '641500041', '415230101', 2, true),
+('415', '641500042', '415230101', 2, true),
+('415', '641500043', '415230101', 2, true),
+('415', '641500044', '415230101', 2, true),
+('415', '641500045', '415230101', 2, true),
+('415', '641500046', '415230101', 2, true);
+
+-- expenses for 641500020 (no smart card spend)
+INSERT INTO juror_mod.appearance (attendance_date, juror_number, loc_code, time_in, time_out, non_attendance,
+mileage_due, pay_cash, public_transport_total_due, public_transport_total_paid, childcare_total_due,
+                                  childcare_total_paid,
+misc_total_due, misc_total_paid, loss_of_earnings_due, loss_of_earnings_paid, subsistence_due, subsistence_paid,
+smart_card_due, travel_time, expense_submitted_date, is_draft_expense, f_audit, sat_on_jury, pool_number,
+appearance_stage) values
+('2023-01-05', '641500020', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-06', '641500020', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-07', '641500020', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-08', '641500020', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED');
+
+-- expenses for 641500021 (smart card spend fully covers subsistence)
+INSERT INTO juror_mod.appearance (attendance_date, juror_number, loc_code, time_in, time_out, non_attendance,
+mileage_due, pay_cash, car_total_due, car_total_paid, misc_total_due, misc_total_paid,
+loss_of_earnings_due, loss_of_earnings_paid, subsistence_due, subsistence_paid, smart_card_due, travel_time,
+expense_submitted_date, is_draft_expense, f_audit, sat_on_jury, pool_number, appearance_stage) values
+('2023-01-06', '641500021', '415', '09:30', '16:00', false, 10, false, 5, 0, 6, 0, 64.95, 0, 5.7, 0, 5.7, 0.75,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-07', '641500021', '415', '09:30', '16:00', false, 10, false, 5, 0, 6, 0, 64.95, 0, 5.7, 0, 5.7, 0.75,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-08', '641500021', '415', '09:30', '16:00', false, 10, false, 5, 0, 6, 0, 64.95, 0, 5.7, 0, 5.7, 0.75,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-09', '641500021', '415', '09:30', '16:00', false, 10, false, 5, 0, 6, 0, 64.95, 0, 5.7, 0, 5.7, 0.75,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED');
+
+-- expenses for 641500022 (smart card spend partially covers subsistence)
+INSERT INTO juror_mod.appearance (attendance_date, juror_number, loc_code, time_in, time_out, non_attendance,
+mileage_due, pay_cash, hired_vehicle_total_due, hired_vehicle_total_paid, misc_total_due, misc_total_paid,
+loss_of_earnings_due, loss_of_earnings_paid, subsistence_due, subsistence_paid, smart_card_due, travel_time,
+expense_submitted_date, is_draft_expense, f_audit, sat_on_jury, pool_number, appearance_stage) values
+('2023-01-07', '641500022', '415', '09:30', '16:00', false, 10, false, 5, 0, 4.5, 0, 64.95, 0, 5.7, 0, 3.5, 0.75,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-08', '641500022', '415', '09:30', '16:00', false, 10, false, 5, 0, 4.5, 0, 64.95, 0, 5.7, 0, 3.5, 0.75,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-09', '641500022', '415', '09:30', '16:00', false, 10, false, 5, 0, 4.5, 0, 64.95, 0, 5.7, 0, 3.5, 0.75,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-10', '641500022', '415', '09:30', '16:00', false, 10, false, 5, 0, 4.5, 0, 64.95, 0, 5.7, 0, 3.5, 0.75,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED');
+
+-- expenses for 641500023 (non-attendance days - half-day loss of earning)
+INSERT INTO juror_mod.appearance (attendance_date, juror_number, loc_code, time_in, time_out, non_attendance,
+mileage_due, pay_cash, loss_of_earnings_due, loss_of_earnings_paid, expense_submitted_date, is_draft_expense, f_audit,
+sat_on_jury, pool_number, appearance_stage) values
+('2023-01-08', '641500023', '415', '09:30', '16:00', true, 0, false, 37.5, 0, '2023-01-19', false,
+nextval('juror_mod.appearance_f_audit_seq'), false, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-09', '641500023', '415', '09:30', '16:00', true, 0, false, 37.5, 0, '2023-01-19', false,
+nextval('juror_mod.appearance_f_audit_seq'), false, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-10', '641500023', '415', '09:30', '16:00', true, 0, false, 37.5, 0, '2023-01-19', false,
+nextval('juror_mod.appearance_f_audit_seq'), false, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-11', '641500023', '415', '09:30', '16:00', true, 0, false, 37.5, 0, '2023-01-19', false,
+nextval('juror_mod.appearance_f_audit_seq'), false, '415230101', 'EXPENSE_ENTERED');
+
+-- expenses for 641500024 (expenses already paid)
+INSERT INTO juror_mod.appearance (attendance_date, juror_number, loc_code, time_in, time_out, non_attendance,
+mileage_due, pay_cash, pedal_cycle_total_due, pedal_cycle_total_paid, childcare_total_due, childcare_total_paid,
+misc_total_due, misc_total_paid, loss_of_earnings_due, loss_of_earnings_paid, subsistence_due, subsistence_paid,
+smart_card_due, travel_time, expense_submitted_date, is_draft_expense, f_audit, sat_on_jury, pool_number,
+appearance_stage) values
+('2023-01-09', '641500024', '415', '09:30', '16:00', false, 10, false, 0, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_AUTHORISED'),
+('2023-01-10', '641500024', '415', '09:30', '16:00', false, 10, false, 0, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_AUTHORISED'),
+('2023-01-11', '641500024', '415', '09:30', '16:00', false, 10, false, 0, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_AUTHORISED'),
+('2023-01-12', '641500024', '415', '09:30', '16:00', false, 10, false, 0, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_AUTHORISED');
+
+-- expenses for 641500025 (some expenses edited)
+INSERT INTO juror_mod.appearance (attendance_date, juror_number, loc_code, time_in, time_out, non_attendance,
+mileage_due, pay_cash, parking_total_due, parking_total_paid, childcare_total_due, childcare_total_paid,
+misc_total_due, misc_total_paid, loss_of_earnings_due, loss_of_earnings_paid, subsistence_due, subsistence_paid,
+smart_card_due, travel_time, expense_submitted_date, is_draft_expense, f_audit, sat_on_jury, pool_number,
+appearance_stage) values
+('2023-01-10', '641500025', '415', '09:30', '16:00', false, 10, false, 2, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_EDITED'),
+('2023-01-11', '641500025', '415', '09:30', '16:00', false, 10, false, 0, 5, 4, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_EDITED'),
+('2023-01-12', '641500025', '415', '09:30', '16:00', false, 10, false, 0, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_AUTHORISED'),
+('2023-01-13', '641500025', '415', '09:30', '16:00', false, 10, false, 0, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_AUTHORISED');
+
+-- expenses for remaining jurors (single appearance per juror)
+INSERT INTO juror_mod.appearance (attendance_date, juror_number, loc_code, time_in, time_out, non_attendance,
+mileage_due, pay_cash, public_transport_total_due, public_transport_total_paid, childcare_total_due, childcare_total_paid,
+misc_total_due, misc_total_paid, loss_of_earnings_due, loss_of_earnings_paid, subsistence_due, subsistence_paid,
+smart_card_due, travel_time, expense_submitted_date, is_draft_expense, f_audit, sat_on_jury, pool_number,
+appearance_stage) values
+('2023-01-11', '641500026', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-12', '641500027', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-13', '641500028', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-14', '641500029', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-15', '641500030', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-16', '641500031', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-17', '641500032', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-18', '641500033', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-19', '641500034', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-05', '641500035', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-06', '641500036', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-07', '641500037', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-08', '641500038', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-09', '641500039', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-10', '641500040', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-11', '641500041', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-12', '641500042', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-13', '641500043', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-14', '641500044', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-15', '641500045', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED'),
+('2023-01-16', '641500046', '415', '09:30', '16:00', false, 10, false, 5, 0, 15, 0, 4.95, 0, 60.95, 0, 5.7, 0, 0, 0.66,
+'2023-01-19', false, nextval('juror_mod.appearance_f_audit_seq'), true, '415230101', 'EXPENSE_ENTERED');

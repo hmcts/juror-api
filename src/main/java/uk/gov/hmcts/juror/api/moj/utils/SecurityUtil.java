@@ -1,0 +1,61 @@
+package uk.gov.hmcts.juror.api.moj.utils;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
+
+public final class SecurityUtil {
+    public static final int STANDARD_USER_LEVEL = 0;
+    public static final int TEAM_LEADER_LEVEL = 1;
+    public static final int JURY_OFFICER_LEVEL = 1;
+    public static final int SENIOR_JUROR_OFFICER_LEVEL = 9;
+    public static final String BUREAU_OWNER = "400";
+    public static final String BUREAU_AUTH = "isAuthenticated() && principal.owner == '400'";
+    public static final String COURT_AUTH = "isAuthenticated() && principal.owner != '400'";
+    public static final String SENIOR_COURT_AUTH = COURT_AUTH + " && principal.userLevel == '9'";
+    public static final String TEAM_LEADER_AUTH = "principal.userLevel == '" + TEAM_LEADER_LEVEL + "'";
+    public static final String BUREAU_TEAM_LEADER = BUREAU_AUTH + " && " + TEAM_LEADER_AUTH;
+    public static final String TEAM_LEADER_LEVEL_STR = String.valueOf(TEAM_LEADER_LEVEL);
+
+
+    private SecurityUtil() {
+        throw new IllegalStateException("Utility class");
+    }
+
+    public static BureauJwtAuthentication getActiveUsersBureauJwtAuthentication() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Authentication authentication = securityContext.getAuthentication();
+        if (authentication instanceof BureauJwtAuthentication bureauJwtAuthentication) {
+            return bureauJwtAuthentication;
+        }
+        throw new MojException.Forbidden("User must be authorised with BureauJwtAuthentication", null);
+    }
+
+    public static BureauJWTPayload getActiveUsersBureauPayload() {
+        Object principal = getActiveUsersBureauJwtAuthentication().getPrincipal();
+
+        if (principal instanceof BureauJWTPayload bureauPayload) {
+            return bureauPayload;
+        }
+        throw new MojException.InternalServerError("Unexpected principal object type", null);
+    }
+
+    public static String getActiveLogin() {
+        return getActiveUsersBureauPayload().getLogin();
+    }
+
+    /**
+     * Verify whether the current/active user has permission to access to a specific court location.
+     *
+     * @param locCode 3-digit numeric string to uniquely identify a court location
+     */
+    public static void validateCourtLocationPermitted(String locCode) {
+        if (!getActiveUsersBureauPayload().getStaff().getCourts().contains(locCode)) {
+            throw new MojException.Forbidden(String.format("Current user does not have permissions to Court Location: "
+                + "%s", locCode), null);
+        }
+    }
+}

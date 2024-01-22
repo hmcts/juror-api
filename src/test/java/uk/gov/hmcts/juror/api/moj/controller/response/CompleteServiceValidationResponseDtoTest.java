@@ -1,0 +1,102 @@
+package uk.gov.hmcts.juror.api.moj.controller.response;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.mockito.Mockito.mock;
+
+@DisplayName("CompleteServiceValidationResponseDto")
+@SuppressWarnings(
+    "PMD.JUnitTestsShouldIncludeAssert"//False positive done via inheritance
+)
+class CompleteServiceValidationResponseDtoTest extends AbstractValidatorTest {
+
+
+    private CompleteServiceValidationResponseDto createCompleteServiceValidationResponseDto(
+        List<JurorStatusValidationResponseDto> valid,
+        List<JurorStatusValidationResponseDto> invalidNotResponded
+    ) {
+        return CompleteServiceValidationResponseDto.builder()
+            .valid(valid)
+            .invalidNotResponded(invalidNotResponded)
+            .build();
+    }
+
+    @Test
+    void positiveTypical() {
+        expectNoViolations(
+            createCompleteServiceValidationResponseDto(
+                List.of(mock(JurorStatusValidationResponseDto.class)),
+                List.of(mock(JurorStatusValidationResponseDto.class))
+            )
+        );
+    }
+
+    @DisplayName("status")
+    @Nested
+    class Valid {
+
+        @Test
+        void negativeNullList() {
+            expectViolations(
+                createCompleteServiceValidationResponseDto(
+                    null,
+                    List.of(mock(JurorStatusValidationResponseDto.class))
+                ),
+                new Violation("valid", "must not be null")
+            );
+        }
+
+        @Test
+        void negativeNullValue() {
+            List<JurorStatusValidationResponseDto> listWithNull = new ArrayList<>();
+            listWithNull.add(mock(JurorStatusValidationResponseDto.class));
+            listWithNull.add(null);
+            listWithNull.add(mock(JurorStatusValidationResponseDto.class));
+
+            expectViolations(
+                createCompleteServiceValidationResponseDto(
+                    listWithNull,
+                    List.of(mock(JurorStatusValidationResponseDto.class))
+                ),
+                new Violation("valid[1].<list element>", "must not be null")
+            );
+        }
+    }
+
+    @DisplayName("invalidNotResponded")
+    @Nested
+    class InvalidNotResponded {
+        @Test
+        void negativeNullList() {
+            expectViolations(
+                createCompleteServiceValidationResponseDto(
+                    List.of(mock(JurorStatusValidationResponseDto.class)),
+                    null
+                ),
+                new Violation("invalidNotResponded", "must not be null")
+            );
+        }
+
+        @Test
+        void negativeNullValue() {
+            List<JurorStatusValidationResponseDto> listWithNull = new ArrayList<>();
+            listWithNull.add(mock(JurorStatusValidationResponseDto.class));
+            listWithNull.add(null);
+            listWithNull.add(mock(JurorStatusValidationResponseDto.class));
+
+            expectViolations(
+                createCompleteServiceValidationResponseDto(
+                    List.of(mock(JurorStatusValidationResponseDto.class)),
+                    listWithNull
+                ),
+                new Violation("invalidNotResponded[1].<list element>", "must not be null")
+            );
+        }
+    }
+}

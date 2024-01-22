@@ -1,0 +1,83 @@
+package uk.gov.hmcts.juror.api.moj.utils;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+
+import java.time.LocalDate;
+
+@Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class DataUtils {
+    static final String RESPONSE_UPDATED_LOG = "Juror: %s. %s response will be updated with new value for %s";
+
+    public static boolean hasValueChanged(LocalDate currentValue, LocalDate newValue, String fieldName,
+                                          String jurorNumber, String replyMethod) {
+        if ((currentValue != null && newValue != null && !currentValue.isEqual(newValue))
+            || (currentValue == null && newValue != null)
+            || (currentValue != null && newValue == null)) {
+            log.debug(String.format(RESPONSE_UPDATED_LOG, jurorNumber, replyMethod, fieldName));
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean hasValueChanged(String currentValue, String newValue, String fieldName, String jurorNumber,
+                                          String replyMethod) {
+        if ((currentValue != null && !currentValue.equals(newValue)) || (currentValue == null && newValue != null)) {
+            log.debug(String.format(RESPONSE_UPDATED_LOG, jurorNumber, replyMethod, fieldName));
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean hasValueChanged(Boolean currentValue, Boolean newValue, String fieldName,
+                                          String jurorNumber, String replyMethod) {
+        if ((currentValue != null && !currentValue.equals(newValue)) || (currentValue == null && newValue != null)) {
+            log.debug(String.format(RESPONSE_UPDATED_LOG, jurorNumber, replyMethod, fieldName));
+            return true;
+        }
+        return false;
+    }
+
+    public static DigitalResponse getJurorDigitalResponse(String jurorNumber,
+                                                          JurorDigitalResponseRepositoryMod repositoryMod) {
+        DigitalResponse jurorResponse;
+
+        try {
+            jurorResponse = repositoryMod.findByJurorNumber(jurorNumber);
+            if (jurorResponse == null) {
+                throw new MojException.NotFound(
+                    String.format("Juror: %s. Cannot find digital response", jurorNumber), null);
+            }
+        } catch (IllegalArgumentException ex) {
+            throw new MojException.InternalServerError(String.format(
+                "Juror: %s. There were problems with searching for the juror digital response. "
+                    + "Refer to the stack trace for additional information.", jurorNumber), ex);
+        }
+        return jurorResponse;
+    }
+
+    public static PaperResponse getJurorPaperResponse(String jurorNumber,
+                                                      JurorPaperResponseRepositoryMod repositoryMod) {
+        PaperResponse jurorPaperResponse;
+
+        try {
+            jurorPaperResponse = repositoryMod.findByJurorNumber(jurorNumber);
+            if (jurorPaperResponse == null) {
+                throw new MojException.NotFound(
+                    String.format("Juror: %s. Cannot find paper response", jurorNumber), null);
+            }
+        } catch (IllegalArgumentException ex) {
+            throw new MojException.InternalServerError(String.format("Juror: %s. There were problems with searching "
+                + "for the  juror paper response for the given juror number. Refer to the stack trace for additional "
+                + "information.", jurorNumber), ex);
+        }
+        return jurorPaperResponse;
+    }
+}

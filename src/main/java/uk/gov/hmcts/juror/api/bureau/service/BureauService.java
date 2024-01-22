@@ -1,0 +1,25 @@
+package uk.gov.hmcts.juror.api.bureau.service;
+
+import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
+import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseOverviewDto;
+import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
+import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
+
+/**
+ * Bureau service for bureau data access operations.
+ */
+public interface BureauService {
+    BureauJurorDetailDto getDetailsByJurorNumber(String jurorNumber);
+
+    BureauResponseSummaryWrapper getDetailsByProcessingStatus(String status);
+
+    BureauResponseSummaryWrapper getTodo(String staffLogin);
+
+    BureauResponseSummaryWrapper getPending(String staffLogin);
+
+    BureauResponseSummaryWrapper getCompletedToday(String staffLogin);
+
+    BureauResponseOverviewDto getOverview(String staffLogin);
+
+    BureauJurorDetailDto mapJurorDetailsToDto(BureauJurorDetail jurorDetail);
+}
