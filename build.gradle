@@ -24,6 +24,8 @@ plugins {
     id 'checkstyle'
     id 'pmd'
     id 'com.github.ben-manes.versions' version '0.47.0'
+    id 'org.sonarqube' version '4.4.1.3373'
+
 //      id 'com.ewerk.gradle.plugins.querydsl' version '1.0.10'
 //      id 'io.franzbecker.gradle-lombok' version '5.0.0'
 }
@@ -185,6 +187,15 @@ jacocoTestReport {
         xml.setRequired(true)
         csv.setRequired(false)
         html.getOutputLocation().set(file("${buildDir}/jacocoHtml"))
+    }
+}
+
+project.tasks['sonarqube'].dependsOn jacocoTestReport
+
+sonarqube {
+    properties {
+        property "sonar.projectName", "Juror :: juror-api"
+        property "sonar.projectKey", "uk.gov.hmcts.juror:juror-api"
     }
 }
 
