@@ -42,13 +42,13 @@ java:
           alias: NOTIFY-REGION-KEY-6
         - name: api-NOTIFY_REGION_KEY_7
           alias: NOTIFY-REGION-KEY-7
-        - name: api-SCHEDULER_SERVICE_SECRET
+        - name: scheduler-api-SECRET
           alias: SCHEDULER-SERVICE-SECRET
         - name: api-SMART_SURVEY_TOKEN
           alias: SMART-SURVEY-TOKEN
         - name: api-SMART_SURVEY_SECRET
           alias: SMART-SURVEY-SECRET
-        - name: api-PNC_CHECK_SERVICE_SECRET
+        - name: pnc-SECRET
           alias: PNC-CHECK-SERVICE-SECRET
   environment:
     SCHEDULER_SERVICE_SUBJECT: juror-back-end
