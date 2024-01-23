@@ -50,10 +50,10 @@ tasks.withType(JavaExec).configureEach {
 }
 
 bootJar {
-    archiveBaseName = 'juror-api'
-    // archiveFileName = "${archiveBaseName.get()}.${archiveExtension.get()}"
-    // archiveName = 'testarchivename.jar'
-
+    archiveFileName = "juror-api.jar"
+    manifest {
+        attributes('Implementation-Version': project.version.toString())
+    }
 }
 
 jacoco {
