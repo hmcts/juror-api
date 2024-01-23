@@ -36,4 +36,3 @@ nbbuild/
 nbdist/
 nbproject/private/
 secret/**
-src/querydsl
