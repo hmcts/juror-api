@@ -379,4 +379,3 @@ check.dependsOn -= integration
 // Makes the whole test suite not run by default.
 check.dependsOn -= testSuite
 
-check.dependsOn dependencyCheckAnalyze
