@@ -196,6 +196,10 @@ sonarqube {
     properties {
         property "sonar.projectName", "Juror :: juror-api"
         property "sonar.projectKey", "uk.gov.hmcts.juror:juror-api"
+        property "sonar.sources", "src"
+        property "sonar.java.binaries", "build/classes"
+        property "sonar.exclusions", "docs/*,docker/*,notify/*,libraries/*,gradle/**/*,data/*,src/querydsl/**/*,src/test/**,src/integration-test/**,src/main/resources/db/modernisationMigration/*"
+        property "sonar.cpd.exclusions", "src/main/resources/db/migration/*,src/main/java/uk/gov/hmcts/juror/api/moj/xerox/letters/*"
     }
 }
 
