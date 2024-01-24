@@ -115,10 +115,14 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
 
         printDataService.printDeferralDeniedLetter(jurorPool);
         
-        jurorHistory.setHistoryCode(HistoryCodeMod.NON_DEFERRED_LETTER);
-        jurorHistory.setOtherInformation("");
-
-        jurorHistoryRepository.save(jurorHistory);
+        jurorHistoryRepository.save(JurorHistory.builder()
+                                            .jurorNumber(jurorPool.getJurorNumber())
+                                            .dateCreated(LocalDateTime.now())
+                                            .historyCode(HistoryCodeMod.NON_DEFERRED_LETTER)
+                                            .createdBy(payload.getLogin())
+                                            .poolNumber(jurorPool.getPoolNumber())
+                                            .otherInformation("")
+                                            .build());
     }
 
     private void checkExcusalCodeIsValid(String excusalCode) {

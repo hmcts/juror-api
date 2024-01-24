@@ -2055,7 +2055,7 @@ public class ManageDeferralsServiceTest {
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
         verify(jurorPoolRepository, times(2)).saveAndFlush(any());
         verify(jurorPoolRepository, times(2)).save(any());
-        verify(jurorHistoryRepository, times(2)).save(any());
+        verify(jurorHistoryRepository, times(3)).save(any());
         verify(poolRequestRepository, times(2))
             .findByPoolNumber(anyString());
         verify(poolMemberSequenceService, times(1))
@@ -2064,9 +2064,8 @@ public class ManageDeferralsServiceTest {
         verify(poolRequestRepository, times(1)).saveAndFlush(any());
         verify(poolMemberSequenceService, times(1))
             .leftPadInteger(any(int.class));
-        verify(postponementLetterService, times(1))
-            .getLetterToEnqueue(any(), any());
-        verify(postponementLetterService, times(1)).enqueueLetter(any());
+        verify(printDataService, times(1))
+            .printPostponeLetter(any());
         verify(printDataService, times(1)).printConfirmationLetter(any());
         verify(currentlyDeferredRepository, times(0)).save(any());
     }
@@ -2094,7 +2093,7 @@ public class ManageDeferralsServiceTest {
 
         verify(jurorPoolRepository, times(0)).saveAndFlush(any());
         verify(jurorPoolRepository, times(2)).save(any());
-        verify(jurorHistoryRepository, times(1)).save(any());
+        verify(jurorHistoryRepository, times(2)).save(any());
         verify(poolRequestRepository, times(0))
             .findByPoolNumber(anyString());
         verify(poolMemberSequenceService, times(0))
@@ -2104,9 +2103,8 @@ public class ManageDeferralsServiceTest {
         verify(poolRequestRepository, times(0)).saveAndFlush(any());
         verify(poolMemberSequenceService, times(0))
             .leftPadInteger(any(int.class));
-        verify(postponementLetterService, times(1))
-            .getLetterToEnqueue(any(), any());
-        verify(postponementLetterService, times(1)).enqueueLetter(any());
+        verify(printDataService, times(1))
+            .printPostponeLetter(any());
         verify(printDataService, times(0)).printConfirmationLetter(any());
     }
 

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.exception.PoolRequestException;
-import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralDeniedLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalDeniedLetter;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @ExtendWith(SpringExtension.class)
-public class DeferralDeniedLetterTest extends AbstractLetterTest {
+public class ExcusalDeniedLetterTest extends AbstractLetterTest {
     @Override
     protected void setupEnglishExpectedResult() {
         addEnglishLetterDate();
@@ -92,24 +92,24 @@ public class DeferralDeniedLetterTest extends AbstractLetterTest {
 
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
-        DeferralDeniedLetter deferralDeniedLetter = new DeferralDeniedLetter(LetterTestUtils.testJurorPool(date),
+        ExcusalDeniedLetter excusalDeniedLetter = new ExcusalDeniedLetter(LetterTestUtils.testJurorPool(date),
                                                         LetterTestUtils.testCourtLocation(),
                                                         LetterTestUtils.testBureauLocation());
 
         int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
         if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
             assertThatExceptionOfType(PoolRequestException.PoolRequestDateInvalid.class)
-                .isThrownBy(deferralDeniedLetter::getLetterString);
+                .isThrownBy(excusalDeniedLetter::getLetterString);
         } else {
-            assertThat(deferralDeniedLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
-            assertThat(deferralDeniedLetter.getFormCode()).isEqualTo(FormCode.ENG_DEFERRALDENIED.getCode());
-            assertThat(deferralDeniedLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
+            assertThat(excusalDeniedLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
+            assertThat(excusalDeniedLetter.getFormCode()).isEqualTo(FormCode.ENG_EXCUSALDENIED.getCode());
+            assertThat(excusalDeniedLetter.getJurorNumber()).isEqualTo(LetterTestUtils.testJuror().getJurorNumber());
 
             // Fax number is always empty
-            assertThat(deferralDeniedLetter.getData().get(11).getFormattedString())
+            assertThat(excusalDeniedLetter.getData().get(11).getFormattedString())
                 .isEqualTo(LetterTestUtils.emptyField(12));
             // Juror address 6 is always empty
-            assertThat(deferralDeniedLetter.getData().get(27).getFormattedString())
+            assertThat(excusalDeniedLetter.getData().get(27).getFormattedString())
                 .isEqualTo(LetterTestUtils.emptyField(35));
         }
     }
@@ -119,7 +119,7 @@ public class DeferralDeniedLetterTest extends AbstractLetterTest {
 
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupWelshExpectedResult();
-        DeferralDeniedLetter deferralDeniedLetter = new DeferralDeniedLetter(LetterTestUtils.testWelshJurorPool(date),
+        ExcusalDeniedLetter excusalDeniedLetter = new ExcusalDeniedLetter(LetterTestUtils.testWelshJurorPool(date),
                                                         LetterTestUtils.testCourtLocation(),
                                                         LetterTestUtils.testBureauLocation(),
                                                         LetterTestUtils.testWelshCourtLocation());
@@ -127,18 +127,18 @@ public class DeferralDeniedLetterTest extends AbstractLetterTest {
         int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
         if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
             assertThatExceptionOfType(PoolRequestException.PoolRequestDateInvalid.class)
-                .isThrownBy(deferralDeniedLetter::getLetterString);
+                .isThrownBy(excusalDeniedLetter::getLetterString);
         } else {
-            assertThat(deferralDeniedLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
-            assertThat(deferralDeniedLetter.getFormCode()).isEqualTo(FormCode.BI_DEFERRALDENIED.getCode());
-            assertThat(deferralDeniedLetter.getJurorNumber())
+            assertThat(excusalDeniedLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
+            assertThat(excusalDeniedLetter.getFormCode()).isEqualTo(FormCode.BI_EXCUSALDENIED.getCode());
+            assertThat(excusalDeniedLetter.getJurorNumber())
                 .isEqualTo(LetterTestUtils.testWelshJuror().getJurorNumber());
 
             // Fax number is always empty
-            assertThat(deferralDeniedLetter.getData().get(11).getFormattedString())
+            assertThat(excusalDeniedLetter.getData().get(11).getFormattedString())
                 .isEqualTo(LetterTestUtils.emptyField(12));
             // Juror address 6 is always empty
-            assertThat(deferralDeniedLetter.getData().get(27).getFormattedString())
+            assertThat(excusalDeniedLetter.getData().get(27).getFormattedString())
                 .isEqualTo(LetterTestUtils.emptyField(35));
         }
     }

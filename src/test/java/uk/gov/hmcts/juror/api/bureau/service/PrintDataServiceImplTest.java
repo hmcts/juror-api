@@ -147,6 +147,21 @@ public class PrintDataServiceImplTest {
     }
 
     @Test
+    void printExcusalDeniedLetterThrowsWithNullList() {
+        assertThatExceptionOfType(MojException.InternalServerError.class)
+            .isThrownBy(() -> printDataService.printExcusalDeniedLetter(null));
+    }
+
+    @Test
+    void printExcusalDeniedLetterCallsCommit() {
+        final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
+
+        doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
+        printDataService.printExcusalDeniedLetter(LetterTestUtils.testJurorPool(date));
+        verify(bulkPrintDataRepository, times(1)).save(any());
+    }
+
+    @Test
     void printConfrimationLetterThrowsWithNullList() {
         assertThatExceptionOfType(MojException.InternalServerError.class)
             .isThrownBy(() -> printDataService.printConfirmationLetter(null));
@@ -158,6 +173,21 @@ public class PrintDataServiceImplTest {
 
         doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
         printDataService.printConfirmationLetter(LetterTestUtils.testJurorPool(date));
+        verify(bulkPrintDataRepository, times(1)).save(any());
+    }
+
+    @Test
+    void printPostponeLetterThrowsWithNullList() {
+        assertThatExceptionOfType(MojException.InternalServerError.class)
+            .isThrownBy(() -> printDataService.printPostponeLetter(null));
+    }
+
+    @Test
+    void printPostponeLetterCallsCommit() {
+        final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
+
+        doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
+        printDataService.printPostponeLetter(LetterTestUtils.testJurorPool(date));
         verify(bulkPrintDataRepository, times(1)).save(any());
     }
 

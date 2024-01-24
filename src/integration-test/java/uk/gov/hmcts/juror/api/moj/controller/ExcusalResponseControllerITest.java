@@ -20,23 +20,14 @@ import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.ExcusalDecisionDto;
-import uk.gov.hmcts.juror.api.moj.domain.ExcusalDecision;
-import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.Juror;
-import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
-import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.*;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.letter.ExcusalDeniedLetterMod;
 import uk.gov.hmcts.juror.api.moj.domain.letter.ExcusalLetterMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
-import uk.gov.hmcts.juror.api.moj.repository.ExcuseDeniedLetterRepository;
-import uk.gov.hmcts.juror.api.moj.repository.ExcuseLetterRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
-import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.*;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -78,6 +69,8 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     private ExcuseLetterRepository excusalLetterRepository;
     @Autowired
     private JurorPoolRepository jurorPoolRepository;
+    @Autowired
+    private BulkPrintDataRepository bulkPrintDataRepository;
 
     private HttpHeaders httpHeaders;
 
@@ -500,11 +493,17 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     }
 
     private void validateExcusalDeniedLetter() {
-        Iterable<ExcusalDeniedLetterMod> excusalDeniedLetterIterable = excusalDeniedLetterRepository.findAll();
-        List<ExcusalDeniedLetterMod> excusalDeniedLetters = new ArrayList<>();
-        excusalDeniedLetterIterable.forEach(excusalDeniedLetters::add);
+        Iterable<BulkPrintData> bulkPrintDataIterable = bulkPrintDataRepository.findAll();
+        List<BulkPrintData> bulkPrintData = new ArrayList<>();
+        bulkPrintDataIterable.forEach((data) -> {
+            if (data.getFormAttribute().getFormType().equals(FormCode.BI_EXCUSALDENIED.getCode())
+                || data.getFormAttribute().getFormType().equals(FormCode.ENG_EXCUSALDENIED.getCode())) {
+                bulkPrintData.add(data);
+            }
+        })
+        ;
 
-        assertThat(excusalDeniedLetters.size())
+        assertThat(bulkPrintData.size())
             .as("Expect a single excusal denied letter to exist")
             .isEqualTo(1);
     }

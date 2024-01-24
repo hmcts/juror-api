@@ -10,6 +10,10 @@ public interface PrintDataService {
     void printDeferralLetter(JurorPool jurorPool);
 
     void printDeferralDeniedLetter(JurorPool jurorPool);
-
+    
+    void printExcusalDeniedLetter(JurorPool jurorPool);
+    
     void printConfirmationLetter(JurorPool jurorPool);
+
+    void printPostponeLetter(JurorPool jurorPool);
 }

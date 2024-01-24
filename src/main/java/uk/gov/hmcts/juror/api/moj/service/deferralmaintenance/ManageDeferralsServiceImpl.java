@@ -463,7 +463,10 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             updateJurorHistory(newJurorPool, newJurorPool.getPoolNumber(), auditorUsername, JurorHistory.ADDED,
                 HistoryCodeMod.DEFERRED_POOL_MEMBER);
 
-            sendPostponementLetter(jurorPool.getOwner(), deferralReasonDto, jurorPool.getJurorNumber());
+            printDataService.printPostponeLetter(newJurorPool);
+            updateJurorHistory(jurorPool, newJurorPool.getPoolNumber(), auditorUsername, "",
+                HistoryCodeMod.POSTPONED_LETTER);
+
             printDataService.printConfirmationLetter(jurorPool);
 
         } else {
@@ -471,7 +474,9 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             setupDeferralEntry(payload, jurorNumber, deferralReasonDto, auditorUsername, jurorPool);
 
             // send letter
-            sendPostponementLetter(jurorPool.getOwner(), deferralReasonDto, jurorPool.getJurorNumber());
+            printDataService.printPostponeLetter(jurorPool);
+            updateJurorHistory(jurorPool, jurorPool.getPoolNumber(), auditorUsername, "",
+                HistoryCodeMod.POSTPONED_LETTER);
         }
     }
 
@@ -518,15 +523,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         dto.setDeferralPoolsSummary(optionSummaryDtos);
 
         return dto;
-    }
-
-    private void sendPostponementLetter(String owner, DeferralReasonRequestDto dto, String jurorNumber) {
-        // setup for postponement letter printing
-        log.info("Juror {} - Enqueued postponement letter", jurorNumber);
-        PostponementLetter postponementLetter = postponementLetterService.getLetterToEnqueue(owner, jurorNumber);
-        postponementLetter.setDatePostpone(dto.getDeferralDate());
-
-        postponementLetterService.enqueueLetter(postponementLetter);
     }
 
     private void updateJurorResponse(String jurorNumber, DeferralReasonRequestDto deferralReasonDto,

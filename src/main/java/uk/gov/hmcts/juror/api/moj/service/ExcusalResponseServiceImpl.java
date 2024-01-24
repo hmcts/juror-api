@@ -70,7 +70,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     @NonNull
     private final JurorHistoryRepository jurorHistoryRepository;
     @NonNull
-    private final ExcusalDeniedLetterServiceImpl excusalDeniedLetterService;
+    private final PrintDataService printDataService;
     @NonNull
     private final ExcusalLetterServiceImpl excusalLetterService;
 
@@ -102,7 +102,6 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
             }
         } else {
             refuseExcusalForJuror(payload, excusalDecisionDto, jurorPool);
-            sendExcusalDeniedLetter(payload.getOwner(), jurorNumber, excusalDecisionDto.getExcusalReasonCode());
         }
     }
 
@@ -239,18 +238,18 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         jurorHistory.setOtherInformation(JurorHistory.RESPONDED);
 
         jurorHistoryRepository.save(jurorHistory);
-    }
 
-    private void sendExcusalDeniedLetter(String owner, String jurorNumber, String excusalCode) {
-        log.info(String.format("Preparing an excusal denied letter for Juror %s", jurorNumber));
-        ExcusalDeniedLetterMod excusalDeniedLetterMod = excusalDeniedLetterService.getLetterToEnqueue(
-            owner,
-            jurorNumber
-        );
-        excusalDeniedLetterMod.setExcCode(excusalCode);
-        excusalDeniedLetterMod.setDateExcused(LocalDate.now());
-        excusalDeniedLetterService.enqueueLetter(excusalDeniedLetterMod);
-        log.info(String.format("Excusal denied letter enqueued for Juror %s", jurorNumber));
+        printDataService.printExcusalDeniedLetter(jurorPool);
+
+        jurorHistoryRepository.save(JurorHistory.builder()
+                                            .jurorNumber(jurorPool.getJurorNumber())
+                                            .dateCreated(LocalDateTime.now())
+                                            .historyCode(HistoryCodeMod.NON_EXCUSED_LETTER)
+                                            .createdBy(payload.getLogin())
+                                            .poolNumber(jurorPool.getPoolNumber())
+                                            .otherInformation("")
+                                            .build());
+
     }
 
     private void sendExcusalLetter(String owner, String jurorNumber, String excusalCode) {

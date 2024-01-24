@@ -17,6 +17,8 @@ import uk.gov.hmcts.juror.api.moj.xerox.LetterBase;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ConfirmLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralDeniedLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.PostponeLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalDeniedLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.SummonsLetter;
 
 import java.time.LocalDate;
@@ -82,6 +84,20 @@ public class PrintDataServiceImpl implements PrintDataService {
     }
 
     @Override
+    public void printExcusalDeniedLetter(JurorPool jurorPool) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to print excusal denied letter for null jurorPool", new Exception());
+        }
+
+        commitData(new ExcusalDeniedLetter(jurorPool, jurorPool.getCourt(),
+                                            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+                                            welshCourtLocationRepository
+                                                .findByLocCode(jurorPool.getCourt().getLocCode())
+        ));
+    }
+
+    @Override
     public void printConfirmationLetter(JurorPool jurorPool) {
         if (jurorPool == null) {
             throw new MojException.InternalServerError(
@@ -89,6 +105,19 @@ public class PrintDataServiceImpl implements PrintDataService {
         }
 
         commitData(new ConfirmLetter(jurorPool, jurorPool.getCourt(),
+                                     courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+                                     welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+        ));
+    }
+
+    @Override
+    public void printPostponeLetter(JurorPool jurorPool) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to print postpone letter for null jurorPool", new Exception());
+        }
+
+        commitData(new PostponeLetter(jurorPool, jurorPool.getCourt(),
                                      courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
                                      welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
         ));

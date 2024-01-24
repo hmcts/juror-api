@@ -7,10 +7,11 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.xerox.LetterBase;
 
-public class DeferralDeniedLetter extends LetterBase {
-    public DeferralDeniedLetter(JurorPool jurorPool,
-                                CourtLocation courtLocation,
-                                CourtLocation bureauLocation) {
+public class PostponeLetter extends LetterBase {
+
+    public PostponeLetter(JurorPool jurorPool,
+                         CourtLocation courtLocation,
+                         CourtLocation bureauLocation) {
         super(LetterContext.builder()
                    .juror(jurorPool.getJuror())
                    .jurorPool(jurorPool)
@@ -20,10 +21,10 @@ public class DeferralDeniedLetter extends LetterBase {
         setup(jurorPool.getJuror());
     }
 
-    public DeferralDeniedLetter(JurorPool jurorPool,
-                                CourtLocation courtLocation,
-                                CourtLocation bureauLocation,
-                                WelshCourtLocation welshCourtLocation) {
+    public PostponeLetter(JurorPool jurorPool,
+                         CourtLocation courtLocation,
+                         CourtLocation bureauLocation,
+                         WelshCourtLocation welshCourtLocation) {
         super(LetterContext.builder()
             .juror(jurorPool.getJuror())
             .jurorPool(jurorPool)
@@ -43,44 +44,41 @@ public class DeferralDeniedLetter extends LetterBase {
     }
 
     private void setupWelsh() {
-        setFormCode(FormCode.BI_DEFERRALDENIED);
+        setFormCode(FormCode.BI_POSTPONE);
         addData(LetterDataType.DATE_OF_LETTER, 18);
         addData(LetterDataType.WELSH_COURT_NAME, 40);
         addData(LetterDataType.COURT_NAME, 40);
         addData(LetterDataType.BUREAU_NAME, 35);
-        sharedBureauSetup();
-        sharedSetup();
-    }
-
-    private void setupEnglish() {
-        setFormCode(FormCode.ENG_DEFERRALDENIED);
-        addData(LetterDataType.DATE_OF_LETTER, 18);
-        addData(LetterDataType.COURT_NAME, 59);
-        addData(LetterDataType.BUREAU_NAME, 40);
-        sharedBureauSetup();
-        addData(LetterDataType.BUREAU_ADDRESS6, 35);
-        sharedSetup();
-    }
-
-    private void sharedBureauSetup() {
         addData(LetterDataType.BUREAU_ADDRESS1, 35);
         addData(LetterDataType.BUREAU_ADDRESS2, 35);
         addData(LetterDataType.BUREAU_ADDRESS3, 35);
         addData(LetterDataType.BUREAU_ADDRESS4, 35);
         addData(LetterDataType.BUREAU_ADDRESS5, 35);
+        sharedSetup();
+        addData(LetterDataType.WELSH_DEFERRAL_DATE, 32);
+        addData(LetterDataType.DEFERRAL_TIME, 8);
+    }
+
+    private void setupEnglish() {
+        setFormCode(FormCode.ENG_POSTPONE);
+        addData(LetterDataType.DATE_OF_LETTER, 18);
+        addData(LetterDataType.COURT_NAME, 59);
+        addData(LetterDataType.BUREAU_NAME, 40);
+        addData(LetterDataType.BUREAU_ADDRESS1, 35);
+        addData(LetterDataType.BUREAU_ADDRESS2, 35);
+        addData(LetterDataType.BUREAU_ADDRESS3, 35);
+        addData(LetterDataType.BUREAU_ADDRESS4, 35);
+        addData(LetterDataType.BUREAU_ADDRESS5, 35);
+        addData(LetterDataType.BUREAU_ADDRESS6, 35);
+        sharedSetup();
+        addData(LetterDataType.DEFERRAL_DATE, 32);
+        addData(LetterDataType.DEFERRAL_TIME, 8);
     }
 
     private void sharedSetup() {
         addData(LetterDataType.BUREAU_POSTCODE, 10);
         addData(LetterDataType.BUREAU_PHONE, 12);
         addData(LetterDataType.BUREAU_FAX, 12);
-        addData(LetterDataType.COURT_ADDRESS1, 35);
-        addData(LetterDataType.COURT_ADDRESS2, 35);
-        addData(LetterDataType.COURT_ADDRESS3, 35);
-        addData(LetterDataType.COURT_ADDRESS4, 35);
-        addData(LetterDataType.COURT_ADDRESS5, 35);
-        addData(LetterDataType.COURT_ADDRESS6, 35);
-        addData(LetterDataType.COURT_POSTCODE, 10);
         addData(LetterDataType.JUROR_TITLE, 10);
         addData(LetterDataType.JUROR_FIRST_NAME, 20);
         addData(LetterDataType.JUROR_LAST_NAME, 20);
