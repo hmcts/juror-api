@@ -1,0 +1,267 @@
+package uk.gov.hmcts.juror.api.moj.service;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCode;
+import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.controller.request.ExcusalDecisionDto;
+import uk.gov.hmcts.juror.api.moj.domain.ExcusalDecision;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.domain.letter.ExcusalDeniedLetterMod;
+import uk.gov.hmcts.juror.api.moj.domain.letter.ExcusalLetterMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
+import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.letter.ExcusalDeniedLetterServiceImpl;
+import uk.gov.hmcts.juror.api.moj.service.letter.ExcusalLetterServiceImpl;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
+import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Excusal Response service.
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor(onConstructor_ = {@Autowired})
+public class ExcusalResponseServiceImpl implements ExcusalResponseService {
+
+    @NonNull
+    private final ExcusalCodeRepository excusalCodeRepository;
+    @NonNull
+    private final JurorRepository jurorRepository;
+    @NonNull
+    private final JurorPoolRepository jurorPoolRepository;
+    @NonNull
+    private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
+    @NonNull
+    private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
+    @NonNull
+    private final UserRepository userRepository;
+    @NonNull
+    private final SummonsReplyMergeService mergeService;
+    @NonNull
+    private final JurorStatusRepository jurorStatusRepository;
+    @NonNull
+    private final JurorHistoryRepository jurorHistoryRepository;
+    @NonNull
+    private final PrintDataService printDataService;
+    @NonNull
+    private final ExcusalLetterServiceImpl excusalLetterService;
+
+    @Override
+    @Transactional
+    public void respondToExcusalRequest(BureauJWTPayload payload, ExcusalDecisionDto excusalDecisionDto,
+                                        String jurorNumber) {
+        log.info(String.format("Processing excusal request for Juror %s, by user %s", jurorNumber, payload.getLogin()));
+
+        checkExcusalCodeIsValid(excusalDecisionDto.getExcusalReasonCode());
+
+        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+
+        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
+
+        if (excusalDecisionDto.getReplyMethod() != null) {
+            if (excusalDecisionDto.getReplyMethod().equals(ReplyMethod.PAPER)) {
+                setPaperResponseProcessingStatusToClosed(payload, excusalDecisionDto, jurorNumber);
+            } else {
+                setDigitalResponseProcessingStatusToClosed(payload, excusalDecisionDto, jurorNumber);
+            }
+        }
+
+        if (excusalDecisionDto.getExcusalDecision().equals(ExcusalDecision.GRANT)) {
+            grantExcusalForJuror(payload, excusalDecisionDto, jurorPool);
+            if (!excusalDecisionDto.getExcusalReasonCode().equals(ExcusalCode.DECEASED)) {
+                // Only generate letter for non-deceased jurors
+                sendExcusalLetter(payload.getOwner(), jurorNumber, excusalDecisionDto.getExcusalReasonCode());
+            }
+        } else {
+            refuseExcusalForJuror(payload, excusalDecisionDto, jurorPool);
+        }
+    }
+
+    public void checkExcusalCodeIsValid(String excusalCode) {
+        log.info(String.format("Checking excusal code %s is valid", excusalCode));
+
+        List<String> excusalCodes = new ArrayList<>();
+        // Extract just the excusal code from the ExcusalCodeEntity objects stored in ExcusalCodeRepository
+        RepositoryUtils.retrieveAllRecordsFromDatabase(excusalCodeRepository)
+            .forEach(excusalCodeEntity -> excusalCodes.add(excusalCodeEntity.getExcusalCode()));
+
+        if (excusalCodes.isEmpty()) {
+            log.info("Unable to retrieve list of excusal codes from database");
+            throw new ExcusalResponseException.UnableToRetrieveExcusalCodeList();
+        }
+
+        if (!excusalCodes.contains(excusalCode)) {
+            log.info(String.format("Excusal code %s is invalid", excusalCode));
+            throw new ExcusalResponseException.InvalidExcusalCode(excusalCode);
+        }
+    }
+
+    private void setPaperResponseProcessingStatusToClosed(BureauJWTPayload payload,
+                                                          ExcusalDecisionDto excusalDecisionDto,
+                                                          String jurorNumber) {
+
+        log.info(String.format("Locating PAPER response for Juror %s", jurorNumber));
+        PaperResponse jurorPaperResponse = DataUtils.getJurorPaperResponse(jurorNumber, jurorPaperResponseRepository);
+
+        if (jurorPaperResponse.isClosed()) {
+            return; //Closed records are static as such we should not update
+        }
+
+        log.info(String.format("PAPER response found for Juror %s", jurorNumber));
+
+        jurorPaperResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+
+        if (jurorPaperResponse.getStaff() == null) {
+            log.info(String.format("No staff assigned to PAPER response for Juror %s", jurorNumber));
+            User staff = userRepository.findByUsername(payload.getLogin());
+            jurorPaperResponse.setStaff(staff);
+            log.info(String.format("Assigned current user to PAPER response for Juror %s", jurorNumber));
+        }
+
+        mergeService.mergePaperResponse(jurorPaperResponse, payload.getLogin());
+
+        log.info(String.format("PAPER response for Juror %s successfully closed", jurorNumber));
+    }
+
+    private void setDigitalResponseProcessingStatusToClosed(BureauJWTPayload payload,
+                                                            ExcusalDecisionDto excusalDecisionDto,
+                                                            String jurorNumber) {
+
+        log.info(String.format("Locating DIGITAL response for Juror %s", jurorNumber));
+        DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
+
+        if (jurorResponse.isClosed()) {
+            return; //Closed records are static as such we should not update
+        }
+
+        log.info(String.format("DIGITAL response found for Juror %s", jurorNumber));
+
+        jurorResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+
+        if (jurorResponse.getStaff() == null) {
+            log.info(String.format("No staff assigned to DIGITAL response for Juror %s", jurorNumber));
+            User staff = userRepository.findByUsername(payload.getLogin());
+            jurorResponse.setStaff(staff);
+            log.info(String.format("Assigned current user to DIGITAL response for Juror %s", jurorNumber));
+        }
+
+        mergeService.mergeDigitalResponse(jurorResponse, payload.getLogin());
+
+        log.info(String.format("DIGITAL response for Juror %s successfully closed", jurorNumber));
+    }
+
+    private void grantExcusalForJuror(BureauJWTPayload payload, ExcusalDecisionDto excusalDecisionDto,
+                                      JurorPool jurorPool) {
+        Juror juror = jurorPool.getJuror();
+
+        log.info(String.format("Processing officer decision to grant excusal for Juror %s", juror.getJurorNumber()));
+
+        juror.setResponded(true);
+        juror.setExcusalDate(LocalDate.now());
+        juror.setExcusalCode(excusalDecisionDto.getExcusalReasonCode());
+        juror.setUserEdtq(payload.getLogin());
+        jurorRepository.save(juror);
+
+        jurorPool.setUserEdtq(payload.getLogin());
+        jurorPool.setStatus(getPoolStatus(IJurorStatus.EXCUSED));
+        jurorPool.setNextDate(null);
+        jurorPoolRepository.save(jurorPool);
+
+        JurorHistory jurorHistory = JurorHistory.builder()
+            .jurorNumber(jurorPool.getJurorNumber())
+            .dateCreated(LocalDateTime.now())
+            .historyCode(HistoryCodeMod.EXCUSE_POOL_MEMBER)
+            .createdBy(payload.getLogin())
+            .poolNumber(jurorPool.getPoolNumber())
+            .otherInformation("Add Excuse - " + excusalDecisionDto.getExcusalReasonCode())
+            .build();
+
+        jurorHistoryRepository.save(jurorHistory);
+    }
+
+    private void refuseExcusalForJuror(BureauJWTPayload payload, ExcusalDecisionDto excusalDecisionDto,
+                                       JurorPool jurorPool) {
+        Juror juror = jurorPool.getJuror();
+        log.info(String.format("Processing officer decision to refuse excusal for Juror %s", juror.getJurorNumber()));
+
+        juror.setResponded(true);
+        juror.setExcusalDate(LocalDate.now());
+        juror.setExcusalCode(excusalDecisionDto.getExcusalReasonCode());
+        juror.setUserEdtq(payload.getLogin());
+        juror.setExcusalRejected("Y");
+        jurorRepository.save(juror);
+
+        jurorPool.setStatus(getPoolStatus(IJurorStatus.RESPONDED));
+        jurorPool.setUserEdtq(payload.getLogin());
+        jurorPoolRepository.save(jurorPool);
+
+        JurorHistory jurorHistory = JurorHistory.builder()
+            .jurorNumber(jurorPool.getJurorNumber())
+            .dateCreated(LocalDateTime.now())
+            .historyCode(HistoryCodeMod.EXCUSE_POOL_MEMBER)
+            .createdBy(payload.getLogin())
+            .poolNumber(jurorPool.getPoolNumber())
+            .otherInformation("Refuse Excuse")
+            .build();
+
+        jurorHistoryRepository.save(jurorHistory);
+
+        jurorHistory.setHistoryCode(HistoryCodeMod.RESPONDED_POSITIVELY);
+        jurorHistory.setOtherInformation(JurorHistory.RESPONDED);
+
+        jurorHistoryRepository.save(jurorHistory);
+
+        printDataService.printExcusalDeniedLetter(jurorPool);
+
+        jurorHistoryRepository.save(JurorHistory.builder()
+                                            .jurorNumber(jurorPool.getJurorNumber())
+                                            .dateCreated(LocalDateTime.now())
+                                            .historyCode(HistoryCodeMod.NON_EXCUSED_LETTER)
+                                            .createdBy(payload.getLogin())
+                                            .poolNumber(jurorPool.getPoolNumber())
+                                            .otherInformation("")
+                                            .build());
+
+    }
+
+    private void sendExcusalLetter(String owner, String jurorNumber, String excusalCode) {
+        log.info(String.format("Preparing an excusal letter for Juror %s", jurorNumber));
+        ExcusalLetterMod excusalLetterMod = excusalLetterService.getLetterToEnqueue(owner, jurorNumber);
+        excusalLetterMod.setExcCode(excusalCode);
+        excusalLetterMod.setDateExcused(LocalDate.now());
+        excusalLetterService.enqueueLetter(excusalLetterMod);
+        log.info(String.format("Excusal letter enqueued for Juror %s", jurorNumber));
+    }
+
+    private JurorStatus getPoolStatus(int poolStatusId) {
+        return RepositoryUtils.retrieveFromDatabase(poolStatusId, jurorStatusRepository);
+    }
+}

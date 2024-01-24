@@ -1,0 +1,51 @@
+-- clear previous pool history
+delete from juror_mod.pool_history;
+
+-- clear previous participant history
+DELETE FROM juror_mod.juror_history;
+DELETE FROM juror_mod.juror_audit;
+
+delete from juror_mod.bulk_print_data;
+
+-- Create POOL records associated with POOL recrods
+delete from juror_mod.contact_log;
+delete from juror_mod.pool_comments;
+delete from juror_mod.juror_pool;
+delete from juror_mod.pool;
+
+INSERT INTO JUROR_MOD.POOL (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE, LOC_CODE, NEW_REQUEST, LAST_UPDATE) VALUES
+	 ('415', '415220401', TIMESTAMP'2022-04-04 00:00:00.0', 100, 100, 'CRO', '415', 'N', TIMESTAMP'2022-02-02 09:22:09.0');
+
+INSERT INTO JUROR_MOD.POOL (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE, LOC_CODE, NEW_REQUEST, LAST_UPDATE) VALUES
+	 ('415', '767220401', TIMESTAMP'2022-04-04 00:00:00.0',100, 100, 'CRO', '767', 'N', TIMESTAMP'2022-02-02 09:22:09.0');
+
+INSERT INTO JUROR_MOD.POOL (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE, LOC_CODE, NEW_REQUEST, LAST_UPDATE) VALUES
+	 ('415', '415220502', TIMESTAMP'2022-05-03 00:00:00.0', 100, 100, 'CRO', '415', 'N', TIMESTAMP'2022-03-02 09:22:09.0');
+
+INSERT INTO JUROR_MOD.POOL (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE, LOC_CODE, NEW_REQUEST, LAST_UPDATE) VALUES
+	 ('400', '416220502', TIMESTAMP'2022-05-03 00:00:00.0',100, 100, 'CRO', '416', 'N', TIMESTAMP'2022-03-02 09:22:09.0');
+
+-- Create JUROR records associated with DEFER_DBF records
+
+INSERT INTO juror_mod.juror (juror_number, last_name, first_name, dob, address_line_1, address_line_4, postcode, responded)
+VALUES ('111111111', 'LNAMEFIVEFOURZERO', 'FNAMEFIVEFOURZERO', CURRENT_DATE - interval '30 years', '540 STREET NAME', 'ANYTOWN', 'CH1 2AN', true),
+('222222222', 'LNAMEFIVEFOURONE', 'FNAMEFIVEFOURONE', CURRENT_DATE - interval '50 years', '540 STREET NAME', 'ANYTOWN','CH1 2AN', true),
+('333333333', 'LNAMEFIVEFOURTWO', 'FNAMEFIVEFOURTWO', CURRENT_DATE - interval '31 years', '540 STREET NAME', 'ANYTOWN', 'CH1 2AN', true),
+('444444444', 'LNAMEFIVEFOURTWO', 'FNAMEFIVEFOURTWO', CURRENT_DATE - interval '32 years', '540 STREET NAME', 'ANYTOWN', 'CH1 2AN', true),
+('123456789', 'LNAMEFIVEFOURTHREE', 'FNAMEFIVEFOURTHREE', CURRENT_DATE - interval '33 years', '540 STREET NAME', 'ANYTOWN', 'CH1 2AN', true),
+('987654321', 'LNAMEFIVEFOURFOUR', 'FNAMEFIVEFOURFOUR', CURRENT_DATE - interval '60 years', '540 STREET NAME', 'ANYTOWN', 'CH1 2AN', true);
+
+INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, is_active, status, def_date)
+VALUES('415', '111111111', '415220401', true, 7, '2022-10-03'),
+('415', '222222222', '415220401', true, 7, '2022-10-03'),
+('415', '333333333', '415220502', true, 7, '2022-10-03'),
+('415', '444444444', '767220401', true, 7, '2022-10-03'),
+('400', '123456789', '415220502', true, 7, '2022-10-03'),
+('416', '987654321', '416220502', true, 7, '2022-10-03');
+
+-- Create A CONFIRM_LETT record for one of the previously deferred juror's
+DELETE FROM JUROR.CONFIRM_LETT;
+
+INSERT INTO JUROR.CONFIRM_LETT
+(OWNER, PART_NO, PRINTED, DATE_PRINTED)
+VALUES('400', '111111111', 'Y', TIMESTAMP'2022-04-04 00:00:00.0');

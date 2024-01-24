@@ -1,0 +1,2475 @@
+package uk.gov.hmcts.juror.api.moj.service.deferralmaintenance;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.slf4j.LoggerFactory;
+import org.springframework.test.context.junit4.SpringRunner;
+import uk.gov.hmcts.juror.api.TestUtils;
+import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
+import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.DeferralReasonRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
+import uk.gov.hmcts.juror.api.moj.domain.CurrentlyDeferred;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.domain.letter.PostponementLetter;
+import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.repository.CurrentlyDeferredRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
+import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
+import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
+import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
+import uk.gov.hmcts.juror.api.moj.service.letter.PostponementLetterServiceImpl;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.juror.api.moj.domain.currentlyDeferredQueries.filterByCourtAndDate;
+import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsServiceTestData.createActivePoolsForDeferralsFirstDate;
+import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsServiceTestData.createActivePoolsForDeferralsSecondDate;
+import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsServiceTestData.createActivePoolsForDeferralsThirdDate;
+import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsServiceTestData.createJurorPoolForDeferrals;
+import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsServiceTestData.createJurorResponseForDeferrals;
+import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsServiceTestData.createJurorResponseWithoutDeferrals;
+
+@RunWith(SpringRunner.class)
+public class ManageDeferralsServiceTest {
+
+    private static final String BUREAU_LOC_CODE = "400";
+
+    @Mock
+    private PoolRequestRepository poolRequestRepository;
+    @Mock
+    private JurorRepository jurorRepository;
+    @Mock
+    private JurorPoolRepository jurorPoolRepository;
+    @Mock
+    private CurrentlyDeferredRepository currentlyDeferredRepository;
+    @Mock
+    private PoolHistoryRepository poolHistoryRepository;
+    @Mock
+    private JurorHistoryRepository jurorHistoryRepository;
+    @Mock
+    private PoolMemberSequenceService poolMemberSequenceService;
+    @Mock
+    private JurorStatusRepository jurorStatusRepository;
+    @Mock
+    private JurorDigitalResponseRepositoryMod digitalResponseRepository;
+    @Mock
+    private JurorPaperResponseRepositoryMod paperResponseRepository;
+    @Mock
+    private JurorResponseAuditRepository auditRepository;
+    @Mock
+    private AssignOnUpdateServiceMod assignOnUpdateService;
+    @Mock
+    private SummonsReplyMergeService mergeService;
+    @Mock
+    private PostponementLetterServiceImpl postponementLetterService;
+    @Mock
+    private PrintDataService printDataService;
+
+    @InjectMocks
+    ManageDeferralsServiceImpl manageDeferralsService;
+
+    private ListAppender<ILoggingEvent> listAppender;
+
+    @Before
+    public void setUp() {
+        final Logger logger = (Logger) LoggerFactory.getLogger(ManageDeferralsServiceImpl.class);
+
+        doReturn(Optional.of(createJurorStatus(2, "RESPONDED")))
+            .when(jurorStatusRepository).findById(2);
+        doReturn(Optional.of(createJurorStatus(7, "DEFERRED")))
+            .when(jurorStatusRepository).findById(7);
+
+        listAppender = new ListAppender<>();
+        listAppender.start();
+
+        logger.addAppender(listAppender);
+    }
+
+    private PoolRequest createPoolRequest(String poolNumber, String locationCode, LocalDate returnDate) {
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(locationCode);
+        courtLocation.setOwner(locationCode);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber(poolNumber);
+        poolRequest.setCourtLocation(courtLocation);
+        poolRequest.setReturnDate(returnDate);
+
+        return poolRequest;
+    }
+
+    private PoolRequest createPoolRequest(String owner, String poolNumber, String locationCode, LocalDate returnDate) {
+        PoolRequest poolRequest = createPoolRequest(poolNumber, locationCode, returnDate);
+        poolRequest.setOwner(owner);
+
+        return poolRequest;
+    }
+
+    @Test
+    public void deleteDeferral_happyPath_bureauUser() {
+        final ArgumentCaptor<JurorPool> jurorPoolArgumentCaptor = ArgumentCaptor.forClass(JurorPool.class);
+
+        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+
+        String jurorNumber = "123456789";
+        String poolNumber = "987654321";
+        CurrentlyDeferred deferredRecord = createDeferredRecord("400", jurorNumber);
+
+        when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+            any(),
+            anyBoolean()
+        ))
+            .thenReturn(createDeferredJurorPools("400"));
+
+        PoolRequest poolRequest = createPoolRequest(poolNumber, "415", LocalDate.now());
+
+        doReturn(Optional.of(poolRequest)).when(poolRequestRepository)
+            .findByPoolNumber(poolNumber);
+
+        when(currentlyDeferredRepository.findById(any())).thenReturn(Optional.of(deferredRecord));
+
+        doNothing().when(currentlyDeferredRepository).delete(any());
+
+        manageDeferralsService.deleteDeferral(bureauPayload, jurorNumber);
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+        verify(currentlyDeferredRepository, times(1)).findById(any());
+        verify(jurorPoolRepository, times(1)).save(jurorPoolArgumentCaptor.capture());
+
+        JurorPool jurorPool = jurorPoolArgumentCaptor.getValue();
+        Juror juror = jurorPool.getJuror();
+
+        assertThat(jurorPool.getDeferralDate()).isNull();
+        assertThat(juror.getExcusalDate()).isNull();
+        assertThat(jurorPool.getDeferralCode()).isNull();
+        assertThat(jurorPool.getNextDate()).isNotNull();
+        assertThat(juror.getNoDefPos()).isEqualTo(0L);
+        assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.RESPONDED);
+        assertThat(jurorPool.getUserEdtq()).isEqualTo(bureauPayload.getLogin());
+    }
+
+    @Test
+    public void deleteDeferral_deferralNotFound() {
+        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+
+        String jurorNumber = "123456789";
+        String poolNumber = "987654321";
+
+        when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true))
+            .thenReturn(createDeferredJurorPools("400"));
+
+        PoolRequest poolRequest = createPoolRequest(poolNumber, "415", LocalDate.now());
+
+        doReturn(Optional.of(poolRequest)).when(poolRequestRepository)
+            .findByPoolNumber(poolNumber);
+
+        when(currentlyDeferredRepository.findById(any())).thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() -> {
+            manageDeferralsService.deleteDeferral(bureauPayload, jurorNumber);
+        });
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+        verify(currentlyDeferredRepository, times(1)).findById(any());
+        verify(jurorPoolRepository, never()).save(any());
+        verify(currentlyDeferredRepository, never()).delete(any());
+    }
+
+    private CurrentlyDeferred createDeferredRecord(String owner, String jurorNumber) {
+        CurrentlyDeferred deferredRecord = new CurrentlyDeferred();
+
+        deferredRecord.setOwner(owner);
+        deferredRecord.setJurorNumber(jurorNumber);
+        deferredRecord.setDeferredTo(LocalDate.of(2023, 12, 4));
+        deferredRecord.setLocCode("415");
+
+        return deferredRecord;
+    }
+
+    @Test
+    public void useDeferrals_noDeferralsUsed() {
+        PoolRequest poolRequest = createPoolRequest("123456789", "123", LocalDate.now());
+        doReturn(new ArrayList<CurrentlyDeferred>()).when(currentlyDeferredRepository)
+            .findAll((Predicate) any());
+
+        int deferralsUsed = manageDeferralsService.useCourtDeferrals(poolRequest,
+            0, "SOME_USER");
+        assertThat(deferralsUsed).as("No deferrals requested, expect 0 to be used").isEqualTo(0);
+
+        verify(jurorPoolRepository, never())
+            .findByJurorJurorNumberAndOwnerAndDeferralDate(any(),
+                any(), any());
+        verify(jurorPoolRepository, never()).saveAndFlush(any());
+        verify(poolRequestRepository, never()).save(any());
+        verify(poolRequestRepository, never()).saveAndFlush(any());
+        verify(poolHistoryRepository, never()).save(any());
+        verify(jurorHistoryRepository, never()).save(any());
+        verify(printDataService, never()).printConfirmationLetter(any());
+    }
+
+    private JurorStatus createJurorStatus(int status, String description) {
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(status);
+        jurorStatus.setStatusDesc(description);
+        jurorStatus.setActive(true);
+        return jurorStatus;
+    }
+
+    @Test
+    public void useCourtDeferrals_deferralsUsed_happyPath() {
+        LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
+        String courtLocation = "415";
+        LocalDate newAttendanceDate = LocalDate.now();
+
+        final PoolRequest newPoolRequest = createPoolRequest("123456789", courtLocation, newAttendanceDate);
+        PoolRequest oldPoolRequest = createPoolRequest("987654321", courtLocation, oldAttendanceDate);
+        doReturn(Optional.of(oldPoolRequest)).when(poolRequestRepository)
+            .findByPoolNumber("987654321");
+
+        List<CurrentlyDeferred> courtDeferrals = new ArrayList<>();
+        courtDeferrals.add(CurrentlyDeferred.builder().owner(courtLocation).build());
+        courtDeferrals.add(CurrentlyDeferred.builder().owner(courtLocation).build());
+
+        doReturn(courtDeferrals).when(currentlyDeferredRepository).findAll(filterByCourtAndDate(
+            courtLocation,
+            courtLocation,
+            newAttendanceDate));
+
+        JurorPool deferredJuror = createDeferredJuror(courtLocation);
+        doReturn(Optional.of(deferredJuror)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndOwnerAndDeferralDate(
+                any(), any(), any());
+        doReturn(Optional.of(createJurorStatus(2, "Responded"))).when(jurorStatusRepository)
+            .findById(2);
+        doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
+        doReturn(null).when(jurorPoolRepository).saveAndFlush(any());
+        doReturn(null).when(poolRequestRepository).save(any());
+        doReturn(null).when(poolRequestRepository).saveAndFlush(any());
+        doReturn(null).when(poolHistoryRepository).save(any());
+        doReturn(null).when(jurorHistoryRepository).save(any());
+
+        int deferralsUsed = courtDeferrals.size();
+        int actualDeferralsUsed = manageDeferralsService.useCourtDeferrals(newPoolRequest,
+            deferralsUsed, "SOME_USER");
+
+        assertThat(actualDeferralsUsed)
+            .as("For the happy path, expect all requested deferrals to be used")
+            .isEqualTo(deferralsUsed);
+        assertThat(deferredJuror.getIsActive())
+            .as("Expect the old, deferred juror record to be updated to inactive")
+            .isEqualTo(false);
+
+        verify(jurorPoolRepository, times(deferralsUsed))
+            .findByJurorJurorNumberAndOwnerAndDeferralDate(any(), any(), any());
+        verify(jurorPoolRepository, times(deferralsUsed * 2))
+            .saveAndFlush(any());
+        verify(poolRequestRepository, times(deferralsUsed)).save(any());
+        verify(poolRequestRepository, times(deferralsUsed)).saveAndFlush(any());
+        verify(poolHistoryRepository, never()).save(any());
+        verify(jurorHistoryRepository, times(deferralsUsed)).save(any());
+    }
+
+    @Test
+    public void useCourtDeferrals_deferralsUsed_noJurorPool() {
+        String courtLocation = "415";
+        LocalDate newAttendanceDate = LocalDate.now();
+        LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
+
+        final PoolRequest newPoolRequest = createPoolRequest("123456789", courtLocation, newAttendanceDate);
+        PoolRequest oldPoolRequest = createPoolRequest("987654321", courtLocation, oldAttendanceDate);
+        doReturn(Optional.of(oldPoolRequest)).when(poolRequestRepository)
+            .findByPoolNumber("987654321");
+
+        List<CurrentlyDeferred> courtDeferrals = new ArrayList<>();
+        courtDeferrals.add(
+            CurrentlyDeferred.builder().jurorNumber("111111111").owner(courtLocation).deferredTo(newAttendanceDate)
+                .build());
+        courtDeferrals.add(
+            CurrentlyDeferred.builder().jurorNumber("222222222").owner(courtLocation).deferredTo(newAttendanceDate)
+                .build());
+        doReturn(courtDeferrals).when(currentlyDeferredRepository).findAll(filterByCourtAndDate(
+            courtLocation,
+            courtLocation,
+            newAttendanceDate));
+        doReturn(Optional.of(createJurorStatus(2, "Responded"))).when(jurorStatusRepository)
+            .findById(2);
+        doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
+
+        JurorPool deferredJuror = createDeferredJuror(courtLocation);
+        doReturn(Optional.of(deferredJuror)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndOwnerAndDeferralDate(
+                "111111111", courtLocation, newAttendanceDate);
+        doReturn(Optional.empty()).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndOwnerAndDeferralDate(
+                "222222222", courtLocation, newAttendanceDate);
+
+        int deferralsUsed = courtDeferrals.size();
+        int actualDeferralsUsed = manageDeferralsService.useCourtDeferrals(newPoolRequest, deferralsUsed,
+            "SOME_USER");
+
+        assertThat(actualDeferralsUsed)
+            .as("Unhappy path - no pool member for one deferral, expect only one of the two deferrals to "
+                + "actually be used")
+            .isEqualTo(1);
+        assertThat(listAppender.list)
+            .extracting(ILoggingEvent::getMessage, ILoggingEvent::getLevel)
+            .contains(org.assertj.core.groups.Tuple.tuple(
+                "An error occurred trying to add a deferred juror to the new Pool: "
+                    + "123456789 - Unable to find an associated Pool Member for the deferred juror: 222222222",
+                Level.ERROR), org.assertj.core.groups.Tuple.tuple(
+                "1 deferred juror(s) have been added to Pool: 123456789",
+                Level.INFO));
+    }
+
+    @Test
+    public void useCourtDeferrals_deferralsUsed_noPoolRequest() {
+        String courtLocation = "415";
+        LocalDate newAttendanceDate = LocalDate.now();
+
+        final PoolRequest newPoolRequest = createPoolRequest("123456789", courtLocation, newAttendanceDate);
+        doReturn(Optional.empty()).when(poolRequestRepository)
+            .findByPoolNumber("987654321");
+
+        List<CurrentlyDeferred> courtDeferrals = new ArrayList<>();
+        courtDeferrals.add(new CurrentlyDeferred());
+
+        doReturn(courtDeferrals).when(currentlyDeferredRepository).findAll(filterByCourtAndDate(
+            courtLocation,
+            courtLocation,
+            newAttendanceDate));
+        doNothing().when(currentlyDeferredRepository).delete(any());
+
+        JurorPool deferredJuror = createDeferredJuror(courtLocation);
+        doReturn(Optional.of(deferredJuror)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndOwnerAndDeferralDate(
+                any(), any(), any());
+        doReturn(Optional.of(createJurorStatus(2, "Responded"))).when(jurorStatusRepository)
+            .findById(2);
+        doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
+
+        doReturn(null).when(jurorPoolRepository).saveAndFlush(any());
+        doReturn(null).when(poolRequestRepository).save(any());
+        doReturn(null).when(poolRequestRepository).saveAndFlush(any());
+
+        int deferralsUsed = courtDeferrals.size();
+        int actualDeferralsUsed = manageDeferralsService.useCourtDeferrals(newPoolRequest,
+            deferralsUsed, "SOME_USER");
+
+        assertThat(actualDeferralsUsed)
+            .as("Unhappy path - no pool request, expect no deferrals to be used")
+            .isEqualTo(0);
+        assertThat(listAppender.list)
+            .extracting(ILoggingEvent::getMessage, ILoggingEvent::getLevel)
+            .contains(
+                org.assertj.core.groups.Tuple.tuple("An error occurred trying to add a deferred juror to "
+                    + "the new Pool: 123456789 - Unable to find an active pool for 987654321", Level.ERROR),
+                org.assertj.core.groups.Tuple.tuple("0 deferred juror(s) have been added to Pool: 123456789",
+                    Level.INFO)
+            );
+    }
+
+    @Test
+    public void useBureauDeferrals_deferralsUsed_happyPath() {
+        LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
+        LocalDate newAttendanceDate = LocalDate.now();
+        String courtLocation = "415";
+
+        final PoolRequest newPoolRequest
+            = createPoolRequest(BUREAU_LOC_CODE, "123456789", courtLocation, newAttendanceDate);
+        PoolRequest oldPoolRequest = createPoolRequest(courtLocation, "987654321", courtLocation,
+            oldAttendanceDate);
+        doReturn(Optional.of(oldPoolRequest)).when(poolRequestRepository)
+            .findByPoolNumber("987654321");
+
+        List<CurrentlyDeferred> bureauDeferrals = new ArrayList<>();
+        bureauDeferrals.add(CurrentlyDeferred.builder().owner(BUREAU_LOC_CODE).jurorNumber("111111111").build());
+        bureauDeferrals.add(CurrentlyDeferred.builder().owner(BUREAU_LOC_CODE).jurorNumber("222222222").build());
+        final int deferralsUsed = bureauDeferrals.size();
+        doReturn(bureauDeferrals).when(currentlyDeferredRepository).findAll(filterByCourtAndDate(
+            BUREAU_LOC_CODE,
+            courtLocation,
+            newAttendanceDate));
+        doNothing().when(currentlyDeferredRepository).delete(any());
+
+        JurorPool deferredJuror = createDeferredJuror(BUREAU_LOC_CODE);
+        doReturn(Optional.of(deferredJuror)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndOwnerAndDeferralDate(
+                any(), any(), any());
+        doReturn(Optional.of(createJurorStatus(2, "Responded"))).when(jurorStatusRepository)
+            .findById(2);
+        doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
+
+        doReturn(null).when(jurorPoolRepository).saveAndFlush(any());
+        doReturn(null).when(poolRequestRepository).save(any());
+        doReturn(null).when(poolRequestRepository).saveAndFlush(any());
+        doReturn(null).when(poolHistoryRepository).save(any());
+        doReturn(null).when(jurorHistoryRepository).save(any());
+
+        manageDeferralsService.useBureauDeferrals(newPoolRequest, deferralsUsed, "SOME_USER");
+
+        assertThat(deferredJuror.getIsActive())
+            .as("Expect the old, deferred juror record to be updated to inactive")
+            .isEqualTo(false);
+
+        verify(printDataService, times(bureauDeferrals.size())).printConfirmationLetter(any());
+
+        verify(poolRequestRepository, times(deferralsUsed)).saveAndFlush(oldPoolRequest);
+        verify(poolRequestRepository, times(deferralsUsed)).save(newPoolRequest);
+        verify(jurorHistoryRepository, times(deferralsUsed)).save(any());
+        verify(jurorPoolRepository, times(deferralsUsed))
+            .findByJurorJurorNumberAndOwnerAndDeferralDate(any(), any(), any());
+        verify(jurorPoolRepository, times(deferralsUsed * 2))
+            .saveAndFlush(any());
+        verify(poolHistoryRepository, times(1)).save(any());
+        verify(printDataService, times(deferralsUsed)).printConfirmationLetter(any());
+    }
+
+    @Test
+    public void useBureauDeferrals_deferralsUsed_noJurorPool() {
+        LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
+        LocalDate newAttendanceDate = LocalDate.now();
+        String courtLocation = "415";
+
+        final PoolRequest newPoolRequest
+            = createPoolRequest(BUREAU_LOC_CODE, "123456789", courtLocation, newAttendanceDate);
+        PoolRequest oldPoolRequest = createPoolRequest(courtLocation, "987654321", courtLocation,
+            oldAttendanceDate);
+        doReturn(Optional.of(oldPoolRequest)).when(poolRequestRepository)
+            .findByPoolNumber("987654321");
+
+        List<CurrentlyDeferred> bureauDeferrals = new ArrayList<>();
+        bureauDeferrals.add(
+            CurrentlyDeferred.builder().jurorNumber("111111111").owner(BUREAU_LOC_CODE).deferredTo(newAttendanceDate)
+                .build());
+        bureauDeferrals.add(
+            CurrentlyDeferred.builder().jurorNumber("222222222").owner(BUREAU_LOC_CODE).deferredTo(newAttendanceDate)
+                .build());
+        final int deferralsUsed = bureauDeferrals.size();
+        doReturn(bureauDeferrals).when(currentlyDeferredRepository).findAll(filterByCourtAndDate(
+            BUREAU_LOC_CODE,
+            courtLocation,
+            newAttendanceDate));
+        doReturn(Optional.of(createJurorStatus(2, "Responded")))
+            .when(jurorStatusRepository).findById(2);
+        doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
+
+        JurorPool deferredJuror = createDeferredJuror(BUREAU_LOC_CODE);
+        doReturn(Optional.of(deferredJuror)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndOwnerAndDeferralDate(
+                "111111111", BUREAU_LOC_CODE, newAttendanceDate);
+        doReturn(Optional.empty()).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndOwnerAndDeferralDate("222222222", BUREAU_LOC_CODE,
+                newAttendanceDate);
+
+        manageDeferralsService.useBureauDeferrals(newPoolRequest, deferralsUsed, "SOME_USER");
+
+        assertThat(listAppender.list)
+            .extracting(ILoggingEvent::getMessage, ILoggingEvent::getLevel)
+            .contains(org.assertj.core.groups.Tuple.tuple("1 deferred juror(s) have been added to Pool: "
+                + "123456789", Level.INFO));
+    }
+
+    @Test
+    public void useBureauDeferrals_deferralsUsed_noPoolRequest() {
+        String courtLocation = "415";
+        LocalDate newAttendanceDate = LocalDate.now();
+
+        final PoolRequest newPoolRequest = createPoolRequest(BUREAU_LOC_CODE, "123456789", courtLocation,
+            newAttendanceDate
+        );
+        doReturn(Optional.empty()).when(poolRequestRepository)
+            .findByPoolNumber("987654321");
+
+        List<CurrentlyDeferred> bureauDeferrals = new ArrayList<>();
+        bureauDeferrals.add(new CurrentlyDeferred());
+        final int deferralsUsed = bureauDeferrals.size();
+        doReturn(bureauDeferrals).when(currentlyDeferredRepository).findAll(filterByCourtAndDate(
+            BUREAU_LOC_CODE,
+            courtLocation,
+            newAttendanceDate));
+        doNothing().when(currentlyDeferredRepository).delete(any());
+
+        JurorPool deferredJuror = createDeferredJuror(BUREAU_LOC_CODE);
+        doReturn(Optional.of(deferredJuror)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndOwnerAndDeferralDate(
+                any(), any(), any());
+        doReturn(Optional.of(createJurorStatus(2, "Responded"))).when(jurorStatusRepository)
+            .findById(2);
+        doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
+
+        doReturn(null).when(jurorPoolRepository).saveAndFlush(any());
+        doReturn(null).when(poolRequestRepository).save(any());
+        doReturn(null).when(poolRequestRepository).saveAndFlush(any());
+
+        manageDeferralsService.useBureauDeferrals(newPoolRequest, deferralsUsed, "SOME_USER");
+
+        assertThat(listAppender.list)
+            .extracting(ILoggingEvent::getMessage, ILoggingEvent::getLevel)
+            .contains(org.assertj.core.groups.Tuple.tuple("0 deferred juror(s) have been added to Pool: "
+                + "123456789", Level.INFO));
+    }
+
+    private void setupProcessJurorTestToActivePool(PoolRequest oldPoolRequest,
+                                                   PoolRequest newPoolRequest,
+                                                   String jurorNumber,
+                                                   List<JurorPool> jurorPools,
+                                                   JurorStatus jurorStatus) {
+        setupProcessJurorTestToDeferralMaintenance(oldPoolRequest, jurorNumber, jurorPools, jurorStatus);
+        doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository)
+            .findByPoolNumber("111111112");
+    }
+
+    private void setupProcessJurorTestToDeferralMaintenance(PoolRequest oldPoolRequest,
+                                                            String jurorNumber,
+                                                            List<JurorPool> jurorPools,
+                                                            JurorStatus jurorStatus) {
+        doReturn(Optional.of(oldPoolRequest)).when(poolRequestRepository)
+            .findByPoolNumber("111111111");
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+        doReturn(Optional.of(jurorStatus)).when(jurorStatusRepository).findById(any());
+    }
+
+
+    private void verifyMoveToActivePoolTest() {
+        verify(jurorHistoryRepository, times(4)).save(any());
+        verify(poolRequestRepository, times(1)).save(any());
+        verify(poolRequestRepository, times(1)).saveAndFlush(any());
+        verify(jurorPoolRepository, times(2)).saveAndFlush(any());
+        verify(poolMemberSequenceService, times(1))
+            .getPoolMemberSequenceNumber(any(String.class));
+        verify(poolMemberSequenceService, times(1))
+            .leftPadInteger(any(int.class));
+        verify(poolHistoryRepository, times(1)).save(any());
+        verify(currentlyDeferredRepository, times(0)).save(any());
+        verify(printDataService, times(1)).printDeferralLetter(any());
+        verify(printDataService, times(1)).printConfirmationLetter(any());
+    }
+
+    private void verifyJurorToDeferralMaintenanceTest() {
+        verify(jurorHistoryRepository, times(2)).save(any());
+        verify(jurorPoolRepository, times(2)).save(any());
+        verify(printDataService, never()).printConfirmationLetter(any());
+    }
+
+    private void verifyLettersHappyPathTest() {
+        verify(printDataService, times(1)).printDeferralLetter(any());
+    }
+
+    @Test
+    public void processJuror_deferral_digital_happy_path_moveToActivePool() {
+        LocalDate newAttendanceDate = LocalDate.now();
+        LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
+        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+        final PoolRequest oldPoolRequest = createPoolRequest("400", "111111111", "415",
+            oldAttendanceDate
+        );
+        final PoolRequest newPoolRequest = createPoolRequest("400", "111111112", "415",
+            newAttendanceDate
+        );
+
+        List<JurorPool> poolMembers = new ArrayList<>();
+        JurorPool member = createJurorPool(jurorNumber);
+        poolMembers.add(member);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+        DigitalResponse digitalResponse = new DigitalResponse();
+        digitalResponse.setJurorNumber(jurorNumber);
+
+        DeferralReasonRequestDto dto = createDeferralReasonRequestDtoToActivePool(ReplyMethod.DIGITAL);
+        dto.setReplyMethod(ReplyMethod.DIGITAL);
+
+        setupProcessJurorTestToActivePool(oldPoolRequest, newPoolRequest, jurorNumber, poolMembers, jurorStatus);
+        doReturn(digitalResponse).when(digitalResponseRepository)
+            .findByJurorNumber(any(String.class));
+
+        manageDeferralsService.processJurorDeferral(bureauPayload, jurorNumber, dto);
+
+        verifyMoveToActivePoolTest();
+        verify(auditRepository, times(1))
+            .save(any(JurorResponseAudit.class));
+
+    }
+
+    @Test
+    public void changeDeferralDate_happy_path_moveToActivePool() {
+        LocalDate newAttendanceDate = LocalDate.now();
+        LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
+        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+        final PoolRequest oldPoolRequest = createPoolRequest("400",
+            "111111111", "415", oldAttendanceDate
+        );
+        final PoolRequest newPoolRequest = createPoolRequest("400",
+            "111111112", "415", newAttendanceDate
+        );
+
+        List<JurorPool> poolMembers = new ArrayList<>();
+        JurorPool member = createJurorPool(jurorNumber);
+        poolMembers.add(member);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+        DigitalResponse digitalResponse = new DigitalResponse();
+        digitalResponse.setJurorNumber(jurorNumber);
+
+        setupProcessJurorTestToActivePool(oldPoolRequest, newPoolRequest, jurorNumber, poolMembers, jurorStatus);
+        doReturn(Optional.of(digitalResponse)).when(digitalResponseRepository)
+            .findById(any(String.class));
+
+        DeferralReasonRequestDto dto = createDeferralReasonRequestDtoToActivePool(null);
+        manageDeferralsService.changeJurorDeferralDate(bureauPayload, jurorNumber, dto);
+
+        verifyMoveToActivePoolTest();
+    }
+
+    @Test
+    public void changeDeferralDate_happy_path_moveToActivePool_RemoveFromDeferralMaintenance() {
+        LocalDate newAttendanceDate = LocalDate.now();
+        LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
+        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+        final PoolRequest oldPoolRequest = createPoolRequest("400",
+            "111111111", "415", oldAttendanceDate
+        );
+        final PoolRequest newPoolRequest = createPoolRequest("400",
+            "111111112", "415", newAttendanceDate
+        );
+
+        List<JurorPool> poolMembers = new ArrayList<>();
+        JurorPool member = createJurorPool(jurorNumber);
+        poolMembers.add(member);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+        final DeferralReasonRequestDto dto = createDeferralReasonRequestDtoToActivePool(null);
+
+        final Optional<CurrentlyDeferred> currentlyDeferred = Optional.of(createCurrentlyDeferred(jurorNumber));
+
+        doReturn(currentlyDeferred).when(currentlyDeferredRepository).findById(any());
+        doNothing().when(currentlyDeferredRepository).delete(currentlyDeferred.get());
+
+        setupProcessJurorTestToActivePool(oldPoolRequest, newPoolRequest, jurorNumber, poolMembers, jurorStatus);
+
+        manageDeferralsService.changeJurorDeferralDate(bureauPayload, jurorNumber, dto);
+
+        verifyMoveToActivePoolTest();
+
+    }
+
+    @Test
+    public void changeDeferralDate_happy_path_moveToDeferralMaintenance() {
+        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+        LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
+        final DeferralReasonRequestDto dto = createDeferralReasonDtoToDeferralMaintenance(null);
+        final PoolRequest oldPoolRequest = createPoolRequest("400",
+            "111111111", "415", oldAttendanceDate
+        );
+        List<JurorPool> poolMembers = new ArrayList<>();
+        JurorPool member = createJurorPool(jurorNumber);
+        poolMembers.add(member);
+
+        DigitalResponse digitalResponse = new DigitalResponse();
+        digitalResponse.setJurorNumber(jurorNumber);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+        setupProcessJurorTestToDeferralMaintenance(oldPoolRequest, jurorNumber, poolMembers, jurorStatus);
+        doReturn(Optional.of(digitalResponse)).when(digitalResponseRepository)
+            .findById(any(String.class));
+
+        manageDeferralsService.changeJurorDeferralDate(bureauPayload, jurorNumber, dto);
+
+        verifyJurorToDeferralMaintenanceTest();
+        verifyLettersHappyPathTest();
+    }
+
+    @Test
+    public void processJuror_deferral_paper_happy_path_moveToActivePool() {
+        LocalDate newAttendanceDate = LocalDate.now();
+        LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
+        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+        final PoolRequest oldPoolRequest = createPoolRequest("400", "111111111", "415",
+            oldAttendanceDate);
+        final PoolRequest newPoolRequest = createPoolRequest("400", "111111112", "415",
+            newAttendanceDate
+        );
+
+        List<JurorPool> jurorPools = new ArrayList<>();
+        JurorPool jurorPool = createJurorPool(jurorNumber);
+        jurorPools.add(jurorPool);
+
+        PaperResponse paperResponse = new PaperResponse();
+        paperResponse.setJurorNumber(jurorNumber);
+
+        final DeferralReasonRequestDto dto = createDeferralReasonRequestDtoToActivePool(ReplyMethod.PAPER);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+        setupProcessJurorTestToActivePool(oldPoolRequest, newPoolRequest, jurorNumber, jurorPools, jurorStatus);
+        doReturn(paperResponse).when(paperResponseRepository)
+            .findByJurorNumber(any(String.class));
+
+        manageDeferralsService.processJurorDeferral(bureauPayload, jurorNumber, dto);
+
+        verifyMoveToActivePoolTest();
+    }
+
+    @Test
+    public void processJuror_deferral_digital_happy_path_moveToDeferralMaintenance() {
+        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+        LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
+        final DeferralReasonRequestDto dto = createDeferralReasonDtoToDeferralMaintenance(ReplyMethod.DIGITAL);
+        final PoolRequest oldPoolRequest = createPoolRequest("400",
+            "111111111", "415", oldAttendanceDate
+        );
+        List<JurorPool> poolMembers = new ArrayList<>();
+        JurorPool jurorPool = createJurorPool(jurorNumber);
+        poolMembers.add(jurorPool);
+
+        DigitalResponse digitalResponse = new DigitalResponse();
+        digitalResponse.setJurorNumber(jurorNumber);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+        setupProcessJurorTestToDeferralMaintenance(oldPoolRequest, jurorNumber, poolMembers, jurorStatus);
+        doReturn(digitalResponse).when(digitalResponseRepository)
+            .findByJurorNumber(any(String.class));
+
+        manageDeferralsService.processJurorDeferral(bureauPayload, jurorNumber, dto);
+
+        verifyJurorToDeferralMaintenanceTest();
+        verifyLettersHappyPathTest();
+        verify(auditRepository, times(1))
+            .save(any(JurorResponseAudit.class));
+    }
+
+    @Test
+    public void processJuror_deferral_paper_happy_path_moveToDeferralMaintenance() {
+        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+        LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
+        final PoolRequest oldPoolRequest = createPoolRequest("400",
+            "111111111", "415", oldAttendanceDate
+        );
+        final DeferralReasonRequestDto dto = createDeferralReasonDtoToDeferralMaintenance(ReplyMethod.PAPER);
+
+        List<JurorPool> poolMembers = new ArrayList<>();
+        JurorPool jurorPool = createJurorPool(jurorNumber);
+        poolMembers.add(jurorPool);
+
+        PaperResponse paperResponse = new PaperResponse();
+        paperResponse.setJurorNumber(jurorNumber);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+        setupProcessJurorTestToDeferralMaintenance(oldPoolRequest, jurorNumber, poolMembers, jurorStatus);
+        doReturn(paperResponse).when(paperResponseRepository)
+            .findByJurorNumber(any(String.class));
+        manageDeferralsService.processJurorDeferral(bureauPayload, jurorNumber, dto);
+        verifyJurorToDeferralMaintenanceTest();
+        verifyLettersHappyPathTest();
+    }
+
+    @Test
+    public void processJuror_deferral_queue_deferral_letter_court_user() {
+        final BureauJWTPayload courtPayload = TestUtils.createJwt("415", "COURT_USER");
+        String jurorNumber = "123456789";
+        LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
+        final PoolRequest oldPoolRequest = createPoolRequest("415",
+            "111111111", "415", oldAttendanceDate
+        );
+        final DeferralReasonRequestDto dto = createDeferralReasonDtoToDeferralMaintenance(ReplyMethod.PAPER);
+
+        List<JurorPool> poolMembers = new ArrayList<>();
+        JurorPool member = createJurorPool(jurorNumber);
+        member.setOwner("415");
+        poolMembers.add(member);
+
+        PaperResponse paperResponse = new PaperResponse();
+        paperResponse.setJurorNumber(jurorNumber);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+        setupProcessJurorTestToDeferralMaintenance(oldPoolRequest, jurorNumber, poolMembers, jurorStatus);
+        doReturn(paperResponse).when(paperResponseRepository)
+            .findByJurorNumber(any(String.class));
+        manageDeferralsService.processJurorDeferral(courtPayload, jurorNumber, dto);
+        verifyJurorToDeferralMaintenanceTest();
+        verifyLettersHappyPathTest();
+    }
+
+    @Test
+    public void test_findActivePoolsForDates_happyPath() {
+        String bureauOwner = "400";
+        final String jurorNumber = "123456789";
+        final String currentCourtLocation = "415";
+        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
+
+        Tuple deferralOption = mock(Tuple.class);
+        setUpMockQueryResult(deferralOption,
+            "415230501",
+            LocalDate.of(2023, 5, 29),
+            2, 4);
+        List<Tuple> firstDateQueryResult = new ArrayList<>();
+        firstDateQueryResult.add(deferralOption);
+
+        Tuple deferralOption2 = mock(Tuple.class);
+        setUpMockQueryResult(deferralOption2,
+            "415230601",
+            LocalDate.of(2023, 6, 12),
+            4, 2);
+        Tuple deferralOption3 = mock(Tuple.class);
+        setUpMockQueryResult(deferralOption3,
+            "415230602",
+            LocalDate.of(2023, 6, 14),
+            2, 2);
+        List<Tuple> secondDateQueryResult = new ArrayList<>();
+        secondDateQueryResult.add(deferralOption2);
+        secondDateQueryResult.add(deferralOption3);
+
+        List<Tuple> thirdDateQueryResult = new ArrayList<>();
+
+        doReturn(firstDateQueryResult).when(poolRequestRepository).findActivePoolsForDateRange(
+            bureauOwner,
+            currentCourtLocation,
+            LocalDate.of(2023, 5, 29),
+            LocalDate.of(2023, 6, 2)
+        );
+        doReturn(secondDateQueryResult).when(poolRequestRepository).findActivePoolsForDateRange(
+            bureauOwner,
+            currentCourtLocation,
+            LocalDate.of(2023, 6, 12),
+            LocalDate.of(2023, 6, 16)
+        );
+        doReturn(thirdDateQueryResult).when(poolRequestRepository)
+            .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
+                LocalDate.of(2023, 7, 3), LocalDate.of(2023, 7, 7));
+
+        long deferralMaintenanceCount = 5L;
+        doReturn(deferralMaintenanceCount).when(currentlyDeferredRepository)
+            .count(filterByCourtAndDate(bureauOwner, currentCourtLocation,
+                LocalDate.of(2023, 7, 3)));
+
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(currentCourtLocation);
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setCourtLocation(courtLocation);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner(bureauOwner);
+        jurorPool.setJuror(juror);
+        jurorPool.setPool(poolRequest);
+
+        DeferralDatesRequestDto deferralDatesRequestDto = new DeferralDatesRequestDto();
+        deferralDatesRequestDto.setDeferralDates(Arrays.asList(
+            LocalDate.of(2023, 5, 29),
+            LocalDate.of(2023, 6, 16),
+            LocalDate.of(2023, 7, 3)
+        ));
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+
+        DeferralOptionsDto deferralOptionsDto = manageDeferralsService.findActivePoolsForDates(deferralDatesRequestDto,
+            jurorNumber, payload);
+
+        verify(poolRequestRepository, times(1))
+            .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
+                LocalDate.of(2023, 5, 29), LocalDate.of(2023, 6, 2));
+        verify(poolRequestRepository, times(1))
+            .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
+                LocalDate.of(2023, 6, 12), LocalDate.of(2023, 6, 16));
+        verify(poolRequestRepository, times(1))
+            .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
+                LocalDate.of(2023, 7, 3), LocalDate.of(2023, 7, 7));
+
+        verify(currentlyDeferredRepository, never()).count(filterByCourtAndDate(
+            bureauOwner,
+            currentCourtLocation,
+            LocalDate.of(2023, 5, 29)));
+        verify(currentlyDeferredRepository, never()).count(filterByCourtAndDate(bureauOwner,
+            currentCourtLocation,
+            LocalDate.of(2023, 6, 12)));
+        verify(currentlyDeferredRepository, times(1))
+            .count(filterByCourtAndDate(bureauOwner, currentCourtLocation,
+                LocalDate.of(2023, 7, 3)));
+
+        List<DeferralOptionsDto.OptionSummaryDto> options = deferralOptionsDto.getDeferralPoolsSummary();
+        DeferralOptionsDto.OptionSummaryDto firstOption = options.stream()
+            .filter(option -> option.getWeekCommencing().equals(LocalDate.of(2023, 5, 29)))
+            .findFirst().orElse(null);
+        assertThat(firstOption).isNotNull();
+        assertThat(firstOption.getDeferralOptions().size()).isEqualTo(1);
+
+        DeferralOptionsDto.DeferralOptionDto option1Summary =
+            firstOption.getDeferralOptions().stream().findFirst().orElse(null);
+        assert option1Summary != null;
+        assertThat(option1Summary.getPoolNumber()).isEqualTo("415230501");
+        assertThat(option1Summary.getServiceStartDate())
+            .isEqualTo(LocalDate.of(2023, 5, 29));
+        assertThat(option1Summary.getUtilisation()).isEqualTo(2);
+        assertThat(option1Summary.getUtilisationDescription()).isEqualTo(PoolUtilisationDescription.SURPLUS);
+
+        DeferralOptionsDto.OptionSummaryDto secondOption = options.stream()
+            .filter(option -> option.getWeekCommencing().equals(LocalDate.of(2023, 6, 12)))
+            .findFirst().orElse(null);
+        assertThat(secondOption).isNotNull();
+        assertThat(secondOption.getDeferralOptions().size()).isEqualTo(2);
+
+        DeferralOptionsDto.DeferralOptionDto option2Summary = secondOption.getDeferralOptions().stream()
+            .filter(option -> option.getPoolNumber()
+                .equalsIgnoreCase("415230601")).findFirst().orElse(null);
+        assert option2Summary != null;
+        assertThat(option2Summary.getServiceStartDate())
+            .isEqualTo(LocalDate.of(2023, 6, 12));
+        assertThat(option2Summary.getUtilisation()).isEqualTo(2);
+        assertThat(option2Summary.getUtilisationDescription()).isEqualTo(PoolUtilisationDescription.NEEDED);
+
+        DeferralOptionsDto.DeferralOptionDto option3Summary = secondOption.getDeferralOptions().stream()
+            .filter(option -> option.getPoolNumber().equalsIgnoreCase("415230602"))
+            .findFirst().orElse(null);
+        assert option3Summary != null;
+        assertThat(option3Summary.getServiceStartDate())
+            .isEqualTo(LocalDate.of(2023, 6, 14));
+        assertThat(option3Summary.getUtilisation()).isEqualTo(0);
+        assertThat(option3Summary.getUtilisationDescription()).isEqualTo(PoolUtilisationDescription.NEEDED);
+
+        DeferralOptionsDto.OptionSummaryDto thirdOption = options.stream()
+            .filter(option -> option.getWeekCommencing().equals(LocalDate.of(2023, 7, 3)))
+            .findFirst().orElse(null);
+        assertThat(thirdOption).isNotNull();
+        assertThat(thirdOption.getDeferralOptions().size()).isEqualTo(1);
+
+        DeferralOptionsDto.DeferralOptionDto option4Summary =
+            thirdOption.getDeferralOptions().stream().findFirst().orElse(null);
+        assert option4Summary != null;
+        assertThat(option4Summary.getPoolNumber()).isNull();
+        assertThat(option4Summary.getServiceStartDate()).isNull();
+        assertThat(option4Summary.getUtilisation()).isEqualTo(deferralMaintenanceCount);
+        assertThat(option4Summary.getUtilisationDescription())
+            .isEqualTo(PoolUtilisationDescription.IN_MAINTENANCE);
+    }
+
+    @Test
+    public void test_findActivePoolsForDates_invalidAccess() {
+        String bureauOwner = "400";
+        String jurorNumber = "123456789";
+        String currentCourtLocation = "415";
+        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
+
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(currentCourtLocation);
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setCourtLocation(courtLocation);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner(currentCourtLocation);
+        jurorPool.setJuror(juror);
+        jurorPool.setPool(poolRequest);
+
+        DeferralDatesRequestDto deferralDatesRequestDto = new DeferralDatesRequestDto();
+        deferralDatesRequestDto.setDeferralDates(Arrays.asList(
+            LocalDate.of(2023, 5, 29),
+            LocalDate.of(2023, 6, 16),
+            LocalDate.of(2023, 7, 3)));
+
+        doReturn(Collections.singletonList(jurorPool))
+            .when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+
+        assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+            manageDeferralsService.findActivePoolsForDates(
+                deferralDatesRequestDto,
+                jurorNumber,
+                payload));
+
+        verify(poolRequestRepository, never()).findActivePoolsForDateRange(
+            bureauOwner,
+            currentCourtLocation,
+            LocalDate.of(2023, 5, 29),
+            LocalDate.of(2023, 6, 2));
+        verify(poolRequestRepository, never()).findActivePoolsForDateRange(
+            bureauOwner,
+            currentCourtLocation,
+            LocalDate.of(2023, 6, 12),
+            LocalDate.of(2023, 6, 16));
+        verify(poolRequestRepository, never()).findActivePoolsForDateRange(
+            bureauOwner,
+            currentCourtLocation,
+            LocalDate.of(2023, 7, 3),
+            LocalDate.of(2023, 7, 7));
+
+        verify(currentlyDeferredRepository, never()).count(filterByCourtAndDate(
+            bureauOwner,
+            currentCourtLocation,
+            LocalDate.of(2023, 5, 29)));
+        verify(currentlyDeferredRepository, never()).count(filterByCourtAndDate(
+            bureauOwner,
+            currentCourtLocation,
+            LocalDate.of(2023, 6, 12)));
+        verify(currentlyDeferredRepository, never()).count(filterByCourtAndDate(
+            bureauOwner,
+            currentCourtLocation,
+            LocalDate.of(2023, 7, 3)));
+    }
+
+    @Test
+    public void test_findActivePoolsForDates_noDates() {
+        String bureauOwner = "400";
+        String jurorNumber = "123456789";
+        String currentCourtLocation = "415";
+        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
+
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(currentCourtLocation);
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setCourtLocation(courtLocation);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner(bureauOwner);
+        jurorPool.setJuror(juror);
+        jurorPool.setPool(poolRequest);
+
+        DeferralDatesRequestDto deferralDatesRequestDto = new DeferralDatesRequestDto();
+
+        doReturn(Collections.singletonList(jurorPool))
+            .when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+
+        DeferralOptionsDto deferralOptionsDto = manageDeferralsService.findActivePoolsForDates(deferralDatesRequestDto,
+            jurorNumber, payload);
+
+        assertThat(deferralOptionsDto.getDeferralPoolsSummary().size())
+            .as("No dates provided - expect empty payload")
+            .isEqualTo(0);
+    }
+
+    @Test
+    public void test_getPreferredDeferralDates_threeValidDates() {
+        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner("400");
+        jurorPool.setJuror(juror);
+
+        DigitalResponse jurorResponse = new DigitalResponse();
+        jurorResponse.setJurorNumber(jurorNumber);
+        jurorResponse.setDeferralReason("C");
+        jurorResponse.setDeferralDate("29/05/2023, 12/6/2023, 3/7/2023");
+
+        doReturn(Collections.singletonList(jurorPool))
+            .when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorResponse).when(digitalResponseRepository)
+            .findByJurorNumber(any(String.class));
+
+        List<String> preferredDates = manageDeferralsService.getPreferredDeferralDates(jurorNumber, payload);
+        assertThat(preferredDates.size()).as("Expect returned list to contain 3 dates").isEqualTo(3);
+        assertThat(preferredDates).contains("2023-05-29");
+        assertThat(preferredDates).contains("2023-06-12");
+        assertThat(preferredDates).contains("2023-07-03");
+    }
+
+    @Test
+    public void testFindActivePoolsForDatesAndLocationCodeHappyPath() {
+        String bureauOwner = "400";
+        final String jurorNumber = "123456789";
+        final String currentCourtLocation = "415";
+        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
+
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(currentCourtLocation);
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setCourtLocation(courtLocation);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner(bureauOwner);
+        jurorPool.setJuror(juror);
+        jurorPool.setPool(poolRequest);
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+
+        Tuple deferralOption = mock(Tuple.class);
+        setUpMockQueryResult(deferralOption,
+            "415230501",
+            LocalDate.of(2023, 5, 29),
+            2, 4);
+        List<Tuple> firstDateQueryResult = new ArrayList<>();
+        firstDateQueryResult.add(deferralOption);
+
+        Tuple deferralOption2 = mock(Tuple.class);
+        setUpMockQueryResult(deferralOption2,
+            "415230601",
+            LocalDate.of(2023, 6, 12),
+            4, 2);
+        Tuple deferralOption3 = mock(Tuple.class);
+        setUpMockQueryResult(deferralOption3,
+            "415230602",
+            LocalDate.of(2023, 6, 14),
+            2, 2);
+        List<Tuple> secondDateQueryResult = new ArrayList<>();
+        secondDateQueryResult.add(deferralOption2);
+        secondDateQueryResult.add(deferralOption3);
+
+        List<Tuple> thirdDateQueryResult = new ArrayList<>();
+
+        doReturn(firstDateQueryResult).when(poolRequestRepository).findActivePoolsForDateRange(
+            bureauOwner,
+            currentCourtLocation,
+            LocalDate.of(2023, 5, 29),
+            LocalDate.of(2023, 6, 2)
+        );
+        doReturn(secondDateQueryResult).when(poolRequestRepository).findActivePoolsForDateRange(
+            bureauOwner,
+            currentCourtLocation,
+            LocalDate.of(2023, 6, 12),
+            LocalDate.of(2023, 6, 16)
+        );
+        doReturn(thirdDateQueryResult).when(poolRequestRepository)
+            .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
+                LocalDate.of(2023, 7, 3), LocalDate.of(2023, 7, 7));
+
+        long deferralMaintenanceCount = 5L;
+        doReturn(deferralMaintenanceCount).when(currentlyDeferredRepository)
+            .count(filterByCourtAndDate(bureauOwner, currentCourtLocation,
+                LocalDate.of(2023, 7, 3)));
+
+        DeferralDatesRequestDto deferralDatesRequestDto = new DeferralDatesRequestDto();
+        deferralDatesRequestDto.setDeferralDates(Arrays.asList(
+            LocalDate.of(2023, 5, 29),
+            LocalDate.of(2023, 6, 16),
+            LocalDate.of(2023, 7, 3)
+        ));
+
+        DeferralOptionsDto deferralOptionsDto = manageDeferralsService.findActivePoolsForDates(deferralDatesRequestDto,
+            jurorNumber, payload);
+
+        verify(poolRequestRepository, times(1))
+            .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
+                LocalDate.of(2023, 5, 29), LocalDate.of(2023, 6, 2));
+        verify(poolRequestRepository, times(1))
+            .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
+                LocalDate.of(2023, 6, 12), LocalDate.of(2023, 6, 16));
+        verify(poolRequestRepository, times(1))
+            .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
+                LocalDate.of(2023, 7, 3), LocalDate.of(2023, 7, 7));
+
+        verify(currentlyDeferredRepository, never()).count(filterByCourtAndDate(
+            bureauOwner,
+            currentCourtLocation,
+            LocalDate.of(2023, 5, 29)));
+        verify(currentlyDeferredRepository, never()).count(filterByCourtAndDate(bureauOwner,
+            currentCourtLocation,
+            LocalDate.of(2023, 6, 12)));
+        verify(currentlyDeferredRepository, times(1))
+            .count(filterByCourtAndDate(bureauOwner, currentCourtLocation,
+                LocalDate.of(2023, 7, 3)));
+
+        List<DeferralOptionsDto.OptionSummaryDto> options = deferralOptionsDto.getDeferralPoolsSummary();
+        DeferralOptionsDto.OptionSummaryDto firstOption = options.stream()
+            .filter(option -> option.getWeekCommencing().equals(LocalDate.of(2023, 5, 29)))
+            .findFirst().orElse(null);
+        assertThat(firstOption).isNotNull();
+        assertThat(firstOption.getDeferralOptions().size()).isEqualTo(1);
+
+        DeferralOptionsDto.DeferralOptionDto option1Summary =
+            firstOption.getDeferralOptions().stream().findFirst().orElse(null);
+        assert option1Summary != null;
+        assertThat(option1Summary.getPoolNumber()).isEqualTo("415230501");
+        assertThat(option1Summary.getServiceStartDate())
+            .isEqualTo(LocalDate.of(2023, 5, 29));
+        assertThat(option1Summary.getUtilisation()).isEqualTo(2);
+        assertThat(option1Summary.getUtilisationDescription()).isEqualTo(PoolUtilisationDescription.SURPLUS);
+
+        DeferralOptionsDto.OptionSummaryDto secondOption = options.stream()
+            .filter(option -> option.getWeekCommencing().equals(LocalDate.of(2023, 6, 12)))
+            .findFirst().orElse(null);
+        assertThat(secondOption).isNotNull();
+        assertThat(secondOption.getDeferralOptions().size()).isEqualTo(2);
+
+        DeferralOptionsDto.DeferralOptionDto option2Summary = secondOption.getDeferralOptions().stream()
+            .filter(option -> option.getPoolNumber()
+                .equalsIgnoreCase("415230601")).findFirst().orElse(null);
+        assert option2Summary != null;
+        assertThat(option2Summary.getServiceStartDate())
+            .isEqualTo(LocalDate.of(2023, 6, 12));
+        assertThat(option2Summary.getUtilisation()).isEqualTo(2);
+        assertThat(option2Summary.getUtilisationDescription()).isEqualTo(PoolUtilisationDescription.NEEDED);
+
+        DeferralOptionsDto.DeferralOptionDto option3Summary = secondOption.getDeferralOptions().stream()
+            .filter(option -> option.getPoolNumber().equalsIgnoreCase("415230602"))
+            .findFirst().orElse(null);
+        assert option3Summary != null;
+        assertThat(option3Summary.getServiceStartDate())
+            .isEqualTo(LocalDate.of(2023, 6, 14));
+        assertThat(option3Summary.getUtilisation()).isEqualTo(0);
+        assertThat(option3Summary.getUtilisationDescription()).isEqualTo(PoolUtilisationDescription.NEEDED);
+
+        DeferralOptionsDto.OptionSummaryDto thirdOption = options.stream()
+            .filter(option -> option.getWeekCommencing().equals(LocalDate.of(2023, 7, 3)))
+            .findFirst().orElse(null);
+        assertThat(thirdOption).isNotNull();
+        assertThat(thirdOption.getDeferralOptions().size()).isEqualTo(1);
+
+        DeferralOptionsDto.DeferralOptionDto option4Summary =
+            thirdOption.getDeferralOptions().stream().findFirst().orElse(null);
+        assert option4Summary != null;
+        assertThat(option4Summary.getPoolNumber()).isNull();
+        assertThat(option4Summary.getServiceStartDate()).isNull();
+        assertThat(option4Summary.getUtilisation()).isEqualTo(deferralMaintenanceCount);
+        assertThat(option4Summary.getUtilisationDescription())
+            .isEqualTo(PoolUtilisationDescription.IN_MAINTENANCE);
+    }
+
+    @Test
+    public void testFindActivePoolsForDatesAndLocationCodeNoDates() {
+        String bureauOwner = "400";
+        String jurorNumber = "123456789";
+        String currentCourtLocation = "415";
+        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
+
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(currentCourtLocation);
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setCourtLocation(courtLocation);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner(bureauOwner);
+        jurorPool.setJuror(juror);
+        jurorPool.setPool(poolRequest);
+
+        DeferralDatesRequestDto deferralDatesRequestDto = new DeferralDatesRequestDto();
+
+        DeferralOptionsDto deferralOptionsDto = manageDeferralsService.findActivePoolsForDatesAndLocCode(deferralDatesRequestDto,
+            jurorNumber, currentCourtLocation, payload);
+
+        assertThat(deferralOptionsDto.getDeferralPoolsSummary().size())
+            .as("No dates provided - expect empty payload")
+            .isEqualTo(0);
+
+    }
+
+    @Test
+    public void testFindActivePoolsForDatesAndLocationCodeNoLocationCode() {
+        String bureauOwner = "400";
+        String jurorNumber = "123456789";
+        String currentCourtLocation = "415";
+        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
+
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(currentCourtLocation);
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setCourtLocation(courtLocation);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner(currentCourtLocation);
+        jurorPool.setJuror(juror);
+        jurorPool.setPool(poolRequest);
+
+        DeferralDatesRequestDto deferralDatesRequestDto = new DeferralDatesRequestDto();
+        deferralDatesRequestDto.setDeferralDates(Arrays.asList(
+            LocalDate.of(2023, 5, 29),
+            LocalDate.of(2023, 6, 16),
+            LocalDate.of(2023, 7, 3)));
+
+        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
+            manageDeferralsService.findActivePoolsForDatesAndLocCode(
+                deferralDatesRequestDto,
+                jurorNumber,
+                null,
+                payload));
+
+        verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any());
+
+        verify(currentlyDeferredRepository, never()).count(any(BooleanExpression.class));
+
+    }
+    @Test
+    public void test_getPreferredDeferralDates_twoValidDates() {
+        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner("400");
+        jurorPool.setJuror(juror);
+
+        DigitalResponse jurorResponse = new DigitalResponse();
+        jurorResponse.setJurorNumber(jurorNumber);
+        jurorResponse.setDeferralReason("C");
+        jurorResponse.setDeferralDate("29/05/2023, 12/6/2023, some/invalid/date");
+
+        doReturn(Collections.singletonList(jurorPool))
+            .when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorResponse).when(digitalResponseRepository)
+            .findByJurorNumber(any(String.class));
+
+        List<String> preferredDates = manageDeferralsService.getPreferredDeferralDates(jurorNumber, payload);
+        assertThat(preferredDates.size()).as("Expect returned list to contain 2 dates").isEqualTo(2);
+        assertThat(preferredDates).contains("2023-05-29");
+        assertThat(preferredDates).contains("2023-06-12");
+    }
+
+    @Test
+    public void test_getPreferredDeferralDates_oneValidDate() {
+        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner("400");
+        jurorPool.setJuror(juror);
+
+        DigitalResponse jurorResponse = new DigitalResponse();
+        jurorResponse.setJurorNumber(jurorNumber);
+        jurorResponse.setDeferralReason("C");
+        jurorResponse.setDeferralDate("29/05/2023");
+
+        doReturn(Collections.singletonList(jurorPool))
+            .when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorResponse).when(digitalResponseRepository)
+            .findByJurorNumber(any(String.class));
+
+        List<String> preferredDates = manageDeferralsService.getPreferredDeferralDates(jurorNumber, payload);
+        assertThat(preferredDates.size()).as("Expect returned list to contain 1 date").isEqualTo(1);
+        assertThat(preferredDates).contains("2023-05-29");
+    }
+
+    @Test
+    public void test_getPreferredDeferralDates_noValidDates() {
+        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner("400");
+        jurorPool.setJuror(juror);
+
+        DigitalResponse jurorResponse = new DigitalResponse();
+        jurorResponse.setJurorNumber(jurorNumber);
+        jurorResponse.setDeferralReason("C");
+
+        doReturn(Collections.singletonList(jurorPool))
+            .when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorResponse).when(digitalResponseRepository)
+            .findByJurorNumber(any(String.class));
+
+        List<String> preferredDates = manageDeferralsService.getPreferredDeferralDates(jurorNumber, payload);
+        assertThat(preferredDates.size()).as("Expect returned list to contain 0 dates").isEqualTo(0);
+    }
+
+    @Test
+    public void test_getPreferredDeferralDates_invalidReadAccess() {
+        final BureauJWTPayload payload = TestUtils.createJwt("415", "BUREAU_USER");
+        String jurorNumber = "123456789";
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner("400");
+        jurorPool.setJuror(juror);
+
+        doReturn(Collections.singletonList(jurorPool))
+            .when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+
+        assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+            manageDeferralsService.getPreferredDeferralDates(
+                jurorNumber,
+                payload
+            ));
+    }
+
+    @Test
+    public void test_getPreferredDeferralDates_noDigitalResponse() {
+        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner("400");
+        jurorPool.setJuror(juror);
+
+        doReturn(Collections.singletonList(jurorPool))
+            .when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+        doReturn(Optional.empty()).when(digitalResponseRepository).findById(jurorNumber);
+
+        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+            manageDeferralsService.getPreferredDeferralDates(
+                jurorNumber,
+                payload
+            ));
+    }
+
+    @Test
+    public void test_moveJurorsToActivePool_singleJuror() {
+        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final String courtLocationCode = "415";
+        String poolNumber = "123456789";
+        List<String> jurorNumbers = new ArrayList<>();
+        jurorNumbers.add("111111111");
+        DeferralAllocateRequestDto dto = new DeferralAllocateRequestDto();
+        dto.setJurors(jurorNumbers);
+        dto.setPoolNumber(poolNumber);
+
+        List<JurorPool> poolMembers = createJurorPools(jurorNumbers, poolNumber, payload.getOwner(),
+            courtLocationCode);
+
+        List<CurrentlyDeferred> deferrals = createDeferrals(payload.getOwner(), courtLocationCode, jurorNumbers,
+            LocalDate.now().plusWeeks(5));
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber(poolNumber);
+
+        JurorStatus status = new JurorStatus();
+        status.setStatus(2);
+        doReturn(Optional.of(status)).when(jurorStatusRepository).findById(2);
+
+        doReturn(Optional.of(poolRequest)).when(poolRequestRepository).findById(any());
+
+        int index = 0;
+        for (String juror : jurorNumbers) {
+            doReturn(Collections.singletonList(poolMembers.get(index)))
+                .when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(eq(juror), eq(true));
+            doReturn(Optional.of(deferrals.get(index)))
+                .when(currentlyDeferredRepository)
+                .findById(juror);
+            index++;
+        }
+
+        manageDeferralsService.allocateJurorsToActivePool(payload, dto);
+
+        //verification code here
+        verifyAllocateJurorsToActivePool(jurorNumbers);
+    }
+
+    private void verifyAllocateJurorsToActivePool(List<String> jurorNumbers) {
+        verify(poolRequestRepository, times(1)).findById(any());
+        verify(poolRequestRepository, times(jurorNumbers.size())).save(any());
+        verify(jurorPoolRepository, times(jurorNumbers.size())).saveAndFlush(any());
+        verify(poolMemberSequenceService, times(jurorNumbers.size()))
+            .getPoolMemberSequenceNumber(any(String.class));
+        verify(poolMemberSequenceService, times(jurorNumbers.size()))
+            .leftPadInteger(any(int.class));
+        verify(currentlyDeferredRepository, times(0)).save(any());
+        verify(printDataService, times(jurorNumbers.size())).printConfirmationLetter(any());
+        verify(jurorHistoryRepository, times(jurorNumbers.size())).save(any());
+    }
+
+    @Test
+    public void test_moveJurorsToActivePool_multipleJuror() {
+        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final String courtLocationCode = "415";
+        final String poolNumber = "123456789";
+        List<String> jurorNumbers = new ArrayList<>();
+        jurorNumbers.add("111111111");
+        jurorNumbers.add("222222222");
+        jurorNumbers.add("333333333");
+        jurorNumbers.add("444444444");
+        jurorNumbers.add("555555555");
+        DeferralAllocateRequestDto dto = new DeferralAllocateRequestDto();
+        dto.setJurors(jurorNumbers);
+
+        dto.setPoolNumber(poolNumber);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber(poolNumber);
+
+        JurorStatus status = new JurorStatus();
+        status.setStatus(2);
+
+        List<JurorPool> poolMembers = createJurorPools(jurorNumbers, poolNumber,
+            payload.getOwner(), courtLocationCode);
+
+        List<CurrentlyDeferred> deferrals = createDeferrals(payload.getOwner(), courtLocationCode, jurorNumbers,
+            LocalDate.now().plusWeeks(7));
+
+        doReturn(Optional.of(status)).when(jurorStatusRepository).findById(2);
+
+        doReturn(Optional.of(poolRequest)).when(poolRequestRepository).findById(any());
+
+        int index = 0;
+        for (String juror : jurorNumbers) {
+            doReturn(Collections.singletonList(poolMembers.get(index)))
+                .when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(eq(juror), eq(true));
+            doReturn(Optional.of(deferrals.get(index)))
+                .when(currentlyDeferredRepository)
+                .findById(juror);
+            index++;
+        }
+        manageDeferralsService.allocateJurorsToActivePool(payload, dto);
+
+        //verification code here
+        verifyAllocateJurorsToActivePool(jurorNumbers);
+    }
+
+    @Test
+    public void test_moveJurorsToActivePool_poolRequestNotFound() {
+        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final String courtLocationCode = "415";
+        String poolNumber = "123456789";
+        List<String> jurorNumbers = new ArrayList<>();
+        jurorNumbers.add("111111111");
+        DeferralAllocateRequestDto dto = new DeferralAllocateRequestDto();
+        dto.setJurors(jurorNumbers);
+        dto.setPoolNumber(poolNumber);
+
+        List<JurorPool> poolMembers = createJurorPools(jurorNumbers, poolNumber, payload.getOwner(),
+            courtLocationCode);
+        List<CurrentlyDeferred> deferrals = createDeferrals(payload.getOwner(), courtLocationCode, jurorNumbers,
+            LocalDate.now().plusWeeks(6));
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("987654321");
+
+        JurorStatus status = new JurorStatus();
+        status.setStatus(2);
+        doReturn(Optional.of(status)).when(jurorStatusRepository).findById(2);
+
+        doReturn(Optional.of(poolRequest))
+            .when(poolRequestRepository)
+            .findByOwnerAndPoolNumber(any(), eq("987654321"));
+
+        int index = 0;
+        for (String juror : jurorNumbers) {
+
+            doReturn(Collections.singletonList(poolMembers.get(index)))
+                .when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(eq(juror), eq(true));
+            doReturn(Optional.of(deferrals.get(index)))
+                .when(currentlyDeferredRepository)
+                .findById(juror);
+            index++;
+        }
+
+        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+            manageDeferralsService.allocateJurorsToActivePool(
+                payload,
+                dto
+            ));
+    }
+
+    @Test
+    public void test_getDeferralsByCourtLocationCode() {
+        String poolNumber = "123456789";
+        List<String> courtJurors = new ArrayList<>();
+        courtJurors.add("111111111");
+        courtJurors.add("222222222");
+        courtJurors.add("333333333");
+
+        BureauJWTPayload payload = TestUtils.createJwt("415", "COURT_USER");
+
+        String courtLocationCode = "415";
+        List<JurorPool> poolMembers = createJurorPools(courtJurors, poolNumber, payload.getOwner(),
+            courtLocationCode);
+
+        final LocalDate deferredTo = LocalDate.of(2023, 6, 16);
+        List<CurrentlyDeferred> deferrals = createDeferrals(payload.getOwner(), courtLocationCode, courtJurors,
+            deferredTo);
+        List<Tuple> courtResults = setupDeferrals(courtJurors, poolNumber, courtLocationCode,
+            deferredTo);
+        doReturn(courtResults).when(currentlyDeferredRepository).getDeferralsByCourtLocationCode(
+            payload,
+            courtLocationCode);
+
+        int index = 0;
+        for (String juror : courtJurors) {
+            doReturn(Collections.singletonList(poolMembers.get(index)))
+                .when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(eq(juror), eq(true));
+            doReturn(Optional.of(deferrals.get(index)))
+                .when(currentlyDeferredRepository)
+                .findById(juror);
+            index++;
+        }
+
+        DeferralListDto dto = manageDeferralsService.getDeferralsByCourtLocationCode(payload, courtLocationCode);
+        assertThat(dto.getDeferrals().size()).isEqualTo(3);
+        assertThat(dto.getDeferrals().get(0).getCourtLocation()).isEqualTo(courtLocationCode);
+        assertThat(dto.getDeferrals().get(0).getJurorNumber()).isEqualTo("111111111");
+        assertThat(dto.getDeferrals().get(0).getFirstName()).isEqualTo("FNAME");
+        assertThat(dto.getDeferrals().get(0).getLastName()).isEqualTo("LNAME");
+        assertThat(dto.getDeferrals().get(0).getPoolNumber()).isEqualTo("123456789");
+        assertThat(dto.getDeferrals().get(0).getDeferredTo()).isEqualTo("2023-06-16");
+        verify(currentlyDeferredRepository, times(1))
+            .getDeferralsByCourtLocationCode(any(), any());
+    }
+
+    @Test
+    public void test_findActivePoolsForCourtLocation() {
+        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final String courtLocationCode = "415";
+
+        List<Tuple> results = new ArrayList<>();
+        Tuple tuple = mock(Tuple.class);
+        setUpMockQueryResult(tuple, "111111111",
+            LocalDate.of(2023, 6, 22),
+            5, 1);
+        results.add(tuple);
+
+        doReturn(results).when(poolRequestRepository).findActivePoolsForDateRange(any(), any(),
+            any(), any());
+
+        DeferralOptionsDto deferralOptionsDto = manageDeferralsService.findActivePoolsForCourtLocation(
+            payload,
+            courtLocationCode);
+
+        verify(poolRequestRepository, times(1)).findActivePoolsForDateRange(
+            any(),
+            any(),
+            any(),
+            any());
+
+        DeferralOptionsDto.OptionSummaryDto summaryDto = deferralOptionsDto.getDeferralPoolsSummary().get(0);
+        assertThat(summaryDto.getDeferralOptions().get(0).getPoolNumber()).isEqualTo("111111111");
+        assertThat(summaryDto.getDeferralOptions().get(0).getServiceStartDate())
+            .isEqualTo(LocalDate.of(2023, 6, 22));
+        assertThat(summaryDto.getDeferralOptions().get(0).getUtilisation()).isEqualTo(4);
+        assertThat(summaryDto.getDeferralOptions().get(0).getUtilisationDescription())
+            .isEqualTo(PoolUtilisationDescription.NEEDED);
+    }
+
+    //Method under test: getAvailablePoolsByCourtLocationCodeAndJurorNumber (START)
+    @Test
+    public void availablePoolsByCourtLocationCodeAndJurorNumberHappy() {
+        doReturn(Collections.singletonList(createJurorPoolForDeferrals("400")))
+            .when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(anyString(), anyBoolean());
+
+        String jurorNumber = "123456789";
+        doReturn(createJurorResponseForDeferrals(jurorNumber))
+            .when(digitalResponseRepository)
+            .findByJurorNumber(jurorNumber);
+
+        doReturn(createActivePoolsForDeferralsFirstDate())
+            .when(poolRequestRepository).findActivePoolsForDateRange(
+                "400",
+                "415",
+                LocalDate.of(2023, 5, 29),
+                LocalDate.of(2023, 6, 2));
+
+        doReturn(createActivePoolsForDeferralsSecondDate())
+            .when(poolRequestRepository).findActivePoolsForDateRange(
+                "400",
+                "415",
+                LocalDate.of(2023, 6, 12),
+                LocalDate.of(2023, 6, 16));
+
+        doReturn(createActivePoolsForDeferralsThirdDate())
+            .when(poolRequestRepository).findActivePoolsForDateRange(
+                "400",
+                "415",
+                LocalDate.of(2023, 7, 3),
+                LocalDate.of(2023, 7, 7));
+
+        //Invoke service method under test
+        BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        DeferralOptionsDto deferralOptions =
+            manageDeferralsService.getAvailablePoolsByCourtLocationCodeAndJurorNumber(payload,
+                "415",
+                jurorNumber);
+
+        List<DeferralOptionsDto.OptionSummaryDto> options = deferralOptions.getDeferralPoolsSummary();
+
+        //Deferral options
+        //Option 1 (first date)
+        DeferralOptionsDto.OptionSummaryDto firstDateOption = options.stream()
+            .filter(option -> option.getWeekCommencing().equals(LocalDate.of(2023, 5, 29)))
+            .findFirst().orElse(null);
+        assertThat(firstDateOption).isNotNull();
+        assertThat(firstDateOption.getDeferralOptions().size()).isEqualTo(2);
+
+        DeferralOptionsDto.DeferralOptionDto option1ForFirstDate = firstDateOption.getDeferralOptions().stream()
+            .filter(option -> option.getPoolNumber().equalsIgnoreCase("415220502"))
+            .findFirst().orElse(null);
+        assert option1ForFirstDate != null;
+        assertThat(option1ForFirstDate.getServiceStartDate())
+            .isEqualTo(LocalDate.of(2023, 6, 1));
+        assertThat(option1ForFirstDate.getUtilisation()).isEqualTo(2);
+        assertThat(option1ForFirstDate.getUtilisationDescription()).isEqualTo(PoolUtilisationDescription
+            .NEEDED);
+
+        DeferralOptionsDto.DeferralOptionDto option2ForFirstDate = firstDateOption.getDeferralOptions().stream()
+            .filter(option -> option.getPoolNumber().equalsIgnoreCase("415220401"))
+            .findFirst().orElse(null);
+        assert option2ForFirstDate != null;
+        assertThat(option2ForFirstDate.getServiceStartDate())
+            .isEqualTo(LocalDate.of(2023, 5, 30));
+        assertThat(option2ForFirstDate.getUtilisation()).isEqualTo(2);
+        assertThat(option2ForFirstDate.getUtilisationDescription()).isEqualTo(PoolUtilisationDescription
+            .SURPLUS);
+
+        //Option 2 (second date)
+        DeferralOptionsDto.OptionSummaryDto secondDateOption = options.stream()
+            .filter(option -> option.getWeekCommencing().equals(LocalDate.of(2023, 6, 12)))
+            .findFirst().orElse(null);
+        assertThat(secondDateOption).isNotNull();
+        assertThat(secondDateOption.getDeferralOptions().size()).isEqualTo(1);
+
+        DeferralOptionsDto.DeferralOptionDto option2Summary1 = secondDateOption.getDeferralOptions().stream()
+            .filter(option -> option.getPoolNumber().equalsIgnoreCase("415220503"))
+            .findFirst().orElse(null);
+        assert option2Summary1 != null;
+        assertThat(option2Summary1.getServiceStartDate())
+            .isEqualTo(LocalDate.of(2023, 6, 12));
+        assertThat(option2Summary1.getUtilisation()).isEqualTo(4);
+        assertThat(option2Summary1.getUtilisationDescription()).isEqualTo(PoolUtilisationDescription
+            .NEEDED);
+
+        //Option 3 (third date)
+        DeferralOptionsDto.OptionSummaryDto thirdDateOption = options.stream()
+            .filter(option -> option.getWeekCommencing().equals(LocalDate.of(2023, 7, 3)))
+            .findFirst().orElse(null);
+        assertThat(thirdDateOption).isNotNull();
+        assertThat(thirdDateOption.getDeferralOptions().size()).isEqualTo(1);
+
+        DeferralOptionsDto.DeferralOptionDto option3Summary1 = thirdDateOption.getDeferralOptions().stream()
+            .findFirst().orElse(null);
+        assert option3Summary1 != null;
+        assertThat(option3Summary1.getPoolNumber()).isNull();
+        assertThat(option3Summary1.getServiceStartDate()).isNull();
+        assertThat(option3Summary1.getUtilisation()).isEqualTo(0);
+        assertThat(option3Summary1.getUtilisationDescription())
+            .isEqualTo(PoolUtilisationDescription.IN_MAINTENANCE);
+    }
+
+    @Test
+    public void availablePoolsByCourtLocationCodeAndJurorNumberActivePoolsEmpty() {
+        doReturn(Collections.singletonList(createJurorPoolForDeferrals("400")))
+            .when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(anyString(), anyBoolean());
+
+        String jurorNumber = "123456789";
+        doReturn(createJurorResponseForDeferrals(jurorNumber))
+            .when(digitalResponseRepository)
+            .findByJurorNumber(jurorNumber);
+
+        doReturn(new ArrayList<>())
+            .when(poolRequestRepository).findActivePoolsForDateRange(
+                "400",
+                "415",
+                LocalDate.of(2023, 5, 29),
+                LocalDate.of(2023, 6, 2));
+
+        doReturn(new ArrayList<>())
+            .when(poolRequestRepository).findActivePoolsForDateRange(
+                "400",
+                "415",
+                LocalDate.of(2023, 6, 12),
+                LocalDate.of(2023, 6, 16));
+
+        doReturn(new ArrayList<>())
+            .when(poolRequestRepository).findActivePoolsForDateRange(
+                "400",
+                "415",
+                LocalDate.of(2023, 7, 3),
+                LocalDate.of(2023, 7, 7));
+
+        //Invoke service method under test
+        BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        DeferralOptionsDto deferralOptions =
+            manageDeferralsService.getAvailablePoolsByCourtLocationCodeAndJurorNumber(payload,
+                "415",
+                jurorNumber);
+
+        List<DeferralOptionsDto.OptionSummaryDto> options = deferralOptions.getDeferralPoolsSummary();
+
+        //Deferral options
+        //Option 1 (first date)
+        DeferralOptionsDto.OptionSummaryDto firstDateOption = options.stream()
+            .filter(option -> option.getWeekCommencing().equals(LocalDate.of(2023, 5, 29)))
+            .findFirst().orElse(null);
+        assertThat(firstDateOption).isNotNull();
+        assertThat(firstDateOption.getDeferralOptions().size()).isEqualTo(1);
+
+        DeferralOptionsDto.DeferralOptionDto option1Summary1 = firstDateOption.getDeferralOptions().stream()
+            .findFirst().orElse(null);
+        assert option1Summary1 != null;
+        assertThat(option1Summary1.getPoolNumber()).isNull();
+        assertThat(option1Summary1.getServiceStartDate()).isNull();
+        assertThat(option1Summary1.getUtilisation()).isEqualTo(0);
+        assertThat(option1Summary1.getUtilisationDescription())
+            .isEqualTo(PoolUtilisationDescription.IN_MAINTENANCE);
+
+        //Option 2 (second date)
+        DeferralOptionsDto.OptionSummaryDto secondDateOption = options.stream()
+            .filter(option -> option.getWeekCommencing().equals(LocalDate.of(2023, 6, 12)))
+            .findFirst().orElse(null);
+        assertThat(secondDateOption).isNotNull();
+        assertThat(secondDateOption.getDeferralOptions().size()).isEqualTo(1);
+
+        DeferralOptionsDto.DeferralOptionDto option2Summary1 = secondDateOption.getDeferralOptions().stream()
+            .findFirst().orElse(null);
+        assert option2Summary1 != null;
+        assertThat(option2Summary1.getPoolNumber()).isNull();
+        assertThat(option2Summary1.getServiceStartDate()).isNull();
+        assertThat(option2Summary1.getUtilisation()).isEqualTo(0);
+        assertThat(option2Summary1.getUtilisationDescription())
+            .isEqualTo(PoolUtilisationDescription.IN_MAINTENANCE);
+
+        //Option 3 (third date)
+        DeferralOptionsDto.OptionSummaryDto thirdDateOption = options.stream()
+            .filter(option -> option.getWeekCommencing().equals(LocalDate.of(2023, 7, 3)))
+            .findFirst().orElse(null);
+        assertThat(thirdDateOption).isNotNull();
+        assertThat(thirdDateOption.getDeferralOptions().size()).isEqualTo(1);
+
+        DeferralOptionsDto.DeferralOptionDto option3Summary1 = thirdDateOption.getDeferralOptions().stream()
+            .findFirst().orElse(null);
+        assert option3Summary1 != null;
+        assertThat(option3Summary1.getPoolNumber()).isNull();
+        assertThat(option3Summary1.getServiceStartDate()).isNull();
+        assertThat(option3Summary1.getUtilisation()).isEqualTo(0);
+        assertThat(option3Summary1.getUtilisationDescription())
+            .isEqualTo(PoolUtilisationDescription.IN_MAINTENANCE);
+    }
+
+    @Test
+    public void availablePoolsByCourtLocationCodeAndJurorNumberNoDeferralDates() {
+        doReturn(Collections.singletonList(createJurorPoolForDeferrals("400")))
+            .when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(anyString(), anyBoolean());
+
+        String jurorNumber = "123456789";
+        doReturn(createJurorResponseWithoutDeferrals(jurorNumber))
+            .when(digitalResponseRepository)
+            .findByJurorNumber(jurorNumber);
+
+        BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        assertThatExceptionOfType(MojException.NotFound.class)
+            .isThrownBy(() -> manageDeferralsService.getAvailablePoolsByCourtLocationCodeAndJurorNumber(payload,
+                "415", "123456789"));
+
+        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(
+            any(String.class), any(Boolean.class));
+        verify(digitalResponseRepository, times(1)).findByJurorNumber(any(String.class));
+        verify(poolRequestRepository, never()).findActivePoolsForDateRange(
+            any(String.class), any(String.class), any(LocalDate.class), any(LocalDate.class));
+    }
+
+    @Test
+    public void availablePoolsByCourtLocationCodeAndJurorNumberJurorNotFound() {
+        doReturn(new ArrayList<>()).when(jurorPoolRepository).findByJurorJurorNumberAndIsActive(
+            "123456789", Boolean.TRUE);
+
+        BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        assertThatExceptionOfType(MojException.NotFound.class)
+            .isThrownBy(() -> manageDeferralsService.getAvailablePoolsByCourtLocationCodeAndJurorNumber(payload,
+                "415", "123456789"));
+
+        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(
+            any(String.class), any(Boolean.class));
+        verify(digitalResponseRepository, never()).findById(any(String.class));
+        verify(poolRequestRepository, never()).findActivePoolsForDateRange(
+            any(String.class), any(String.class), any(LocalDate.class), any(LocalDate.class));
+    }
+
+    @Test
+    public void availablePoolsByCourtLocationCodeAndJurorNumberJurorForbidden() {
+        doReturn(Collections.singletonList(createJurorPoolForDeferrals("400")))
+            .when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(anyString(), anyBoolean());
+
+        BureauJWTPayload payload = TestUtils.createJwt("123", "BUREAU_USER");
+        assertThatExceptionOfType(MojException.Forbidden.class)
+            .isThrownBy(() -> manageDeferralsService.getAvailablePoolsByCourtLocationCodeAndJurorNumber(payload,
+                "415", "123456789"));
+
+        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(
+            any(String.class), any(Boolean.class));
+        verify(digitalResponseRepository, never()).findById(any(String.class));
+        verify(poolRequestRepository, never()).findActivePoolsForDateRange(
+            any(String.class), any(String.class), any(LocalDate.class), any(LocalDate.class));
+    }
+
+    @Test
+    public void availablePoolsByCourtLocationCodeAndJurorNumberNoResponseRecord() {
+        doReturn(Collections.singletonList(createJurorPoolForDeferrals("400")))
+            .when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(anyString(), anyBoolean());
+
+        doReturn(null).when(digitalResponseRepository).findByJurorNumber(any());
+
+        BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        assertThatExceptionOfType(MojException.NotFound.class)
+            .isThrownBy(() -> manageDeferralsService.getAvailablePoolsByCourtLocationCodeAndJurorNumber(payload,
+                "415", "123456789"));
+
+        verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndIsActive(
+            any(String.class), any(Boolean.class));
+        verify(digitalResponseRepository, times(1)).findByJurorNumber(any(String.class));
+        verify(poolRequestRepository, never()).findActivePoolsForDateRange(
+            any(String.class), any(String.class), any(LocalDate.class), any(LocalDate.class));
+    }
+    //Method under test: getAvailablePoolsByCourtLocationCodeAndJurorNumber (END)
+
+    @Test
+    public void processJuror_postponement_happy_path_moveToActivePool() {
+        LocalDate newAttendanceDate = LocalDate.now();
+        LocalDate oldAttendanceDate = LocalDate.of(2023, 6, 6);
+        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+        final PoolRequest oldPoolRequest = createPoolRequest("400", "111111111", "415",
+            oldAttendanceDate);
+        final PoolRequest newPoolRequest = createPoolRequest("400", "111111112", "415",
+            newAttendanceDate);
+
+        List<JurorPool> poolMembers = new ArrayList<>();
+        JurorPool member = createJurorPool(jurorNumber);
+        poolMembers.add(member);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+        final DeferralReasonRequestDto dto = createPostponementRequestDtoToActivePool();
+
+        doReturn(poolMembers).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+
+        doReturn(Optional.of(oldPoolRequest)).when(poolRequestRepository)
+            .findByPoolNumber("111111111");
+        doReturn(Optional.of(jurorStatus)).when(jurorStatusRepository).findById(anyInt());
+        doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
+
+        doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(
+            anyString());
+        doReturn(new PostponementLetter()).when(postponementLetterService).getLetterToEnqueue(
+            any(),
+            any()
+        );
+
+        manageDeferralsService.processJurorPostponement(bureauPayload, jurorNumber, dto);
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+        verify(jurorPoolRepository, times(2)).saveAndFlush(any());
+        verify(jurorPoolRepository, times(2)).save(any());
+        verify(jurorHistoryRepository, times(3)).save(any());
+        verify(poolRequestRepository, times(2))
+            .findByPoolNumber(anyString());
+        verify(poolMemberSequenceService, times(1))
+            .getPoolMemberSequenceNumber(any(String.class));
+        verify(poolRequestRepository, times(1)).save(any());
+        verify(poolRequestRepository, times(1)).saveAndFlush(any());
+        verify(poolMemberSequenceService, times(1))
+            .leftPadInteger(any(int.class));
+        verify(printDataService, times(1))
+            .printPostponeLetter(any());
+        verify(printDataService, times(1)).printConfirmationLetter(any());
+        verify(currentlyDeferredRepository, times(0)).save(any());
+    }
+
+
+    @Test
+    public void processJuror_postponement_happy_path_moveToCurrentlyDeferred() {
+
+        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+
+        List<JurorPool> poolMembers = new ArrayList<>();
+        JurorPool jurorPool = createJurorPool(jurorNumber);
+        poolMembers.add(jurorPool);
+
+        doReturn(poolMembers).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+
+        doReturn(new PostponementLetter()).when(postponementLetterService).getLetterToEnqueue(
+            any(),
+            any());
+
+        DeferralReasonRequestDto dto = createPostponementRequestDtoToCurrentlyDeferred();
+        manageDeferralsService.processJurorPostponement(bureauPayload, jurorNumber, dto);
+
+        verify(jurorPoolRepository, times(0)).saveAndFlush(any());
+        verify(jurorPoolRepository, times(2)).save(any());
+        verify(jurorHistoryRepository, times(2)).save(any());
+        verify(poolRequestRepository, times(0))
+            .findByPoolNumber(anyString());
+        verify(poolMemberSequenceService, times(0))
+            .getPoolMemberSequenceNumber(any(String.class));
+        verify(jurorStatusRepository, times(1)).findById(any());
+        verify(poolRequestRepository, times(0)).save(any());
+        verify(poolRequestRepository, times(0)).saveAndFlush(any());
+        verify(poolMemberSequenceService, times(0))
+            .leftPadInteger(any(int.class));
+        verify(printDataService, times(1))
+            .printPostponeLetter(any());
+        verify(printDataService, times(0)).printConfirmationLetter(any());
+    }
+
+    @Test
+    public void processJuror_postponement_unhappy_path_invalidReasonCode() {
+        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+        DeferralReasonRequestDto dto = new DeferralReasonRequestDto();
+        dto.setPoolNumber("111111111");
+        dto.setExcusalReasonCode("C");  // setting an invalid reason code, should be "P"
+
+        List<JurorPool> jurorPools = new ArrayList<>();
+        JurorPool jurorPool = createJurorPool(jurorNumber);
+        jurorPools.add(jurorPool);
+
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+
+        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
+            manageDeferralsService.processJurorPostponement(
+                bureauPayload,
+                jurorNumber,
+                dto
+            ));
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+
+        // make sure no letters are sent or deferral records created
+        verify(postponementLetterService, times(0))
+            .getLetterToEnqueue(any(), any());
+        verify(postponementLetterService, times(0)).enqueueLetter(any());
+        verify(printDataService, times(0)).printConfirmationLetter(any());
+        verify(currentlyDeferredRepository, times(0)).save(any());
+    }
+
+    @Test
+    public void processJuror_postponement_unhappy_path_jurorNumberNotFound() {
+        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+        DeferralReasonRequestDto dto = new DeferralReasonRequestDto();
+        dto.setPoolNumber("111111111");
+        dto.setExcusalReasonCode("P");
+
+        List<JurorPool> poolMembers = new ArrayList<>();
+
+        doReturn(poolMembers).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+
+        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+            manageDeferralsService.processJurorPostponement(
+                bureauPayload,
+                jurorNumber,
+                dto
+            ));
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+
+        // make sure no letters are sent or deferral records created
+        verify(postponementLetterService, times(0))
+            .getLetterToEnqueue(any(), any());
+        verify(postponementLetterService, times(0)).enqueueLetter(any());
+        verify(printDataService, times(0)).printConfirmationLetter(any());
+        verify(currentlyDeferredRepository, times(0)).save(any());
+    }
+
+    @Test
+    public void processJuror_postponement_unhappy_path_poolNumberNotFound() {
+        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+        DeferralReasonRequestDto dto = new DeferralReasonRequestDto();
+        dto.setPoolNumber("111111112");
+        dto.setExcusalReasonCode("P");
+
+        List<JurorPool> poolMembers = new ArrayList<>();
+        JurorPool member = createJurorPool(jurorNumber);
+        poolMembers.add(member);
+
+        doReturn(poolMembers).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+        doReturn(Optional.empty()).when(poolRequestRepository)
+            .findByPoolNumber("111111112");
+
+        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+            manageDeferralsService.processJurorPostponement(
+                bureauPayload,
+                jurorNumber,
+                dto
+            ));
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+
+        verify(poolRequestRepository, times(1))
+            .findByPoolNumber(anyString());
+
+        // make sure no letters are sent or deferral records created
+        verify(postponementLetterService, times(0))
+            .getLetterToEnqueue(any(), any());
+        verify(postponementLetterService, times(0)).enqueueLetter(any());
+        verify(printDataService, times(0)).printConfirmationLetter(any());
+        verify(currentlyDeferredRepository, times(0)).save(any());
+    }
+
+    @Test
+    public void processJuror_postponement_unhappy_path_currentPoolNumber() {
+        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        String jurorNumber = "123456789";
+        DeferralReasonRequestDto dto = new DeferralReasonRequestDto();
+        dto.setPoolNumber("111111111");  // set the DTO to the current pool for juror
+        dto.setExcusalReasonCode("P");
+
+        List<JurorPool> poolMembers = new ArrayList<>();
+        JurorPool member = createJurorPool(jurorNumber);
+        poolMembers.add(member);
+
+        doReturn(poolMembers).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+        doReturn(Optional.empty()).when(poolRequestRepository)
+            .findByPoolNumber("111111111");
+
+        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
+            manageDeferralsService.processJurorPostponement(
+                bureauPayload,
+                jurorNumber,
+                dto
+            ));
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+
+        // make sure no letters are sent or deferral records created
+        verify(postponementLetterService, times(0))
+            .getLetterToEnqueue(any(), any());
+        verify(postponementLetterService, times(0)).enqueueLetter(any());
+        verify(printDataService, times(0)).printConfirmationLetter(any());
+        verify(currentlyDeferredRepository, times(0)).save(any());
+    }
+
+    private void setUpDeferralQueryResult(Tuple deferral, String courtLocation,
+                                          String jurorNumber, String poolNumber, LocalDate deferredTo) {
+        doReturn(courtLocation).when(deferral).get(0, String.class);
+        doReturn(jurorNumber).when(deferral).get(1, String.class);
+        doReturn("FNAME").when(deferral).get(2, String.class);
+        doReturn("LNAME").when(deferral).get(3, String.class);
+        doReturn(poolNumber).when(deferral).get(4, String.class);
+        doReturn(deferredTo)
+            .when(deferral).get(5, LocalDate.class);
+    }
+
+    private List<Tuple> setupDeferrals(List<String> jurorNumbers,
+                                       String poolNumber, String courtLocation,
+                                       LocalDate deferredTo) {
+        List<Tuple> results = new ArrayList<>();
+        for (String jurorNumber : jurorNumbers) {
+            Tuple tuple = mock(Tuple.class);
+            setUpDeferralQueryResult(tuple, courtLocation, jurorNumber, poolNumber, deferredTo);
+            results.add(tuple);
+        }
+        return results;
+    }
+
+    private void setUpMockQueryResult(Tuple deferralOption, String poolNumber,
+                                      LocalDate serviceStartDate,
+                                      int poolMembersRequested, int activeJurorPoolCount) {
+        doReturn(poolNumber).when(deferralOption).get(0, String.class);
+        doReturn(serviceStartDate).when(deferralOption).get(1, LocalDate.class);
+        doReturn(poolMembersRequested).when(deferralOption).get(2, Integer.class);
+        doReturn(activeJurorPoolCount).when(deferralOption).get(3, Integer.class);
+    }
+
+
+    private DeferralReasonRequestDto createDeferralReasonRequestDtoToActivePool(ReplyMethod replyMethod) {
+        DeferralReasonRequestDto dto = new DeferralReasonRequestDto();
+        dto.setReplyMethod(replyMethod);
+        dto.setExcusalReasonCode("A");
+        dto.setPoolNumber("111111112");
+        dto.setDeferralDate(LocalDate.of(2023, 6, 12));
+        return dto;
+    }
+
+    private DeferralReasonRequestDto createPostponementRequestDtoToActivePool() {
+        DeferralReasonRequestDto dto = new DeferralReasonRequestDto();
+        dto.setExcusalReasonCode("P");
+        dto.setPoolNumber("111111112");
+        dto.setDeferralDate(LocalDate.of(2023, 8, 12));
+        return dto;
+    }
+
+    private DeferralReasonRequestDto createPostponementRequestDtoToCurrentlyDeferred() {
+        DeferralReasonRequestDto dto = new DeferralReasonRequestDto();
+        dto.setExcusalReasonCode("P");
+        dto.setDeferralDate(LocalDate.of(2023, 8, 12));
+        return dto;
+    }
+
+    private DeferralReasonRequestDto createDeferralReasonDtoToDeferralMaintenance(ReplyMethod replyMethod) {
+        DeferralReasonRequestDto dto = new DeferralReasonRequestDto();
+        dto.setReplyMethod(replyMethod);
+        dto.setExcusalReasonCode("A");
+        dto.setDeferralDate(LocalDate.of(2023, 8, 1));
+        return dto;
+    }
+
+    private CurrentlyDeferred createCurrentlyDeferred(String jurorNumber) {
+        CurrentlyDeferred currentlyDeferred = new CurrentlyDeferred();
+        currentlyDeferred.setOwner("400");
+        currentlyDeferred.setJurorNumber(jurorNumber);
+        currentlyDeferred.setLocCode("415");
+        currentlyDeferred.setDeferredTo(LocalDate.now());
+
+        return currentlyDeferred;
+    }
+
+    private JurorPool createJurorPool(String jurorNumber) {
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+        juror.setFirstName("Test");
+        juror.setLastName("Person");
+        juror.setAddressLine1("Address Line 1");
+        juror.setAddressLine2("Address Line 2");
+        juror.setAddressLine4("Address Town");
+        juror.setAddressLine5("Address County");
+        juror.setPostcode("CH1 2AN");
+        juror.setNoDefPos(0);
+
+        CourtLocation location = new CourtLocation();
+        location.setLocCode("415");
+        location.setName("Chester");
+        location.setCourtAttendTime("09:00");
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("111111111");
+        poolRequest.setCourtLocation(location);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setStatus(jurorStatus);
+        jurorPool.setOwner("400");
+        jurorPool.setJuror(juror);
+        jurorPool.setPool(poolRequest);
+        jurorPool.setIsActive(true);
+
+        juror.setAssociatedPools(Set.of(jurorPool));
+
+        return jurorPool;
+    }
+
+    private List<JurorPool> createJurorPools(List<String> jurorNumbers, String poolNumber, String owner,
+                                             String courtLoc) {
+        CourtLocation location = new CourtLocation();
+        location.setLocCode(courtLoc);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber(poolNumber);
+        poolRequest.setCourtLocation(location);
+
+        JurorStatus status = new JurorStatus();
+        status.setStatus(IJurorStatus.RESPONDED);
+
+        List<JurorPool> jurorPools = new ArrayList<>();
+        for (String jurorNumber : jurorNumbers) {
+            Juror juror = new Juror();
+            juror.setJurorNumber(jurorNumber);
+            juror.setFirstName("Test");
+            juror.setLastName("Person");
+            juror.setAddressLine1("Address Line 1");
+            juror.setAddressLine2("Address Line 2");
+            juror.setAddressLine4("Address Town");
+            juror.setAddressLine5("Address County");
+            juror.setPostcode("CH1 2AN");
+
+            JurorPool jurorPool = new JurorPool();
+            jurorPool.setOwner(owner);
+            jurorPool.setPool(poolRequest);
+            jurorPool.setJuror(juror);
+            jurorPools.add(jurorPool);
+            jurorPool.setIsActive(true);
+            jurorPool.setStatus(status);
+
+            juror.setAssociatedPools(Set.of(jurorPool));
+        }
+        return jurorPools;
+    }
+
+    private List<CurrentlyDeferred> createDeferrals(String owner, String locCode, List<String> partNos,
+                                                    LocalDate deferredTo) {
+        List<CurrentlyDeferred> deferrals = new ArrayList<>();
+
+        for (String partNo : partNos) {
+            CurrentlyDeferred dbf = new CurrentlyDeferred();
+            dbf.setLocCode(locCode);
+            dbf.setOwner(owner);
+            dbf.setJurorNumber(partNo);
+            dbf.setDeferredTo(deferredTo);
+            deferrals.add(dbf);
+        }
+        return deferrals;
+    }
+
+
+    private List<JurorPool> createDeferredJurorPools(String owner) {
+        final List<JurorPool> jurorPools = new ArrayList<>();
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("987654321");
+
+        Juror juror = new Juror();
+        juror.setJurorNumber("123456789");
+        juror.setDateOfBirth(LocalDate.of(1990, 6, 1));
+        juror.setExcusalDate(LocalDate.of(2022, 5, 4));
+        juror.setExcusalCode("Y");
+        juror.setNoDefPos(1);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.DEFERRED);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setIsActive(true);
+        jurorPool.setStatus(jurorStatus);
+        jurorPool.setOwner(owner);
+        jurorPool.setDeferralDate(LocalDate.of(2022, 10, 3));
+        jurorPool.setNextDate(LocalDate.of(2022, 6, 6));
+        jurorPool.setUserEdtq("SOME_USER");
+
+        jurorPool.setJuror(juror);
+        jurorPool.setPool(poolRequest);
+
+        juror.setAssociatedPools(Set.of(jurorPool));
+
+        jurorPools.add(jurorPool);
+
+        return jurorPools;
+    }
+
+    private JurorPool createDeferredJuror(String owner) {
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("987654321");
+
+        Juror juror = new Juror();
+        juror.setJurorNumber("111111111");
+        juror.setDateOfBirth(LocalDate.of(1990, 6, 1));
+        juror.setExcusalDate(LocalDate.of(2022, 5, 4));
+        juror.setExcusalCode("Y");
+        juror.setNoDefPos(1);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.DEFERRED);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setIsActive(true);
+        jurorPool.setStatus(jurorStatus);
+        jurorPool.setOwner(owner);
+        jurorPool.setDeferralDate(LocalDate.of(2022, 10, 3));
+        jurorPool.setNextDate(LocalDate.of(2022, 6, 6));
+        jurorPool.setUserEdtq("SOME_USER");
+
+        jurorPool.setPool(poolRequest);
+        jurorPool.setJuror(juror);
+
+        juror.setAssociatedPools(Set.of(jurorPool));
+
+        return jurorPool;
+    }
+}

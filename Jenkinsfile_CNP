@@ -1,0 +1,184 @@
+#!groovy
+
+@Library("Infrastructure")
+
+import uk.gov.hmcts.contino.GradleBuilder
+
+def type = "java"
+def product = "juror"
+def component = "api"
+
+def branchesToSync = ['demo', 'ithc', 'perftest']
+
+def secrets = [
+  'juror-${env}': [
+    secret('app-insights-connection-string', 'app-insights-connection-string'),
+    secret('AppInsightsInstrumentationKey', 'azure.application-insights.instrumentation-key'),
+    secret('api-POSTGRES-HOST', 'DB_HOST'),
+    secret('api-POSTGRES-PORT', 'DB_PORT'),
+    secret('api-POSTGRES-DATABASE', 'DB_NAME'),
+    secret('api-POSTGRES-USER', 'DB_USER_NAME'),
+    secret('api-POSTGRES-PASS', 'DB_PASSWORD'),
+    secret('api-JWT-SECRET-BUREAU', 'JWT-SECRET-BUREAU'),
+    secret('api-JWT-SECRET-PUBLIC', 'JWT-SECRET-PUBLIC'),
+    secret('api-JWT_SECRET_HMAC', 'JWT_SECRET_HMAC'),
+    secret('api-NOTIFY-KEY', 'NOTIFY_KEY'),
+    secret('api-NOTIFY-REGION-KEY-1', 'NOTIFY_REGION_KEY_1'),
+    secret('api-NOTIFY-REGION-KEY-2', 'NOTIFY_REGION_KEY_2'),
+    secret('api-NOTIFY-REGION-KEY-3', 'NOTIFY_REGION_KEY_3'),
+    secret('api-NOTIFY-REGION-KEY-4', 'NOTIFY_REGION_KEY_4'),
+    secret('api-NOTIFY-REGION-KEY-5', 'NOTIFY_REGION_KEY_5'),
+    secret('api-NOTIFY-REGION-KEY-6', 'NOTIFY_REGION_KEY_6'),
+    secret('api-NOTIFY-REGION-KEY-7', 'NOTIFY_REGION_KEY_7'),
+    secret('scheduler-api-SECRET', 'SCHEDULER-SERVICE-SECRET'),
+    secret('api-SMART_SURVEY_TOKEN', 'SMART-SURVEY-TOKEN'),
+    secret('api-SMART_SURVEY_SECRET', 'SMART-SURVEY-SECRET'),
+    secret('pnc-SECRET', 'PNC-CHECK-SERVICE-SECRET'),
+    ],
+]
+
+static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
+  [$class     : 'AzureKeyVaultSecret',
+   secretType : 'Secret',
+   name       : secretName,
+   version    : '',
+   envVariable: envVar
+  ]
+}
+
+GradleBuilder builder = new GradleBuilder(this, product)
+
+withPipeline(type, product, component) {
+  //enableDbMigration(product)
+  loadVaultSecrets(secrets)
+  enableSlackNotifications('#juror-build-notices')
+  syncBranchesWithMaster(branchesToSync)
+
+  env.JWT_SECRET_BUREAU = 'W3N1cGVyLXNlY3JldC1rZXktYnVyZWF1XVtzdXBlci1zZWNyZXQta2V5LWJ1cmVhdV1bc3VwZXItc2VjcmV0LWtleS1idXJlYXVd'
+  env.JWT_SECRET_PUBLIC = 'W3N1cGVyLXNlY3JldC1rZXldW3N1cGVyLXNlY3JldC1rZXldW3N1cGVyLXNlY3JldC1rZXld'
+  env.JWT_SECRET_HMAC = 'W3N1cGVyLXNlY3JldC1rZXktbG9naW5dW3N1cGVyLXNlY3JldC1rZXktbG9naW5dW3N1cGVyLXNlY3JldC1rZXktbG9naW5d'
+  env.SCHEDULER_SERVICE_SECRET = 'WW91clZlcnlWZXJ5VmVyeVNlY3JldEtleVRoYXRJc1NvU2VjcmV0SURvbnRFdmVuS25vd0l0'
+  env.PNC_CHECK_SERVICE_SECRET = 'WW91clZlcnlWZXJ5VmVyeVNlY3JldEtleVRoYXRJc1NvU2VjcmV0SURvbnRFdmVuS25vd0l0'
+  env.SCHEDULER_SERVICE_SUBJECT = 'juror-back-end'
+  env.SCHEDULER_SERVICE_HOST = 'juror-scheduler-api.staging.platform.hmcts.net'
+  env.SCHEDULER_SERVICE_PORT = '443'
+  env.PNC_CHECK_SERVICE_SUBJECT = 'juror-back-end'
+  env.PNC_CHECK_SERVICE_HOST = 'juror-scheduler-execution.staging.platform.hmcts.net'
+  env.PNC_CHECK_SERVICE_PORT = '443'
+
+  afterAlways('test') {
+    builder.gradle('jacocoTestReport')
+
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/checkstyle",
+      reportFiles          : "main.html",
+      reportName           : "Checkstyle Main Report"
+    ]
+
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/checkstyle",
+      reportFiles          : "test.html",
+      reportName           : "Checkstyle Test Report"
+    ]
+
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/checkstyle",
+      reportFiles          : "integrationTest.html",
+      reportName           : "Checkstyle Integration Test Report"
+    ]
+
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/checkstyle",
+      reportFiles          : "smokeTest.html",
+      reportName           : "Checkstyle Smoke Test Report"
+    ]
+
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/checkstyle",
+      reportFiles          : "functionalTest.html",
+      reportName           : "Checkstyle Functional Test Report"
+    ]
+
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/pmd",
+      reportFiles          : "main.html",
+      reportName           : "PMD Main Report"
+    ]
+
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/pmd",
+      reportFiles          : "test.html",
+      reportName           : "PMD Test Report"
+    ]
+
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/pmd",
+      reportFiles          : "integrationTest.html",
+      reportName           : "PMD Integration Test Report"
+    ]
+
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/pmd",
+      reportFiles          : "smokeTest.html",
+      reportName           : "PMD Smoke Test Report"
+    ]
+
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/pmd",
+      reportFiles          : "functionalTest.html",
+      reportName           : "PMD Functional Test Report"
+    ]
+
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/tests/test",
+      reportFiles          : "index.html",
+      reportName           : "Unit Test Report"
+    ]
+
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/tests/integration",
+      reportFiles          : "index.html",
+      reportName           : "Integration Test Report"
+    ]
+  }
+
+  afterFailure('test') {
+    junit '**/test-results/integration/*.xml'
+  }
+}

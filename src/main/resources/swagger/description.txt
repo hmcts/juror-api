@@ -1,0 +1,3 @@
+RESTful API for Juror Response and administration operations.
+
+Secure APIs all require valid authentication Json Web Token (Base64 encoded) in the Authentication header.

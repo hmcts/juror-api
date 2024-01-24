@@ -1,0 +1,246 @@
+springdoc:
+  show-actuator: true
+management:
+  endpoint:
+    health:
+      show-details: "always"
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health, info
+jwt:
+  secret:
+    hmac: ${JWT_SECRET_HMAC:}
+    public: ${JWT_SECRET_PUBLIC:}
+    bureau: ${JWT_SECRET_BUREAU:}
+notify:
+  disabled: true
+  proxy:
+    enabled: false
+    host: ${PROXY_HOST:}
+    port: ${PROXY_PORT:}
+    type: HTTP    # type is one of DIRECT, HTTP, SOCKS
+  key: ${NOTIFY_KEY:}
+notifyregion:
+  regionkeys:
+    - ${NOTIFY_REGION_KEY_1:}
+    - ${NOTIFY_REGION_KEY_2:}
+    - ${NOTIFY_REGION_KEY_3:}
+    - ${NOTIFY_REGION_KEY_4:}
+    - ${NOTIFY_REGION_KEY_5:}
+    - ${NOTIFY_REGION_KEY_6:}
+    - ${NOTIFY_REGION_KEY_7:}
+smartsurvey:
+  enabled: false
+  exportsurl: https://api.smartsurvey.io/v1/surveys/{surveyId}/exports?page_size=50&page=1
+  token: ${SMART_SURVEY_TOKEN:}
+  secret: ${SMART_SURVEY_SECRET:}
+  proxy:
+    enabled: false
+    host: ${PROXY_HOST:}
+    port: ${PROXY_PORT:}
+    type: HTTP     # type is one of DIRECT, HTTP, SOCKS
+server:
+  error:
+    include-message: always
+    include-exception: true
+    include-binding-errors: always
+  tomcat:
+    basedir: "my-tomcat"
+    accesslog:
+      enabled: true
+      pattern: "%h %l %u %t %a %r %s (%D ms)"
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+    #database-platform: org.hibernate.dialect.Oracle10gDialect
+    show-sql: true
+    properties:
+      org:
+        hibernate:
+          envers:
+            audit_table_suffix: _audit
+            default_schema: juror_mod
+            revision_field_name: revision
+            revision_type_field_name: rev_type
+  datasource:
+    username: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
+    url: ${DB_URL:}
+    tomcat:
+      test-while-idle: true
+      validationQueryTimeout: 5
+  cache:
+    type: simple
+  jackson:
+    serialization:
+      write-dates-as-timestamps: true
+  # Flyway must align with build.gradle
+  flyway:
+    schemas: [ juror_mod ]
+    default-schema: juror_mod
+    table: schema_history
+    user: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+    url: ${spring.datasource.url}
+logging:
+  level:
+    uk.gov.hmcts.juror.api: info
+    org.apache.tomcat: DEBUG
+    org.apache.catalina: DEBUG
+debug: false
+docs:
+  host: localhost:8080
+  licence: Licence TBC
+  licence-url: http://some-domain/some-licence.html
+uk:
+  gov:
+    hmcts:
+      juror:
+        remote:
+          pnc-check-service:
+            security:
+              claims:
+                permissions:
+                  - pnc::check::single
+              issuer: juror-backend-service
+              secret: ${PNC_CHECK_SERVICE_SECRET}
+              subject: ${PNC_CHECK_SERVICE_SUBJECT}
+              token-validity: 300000
+            scheme: http
+            host: ${PNC_CHECK_SERVICE_HOST}
+            port: ${PNC_CHECK_SERVICE_PORT}
+            url: /jurors/check
+            retry-delay: 1000
+            max-retries: 3
+          scheduler-service:
+            security:
+              claims:
+                permissions:
+                  - task::status::update
+              issuer: api-job-execution-service
+              secret: ${SCHEDULER_SERVICE_SECRET}
+              subject: ${SCHEDULER_SERVICE_SUBJECT}
+              token-validity: 300000
+            scheme: http
+            host: ${SCHEDULER_SERVICE_HOST}
+            port: ${SCHEDULER_SERVICE_PORT}
+            url: /job/{job-key}/task/{task-id}/status
+            retry-delay: 1000
+            max-retries: 3
+
+---
+spring:
+  config:
+    import: "optional:configtree:/mnt/secrets/juror-digital-vault/"
+    activate:
+      on-profile: development
+  jackson:
+    serialization:
+      INDENT_OUTPUT: true
+  jpa:
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
+      hibernate.generate_statistics: true
+notify:
+  disabled: false
+smartsurvey:
+  enabled: true
+logging:
+  level:
+    uk.gov.hmcts.juror.api: trace
+    org.springframework.data: debug
+    org.springframework.security: info
+    org.springframework.transaction: info
+    org.hibernate.type: info
+    org.apache.tomcat: DEBUG
+    org.apache.catalina: DEBUG
+    org.springframework: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.springframework.web: DEBUG
+welshtranslations:
+  welshDaysMonths:
+    - Dydd Sul
+    - Dydd Llun
+    - Dydd Mawrth
+    - Dydd Mercher
+    - Dydd Iau
+    - Dydd Gwener
+    - Dydd Sadwrn
+    - Ionawr
+    - Chwefror
+    - Mawrth
+    - Ebrill
+    - Mai
+    - Mehefin
+    - Gorffenaf
+    - Awst
+    - Medi
+    - Hydref
+    - Tachwedd
+    - Rhagfyr
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+testing:
+  fix-clock: true
+uk:
+  gov:
+    hmcts:
+      juror:
+        remote:
+          pnc-check-service:
+            security:
+              secret: ${PNC_CHECK_SERVICE_SECRET}
+              subject: ${PNC_CHECK_SERVICE_SUBJECT}
+            host: localhost
+            port: 8090
+---
+spring:
+  config:
+    import: "optional:configtree:/mnt/secrets/juror-digital-vault/"
+    activate:
+      on-profile: production
+  jpa:
+    show-sql: false
+notify:
+  disabled: false
+smartsurvey:
+  enabled: true
+logging:
+  level:
+    uk.gov.hmcts.juror.api: INFO
+    org.springframework.data: INFO
+    org.springframework.security: INFO
+    org.springframework.transaction: INFO
+    org.hibernate.type: INFO
+    org.apache.tomcat: INFO
+    org.apache.catalina: INFO
+    org.springframework.web: INFO
+welshtranslations:
+  welshDaysMonths:
+    - Dydd Sul
+    - Dydd Llun
+    - Dydd Mawrth
+    - Dydd Mercher
+    - Dydd Iau
+    - Dydd Gwener
+    - Dydd Sadwrn
+    - Ionawr
+    - Chwefror
+    - Mawrth
+    - Ebrill
+    - Mai
+    - Mehefin
+    - Gorffenaf
+    - Awst
+    - Medi
+    - Hydref
+    - Tachwedd
+    - Rhagfyr

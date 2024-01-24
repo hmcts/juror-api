@@ -1,0 +1,40 @@
+package uk.gov.hmcts.juror.api.moj.domain;
+
+public enum ContactEnquiryCode {
+
+    AP,
+    CA,
+    CN,
+    CP,
+    CS,
+    DE,
+    DS,
+    EL,
+    EQ,
+    ER,
+    EX,
+    FA,
+    GE,
+    GL,
+    IA,
+    IN,
+    LR,
+    LS,
+    MD,
+    ME,
+    NS,
+    OU,
+    PA,
+    PE,
+    PV,
+    RA,
+    RC,
+    RD,
+    RE,
+    SD,
+    SI,
+    TR,
+    UA,
+    VI
+
+}

@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "jwt.secret.hmac",
+      "type": "java.lang.String",
+      "description": "Base64 encoded secret."
+    },
+    {
+      "name": "jwt.secret.public",
+      "type": "java.lang.String",
+      "description": "Base64 encoded secret."
+    },
+    {
+      "name": "jwt.secret.bureau",
+      "type": "java.lang.String",
+      "description": "Base64 encoded secret."
+    }
+  ]
+}
