@@ -5,18 +5,22 @@ import lombok.Getter;
 @Getter
 public enum SpecialNeeds {
 
-    CHILDCARE_PROBLEMS("C", "Childcare Problems"),
-    DIET("D", "Diet"),
-    HEARING_IMPAIRMENT("H", "Hearing Impairment"),
+    CARING_RESPONSIBILITIES("C", "Caring responsibilities"),
+    ALLERGIES("D", "Allergies"),
+    HEARING_LOSS("H", "Hearing Loss"),
     DIABETIC("I", "Diabetic"),
     LIMITED_MOBILITY("L", "Limited mobility"),
     MULTIPLE("M", "Multiple"),
     OTHER("O", "Other"),
-    PREGNANCY("P", "Pregnancy"),
+    PREGNANCY("P", "Pregnancy/Breastfeeding"),
     READING("R", "Reading"),
-    DRUG_DEPENDENT("U", "Drug dependent"),
+    MEDICATION("U", "Medication"),
     VISUAL_IMPAIRMENT("V", "Visual Impairment"),
-    WHEELCHAIR_ACCESS("W", "Wheelchair Access");
+    WHEELCHAIR_ACCESS("W", "Wheelchair Access"),
+    CJS_EMPLOYEE("J","CJS Employee"),
+    EPILEPSY("E","Epilepsy"),
+    RELIGIOUS_REASONS("A","Religious Reasons"),
+    TRAVELLING_DIFFICULTIES("T","Travelling Difficulties");
 
     private final String code;
     private final String description;

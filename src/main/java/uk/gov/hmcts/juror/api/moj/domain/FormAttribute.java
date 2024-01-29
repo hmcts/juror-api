@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Immutable;
@@ -17,6 +18,7 @@ import java.io.Serializable;
 @Table(name = "t_form_attr", schema = "juror_mod")
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Getter
 @Immutable
 public class FormAttribute implements Serializable {

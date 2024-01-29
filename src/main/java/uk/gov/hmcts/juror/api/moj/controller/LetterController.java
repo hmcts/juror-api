@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,8 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.AdditionalInformationDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
 import uk.gov.hmcts.juror.api.moj.service.letter.RequestInformationLetterService;
 
 /**
@@ -36,6 +43,9 @@ public class LetterController {
 
     @NonNull
     private final RequestInformationLetterService requestInformationLetterService;
+
+    @NonNull
+    private final ReissueLetterService reissueLetterService;
 
     @PostMapping(path = "/request-information")
     @Operation(summary = "Request information",
@@ -56,6 +66,43 @@ public class LetterController {
         return ResponseEntity
             .status(HttpStatus.CREATED)
             .body(String.format("Request Letter queued for juror number %s", jurorNumber));
+    }
+
+    @PostMapping(path = "/reissue-letter-list")
+    @Operation(summary = "GET With Body - Reissue letter list", description = "Request a list of letters for reissue "
+        + "to a juror")
+    @IsBureauUser
+    public ResponseEntity<ReissueLetterListResponseDto> reissueLetterList(
+     @RequestBody @Valid @NotNull ReissueLetterListRequestDto reIssueLetterListRequestDto) {
+
+        ReissueLetterListResponseDto reissueLetterListResponseDto = reissueLetterService.reissueLetterList(
+            reIssueLetterListRequestDto);
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(reissueLetterListResponseDto);
+    }
+
+    @PostMapping("/reissue-letter")
+    @Operation(description = "Reissue letters to jurors as Bureau officer")
+    @IsBureauUser
+    public ResponseEntity<String> reissueLetter(
+        @RequestBody @Valid @NotNull ReissueLetterRequestDto request) {
+
+        reissueLetterService.reissueLetter(request);
+
+        return ResponseEntity.ok("Letters reissued");
+    }
+
+    @DeleteMapping("/delete-pending-letter")
+    @Operation(description = "Delete a pending letter to jurors as Bureau officer")
+    @IsBureauUser
+    public ResponseEntity<String> deletePendingLetter(
+        @RequestBody @Valid @NotNull ReissueLetterRequestDto request) {
+
+        reissueLetterService.deletePendingLetter(request);
+
+        return ResponseEntity.ok("Letters reissued");
     }
 }
 

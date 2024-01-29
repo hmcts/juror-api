@@ -185,7 +185,7 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
         return new CaseBuilder()
             .when(Expressions.asBoolean(JUROR_POOL.onCall.eq(true)))
             .then("On call")
-            .otherwise(JUROR_POOL.nextDate.toString());
+            .otherwise(JUROR_POOL.nextDate.stringValue());
     }
 
 }

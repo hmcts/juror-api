@@ -40,7 +40,7 @@ import static org.mockito.Mockito.verify;
 
 
 @ExtendWith(SpringExtension.class)
-public class PrintDataServiceImplTest {
+class PrintDataServiceImplTest {
     private MockedStatic<RepositoryUtils> mockRepositoryUtils;
     @Mock
     private BulkPrintDataRepository bulkPrintDataRepository;
@@ -62,8 +62,8 @@ public class PrintDataServiceImplTest {
     void setStaticMocks() {
         mockRepositoryUtils = mockStatic(RepositoryUtils.class);
         mockRepositoryUtils.when(() -> RepositoryUtils.retrieveFromDatabase(
-            eq("FORM_CODE_ENUM"),
-            (FormAttributeRepository)any()))
+                eq("FORM_CODE_ENUM"),
+                (FormAttributeRepository) any()))
             .thenReturn(formAttribute);
         doReturn(LetterTestUtils.testBureauLocation()).when(courtLocationService)
             .getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE);
@@ -188,6 +188,19 @@ public class PrintDataServiceImplTest {
 
         doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
         printDataService.printPostponeLetter(LetterTestUtils.testJurorPool(date));
+    }
+
+    @Test
+    void printExcusalLetterThrowsWithNullList() {
+        assertThatExceptionOfType(MojException.InternalServerError.class)
+            .isThrownBy(() -> printDataService.printExcusalLetter(null));
+    }
+
+    @Test
+    void printExcusalLetterCallsCommit() {
+        final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
+        doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
+        printDataService.printExcusalLetter(LetterTestUtils.testJurorPool(date));
         verify(bulkPrintDataRepository, times(1)).save(any());
     }
 

@@ -117,8 +117,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         // verify the jurors are in the pool at present and with the right status
         List<JurorPool> sourceJurorPools =
             JurorPoolUtils.getSourceJurorsForPool(jurorManagementRequestDto.getJurorNumbers(), sourcePoolNumber,
-                sendingCourtLocation, jurorPoolRepository
-            );
+                sendingCourtLocation, jurorPoolRepository);
 
         log.debug("{} Pool Members found for the {} juror numbers provided", sourceJurorPools.size(),
             jurorManagementRequestDto.getJurorNumbers().stream().distinct().count()
@@ -127,8 +126,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         for (JurorPool sourceJurorPool : sourceJurorPools) {
             String jurorNumber = sourceJurorPool.getJurorNumber();
             log.info("Juror: {} - reassigning from Pool: {} to Pool: {}", jurorNumber, sourcePoolNumber,
-                targetPoolNumber
-            );
+                targetPoolNumber);
 
             try {
 
@@ -147,19 +145,15 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                     .dateCreated(LocalDateTime.now())
                     .createdBy(currentUser)
                     .historyCode(HistoryCodeMod.REASSIGN_POOL_MEMBER)
-                    .otherInformation(String.format(
-                        "To %s %s",
-                        targetPoolNumber,
-                        receivingCourtLocation.getName()
-                    ))
+                    .otherInformation(String.format("To %s %s", targetPoolNumber, receivingCourtLocation.getName()))
                     .build());
 
-                // queue a summons confirmation letter
-                ConfirmationLetter confirmationLetter = confirmationLetterService.getLetterToEnqueue(
-                    owner,
-                    jurorNumber
-                );
-                confirmationLetterService.enqueueLetter(confirmationLetter);
+                // queue a summons confirmation letter (Bureau only!)
+                if (payload.getOwner().equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)) {
+                    ConfirmationLetter confirmationLetter = confirmationLetterService.getLetterToEnqueue(owner,
+                        jurorNumber);
+                    confirmationLetterService.enqueueLetter(confirmationLetter);
+                }
 
                 reassignedJurorsCount++;
 
@@ -193,17 +187,18 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         log.trace("Enter createReassignedJurorPool");
         JurorPool newTargetJurorPool = new JurorPool();
 
-        BeanUtils.copyProperties(
-            sourceJurorPool,
-            newTargetJurorPool,
-            JurorManagementConstants.POOL_MEMBER_IGNORE_PROPERTIES
-        );
+        BeanUtils.copyProperties(sourceJurorPool, newTargetJurorPool,
+            JurorManagementConstants.POOL_MEMBER_IGNORE_PROPERTIES);
 
         JurorStatus jurorStatus = new JurorStatus();
 
         jurorStatus.setStatus(2);
 
-        newTargetJurorPool.setOwner(targetPool.getOwner());
+        /* Bureau users can only reassign bureau owned jurors to bureau owned pools (but to any court location).
+        Court users can only reassign court owned jurors, to any pool, as long as the pool is requested for a court
+        location within their primary group - therefore the target juror_pool owner value will always be the same as the
+        source juror_pool for reassignment */
+        newTargetJurorPool.setOwner(sourceJurorPool.getOwner());
         newTargetJurorPool.setPool(targetPool);
         newTargetJurorPool.setNextDate(targetPool.getReturnDate());
         newTargetJurorPool.setUserEdtq(currentUser);
@@ -213,15 +208,12 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         Juror newTargetJuror = newTargetJurorPool.getJuror();
         newTargetJuror.setNotifications(0);
 
-        // Todo copied welsh flag but - may need to check if its a welsh court and set the flag accordingly
-
         int nextPoolSequenceNumber = poolMemberSequenceService
             .getPoolMemberSequenceNumber(targetPool.getPoolNumber());
         newTargetJurorPool.setPoolSequence(poolMemberSequenceService.leftPadInteger(nextPoolSequenceNumber));
 
         log.debug("Juror: {} - New Pool Member record created for Court Location: {}. Reassign to Pool: {}",
-            sourceJurorPool.getJurorNumber(), receivingCourtLocation.getName(), targetPool.getPoolNumber()
-        );
+            sourceJurorPool.getJurorNumber(), receivingCourtLocation.getName(), targetPool.getPoolNumber());
 
         jurorPoolRepository.save(newTargetJurorPool);
         log.trace("Exit createReassignedJurorPool");

@@ -14,14 +14,14 @@ import java.io.Serializable;
 
 @Entity
 @Data
-@Table(name = "t_excusal_code", schema = "juror_mod")
+@Table(name = "t_exc_code", schema = "juror_mod")
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExcusalCode implements Serializable {
 
     @Id
     @Column(name = "exc_code")
-    @Length(max = 1)
+    @Length(max = 2)
     @NotNull
     private String excusalCode;
 

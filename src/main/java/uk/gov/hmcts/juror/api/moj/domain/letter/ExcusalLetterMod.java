@@ -15,7 +15,7 @@ import java.time.LocalDate;
 public class ExcusalLetterMod extends Letter {
 
     @NotNull
-    @Length(min = 1, max = 1)
+    @Length(min = 1, max = 2)
     @Column(name = "EXC_CODE")
     private String excCode;
 

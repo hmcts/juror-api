@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import com.google.common.annotations.VisibleForTesting;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +16,9 @@ import uk.gov.hmcts.juror.api.moj.xerox.LetterBase;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ConfirmLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralDeniedLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralLetter;
-import uk.gov.hmcts.juror.api.moj.xerox.letters.PostponeLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalDeniedLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.PostponeLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.SummonsLetter;
 
 import java.time.LocalDate;
@@ -118,8 +118,21 @@ public class PrintDataServiceImpl implements PrintDataService {
         }
 
         commitData(new PostponeLetter(jurorPool, jurorPool.getCourt(),
-                                     courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
-                                     welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+        ));
+    }
+
+    @Override
+    public void printExcusalLetter(JurorPool jurorPool) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to print excusal letter for null jurorPool", new Exception());
+        }
+
+        commitData(new ExcusalLetter(jurorPool, jurorPool.getCourt(),
+            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
         ));
     }
 

@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseR
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 
 import java.time.LocalDate;
+import java.util.Collection;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -79,5 +80,9 @@ public final class DataUtils {
                 + "information.", jurorNumber), ex);
         }
         return jurorPaperResponse;
+    }
+
+    public static boolean isEmptyOrNull(Collection< ? > collection) {
+        return (collection == null || collection.isEmpty());
     }
 }

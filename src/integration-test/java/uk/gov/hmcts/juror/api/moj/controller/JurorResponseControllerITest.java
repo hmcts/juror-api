@@ -126,6 +126,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     @DisplayName("PATCH /api/v1/moj/juror-response/juror/%s/details/personal")
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPaperResponse.sql"})
     class UpdatePaperResponse {

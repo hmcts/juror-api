@@ -17,7 +17,7 @@ import static org.mockito.Mockito.when;
 
 public final class TestUtils {
 
-    private static final ObjectMapper objectMapper;
+    public static final ObjectMapper objectMapper;
 
     static {
         objectMapper = new ObjectMapper().findAndRegisterModules();

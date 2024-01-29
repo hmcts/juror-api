@@ -129,4 +129,13 @@ public class ConfirmLetterTest extends AbstractLetterTest {
         }
     }
 
+    @Test
+    public void confirmWelshWithoutWelshCourtProducesEnglishOutput() {
+        final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
+        setupEnglishExpectedResult();
+        ConfirmLetter confirmLetter = new ConfirmLetter(LetterTestUtils.testWelshJurorPool(date),
+                                                        LetterTestUtils.testCourtLocation(),
+                                                        LetterTestUtils.testBureauLocation());
+        assertThat(confirmLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
+    }
 }

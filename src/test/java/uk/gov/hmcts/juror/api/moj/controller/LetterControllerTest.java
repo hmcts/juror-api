@@ -21,13 +21,19 @@ import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.controller.request.AdditionalInformationDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
+import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.MissingInformation;
+import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
 import uk.gov.hmcts.juror.api.moj.service.letter.RequestInformationLetterService;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.mockito.Mockito.mock;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -45,6 +51,8 @@ public class LetterControllerTest {
     private RequestInformationLetterService requestInformationLetterService;
     @MockBean
     private RestfulAuthenticationEntryPoint restfulAuthenticationEntryPoint;
+    @MockBean
+    private ReissueLetterService reissueLetterService;
 
     @Before
     public void setupMocks() {
@@ -260,4 +268,113 @@ public class LetterControllerTest {
             .requestInformation(jwtPayload, additionalInformationDto);
     }
 
+    @Test
+    public void testReissueDeferralLetterListInvalidRequestJurorNumberPoolNumber() throws Exception {
+        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+        Mockito.when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+
+        ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
+            .jurorNumber("111111111")
+            .poolNumber("415220110")
+            .letterType(LetterType.DEFERRAL)
+            .build();
+
+        mockMvc.perform(post("/api/v1/moj/letter/reissue-letter-list")
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(reissueLetterListRequestDto)))
+            .andExpect(status().isBadRequest());
+
+        Mockito.verify(reissueLetterService, Mockito.never())
+            .reissueLetterList(reissueLetterListRequestDto);
+    }
+
+    @Test
+    public void testReissueDeferralLetterListInvalidRequestShowAllJurorNumber() throws Exception {
+        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+        Mockito.when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+
+        ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
+            .jurorNumber("111111111")
+            .showAllQueued(true)
+            .letterType(LetterType.DEFERRAL)
+            .build();
+
+        mockMvc.perform(post("/api/v1/moj/letter/reissue-letter-list")
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(reissueLetterListRequestDto)))
+            .andExpect(status().isBadRequest());
+
+        Mockito.verify(reissueLetterService, Mockito.never())
+            .reissueLetterList(reissueLetterListRequestDto);
+    }
+
+    @Test
+    public void testReissueDeferralLetterListInvalidRequestShowAllPoolNumber() throws Exception {
+        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+        Mockito.when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+
+        ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
+            .poolNumber("111111111")
+            .showAllQueued(true)
+            .letterType(LetterType.DEFERRAL)
+            .build();
+
+        mockMvc.perform(post("/api/v1/moj/letter/reissue-letter-list")
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(reissueLetterListRequestDto)))
+            .andExpect(status().isBadRequest());
+
+        Mockito.verify(reissueLetterService, Mockito.never())
+            .reissueLetterList(reissueLetterListRequestDto);
+    }
+
+
+    @Test
+    public void testReissueDeferralLetterInvalidRequestJurorNumberPoolNumber() throws Exception {
+        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+        Mockito.when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+
+        ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
+            .letters(new ArrayList<>())
+            .build();
+
+        mockMvc.perform(post("/api/v1/moj/letter/reissue-letter")
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(reissueLetterRequestDto)))
+            .andExpect(status().isBadRequest());
+
+        Mockito.verify(reissueLetterService, Mockito.never())
+            .reissueLetter(reissueLetterRequestDto);
+    }
+
+
+    @Test
+    public void testDeleteDeferralLetterInvalidRequestJurorNumberPoolNumber() throws Exception {
+        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+        Mockito.when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+
+        ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
+            .letters(new ArrayList<>())
+            .build();
+
+        mockMvc.perform(delete("/api/v1/moj/letter/delete-pending-letter")
+                .principal(mockPrincipal)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TestUtils.asJsonString(reissueLetterRequestDto)))
+            .andExpect(status().isBadRequest());
+
+        Mockito.verify(reissueLetterService, Mockito.never())
+            .deletePendingLetter(reissueLetterRequestDto);
+    }
+
 }
+

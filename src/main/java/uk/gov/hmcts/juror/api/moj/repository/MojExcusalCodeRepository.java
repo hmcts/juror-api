@@ -12,8 +12,8 @@ import java.util.List;
 @Repository
 public interface MojExcusalCodeRepository extends ReadOnlyRepository<ExcusalCode, String> {
 
-   List<ExcusalCode> findByForDeferral(boolean forDeferral);
+    List<ExcusalCode> findByForDeferral(boolean forDeferral);
 
-   List<ExcusalCode> findByForExcusal(boolean forExcusal);
+    List<ExcusalCode> findByForExcusal(boolean forExcusal);
 
 }

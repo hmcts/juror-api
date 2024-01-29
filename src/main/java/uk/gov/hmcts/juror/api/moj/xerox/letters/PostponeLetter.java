@@ -13,12 +13,10 @@ public class PostponeLetter extends LetterBase {
                          CourtLocation courtLocation,
                          CourtLocation bureauLocation) {
         super(LetterContext.builder()
-                   .juror(jurorPool.getJuror())
                    .jurorPool(jurorPool)
                    .courtLocation(courtLocation)
                    .bureauLocation(bureauLocation)
                    .build());
-        setup(jurorPool.getJuror());
     }
 
     public PostponeLetter(JurorPool jurorPool,
@@ -26,24 +24,14 @@ public class PostponeLetter extends LetterBase {
                          CourtLocation bureauLocation,
                          WelshCourtLocation welshCourtLocation) {
         super(LetterContext.builder()
-            .juror(jurorPool.getJuror())
             .jurorPool(jurorPool)
             .courtLocation(courtLocation)
             .welshCourtLocation(welshCourtLocation)
             .bureauLocation(bureauLocation)
             .build());
-        setup(jurorPool.getJuror());
     }
 
-    private void setup(Juror juror) {
-        if (Boolean.TRUE.equals(juror.getWelsh())) {
-            setupWelsh();
-        } else {
-            setupEnglish();
-        }
-    }
-
-    private void setupWelsh() {
+    protected void setupWelsh() {
         setFormCode(FormCode.BI_POSTPONE);
         addData(LetterDataType.DATE_OF_LETTER, 18);
         addData(LetterDataType.WELSH_COURT_NAME, 40);
@@ -59,7 +47,7 @@ public class PostponeLetter extends LetterBase {
         addData(LetterDataType.DEFERRAL_TIME, 8);
     }
 
-    private void setupEnglish() {
+    protected void setupEnglish() {
         setFormCode(FormCode.ENG_POSTPONE);
         addData(LetterDataType.DATE_OF_LETTER, 18);
         addData(LetterDataType.COURT_NAME, 59);
