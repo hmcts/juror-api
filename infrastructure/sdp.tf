@@ -7,6 +7,10 @@ provider "azurerm" {
 
 module "sdp_db_user" {
 
+  providers = {
+    azurerm.sdp_vault = azurerm.sdp_vault
+  }
+  
   source = "git@github.com:hmcts/terraform-module-sdp-db-user?ref=master"
 
   server_name       = "${var.product}-${var.component}-${var.env}"
