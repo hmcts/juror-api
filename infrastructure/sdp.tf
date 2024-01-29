@@ -2,7 +2,7 @@ provider "azurerm" {
   features {}
   skip_provider_registration = true
   alias                      = "sdp_vault"
-  subscription_id            = var.subscription
+  subscription_id            = var.aks_subscription_id
 }
 
 module "sdp_db_user" {
