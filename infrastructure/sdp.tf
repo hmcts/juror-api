@@ -19,7 +19,7 @@ module "sdp_db_user" {
   server_admin_user = module.postgresql_flexible.username
   server_admin_pass = module.postgresql_flexible.password
 
-  count = var.env == "sandbox" || var.env == "dev" || var.env == "test" || var.env == "demo" ? 0 : 1
+  count = var.env == "prod" || var.env == "stg" || var.env == "ithc" ? 1 : 0
 
   databases = [
     {
