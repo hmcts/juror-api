@@ -10,9 +10,10 @@ module "sdp_db_user" {
   providers = {
     azurerm.sdp_vault = azurerm.sdp_vault
   }
-  
+
   source = "git@github.com:hmcts/terraform-module-sdp-db-user?ref=master"
 
+  env = var.env
   server_name       = "${var.product}-${var.component}-${var.env}"
   server_fqdn       = module.postgresql_flexible.fqdn
   server_admin_user = module.postgresql_flexible.username
