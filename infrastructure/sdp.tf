@@ -1,3 +1,10 @@
+provider "azurerm" {
+  features {}
+  skip_provider_registration = true
+  alias                      = "sdp_vault"
+  subscription_id            = var.subscription
+}
+
 module "sdp_db_user" {
 
   source = "git@github.com:hmcts/terraform-module-sdp-db-user?ref=master"
