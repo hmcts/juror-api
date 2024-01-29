@@ -14,7 +14,7 @@ module "sdp_db_user" {
   source = "git@github.com:hmcts/terraform-module-sdp-db-user?ref=master"
 
   env = var.env
-  server_name       = "${var.product}"
+  server_name       = "${var.product}-flexible-${var.env}"
   server_fqdn       = module.postgresql_flexible.fqdn
   server_admin_user = module.postgresql_flexible.username
   server_admin_pass = module.postgresql_flexible.password
