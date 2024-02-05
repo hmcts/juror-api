@@ -21,8 +21,14 @@ public enum FormCode {
     ENG_POSTPONE("5229", PrintDataService::printPostponeLetter, IJurorStatus.DEFERRED),
     BI_POSTPONE("5229C", PrintDataService::printPostponeLetter, IJurorStatus.DEFERRED),
     ENG_EXCUSAL("5225", PrintDataService::printExcusalLetter, IJurorStatus.EXCUSED),
-    BI_EXCUSAL("5225C", PrintDataService::printExcusalLetter, IJurorStatus.EXCUSED);
-
+    BI_EXCUSAL("5225C", PrintDataService::printExcusalLetter, IJurorStatus.EXCUSED),
+    // We currently are not anticipating a resend function for request info letters.
+    // If we do need one, we will need to write a print function in PrintDataService that only takes a jurorNumber
+    // and looks up the previous letter in the bulk_print_data table to retrieve the requested information.
+    ENG_REQUESTINFO("5227", null, IJurorStatus.ADDITIONAL_INFO),
+    BI_REQUESTINFO("5227C", null, IJurorStatus.ADDITIONAL_INFO),
+    ENG_WITHDRAWAL("5224", PrintDataService::printWithdrawalLetter, IJurorStatus.DISQUALIFIED),
+    BI_WITHDRAWAL("5224C", PrintDataService::printWithdrawalLetter, IJurorStatus.DISQUALIFIED);
     private final String code;
 
     private int jurorStatus;  // Todo: this may need to be a list of statuses

@@ -41,6 +41,7 @@ import static uk.gov.hmcts.juror.api.bureau.service.AutoAssignmentServiceImpl.DE
  * Unit tests for {@link AutoAssignmentServiceImpl}.
  */
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("PMD.LawOfDemeter")
 public class AutoAssignmentServiceImplTest {
 
     private static final Comparator<JurorResponse> ascendingDateOrder =

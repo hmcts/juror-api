@@ -14,7 +14,7 @@ import java.util.List;
 
 import static java.lang.Boolean.TRUE;
 import static java.time.LocalDate.now;
-import static uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.JurorResponseRetrieveRequestDto.Status.COMPLETED;
+import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.isNotEmptyOrNull;
 
 /**
  * Custom Repository implementation for juror responses (paper or digital).
@@ -105,13 +105,8 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
             query.where(JUROR_RESPONSE_COMMON.staff.username.eq(request.getOfficerAssigned()));
         }
 
-        if (request.getProcessingStatus() != null) {
-            if (COMPLETED.equals(request.getProcessingStatus())) {
-                query.where(JUROR_RESPONSE_COMMON.processingComplete.eq(TRUE));
-            } else {
-                query.where(JUROR_RESPONSE_COMMON.processingStatus.stringValue()
-                    .eq(request.getProcessingStatus().toString()));
-            }
+        if (isNotEmptyOrNull(request.getProcessingStatus())) {
+            query.where(JUROR_RESPONSE_COMMON.processingStatus.in(request.getProcessingStatus()));
         }
     }
 }

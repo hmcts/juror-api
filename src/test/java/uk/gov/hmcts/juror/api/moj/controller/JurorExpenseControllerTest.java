@@ -25,14 +25,25 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.controller.request.ViewExpenseRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseItemsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.GetEnteredExpenseRequest;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseFinancialLoss;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseFoodAndDrink;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseTime;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseTravel;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.BulkExpenseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.BulkExpenseEntryDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.DailyExpenseResponse;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.FinancialLossWarningTest;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.TotalExpenseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.FoodDrinkClaimType;
+import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
@@ -44,10 +55,12 @@ import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseServiceImpl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -706,6 +719,254 @@ class JurorExpenseControllerTest {
             verify(jurorExpenseService, times(1))
                 .submitDraftExpensesForApproval(Mockito.any());
             verifyNoMoreInteractions(jurorExpenseService);
+        }
+    }
+
+    abstract class AbstractEnterDraftExpenseTest {
+
+        private final String url;
+
+        public AbstractEnterDraftExpenseTest(String url) {
+            this.url = url;
+        }
+
+
+        protected static DailyExpenseFinancialLoss createDailyExpenseFinancialLoss(Double lossOfEarnings,
+                                                                                   Double extraCareCost,
+                                                                                   Double otherCost,
+                                                                                   String otherCostDesc) {
+            return DailyExpenseFinancialLoss.builder()
+                .lossOfEarningsOrBenefits(doubleToBigDecimal(lossOfEarnings))
+                .extraCareCost(doubleToBigDecimal(extraCareCost))
+                .otherCosts(doubleToBigDecimal(otherCost))
+                .otherCostsDescription(otherCostDesc)
+                .build();
+        }
+
+        protected static DailyExpenseFoodAndDrink createDailyExpenseFoodAndDrink(FoodDrinkClaimType foodDrinkClaimType,
+                                                                                 Double smartCardAmount) {
+            return DailyExpenseFoodAndDrink.builder()
+                .foodAndDrinkClaimType(foodDrinkClaimType)
+                .smartCardAmount(doubleToBigDecimal(smartCardAmount))
+                .build();
+        }
+
+        protected static BigDecimal doubleToBigDecimal(Double value) {
+            return doubleToBigDecimal(value, 2);
+        }
+
+        protected static BigDecimal doubleToBigDecimal(Double value, int precision) {
+            if (value == null) {
+                return null;
+            }
+            return new BigDecimal(String.format("%." + precision + "f", value));
+        }
+
+        protected String toUrl(String jurorNumber) {
+            return url.replace("{juror_number}", jurorNumber);
+        }
+
+        protected abstract DailyExpense getValidPayload();
+
+        @Nested
+        @DisplayName("Negative")
+        class Negative {
+
+            @Test
+            void badPayload() throws Exception {
+                DailyExpense payload = getValidPayload();
+                payload.setPoolNumber("INVALID");
+                mockMvc.perform(post(toUrl(TestConstants.VALID_JUROR_NUMBER))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.asJsonString(payload)))
+                    .andDo(MockMvcResultHandlers.print())
+                    .andExpect(status().isBadRequest());
+                verifyNoInteractions(jurorExpenseService);
+            }
+
+            @Test
+            void invalidJurorNumber() throws Exception {
+                DailyExpense payload = getValidPayload();
+                mockMvc.perform(post(toUrl("INVALID"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.asJsonString(payload)))
+                    .andDo(MockMvcResultHandlers.print())
+                    .andExpect(status().isBadRequest());
+                verifyNoInteractions(jurorExpenseService);
+            }
+        }
+
+        @Nested
+        @DisplayName("Positive")
+        class Positive {
+            @Test
+            void typical() throws Exception {
+                DailyExpense payload = getValidPayload();
+
+                DailyExpenseResponse response = new DailyExpenseResponse();
+                response.setFinancialLossWarning(
+                    FinancialLossWarningTest.getValidObject()
+                );
+                when(jurorExpenseService.updateDraftExpense(TestConstants.VALID_JUROR_NUMBER, payload))
+                    .thenReturn(response);
+                mockMvc.perform(post(toUrl(TestConstants.VALID_JUROR_NUMBER))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.asJsonString(payload)))
+                    .andDo(MockMvcResultHandlers.print())
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(TestUtils.asJsonString(response)));
+                verify(jurorExpenseService, times(1)).updateDraftExpense(TestConstants.VALID_JUROR_NUMBER, payload);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("POST " + AttendedDayEnterDraftExpenseTest.URL)
+    class AttendedDayEnterDraftExpenseTest extends AbstractEnterDraftExpenseTest {
+        public static final String URL = BASE_URL + "/{juror_number}/draft/attended_day";
+
+        AttendedDayEnterDraftExpenseTest() {
+            super(URL);
+        }
+
+        protected static DailyExpense getTypicalPayload() {
+            return DailyExpense.builder()
+                .dateOfExpense(LocalDate.of(2023, 1, 5))
+                .poolNumber("415230101")
+                .payCash(false)
+                .time(DailyExpenseTime.builder()
+                    .travelTime(LocalTime.of(1, 2))
+                    .payAttendance(PayAttendanceType.FULL_DAY)
+                    .build())
+                .financialLoss(
+                    createDailyExpenseFinancialLoss(25.01, 10.00, 5.00, "Desc")
+                )
+                .travel(
+                    DailyExpenseTravel.builder()
+                        .traveledByCar(true)
+                        .jurorsTakenCar(null)
+                        .milesTraveled(5)
+                        .parking(doubleToBigDecimal(2.25))
+                        .publicTransport(null)
+                        .taxi(null)
+                        .build()
+                )
+                .foodAndDrink(
+                    createDailyExpenseFoodAndDrink(FoodDrinkClaimType.LESS_THAN_1O_HOURS, 4.2)
+                )
+                .build();
+        }
+
+        @Override
+        protected DailyExpense getValidPayload() {
+            return getTypicalPayload();
+        }
+    }
+
+    @Nested
+    @DisplayName("POST " + NonAttendedDayEnterDraftExpenseTest.URL)
+    class NonAttendedDayEnterDraftExpenseTest extends AbstractEnterDraftExpenseTest {
+        public static final String URL = BASE_URL + "/{juror_number}/draft/non_attended_day";
+
+        NonAttendedDayEnterDraftExpenseTest() {
+            super(URL);
+        }
+
+        protected static DailyExpense getTypicalPayload() {
+            return DailyExpense.builder()
+                .dateOfExpense(LocalDate.of(2023, 1, 5))
+                .poolNumber("415230101")
+                .payCash(false)
+                .time(DailyExpenseTime.builder()
+                    .payAttendance(PayAttendanceType.FULL_DAY)
+                    .build())
+                .financialLoss(
+                    createDailyExpenseFinancialLoss(25.01, 10.00, 5.00, "Desc")
+                )
+                .build();
+        }
+
+        @Override
+        protected DailyExpense getValidPayload() {
+            return getTypicalPayload();
+        }
+
+
+        @Nested
+        @DisplayName("Negative")
+        class Negative extends AbstractEnterDraftExpenseTest.Negative {
+
+            @Test
+            @DisplayName("Attended day payload")
+            void attendedDayPayload() throws Exception {
+                DailyExpense payload = AttendedDayEnterDraftExpenseTest.getTypicalPayload();
+                mockMvc.perform(post(toUrl(TestConstants.VALID_JUROR_NUMBER))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.asJsonString(payload)))
+                    .andDo(MockMvcResultHandlers.print())
+                    .andExpect(status().isBadRequest());
+                verifyNoInteractions(jurorExpenseService);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("POST (get) " + GetEnteredExpenseDetails.URL)
+    class GetEnteredExpenseDetails {
+        public static final String URL = BASE_URL + "/entered";
+
+        @Nested
+        @DisplayName("Negative")
+        class Negative {
+
+            @Test
+            void badPayload() throws Exception {
+                GetEnteredExpenseRequest request = GetEnteredExpenseRequest.builder()
+                    .dateOfExpense(LocalDate.now())
+                    .poolNumber(TestConstants.INVALID_POOL_NUMBER)
+                    .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                    .build();
+                mockMvc.perform(post(URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.asJsonString(request)))
+                    .andDo(MockMvcResultHandlers.print())
+                    .andExpect(status().isBadRequest());
+                verifyNoInteractions(jurorExpenseService);
+            }
+        }
+
+        @Nested
+        @DisplayName("Positive")
+        class Positive {
+            @Test
+            @DisplayName("typical")
+            void typical() throws Exception {
+                GetEnteredExpenseRequest request = GetEnteredExpenseRequest.builder()
+                    .dateOfExpense(LocalDate.now())
+                    .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                    .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                    .build();
+                GetEnteredExpenseResponse response = GetEnteredExpenseResponse.builder()
+                    .totalPaid(new BigDecimal("1.23"))
+                    .build();
+                when(jurorExpenseService
+                    .getEnteredExpense(TestConstants.VALID_JUROR_NUMBER,
+                        TestConstants.VALID_POOL_NUMBER,
+                        request.getDateOfExpense())
+                ).thenReturn(response);
+
+                mockMvc.perform(post(URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.asJsonString(request)))
+                    .andDo(MockMvcResultHandlers.print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.total_paid", CoreMatchers.is(1.23)));
+
+                verify(jurorExpenseService, times(1))
+                    .getEnteredExpense(TestConstants.VALID_JUROR_NUMBER,
+                        TestConstants.VALID_POOL_NUMBER,
+                        request.getDateOfExpense());
+            }
         }
     }
 }

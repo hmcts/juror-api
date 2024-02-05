@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRe
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static java.time.LocalDate.now;
@@ -96,7 +97,7 @@ class JurorResponseRetrieveServiceImplTest {
         @DisplayName("Bureau officer - advanced search with single criteria is forbidden")
         void bureauOfficerAdvancedSearchSingleCriteriaForbidden() {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
-            request.setProcessingStatus(JurorResponseRetrieveRequestDto.Status.TODO);
+            request.setProcessingStatus(Collections.singletonList(ProcessingStatus.TODO));
 
             // mock jwt payload
             BureauJWTPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
@@ -166,7 +167,7 @@ class JurorResponseRetrieveServiceImplTest {
         @DisplayName("Court officer - search is forbidden")
         void courtOfficerSearchForbidden() {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
-            request.setProcessingStatus(JurorResponseRetrieveRequestDto.Status.TODO);
+            request.setProcessingStatus(Collections.singletonList(ProcessingStatus.TODO));
 
             // mock jwt payload
             BureauJWTPayload payload = mockJwt(COURT_OWNER, COURT_USER, COURT_STAFF_NAME, 0);

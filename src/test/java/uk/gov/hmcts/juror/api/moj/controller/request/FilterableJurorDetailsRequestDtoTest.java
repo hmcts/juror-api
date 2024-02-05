@@ -21,7 +21,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @SuppressWarnings("PMD.LawOfDemeter")
-public class FilterableJurorDetailsRequestDtoTest extends AbstractValidatorTest {
+public class FilterableJurorDetailsRequestDtoTest extends AbstractValidatorTest<FilterableJurorDetailsRequestDto> {
+
+    @Override
+    protected FilterableJurorDetailsRequestDto createValidObject() {
+        return createValidFilterableJurorDetailsRequestDto();
+    }
 
     @Nested
     @DisplayName("Include Type")
@@ -113,74 +118,32 @@ public class FilterableJurorDetailsRequestDtoTest extends AbstractValidatorTest 
     }
 
     @Nested
-    class JurorNumberTest extends
-        AbstractValidatorTest.AbstractValidationFieldTestString<FilterableJurorDetailsRequestDto> {
+    class JurorNumberTest extends AbstractValidationFieldTestString {
 
         protected JurorNumberTest() {
-            super("jurorNumber");
+            super("jurorNumber", FilterableJurorDetailsRequestDto::setJurorNumber);
             ignoreAdditionalFailures();
             addNotBlankTest(null);
             addInvalidPatternTest("INVALID", "^\\d{9}$", null);
         }
-
-        @Override
-        protected void setField(FilterableJurorDetailsRequestDto baseObject, String value) {
-            baseObject.setJurorNumber(value);
-        }
-
-        @Override
-        protected FilterableJurorDetailsRequestDto createValidObject() {
-            return createValidFilterableJurorDetailsRequestDto();
-        }
     }
 
     @Nested
-    class JurorVersionTest
-        extends AbstractValidatorTest.AbstractValidationFieldTestNumeric<FilterableJurorDetailsRequestDto, Long> {
+    class JurorVersionTest extends AbstractValidationFieldTestLong {
 
         protected JurorVersionTest() {
-            super("jurorVersion");
+            super("jurorVersion", FilterableJurorDetailsRequestDto::setJurorVersion);
             addMustBePositive(null);
-        }
-
-
-        @Override
-        protected void setField(FilterableJurorDetailsRequestDto baseObject, Long value) {
-            baseObject.setJurorVersion(value);
-        }
-
-        @Override
-        protected FilterableJurorDetailsRequestDto createValidObject() {
-            return createValidFilterableJurorDetailsRequestDto();
-        }
-
-        @Override
-        protected Long toNumber(String value) {
-            return Long.parseLong(value);
         }
     }
 
     @Nested
-    class IncludeTest extends AbstractValidatorTest.AbstractValidationFieldTestList<FilterableJurorDetailsRequestDto,
-        FilterableJurorDetailsRequestDto.IncludeType> {
+    class IncludeTest extends AbstractValidationFieldTestList<FilterableJurorDetailsRequestDto.IncludeType> {
 
         protected IncludeTest() {
-            super("include");
+            super("include", FilterableJurorDetailsRequestDto::setInclude);
             addNotEmptyTest(null);
             addNullValueInListTest(null);
         }
-
-
-        @Override
-        protected void setField(FilterableJurorDetailsRequestDto baseObject,
-                                List<FilterableJurorDetailsRequestDto.IncludeType> value) {
-            baseObject.setInclude(value);
-        }
-
-        @Override
-        protected FilterableJurorDetailsRequestDto createValidObject() {
-            return createValidFilterableJurorDetailsRequestDto();
-        }
     }
-
 }

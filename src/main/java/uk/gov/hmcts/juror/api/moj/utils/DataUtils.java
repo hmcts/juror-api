@@ -1,7 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.utils;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
@@ -13,8 +11,12 @@ import java.time.LocalDate;
 import java.util.Collection;
 
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DataUtils {
+
+    private DataUtils() {
+        // private constructor
+    }
+
     static final String RESPONSE_UPDATED_LOG = "Juror: %s. %s response will be updated with new value for %s";
 
     public static boolean hasValueChanged(LocalDate currentValue, LocalDate newValue, String fieldName,
@@ -82,7 +84,11 @@ public final class DataUtils {
         return jurorPaperResponse;
     }
 
-    public static boolean isEmptyOrNull(Collection< ? > collection) {
+    public static boolean isEmptyOrNull(Collection <?> collection) {
         return (collection == null || collection.isEmpty());
+    }
+
+    public static boolean isNotEmptyOrNull(Collection <?> collection) {
+        return !isEmptyOrNull(collection);
     }
 }

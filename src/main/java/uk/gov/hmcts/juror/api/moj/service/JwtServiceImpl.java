@@ -9,12 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
 
-import javax.crypto.SecretKey;
 import java.security.Key;
 import java.time.Clock;
 import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
+import javax.crypto.SecretKey;
 
 @Slf4j
 @Service

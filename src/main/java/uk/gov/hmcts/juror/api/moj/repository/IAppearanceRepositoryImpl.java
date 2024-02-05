@@ -24,7 +24,6 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -217,7 +216,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                 .checkOutTime(timeOut)
                 .hours(String.format("%.1f", hours))  // format to 1 decimal place
                 .attendanceType(attendanceType)
-                .travelTime(ObjectUtils.defaultIfNull(tuple.get(3, BigDecimal.class), BigDecimal.ZERO))
+                .travelTime(ObjectUtils.defaultIfNull(tuple.get(3, LocalTime.class), LocalTime.of(0,0)))
                 .build();
             attendanceDataList.add(appearanceData);
         }

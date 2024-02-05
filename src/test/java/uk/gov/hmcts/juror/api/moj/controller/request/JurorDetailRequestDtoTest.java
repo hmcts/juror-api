@@ -5,10 +5,11 @@ import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
-import java.util.function.BiConsumer;
+class JurorDetailRequestDtoTest extends AbstractValidatorTest<JurorDetailRequestDto> {
 
-public class JurorDetailRequestDtoTest extends AbstractValidatorTest {
-    JurorDetailRequestDto createDto() {
+
+    @Override
+    protected JurorDetailRequestDto createValidObject() {
         JurorDetailRequestDto detailDto = new JurorDetailRequestDto();
         detailDto.setFirstName("FNAME");
         detailDto.setLastName("LNAME");
@@ -17,29 +18,9 @@ public class JurorDetailRequestDtoTest extends AbstractValidatorTest {
         return detailDto;
     }
 
-    class AbstractEmpanelDetailRequestDtoTest extends AbstractValidationFieldTestString<JurorDetailRequestDto> {
-
-        private final BiConsumer<JurorDetailRequestDto, String> setFieldConsumer;
-
-        protected AbstractEmpanelDetailRequestDtoTest(String fieldName,
-                                                      BiConsumer<JurorDetailRequestDto, String> setFieldConsumer) {
-            super(fieldName);
-            this.setFieldConsumer = setFieldConsumer;
-        }
-
-        @Override
-        protected void setField(JurorDetailRequestDto baseObject, String value) {
-            setFieldConsumer.accept(baseObject, value);
-        }
-
-        @Override
-        protected JurorDetailRequestDto createValidObject() {
-            return createDto();
-        }
-    }
 
     @Nested
-    class FirstName extends AbstractEmpanelDetailRequestDtoTest {
+    class FirstName extends AbstractValidationFieldTestString {
         protected FirstName() {
             super("firstName", JurorDetailRequestDto::setFirstName);
             addNotBlankTest(null);
@@ -49,7 +30,7 @@ public class JurorDetailRequestDtoTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class LastName extends AbstractEmpanelDetailRequestDtoTest {
+    class LastName extends AbstractValidationFieldTestString {
         protected LastName() {
             super("lastName", JurorDetailRequestDto::setLastName);
             addNotBlankTest(null);

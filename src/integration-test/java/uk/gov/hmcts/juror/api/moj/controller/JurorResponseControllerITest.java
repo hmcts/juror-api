@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
@@ -89,6 +88,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private static final String JUROR_NUMBER_111222333 = "111222333";
     private static final String JUROR_NUMBER_222222222 = "222222222";
     private static final String JUROR_NUMBER_555555555 = "555555555";
+    private static final String JUROR_NUMBER_333222111 = "333222111";
+    private static final String JUROR_NUMBER_352004504 = "352004504";
 
     private static final String URI_PERSONAL_DETAILS = "/api/v1/moj/juror-response/juror/%s/details/personal";
     private static final String URI_RETRIEVE_JUROR_RESPONSES = "/api/v1/moj/juror-response/retrieve";
@@ -114,8 +115,6 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private final JurorRepository jurorRepository;
     private final UserRepository userRepository;
     private final JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
-
-    private final JdbcTemplate jdbcTemplate;
 
     @Override
     @BeforeEach
@@ -641,7 +640,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     @SuppressWarnings({"java:S1192"})
     class RetrieveJurorResponses {
         @Test
-        @DisplayName("Retrieve juror response, team leader - basic and advanced search criteria is ok")
+        @DisplayName("Retrieve juror response, team leader - basic and advanced search criteria is okay")
         void teamLeaderFilterByBasicAndAdvancedSearchCriteria()  {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setJurorNumber(JUROR_NUMBER_111222333);
@@ -662,23 +661,21 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Retrieve juror response, team leader - advanced search for filter Processing Status Completed")
+        @DisplayName("Retrieve juror response, team leader - advanced search for filter Processing Status Completed "
+            + "is okay")
         void teamLeaderFilterAdvancedSearchFilterIsProcessingStatusCompleted()  {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
-            request.setProcessingStatus(JurorResponseRetrieveRequestDto.Status.COMPLETED);
+            request.setProcessingStatus(Collections.singletonList(ProcessingStatus.CLOSED));
 
             setHeaders(OWNER_400, TEAM_LEADER, "1");
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, OK);
 
             JurorResponseRetrieveResponseDto body = response.getBody();
             assertThat(body).isNotNull();
-            assertThat(body.getRecordCount()).as("Record count should be 2").isEqualTo(2);
+            assertThat(body.getRecordCount()).as("Record count should be 1").isEqualTo(1);
 
             // validate data
             List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = body.getRecords();
-            validateData(records.get(1),  JUROR_NUMBER_555555555, "415220502", "Test5Paper",
-                "Person5Paper", "CH1 2AN", "Chester", "JDoe",
-                ProcessingStatus.AWAITING_COURT_REPLY, LocalDate.of(2023, 3, 9));
 
             validateData(records.get(0),  JUROR_NUMBER_222222222, "415220502", "Test4Paper",
                 "Person4Paper", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
@@ -687,10 +684,10 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Retrieve juror response, team leader - advanced search for filter Processing Status Awaiting "
-            + "Court Reply")
+            + "Court Reply is okay")
         void teamLeaderFilterAdvancedSearchFilterIsProcessingStatusAwaitingCourtReply()  {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
-            request.setProcessingStatus(JurorResponseRetrieveRequestDto.Status.AWAITING_COURT_REPLY);
+            request.setProcessingStatus(Collections.singletonList(ProcessingStatus.AWAITING_COURT_REPLY));
 
             setHeaders(OWNER_400, TEAM_LEADER, "1");
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, OK);
@@ -707,7 +704,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Retrieve juror response, team leader - basic search for filter lastname")
+        @DisplayName("Retrieve juror response, team leader - basic search for filter lastname is okay")
         void teamLeaderFilterBasicSearchFilterLastname()  {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setLastName("Person5Paper");
@@ -727,7 +724,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Retrieve juror response, team leader - advanced search for filter isUrgent")
+        @DisplayName("Retrieve juror response, team leader - advanced search for filter isUrgent is okay")
         void teamLeaderFilterAdvancedSearchFilterIsUrgent()  {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setLastName("Person5Paper");
@@ -747,7 +744,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Retrieve juror response, team leader - no records matching search criteria")
+        @DisplayName("Retrieve juror response, team leader - no records matching search criteria is okay")
         void teamLeaderFilterNoRecordsMatchingSearchCriteria()  {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setLastName("Person99Paper");
@@ -761,7 +758,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Retrieve juror response, bureau user - filter by juror number is ok")
+        @DisplayName("Retrieve juror response, bureau user - filter by juror number is okay")
         void bureauOfficerFilterByJurorNumber() {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setJurorNumber(JUROR_NUMBER_111222333);

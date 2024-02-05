@@ -6,9 +6,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.TestConstants;
+import uk.gov.hmcts.juror.api.TestUtils;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.controller.request.CompleteServiceJurorNumberListDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberListDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
+import uk.gov.hmcts.juror.api.moj.controller.response.CompleteJurorResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.CompleteServiceValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -22,11 +30,16 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -35,13 +48,14 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @DisplayName("CompleteServiceServiceImpl")
+@SuppressWarnings("PMD.ExcessiveImports")
 class CompleteServiceServiceImplTest {
 
     private JurorPoolRepository jurorPoolRepository;
     private JurorStatusRepository jurorStatusRepository;
     private JurorHistoryService jurorHistoryService;
     private JurorRepository jurorRepository;
-    private CompleteServiceServiceImpl validationService;
+    private CompleteServiceServiceImpl completeServiceService;
 
     @BeforeEach
     void beforeEach() {
@@ -49,7 +63,7 @@ class CompleteServiceServiceImplTest {
         this.jurorStatusRepository = mock(JurorStatusRepository.class);
         this.jurorHistoryService = mock(JurorHistoryService.class);
         this.jurorRepository = mock(JurorRepository.class);
-        this.validationService = new CompleteServiceServiceImpl(
+        this.completeServiceService = new CompleteServiceServiceImpl(
             jurorPoolRepository, jurorStatusRepository,
             jurorRepository, jurorHistoryService);
     }
@@ -84,7 +98,7 @@ class CompleteServiceServiceImplTest {
             CompleteServiceJurorNumberListDto completeServiceJurorNumberListDto =
                 createCompleteServiceJurorNumberListDto(localDate, TestConstants.VALID_JUROR_NUMBER);
 
-            validationService
+            completeServiceService
                 .completeService(TestConstants.VALID_POOL_NUMBER, completeServiceJurorNumberListDto);
 
             verify(jurorPoolRepository, times(1))
@@ -127,7 +141,7 @@ class CompleteServiceServiceImplTest {
             CompleteServiceJurorNumberListDto completeServiceJurorNumberListDto =
                 createCompleteServiceJurorNumberListDto(localDate, "123456789", "123456788", "123456787");
 
-            validationService
+            completeServiceService
                 .completeService(TestConstants.VALID_POOL_NUMBER, completeServiceJurorNumberListDto);
 
 
@@ -179,7 +193,7 @@ class CompleteServiceServiceImplTest {
                 createCompleteServiceJurorNumberListDto(localDate, TestConstants.VALID_JUROR_NUMBER);
 
             MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
-                () -> validationService
+                () -> completeServiceService
                     .completeService(TestConstants.VALID_POOL_NUMBER, completeServiceJurorNumberListDto),
                 "Expected exception to be thrown when juror pool not in resolved status");
 
@@ -212,7 +226,7 @@ class CompleteServiceServiceImplTest {
                 createCompleteServiceJurorNumberListDto(localDate, TestConstants.VALID_JUROR_NUMBER);
 
             MojException.NotFound exception = assertThrows(MojException.NotFound.class,
-                () -> validationService
+                () -> completeServiceService
                     .completeService(TestConstants.VALID_POOL_NUMBER, completeServiceJurorNumberListDto),
                 "Expected exception to be thrown when juror pool not found");
 
@@ -260,9 +274,10 @@ class CompleteServiceServiceImplTest {
             JurorStatus jurorStatus = new JurorStatus();
             jurorStatus.setStatus(poolStatus);
 
-            createMockJurorAndPool(firstName, lastName, juror, jurorPool, jurorStatus, TestConstants.VALID_JUROR_NUMBER);
+            createMockJurorAndPool(firstName, lastName, juror, jurorPool, jurorStatus,
+                TestConstants.VALID_JUROR_NUMBER);
 
-            validationService
+            completeServiceService
                 .completeDismissedJurorsService(completeServiceJurorNumberListDto);
 
             validateCompleteDismissal(localDate, juror, jurorPool, jurorStatus);
@@ -284,7 +299,8 @@ class CompleteServiceServiceImplTest {
                 .thenReturn(Optional.ofNullable(jurorStatus));
         }
 
-        private void validateCompleteDismissal(LocalDate localDate, Juror juror, JurorPool jurorPool, JurorStatus jurorStatus) {
+        private void validateCompleteDismissal(LocalDate localDate, Juror juror, JurorPool jurorPool,
+                                               JurorStatus jurorStatus) {
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndStatusAndIsActive(TestConstants.VALID_JUROR_NUMBER,
                     jurorStatus, true);
@@ -306,6 +322,9 @@ class CompleteServiceServiceImplTest {
         }
 
         @Test
+        @SuppressWarnings({
+            "PMD.JUnitTestsShouldIncludeAssert"//False positive
+        })
         void positiveTypicalMultiple() {
 
             final String firstName1 = RandomStringUtils.randomAlphabetic(20);
@@ -334,7 +353,7 @@ class CompleteServiceServiceImplTest {
             CompleteServiceJurorNumberListDto completeServiceJurorNumberListDto =
                 createCompleteServiceJurorNumberListDto(localDate, "123456789", "123456788", "123456787");
 
-            validationService.completeDismissedJurorsService(completeServiceJurorNumberListDto);
+            completeServiceService.completeDismissedJurorsService(completeServiceJurorNumberListDto);
             validateCompleteDismissal(localDate, juror1, jurorPool1, jurorStatus);
             validateCompleteDismissal(localDate, juror2, jurorPool2, jurorStatus);
             validateCompleteDismissal(localDate, juror3, jurorPool3, jurorStatus);
@@ -356,7 +375,7 @@ class CompleteServiceServiceImplTest {
                 createCompleteServiceJurorNumberListDto(localDate, TestConstants.VALID_JUROR_NUMBER);
 
             MojException.NotFound exception = assertThrows(MojException.NotFound.class,
-                () -> validationService
+                () -> completeServiceService
                     .completeDismissedJurorsService(completeServiceJurorNumberListDto),
                 "Expected exception to be thrown when juror pool not found");
 
@@ -387,7 +406,7 @@ class CompleteServiceServiceImplTest {
                 firstName, lastName);
             JurorNumberListDto jurorNumberListDto = createJurorNumberListDto(TestConstants.VALID_JUROR_NUMBER);
 
-            CompleteServiceValidationResponseDto completeServiceValidationResponseDto = validationService
+            CompleteServiceValidationResponseDto completeServiceValidationResponseDto = completeServiceService
                 .validateCanCompleteService(TestConstants.VALID_POOL_NUMBER, jurorNumberListDto);
 
             verify(jurorPoolRepository, times(1))
@@ -428,7 +447,7 @@ class CompleteServiceServiceImplTest {
 
             JurorNumberListDto jurorNumberListDto = createJurorNumberListDto("123456789", "123456788", "123456787");
 
-            CompleteServiceValidationResponseDto completeServiceValidationResponseDto = validationService
+            CompleteServiceValidationResponseDto completeServiceValidationResponseDto = completeServiceService
                 .validateCanCompleteService(TestConstants.VALID_POOL_NUMBER, jurorNumberListDto);
 
             assertEquals(0, completeServiceValidationResponseDto.getInvalidNotResponded().size(),
@@ -485,7 +504,7 @@ class CompleteServiceServiceImplTest {
 
             JurorNumberListDto jurorNumberListDto = createJurorNumberListDto("123456789", "123456788", "123456787");
 
-            CompleteServiceValidationResponseDto completeServiceValidationResponseDto = validationService
+            CompleteServiceValidationResponseDto completeServiceValidationResponseDto = completeServiceService
                 .validateCanCompleteService(TestConstants.VALID_POOL_NUMBER, jurorNumberListDto);
 
             assertEquals(0, completeServiceValidationResponseDto.getValid().size(),
@@ -546,7 +565,7 @@ class CompleteServiceServiceImplTest {
 
             JurorNumberListDto jurorNumberListDto = createJurorNumberListDto("123456789", "123456788", "123456787");
 
-            CompleteServiceValidationResponseDto completeServiceValidationResponseDto = validationService
+            CompleteServiceValidationResponseDto completeServiceValidationResponseDto = completeServiceService
                 .validateCanCompleteService(poolNumber, jurorNumberListDto);
 
             assertEquals(1, completeServiceValidationResponseDto.getValid().size(),
@@ -590,15 +609,225 @@ class CompleteServiceServiceImplTest {
 
             JurorNumberListDto jurorNumberListDto = createJurorNumberListDto(TestConstants.VALID_JUROR_NUMBER);
 
-            MojException.NotFound notFoundException = assertThrows(MojException.NotFound.class, () -> validationService
-                    .validateCanCompleteService(TestConstants.VALID_POOL_NUMBER, jurorNumberListDto),
-                "Expected exception to be thrown when juror pool not found");
+            MojException.NotFound notFoundException =
+                assertThrows(MojException.NotFound.class, () -> completeServiceService
+                        .validateCanCompleteService(TestConstants.VALID_POOL_NUMBER, jurorNumberListDto),
+                    "Expected exception to be thrown when juror pool not found");
 
             assertEquals("Juror number " + TestConstants.VALID_JUROR_NUMBER + " not found in pool "
                     + TestConstants.VALID_POOL_NUMBER,
                 notFoundException.getMessage(),
                 "Expected exception message to be " + "Juror number " + TestConstants.VALID_JUROR_NUMBER
                     + " not found in pool " + TestConstants.VALID_POOL_NUMBER);
+        }
+    }
+
+    @Nested
+    @DisplayName("public List<CompleteJurorResponse> search(JurorPoolSearch search)")
+    class Search {
+        @Test
+        @SuppressWarnings("PMD.NcssCount")
+        void positiveTypical() {
+            JurorPoolSearch poolSearch = JurorPoolSearch.builder()
+                .jurorNumber("1234")
+                .build();
+
+            JurorPool jurorPool1 = mock(JurorPool.class);
+            Juror juror1 = mock(Juror.class);
+            when(jurorPool1.getJuror()).thenReturn(juror1);
+            when(jurorPool1.getJurorNumber()).thenReturn("111111111");
+            when(jurorPool1.getPoolNumber()).thenReturn("2222222222");
+            when(juror1.getJurorNumber()).thenReturn("111111111");
+            when(juror1.getFirstName()).thenReturn("FNAME1");
+            when(juror1.getLastName()).thenReturn("LNAME1");
+            when(juror1.getPostcode()).thenReturn("POSTCODE1");
+            when(juror1.getCompletionDate()).thenReturn(LocalDate.of(2023,1,1));
+
+            JurorPool jurorPool2 = mock(JurorPool.class);
+            Juror juror2 = mock(Juror.class);
+            when(jurorPool2.getJuror()).thenReturn(juror2);
+            when(jurorPool2.getJurorNumber()).thenReturn("111111112");
+            when(jurorPool2.getPoolNumber()).thenReturn("2222222223");
+            when(juror2.getJurorNumber()).thenReturn("111111112");
+            when(juror2.getFirstName()).thenReturn("FNAME2");
+            when(juror2.getLastName()).thenReturn("LNAME2");
+            when(juror2.getPostcode()).thenReturn("POSTCODE2");
+            when(juror2.getCompletionDate()).thenReturn(LocalDate.of(2023,1,2));
+
+            JurorPool jurorPool3 = mock(JurorPool.class);
+            Juror juror3 = mock(Juror.class);
+            when(jurorPool3.getJuror()).thenReturn(juror3);
+            when(jurorPool3.getJurorNumber()).thenReturn("111111113");
+            when(jurorPool3.getPoolNumber()).thenReturn("2222222224");
+            when(juror3.getJurorNumber()).thenReturn("111111113");
+            when(juror3.getFirstName()).thenReturn("FNAME3");
+            when(juror3.getLastName()).thenReturn("LNAME3");
+            when(juror3.getPostcode()).thenReturn("POSTCODE3");
+            when(juror3.getCompletionDate()).thenReturn(LocalDate.of(2023,1,3));
+
+            SecurityContextHolder.getContext().setAuthentication(
+                new BureauJwtAuthentication(List.of(),
+                    TestUtils.createJwt("415", "COURT_USER", "0"))
+            );
+            doReturn(List.of(jurorPool1, jurorPool2, jurorPool3))
+                .when(jurorPoolRepository)
+                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any());
+
+
+            List<CompleteJurorResponse> responses =
+                completeServiceService.search(poolSearch);
+
+            assertThat(responses).isNotNull().hasSize(3);
+
+            CompleteJurorResponse response1 = responses.get(0);
+            assertThat(response1).isNotNull();
+            assertThat(response1.getJurorNumber()).isEqualTo("111111111");
+            assertThat(response1.getPoolNumber()).isEqualTo("2222222222");
+            assertThat(response1.getFirstName()).isEqualTo("FNAME1");
+            assertThat(response1.getLastName()).isEqualTo("LNAME1");
+            assertThat(response1.getPostCode()).isEqualTo("POSTCODE1");
+            assertThat(response1.getCompletionDate()).isEqualTo(LocalDate.of(2023,1,1));
+
+            CompleteJurorResponse response2 = responses.get(1);
+            assertThat(response2).isNotNull();
+            assertThat(response2.getJurorNumber()).isEqualTo("111111112");
+            assertThat(response2.getPoolNumber()).isEqualTo("2222222223");
+            assertThat(response2.getFirstName()).isEqualTo("FNAME2");
+            assertThat(response2.getLastName()).isEqualTo("LNAME2");
+            assertThat(response2.getPostCode()).isEqualTo("POSTCODE2");
+            assertThat(response2.getCompletionDate()).isEqualTo(LocalDate.of(2023,1,2));
+
+            CompleteJurorResponse response3 = responses.get(2);
+            assertThat(response3).isNotNull();
+            assertThat(response3.getJurorNumber()).isEqualTo("111111113");
+            assertThat(response3.getPoolNumber()).isEqualTo("2222222224");
+            assertThat(response3.getFirstName()).isEqualTo("FNAME3");
+            assertThat(response3.getLastName()).isEqualTo("LNAME3");
+            assertThat(response3.getPostCode()).isEqualTo("POSTCODE3");
+            assertThat(response3.getCompletionDate()).isEqualTo(LocalDate.of(2023,1,3));
+
+
+            verify(jurorPoolRepository, times(1))
+                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any());
+
+
+        }
+
+        @ParameterizedTest
+        @NullSource
+        @EmptySource
+        void negativePoolsNotFound(List<CompleteJurorResponse> response) {
+            JurorPoolSearch poolSearch = JurorPoolSearch.builder()
+                .jurorNumber("123")
+                .build();
+
+            SecurityContextHolder.getContext().setAuthentication(
+                new BureauJwtAuthentication(List.of(),
+                    TestUtils.createJwt("415", "COURT_USER", "0"))
+            );
+            doReturn(response)
+                .when(jurorPoolRepository)
+                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any());
+
+
+            MojException.NotFound exception = assertThrows(MojException.NotFound.class,
+                () -> completeServiceService.search(poolSearch),
+                "Exception should be thrown");
+
+            assertThat(exception).isNotNull();
+            assertThat(exception.getCause()).isNull();
+            assertThat(exception.getMessage()).isEqualTo(
+                "No complete juror pools found that meet your search criteria.");
+
+
+            verify(jurorPoolRepository, times(1))
+                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any());
+
+        }
+
+
+    }
+
+    @Nested
+    @DisplayName("public void uncompleteJurorsService(String jurorNumber, String poolNumber)")
+    class UncompleteJurorsService {
+        @Test
+        void positiveTypical() {
+            JurorPool jurorPool = mock(JurorPool.class);
+            Juror juror = mock(Juror.class);
+            when(jurorPool.getJuror()).thenReturn(juror);
+            JurorStatus completeStatus = mock(JurorStatus.class);
+            JurorStatus respondedStatus = mock(JurorStatus.class);
+
+            when(jurorStatusRepository.findById(IJurorStatus.COMPLETED))
+                .thenReturn(Optional.of(completeStatus));
+
+            when(jurorStatusRepository.findById(IJurorStatus.RESPONDED))
+                .thenReturn(Optional.of(respondedStatus));
+
+            doReturn(jurorPool)
+                .when(jurorPoolRepository)
+                .findByJurorJurorNumberAndPoolPoolNumberAndStatus(TestConstants.VALID_JUROR_NUMBER,
+                    TestConstants.VALID_POOL_NUMBER, completeStatus);
+
+
+            completeServiceService.uncompleteJurorsService(
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
+
+
+            verify(jurorStatusRepository, times(1)).findById(IJurorStatus.COMPLETED);
+            verify(jurorStatusRepository, times(1)).findById(IJurorStatus.RESPONDED);
+
+            verify(jurorPool, times(1)).setStatus(respondedStatus);
+            verify(jurorPool, times(1)).getJuror();
+            verify(juror, times(1)).setCompletionDate(null);
+
+            verify(jurorHistoryService, times(1)).createUncompleteServiceHistory(jurorPool);
+            verify(jurorRepository, times(1)).save(juror);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+
+
+            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumberAndStatus(
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, completeStatus);
+
+
+            verifyNoMoreInteractions(jurorStatusRepository,
+                jurorHistoryService, jurorRepository, jurorPoolRepository,
+                jurorPool, completeStatus, respondedStatus, juror);
+        }
+
+        @Test
+        void negativeNullPools() {
+            JurorStatus completeStatus = mock(JurorStatus.class);
+
+            when(jurorStatusRepository.findById(IJurorStatus.COMPLETED))
+                .thenReturn(Optional.of(completeStatus));
+
+            doReturn(null)
+                .when(jurorPoolRepository)
+                .findByJurorJurorNumberAndPoolPoolNumberAndStatus(TestConstants.VALID_JUROR_NUMBER,
+                    TestConstants.VALID_POOL_NUMBER, completeStatus);
+
+
+            MojException.NotFound exception = assertThrows(MojException.NotFound.class,
+                () -> completeServiceService.uncompleteJurorsService(
+                    TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER),
+                "Exception should be thrown");
+
+            assertThat(exception).isNotNull();
+            assertThat(exception.getCause()).isNull();
+            assertThat(exception.getMessage()).isEqualTo(
+                "No complete juror pool found for Juror number " + TestConstants.VALID_JUROR_NUMBER);
+
+
+            verify(jurorStatusRepository, times(1)).findById(IJurorStatus.COMPLETED);
+            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumberAndStatus(
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, completeStatus);
+
+
+            verifyNoMoreInteractions(jurorStatusRepository,
+                jurorHistoryService, jurorRepository, jurorPoolRepository, completeStatus);
+
         }
     }
 

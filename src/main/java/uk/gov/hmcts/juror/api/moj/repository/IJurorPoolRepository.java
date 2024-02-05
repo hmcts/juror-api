@@ -1,11 +1,14 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.jpa.JPQLQuery;
 import jakarta.validation.constraints.NotNull;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Custom Repository definition for the JurorPool entity.
@@ -33,4 +36,7 @@ public interface IJurorPoolRepository {
     List<JurorPool> findJurorsNotInAttendanceAtCourtLocation(String locCode, List<String> poolNumbers);
 
     List<Tuple> getJurorsToDismiss(List<String> poolNumbers, List<String> jurorNumbers, String locCode);
+
+    List<JurorPool> findJurorPoolsBySearch(JurorPoolSearch search, String owner,
+                                           Consumer<JPQLQuery<JurorPool>> queryModifiers);
 }

@@ -27,10 +27,10 @@ public class AssignOnUpdateServiceModImpl implements AssignOnUpdateServiceMod {
     public void assignToCurrentLogin(DigitalResponse jurorResponse, String auditorUsername) {
         final User staffToAssign =
             userRepository.findOne(
-                QUser.user.username.eq(auditorUsername)).orElseThrow(
-                () -> {
+                QUser.user.username.eq(auditorUsername)).orElseThrow(() -> {
                     log.warn("Assigning user '{}' Staff record does not exist!", auditorUsername);
-                    return new MojException.NotFound("Assigning staff record does not exist!", null);
+                    return new MojException.NotFound("Assigning staff record does not exist!",
+                        null);
                 });
 
         final LocalDate assignmentDate = LocalDate.now();

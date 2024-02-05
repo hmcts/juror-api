@@ -9,11 +9,10 @@ public enum ProcessingStatus {
     AWAITING_CONTACT("Awaiting Juror"),
     AWAITING_COURT_REPLY("Awaiting Court"),
     AWAITING_TRANSLATION("Awaiting Translation"),
+    CLOSED("Closed"),
 
     @Deprecated
-    REFERRED_TO_TEAM_LEADER("Referred to Team Leader"), // no longer used in code, but may be in db
-
-    CLOSED("Closed");
+    REFERRED_TO_TEAM_LEADER("Referred to Team Leader"); // no longer used in code, but may be in db
 
     private final String description;
 

@@ -277,7 +277,7 @@ public class LetterControllerTest {
         ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
             .jurorNumber("111111111")
             .poolNumber("415220110")
-            .letterType(LetterType.DEFERRAL)
+            .letterType(LetterType.DEFERRAL_GRANTED)
             .build();
 
         mockMvc.perform(post("/api/v1/moj/letter/reissue-letter-list")
@@ -299,7 +299,7 @@ public class LetterControllerTest {
         ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
             .jurorNumber("111111111")
             .showAllQueued(true)
-            .letterType(LetterType.DEFERRAL)
+            .letterType(LetterType.DEFERRAL_GRANTED)
             .build();
 
         mockMvc.perform(post("/api/v1/moj/letter/reissue-letter-list")
@@ -321,7 +321,7 @@ public class LetterControllerTest {
         ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
             .poolNumber("111111111")
             .showAllQueued(true)
-            .letterType(LetterType.DEFERRAL)
+            .letterType(LetterType.DEFERRAL_GRANTED)
             .build();
 
         mockMvc.perform(post("/api/v1/moj/letter/reissue-letter-list")
@@ -357,7 +357,7 @@ public class LetterControllerTest {
 
 
     @Test
-    public void testDeleteDeferralLetterInvalidRequestJurorNumberPoolNumber() throws Exception {
+    public void testDeleteDeferralLetterInvalidRequestEmpty() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         Mockito.when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);

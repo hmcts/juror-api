@@ -23,12 +23,17 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.moj.controller.request.CompleteServiceJurorNumberListDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorAndPoolRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberListDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
+import uk.gov.hmcts.juror.api.moj.controller.response.CompleteJurorResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.CompleteServiceValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
+import uk.gov.hmcts.juror.api.moj.service.BulkService;
+import uk.gov.hmcts.juror.api.moj.service.BulkServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceService;
 
 import java.time.LocalDate;
@@ -54,7 +59,8 @@ import static uk.gov.hmcts.juror.api.moj.controller.CompleteServiceControllerTes
 @ContextConfiguration(
     classes = {
         CompleteServiceController.class,
-        RestResponseEntityExceptionHandler.class
+        RestResponseEntityExceptionHandler.class,
+        BulkServiceImpl.class
     }
 )
 @DisplayName("Controller: " + CompleteServiceControllerTest.BASE_URL)
@@ -68,8 +74,12 @@ class CompleteServiceControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private BulkService bulkService;
+
     @MockBean
     private CompleteServiceService completeServiceService;
+
 
     @Nested
     @DisplayName("PATCH " + COMPLETE_SERVICE_URL)
@@ -143,7 +153,9 @@ class CompleteServiceControllerTest {
             + "/{poolNumber}/validate";
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+        @SuppressWarnings({
+            "PMD.JUnitTestsShouldIncludeAssert"//False positive
+        })
         void positiveAllValidResponse() throws Exception {
             JurorNumberListDto payload = new JurorNumberListDto();
             payload.setJurorNumbers(List.of("123456789", "123456788"));
@@ -154,15 +166,15 @@ class CompleteServiceControllerTest {
             JurorStatusValidationResponseDto jurorStatusValidationResponseDto1 =
                 JurorStatusValidationResponseDto.builder()
                     .jurorNumber("123456789")
-                    .firstName(RandomStringUtils.random(10))
-                    .lastName(RandomStringUtils.random(10))
+                    .firstName(RandomStringUtils.randomAlphabetic(10))
+                    .lastName(RandomStringUtils.randomAlphabetic(10))
                     .status(IJurorStatus.RESPONDED)
                     .build();
             JurorStatusValidationResponseDto jurorStatusValidationResponseDto2 =
                 JurorStatusValidationResponseDto.builder()
                     .jurorNumber("123456788")
-                    .firstName(RandomStringUtils.random(10))
-                    .lastName(RandomStringUtils.random(10))
+                    .firstName(RandomStringUtils.randomAlphabetic(10))
+                    .lastName(RandomStringUtils.randomAlphabetic(10))
                     .status(IJurorStatus.RESPONDED)
                     .build();
 
@@ -189,7 +201,9 @@ class CompleteServiceControllerTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+        @SuppressWarnings({
+            "PMD.JUnitTestsShouldIncludeAssert"//False positive
+        })
         void positiveAllInValidResponse() throws Exception {
             JurorNumberListDto payload = new JurorNumberListDto();
             payload.setJurorNumbers(List.of("123456789", "123456788", "123456787"));
@@ -200,22 +214,22 @@ class CompleteServiceControllerTest {
             JurorStatusValidationResponseDto jurorStatusValidationResponseDto1 =
                 JurorStatusValidationResponseDto.builder()
                     .jurorNumber("123456789")
-                    .firstName(RandomStringUtils.random(10))
-                    .lastName(RandomStringUtils.random(10))
+                    .firstName(RandomStringUtils.randomAlphabetic(10))
+                    .lastName(RandomStringUtils.randomAlphabetic(10))
                     .status(1)
                     .build();
             JurorStatusValidationResponseDto jurorStatusValidationResponseDto2 =
                 JurorStatusValidationResponseDto.builder()
                     .jurorNumber("123456788")
-                    .firstName(RandomStringUtils.random(10))
-                    .lastName(RandomStringUtils.random(10))
+                    .firstName(RandomStringUtils.randomAlphabetic(10))
+                    .lastName(RandomStringUtils.randomAlphabetic(10))
                     .status(RandomUtils.nextInt(2, 12))
                     .build();
             JurorStatusValidationResponseDto jurorStatusValidationResponseDto3 =
                 JurorStatusValidationResponseDto.builder()
                     .jurorNumber("123456787")
-                    .firstName(RandomStringUtils.random(10))
-                    .lastName(RandomStringUtils.random(10))
+                    .firstName(RandomStringUtils.randomAlphabetic(10))
+                    .lastName(RandomStringUtils.randomAlphabetic(10))
                     .status(RandomUtils.nextInt(2, 12))
                     .build();
 
@@ -247,7 +261,9 @@ class CompleteServiceControllerTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+        @SuppressWarnings({
+            "PMD.JUnitTestsShouldIncludeAssert"//False positive
+        })
         void positiveAllMixValidAndInvalidResponse() throws Exception {
             JurorNumberListDto payload = new JurorNumberListDto();
             payload.setJurorNumbers(List.of("123456789", "123456788", "123456787"));
@@ -258,22 +274,22 @@ class CompleteServiceControllerTest {
             JurorStatusValidationResponseDto jurorStatusValidationResponseDto1 =
                 JurorStatusValidationResponseDto.builder()
                     .jurorNumber("123456789")
-                    .firstName(RandomStringUtils.random(10))
-                    .lastName(RandomStringUtils.random(10))
+                    .firstName(RandomStringUtils.randomAlphabetic(10))
+                    .lastName(RandomStringUtils.randomAlphabetic(10))
                     .status(1)
                     .build();
             JurorStatusValidationResponseDto jurorStatusValidationResponseDto2 =
                 JurorStatusValidationResponseDto.builder()
                     .jurorNumber("123456788")
-                    .firstName(RandomStringUtils.random(10))
-                    .lastName(RandomStringUtils.random(10))
+                    .firstName(RandomStringUtils.randomAlphabetic(10))
+                    .lastName(RandomStringUtils.randomAlphabetic(10))
                     .status(IJurorStatus.RESPONDED)
                     .build();
             JurorStatusValidationResponseDto jurorStatusValidationResponseDto3 =
                 JurorStatusValidationResponseDto.builder()
                     .jurorNumber("123456787")
-                    .firstName(RandomStringUtils.random(10))
-                    .lastName(RandomStringUtils.random(10))
+                    .firstName(RandomStringUtils.randomAlphabetic(10))
+                    .lastName(RandomStringUtils.randomAlphabetic(10))
                     .status(RandomUtils.nextInt(2, 12))
                     .build();
 
@@ -336,8 +352,145 @@ class CompleteServiceControllerTest {
     }
 
 
+    @Nested
+    @DisplayName("PATCH " + UncompleteService.URL)
+    class UncompleteService {
+        public static final String URL = BASE_URL + "/uncomplete";
+
+        @Test
+        void positiveTypical() throws Exception {
+            JurorAndPoolRequest jurorAndPoolRequest = JurorAndPoolRequest.builder()
+                .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                .build();
+
+            mockMvc.perform(patch(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(List.of(jurorAndPoolRequest))))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isAccepted())
+                .andExpect(content().string(""));
+
+
+            verify(completeServiceService, times(1))
+                .uncompleteJurorsService(TestConstants.VALID_JUROR_NUMBER,
+                    TestConstants.VALID_POOL_NUMBER);
+        }
+
+        @Test
+        void positiveMultiple() throws Exception {
+            JurorAndPoolRequest jurorAndPoolRequest1 = JurorAndPoolRequest.builder()
+                .jurorNumber("111111111")
+                .poolNumber("111111112")
+                .build();
+
+
+            JurorAndPoolRequest jurorAndPoolRequest2 = JurorAndPoolRequest.builder()
+                .jurorNumber("111111113")
+                .poolNumber("111111114")
+                .build();
+
+
+            JurorAndPoolRequest jurorAndPoolRequest3 = JurorAndPoolRequest.builder()
+                .jurorNumber("111111115")
+                .poolNumber("111111116")
+                .build();
+
+            mockMvc.perform(patch(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(List.of(jurorAndPoolRequest1,
+                        jurorAndPoolRequest2, jurorAndPoolRequest3))))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isAccepted())
+                .andExpect(content().string(""));
+
+
+            verify(completeServiceService, times(1))
+                .uncompleteJurorsService(
+                    "111111111", "111111112");
+            verify(completeServiceService, times(1))
+                .uncompleteJurorsService(
+                    "111111113", "111111114");
+            verify(completeServiceService, times(1))
+                .uncompleteJurorsService(
+                    "111111115", "111111116");
+        }
+
+        @Test
+        void negativeBadPayload() throws Exception {
+            mockMvc.perform(patch(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(List.of())))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+            verifyNoMoreInteractions(completeServiceService);
+        }
+    }
+
+    @Nested
+    @DisplayName("POST " + GetCompleteJurors.URL)
+    class GetCompleteJurors {
+        public static final String URL = BASE_URL;
+
+        @Test
+        void positiveTypical() throws Exception {
+            JurorPoolSearch poolSearch = JurorPoolSearch.builder()
+                .jurorNumber("123")
+                .pageLimit(5)
+                .pageNumber(1)
+                .build();
+
+            CompleteJurorResponse response1 = CompleteJurorResponse.builder()
+                .jurorNumber("1234")
+                .build();
+            CompleteJurorResponse response2 = CompleteJurorResponse.builder()
+                .jurorNumber("1235")
+                .build();
+            CompleteJurorResponse response3 = CompleteJurorResponse.builder()
+                .jurorNumber("1236")
+                .build();
+
+            when(completeServiceService.search(poolSearch))
+                .thenReturn(List.of(response1, response2, response3));
+
+            mockMvc.perform(post(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(poolSearch)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+
+                .andExpect(jsonPath("$.size()", CoreMatchers.is(3)))
+                .andExpect(jsonPath("$.[0].juror_number", CoreMatchers.is("1234")))
+                .andExpect(jsonPath("$.[1].juror_number", CoreMatchers.is("1235")))
+                .andExpect(jsonPath("$.[2].juror_number", CoreMatchers.is("1236")));
+
+
+            verify(completeServiceService, times(1))
+                .search(poolSearch);
+            verifyNoMoreInteractions(completeServiceService);
+        }
+
+
+        @Test
+        void negativeBadPayload() throws Exception {
+            JurorPoolSearch poolSearch = JurorPoolSearch.builder()
+                .jurorName("Ben")
+                .jurorNumber("123")
+                .build();
+            mockMvc.perform(post(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(poolSearch)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+            verifyNoMoreInteractions(completeServiceService);
+        }
+    }
+
+
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+    @SuppressWarnings({
+        "PMD.JUnitTestsShouldIncludeAssert" //False positive
+    })
     void negativeNotFound() throws Exception {
         JurorNumberListDto payload = new JurorNumberListDto();
         payload.setJurorNumbers(List.of("123456789", "123456788"));

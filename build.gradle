@@ -144,7 +144,6 @@ dependencies {
     testImplementation('org.assertj:assertj-core:3.23.1')
     testImplementation 'org.mockito:mockito-core:5.6.0'
 
-
     testImplementation('org.ajbrown:name-machine:1.0.0')
     testImplementation('org.projectlombok:lombok')
     testAnnotationProcessor('org.projectlombok:lombok')
@@ -313,13 +312,13 @@ sourceSets {
 }
 
 checkstyleMain {
-    maxWarnings = 427
+    maxWarnings = 404
 }
 checkstyleTest {
-    maxWarnings = 281
+    maxWarnings = 279
 }
 checkstyleIntegration{
-    maxWarnings = 1287
+    maxWarnings = 1272
 }
 checkstyle {
     maxWarnings = 0
@@ -328,13 +327,13 @@ checkstyle {
 }
 
 pmdIntegration {
-    maxFailures = 961
+    maxFailures = 821
 }
 pmdTest {
-    maxFailures = 816
+    maxFailures = 701
 }
 pmdMain {
-    maxFailures = 1374
+    maxFailures = 1337
 }
 pmd {
     maxFailures = 0

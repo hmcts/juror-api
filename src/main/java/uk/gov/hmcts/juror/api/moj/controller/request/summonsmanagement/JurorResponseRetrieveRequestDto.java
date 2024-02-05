@@ -5,7 +5,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.validation.PoolNumber;
+
+import java.util.List;
 
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REGEX;
@@ -40,13 +43,5 @@ public class JurorResponseRetrieveRequestDto {
 
     @JsonProperty("processing_status")
     @Schema(description = "Processing status of the response", example = "TODO")
-    private Status processingStatus;
-
-    public enum Status {
-        TODO,
-        AWAITING_COURT_REPLY,
-        AWAITING_CONTACT,
-        AWAITING_TRANSLATION,
-        COMPLETED
-    }
+    private List<ProcessingStatus> processingStatus;
 }

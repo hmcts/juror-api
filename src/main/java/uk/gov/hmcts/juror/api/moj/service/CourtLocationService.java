@@ -5,8 +5,10 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationListDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.CourtRates;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface CourtLocationService {
@@ -28,4 +30,5 @@ public interface CourtLocationService {
     List<CourtLocationDataDto> getCourtLocationsByPostcode(
         @Length(max = 4) String postcode);
 
+    CourtRates getCourtRates(String locCode, LocalDate date);
 }

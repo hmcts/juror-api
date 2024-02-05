@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -20,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 
 @Slf4j
 @Service
@@ -74,13 +76,37 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                 .orElseThrow(() -> new MojException.NotFound(
                     "Bulk print data not found for juror %s " + letter.getJurorNumber(), null));
 
+            // verify the same letter is not already pending a reprint
+            bulkPrintDataRepository.findByJurorNumberFormCodeAndPending(letter.getJurorNumber(), letter.getFormCode())
+                .ifPresent(bulkPrintData -> {
+                    throw new MojException.BadRequest("Letter already pending reprint for juror %s "
+                        + letter.getJurorNumber(), null);
+                });
+
             FormCode formCode = FormCode.getFormCode(letter.getFormCode());
+
+            // TODO: history to show letter requested by bureau user
+            log.debug("Printing letter for juror number %s with form code %s", letter.getJurorNumber(),
+                letter.getFormCode());
 
             JurorStatus jurorStatus = RepositoryUtils.retrieveFromDatabase(
                 formCode.getJurorStatus(), jurorStatusRepository);
 
-            formCode.getLetterPrinter().accept(printDataService,
-                jurorPoolRepository.findByJurorJurorNumberAndStatus(letter.getJurorNumber(), jurorStatus));
+            List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndStatusOrderByDateCreatedDesc(letter.getJurorNumber(),
+                jurorStatus);
+
+            if (jurorPools.isEmpty()) {
+                throw new MojException.NotFound("Juror not found for juror number %s " + letter.getJurorNumber(),
+                    null);
+            }
+
+            BiConsumer<PrintDataService, JurorPool> letterPrinter = formCode.getLetterPrinter();
+            if (letterPrinter.equals(null)) {
+                throw new MojException.InternalServerError(
+                    "Attempting to send a letter without a resend letter function", null);
+            }
+
+            letterPrinter.accept(printDataService,jurorPools.get(0));
         });
     }
 
@@ -97,6 +123,9 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                     letter.getFormCode(), letter.getDatePrinted())
                 .orElseThrow(() -> new MojException.NotFound(
                     "Bulk print data not found for juror %s " + letter.getJurorNumber(), null));
+        // TODO: history to show letter pending deleted by bureau user
+        log.debug("Deleting pending letter for juror number %s with form code %s", letter.getJurorNumber(),
+            letter.getFormCode());
 
         bulkPrintDataRepository.delete(bulkPrintData);
 

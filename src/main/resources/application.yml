@@ -86,6 +86,7 @@ spring:
     user: ${spring.datasource.username}
     password: ${spring.datasource.password}
     url: ${spring.datasource.url}
+    enabled: false
 logging:
   level:
     uk.gov.hmcts.juror.api: info

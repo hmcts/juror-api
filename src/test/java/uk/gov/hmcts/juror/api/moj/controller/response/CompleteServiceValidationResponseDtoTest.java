@@ -14,8 +14,16 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings(
     "PMD.JUnitTestsShouldIncludeAssert"//False positive done via inheritance
 )
-class CompleteServiceValidationResponseDtoTest extends AbstractValidatorTest {
+class CompleteServiceValidationResponseDtoTest extends AbstractValidatorTest<CompleteServiceValidationResponseDto> {
 
+
+    @Override
+    protected CompleteServiceValidationResponseDto createValidObject() {
+        return createCompleteServiceValidationResponseDto(
+            List.of(mock(JurorStatusValidationResponseDto.class)),
+            List.of(mock(JurorStatusValidationResponseDto.class))
+        );
+    }
 
     private CompleteServiceValidationResponseDto createCompleteServiceValidationResponseDto(
         List<JurorStatusValidationResponseDto> valid,
@@ -36,6 +44,7 @@ class CompleteServiceValidationResponseDtoTest extends AbstractValidatorTest {
             )
         );
     }
+
 
     @DisplayName("status")
     @Nested

@@ -6,18 +6,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.moj.controller.request.CompleteServiceJurorNumberListDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberListDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
+import uk.gov.hmcts.juror.api.moj.controller.response.CompleteJurorResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.CompleteServiceValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -28,6 +33,49 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
     private final JurorRepository jurorRepository;
     private final JurorHistoryService jurorHistoryService;
 
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CompleteJurorResponse> search(JurorPoolSearch search) {
+        String owner = SecurityUtil.getOwner();
+        List<JurorPool> jurorPools =
+            jurorPoolRepository.findJurorPoolsBySearch(search, owner,
+                jurorPoolJPQLQuery -> jurorPoolJPQLQuery.where(
+                    QJurorPool.jurorPool.status.status.eq(IJurorStatus.COMPLETED)));
+
+        if (jurorPools == null || jurorPools.isEmpty()) {
+            throw new MojException.NotFound("No complete juror pools found that meet your search criteria.", null);
+        }
+        return jurorPools.stream()
+            .map(jurorPool -> {
+                Juror juror = jurorPool.getJuror();
+                return CompleteJurorResponse.builder()
+                    .jurorNumber(jurorPool.getJurorNumber())
+                    .poolNumber(jurorPool.getPoolNumber())
+                    .firstName(juror.getFirstName())
+                    .lastName(juror.getLastName())
+                    .postCode(juror.getPostcode())
+                    .completionDate(juror.getCompletionDate())
+                    .build();
+            }).toList();
+    }
+
+
+    @Override
+    public void uncompleteJurorsService(String jurorNumber, String poolNumber) {
+        JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndStatus(jurorNumber,
+            poolNumber, RepositoryUtils.retrieveFromDatabase(IJurorStatus.COMPLETED, jurorStatusRepository));
+
+        if (jurorPool == null) {
+            throw new MojException.NotFound("No complete juror pool found for Juror number " + jurorNumber, null);
+        }
+        jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));
+        Juror juror = jurorPool.getJuror();
+        juror.setCompletionDate(null);
+        jurorHistoryService.createUncompleteServiceHistory(jurorPool);
+        jurorRepository.save(juror);
+        jurorPoolRepository.save(jurorPool);
+    }
 
     @Override
     @Transactional
@@ -45,6 +93,7 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
             completeDismissedJurorsService(jurorNumber, completeServiceJurorNumberListDto.getCompletionDate());
         }
     }
+
 
     @Override
     @Transactional(readOnly = true)

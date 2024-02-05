@@ -8,7 +8,12 @@ import java.util.List;
 @SuppressWarnings(
     "PMD.JUnitTestsShouldIncludeAssert"//False positive done via inheritance
 )
-class JurorNumberListDtoTest extends AbstractValidatorTest {
+class JurorNumberListDtoTest extends AbstractValidatorTest<JurorNumberListDto> {
+
+    @Override
+    protected JurorNumberListDto createValidObject() {
+        return createJurorNumberListDto(List.of("123456789", "123456788"));
+    }
 
     protected JurorNumberListDto createJurorNumberListDto(List<String> jurorNumbers) {
         JurorNumberListDto jurorNumberListDto = new JurorNumberListDto();

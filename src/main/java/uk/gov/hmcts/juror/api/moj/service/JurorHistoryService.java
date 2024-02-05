@@ -19,4 +19,6 @@ public interface JurorHistoryService {
     void createUndoFailedToAttendHistory(JurorPool jurorPool);
 
     void createPendingJurorAuthorisedHistory(JurorPool jurorPool);
+
+    void createUncompleteServiceHistory(JurorPool jurorPool);
 }

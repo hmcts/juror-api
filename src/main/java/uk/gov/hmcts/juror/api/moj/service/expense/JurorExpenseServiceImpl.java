@@ -11,11 +11,21 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.history.Revision;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.DefaultExpenseSummaryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseItemsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseApplyToAllDays;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseFinancialLoss;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseFoodAndDrink;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseTime;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseTravel;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.BulkExpenseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.BulkExpenseEntryDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.DailyExpenseResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.ExpenseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.FinancialLossWarning;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.TotalExpenseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -25,12 +35,17 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorExpenseTotals;
 import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.FoodDrinkClaimType;
+import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.TravelMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.FinancialAuditDetailsRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorExpenseTotalsRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -43,14 +58,25 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.juror.api.JurorDigitalApplication.PAGE_SIZE;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO;
+import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.GodClass",
+    "PMD.TooManyMethods",
+    "PMD.LawOfDemeter"
+})
 public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     private final JurorExpenseTotalsRepository jurorExpenseTotalsRepository;
@@ -163,6 +189,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     Revision<Long, Appearance> getLastAuditForAppearanceWhereStage(Appearance appearance,
                                                                    AppearanceStage appearanceStage) {
+        //TODO revisit / optimise with RevisionUtil
         Optional<Revision<Long, Appearance>> appearanceRevision = appearanceRepository.findRevisions(
                 new AppearanceId(
                     appearance.getJurorNumber(),
@@ -297,6 +324,319 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         }
 
         log.trace("Exit submitDraftExpensesForApproval");
+    }
+
+    Appearance getAppearance(String jurorNumber, String poolNumber, LocalDate attendanceDate) {
+        Optional<Appearance> appearanceOptional =
+            appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(
+                jurorNumber,
+                poolNumber,
+                attendanceDate);
+        if (appearanceOptional.isEmpty()) {
+            throw new MojException.NotFound("No appearance record found for juror: " + jurorNumber
+                + " on day: " + attendanceDate, null);
+        }
+        return appearanceOptional.get();
+    }
+
+    Appearance getDraftAppearance(String jurorNumber, String poolNumber, LocalDate attendanceDate) {
+        Optional<Appearance> appearanceOptional =
+            appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDateAndIsDraftExpenseTrue(
+                jurorNumber,
+                poolNumber,
+                attendanceDate);
+        if (appearanceOptional.isEmpty()) {
+            throw new MojException.NotFound("No draft appearance record found for juror: " + jurorNumber
+                + " on day: " + attendanceDate, null);
+        }
+        return appearanceOptional.get();
+    }
+
+
+    boolean isAttendanceDay(Appearance appearance) {
+        return !AttendanceType.NON_ATTENDANCE.equals(appearance.getAttendanceType());
+    }
+
+    DailyExpenseResponse updateDraftExpenseInternal(Appearance appearance,
+                                                    DailyExpense request) {
+        DailyExpenseResponse dailyExpenseResponse = new DailyExpenseResponse();
+
+        DailyExpenseTime time = request.getTime();
+        appearance.setPayCash(request.getPayCash());
+        updateDraftTimeExpense(appearance, time);
+        dailyExpenseResponse.setFinancialLossWarning(
+            updateDraftFinancialLossExpense(appearance, request.getFinancialLoss()));
+
+        if (isAttendanceDay(appearance)) {
+            appearance.setTravelTime(time.getTravelTime());
+            updateDraftTravelExpense(appearance, request.getTravel());
+            updateDraftFoodAndDrinkExpense(appearance, request.getFoodAndDrink());
+        }
+        checkTotalExpensesAreNotLessThan0(appearance);
+        //If time pay attendance changes validate financial loss limit if not already validated
+        if (time != null
+            && time.getPayAttendance() != null
+            && request.getFinancialLoss() == null) {
+            validateAndUpdateFinancialLossExpenseLimit(appearance);
+        }
+
+        appearanceRepository.save(appearance);
+        return dailyExpenseResponse;
+    }
+
+    @Override
+    public GetEnteredExpenseResponse getEnteredExpense(String jurorNumber, String poolNumber, LocalDate dateOfExpense) {
+        Appearance appearance = getAppearance(jurorNumber, poolNumber, dateOfExpense);
+
+        return GetEnteredExpenseResponse.builder()
+            .dateOfExpense(appearance.getAttendanceDate())
+            .stage(appearance.getAppearanceStage())
+            .totalDue(appearance.getTotalDue())
+            .totalPaid(appearance.getTotalPaid())
+            .payCash(appearance.getPayCash())
+            .time(getTimeFromAppearance(appearance))
+            .financialLoss(getFinancialLossFromAppearance(appearance))
+            .travel(getTravelFromAppearance(appearance))
+            .foodAndDrink(getFoodAndDrinkFromAppearance(appearance))
+            .build();
+    }
+
+    DailyExpenseFoodAndDrink getFoodAndDrinkFromAppearance(Appearance appearance) {
+        return DailyExpenseFoodAndDrink.builder()
+            .foodAndDrinkClaimType(appearance.getFoodAndDrinkClaimType())
+            .smartCardAmount(appearance.getSmartCardAmountDue())
+            .build();
+    }
+
+    DailyExpenseTravel getTravelFromAppearance(Appearance appearance) {
+        return DailyExpenseTravel.builder()
+            .traveledByCar(appearance.getTraveledByCar())
+            .jurorsTakenCar(appearance.getJurorsTakenCar())
+            .traveledByMotorcycle(appearance.getTraveledByMotorcycle())
+            .jurorsTakenMotorcycle(appearance.getJurorsTakenMotorcycle())
+            .traveledByBicycle(appearance.getTraveledByBicycle())
+            .milesTraveled(appearance.getMilesTraveled())
+            .parking(appearance.getParkingDue())
+            .publicTransport(appearance.getPublicTransportDue())
+            .taxi(appearance.getHiredVehicleDue())
+            .build();
+    }
+
+    DailyExpenseFinancialLoss getFinancialLossFromAppearance(Appearance appearance) {
+        return DailyExpenseFinancialLoss.builder()
+            .lossOfEarningsOrBenefits(appearance.getLossOfEarningsDue())
+            .extraCareCost(appearance.getChildcareDue())
+            .otherCosts(appearance.getMiscAmountDue())
+            .otherCostsDescription(appearance.getMiscDescription())
+            .build();
+    }
+
+    GetEnteredExpenseResponse.DailyExpenseTimeEntered getTimeFromAppearance(Appearance appearance) {
+        return GetEnteredExpenseResponse.DailyExpenseTimeEntered.builder()
+            .timeSpentAtCourt(appearance.getTimeSpentAtCourt())
+            .payAttendance(appearance.getPayAttendanceType())
+            .travelTime(appearance.getTravelTime())
+            .build();
+    }
+
+    @Transactional
+    @Override
+    public DailyExpenseResponse updateDraftExpense(String jurorNumber,
+                                                   DailyExpense request) {
+        Appearance appearance = getDraftAppearance(jurorNumber, request.getPoolNumber(), request.getDateOfExpense());
+        DailyExpenseResponse dailyExpenseResponse = updateDraftExpenseInternal(appearance, request);
+
+        if (request.getApplyToAllDays() != null && !request.getApplyToAllDays().isEmpty()) {
+            applyToAll(appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(jurorNumber,
+                request.getPoolNumber()), request);
+        }
+        return dailyExpenseResponse;
+    }
+
+    void applyToAll(List<Appearance> appearances, DailyExpense request) {
+        List<BiConsumer<Appearance, DailyExpense>> updateAppearanceConsumer = new ArrayList<>();
+        AtomicBoolean hasFinancialLoss = new AtomicBoolean(false);
+        request.getApplyToAllDays().forEach(dailyExpenseApplyToAllDays -> {
+            if (DailyExpenseApplyToAllDays.TRAVEL_COSTS.equals(dailyExpenseApplyToAllDays)) {
+                updateAppearanceConsumer.add((appearance, dailyExpense) -> {
+                    if (isAttendanceDay(appearance)) {
+                        updateDraftTravelExpense(appearance, request.getTravel());
+                    }
+                });
+            }
+            if (DailyExpenseApplyToAllDays.PAY_CASH.equals(dailyExpenseApplyToAllDays)) {
+                appearances.forEach(appearance -> appearance.setPayCash(request.getPayCash()));
+            }
+
+
+            final DailyExpenseFinancialLoss financialLoss = request.getFinancialLoss();
+            if (financialLoss != null) {
+                if (DailyExpenseApplyToAllDays.LOSS_OF_EARNINGS.equals(dailyExpenseApplyToAllDays)) {
+                    hasFinancialLoss.set(true);
+                    updateAppearanceConsumer.add((appearance, dailyExpense) ->
+                        appearance.setLossOfEarningsDue(financialLoss.getLossOfEarningsOrBenefits()));
+                }
+                if (DailyExpenseApplyToAllDays.EXTRA_CARE_COSTS.equals(dailyExpenseApplyToAllDays)) {
+                    hasFinancialLoss.set(true);
+                    updateAppearanceConsumer.add((appearance, dailyExpense) -> appearance.setChildcareDue(
+                        financialLoss.getExtraCareCost()));
+                }
+                if (DailyExpenseApplyToAllDays.OTHER_COSTS.equals(dailyExpenseApplyToAllDays)) {
+                    hasFinancialLoss.set(true);
+                    updateAppearanceConsumer.add((appearance, dailyExpense) -> {
+                        appearance.setMiscAmountDue(financialLoss.getOtherCosts());
+                        appearance.setMiscDescription(financialLoss.getOtherCostsDescription());
+                    });
+                }
+            }
+        });
+        if (hasFinancialLoss.get()) {
+            updateAppearanceConsumer.add(
+                (appearance, dailyExpense) -> validateAndUpdateFinancialLossExpenseLimit(appearance));
+        }
+
+        updateAppearanceConsumer.add(
+            (appearance, dailyExpense) -> checkTotalExpensesAreNotLessThan0(appearance));
+
+        appearances.forEach(
+            appearance -> updateAppearanceConsumer.forEach(
+                appearanceDailyExpenseAttendanceDayBiConsumer -> appearanceDailyExpenseAttendanceDayBiConsumer.accept(
+                    appearance, request)));
+        appearanceRepository.saveAll(appearances);
+    }
+
+    void updateDraftTimeExpense(Appearance appearance, DailyExpenseTime time) {
+        if (time == null) {
+            return;
+        }
+        appearance.setPayAttendanceType(time.getPayAttendance());
+    }
+
+    void checkTotalExpensesAreNotLessThan0(Appearance appearance) {
+        if (!validateTotalExpense(appearance)) {
+            throw new MojException.BusinessRuleViolation(
+                "Total expenses cannot be less than £0. For Day " + appearance.getAttendanceDate(),
+                EXPENSES_CANNOT_BE_LESS_THAN_ZERO);
+        }
+    }
+
+    boolean validateTotalExpense(Appearance appearance) {
+        return BigDecimalUtils.isGreaterThanOrEqualTo(appearance.getTotalDue(), BigDecimal.ZERO);
+    }
+
+    FinancialLossWarning validateAndUpdateFinancialLossExpenseLimit(Appearance appearance) {
+        CourtLocation courtLocation = appearance.getCourtLocation();
+        PayAttendanceType attendanceType = appearance.getPayAttendanceType();
+        boolean isLongTrial = Boolean.TRUE.equals(appearance.isLongTrialDay());
+        BigDecimal financialLossLimit = switch (attendanceType) {
+            case FULL_DAY -> isLongTrial
+                ? courtLocation.getLimitFinancialLossFullDayLongTrial()
+                : courtLocation.getLimitFinancialLossFullDay();
+            case HALF_DAY -> isLongTrial
+                ? courtLocation.getLimitFinancialLossHalfDayLongTrial()
+                : courtLocation.getLimitFinancialLossHalfDay();
+        };
+        BigDecimal effectiveLossOfEarnings = getOrZero(appearance.getLossOfEarningsDue());
+        BigDecimal effectiveExtraCareCost = getOrZero(appearance.getChildcareDue());
+        BigDecimal effectiveOtherCost = getOrZero(appearance.getMiscAmountDue());
+        BigDecimal total = BigDecimal.ZERO
+            .add(effectiveLossOfEarnings)
+            .add(effectiveExtraCareCost)
+            .add(effectiveOtherCost);
+
+        if (BigDecimalUtils.isGreaterThan(total, financialLossLimit)) {
+            BigDecimal difference = total.subtract(financialLossLimit);
+            if (BigDecimalUtils.isGreaterThanOrEqualTo(
+                effectiveOtherCost, difference)) {
+                effectiveOtherCost = effectiveOtherCost.subtract(difference);
+            } else {
+                difference = difference.subtract(effectiveOtherCost);
+                effectiveOtherCost = BigDecimal.ZERO;
+
+                if (BigDecimalUtils.isGreaterThanOrEqualTo(
+                    effectiveExtraCareCost, difference)) {
+                    effectiveExtraCareCost = effectiveExtraCareCost.subtract(difference);
+                } else {
+                    difference = difference.subtract(effectiveExtraCareCost);
+                    effectiveExtraCareCost = BigDecimal.ZERO;
+                    effectiveLossOfEarnings = effectiveLossOfEarnings.subtract(difference);
+                }
+            }
+
+            appearance.setLossOfEarningsDue(effectiveLossOfEarnings);
+            appearance.setChildcareDue(effectiveExtraCareCost);
+            appearance.setMiscAmountDue(effectiveOtherCost);
+
+            return new FinancialLossWarning(
+                appearance.getAttendanceDate(),
+                total,
+                financialLossLimit,
+                attendanceType,
+                appearance.isLongTrialDay(),
+                "The amount you entered will automatically be recalculated to limit the juror's loss to "
+                    + BigDecimalUtils.currencyFormat(financialLossLimit)
+            );
+        }
+        return null;
+    }
+
+    FinancialLossWarning updateDraftFinancialLossExpense(Appearance appearance,
+                                                         DailyExpenseFinancialLoss financialLoss) {
+        if (financialLoss == null) {
+            return null;
+        }
+        appearance.setLossOfEarningsDue(financialLoss.getLossOfEarningsOrBenefits());
+        appearance.setChildcareDue(financialLoss.getExtraCareCost());
+        appearance.setMiscAmountDue(financialLoss.getOtherCosts());
+        appearance.setMiscDescription(financialLoss.getOtherCostsDescription());
+        return validateAndUpdateFinancialLossExpenseLimit(appearance);
+    }
+
+    void updateDraftTravelExpense(Appearance appearance, DailyExpenseTravel travel) {
+        if (travel == null) {
+            return;
+        }
+        final Integer milesTraveled = travel.getMilesTraveled();
+
+        BiFunction<TravelMethod, Boolean, BigDecimal> calculateTravelCost = (travelMethod, traveledBy) -> {
+            if (traveledBy == null || !traveledBy) {
+                return null;
+            }
+            BigDecimal travelRate = travelMethod.getRate(appearance.getCourtLocation(), travel);
+            return travelRate.multiply(BigDecimal.valueOf(Optional.ofNullable(milesTraveled).orElse(0)));
+        };
+
+        appearance.setTraveledByCar(travel.getTraveledByCar());
+        appearance.setJurorsTakenCar(travel.getJurorsTakenCar());
+        appearance.setCarDue(calculateTravelCost.apply(TravelMethod.CAR, travel.getTraveledByCar()));
+
+        appearance.setTraveledByMotorcycle(travel.getTraveledByMotorcycle());
+        appearance.setJurorsTakenMotorcycle(travel.getJurorsTakenMotorcycle());
+        appearance.setMotorcycleDue(
+            calculateTravelCost.apply(TravelMethod.MOTERCYCLE, travel.getTraveledByMotorcycle()));
+
+        appearance.setTraveledByBicycle(travel.getTraveledByBicycle());
+        appearance.setBicycleDue(calculateTravelCost.apply(TravelMethod.BICYCLE, travel.getTraveledByBicycle()));
+
+
+        appearance.setMilesTraveled(milesTraveled);
+
+        appearance.setParkingDue(travel.getParking());
+        appearance.setPublicTransportDue(travel.getPublicTransport());
+        appearance.setHiredVehicleDue(travel.getTaxi());
+    }
+
+    void updateDraftFoodAndDrinkExpense(Appearance appearance, DailyExpenseFoodAndDrink foodAndDrink) {
+        if (foodAndDrink == null) {
+            return;
+        }
+        CourtLocation courtLocation = appearance.getCourtLocation();
+        FoodDrinkClaimType claimType = foodAndDrink.getFoodAndDrinkClaimType();
+
+        BigDecimal substanceRate = claimType.getRate(courtLocation);
+        appearance.setSubsistenceDue(substanceRate);
+        appearance.setSmartCardAmountDue(foodAndDrink.getSmartCardAmount());
+        appearance.setFoodAndDrinkClaimType(claimType);
     }
 
 

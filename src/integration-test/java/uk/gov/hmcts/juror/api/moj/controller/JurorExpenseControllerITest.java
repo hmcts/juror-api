@@ -19,18 +19,37 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
+import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.DefaultExpenseSummaryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ViewExpenseRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseItemsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.GetEnteredExpenseRequest;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseApplyToAllDays;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseFinancialLoss;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseFoodAndDrink;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseTime;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseTravel;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.BulkExpenseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.BulkExpenseEntryDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.DailyExpenseResponse;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.FinancialLossWarning;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.TotalExpenseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
+import uk.gov.hmcts.juror.api.moj.domain.AppearanceId;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.FoodDrinkClaimType;
+import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
+import uk.gov.hmcts.juror.api.moj.enumeration.TravelMethod;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
+import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.utils.CustomPageImpl;
 
 import java.math.BigDecimal;
@@ -42,18 +61,21 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DisplayName("Controller: /api/v1/moj/expenses")
+@DisplayName("Controller: " + JurorExpenseControllerITest.BASE_URL)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings({"PMD.LawOfDemeter", "PMD.ExcessiveImports", "unchecked"})
+@SuppressWarnings({"PMD.LawOfDemeter", "PMD.ExcessiveImports"})
 class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     private static final String PAGINATION_PAGE_NO = "&page_number=0";
@@ -64,9 +86,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     private static final String MIN_DATE = "?min_date=";
     private static final String URL_UNPAID_SUMMARY = "/api/v1/moj/expenses/unpaid-summary/";
     private static final String URL_DEFAULT_SUMMARY = "/api/v1/moj/expenses/default-summary/";
+    public static final String BASE_URL = "/api/v1/moj/expenses";
 
     private final TestRestTemplate template;
     private final AppearanceRepository appearanceRepository;
+    private final CourtLocationRepository courtLocationRepository;
 
     private HttpHeaders httpHeaders;
 
@@ -305,6 +329,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             private ResponseEntity<String> triggerInvalid(ViewExpenseRequest request) throws Exception {
                 return triggerInvalid(List.of(request));
             }
+
             private ResponseEntity<String> triggerInvalid(List<ViewExpenseRequest> request) throws Exception {
                 final String jwt = createBureauJwt(COURT_USER, "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
@@ -335,7 +360,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
             void invalidJurorNumber() throws Exception {
                 ViewExpenseRequest request = createRequest("64150002", "415230101");
-                validateInvalidPathParam(triggerInvalid(request), VIEW_EXPENSE_URI.getPath(),
+                validateInvalidPathParam(triggerInvalid(request),
                     "getBulkExpense.request[0].jurorNumber: must match \"^\\d{9}$\"");
             }
 
@@ -344,7 +369,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
             void invalidPoolNumber() throws Exception {
                 ViewExpenseRequest request = createRequest("641500020", "41523010");
-                validateInvalidPathParam(triggerInvalid(request), VIEW_EXPENSE_URI.getPath(),
+                validateInvalidPathParam(triggerInvalid(request),
                     "getBulkExpense.request[0].identifier: must match \"^F\\d+$|^\\d{9}$\"");
             }
 
@@ -353,7 +378,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
             void invalidAuditNumber() throws Exception {
                 ViewExpenseRequest request = createRequest("641500020", "FABC");
-                validateInvalidPathParam(triggerInvalid(request), VIEW_EXPENSE_URI.getPath(),
+                validateInvalidPathParam(triggerInvalid(request),
                     "getBulkExpense.request[0].identifier: must match \"^F\\d+$|^\\d{9}$\"");
             }
 
@@ -373,7 +398,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             @DisplayName("Empty request body")
             @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
             void emptyRequest() throws Exception {
-                validateInvalidPathParam(triggerInvalid(List.of()), VIEW_EXPENSE_URI.getPath(),
+                validateInvalidPathParam(triggerInvalid(List.of()),
                     "getBulkExpense.request: size must be between 1 and 20");
             }
 
@@ -383,7 +408,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void requestWithNullItem() throws Exception {
                 List<ViewExpenseRequest> request = new ArrayList<>();
                 request.add(null);
-                validateInvalidPathParam(triggerInvalid(request), VIEW_EXPENSE_URI.getPath(),
+                validateInvalidPathParam(triggerInvalid(request),
                     "getBulkExpense.request[0].<list element>: must not be null");
             }
 
@@ -400,7 +425,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .build());
                 }
 
-                validateInvalidPathParam(triggerInvalid(request), VIEW_EXPENSE_URI.getPath(),
+                validateInvalidPathParam(triggerInvalid(request),
                     "getBulkExpense.request: size must be between 1 and 20");
             }
         }
@@ -878,7 +903,1099 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     .build();
             }
         }
+    }
 
+    @SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
+    abstract class AbstractDraftDailyExpense {
+        private final String url;
+        private final String methodName;
+
+        AbstractDraftDailyExpense(String url, String methodName) {
+            this.url = url;
+            this.methodName = methodName;
+        }
+
+        protected DailyExpenseTravel createDailyExpenseTravel(TravelMethod travelMethod,
+                                                              Integer jurorsTaken,
+                                                              Integer milesTraveled,
+                                                              Double parking,
+                                                              Double publicTransport,
+                                                              Double taxi) {
+            DailyExpenseTravel.DailyExpenseTravelBuilder builder = DailyExpenseTravel.builder()
+                .milesTraveled(milesTraveled)
+                .parking(doubleToBigDecimal(parking))
+                .publicTransport(doubleToBigDecimal(publicTransport))
+                .taxi(doubleToBigDecimal(taxi));
+
+            if (TravelMethod.CAR.equals(travelMethod)) {
+                builder.traveledByCar(true)
+                    .jurorsTakenCar(jurorsTaken);
+            } else if (TravelMethod.MOTERCYCLE.equals(travelMethod)) {
+                builder.traveledByMotorcycle(true)
+                    .jurorsTakenMotorcycle(jurorsTaken);
+            } else if (TravelMethod.BICYCLE.equals(travelMethod)) {
+                builder.traveledByBicycle(true);
+            }
+
+            return builder.build();
+        }
+
+        protected DailyExpenseFinancialLoss createDailyExpenseFinancialLoss(Double lossOfEarnings,
+                                                                            Double extraCareCost,
+                                                                            Double otherCost,
+                                                                            String otherCostDesc) {
+            return DailyExpenseFinancialLoss.builder()
+                .lossOfEarningsOrBenefits(doubleToBigDecimal(lossOfEarnings))
+                .extraCareCost(doubleToBigDecimal(extraCareCost))
+                .otherCosts(doubleToBigDecimal(otherCost))
+                .otherCostsDescription(otherCostDesc)
+                .build();
+        }
+
+        protected DailyExpenseFoodAndDrink createDailyExpenseFoodAndDrink(FoodDrinkClaimType foodDrinkClaimType,
+                                                                          Double smartCardAmount) {
+            return DailyExpenseFoodAndDrink.builder()
+                .foodAndDrinkClaimType(foodDrinkClaimType)
+                .smartCardAmount(doubleToBigDecimal(smartCardAmount))
+                .build();
+        }
+
+        protected BigDecimal doubleToBigDecimal(Double value) {
+            return doubleToBigDecimal(value, 2);
+        }
+
+        protected BigDecimal doubleToBigDecimal(Double value, int precision) {
+            if (value == null) {
+                return null;
+            }
+            return new BigDecimal(String.format("%." + precision + "f", value));
+        }
+
+        protected Appearance getAppearance(String jurorNumber, LocalDate date, String locCode) {
+            Optional<CourtLocation> courtLocationOptional = courtLocationRepository.findByLocCode(locCode);
+            if (courtLocationOptional.isEmpty()) {
+                fail("Failed to find court location");
+            }
+            Optional<Appearance> appearanceOptional = appearanceRepository.findById(
+                new AppearanceId(jurorNumber, date, courtLocationOptional.get()));
+            if (appearanceOptional.isEmpty()) {
+                fail("Failed to find appearance");
+            }
+            return appearanceOptional.get();
+        }
+
+
+        protected String toUrl(String jurorNumber) {
+            return url.replace("{juror_number}", jurorNumber);
+        }
+
+        @DisplayName("Negative")
+        @Nested
+        class Negative {
+
+            protected ResponseEntity<String> triggerInvalid(String jurorNumber, DailyExpense request) throws Exception {
+                final String jwt = createBureauJwt(COURT_USER, "415");
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+                return template.exchange(
+                    new RequestEntity<>(request, httpHeaders, POST,
+                        URI.create(toUrl(jurorNumber))),
+                    String.class);
+            }
+
+            @Test
+            @SuppressWarnings({
+                "PMD.JUnitTestsShouldIncludeAssert" //False positive
+            })
+            void invalidJurorNumber() throws Exception {
+                final String jurorNumber = "INVALID";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber("415230101")
+                    .payCash(false)
+                    .time(DailyExpenseTime.builder()
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .build())
+                    .financialLoss(
+                        createDailyExpenseFinancialLoss(25.01, 10.00, 5.00, "Desc")
+                    )
+                    .build();
+
+                ResponseEntity<String> response = triggerInvalid(jurorNumber, request);
+                validateInvalidPathParam(response,
+                    methodName + ".jurorNumber: must match \"^\\d{9}$\"");
+            }
+
+            @Test
+            @SuppressWarnings({
+                "PMD.JUnitTestsShouldIncludeAssert" //False positive
+            })
+            void noAttendancesFound() throws Exception {
+                final String jurorNumber = "123456789";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber("415230101")
+                    .payCash(false)
+                    .time(DailyExpenseTime.builder()
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .build())
+                    .financialLoss(
+                        createDailyExpenseFinancialLoss(25.01, 10.00, 5.00, "Desc")
+                    )
+                    .build();
+
+                ResponseEntity<String> response = triggerInvalid(jurorNumber, request);
+                validateNotFound(response, toUrl(jurorNumber),
+                    "No draft appearance record found for juror: 123456789 on day: 2023-01-05");
+            }
+        }
+
+        @DisplayName("Positive")
+        @Nested
+        class Positive {
+
+            protected ResponseEntity<DailyExpenseResponse> triggerValid(String jurorNumber,
+                                                                        DailyExpense request) throws Exception {
+                final String jwt = createBureauJwt(COURT_USER, "415");
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+                ResponseEntity<DailyExpenseResponse> response = template.exchange(
+                    new RequestEntity<>(request, httpHeaders, POST,
+                        URI.create(toUrl(jurorNumber))),
+                    DailyExpenseResponse.class);
+                assertThat(response.getStatusCode())
+                    .as("Expect the HTTP GET request to be successful")
+                    .isEqualTo(HttpStatus.OK);
+                return response;
+            }
+
+        }
+    }
+
+    @Nested
+    @DisplayName("POST " + PostDraftAttendedDayDailyExpense.URL)
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql"})
+    class PostDraftAttendedDayDailyExpense extends AbstractDraftDailyExpense {
+
+        public static final String URL = BASE_URL + "/{juror_number}/draft/attended_day";
+
+        PostDraftAttendedDayDailyExpense() {
+            super(URL, "postDraftAttendedDayDailyExpense");
+        }
+
+        @Nested
+        @DisplayName("Negative")
+        class Negative extends AbstractDraftDailyExpense.Negative {
+
+            @Test
+            @SuppressWarnings({
+                "PMD.JUnitTestsShouldIncludeAssert" //False positive
+            })
+            void negativeExpenseTotal() throws Exception {
+                final String jurorNumber = "641500021";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber("415230101")
+                    .payCash(false)
+                    .time(DailyExpenseTime.builder()
+                        .travelTime(LocalTime.of(1, 2))
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .build())
+                    .foodAndDrink(
+                        createDailyExpenseFoodAndDrink(FoodDrinkClaimType.LESS_THAN_1O_HOURS, 10.72)
+                    )
+                    .build();
+                validateBusinessRuleViolation(triggerInvalid(jurorNumber, request),
+                    "Total expenses cannot be less than £0. For Day "
+                        + "2023-01-05", MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO);
+            }
+
+            @Test
+            @SuppressWarnings({
+                "PMD.JUnitTestsShouldIncludeAssert" //False positive
+            })
+            void applyToAllWith0Expense() throws Exception {
+                final String jurorNumber = "641500022";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber("415230101")
+                    .payCash(false)
+                    .time(DailyExpenseTime.builder()
+                        .travelTime(LocalTime.of(1, 2))
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .build())
+                    .financialLoss(createDailyExpenseFinancialLoss(0.00, 5.00, 5.00, "Desc"))
+                    .applyToAllDays(List.of(DailyExpenseApplyToAllDays.OTHER_COSTS))
+                    .build();
+                validateBusinessRuleViolation(triggerInvalid(jurorNumber, request),
+                    "Total expenses cannot be less than £0. For Day "
+                        + "2023-01-06", MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO);
+            }
+        }
+
+        @Nested
+        @DisplayName("Positive")
+        class Positive extends AbstractDraftDailyExpense.Positive {
+
+            @Test
+            void typical() throws Exception {
+                final String jurorNumber = "641500021";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber("415230101")
+                    .payCash(false)
+                    .time(DailyExpenseTime.builder()
+                        .travelTime(LocalTime.of(1, 2))
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .build())
+                    .financialLoss(
+                        createDailyExpenseFinancialLoss(25.01, 10.00, 5.00, "Desc")
+                    )
+                    .travel(
+                        createDailyExpenseTravel(TravelMethod.CAR, null, 5, 2.25, null, null)
+                    )
+                    .foodAndDrink(
+                        createDailyExpenseFoodAndDrink(FoodDrinkClaimType.LESS_THAN_1O_HOURS, 4.2)
+                    )
+                    .build();
+
+                ResponseEntity<DailyExpenseResponse> response = triggerValid(jurorNumber, request);
+                assertThat(response).isNotNull();
+                assertThat(response.getBody()).isNotNull();
+                assertThat(response.getBody().getFinancialLossWarning()).isNull();
+
+                Appearance appearance = getAppearance(jurorNumber, request.getDateOfExpense(), "415");
+
+                assertThat(appearance).isNotNull();
+                assertThat(appearance.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
+                assertThat(appearance.getPayCash()).isEqualTo(false);
+                assertThat(appearance.getTravelTime()).isEqualTo(LocalTime.of(1, 2));
+
+                //Financial Loss
+                assertThat(appearance.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(25.01));
+                assertThat(appearance.getChildcareDue()).isEqualTo(doubleToBigDecimal(10.00));
+                assertThat(appearance.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(5.00));
+                assertThat(appearance.getMiscDescription()).isEqualTo("Desc");
+                //Travel
+                assertThat(appearance.getTraveledByCar()).isTrue();
+                assertThat(appearance.getJurorsTakenCar()).isNull();
+                assertThat(appearance.getCarDue()).isEqualTo(doubleToBigDecimal(1.57));
+
+
+                assertThat(appearance.getMilesTraveled()).isEqualTo(5);
+                assertThat(appearance.getParkingDue()).isEqualTo(doubleToBigDecimal(2.25));
+                assertThat(appearance.getPublicTransportDue()).isNull();
+                assertThat(appearance.getHiredVehicleDue()).isNull();
+
+                // Substance
+                assertThat(appearance.getFoodAndDrinkClaimType()).isEqualTo(FoodDrinkClaimType.LESS_THAN_1O_HOURS);
+                assertThat(appearance.getSmartCardAmountDue()).isEqualTo(doubleToBigDecimal(4.2));
+                assertThat(appearance.getSubsistenceDue()).isEqualTo(doubleToBigDecimal(5.71));
+
+
+                assertThat(appearance.getTotalDue()).isEqualTo(doubleToBigDecimal(45.34));
+
+            }
+
+
+            @Test
+            void financialLossExceeded() throws Exception {
+                final String jurorNumber = "641500021";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber("415230101")
+                    .payCash(true)
+                    .time(DailyExpenseTime.builder()
+                        .travelTime(LocalTime.of(2, 2))
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .build())
+                    .financialLoss(
+                        createDailyExpenseFinancialLoss(45.01, 20.00, 5.00, "Desc 3")
+                    )
+                    .travel(
+                        createDailyExpenseTravel(TravelMethod.MOTERCYCLE, 1, 7, 2.25, 3.2, 1.23)
+                    )
+                    .foodAndDrink(
+                        createDailyExpenseFoodAndDrink(FoodDrinkClaimType.MORE_THAN_10_HOURS, 3.2)
+                    )
+                    .build();
+
+                ResponseEntity<DailyExpenseResponse> response = triggerValid(jurorNumber, request);
+                assertThat(response).isNotNull();
+                assertThat(response.getBody()).isNotNull();
+
+                FinancialLossWarning financialLossWarning = response.getBody().getFinancialLossWarning();
+                assertThat(financialLossWarning.getDate()).isEqualTo(request.getDateOfExpense());
+                assertThat(financialLossWarning.getJurorsLoss()).isEqualTo(doubleToBigDecimal(70.01));
+                assertThat(financialLossWarning.getLimit()).isEqualTo(doubleToBigDecimal(64.95, 5));
+                assertThat(financialLossWarning.getAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
+                assertThat(financialLossWarning.getMessage()).isEqualTo(
+                    "The amount you entered will automatically be recalculated to limit the juror's loss to £64.95"
+                );
+                assertThat(financialLossWarning.getIsLongTrialDay()).isEqualTo(false);
+
+
+                Appearance appearance = getAppearance(jurorNumber, request.getDateOfExpense(), "415");
+
+                assertThat(appearance).isNotNull();
+                assertThat(appearance.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
+                assertThat(appearance.getPayCash()).isEqualTo(true);
+                assertThat(appearance.getTravelTime()).isEqualTo(LocalTime.of(2, 2));
+
+                //Financial Loss
+                assertThat(appearance.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(45.01));
+                assertThat(appearance.getChildcareDue()).isEqualTo(doubleToBigDecimal(19.94));
+                assertThat(appearance.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(0.00));
+                assertThat(appearance.getMiscDescription()).isEqualTo("Desc 3");
+                //Travel
+                assertThat(appearance.getTraveledByMotorcycle()).isTrue();
+                assertThat(appearance.getJurorsTakenMotorcycle()).isEqualTo(1);
+                assertThat(appearance.getMotorcycleDue()).isEqualTo(doubleToBigDecimal(2.268));
+
+                assertThat(appearance.getMilesTraveled()).isEqualTo(7);
+                assertThat(appearance.getParkingDue()).isEqualTo(doubleToBigDecimal(2.25));
+                assertThat(appearance.getPublicTransportDue()).isEqualTo(doubleToBigDecimal(3.2));
+                assertThat(appearance.getHiredVehicleDue()).isEqualTo(doubleToBigDecimal(1.23));
+
+                // Substance
+                assertThat(appearance.getFoodAndDrinkClaimType()).isEqualTo(FoodDrinkClaimType.MORE_THAN_10_HOURS);
+                assertThat(appearance.getSmartCardAmountDue()).isEqualTo(doubleToBigDecimal(3.2));
+                assertThat(appearance.getSubsistenceDue()).isEqualTo(doubleToBigDecimal(12.17));
+
+                assertThat(appearance.getTotalDue()).isEqualTo(doubleToBigDecimal(82.87));
+            }
+
+            @Test
+            void applyToAllFinancialLossExceeded() throws Exception {
+                final String jurorNumber = "641500021";
+                final String poolNumber = "415230101";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber(poolNumber)
+                    .payCash(true)
+                    .time(DailyExpenseTime.builder()
+                        .travelTime(LocalTime.of(2, 2))
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .build())
+                    .financialLoss(
+                        createDailyExpenseFinancialLoss(1.01, 50.00, 35.00, "Desc 3")
+                    )
+                    .applyToAllDays(List.of(DailyExpenseApplyToAllDays.OTHER_COSTS,
+                        DailyExpenseApplyToAllDays.EXTRA_CARE_COSTS,
+                        DailyExpenseApplyToAllDays.LOSS_OF_EARNINGS))
+                    .build();
+
+                ResponseEntity<DailyExpenseResponse> response = triggerValid(jurorNumber, request);
+                assertThat(response).isNotNull();
+                assertThat(response.getBody()).isNotNull();
+
+                FinancialLossWarning financialLossWarning = response.getBody().getFinancialLossWarning();
+                assertThat(financialLossWarning.getDate()).isEqualTo(request.getDateOfExpense());
+                assertThat(financialLossWarning.getJurorsLoss()).isEqualTo(doubleToBigDecimal(86.01));
+                assertThat(financialLossWarning.getLimit()).isEqualTo(doubleToBigDecimal(64.95, 5));
+                assertThat(financialLossWarning.getAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
+                assertThat(financialLossWarning.getMessage()).isEqualTo(
+                    "The amount you entered will automatically be recalculated to limit the juror's loss to £64.95"
+                );
+                assertThat(financialLossWarning.getIsLongTrialDay()).isEqualTo(false);
+
+
+                Appearance appearance = getAppearance(jurorNumber, request.getDateOfExpense(), "415");
+
+                assertThat(appearance).isNotNull();
+                assertThat(appearance.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
+                assertThat(appearance.getPayCash()).isEqualTo(true);
+                assertThat(appearance.getTravelTime()).isEqualTo(LocalTime.of(2, 2));
+
+                //Financial Loss
+                assertThat(appearance.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(1.01));
+                assertThat(appearance.getChildcareDue()).isEqualTo(doubleToBigDecimal(50.00));
+                assertThat(appearance.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(13.94));
+                assertThat(appearance.getMiscDescription()).isEqualTo("Desc 3");
+
+                assertThat(appearance.getTotalDue()).isEqualTo(doubleToBigDecimal(64.95));
+
+
+                List<Appearance> appearances =
+                    appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(jurorNumber, poolNumber);
+
+                assertThat(appearances).size().isEqualTo(3);
+                appearances.forEach(appearance1 -> {
+                    if (!appearance1.getAttendanceDate().equals(request.getDateOfExpense())) {
+                        if (PayAttendanceType.HALF_DAY.equals(appearance1.getPayAttendanceType())) {
+                            assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(1.01));
+                            assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(31.46));
+                            assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(0.00));
+                            assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
+                            assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(32.47));
+                        } else if (PayAttendanceType.FULL_DAY.equals(appearance1.getPayAttendanceType())) {
+                            assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(1.01));
+                            assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(50.00));
+                            assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(13.94));
+                            assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
+                            assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(64.95));
+                        } else {
+                            fail("Not handled");
+                        }
+                    }
+                });
+            }
+
+            @Test
+            void applyToAllDaysMultipleIncludingTravelAndNonAttendedDays() throws Exception {
+                final String jurorNumber = "641500021";
+                final String poolNumber = "415230101";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber(poolNumber)
+                    .payCash(true)
+                    .time(DailyExpenseTime.builder()
+                        .travelTime(LocalTime.of(2, 2))
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .build())
+                    .travel(createDailyExpenseTravel(TravelMethod.CAR, 2, 6, 2.4, 0.0, 0.0))
+                    .financialLoss(
+                        createDailyExpenseFinancialLoss(0.00, 0.00, 15.00, "Desc 3")
+                    )
+                    .applyToAllDays(List.of(DailyExpenseApplyToAllDays.OTHER_COSTS,
+                        DailyExpenseApplyToAllDays.TRAVEL_COSTS))
+                    .build();
+
+                ResponseEntity<DailyExpenseResponse> response = triggerValid(jurorNumber, request);
+                assertThat(response).isNotNull();
+                assertThat(response.getBody()).isNotNull();
+                assertThat(response.getBody().getFinancialLossWarning()).isNull();
+
+                Appearance appearance = getAppearance(jurorNumber, request.getDateOfExpense(), "415");
+
+                assertThat(appearance).isNotNull();
+                assertThat(appearance.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
+                assertThat(appearance.getPayCash()).isEqualTo(true);
+                assertThat(appearance.getTravelTime()).isEqualTo(LocalTime.of(2, 2));
+
+                //Financial Loss
+                assertThat(appearance.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(0.00));
+                assertThat(appearance.getChildcareDue()).isEqualTo(doubleToBigDecimal(0.00));
+                assertThat(appearance.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(15.00));
+                assertThat(appearance.getMiscDescription()).isEqualTo("Desc 3");
+
+                //Travel
+                assertThat(appearance.getTraveledByCar()).isTrue();
+                assertThat(appearance.getJurorsTakenCar()).isEqualTo(2);
+                assertThat(appearance.getCarDue()).isEqualTo(doubleToBigDecimal(2.388));
+
+
+                assertThat(appearance.getMilesTraveled()).isEqualTo(6);
+                assertThat(appearance.getParkingDue()).isEqualTo(doubleToBigDecimal(2.4));
+                assertThat(appearance.getPublicTransportDue()).isEqualTo(doubleToBigDecimal(0.0));
+                assertThat(appearance.getHiredVehicleDue()).isEqualTo(doubleToBigDecimal(0.0));
+
+                assertThat(appearance.getTotalDue()).isEqualTo(doubleToBigDecimal(19.788));
+
+
+                List<Appearance> appearances =
+                    appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(jurorNumber, poolNumber);
+
+                assertThat(appearances).size().isEqualTo(3);
+
+                AtomicBoolean hasNonAttendanceDay = new AtomicBoolean(false);
+                appearances.forEach(appearance1 -> {
+                    if (!appearance1.getAttendanceDate().equals(request.getDateOfExpense())) {
+                        if (AttendanceType.NON_ATTENDANCE.equals(appearance1.getAttendanceType())) {
+                            hasNonAttendanceDay.set(true);
+                            assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(0.00));
+                            assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(0.00));
+                            assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(15.00));
+                            assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
+                            assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(15.00));
+                        } else {
+                            assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(0.00));
+                            assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(0.00));
+                            assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(15.00));
+                            assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
+                            assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(19.788));
+                        }
+                    }
+                });
+                assertThat(hasNonAttendanceDay.get()).isTrue();
+
+            }
+        }
+
+    }
+
+    @Nested
+    @DisplayName("POST " + PostDraftNonAttendedDayDailyExpense.URL)
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql"})
+    class PostDraftNonAttendedDayDailyExpense extends AbstractDraftDailyExpense {
+        public static final String URL = BASE_URL + "/{juror_number}/draft/non_attended_day";
+
+        PostDraftNonAttendedDayDailyExpense() {
+            super(URL, "postDraftNonAttendedDayDailyExpense");
+        }
+
+        @Nested
+        @DisplayName("Negative")
+        class Negative extends AbstractDraftDailyExpense.Negative {
+
+            @Test
+            @SuppressWarnings({
+                "PMD.JUnitTestsShouldIncludeAssert" //False positive
+            })
+            void hasTravelExpenses() throws Exception {
+                final String jurorNumber = "641500021";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber("415230101")
+                    .payCash(false)
+                    .time(DailyExpenseTime.builder()
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .build())
+                    .travel(DailyExpenseTravel.builder().build())
+                    .financialLoss(
+                        createDailyExpenseFinancialLoss(25.01, 10.00, 5.00, "Desc")
+                    )
+                    .build();
+
+                ResponseEntity<String> response = triggerInvalid(jurorNumber, request);
+
+                validateInvalidPayload(response,
+                    new RestResponseEntityExceptionHandler.FieldError("travel", "must be null"));
+            }
+
+            @Test
+            @SuppressWarnings({
+                "PMD.JUnitTestsShouldIncludeAssert" //False positive
+            })
+            void hasFoodAndDrinkExpenses() throws Exception {
+                final String jurorNumber = "641500021";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber("415230101")
+                    .payCash(false)
+                    .time(DailyExpenseTime.builder()
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .build())
+                    .foodAndDrink(DailyExpenseFoodAndDrink.builder()
+                        .foodAndDrinkClaimType(FoodDrinkClaimType.NONE)
+                        .build())
+                    .financialLoss(
+                        createDailyExpenseFinancialLoss(25.01, 10.00, 5.00, "Desc")
+                    )
+                    .build();
+
+                ResponseEntity<String> response = triggerInvalid(jurorNumber, request);
+                validateInvalidPayload(response,
+                    new RestResponseEntityExceptionHandler.FieldError("foodAndDrink", "must be null"));
+            }
+
+            @Test
+            @SuppressWarnings({
+                "PMD.JUnitTestsShouldIncludeAssert" //False positive
+            })
+            void applyToAllHasTravel() throws Exception {
+                final String jurorNumber = "641500021";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber("415230101")
+                    .payCash(false)
+                    .time(DailyExpenseTime.builder()
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .build())
+                    .applyToAllDays(List.of(DailyExpenseApplyToAllDays.TRAVEL_COSTS))
+                    .financialLoss(
+                        createDailyExpenseFinancialLoss(25.01, 10.00, 5.00, "Desc")
+                    )
+                    .build();
+
+                ResponseEntity<String> response = triggerInvalid(jurorNumber, request);
+
+                validateInvalidPayload(response,
+                    new RestResponseEntityExceptionHandler.FieldError("applyToAllDays[0]",
+                        "Non Attendance day can only apply to all for [EXTRA_CARE_COSTS, OTHER_COSTS, PAY_CASH]"));
+            }
+
+            @Test
+            @SuppressWarnings({
+                "PMD.JUnitTestsShouldIncludeAssert" //False positive
+            })
+            void hasTotalTravelTime() throws Exception {
+                final String jurorNumber = "641500021";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber("415230101")
+                    .payCash(false)
+                    .time(DailyExpenseTime.builder()
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .travelTime(LocalTime.of(1, 1))
+                        .build())
+                    .financialLoss(
+                        createDailyExpenseFinancialLoss(25.01, 10.00, 5.00, "Desc")
+                    )
+                    .build();
+
+                ResponseEntity<String> response = triggerInvalid(jurorNumber, request);
+
+                validateInvalidPayload(response,
+                    new RestResponseEntityExceptionHandler.FieldError("time.travelTime", "must be null"));
+            }
+        }
+
+        @Nested
+        @DisplayName("Positive")
+        class Positive extends AbstractDraftDailyExpense.Positive {
+            @Test
+            void typical() throws Exception {
+                final String jurorNumber = "641500021";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber("415230101")
+                    .payCash(false)
+                    .time(DailyExpenseTime.builder()
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .build())
+                    .financialLoss(
+                        createDailyExpenseFinancialLoss(25.01, 10.00, 5.00, "Desc")
+                    )
+                    .build();
+
+                ResponseEntity<DailyExpenseResponse> response = triggerValid(jurorNumber, request);
+                assertThat(response).isNotNull();
+                assertThat(response.getBody()).isNotNull();
+                assertThat(response.getBody().getFinancialLossWarning()).isNull();
+
+                Appearance appearance = getAppearance(jurorNumber, request.getDateOfExpense(), "415");
+
+                assertThat(appearance).isNotNull();
+                assertThat(appearance.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
+                assertThat(appearance.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(25.01));
+                assertThat(appearance.getChildcareDue()).isEqualTo(doubleToBigDecimal(10.00));
+                assertThat(appearance.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(5.00));
+                assertThat(appearance.getMiscDescription()).isEqualTo("Desc");
+                assertThat(appearance.getPayCash()).isEqualTo(false);
+
+                assertThat(appearance.getTotalDue()).isEqualTo(doubleToBigDecimal(40.01));
+            }
+
+            @Test
+            void financialLossLimitApplied() throws Exception {
+                final String jurorNumber = "641500021";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 6))
+                    .poolNumber("415230101")
+                    .payCash(false)
+                    .time(DailyExpenseTime.builder()
+                        .payAttendance(PayAttendanceType.HALF_DAY)
+                        .build())
+                    .financialLoss(
+                        createDailyExpenseFinancialLoss(25.00, 10.00, 5.00, "Desc 2")
+                    )
+                    .build();
+
+                ResponseEntity<DailyExpenseResponse> response = triggerValid(jurorNumber, request);
+                assertThat(response).isNotNull();
+                assertThat(response.getBody()).isNotNull();
+                assertThat(response.getBody().getFinancialLossWarning()).isNotNull();
+
+                FinancialLossWarning financialLossWarning = response.getBody().getFinancialLossWarning();
+                assertThat(financialLossWarning.getDate()).isEqualTo(request.getDateOfExpense());
+                assertThat(financialLossWarning.getJurorsLoss()).isEqualTo(doubleToBigDecimal(40.00));
+                assertThat(financialLossWarning.getLimit()).isEqualTo(doubleToBigDecimal(32.47, 5));
+                assertThat(financialLossWarning.getAttendanceType()).isEqualTo(PayAttendanceType.HALF_DAY);
+                assertThat(financialLossWarning.getMessage()).isEqualTo(
+                    "The amount you entered will automatically be recalculated to limit the juror's loss to £32.47"
+                );
+                assertThat(financialLossWarning.getIsLongTrialDay()).isEqualTo(false);
+
+                Appearance appearance = getAppearance(jurorNumber, request.getDateOfExpense(), "415");
+
+                assertThat(appearance).isNotNull();
+                assertThat(appearance.getPayAttendanceType()).isEqualTo(PayAttendanceType.HALF_DAY);
+                assertThat(appearance.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(25.00));
+                assertThat(appearance.getChildcareDue()).isEqualTo(doubleToBigDecimal(7.47));
+                assertThat(appearance.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(0.00));
+                assertThat(appearance.getMiscDescription()).isEqualTo("Desc 2");
+                assertThat(appearance.getPayCash()).isEqualTo(false);
+
+                assertThat(appearance.getTotalDue()).isEqualTo(doubleToBigDecimal(32.47));
+
+            }
+
+            @Test
+            void zero() throws Exception {
+                final String jurorNumber = "641500021";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber("415230101")
+                    .payCash(false)
+                    .time(DailyExpenseTime.builder()
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .build())
+                    .financialLoss(
+                        createDailyExpenseFinancialLoss(0.0, 0.00, 0.00, null)
+                    )
+                    .build();
+
+                ResponseEntity<DailyExpenseResponse> response = triggerValid(jurorNumber, request);
+                assertThat(response).isNotNull();
+                assertThat(response.getBody()).isNotNull();
+                assertThat(response.getBody().getFinancialLossWarning()).isNull();
+
+                Appearance appearance = getAppearance(jurorNumber, request.getDateOfExpense(), "415");
+
+                assertThat(appearance).isNotNull();
+                assertThat(appearance.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
+                assertThat(appearance.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(0.00));
+                assertThat(appearance.getChildcareDue()).isEqualTo(doubleToBigDecimal(0.00));
+                assertThat(appearance.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(0.00));
+                assertThat(appearance.getMiscDescription()).isNull();
+                assertThat(appearance.getPayCash()).isEqualTo(false);
+
+                assertThat(appearance.getTotalDue()).isEqualTo(doubleToBigDecimal(0.00));
+            }
+
+            @Test
+            void applyToAllDaysSingle() throws Exception {
+                final String jurorNumber = "641500021";
+                final String poolNumber = "415230101";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber("415230101")
+                    .payCash(false)
+                    .time(DailyExpenseTime.builder()
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .build())
+                    .financialLoss(
+                        createDailyExpenseFinancialLoss(25.01, 10.00, 5.00, "Desc")
+                    )
+                    .applyToAllDays(List.of(DailyExpenseApplyToAllDays.OTHER_COSTS))
+                    .build();
+
+                ResponseEntity<DailyExpenseResponse> response = triggerValid(jurorNumber, request);
+                assertThat(response).isNotNull();
+                assertThat(response.getBody()).isNotNull();
+                assertThat(response.getBody().getFinancialLossWarning()).isNull();
+
+                Appearance appearance = getAppearance(jurorNumber, request.getDateOfExpense(), "415");
+
+                assertThat(appearance).isNotNull();
+                assertThat(appearance.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
+                assertThat(appearance.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(25.01));
+                assertThat(appearance.getChildcareDue()).isEqualTo(doubleToBigDecimal(10.00));
+                assertThat(appearance.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(5.00));
+                assertThat(appearance.getMiscDescription()).isEqualTo("Desc");
+                assertThat(appearance.getTotalDue()).isEqualTo(doubleToBigDecimal(40.01));
+                assertThat(appearance.getPayCash()).isEqualTo(false);
+
+
+                List<Appearance> appearances =
+                    appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(jurorNumber, poolNumber);
+
+                assertThat(appearances).size().isEqualTo(3);
+                appearances.forEach(appearance1 -> {
+                    if (!appearance1.getAttendanceDate().equals(request.getDateOfExpense())) {
+                        assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(5.00));
+                        assertThat(appearance1.getMiscDescription()).isEqualTo("Desc");
+                        //Ensures nothing else is set
+                        assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(5.00));
+                    }
+                });
+            }
+
+            @Test
+            void applyToAllDaysMultiple() throws Exception {
+                final String jurorNumber = "641500021";
+                final String poolNumber = "415230101";
+                DailyExpense request = DailyExpense.builder()
+                    .dateOfExpense(LocalDate.of(2023, 1, 5))
+                    .poolNumber("415230101")
+                    .payCash(true)
+                    .time(DailyExpenseTime.builder()
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .build())
+                    .financialLoss(
+                        createDailyExpenseFinancialLoss(25.01, 10.00, 5.00, "Desc 2")
+                    )
+                    .applyToAllDays(List.of(DailyExpenseApplyToAllDays.OTHER_COSTS,
+                        DailyExpenseApplyToAllDays.EXTRA_CARE_COSTS, DailyExpenseApplyToAllDays.PAY_CASH))
+                    .build();
+
+                ResponseEntity<DailyExpenseResponse> response = triggerValid(jurorNumber, request);
+                assertThat(response).isNotNull();
+                assertThat(response.getBody()).isNotNull();
+                assertThat(response.getBody().getFinancialLossWarning()).isNull();
+
+                Appearance appearance = getAppearance(jurorNumber, request.getDateOfExpense(), "415");
+
+                assertThat(appearance).isNotNull();
+                assertThat(appearance.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
+                assertThat(appearance.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(25.01));
+                assertThat(appearance.getChildcareDue()).isEqualTo(doubleToBigDecimal(10.00));
+                assertThat(appearance.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(5.00));
+                assertThat(appearance.getMiscDescription()).isEqualTo("Desc 2");
+                assertThat(appearance.getTotalDue()).isEqualTo(doubleToBigDecimal(40.01));
+                assertThat(appearance.getPayCash()).isEqualTo(true);
+
+
+                List<Appearance> appearances =
+                    appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(jurorNumber, poolNumber);
+
+                assertThat(appearances).size().isEqualTo(3);
+                appearances.forEach(appearance1 -> {
+                    if (!appearance1.getAttendanceDate().equals(request.getDateOfExpense())) {
+                        assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(5.00));
+                        assertThat(appearance.getChildcareDue()).isEqualTo(doubleToBigDecimal(10.00));
+                        assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 2");
+                        //Ensures nothing else is set
+                        assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(15.00));
+                        assertThat(appearance.getPayCash()).isEqualTo(true);
+
+                    }
+                });
+            }
+        }
+
+    }
+
+
+    @Nested
+    @DisplayName("GET " + GetEnteredExpenseDetails.URL)
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_getEnteredExpenseDetails.sql"})
+    class GetEnteredExpenseDetails {
+        public static final String URL = BASE_URL + "/entered";
+
+
+        private GetEnteredExpenseRequest buildRequest(LocalDate date) {
+            return GetEnteredExpenseRequest.builder()
+                .dateOfExpense(date)
+                .jurorNumber("641500020")
+                .poolNumber("415230101")
+                .build();
+        }
+
+        @Nested
+        @DisplayName("Positive")
+        class Positive {
+            private ResponseEntity<GetEnteredExpenseResponse> triggerValid(
+                GetEnteredExpenseRequest request) throws Exception {
+                final String jwt = createBureauJwt(COURT_USER, "415");
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+                ResponseEntity<GetEnteredExpenseResponse> response = template.exchange(
+                    new RequestEntity<>(request, httpHeaders, POST, URI.create(URL)),
+                    GetEnteredExpenseResponse.class);
+                assertThat(response.getStatusCode())
+                    .as("Expect the HTTP GET request to be successful")
+                    .isEqualTo(HttpStatus.OK);
+                return response;
+            }
+
+            private void validateTime(GetEnteredExpenseResponse.DailyExpenseTimeEntered time, LocalTime timeAtCourt,
+                                      PayAttendanceType payAttendanceType, LocalTime travelTime) {
+                assertThat(time).isNotNull();
+                assertThat(time.getTimeSpentAtCourt()).isEqualTo(timeAtCourt);
+                assertThat(time.getPayAttendance()).isEqualTo(payAttendanceType);
+                assertThat(time.getTravelTime()).isEqualTo(travelTime);
+            }
+
+            private void validateFinancialLoss(DailyExpenseFinancialLoss financialLoss, BigDecimal lossOfEarnings,
+                                               BigDecimal extraCare, BigDecimal other, String otherDescription) {
+                assertThat(financialLoss).isNotNull();
+                assertThat(financialLoss.getLossOfEarningsOrBenefits()).isEqualTo(lossOfEarnings);
+                assertThat(financialLoss.getExtraCareCost()).isEqualTo(extraCare);
+                assertThat(financialLoss.getOtherCosts()).isEqualTo(other);
+                assertThat(financialLoss.getOtherCostsDescription()).isEqualTo(otherDescription);
+            }
+
+            private void validateTravel(DailyExpenseTravel travel,
+                                        Boolean travelByCar, Integer jurorsByCar,
+                                        Boolean travelByMotorcycle, Integer jurorsByMotorcycle,
+                                        Boolean travelByBike,
+                                        Integer milesTraveled, BigDecimal parking,
+                                        BigDecimal publicTransport, BigDecimal taxi) {
+                assertThat(travel).isNotNull();
+                assertThat(travel.getTraveledByCar()).isEqualTo(travelByCar);
+                assertThat(travel.getJurorsTakenCar()).isEqualTo(jurorsByCar);
+                assertThat(travel.getTraveledByMotorcycle()).isEqualTo(travelByMotorcycle);
+                assertThat(travel.getJurorsTakenMotorcycle()).isEqualTo(jurorsByMotorcycle);
+                assertThat(travel.getTraveledByBicycle()).isEqualTo(travelByBike);
+                assertThat(travel.getMilesTraveled()).isEqualTo(milesTraveled);
+                assertThat(travel.getParking()).isEqualTo(parking);
+                assertThat(travel.getPublicTransport()).isEqualTo(publicTransport);
+                assertThat(travel.getTaxi()).isEqualTo(taxi);
+            }
+
+            private void validateFoodAndDrink(DailyExpenseFoodAndDrink foodAndDrink,
+                                              FoodDrinkClaimType foodDrinkClaimType,
+                                              BigDecimal smartCardAmount) {
+                assertThat(foodAndDrink).isNotNull();
+                assertThat(foodAndDrink.getFoodAndDrinkClaimType()).isEqualTo(foodDrinkClaimType);
+                assertThat(foodAndDrink.getSmartCardAmount()).isEqualTo(smartCardAmount);
+            }
+
+            @Test
+            void positiveDraftExpense() throws Exception {
+                LocalDate dateOfExpense = LocalDate.of(2023, 1, 5);
+                GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
+
+                ResponseEntity<GetEnteredExpenseResponse> responseEntity = triggerValid(request);
+                assertThat(responseEntity).isNotNull();
+                assertThat(responseEntity.getBody()).isNotNull();
+                GetEnteredExpenseResponse response = responseEntity.getBody();
+                assertThat(response.getDateOfExpense()).isEqualTo(dateOfExpense);
+                assertThat(response.getStage()).isEqualTo(AppearanceStage.EXPENSE_ENTERED);
+                assertThat(response.getTotalDue()).isEqualTo(new BigDecimal("525.00"));
+                assertThat(response.getTotalPaid()).isEqualTo(new BigDecimal("0.00"));
+                assertThat(response.getPayCash()).isEqualTo(true);
+
+                validateTime(response.getTime(),
+                    LocalTime.of(6, 30),
+                    PayAttendanceType.FULL_DAY,
+                    LocalTime.of(0, 40)
+                );
+                validateFinancialLoss(response.getFinancialLoss(),
+                    new BigDecimal("90.00"),
+                    new BigDecimal("70.00"),
+                    new BigDecimal("80.00"),
+                    "Desc 1");
+                validateTravel(response.getTravel(),
+                    true,
+                    1,
+                    true,
+                    2,
+                    true,
+                    4,
+                    new BigDecimal("60.00"),
+                    new BigDecimal("10.00"),
+                    new BigDecimal("20.00")
+                );
+                validateFoodAndDrink(response.getFoodAndDrink(),
+                    FoodDrinkClaimType.LESS_THAN_1O_HOURS,
+                    new BigDecimal("25.00"));
+            }
+
+
+            @Test
+            void positiveForApprovalExpense() throws Exception {
+                LocalDate dateOfExpense = LocalDate.of(2023, 1, 8);
+                GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
+
+                ResponseEntity<GetEnteredExpenseResponse> responseEntity = triggerValid(request);
+                assertThat(responseEntity).isNotNull();
+                assertThat(responseEntity.getBody()).isNotNull();
+                GetEnteredExpenseResponse response = responseEntity.getBody();
+                assertThat(response.getDateOfExpense()).isEqualTo(dateOfExpense);
+                assertThat(response.getStage()).isEqualTo(AppearanceStage.EXPENSE_ENTERED);
+                assertThat(response.getTotalDue()).isEqualTo(new BigDecimal("552.97"));
+                assertThat(response.getTotalPaid()).isEqualTo(new BigDecimal("0.00"));
+                assertThat(response.getPayCash()).isEqualTo(false);
+
+                validateTime(response.getTime(),
+                    LocalTime.of(4, 0),
+                    PayAttendanceType.HALF_DAY,
+                    LocalTime.of(0, 40)
+                );
+                validateFinancialLoss(response.getFinancialLoss(),
+                    new BigDecimal("93.00"),
+                    new BigDecimal("73.00"),
+                    new BigDecimal("83.00"),
+                    "Desc 3");
+                validateTravel(response.getTravel(),
+                    null,
+                    null,
+                    false,
+                    null,
+                    true,
+                    6,
+                    new BigDecimal("63.00"),
+                    new BigDecimal("13.97"),
+                    new BigDecimal("23.00")
+                );
+                validateFoodAndDrink(response.getFoodAndDrink(),
+                    FoodDrinkClaimType.NONE,
+                    new BigDecimal("28.00"));
+            }
+
+            @Test
+            void positiveApprovedExpense() throws Exception {
+                LocalDate dateOfExpense = LocalDate.of(2023, 1, 11);
+                GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
+
+                ResponseEntity<GetEnteredExpenseResponse> responseEntity = triggerValid(request);
+                assertThat(responseEntity).isNotNull();
+                assertThat(responseEntity.getBody()).isNotNull();
+                GetEnteredExpenseResponse response = responseEntity.getBody();
+                assertThat(response.getDateOfExpense()).isEqualTo(dateOfExpense);
+                assertThat(response.getStage()).isEqualTo(AppearanceStage.EXPENSE_AUTHORISED);
+                assertThat(response.getTotalDue()).isEqualTo(new BigDecimal("551.48"));
+                assertThat(response.getTotalPaid()).isEqualTo(new BigDecimal("541.48"));
+                assertThat(response.getPayCash()).isEqualTo(false);
+
+                validateTime(response.getTime(),
+                    LocalTime.of(6, 25),
+                    PayAttendanceType.FULL_DAY,
+                    LocalTime.of(1, 43)
+                );
+                validateFinancialLoss(response.getFinancialLoss(),
+                    new BigDecimal("23.00"),
+                    new BigDecimal("43.00"),
+                    new BigDecimal("33.00"),
+                    "Desc 4");
+                validateTravel(response.getTravel(),
+                    true,
+                    3,
+                    null,
+                    null,
+                    null,
+                    9,
+                    new BigDecimal("53.00"),
+                    new BigDecimal("103.00"),
+                    new BigDecimal("93.00")
+                );
+                validateFoodAndDrink(response.getFoodAndDrink(),
+                    FoodDrinkClaimType.MORE_THAN_10_HOURS,
+                    new BigDecimal("28.52"));
+            }
+        }
+
+        @Nested
+        @DisplayName("Negative")
+        class Negative {
+            private ResponseEntity<String> triggerInvalid(GetEnteredExpenseRequest request) throws Exception {
+                final String jwt = createBureauJwt(COURT_USER, "415");
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+                return template.exchange(
+                    new RequestEntity<>(request, httpHeaders, POST, URI.create(URL)),
+                    String.class);
+            }
+
+            @Test
+            void invalidPayload() throws Exception {
+                validateInvalidPayload(triggerInvalid(GetEnteredExpenseRequest.builder()
+                        .jurorNumber("INVALID")
+                        .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                        .dateOfExpense(LocalDate.now())
+                        .build()),
+                    new RestResponseEntityExceptionHandler.FieldError("jurorNumber",
+                        "must match \"^\\d{9}$\""));
+            }
+
+            @Test
+            void appearanceNotFound() throws Exception {
+                LocalDate dateOfExpense = LocalDate.of(2024, 1, 11);
+                GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
+                validateNotFound(triggerInvalid(request),
+                    URL, "No appearance record found for juror: 641500020 on day: 2024-01-11");
+            }
+
+            @Test
+            void unauthorisedBureauUser() throws Exception {
+                LocalDate dateOfExpense = LocalDate.of(2024, 1, 11);
+                GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
+                final String jwt = createBureauJwt(BUREAU_USER, "400");
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+                validateForbiddenResponse(template.exchange(
+                        new RequestEntity<>(request, httpHeaders, POST, URI.create(URL)), String.class),
+                    URL);
+            }
+        }
     }
 
 

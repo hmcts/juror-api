@@ -74,6 +74,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.ContactEnquiryTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -92,7 +93,6 @@ import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
-import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -3135,7 +3135,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(jurorAttendanceDetailsDto.getHours())
                 .isEqualTo("0.0");
             assertThat(jurorAttendanceDetailsDto.getTravelTime())
-                .isEqualTo(new BigDecimal("1.20"));
+                .isEqualTo(LocalTime.of(1,12));
 
             jurorAttendanceDetailsDto =
                 jurorAttendanceDetailsResponseDto.getData().get(1);
@@ -3200,7 +3200,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(jurorAttendanceDetailsDto.getHours())
                 .isEqualTo("8.0");
             assertThat(jurorAttendanceDetailsDto.getTravelTime())
-                .isEqualTo(new BigDecimal("1.00"));
+                .isEqualTo(LocalTime.of(1,0));
         }
 
     }
@@ -3558,7 +3558,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
             validateInvalidPayload(response,
-                "must match \"^\\d{9}$\"");
+                new RestResponseEntityExceptionHandler.FieldError("jurorNumber", "must match \"^\\d{9}$\""));
 
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
@@ -3684,7 +3684,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
             validateInvalidPayload(response,
-                "must match \"^\\d{9}$\"");
+                new RestResponseEntityExceptionHandler.FieldError("jurorNumber", "must match \"^\\d{9}$\""));
+
 
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
@@ -4044,7 +4045,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 FilterableJurorDetailsRequestDto request = createDto("INVALID", 9L,
                     FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
 
-                validateInvalidPathParam(triggerInvalid(request), URL,
+                validateInvalidPathParam(triggerInvalid(request),
                     "getJurorDetailsBulkFilterable.request[0].jurorNumber: must match \"^\\d{9}$\"");
             }
 
@@ -4065,7 +4066,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             @DisplayName("Empty request body")
             @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
             void emptyRequest() throws Exception {
-                validateInvalidPathParam(triggerInvalid(List.of()), URL,
+                validateInvalidPathParam(triggerInvalid(List.of()),
                     "getJurorDetailsBulkFilterable.request: size must be between 1 and 20");
             }
 
@@ -4075,7 +4076,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             void requestWithNullItem() throws Exception {
                 List<FilterableJurorDetailsRequestDto> request = new ArrayList<>();
                 request.add(null);
-                validateInvalidPathParam(triggerInvalid(request), URL,
+                validateInvalidPathParam(triggerInvalid(request),
                     "getJurorDetailsBulkFilterable.request[0].<list element>: must not be null");
             }
 
@@ -4092,7 +4093,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                         .build());
                 }
 
-                validateInvalidPathParam(triggerInvalid(request), URL,
+                validateInvalidPathParam(triggerInvalid(request),
                     "getJurorDetailsBulkFilterable.request: size must be between 1 and 20");
             }
         }

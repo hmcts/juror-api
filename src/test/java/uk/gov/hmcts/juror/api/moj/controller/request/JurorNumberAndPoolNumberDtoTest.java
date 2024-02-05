@@ -7,8 +7,13 @@ import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 @SuppressWarnings(
     "PMD.JUnitTestsShouldIncludeAssert"//False positive done via inheritance
 )
-class JurorNumberAndPoolNumberDtoTest extends AbstractValidatorTest {
+class JurorNumberAndPoolNumberDtoTest extends AbstractValidatorTest<JurorNumberAndPoolNumberDto> {
 
+    @Override
+    protected JurorNumberAndPoolNumberDto createValidObject() {
+        return createJurorNumberAndPoolNumberDto(
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
+    }
 
     protected JurorNumberAndPoolNumberDto createJurorNumberAndPoolNumberDto(
         String jurorNumber,

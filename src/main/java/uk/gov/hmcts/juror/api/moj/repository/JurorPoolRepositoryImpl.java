@@ -3,11 +3,16 @@ package uk.gov.hmcts.juror.api.moj.repository;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.PathBuilderFactory;
 import com.querydsl.core.types.dsl.StringExpression;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.repository.support.Querydsl;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
@@ -16,8 +21,8 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 
-import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Custom Repository implementation for the JurorPool entity.
@@ -172,6 +177,40 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
 
     }
 
+    @Override
+    public List<JurorPool> findJurorPoolsBySearch(JurorPoolSearch search, String owner,
+                                                  Consumer<JPQLQuery<JurorPool>> queryModifiers) {
+        Querydsl querydsl = new Querydsl(entityManager, new PathBuilderFactory().create(JurorPool.class));
+
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        JPQLQuery<JurorPool> query = queryFactory
+            .selectFrom(JUROR_POOL)
+            .where(JUROR_POOL.owner.eq(owner));
+
+        if (queryModifiers != null) {
+            queryModifiers.accept(query);
+        }
+
+        if (search.getJurorName() != null) {
+            query.where(JUROR.firstName.concat(" ").concat(JUROR.lastName)
+                .likeIgnoreCase("%" + search.getJurorName() + "%"));
+        }
+
+        if (search.getJurorNumber() != null) {
+            query.where(JUROR.jurorNumber.startsWith(search.getJurorNumber()));
+        }
+
+        if (search.getPostcode() != null) {
+            query.where(JUROR.postcode.eq(search.getPostcode()));
+        }
+
+        if (search.getPoolNumber() != null) {
+            query.where(JUROR_POOL.pool.poolNumber.startsWith(search.getPoolNumber()));
+        }
+        return querydsl.applyPagination(PageRequest.of(search.getPageNumber() - 1, search.getPageLimit()), query)
+            .fetch();
+    }
+
     private static StringExpression getJurorAttendance() {
         return new CaseBuilder()
             .when(Expressions.asBoolean(JUROR_POOL.onCall.eq(true)))
@@ -187,5 +226,4 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             .then("On call")
             .otherwise(JUROR_POOL.nextDate.stringValue());
     }
-
 }

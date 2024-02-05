@@ -1,18 +1,19 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationDataDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,17 +35,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(CourtLocationController.class)
 @AutoConfigureMockMvc(addFilters = false)
 public class CourtLocationControllerTest {
 
+    private static final String BASE_URL = "/api/v1/moj/court-location";
     @Autowired
     private MockMvc mockMvc;
 
@@ -52,15 +56,6 @@ public class CourtLocationControllerTest {
 
     @MockBean
     private RestfulAuthenticationEntryPoint restfulAuthenticationEntryPoint;
-
-    @Before
-    public void setupMocks() {
-        Authentication auth = mock(Authentication.class);
-        SecurityContext securityContext = mock(SecurityContext.class);
-
-        when(securityContext.getAuthentication()).thenReturn(auth);
-        SecurityContextHolder.setContext(securityContext);
-    }
 
     //Tests related to operation: getAllCourtLocationsByPostcode
     @Test
@@ -76,7 +71,7 @@ public class CourtLocationControllerTest {
 
         mockMvc.perform(get("/api/v1/moj/court-location/catchment-areas")
                 .principal(mockPrincipal)
-                .queryParam("postcode","SE15")
+                .queryParam("postcode", "SE15")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()", is(2)))
@@ -104,7 +99,7 @@ public class CourtLocationControllerTest {
 
         mockMvc.perform(get("/api/v1/moj/court-location/catchment-areas")
                 .principal(mockPrincipal)
-                .queryParam("postcode","SE16")
+                .queryParam("postcode", "SE16")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()", is(2)))
@@ -152,6 +147,7 @@ public class CourtLocationControllerTest {
 
         verify(courtLocationService, never()).getCourtLocationsByPostcode(any(String.class));
     }
+
     @Test
     public void getAllCourtLocationsByPostcode_longPostcode() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
@@ -181,6 +177,7 @@ public class CourtLocationControllerTest {
 
         verify(courtLocationService, never()).getCourtLocationsByPostcode(any(String.class));
     }
+
     @Test
     public void getAllCourtLocationsByPostcode_blankPostcode() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
@@ -190,7 +187,7 @@ public class CourtLocationControllerTest {
 
         mockMvc.perform(get("/api/v1/moj/court-location/catchment-areas")
                 .principal(mockPrincipal)
-                .queryParam("postcode","")
+                .queryParam("postcode", "")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
 
@@ -223,7 +220,7 @@ public class CourtLocationControllerTest {
 
         mockMvc.perform(get("/api/v1/moj/court-location/catchment-areas")
                 .principal(mockPrincipal)
-                .queryParam("postcode","A BC")
+                .queryParam("postcode", "A BC")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
 
@@ -241,5 +238,44 @@ public class CourtLocationControllerTest {
                 "Jury Central Summoning Bureau",
                 null)
         );
+    }
+
+
+    @Nested
+    class GetCourtRates
+        extends AbstractControllerTest<Void, GetCourtRates> {
+        private static final String URL = BASE_URL + "/{loc_code}/{date}/rates";
+        private static final BureauJwtAuthentication MOCK_PRINCIPAL = mock(BureauJwtAuthentication.class);
+        private BureauJWTPayload bureauJwtPayload;
+
+        protected GetCourtRates() {
+            super(HttpMethod.GET, URL, MOCK_PRINCIPAL);
+            bureauJwtPayload = TestUtils.createJwt("415", "COURT_USER");
+            when(MOCK_PRINCIPAL.getPrincipal()).thenReturn(bureauJwtPayload);
+        }
+
+        @BeforeEach
+        void beforeEach() {
+            this.setMockMvc(mockMvc);
+        }
+
+        @Test
+        void positiveTypical() throws Exception {
+            send(null, HttpStatus.OK, "415", "2023-05-04");
+            verify(courtLocationService, times(1))
+                .getCourtRates("415", LocalDate.of(2023, 5, 4));
+        }
+
+        @Test
+        void negativeInvalidLocCode() throws Exception {
+            send(null, HttpStatus.BAD_REQUEST, "INVALID", "2023-05-04");
+            verifyNoInteractions(courtLocationService);
+        }
+
+        @Test
+        void negativeInvalidDate() throws Exception {
+            send(null, HttpStatus.BAD_REQUEST, "415", "INVALID");
+            verifyNoInteractions(courtLocationService);
+        }
     }
 }

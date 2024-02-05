@@ -490,6 +490,18 @@ class LetterBaseTest {
     }
 
     @Test
+    void additionalInformationIsCorrect() {
+        final String additionalInformation =
+            "This is the additional information for the request additional information letter";
+        LetterBase testLetter = new LetterBase(testContextBuilder()
+                                                   .additionalInformation(additionalInformation).build());
+
+        testLetter.addData(LetterBase.LetterDataType.ADDITIONAL_INFORMATION, 210);
+        assertThat(testLetter.getLetterString())
+            .isEqualTo(LetterTestUtils.pad(additionalInformation.toUpperCase(), 210));
+    }
+
+    @Test
     void welshCourtNameIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
                                                    .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())

@@ -31,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SuppressWarnings("PMD.LawOfDemeter")
 public class BureauAuthenticationControllerTest extends AbstractIntegrationTest {
     private static final String HMAC_HEADER_VALID = "eyJhbGciOiJIUzI1NiJ9"
         + ".eyJleHAiOjM0NTIwMTk4MzM1MCwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";

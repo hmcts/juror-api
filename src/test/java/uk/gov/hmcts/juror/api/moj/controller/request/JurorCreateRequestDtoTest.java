@@ -8,10 +8,13 @@ import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
-import java.util.function.BiConsumer;
 
-public class JurorCreateRequestDtoTest extends AbstractValidatorTest {
+public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreateRequestDto> {
 
+    @Override
+    protected JurorCreateRequestDto createValidObject() {
+        return createValidJurorCreateRequestDto();
+    }
 
     public static JurorCreateRequestDto createValidJurorCreateRequestExistingPoolDto() {
         JurorCreateRequestDto jurorCreateRequestDto = createValidJurorCreateRequestDto();
@@ -54,29 +57,8 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest {
     }
 
 
-    class AbstractJurorCreateRequestDtoTest extends AbstractValidationFieldTestString<JurorCreateRequestDto> {
-
-        private final BiConsumer<JurorCreateRequestDto, String> setFieldConsumer;
-
-        protected AbstractJurorCreateRequestDtoTest(String fieldName,
-                                                    BiConsumer<JurorCreateRequestDto, String> setFieldConsumer) {
-            super(fieldName);
-            this.setFieldConsumer = setFieldConsumer;
-        }
-
-        @Override
-        protected void setField(JurorCreateRequestDto baseObject, String value) {
-            setFieldConsumer.accept(baseObject, value);
-        }
-
-        @Override
-        protected JurorCreateRequestDto createValidObject() {
-            return createValidJurorCreateRequestDto();
-        }
-    }
-
     @Nested
-    class Title extends AbstractJurorCreateRequestDtoTest {
+    class Title extends AbstractValidationFieldTestString {
         protected Title() {
             super("title", JurorCreateRequestDto::setTitle);
             addAllowBlankTest("ABC");
@@ -86,7 +68,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class FirstName extends AbstractJurorCreateRequestDtoTest {
+    class FirstName extends AbstractValidationFieldTestString {
         protected FirstName() {
             super("firstName", JurorCreateRequestDto::setFirstName);
             addNotBlankTest(null);
@@ -96,7 +78,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class LastName extends AbstractJurorCreateRequestDtoTest {
+    class LastName extends AbstractValidationFieldTestString {
         protected LastName() {
             super("lastName", JurorCreateRequestDto::setLastName);
             addNotBlankTest(null);
@@ -106,47 +88,26 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class Address extends AbstractValidationFieldTestBase<JurorCreateRequestDto, JurorAddressDto> {
+    class Address extends AbstractValidationFieldTestBase<JurorAddressDto> {
         protected Address() {
-            super("address");
+            super("address", JurorCreateRequestDto::setAddress);
             addRequiredTest(null);
-        }
-
-        @Override
-        protected void setField(JurorCreateRequestDto baseObject, JurorAddressDto value) {
-            baseObject.setAddress(value);
-        }
-
-        @Override
-        protected JurorCreateRequestDto createValidObject() {
-            return createValidJurorCreateRequestDto();
         }
     }
 
     @Nested
-    class DateOfBirth extends AbstractValidationFieldTestLocalDate<JurorCreateRequestDto> {
+    class DateOfBirth extends AbstractValidationFieldTestLocalDate {
         protected DateOfBirth() {
-            super("dateOfBirth");
+            super("dateOfBirth", JurorCreateRequestDto::setDateOfBirth);
             addRequiredTest(null);
-            addDateRangeTest(LocalDate.now().minusYears(125), LocalDate.now().minusDays(1), new FieldTestSupport(
-                "{uk.gov.hmcts.juror.api.validation.LocalDateOfBirth.message}"));
+            addDateRangeTest(LocalDate.now().minusYears(125), LocalDate.now().minusDays(1),
+                new FieldTestSupport().setMessage(
+                    "{uk.gov.hmcts.juror.api.validation.LocalDateOfBirth.message}"));
         }
-
-
-        @Override
-        protected void setField(JurorCreateRequestDto baseObject, LocalDate value) {
-            baseObject.setDateOfBirth(value);
-        }
-
-        @Override
-        protected JurorCreateRequestDto createValidObject() {
-            return createValidJurorCreateRequestDto();
-        }
-
     }
 
     @Nested
-    class PrimaryPhone extends AbstractJurorCreateRequestDtoTest {
+    class PrimaryPhone extends AbstractValidationFieldTestString {
         protected PrimaryPhone() {
             super("primaryPhone", JurorCreateRequestDto::setPrimaryPhone);
             addNotRequiredTest("012345678");
@@ -155,7 +116,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class AlternativePhone extends AbstractJurorCreateRequestDtoTest {
+    class AlternativePhone extends AbstractValidationFieldTestString {
         protected AlternativePhone() {
             super("alternativePhone", JurorCreateRequestDto::setAlternativePhone);
             addNotRequiredTest("012345678");
@@ -164,7 +125,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class EmailAddress extends AbstractJurorCreateRequestDtoTest {
+    class EmailAddress extends AbstractValidationFieldTestString {
         protected EmailAddress() {
             super("emailAddress", JurorCreateRequestDto::setEmailAddress);
             addAllowBlankTest("test@email.com");
@@ -174,7 +135,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class Notes extends AbstractJurorCreateRequestDtoTest {
+    class Notes extends AbstractValidationFieldTestString {
         protected Notes() {
             super("notes", JurorCreateRequestDto::setNotes);
             addAllowBlankTest("ABC");
@@ -183,7 +144,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class PoolNumber extends AbstractJurorCreateRequestDtoTest {
+    class PoolNumber extends AbstractValidationFieldTestString {
         protected PoolNumber() {
             super("poolNumber", JurorCreateRequestDto::setPoolNumber);
             addNotRequiredTest("123456789");
@@ -252,22 +213,11 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class StartDate extends AbstractValidationFieldTestLocalDate<JurorCreateRequestDto> {
+    class StartDate extends AbstractValidationFieldTestLocalDate {
         protected StartDate() {
-            super("startDate");
+            super("startDate", JurorCreateRequestDto::setStartDate);
             addNotRequiredTest(LocalDate.now());
         }
-
-        @Override
-        protected void setField(JurorCreateRequestDto baseObject, LocalDate value) {
-            baseObject.setStartDate(value);
-        }
-
-        @Override
-        protected JurorCreateRequestDto createValidObject() {
-            return createValidJurorCreateRequestDto();
-        }
-
 
         @Test
         void negativeExcludeIfHasPoolNumber() {
@@ -284,7 +234,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class PoolType extends AbstractJurorCreateRequestDtoTest {
+    class PoolType extends AbstractValidationFieldTestString {
         protected PoolType() {
             super("poolType", JurorCreateRequestDto::setPoolType);
             addNotRequiredTest("ABC");
@@ -306,7 +256,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class LocationCode extends AbstractJurorCreateRequestDtoTest {
+    class LocationCode extends AbstractValidationFieldTestString {
         protected LocationCode() {
             super("locationCode", JurorCreateRequestDto::setLocationCode);
             addNotRequiredTest("400");

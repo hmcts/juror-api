@@ -42,7 +42,8 @@ public class MojException extends RuntimeException {
             FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD,
             JUROR_STATUS_MUST_BE_FAILED_TO_ATTEND,
             JUROR_STATUS_MUST_BE_RESPONDED,
-            LETTER_CANNOT_GENERATE_ON_WEEKEND;
+            LETTER_CANNOT_GENERATE_ON_WEEKEND,
+            EXPENSES_CANNOT_BE_LESS_THAN_ZERO;
         }
     }
 

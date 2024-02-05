@@ -100,15 +100,15 @@ INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, is_active, n
 ('418', '641800003', '418230103', true, '2023-10-23', 2, null);
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,travel_time,appearance_stage,non_attendance) VALUES
-	(current_date,'641700003','417230101','417',123456789,'09:30:00',null,1.2,'CHECKED_IN',false),
-	(current_date,'641700006','417230101','417',123456789,'09:30:00',null,1.2,'CHECKED_IN',false),
-	(current_date,'641700005','417230101','417',123456789,'09:30:00',null,1.2,'CHECKED_IN',false);
+	(current_date,'641700003','417230101','417',123456789,'09:30:00',null,'01:12','CHECKED_IN',false),
+	(current_date,'641700006','417230101','417',123456789,'09:30:00',null,'01:12','CHECKED_IN',false),
+	(current_date,'641700005','417230101','417',123456789,'09:30:00',null,'01:12','CHECKED_IN',false);
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,travel_time,appearance_stage,non_attendance) VALUES
-	(current_date,'641700007','417230101','417',123456789,null,null,1.2,null,false),
-    (current_date,'641700008','417230101','417',123456789,null,null,1.2,null,false);
+	(current_date,'641700007','417230101','417',123456789,null,null,'01:12',null,false),
+    (current_date,'641700008','417230101','417',123456789,null,null,'01:12',null,false);
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,travel_time,appearance_stage,non_attendance) VALUES
-    (current_date,'641800001','418230101','418',123456789,'09:30:00',null,1.2,'CHECKED_IN',false),
-    (current_date,'641800002','418230102','418',123456789,'09:30:00',null,1.2,'CHECKED_IN',false),
-    (current_date,'641800003','418230103','418',123456789,'09:30:00',null,1.2,'CHECKED_IN',false);
+    (current_date,'641800001','418230101','418',123456789,'09:30:00',null,'01:12','CHECKED_IN',false),
+    (current_date,'641800002','418230102','418',123456789,'09:30:00',null,'01:12','CHECKED_IN',false),
+    (current_date,'641800003','418230103','418',123456789,'09:30:00',null,'01:12','CHECKED_IN',false);

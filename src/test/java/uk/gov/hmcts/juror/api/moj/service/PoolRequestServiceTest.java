@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -270,34 +269,34 @@ public class PoolRequestServiceTest {
             .saveAndFlush(poolRequestArgumentCaptor.capture());
         PoolRequest pool = poolRequestArgumentCaptor.getValue();
 
-        Assertions.assertThat(pool).isNotNull();
+        assertThat(pool).isNotNull();
 
-        Assertions.assertThat(pool.getPoolNumber())
+        assertThat(pool.getPoolNumber())
             .as("Expect pool number to be mapped from request dto")
             .isEqualTo(poolRequestDto.getPoolNumber());
-        Assertions.assertThat(pool.getPoolType().getPoolType())
+        assertThat(pool.getPoolType().getPoolType())
             .as("Expect pool type to be mapped from request dto")
             .isEqualTo(poolRequestDto.getPoolType());
-        Assertions.assertThat(pool.getNumberRequested())
+        assertThat(pool.getNumberRequested())
             .as("Expect number requested to be mapped from the request dto")
             .isEqualTo(poolRequestDto.getNumberRequested());
-        Assertions.assertThat(pool.getTotalNoRequired())
+        assertThat(pool.getTotalNoRequired())
             .as("Expect total number requested to be mapped from the request dto")
             .isEqualTo(poolRequestDto.getNumberRequested());
-        Assertions.assertThat(pool.getReturnDate())
+        assertThat(pool.getReturnDate())
             .as("Expect service start date to be mapped from request dto")
             .isEqualTo(poolRequestDto.getAttendanceDate());
-        Assertions.assertThat(pool.getAttendTime())
+        assertThat(pool.getAttendTime())
             .as("Expect attendance time to be mapped from request dto")
             .isEqualToIgnoringSeconds(LocalDateTime.of(poolRequestDto.getAttendanceDate(),
                 poolRequestDto.getAttendanceTime()));
-        Assertions.assertThat(pool.getNewRequest())
+        assertThat(pool.getNewRequest())
             .as("Expect new request flag to be set to 'Y' - jurors have not yet been summoned")
             .isEqualTo('Y');
-        Assertions.assertThat(pool.getOwner())
+        assertThat(pool.getOwner())
             .as("Expect owner to be set to bureau's location code")
             .isEqualTo("400");
-        Assertions.assertThat(pool.isNilPool())
+        assertThat(pool.isNilPool())
             .as("Expect nil pool flag to be set to false")
             .isFalse();
     }
@@ -326,34 +325,34 @@ public class PoolRequestServiceTest {
             .saveAndFlush(poolRequestArgumentCaptor.capture());
         PoolRequest pool = poolRequestArgumentCaptor.getValue();
 
-        Assertions.assertThat(pool).isNotNull();
+        assertThat(pool).isNotNull();
 
-        Assertions.assertThat(pool.getPoolNumber())
+        assertThat(pool.getPoolNumber())
             .as("Expect pool number to be mapped from request dto")
             .isEqualTo(poolRequestDto.getPoolNumber());
-        Assertions.assertThat(pool.getPoolType().getPoolType())
+        assertThat(pool.getPoolType().getPoolType())
             .as("Expect pool type to be mapped from request dto")
             .isEqualTo(poolRequestDto.getPoolType());
-        Assertions.assertThat(pool.getNumberRequested())
+        assertThat(pool.getNumberRequested())
             .as("Expect number requested to be mapped from the request dto")
             .isEqualTo(poolRequestDto.getNumberRequested());
-        Assertions.assertThat(pool.getTotalNoRequired())
+        assertThat(pool.getTotalNoRequired())
             .as("Expect total number requested to be mapped from the request dto")
             .isEqualTo(poolRequestDto.getNumberRequested());
-        Assertions.assertThat(pool.getReturnDate())
+        assertThat(pool.getReturnDate())
             .as("Expect service start date to be mapped from request dto")
             .isEqualTo(poolRequestDto.getAttendanceDate());
-        Assertions.assertThat(pool.getAttendTime())
+        assertThat(pool.getAttendTime())
             .as("Expect attendance time to be mapped from request dto")
             .isEqualToIgnoringSeconds(LocalDateTime.of(poolRequestDto.getAttendanceDate(),
                 poolRequestDto.getAttendanceTime()));
-        Assertions.assertThat(pool.getNewRequest())
+        assertThat(pool.getNewRequest())
             .as("Expect new request flag to be set to 'Y' - jurors have not yet been summoned")
             .isEqualTo('Y');
-        Assertions.assertThat(pool.getOwner())
+        assertThat(pool.getOwner())
             .as("Expect owner to be set to bureau's location code")
             .isEqualTo("400");
-        Assertions.assertThat(pool.isNilPool())
+        assertThat(pool.isNilPool())
             .as("Expect nil pool flag to be set to false")
             .isFalse();
     }
@@ -398,33 +397,33 @@ public class PoolRequestServiceTest {
         Mockito.verify(poolRequestRepository, Mockito.times(1))
             .saveAndFlush(poolRequestArgumentCaptor.capture());
         PoolRequest poolRequest = poolRequestArgumentCaptor.getValue();
-        Assertions.assertThat(poolRequest).isNotNull();
+        assertThat(poolRequest).isNotNull();
 
-        Assertions.assertThat(poolRequest.getPoolNumber())
+        assertThat(poolRequest.getPoolNumber())
             .as("Expect pool number to be mapped from request dto")
             .isEqualTo(poolRequestDto.getPoolNumber());
-        Assertions.assertThat(poolRequest.getPoolType().getPoolType())
+        assertThat(poolRequest.getPoolType().getPoolType())
             .as("Expect pool type to be mapped from request dto")
             .isEqualTo(poolRequestDto.getPoolType());
-        Assertions.assertThat(poolRequest.getNumberRequested())
+        assertThat(poolRequest.getNumberRequested())
             .as("Expect number requested to be set to 0")
             .isEqualTo(0);
-        Assertions.assertThat(poolRequest.getTotalNoRequired())
+        assertThat(poolRequest.getTotalNoRequired())
             .as("Expect total number requested to be set to 0")
             .isEqualTo(0);
-        Assertions.assertThat(poolRequest.getReturnDate())
+        assertThat(poolRequest.getReturnDate())
             .as("Expect service start date to be mapped from request dto")
             .isEqualTo(poolRequestDto.getAttendanceDate());
-        Assertions.assertThat(poolRequest.getAttendTime())
+        assertThat(poolRequest.getAttendTime())
             .as("Expect attendance time not to be set")
             .isNull();
-        Assertions.assertThat(poolRequest.getNewRequest())
+        assertThat(poolRequest.getNewRequest())
             .as("Expect new request flag to be set to 'N' - pool request goes straight to created")
             .isEqualTo('N');
-        Assertions.assertThat(poolRequest.getOwner())
+        assertThat(poolRequest.getOwner())
             .as("Expect owner to be set to primary court location code")
             .isEqualTo(courtOwner);
-        Assertions.assertThat(poolRequest.isNilPool())
+        assertThat(poolRequest.isNilPool())
             .as("Expect nil pool flag to be set to false")
             .isFalse();
     }
@@ -442,7 +441,7 @@ public class PoolRequestServiceTest {
 
         Mockito.when(poolRequestRepository.findById(poolNumber)).thenReturn(Optional.empty());
 
-        Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+        assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
             poolRequestService.savePoolRequest(poolRequestDto, buildPayload(bureauOwner)));
 
         Mockito.verify(poolRequestRepository, Mockito.times(1)).findById(poolNumber);

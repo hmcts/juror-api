@@ -42,16 +42,19 @@ public interface ReissueLetterService {
         JUROR_DEFERRED_TO_REASON(String.class, "Reason", QJurorPool.jurorPool.deferralCode.as("deferral_code"),
             List.of(QJurorPool.class), deferralCode -> ExcusalCodeEnum.valueOf((String)deferralCode).getDescription()),
         DATE_PRINTED(LocalDate.class, "Date printed", QBulkPrintData.bulkPrintData.creationDate.as("date_printed"),
-            List.of(QBulkPrintData.class), localDate -> {
-            if (LocalDate.now().equals(localDate)) {
-                return "Pending";
-            }
-            return localDate.toString();
-        }),
-        BULK_PRINT_ID(Long.class, "hidden", QBulkPrintData.bulkPrintData.id.as("id"),
+            List.of(QBulkPrintData.class), Object::toString),
+        BULK_PRINT_ID(Long.class, "hidden_print_id", QBulkPrintData.bulkPrintData.id.as("id"),
             List.of(QBulkPrintData.class)),
-        FORM_CODE(String.class, "hidden", QBulkPrintData.bulkPrintData.formAttribute.formType.as("form_code"),
-            List.of(QBulkPrintData.class));
+        FORM_CODE(String.class, "hidden_form_code", QBulkPrintData.bulkPrintData.formAttribute.formType.as("form_code"),
+            List.of(QBulkPrintData.class)),
+        EXTRACTED_FLAG(Boolean.class, "hidden_extracted_flag", QBulkPrintData.bulkPrintData.extractedFlag.as(
+            "extracted_flag"),
+            List.of(QBulkPrintData.class), flag -> {
+                if (flag == null) {
+                    return false;
+                }
+                return flag;
+            });
 
         private final Class<?> classType;
         private final String displayText;
@@ -92,8 +95,8 @@ public interface ReissueLetterService {
             if (LocalDate.class.equals(classType)) {
                 return "date";
             }
-            if (Long.class.equals(classType)) {
-                return "number";
+            if (Boolean.class.equals(classType)) {
+                return "boolean";
             }
             throw new MojException.InternalServerError("Unknown data type: " + classType, null);
         }

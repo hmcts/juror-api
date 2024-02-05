@@ -205,6 +205,20 @@ class PrintDataServiceImplTest {
     }
 
     @Test
+    void printWithdrawalLetterThrowsWithNullList() {
+        assertThatExceptionOfType(MojException.InternalServerError.class)
+            .isThrownBy(() -> printDataService.printWithdrawalLetter(null));
+    }
+
+    @Test
+    void printWithdrawalLetterCallsCommit() {
+        final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
+        doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
+        printDataService.printWithdrawalLetter(LetterTestUtils.testJurorPool(date));
+        verify(bulkPrintDataRepository, times(1)).save(any());
+    }
+
+    @Test
     void commitDataWritesLetterData() {
         doReturn("test-letter-string").when(letterBase).getLetterString();
         doReturn("123456789").when(letterBase).getJurorNumber();

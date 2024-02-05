@@ -3,13 +3,18 @@ package uk.gov.hmcts.juror.api.moj.domain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
 import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class AppearanceTest {
 
@@ -229,6 +234,76 @@ class AppearanceTest {
                 getAppearanceForTotalsNulls().getTotalPaid(),
                 "Total paid should be 0 if all the due amounts are null");
         }
+    }
+
+    @DisplayName("public LocalTime getTimeSpentAtCourt()")
+    @Nested
+    class GetTimeSpentAtCourt {
+        @Test
+        void timeOutNull() {
+            Appearance appearance = new Appearance();
+            appearance.setTimeIn(LocalTime.of(8, 30));
+            appearance.setTimeOut(null);
+            assertThat(appearance.getTimeSpentAtCourt())
+                .isEqualTo(LocalTime.of(0, 0));
+        }
+
+        @Test
+        void timeInNull() {
+            Appearance appearance = new Appearance();
+            appearance.setTimeIn(null);
+            appearance.setTimeOut(LocalTime.of(17, 30));
+            assertThat(appearance.getTimeSpentAtCourt())
+                .isEqualTo(LocalTime.of(0, 0));
+
+        }
+
+        @Test
+        void timeOutAndTimeInNull() {
+            Appearance appearance = new Appearance();
+            appearance.setTimeIn(null);
+            appearance.setTimeOut(null);
+            assertThat(appearance.getTimeSpentAtCourt())
+                .isEqualTo(LocalTime.of(0, 0));
+
+        }
+
+        @Test
+        void timeOutAndTimeInNotNull() {
+            Appearance appearance = new Appearance();
+            appearance.setTimeIn(LocalTime.of(8, 30));
+            appearance.setTimeOut(LocalTime.of(17, 30));
+            assertThat(appearance.getTimeSpentAtCourt())
+                .isEqualTo(LocalTime.of(9, 0));
+
+        }
+    }
+
+    @Test
+    void isLongTrialDayTrue() {
+        Appearance appearance = new Appearance();
+        AttendanceType attendanceType = mock(AttendanceType.class);
+        appearance.setAttendanceType(attendanceType);
+        when(attendanceType.getIsLongTrial()).thenReturn(true);
+        assertThat(appearance.isLongTrialDay()).isEqualTo(true);
+    }
+
+    @Test
+    void isLongTrialDayFalse() {
+        Appearance appearance = new Appearance();
+        AttendanceType attendanceType = mock(AttendanceType.class);
+        appearance.setAttendanceType(attendanceType);
+        when(attendanceType.getIsLongTrial()).thenReturn(false);
+        assertThat(appearance.isLongTrialDay()).isEqualTo(false);
+    }
+
+    @Test
+    void isLongTrialDayNull() {
+        Appearance appearance = new Appearance();
+        AttendanceType attendanceType = mock(AttendanceType.class);
+        appearance.setAttendanceType(attendanceType);
+        when(attendanceType.getIsLongTrial()).thenReturn(null);
+        assertThat(appearance.isLongTrialDay()).isNull();
     }
 
     @SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")

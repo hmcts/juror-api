@@ -8,6 +8,8 @@ import uk.gov.hmcts.juror.api.moj.domain.AppearanceId;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+
 
 @Repository
 public interface AppearanceRepository extends
@@ -23,4 +25,13 @@ public interface AppearanceRepository extends
     List<Appearance> findAllByJurorNumberAndFinancialAuditDetailsId(String jurorNumber, long financialAuditDetails);
 
     List<Appearance> findAllByJurorNumberAndPoolNumber(String jurorNumber, String poolNumber);
+
+    Optional<Appearance> findByJurorNumberAndPoolNumberAndAttendanceDateAndIsDraftExpenseTrue(String jurorNumber,
+                                                                                              String poolNumber,
+                                                                                              LocalDate attendanceDate);
+
+    Optional<Appearance> findByJurorNumberAndPoolNumberAndAttendanceDate(String jurorNumber,
+                                                                         String poolNumber, LocalDate attendanceDate);
+
+    List<Appearance> findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(String jurorNumber, String poolNumber);
 }

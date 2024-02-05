@@ -4,30 +4,11 @@ import org.junit.jupiter.api.Nested;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 
-import java.util.function.BiConsumer;
+public class ViewExpenseRequestTest extends AbstractValidatorTest<ViewExpenseRequest> {
 
-public class ViewExpenseRequestTest extends AbstractValidatorTest {
-
-    class AbstractViewExpenseRequestTest extends AbstractValidatorTest.AbstractValidationFieldTestString<ViewExpenseRequest> {
-
-        private final BiConsumer<ViewExpenseRequest, String> setFieldConsumer;
-
-        protected AbstractViewExpenseRequestTest(String fieldName,
-                                                 BiConsumer<ViewExpenseRequest, String> setFieldConsumer) {
-            super(fieldName);
-            this.setFieldConsumer = setFieldConsumer;
-        }
-
-
-        @Override
-        protected void setField(ViewExpenseRequest baseObject, String value) {
-            setFieldConsumer.accept(baseObject, value);
-        }
-
-        @Override
-        protected ViewExpenseRequest createValidObject() {
-            return createValid();
-        }
+    @Override
+    protected ViewExpenseRequest createValidObject() {
+        return createValid();
     }
 
     private ViewExpenseRequest createValid() {
@@ -38,20 +19,21 @@ public class ViewExpenseRequestTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class JurorNumber extends AbstractViewExpenseRequestTest {
+    class JurorNumber extends AbstractValidationFieldTestString {
         protected JurorNumber() {
             super("jurorNumber", ViewExpenseRequest::setJurorNumber);
             ignoreAdditionalFailures();
-            addNotBlankTest(new AbstractValidatorTest.FieldTestSupport(null));
+            addNotBlankTest(null);
             addInvalidPatternTest("ABC", "^\\d{9}$", null);
         }
     }
+
     @Nested
-    class Identifier extends AbstractViewExpenseRequestTest {
+    class Identifier extends AbstractValidationFieldTestString {
         protected Identifier() {
             super("identifier", ViewExpenseRequest::setIdentifier);
             ignoreAdditionalFailures();
-            addNotBlankTest(new AbstractValidatorTest.FieldTestSupport(null));
+            addNotBlankTest(null);
             addInvalidPatternTest("ABC", "^F\\d+$|^\\d{9}$", null);
         }
     }

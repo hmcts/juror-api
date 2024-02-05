@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,11 +20,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
+import uk.gov.hmcts.juror.api.config.security.IsSeniorCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.CompleteServiceJurorNumberListDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorAndPoolRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberListDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
+import uk.gov.hmcts.juror.api.moj.controller.response.CompleteJurorResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.CompleteServiceValidationResponseDto;
+import uk.gov.hmcts.juror.api.moj.service.BulkService;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceService;
 import uk.gov.hmcts.juror.api.validation.PoolNumber;
+
+import java.util.List;
 
 @RestController
 @Validated
@@ -33,6 +42,7 @@ import uk.gov.hmcts.juror.api.validation.PoolNumber;
 public class CompleteServiceController {
 
     private final CompleteServiceService completeServiceService;
+    private final BulkService bulkService;
 
     @PatchMapping("/{poolNumber}/complete")
     @Operation(summary = "/api/v1/moj/complete-service/{poolNumber}/complete - Send a payload containing a list of "
@@ -44,6 +54,32 @@ public class CompleteServiceController {
         @Valid String poolNumber,
         @Valid @RequestBody CompleteServiceJurorNumberListDto completeServiceJurorNumberListDto) {
         completeServiceService.completeService(poolNumber, completeServiceJurorNumberListDto);
+    }
+
+    @PatchMapping("/uncomplete")
+    @Operation(summary = "/api/v1/moj/complete-service/uncomplete - Send a payload containing a list of "
+        + "juror numbers so that the SJO can uncomplete their service")
+    @IsSeniorCourtUser
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void uncompleteService(
+        @Valid
+        @NotNull
+        @Size(min = 1, max = 20)
+        @RequestBody List<@Valid @NotNull JurorAndPoolRequest> requestList) {
+        bulkService.processVoid(requestList,
+            jurorAndPoolRequest -> completeServiceService.uncompleteJurorsService(
+            jurorAndPoolRequest.getJurorNumber(),
+            jurorAndPoolRequest.getPoolNumber())
+        );
+    }
+
+    @PostMapping
+    @Operation(summary = "/api/v1/moj/complete-service - Get a list of complete jurors based on search criteria")
+    @IsSeniorCourtUser
+    @ResponseStatus(HttpStatus.OK)
+    public List<CompleteJurorResponse> getCompleteJurors(
+        @Valid @RequestBody JurorPoolSearch request) {
+        return completeServiceService.search(request);
     }
 
     @PatchMapping("/dismissal")

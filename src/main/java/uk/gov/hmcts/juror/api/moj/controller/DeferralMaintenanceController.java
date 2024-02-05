@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
@@ -36,6 +35,7 @@ import java.util.List;
 @Tag(name = "Deferral Maintenance")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @Validated
+@SuppressWarnings("PMD.TooManyMethods")
 public class DeferralMaintenanceController {
 
     @NonNull
@@ -66,7 +66,7 @@ public class DeferralMaintenanceController {
         return ResponseEntity.ok().body(responseBody);
     }
 
-    @GetMapping(value = "/available-pools/{courtLocationCode}")
+    @GetMapping("/available-pools/{courtLocationCode}")
     @Operation(summary = "Retrieve active pools, including utilisation stats, for the given court location")
     public ResponseEntity<DeferralOptionsDto> getDeferralOptionsForCourtLocation(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,

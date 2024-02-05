@@ -48,6 +48,7 @@ import uk.gov.hmcts.juror.api.validation.JurorNumber;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @Validated
 @Tag(name = "Summons Management")
+@SuppressWarnings("PMD.ExcessiveImports")
 public class JurorPaperResponseController {
 
     @NonNull

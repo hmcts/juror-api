@@ -25,13 +25,18 @@ import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.DefaultExpenseSummaryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ViewExpenseRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseItemsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.GetEnteredExpenseRequest;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.BulkExpenseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.DailyExpenseResponse;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
+import uk.gov.hmcts.juror.api.validation.JurorNumber;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -42,6 +47,7 @@ import java.util.List;
 @Tag(name = "Expenses")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @IsCourtUser
+@SuppressWarnings("PMD.ExcessiveImports")
 public class JurorExpenseController {
 
     private final JurorExpenseService jurorExpenseService;
@@ -94,12 +100,54 @@ public class JurorExpenseController {
             }));
     }
 
+
+    @PostMapping("/{juror_number}/draft/attended_day")
+    @Operation(summary = "/api/v1/moj/expenses/{juror_number}/draft/attended_day - "
+        + "Updates a jurors expenses for a given day.")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @IsCourtUser
+    public ResponseEntity<DailyExpenseResponse> postDraftAttendedDayDailyExpense(
+        @Parameter(description = "9-digit numeric string to identify the juror") @PathVariable(name = "juror_number")
+        @JurorNumber @Valid String jurorNumber,
+        @Validated(DailyExpense.AttendanceDay.class)
+        @Valid @RequestBody @NotNull DailyExpense request
+    ) {
+        return ResponseEntity.ok(jurorExpenseService.updateDraftExpense(jurorNumber, request));
+    }
+
+    @PostMapping("/{juror_number}/draft/non_attended_day")
+    @Operation(summary = "/api/v1/moj/expenses/{juror_number}/draft/non_attended_day - "
+        + "Updates a jurors expenses for a given day.")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @IsCourtUser
+    public ResponseEntity<DailyExpenseResponse> postDraftNonAttendedDayDailyExpense(
+        @Parameter(description = "9-digit numeric string to identify the juror") @PathVariable(name = "juror_number")
+        @JurorNumber @Valid String jurorNumber,
+        @Validated(DailyExpense.NonAttendanceDay.class)
+        @Valid @RequestBody @NotNull DailyExpense request
+    ) {
+        return ResponseEntity.ok(jurorExpenseService.updateDraftExpense(jurorNumber, request));
+    }
+
+    @PostMapping("/entered")
+    @Operation(summary = "/api/v1/moj/expenses/entered - "
+        + "Get a jurors entered expense details for a given day.")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @IsCourtUser
+    public ResponseEntity<GetEnteredExpenseResponse> getEnteredExpenseDetails(
+        @Valid @RequestBody @NotNull GetEnteredExpenseRequest request
+    ) {
+        return ResponseEntity.ok(jurorExpenseService.getEnteredExpense(
+            request.getJurorNumber(),
+            request.getPoolNumber(),
+            request.getDateOfExpense()));
+    }
+
     @GetMapping("/default-summary/{jurorNumber}")
     @Operation(summary = "/api/v1/moj/expenses/default-summary - Retrieve default expenses details"
         + "and persists them to juror and appearance tables ")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<DefaultExpenseSummaryDto> setDefaultExpensesForJuror(DefaultExpenseSummaryDto dto
-    ) {
+    public ResponseEntity<Void> updateDefaultExpensesForJuror(DefaultExpenseSummaryDto dto) {
         jurorExpenseService.setDefaultExpensesForJuror(dto);
         return new ResponseEntity<>(HttpStatus.OK);
     }

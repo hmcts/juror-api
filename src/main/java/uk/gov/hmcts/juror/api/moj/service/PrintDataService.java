@@ -18,5 +18,10 @@ public interface PrintDataService {
     void printConfirmationLetter(JurorPool jurorPool);
 
     void printPostponeLetter(JurorPool jurorPool);
+
     void printExcusalLetter(JurorPool jurorPool);
+
+    void printRequestInfoLetter(JurorPool jurorPool, String additionalInfo);
+
+    void printWithdrawalLetter(JurorPool jurorPool);
 }

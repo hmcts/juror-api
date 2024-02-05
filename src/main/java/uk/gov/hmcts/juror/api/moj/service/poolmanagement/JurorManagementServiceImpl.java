@@ -17,7 +17,6 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.letter.ConfirmationLetter;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
@@ -190,10 +189,6 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         BeanUtils.copyProperties(sourceJurorPool, newTargetJurorPool,
             JurorManagementConstants.POOL_MEMBER_IGNORE_PROPERTIES);
 
-        JurorStatus jurorStatus = new JurorStatus();
-
-        jurorStatus.setStatus(2);
-
         /* Bureau users can only reassign bureau owned jurors to bureau owned pools (but to any court location).
         Court users can only reassign court owned jurors, to any pool, as long as the pool is requested for a court
         location within their primary group - therefore the target juror_pool owner value will always be the same as the
@@ -202,7 +197,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         newTargetJurorPool.setPool(targetPool);
         newTargetJurorPool.setNextDate(targetPool.getReturnDate());
         newTargetJurorPool.setUserEdtq(currentUser);
-        newTargetJurorPool.setStatus(jurorStatus);
+
+        newTargetJurorPool.setStatus(sourceJurorPool.getStatus()); // keep the status of the juror the same
 
         // some default values
         Juror newTargetJuror = newTargetJurorPool.getJuror();
@@ -393,10 +389,14 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             // age validation
             Juror juror = jurorPool.getJuror();
             LocalDate dateOfBirth = juror.getDateOfBirth();
-            JurorUtils.getJurorAgeAtHearingDate(dateOfBirth, requestDto.getServiceStartDate());
-            validateJurorAge(jurorPool.getJurorNumber(), dateOfBirth, requestDto.getServiceStartDate(),
-                failedTransfers
-            );
+
+            if (dateOfBirth == null) {
+                log.info("Juror {} has no date of birth on record so cannot validate", juror.getJurorNumber());
+            } else {
+                validateJurorAge(jurorPool.getJurorNumber(), dateOfBirth, requestDto.getServiceStartDate(),
+                    failedTransfers
+                );
+            }
         });
 
         return mapValidationResultsToDto(requestDto.getJurorNumbers(), failedTransfers);

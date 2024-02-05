@@ -21,6 +21,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -36,9 +37,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @SuppressWarnings({
     "PMD.AbstractClassWithoutAbstractMethod",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.LawOfDemeter"
 })
 public abstract class AbstractIntegrationTest {
+
+    protected static final String BUREAU_USER = "BUREAU_USER";
+    protected static final String COURT_USER = "COURT_USER";
+
     @SuppressWarnings("SpringJavaAutowiredMembersInspection")
     @Autowired
     protected JdbcTemplate jdbcTemplate;
@@ -123,6 +129,10 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected String createBureauJwt(String login, String owner) throws Exception {
+        return createBureauJwt(login, owner, owner);
+    }
+
+    protected String createBureauJwt(String login, String owner, String... courts) throws Exception {
         return mintBureauJwt(BureauJWTPayload.builder()
             .userLevel("1")
             .login(login)
@@ -130,6 +140,21 @@ public abstract class AbstractIntegrationTest {
                 .name("Test User")
                 .active(1)
                 .rank(1)
+                .courts(List.of(courts))
+                .build())
+            .daysToExpire(89)
+            .owner(owner)
+            .build());
+    }
+
+    protected String createBureauJwt(String login, String owner, int rank) throws Exception {
+        return mintBureauJwt(BureauJWTPayload.builder()
+            .userLevel(String.valueOf(rank))
+            .login(login)
+            .staff(BureauJWTPayload.Staff.builder()
+                .name("Test User")
+                .active(1)
+                .rank(rank)
                 .build())
             .daysToExpire(89)
             .owner(owner)
@@ -165,7 +190,14 @@ public abstract class AbstractIntegrationTest {
                 response.getBody(), false);
     }
 
+    protected void validateBusinessRuleViolation(ResponseEntity<String> response, String message,
+                                                 MojException.BusinessRuleViolation.ErrorCode code) {
+        validateBusinessRuleViolation(response, null, message, code);
+    }
+
     @SneakyThrows
+    @Deprecated
+    //Use one without url
     protected void validateBusinessRuleViolation(ResponseEntity<String> response, String url, String message,
                                                  MojException.BusinessRuleViolation.ErrorCode code) {
 
@@ -189,7 +221,7 @@ public abstract class AbstractIntegrationTest {
             expectedError);
     }
 
-    protected void validateInvalidPathParam(ResponseEntity<String> response, String url,
+    protected void validateInvalidPathParam(ResponseEntity<String> response,
                                             String expectedMessage) throws JsonProcessingException {
 
         assertThat(response).isNotNull();
@@ -215,7 +247,7 @@ public abstract class AbstractIntegrationTest {
 
     @SneakyThrows
     protected void validateInvalidPayload(ResponseEntity<String> response,
-                                          String... errors) {
+                                          RestResponseEntityExceptionHandler.FieldError... errors) {
         log.debug("Response: {}", response);
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -233,7 +265,7 @@ public abstract class AbstractIntegrationTest {
     @Data
     private static class InvalidPayload {
         private int status;
-        private List<String> errors;
+        private List<RestResponseEntityExceptionHandler.FieldError> errors;
     }
 
     @Data

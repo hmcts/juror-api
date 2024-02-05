@@ -63,6 +63,17 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     @Override
+    public void createUncompleteServiceHistory(JurorPool jurorPool) {
+        Juror juror = jurorPool.getJuror();
+        if (juror.getCompletionDate() != null) {
+            throw new MojException.InternalServerError("To uncomplete a service history entry. "
+                + "The juror record must not contain a completion date for juror " + juror.getJurorNumber(), null);
+        }
+        registerHistoryLoginUser(jurorPool, HistoryCodeMod.COMPLETE_SERVICE,
+            "Completion date removed");
+    }
+
+    @Override
     @IsCourtUser
     public void createFailedToAttendHistory(JurorPool jurorPool) {
         if (jurorPool.getStatus().getStatus() != IJurorStatus.FAILED_TO_ATTEND) {
@@ -86,6 +97,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
         registerHistoryLoginUser(jurorPool, HistoryCodeMod.PENDING_JUROR_AUTHORISED,
             "Pending juror authorised");
     }
+
 
     @Override
     public void createPoliceCheckInsufficientInformationHistory(JurorPool jurorPool) {

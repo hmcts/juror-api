@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -67,7 +66,7 @@ public class JurorAttendanceDetailsResponseDto {
 
         @JsonProperty("travel_time")
         @Schema(description = "Number of hours the juror spent travelling")
-        private BigDecimal travelTime;
+        private LocalTime travelTime;
 
         @JsonProperty("attendance_type")
         @Schema(description = "Full/half day or absent")

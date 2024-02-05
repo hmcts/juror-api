@@ -34,6 +34,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("PMD.TooManyMethods")
 class JurorHistoryServiceImplTest {
     private final JurorHistoryService jurorHistoryService;
     private final Clock clock;
@@ -48,10 +49,10 @@ class JurorHistoryServiceImplTest {
 
     @BeforeEach
     void beforeEach() {
-        Mockito.when(clock.instant())
+        when(clock.instant())
             .thenReturn(Instant.now());
 
-        Mockito.when(clock.getZone())
+        when(clock.getZone())
             .thenReturn(ZoneId.systemDefault());
     }
 
@@ -145,6 +146,30 @@ class JurorHistoryServiceImplTest {
             "Exception must be thrown");
         assertEquals("To create a complete service history entry. "
                 + "The juror record must contain a completion date for juror " + jurorPool.getJurorNumber(), exception.getMessage(),
+            "Exception message must match");
+    }
+
+    @Test
+    void typicalCreateUnCompleteServiceHistory() {
+        JurorPool jurorPool = createJurorPool();
+        jurorPool.getJuror().setCompletionDate(null);
+        mockCurrentUser("someUserId1");
+        jurorHistoryService.createUncompleteServiceHistory(jurorPool);
+        verifyStandardValues(jurorPool, "someUserId1", new JurorHistoryPartHistoryJurorHistoryExpectedValues(
+            HistoryCodeMod.COMPLETE_SERVICE, "Completion date removed"));
+    }
+
+    @Test
+    void negativeCompletionDateUnCompletedDateCreateCompleteServiceHistory() {
+        JurorPool jurorPool = createJurorPool();
+        jurorPool.getJuror().setCompletionDate(LocalDate.now());
+        mockCurrentUser("someUserId1");
+        MojException.InternalServerError exception = assertThrows(MojException.InternalServerError.class,
+            () -> jurorHistoryService.createUncompleteServiceHistory(jurorPool),
+            "Exception must be thrown");
+        assertEquals("To uncomplete a service history entry. "
+                + "The juror record must not contain a completion date for juror "
+                + jurorPool.getJurorNumber(), exception.getMessage(),
             "Exception message must match");
     }
 

@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service.letter;
 
-import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,15 +9,15 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.AdditionalInformationDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.letter.RequestLetter;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.MissingInformation;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.letter.RequestLetterRepository;
+import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyStatusUpdateService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
@@ -28,38 +28,17 @@ import java.util.List;
  */
 @Slf4j
 @Service
-public class RequestInformationLetterServiceImpl extends LetterServiceImpl<RequestLetter, RequestLetterRepository>
-    implements RequestInformationLetterService {
+@RequiredArgsConstructor(onConstructor_ = {@Autowired})
+public class RequestInformationLetterServiceImpl implements RequestInformationLetterService {
 
-    @Autowired
-    private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-    @Autowired
-    private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
     @Autowired
     private final JurorPoolRepository jurorPoolRepository;
     @Autowired
     private final SummonsReplyStatusUpdateService summonsReplyStatusUpdateService;
-
-    public RequestInformationLetterServiceImpl(
-        @NonNull final RequestLetterRepository letterRepository,
-        @NonNull final JurorPaperResponseRepositoryMod jurorPaperResponseRepository,
-        @NonNull final JurorPoolRepository jurorPoolRepository,
-        @NonNull final JurorDigitalResponseRepositoryMod jurorResponseRepository,
-        @NonNull final SummonsReplyStatusUpdateService summonsReplyStatusUpdateService) {
-        super(letterRepository);
-        this.jurorPaperResponseRepository = jurorPaperResponseRepository;
-        this.jurorPoolRepository = jurorPoolRepository;
-        this.jurorResponseRepository = jurorResponseRepository;
-        this.summonsReplyStatusUpdateService = summonsReplyStatusUpdateService;
-    }
-
-    @Override
-    public RequestLetter createNewLetter(String owner, String jurorNumber) {
-        RequestLetter requestLetter = new RequestLetter();
-        requestLetter.setOwner(owner);
-        requestLetter.setJurorNumber(jurorNumber);
-        return requestLetter;
-    }
+    @Autowired
+    private final PrintDataService printDataService;
+    @Autowired
+    private final JurorHistoryRepository jurorHistoryRepository;
 
     @Override
     @Transactional
@@ -87,11 +66,16 @@ public class RequestInformationLetterServiceImpl extends LetterServiceImpl<Reque
             MissingInformation.buildMissingInformationString(additionalInformationDto.getMissingInformation(),
                 welshMapping);
 
-        RequestLetter letterToEnqueue = getLetterToEnqueue(owner, jurorNumber);
-        letterToEnqueue.setRequiredInformation(missingInformation);
+        printDataService.printRequestInfoLetter(jurorPool, missingInformation);
+        JurorHistory jurorHistory = JurorHistory.builder()
+            .historyCode(HistoryCodeMod.AWAITING_FURTHER_INFORMATION)
+            .jurorNumber(juror.getJurorNumber())
+            .poolNumber(jurorPool.getPoolNumber())
+            .createdBy(owner)
+            .otherInformation(missingInformation)
+            .build();
 
-        //Mapping complete, now queue the Letter
-        enqueueLetter(letterToEnqueue);
+        jurorHistoryRepository.save(jurorHistory);
 
         // update the response status
         if (replyMethod.equals(ReplyMethod.PAPER)) {
