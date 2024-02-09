@@ -28,7 +28,7 @@ module "sdp_db_user" {
   ]
 
   database_schemas = {
-    juror = ["juror_mod"]
+    juror = ["juror_mod", "juror_dashboard"]
   }
 
   common_tags = var.common_tags
