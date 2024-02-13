@@ -5,9 +5,6 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.util.List;
 
-@SuppressWarnings(
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive done via inheritance
-)
 class CompleteServiceJurorNumberListDtoTest extends JurorNumberListDtoTest {
 
     @Override
@@ -27,7 +24,7 @@ class CompleteServiceJurorNumberListDtoTest extends JurorNumberListDtoTest {
     @Test
     void negativeCompletionDateNull() {
         JurorNumberListDto jurorNumberListDto = createCompleteServiceJurorNumberListDto(null,List.of("123456789"));
-        expectViolations(jurorNumberListDto,
+        assertExpectViolations(jurorNumberListDto,
             new Violation("completionDate", "must not be null")
         );
     }

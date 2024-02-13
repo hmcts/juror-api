@@ -37,7 +37,8 @@ public class ReissueLetterListResponseDtoTest {
     public void noViolations() {
         ReissueLetterListResponseDto reissueLetterListResponseDto = buildLetterListResponseDto();
 
-        Set<ConstraintViolation<ReissueLetterListResponseDto>> violations = validator.validate(reissueLetterListResponseDto);
+        Set<ConstraintViolation<ReissueLetterListResponseDto>> violations =
+            validator.validate(reissueLetterListResponseDto);
 
         assertThat(violations.size()).isEqualTo(0);
     }
@@ -47,7 +48,8 @@ public class ReissueLetterListResponseDtoTest {
         ReissueLetterListResponseDto reissueLetterListResponseDto = buildLetterListResponseDto();
         reissueLetterListResponseDto.setHeadings(List.of());
 
-        Set<ConstraintViolation<ReissueLetterListResponseDto>> violations = validator.validate(reissueLetterListResponseDto);
+        Set<ConstraintViolation<ReissueLetterListResponseDto>> violations =
+            validator.validate(reissueLetterListResponseDto);
         assertThat(violations).isNotEmpty();
         assertThat(violations.size()).isEqualTo(1);
         ConstraintViolation<ReissueLetterListResponseDto> violation = violations.stream().findFirst().get();
@@ -60,7 +62,8 @@ public class ReissueLetterListResponseDtoTest {
         ReissueLetterListResponseDto reissueLetterListResponseDto = buildLetterListResponseDto();
         reissueLetterListResponseDto.setDataTypes(List.of());
 
-        Set<ConstraintViolation<ReissueLetterListResponseDto>> violations = validator.validate(reissueLetterListResponseDto);
+        Set<ConstraintViolation<ReissueLetterListResponseDto>> violations =
+            validator.validate(reissueLetterListResponseDto);
         assertThat(violations).isNotEmpty();
         assertThat(violations.size()).isEqualTo(1);
         ConstraintViolation<ReissueLetterListResponseDto> violation = violations.stream().findFirst().get();

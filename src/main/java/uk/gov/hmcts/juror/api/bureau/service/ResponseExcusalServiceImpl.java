@@ -86,6 +86,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
         this.assignOnUpdateService = assignOnUpdateService;
     }
 
+    @Override
     public List<ExcusalCodeDto> getExcusalReasons() throws ExcusalException.UnableToRetrieveExcusalCodeList {
         Iterable<ExcusalCodeEntity> excusalReasonsList = excusalCodeRepository.findAll();
         if (!excusalReasonsList.iterator().hasNext()) {
@@ -100,6 +101,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
     }
 
     @Transactional
+    @Override
     public boolean excuseJuror(String jurorId, ExcusalCodeDto excusalCodeDto, String login) throws ExcusalException {
         if (!isValidExcusalCode(jurorId, excusalCodeDto.getExcusalCode())) {
             return false;
@@ -200,6 +202,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
     }
 
     @Transactional
+    @Override
     public boolean rejectExcusalRequest(String jurorId, ExcusalCodeDto excusalCodeDto,
                                         String login) throws ExcusalException {
         if (!isValidExcusalCode(jurorId, excusalCodeDto.getExcusalCode())) {

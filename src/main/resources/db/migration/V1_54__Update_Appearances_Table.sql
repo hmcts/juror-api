@@ -1,1 +1,0 @@
-ALTER TABLE juror_mod.appearance ADD no_show boolean NULL;

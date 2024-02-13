@@ -51,7 +51,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         List<Tuple> letters = bulkPrintDataRepository.findLetters(request, letterType.getLetterQueryConsumer());
 
         if (letters.isEmpty()) {
-            throw new MojException.NotFound("No letters found for the given criteria", null);
+            throw new MojException.NotFound("No letters found for the given criteria",
+                null);
         }
 
         final List<List<Object>> data = letters.stream()
@@ -74,7 +75,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(letter.getJurorNumber(),
                     letter.getFormCode(), letter.getDatePrinted())
                 .orElseThrow(() -> new MojException.NotFound(
-                    "Bulk print data not found for juror %s " + letter.getJurorNumber(), null));
+                    "Bulk print data not found for juror %s " + letter.getJurorNumber(),
+                    null));
 
             // verify the same letter is not already pending a reprint
             bulkPrintDataRepository.findByJurorNumberFormCodeAndPending(letter.getJurorNumber(), letter.getFormCode())
@@ -92,12 +94,13 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             JurorStatus jurorStatus = RepositoryUtils.retrieveFromDatabase(
                 formCode.getJurorStatus(), jurorStatusRepository);
 
-            List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndStatusOrderByDateCreatedDesc(letter.getJurorNumber(),
-                jurorStatus);
+            List<JurorPool> jurorPools = jurorPoolRepository
+                .findByJurorJurorNumberAndStatusOrderByDateCreatedDesc(letter.getJurorNumber(),
+                    jurorStatus);
 
             if (jurorPools.isEmpty()) {
-                throw new MojException.NotFound("Juror not found for juror number %s " + letter.getJurorNumber(),
-                    null);
+                throw new MojException.NotFound("Juror not found for juror number %s "
+                    + letter.getJurorNumber(), null);
             }
 
             BiConsumer<PrintDataService, JurorPool> letterPrinter = formCode.getLetterPrinter();
@@ -106,7 +109,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                     "Attempting to send a letter without a resend letter function", null);
             }
 
-            letterPrinter.accept(printDataService,jurorPools.get(0));
+            letterPrinter.accept(printDataService, jurorPools.get(0));
         });
     }
 
@@ -122,13 +125,12 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(letter.getJurorNumber(),
                     letter.getFormCode(), letter.getDatePrinted())
                 .orElseThrow(() -> new MojException.NotFound(
-                    "Bulk print data not found for juror %s " + letter.getJurorNumber(), null));
+                    "Bulk print data not found for juror %s " + letter.getJurorNumber(),
+                    null));
         // TODO: history to show letter pending deleted by bureau user
         log.debug("Deleting pending letter for juror number %s with form code %s", letter.getJurorNumber(),
             letter.getFormCode());
 
         bulkPrintDataRepository.delete(bulkPrintData);
-
     }
-
 }

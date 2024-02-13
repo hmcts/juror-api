@@ -10,6 +10,10 @@ public final class TestConstants {
 
     public static final String VALID_COURT_LOCATION = "415";
     public static final String INVALID_COURT_LOCATION = "0415";
+    public static final String VALID_TRIAL_NUMBER = "T000000001";
+    public static final String VALID_POSTCODE = "TE1 4ST";
+    public static final String VALID_PHONE_NUMBER = "01792 637000";
+    public static final String VALID_EMAIL = "some.one@some.email.com";
 
     private TestConstants() {
 

@@ -49,6 +49,10 @@ public final class SecurityUtil {
         return getActiveUsersBureauPayload().getLogin();
     }
 
+    public static String getActiveOwner() {
+        return getActiveUsersBureauPayload().getOwner();
+    }
+
     /**
      * Verify whether the current/active user has permission to access to a specific court location.
      *
@@ -59,9 +63,5 @@ public final class SecurityUtil {
             throw new MojException.Forbidden(String.format("Current user does not have permissions to Court Location: "
                 + "%s", locCode), null);
         }
-    }
-
-    public static String getOwner() {
-        return getActiveUsersBureauPayload().getOwner();
     }
 }

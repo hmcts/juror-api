@@ -25,6 +25,7 @@ public class CourtQueriesRepositoryImpl implements CourtQueriesRepository {
     @PersistenceContext
     EntityManager entityManager;
 
+    @Override
     public List<CourtLocationDataDto> getCourtDetailsFilteredByPostcode(String firstHalfOfPostcode) {
         log.trace("First half of postcode {} - Query method getCourtDetailsFilteredByPostcode() started",
             firstHalfOfPostcode);

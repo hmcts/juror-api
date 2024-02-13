@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
-import java.util.function.BiConsumer;
-
 @SuppressWarnings({
     "PMD.JUnitTestsShouldIncludeAssert",//False positive done via inheritance
     "PMD.JUnit5TestShouldBePackagePrivate"
@@ -39,6 +37,7 @@ public class JurorAddressDtoTest extends AbstractValidatorTest<JurorAddressDto> 
         );
     }
 
+    @Override
     public JurorAddressDto createValidObject() {
         return createValidJurorAddressDto();
     }
@@ -46,7 +45,7 @@ public class JurorAddressDtoTest extends AbstractValidatorTest<JurorAddressDto> 
     @Test
     void positiveTypical() {
         JurorAddressDto dto = createValidJurorAddressDto();
-        expectNoViolations(dto);
+        assertExpectNoViolations(dto);
     }
 
 

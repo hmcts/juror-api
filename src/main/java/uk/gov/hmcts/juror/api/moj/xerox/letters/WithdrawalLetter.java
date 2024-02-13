@@ -12,10 +12,10 @@ public class WithdrawalLetter extends LetterBase {
                             CourtLocation courtLocation,
                             CourtLocation bureauLocation) {
         super(LetterContext.builder()
-                    .jurorPool(jurorPool)
-                   .courtLocation(courtLocation)
-                   .bureauLocation(bureauLocation)
-                   .build());
+            .jurorPool(jurorPool)
+            .courtLocation(courtLocation)
+            .bureauLocation(bureauLocation)
+            .build());
     }
 
     public WithdrawalLetter(JurorPool jurorPool,
@@ -30,6 +30,7 @@ public class WithdrawalLetter extends LetterBase {
             .build());
     }
 
+    @Override
     protected void setupWelsh() {
         setFormCode(FormCode.BI_WITHDRAWAL);
         addData(LetterDataType.DATE_OF_LETTER, 18);
@@ -44,6 +45,7 @@ public class WithdrawalLetter extends LetterBase {
         addData(LetterDataType.BUREAU_SIGNATORY, 30);
     }
 
+    @Override
     protected void setupEnglish() {
         setFormCode(FormCode.ENG_WITHDRAWAL);
         addData(LetterDataType.DATE_OF_LETTER, 18);

@@ -18,6 +18,7 @@ DELETE FROM juror_mod.pool_comments;
 DELETE FROM juror_mod.pool_history;
 DELETE FROM juror_mod.juror_pool;
 DELETE FROM juror_mod.pool;
+DELETE FROM juror_mod.message;
 
 DELETE FROM juror_mod.staff_juror_response_audit;
 DELETE FROM juror_mod.juror_response_aud;

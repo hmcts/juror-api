@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.dsl.EntityPathBase;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -11,15 +12,21 @@ import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.LawOfDemeter")
 public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
@@ -31,22 +38,25 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
     private static final QJuror JUROR = QJuror.juror;
 
+    JPAQueryFactory getQueryFactory() {
+        return new JPAQueryFactory(entityManager);
+    }
+
     @Override
     public List<Tuple> findLetters(ReissueLetterListRequestDto request, Consumer<JPAQuery<Tuple>> queryConsumer) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        JPAQueryFactory queryFactory =  getQueryFactory();
 
         JPAQuery<Tuple> query = queryFactory.selectDistinct(
             request.getLetterType().getReissueDataTypes().stream()
                 .map(ReissueLetterService.DataType::getExpression)
-                .toArray(Expression[]::new)
-        ).from(JUROR);  // must query Juror table for every letter type
+                .toArray(Expression[]::new))
+            .from(JUROR);  // must query Juror table for every letter type
 
-        // may not need this code unless we need joins to other than jurorpool and bulkprintdata
-        //        Set<Class<? extends EntityPathBase<?>>> entityPathBaseSet = request.getLetterType()
-        //            .getReissueDataTypes().stream()
-        //            .map(ReissueLetterService.DataType::getEntityPaths)
-        //            .flatMap(Collection::stream)
-        //            .collect(Collectors.toSet());
+        Set<Class<? extends EntityPathBase<?>>> entityPathBaseSet = request.getLetterType()
+            .getReissueDataTypes().stream()
+            .map(ReissueLetterService.DataType::getEntityPaths)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toSet());
 
         query.join(JUROR_POOL).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
 
@@ -55,6 +65,18 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
 
         if (queryConsumer != null) {
             queryConsumer.accept(query);
+        }
+
+        if (entityPathBaseSet.contains(QJurorHistory.class)) {
+            query.join(QJurorHistory.jurorHistory)
+                .on(JUROR.jurorNumber.eq(QJurorHistory.jurorHistory.jurorNumber));
+
+            query.where(QJurorHistory.jurorHistory.poolNumber.eq(JUROR_POOL.pool.poolNumber));
+
+            if (request.getLetterType().equals(LetterType.DEFERRAL_REFUSED)) {
+                query.where(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.NON_DEFERRED_LETTER));
+            }
+
         }
 
         query.where(BULK_PRINT_DATA.formAttribute.formType.in(request.getLetterType().getFormCodes().stream()
@@ -70,7 +92,8 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
         } else if (request.getShowAllQueued()) {
             query.where(BULK_PRINT_DATA.extractedFlag.isNull().or(BULK_PRINT_DATA.extractedFlag.eq(false)));
         } else {
-            throw new MojException.InternalServerError("Invalid criteria provided for letter search", null);
+            throw new MojException.InternalServerError("Invalid criteria provided for letter search",
+                null);
         }
 
         return query
@@ -81,7 +104,7 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
     @Override
     public Optional<BulkPrintData> findByJurorNumberFormCodeDatePrinted(String jurorNumber, String formCode,
                                                                         LocalDate datePrinted) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        JPAQueryFactory queryFactory = getQueryFactory();
 
         JPAQuery<BulkPrintData> query = queryFactory.selectFrom(BULK_PRINT_DATA)
             .where(BULK_PRINT_DATA.jurorNo.eq(jurorNumber))
@@ -93,7 +116,7 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
 
     @Override
     public Optional<BulkPrintData> findByJurorNumberFormCodeAndPending(String jurorNumber, String formCode) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        JPAQueryFactory queryFactory = getQueryFactory();
 
         JPAQuery<BulkPrintData> query = queryFactory.selectFrom(BULK_PRINT_DATA)
             .where(BULK_PRINT_DATA.jurorNo.eq(jurorNumber))
@@ -102,5 +125,4 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
 
         return Optional.ofNullable(query.fetchOne());
     }
-
 }

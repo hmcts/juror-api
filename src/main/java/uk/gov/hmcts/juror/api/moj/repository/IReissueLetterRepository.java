@@ -4,7 +4,6 @@ import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
-import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 
 import java.time.LocalDate;
 import java.util.List;

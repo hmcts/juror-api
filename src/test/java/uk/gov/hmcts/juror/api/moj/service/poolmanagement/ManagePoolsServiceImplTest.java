@@ -362,11 +362,11 @@ public class ManagePoolsServiceImplTest extends TestCase {
     }
 
     private List<Tuple> getNilPools() {
-        List<Tuple> tuples = new ArrayList<>();
         Tuple t = Mockito.mock(Tuple.class);
         doReturn(0).when(t).get(1, int.class);
         doReturn(LocalDate.now()).when(t).get(2, LocalDate.class);
         doReturn("111111111").when(t).get(0, String.class);
+        List<Tuple> tuples = new ArrayList<>();
         tuples.add(t);
 
         t = Mockito.mock(Tuple.class);

@@ -23,9 +23,7 @@ public class ITrialRepositoryImpl implements ITrialRepository {
     @Override
 
     public List<Trial> getListOfTrialsForCourtLocations(List<String> locCode, boolean isActiveFilter,
-                                                        Pageable pageable) {
-
-        Querydsl querydsl = new Querydsl(entityManager, new PathBuilderFactory().create(Trial.class));
+                                                        String trialNumber, Pageable pageable) {
         JPQLQuery<Trial> query = new JPAQuery<>(entityManager);
 
         query.select(TRIAL).from(TRIAL).where(TRIAL.courtLocation.locCode.in(locCode));
@@ -34,6 +32,10 @@ public class ITrialRepositoryImpl implements ITrialRepository {
             query.where(TRIAL.trialEndDate.isNull());
         }
 
+        if (trialNumber != null) {
+            query.where(TRIAL.trialNumber.startsWith(trialNumber));
+        }
+        Querydsl querydsl = new Querydsl(entityManager, new PathBuilderFactory().create(Trial.class));
         return querydsl.applyPagination(pageable, query).fetch();
     }
 

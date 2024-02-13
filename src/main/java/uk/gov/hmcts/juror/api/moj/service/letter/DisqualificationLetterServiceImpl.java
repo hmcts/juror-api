@@ -20,10 +20,10 @@ public class DisqualificationLetterServiceImpl extends LetterServiceImpl<Disqual
 
     @Override
     public DisqualificationLetterMod createNewLetter(String owner, String jurorNumber) {
-        DisqualificationLetterMod DisqualificationLetterMod = new DisqualificationLetterMod();
-        DisqualificationLetterMod.setOwner(owner);
-        DisqualificationLetterMod.setJurorNumber(jurorNumber);
-        return DisqualificationLetterMod;
+        DisqualificationLetterMod disqualificationLetterMod = new DisqualificationLetterMod();
+        disqualificationLetterMod.setOwner(owner);
+        disqualificationLetterMod.setJurorNumber(jurorNumber);
+        return disqualificationLetterMod;
     }
 
 }

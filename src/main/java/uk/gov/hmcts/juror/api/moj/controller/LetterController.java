@@ -22,13 +22,23 @@ import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
+import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.AdditionalInformationDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CourtLetterListRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.PrintLettersRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDataResponseDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
+import uk.gov.hmcts.juror.api.moj.service.letter.CourtLetterPrintService;
+import uk.gov.hmcts.juror.api.moj.service.letter.CourtLetterService;
 import uk.gov.hmcts.juror.api.moj.service.letter.RequestInformationLetterService;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+
+import java.util.List;
 
 /**
  * API endpoints related to letters.
@@ -39,24 +49,29 @@ import uk.gov.hmcts.juror.api.moj.service.letter.RequestInformationLetterService
 @Validated
 @Tag(name = "Summons Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings("PMD.ExcessiveImports")
 public class LetterController {
 
     @NonNull
     private final RequestInformationLetterService requestInformationLetterService;
-
+    @NonNull
+    private final CourtLetterService courtLetterService;
     @NonNull
     private final ReissueLetterService reissueLetterService;
+    @NonNull
+    private final CourtLetterPrintService courtLetterPrintService;
 
     @PostMapping(path = "/request-information")
     @Operation(summary = "Request information",
         description = "Request information from the juror related to the juror response form")
-    public ResponseEntity<String> requestInformation(@Parameter(hidden = true) BureauJwtAuthentication auth,
-                                                     @RequestBody @Valid AdditionalInformationDto additionalInformationDto) {
+    public ResponseEntity<String> requestInformation(
+        @Parameter(hidden = true) BureauJwtAuthentication auth,
+        @RequestBody @Valid AdditionalInformationDto additionalInformationDto) {
         final String jurorNumber = additionalInformationDto.getJurorNumber();
         log.trace("Process to queue the Request Letter started for juror {} ", jurorNumber);
 
         BureauJWTPayload payload = (BureauJWTPayload) auth.getPrincipal();
-        if (!payload.getOwner().equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)) {
+        if (!JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner())) {
             throw new MojException.Forbidden("Request additional information "
                 + "letter is a Bureau only process", null);
         }
@@ -73,7 +88,7 @@ public class LetterController {
         + "to a juror")
     @IsBureauUser
     public ResponseEntity<ReissueLetterListResponseDto> reissueLetterList(
-     @RequestBody @Valid @NotNull ReissueLetterListRequestDto reIssueLetterListRequestDto) {
+        @RequestBody @Valid @NotNull ReissueLetterListRequestDto reIssueLetterListRequestDto) {
 
         ReissueLetterListResponseDto reissueLetterListResponseDto = reissueLetterService.reissueLetterList(
             reIssueLetterListRequestDto);
@@ -103,6 +118,30 @@ public class LetterController {
         reissueLetterService.deletePendingLetter(request);
 
         return ResponseEntity.ok("Letters reissued");
+    }
+
+    @PostMapping(path = "/court-letter-list")
+    @Operation(summary = "GET With Body - Court letter list", description = "Request a list of jurors eligible "
+        + "for court letters to be issued/re-issued.")
+    @IsCourtUser
+    public ResponseEntity<LetterListResponseDto> courtLetterList(
+        @RequestBody @Valid CourtLetterListRequestDto courtLetterListRequestDto) {
+
+        LetterListResponseDto courtLetterListResponseDto =
+            courtLetterService.getEligibleList(courtLetterListRequestDto);
+
+        return ResponseEntity.status(HttpStatus.OK).body(courtLetterListResponseDto);
+    }
+
+    @PostMapping(path = "/print-court-letter")
+    @Operation(summary = "GET With Body - Get court letter print data",
+        description = "Print/Reissue selected court letters")
+    @IsCourtUser
+    public ResponseEntity<List<PrintLetterDataResponseDto>> printCourtLetters(
+        @RequestBody @Valid PrintLettersRequestDto lettersRequestDto) {
+        List<PrintLetterDataResponseDto> dto = courtLetterPrintService.getPrintLettersData(lettersRequestDto,
+            SecurityUtil.getActiveLogin());
+        return ResponseEntity.ok().body(dto);
     }
 }
 

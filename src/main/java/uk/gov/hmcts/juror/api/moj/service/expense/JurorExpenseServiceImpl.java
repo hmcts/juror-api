@@ -12,7 +12,7 @@ import org.springframework.data.history.Revision;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.moj.controller.request.DefaultExpenseSummaryDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseItemsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseApplyToAllDays;
@@ -20,16 +20,12 @@ import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseF
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseFoodAndDrink;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseTime;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseTravel;
-import uk.gov.hmcts.juror.api.moj.controller.response.expense.BulkExpenseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.expense.BulkExpenseEntryDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.DefaultExpenseResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.DailyExpenseResponse;
-import uk.gov.hmcts.juror.api.moj.controller.response.expense.ExpenseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.FinancialLossWarning;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseResponse;
-import uk.gov.hmcts.juror.api.moj.controller.response.expense.TotalExpenseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
-import uk.gov.hmcts.juror.api.moj.domain.AppearanceId;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorExpenseTotals;
@@ -45,16 +41,17 @@ import uk.gov.hmcts.juror.api.moj.repository.FinancialAuditDetailsRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorExpenseTotalsRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.service.RevisionService;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -62,7 +59,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static uk.gov.hmcts.juror.api.JurorDigitalApplication.PAGE_SIZE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO;
@@ -84,7 +80,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     private final JurorRepository jurorRepository;
     private final FinancialAuditDetailsRepository financialAuditDetailsRepository;
     private final UserRepository userRepository;
-
+    private final RevisionService revisionService;
 
     Integer getJurorDefaultMileage(String jurorNumber) {
         Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
@@ -93,120 +89,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         }
         return juror.getMileage();
     }
-
-    @Override
-    @Transactional(readOnly = true)
-    public BulkExpenseDto getBulkDraftExpense(String jurorNumber, String poolNumber) {
-        return getBulkExpense(jurorNumber, appearanceRepository
-            .findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber)
-            .stream().filter(Appearance::getIsDraftExpense).toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public BulkExpenseDto getBulkExpense(String jurorNumber, long financialAuditNumber) {
-        return getBulkExpense(jurorNumber, appearanceRepository
-            .findAllByJurorNumberAndFinancialAuditDetailsId(jurorNumber, financialAuditNumber)
-            .stream().filter(appearance -> !appearance.getIsDraftExpense()).toList()
-        );
-    }
-
-    BulkExpenseDto getBulkExpense(String jurorNumber, List<Appearance> appearances) {
-        if (appearances.isEmpty()) {
-            throw new MojException.NotFound("No appearances found", null);
-        }
-
-        AppearanceStage stage = getAppearanceStage(appearances);
-        if (!Set.of(AppearanceStage.EXPENSE_EDITED,
-            AppearanceStage.EXPENSE_ENTERED,
-            AppearanceStage.EXPENSE_AUTHORISED).contains(stage)) {
-            throw new MojException.InternalServerError("Invalid appearance stage type: " + stage, null);
-        }
-        BulkExpenseDto bulkExpenseDto = new BulkExpenseDto();
-
-        FinancialAuditDetails financialAuditDetails = appearances.get(0).getFinancialAuditDetails();
-        if (financialAuditDetails != null) {
-            if (financialAuditDetails.getSubmittedBy() != null) {
-                bulkExpenseDto.setSubmittedBy(financialAuditDetails.getSubmittedBy().getUsername());
-            }
-            bulkExpenseDto.setSubmittedOn(financialAuditDetails.getSubmittedOn());
-            if (financialAuditDetails.getApprovedBy() != null) {
-                bulkExpenseDto.setApprovedBy(financialAuditDetails.getApprovedBy().getUsername());
-            }
-            bulkExpenseDto.setApprovedOn(financialAuditDetails.getApprovedOn());
-            //TODO confirm if this should show for edited stage
-            bulkExpenseDto.setJurorVersion(financialAuditDetails.getJurorRevisionWhenApproved());
-        }
-        bulkExpenseDto.setType(stage);
-        List<BulkExpenseEntryDto> expenseDtos = getBulkExpenseDtoEntities(appearances);
-        return bulkExpenseDto.setExpenses(expenseDtos)
-            .setTotals(calculateBulkExpenseTotals(expenseDtos, appearances))
-            .setJurorNumber(jurorNumber)
-            .setMileage(getJurorDefaultMileage(jurorNumber));
-    }
-
-    List<BulkExpenseEntryDto> getBulkExpenseDtoEntities(List<Appearance> appearances) {
-        Stream<BulkExpenseEntryDto> bulkExpenseEntryDtoStream = appearances.stream()
-            .map(appearance -> {
-                BulkExpenseEntryDto bulkExpenseEntryDto = BulkExpenseEntryDto.fromAppearance(appearance);
-                if (AppearanceStage.EXPENSE_EDITED.equals(appearance.getAppearanceStage())) {
-                    bulkExpenseEntryDto.setOriginalValue(
-                        BulkExpenseEntryDto.fromAppearance(
-                            getLastAuditForAppearanceWhereStage(appearance,
-                                AppearanceStage.EXPENSE_AUTHORISED).getEntity()));
-                }
-                return bulkExpenseEntryDto;
-            });
-        return bulkExpenseEntryDtoStream
-            .sorted(Comparator.comparing(BulkExpenseEntryDto::getAppearanceDate))
-            .toList();
-    }
-
-
-    TotalExpenseDto calculateBulkExpenseTotals(List<BulkExpenseEntryDto> expenseDtos,
-                                               List<Appearance> appearances) {
-        TotalExpenseDto totalExpenseDto = (TotalExpenseDto) expenseDtos
-            .stream()
-            .map(ExpenseDto.class::cast)
-            .reduce(new TotalExpenseDto(), ExpenseDto::addExpenseDto);
-        totalExpenseDto.setTotalDays(appearances.size());
-        //Total of all paid total
-        BigDecimal totalPaid = appearances.stream()
-            .map(Appearance::getTotalPaid)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal totalDue = appearances.stream()
-            .map(Appearance::getTotalDue)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-
-        BigDecimal totalAmount = totalDue.add(totalPaid);
-        totalExpenseDto.setTotalAmountPaidToDate(totalPaid);
-        totalExpenseDto.setTotalAmount(totalAmount);
-        totalExpenseDto.setBalanceToPay(totalAmount.subtract(totalPaid));
-        return totalExpenseDto;
-    }
-
-    Revision<Long, Appearance> getLastAuditForAppearanceWhereStage(Appearance appearance,
-                                                                   AppearanceStage appearanceStage) {
-        //TODO revisit / optimise with RevisionUtil
-        Optional<Revision<Long, Appearance>> appearanceRevision = appearanceRepository.findRevisions(
-                new AppearanceId(
-                    appearance.getJurorNumber(),
-                    appearance.getAttendanceDate(),
-                    appearance.getCourtLocation()
-                )
-            ).stream()
-            .sorted((o1, o2) -> o2.getRequiredRevisionInstant().compareTo(o1.getRequiredRevisionInstant()))
-            .filter(revision -> appearanceStage.equals(revision.getEntity().getAppearanceStage())).findFirst();
-
-        if (appearanceRevision.isEmpty()) {
-            throw new MojException.NotFound("No appearance history found with stage: " + appearanceStage + " for "
-                + "appearance: " + appearance.getIdString(), null);
-        }
-        return appearanceRevision.get();
-    }
-
 
     AppearanceStage getAppearanceStage(List<Appearance> appearances) {
         AppearanceStage firstAppearanceStage = appearances.get(0).getAppearanceStage();
@@ -269,16 +151,128 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     @Override
-    public void setDefaultExpensesForJuror(DefaultExpenseSummaryDto dto) {
+    public DefaultExpenseResponseDto getDefaultExpensesForJuror(String jurorNumber) {
+
+        Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, jurorNumber);
+
+        DefaultExpenseResponseDto dto = new DefaultExpenseResponseDto();
+
+        dto.setJurorNumber(juror.getJurorNumber());
+        dto.setFinancialLoss(juror.getFinancialLoss());
+        dto.setTravelTime(juror.getTravelTime());
+        dto.setDistanceTraveledMiles(juror.getMileage());
+        dto.setSmartCardNumber(juror.getSmartCard());
+        dto.setTotalSmartCardSpend(juror.getAmountSpent());
+
+        return dto;
+    }
+
+    @Override
+    public void setDefaultExpensesForJuror(RequestDefaultExpensesDto dto) {
+
+        String owner = SecurityUtil.getActiveOwner();
+
         Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, dto.getJurorNumber());
 
-        juror.setSmartCard(dto.getSmartCardNumber());
         juror.setMileage(dto.getDistanceTraveledMiles());
-        juror.setSmartCard(dto.getSmartCardNumber());
-        juror.setTravelTime(calculateTravelTime(dto.getTravelTime()));
-        juror.setAmountSpent(dto.getTotalSmartCardSpend());
         juror.setFinancialLoss(dto.getFinancialLoss());
+        juror.setAmountSpent(dto.getTotalSmartCardSpend());
+        juror.setSmartCard(dto.getSmartCardNumber());
+        juror.setTravelTime(dto.getTravelTime());
+
         jurorRepository.save(juror);
+
+        if (dto.isOverwriteExistingDraftExpenses()) {
+            List<Appearance> appearances = appearanceRepository
+                .findAllByJurorNumberAndAppearanceStageInAndCourtLocationOwnerAndIsDraftExpenseTrueOrderByAttendanceDateDesc(
+                    dto.getJurorNumber(),
+                    Set.of(AppearanceStage.APPEARANCE_CONFIRMED, AppearanceStage.EXPENSE_ENTERED)
+                    , owner);
+
+            if (appearances == null || appearances.isEmpty()) {
+                log.info("No appearances found with matching criteria");
+                return;
+            }
+
+            int numberOfDays =
+                (int) (appearances.size() -
+                    appearances.stream().filter(appearance -> appearance.getNonAttendanceDay()).count());
+
+            BigDecimal smartCardAmount = dto.getTotalSmartCardSpend();
+
+            BigDecimal amountPerDay = calculateAmountPerDay(smartCardAmount, numberOfDays);
+
+            BigDecimal finalDayOffset =
+                smartCardAmount.subtract(amountPerDay.multiply(BigDecimal.valueOf(numberOfDays)));
+
+            Appearance lastAttendanceDay = null;
+
+            for (Appearance appearance : appearances) {
+
+                appearance.setTravelTime(dto.getTravelTime());
+
+                PayAttendanceType currentPayAttendanceType = calculatePayAttendanceType(appearance.getEffectiveTime());
+
+                appearance.setPayAttendanceType(currentPayAttendanceType);
+
+                updateMilesTraveledAndTravelDue(appearance, dto.getDistanceTraveledMiles());
+
+                if (!dto.isHasFoodAndDrink()) {
+                    updateFoodDrinkClaimType(appearance, FoodDrinkClaimType.NONE);
+                } else {
+                    if (dto.getTravelTime().isBefore(LocalTime.of(10, 0, 0))) {
+                        updateFoodDrinkClaimType(appearance, FoodDrinkClaimType.LESS_THAN_1O_HOURS);
+                    } else if (dto.getTravelTime().isAfter(LocalTime.of(9, 59))) {
+                        updateFoodDrinkClaimType(appearance, FoodDrinkClaimType.MORE_THAN_10_HOURS);
+                    }
+                }
+
+                if (isAttendanceDay(appearance)) {
+
+                    appearance.setSmartCardAmountDue(amountPerDay);
+                    lastAttendanceDay = appearance;
+
+                }
+
+                if (dto.getFinancialLoss() == null || BigDecimal.ZERO.equals(dto.getFinancialLoss())) {
+                    appearance.setLossOfEarningsDue(null);
+                } else if (PayAttendanceType.FULL_DAY.equals(appearance.getPayAttendanceType())) {
+                    appearance.setLossOfEarningsDue(dto.getFinancialLoss());
+                } else {
+                    appearance.setLossOfEarningsDue(dto.getFinancialLoss().divide(
+                        BigDecimal.valueOf(2)));
+                }
+
+                validateAndUpdateFinancialLossExpenseLimit(appearance);
+            }
+
+            if (lastAttendanceDay != null) {
+                lastAttendanceDay.setSmartCardAmountDue(amountPerDay.add(finalDayOffset));
+            }
+            appearanceRepository.saveAll(appearances);
+        }
+
+    }
+
+    BigDecimal calculateAmountPerDay(BigDecimal amount, int days) {
+
+        if (days == 0) {
+            throw new MojException.NotFound("No days found for juror at court", null);
+        }
+
+        BigDecimal result = amount.divide(BigDecimal.valueOf(days), RoundingMode.HALF_UP);
+        return result.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private PayAttendanceType calculatePayAttendanceType(LocalTime totalTimeForDay) {
+        PayAttendanceType payAttendanceType;
+
+        if (totalTimeForDay.isAfter(LocalTime.of(3, 59))) {
+            payAttendanceType = PayAttendanceType.FULL_DAY;
+        } else {
+            payAttendanceType = PayAttendanceType.HALF_DAY;
+        }
+        return payAttendanceType;
     }
 
     /**
@@ -304,11 +298,22 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             throw new MojException.NotFound(String.format("No appearance records found for Juror Number: %s, "
                 + "Pool Number: %s and Attendance Dates provided", dto.getJurorNumber(), dto.getPoolNumber()), null);
         }
+        Appearance firstAppearance = appearances.get(0);
+        String jurorNumber = firstAppearance.getJurorNumber();
+        CourtLocation courtLocation = firstAppearance.getCourtLocation();
+
+        Revision<Long, CourtLocation> courtRevision =
+            revisionService.getLatestCourtRevision(courtLocation.getLocCode());
+        Revision<Long, Juror> jurorRevision =
+            revisionService.getLatestJurorRevision(jurorNumber);
 
         // create a single financial audit details object with a new audit number generated for this batch of expenses
         FinancialAuditDetails auditDetails = FinancialAuditDetails.builder()
-            .submittedBy(userRepository.findByUsername(SecurityUtil.getActiveLogin()))
-            .submittedOn(LocalDateTime.now())
+            .createdBy(userRepository.findByUsername(SecurityUtil.getActiveLogin()))
+            .createdOn(LocalDateTime.now())
+            .type(FinancialAuditDetails.Type.FOR_APPROVAL)
+            .jurorRevision(jurorRevision.getRequiredRevisionNumber())
+            .courtLocationRevision(courtRevision.getRequiredRevisionNumber())
             .build();
 
         financialAuditDetailsRepository.save(auditDetails);
@@ -596,47 +601,58 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         if (travel == null) {
             return;
         }
-        final Integer milesTraveled = travel.getMilesTraveled();
-
-        BiFunction<TravelMethod, Boolean, BigDecimal> calculateTravelCost = (travelMethod, traveledBy) -> {
-            if (traveledBy == null || !traveledBy) {
-                return null;
-            }
-            BigDecimal travelRate = travelMethod.getRate(appearance.getCourtLocation(), travel);
-            return travelRate.multiply(BigDecimal.valueOf(Optional.ofNullable(milesTraveled).orElse(0)));
-        };
 
         appearance.setTraveledByCar(travel.getTraveledByCar());
         appearance.setJurorsTakenCar(travel.getJurorsTakenCar());
-        appearance.setCarDue(calculateTravelCost.apply(TravelMethod.CAR, travel.getTraveledByCar()));
 
         appearance.setTraveledByMotorcycle(travel.getTraveledByMotorcycle());
         appearance.setJurorsTakenMotorcycle(travel.getJurorsTakenMotorcycle());
-        appearance.setMotorcycleDue(
-            calculateTravelCost.apply(TravelMethod.MOTERCYCLE, travel.getTraveledByMotorcycle()));
 
         appearance.setTraveledByBicycle(travel.getTraveledByBicycle());
-        appearance.setBicycleDue(calculateTravelCost.apply(TravelMethod.BICYCLE, travel.getTraveledByBicycle()));
-
-
-        appearance.setMilesTraveled(milesTraveled);
+        updateMilesTraveledAndTravelDue(appearance, travel.getMilesTraveled());
 
         appearance.setParkingDue(travel.getParking());
         appearance.setPublicTransportDue(travel.getPublicTransport());
         appearance.setHiredVehicleDue(travel.getTaxi());
     }
 
+    @Override
+    //Must be called after jurors taken by X and juror traveled by X are set
+    public void updateMilesTraveledAndTravelDue(Appearance appearance, Integer milesTraveled) {
+        appearance.setMilesTraveled(milesTraveled);
+        final Integer jurorsByCar = appearance.getJurorsTakenCar();
+        final Integer jurorsByMotorcycle = appearance.getJurorsTakenMotorcycle();
+        final CourtLocation courtLocation = appearance.getCourtLocation();
+
+        BiFunction<TravelMethod, Boolean, BigDecimal> calculateTravelCost = (travelMethod, traveledBy) -> {
+            if (traveledBy == null || !traveledBy) {
+                return null;
+            }
+            BigDecimal travelRate = travelMethod.getRate(
+                courtLocation, jurorsByCar, jurorsByMotorcycle);
+            return travelRate.multiply(BigDecimal.valueOf(Optional.ofNullable(milesTraveled).orElse(0)));
+        };
+
+        appearance.setCarDue(calculateTravelCost.apply(TravelMethod.CAR, appearance.getTraveledByCar()));
+        appearance.setMotorcycleDue(
+            calculateTravelCost.apply(TravelMethod.MOTERCYCLE, appearance.getTraveledByMotorcycle()));
+        appearance.setBicycleDue(calculateTravelCost.apply(TravelMethod.BICYCLE, appearance.getTraveledByBicycle()));
+    }
+
+    @Override
+    public void updateFoodDrinkClaimType(Appearance appearance, FoodDrinkClaimType claimType) {
+        CourtLocation courtLocation = appearance.getCourtLocation();
+        BigDecimal substanceRate = claimType.getRate(courtLocation);
+        appearance.setSubsistenceDue(substanceRate);
+        appearance.setFoodAndDrinkClaimType(claimType);
+    }
+
     void updateDraftFoodAndDrinkExpense(Appearance appearance, DailyExpenseFoodAndDrink foodAndDrink) {
         if (foodAndDrink == null) {
             return;
         }
-        CourtLocation courtLocation = appearance.getCourtLocation();
-        FoodDrinkClaimType claimType = foodAndDrink.getFoodAndDrinkClaimType();
-
-        BigDecimal substanceRate = claimType.getRate(courtLocation);
-        appearance.setSubsistenceDue(substanceRate);
+        updateFoodDrinkClaimType(appearance, foodAndDrink.getFoodAndDrinkClaimType());
         appearance.setSmartCardAmountDue(foodAndDrink.getSmartCardAmount());
-        appearance.setFoodAndDrinkClaimType(claimType);
     }
 
 

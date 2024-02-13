@@ -23,7 +23,7 @@ public class ExcusalCode implements Serializable {
     @Column(name = "exc_code")
     @Length(max = 2)
     @NotNull
-    private String excusalCode;
+    private String code;
 
     @NotNull
     @Column(name = "description")

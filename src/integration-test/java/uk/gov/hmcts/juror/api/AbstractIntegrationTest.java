@@ -161,8 +161,8 @@ public abstract class AbstractIntegrationTest {
             .build());
     }
 
-    protected void validateForbiddenResponse(ResponseEntity<String> response, String url) {
-        validateErrorResponse(response,
+    protected void assertForbiddenResponse(ResponseEntity<String> response, String url) {
+        assertErrorResponse(response,
             HttpStatus.FORBIDDEN,
             url,
             AccessDeniedException.class,
@@ -170,11 +170,11 @@ public abstract class AbstractIntegrationTest {
     }
 
     @SneakyThrows
-    protected void validateErrorResponse(ResponseEntity<String> response,
-                                         HttpStatus status,
-                                         String url,
-                                         Class<? extends Exception> exceptionClass,
-                                         String message) {
+    protected void assertErrorResponse(ResponseEntity<String> response,
+                                       HttpStatus status,
+                                       String url,
+                                       Class<? extends Exception> exceptionClass,
+                                       String message) {
         assertThat(response).isNotNull();
         log.debug("Response: {}", response);
         assertThat(response.getStatusCode()).isEqualTo(status);
@@ -190,16 +190,16 @@ public abstract class AbstractIntegrationTest {
                 response.getBody(), false);
     }
 
-    protected void validateBusinessRuleViolation(ResponseEntity<String> response, String message,
-                                                 MojException.BusinessRuleViolation.ErrorCode code) {
-        validateBusinessRuleViolation(response, null, message, code);
+    protected void assertBusinessRuleViolation(ResponseEntity<String> response, String message,
+                                               MojException.BusinessRuleViolation.ErrorCode code) {
+        assertBusinessRuleViolation(response, null, message, code);
     }
 
     @SneakyThrows
     @Deprecated
     //Use one without url
-    protected void validateBusinessRuleViolation(ResponseEntity<String> response, String url, String message,
-                                                 MojException.BusinessRuleViolation.ErrorCode code) {
+    protected void assertBusinessRuleViolation(ResponseEntity<String> response, String url, String message,
+                                               MojException.BusinessRuleViolation.ErrorCode code) {
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
@@ -212,17 +212,17 @@ public abstract class AbstractIntegrationTest {
                 response.getBody(), false);
     }
 
-    protected void validateInternalServerErrorViolation(ResponseEntity<String> response, String url,
-                                                        String expectedError) {
-        validateErrorResponse(response,
+    protected void assertInternalServerErrorViolation(ResponseEntity<String> response, String url,
+                                                      String expectedError) {
+        assertErrorResponse(response,
             HttpStatus.INTERNAL_SERVER_ERROR,
             url,
             MojException.InternalServerError.class,
             expectedError);
     }
 
-    protected void validateInvalidPathParam(ResponseEntity<String> response,
-                                            String expectedMessage) throws JsonProcessingException {
+    protected void assertInvalidPathParam(ResponseEntity<String> response,
+                                          String expectedMessage) throws JsonProcessingException {
 
         assertThat(response).isNotNull();
         log.debug("Response: {}", response);
@@ -237,17 +237,18 @@ public abstract class AbstractIntegrationTest {
     }
 
     @SneakyThrows
-    protected void validateNotFound(ResponseEntity<String> response, String url, String message) {
-        validateErrorResponse(response,
+    protected void assertNotFound(ResponseEntity<String> response, String url, String message) {
+        assertErrorResponse(response,
             HttpStatus.NOT_FOUND,
             url,
             MojException.NotFound.class,
             message);
     }
 
+
     @SneakyThrows
-    protected void validateInvalidPayload(ResponseEntity<String> response,
-                                          RestResponseEntityExceptionHandler.FieldError... errors) {
+    protected void assertInvalidPayload(ResponseEntity<String> response,
+                                        RestResponseEntityExceptionHandler.FieldError... errors) {
         log.debug("Response: {}", response);
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

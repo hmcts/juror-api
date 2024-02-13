@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurorresponse.ReasonableAdjustmentsEnum;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -121,12 +122,13 @@ public class JurorDetailsResponseDto {
     @Autowired
     public JurorDetailsResponseDto(JurorPool jurorPool,
                                    JurorStatusRepository jurorStatusRepository,
-                                   ResponseExcusalService responseExcusalService) {
+                                   ResponseExcusalService responseExcusalService,
+                                   PendingJurorRepository pendingJurorRepository) {
 
         Juror juror = jurorPool.getJuror();
 
         this.commonDetails = new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
-            responseExcusalService);
+            responseExcusalService, pendingJurorRepository);
 
         this.dateOfBirth = juror.getDateOfBirth();
 

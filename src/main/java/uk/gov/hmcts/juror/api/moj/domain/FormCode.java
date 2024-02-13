@@ -8,6 +8,8 @@ import java.util.function.BiConsumer;
 @Getter
 public enum FormCode {
 
+    ENG_EXCUSAL("5225", PrintDataService::printExcusalLetter, IJurorStatus.EXCUSED),
+    BI_EXCUSAL("5225C", PrintDataService::printExcusalLetter, IJurorStatus.EXCUSED),
     ENG_EXCUSALDENIED("5226", PrintDataService::printExcusalDeniedLetter, IJurorStatus.SUMMONED),
     BI_EXCUSALDENIED("5226C", PrintDataService::printExcusalDeniedLetter, IJurorStatus.SUMMONED),
     ENG_SUMMONS("5221", PrintDataService::printSummonsLetter, IJurorStatus.SUMMONED),
@@ -20,8 +22,7 @@ public enum FormCode {
     BI_DEFERRALDENIED("5226AC", PrintDataService::printDeferralDeniedLetter, IJurorStatus.RESPONDED),
     ENG_POSTPONE("5229", PrintDataService::printPostponeLetter, IJurorStatus.DEFERRED),
     BI_POSTPONE("5229C", PrintDataService::printPostponeLetter, IJurorStatus.DEFERRED),
-    ENG_EXCUSAL("5225", PrintDataService::printExcusalLetter, IJurorStatus.EXCUSED),
-    BI_EXCUSAL("5225C", PrintDataService::printExcusalLetter, IJurorStatus.EXCUSED),
+
     // We currently are not anticipating a resend function for request info letters.
     // If we do need one, we will need to write a print function in PrintDataService that only takes a jurorNumber
     // and looks up the previous letter in the bulk_print_data table to retrieve the requested information.

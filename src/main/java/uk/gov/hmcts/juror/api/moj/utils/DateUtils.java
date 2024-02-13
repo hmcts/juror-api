@@ -15,23 +15,18 @@ import java.util.List;
 public class DateUtils {
 
     private DateUtils() {
-
+        // empty private constructor
     }
 
     public static LocalDate convertToLocalDateViaMillisecond(Date dateToConvert) {
         if (dateToConvert == null) {
             return null;
         }
-        return Instant.ofEpochMilli(dateToConvert.getTime())
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate();
+        return Instant.ofEpochMilli(dateToConvert.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
     public static Date convertToDateViaInstant(LocalDate dateToConvert) {
-        return dateToConvert == null
-            ?
-            null
-            :
+        return dateToConvert == null ? null :
                 Date.from(dateToConvert.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 

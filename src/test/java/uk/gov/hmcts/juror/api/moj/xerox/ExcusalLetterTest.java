@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.exception.PoolRequestException;
-import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalDeniedLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalLetter;
 
 import java.time.LocalDate;

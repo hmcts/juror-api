@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -98,6 +99,7 @@ class JurorHistoryServiceImplTest {
             HistoryCodeMod.POLICE_CHECK_COMPLETE, "Unchecked - timed out"));
     }
 
+
     @Test
     void createPoliceCheckDisqualifyHistory() {
         JurorPool jurorPool = createJurorPool();
@@ -125,6 +127,21 @@ class JurorHistoryServiceImplTest {
             HistoryCodeMod.INSUFFICIENT_INFORMATION, "Insufficient Information"));
     }
 
+    @Test
+    void createSendMessageHistory() {
+        final String otherInfo = "Some other info";
+        mockCurrentUser("someUserId1");
+        jurorHistoryService.createSendMessageHistory(
+            TestConstants.VALID_JUROR_NUMBER,
+            TestConstants.VALID_POOL_NUMBER,
+            "Some other info"
+        );
+        verifyStandardValues(TestConstants.VALID_JUROR_NUMBER,
+            TestConstants.VALID_POOL_NUMBER,
+            "someUserId1",
+            new JurorHistoryPartHistoryJurorHistoryExpectedValues(
+                HistoryCodeMod.NOTIFY_MESSAGE_REQUESTED, otherInfo));
+    }
 
     @Test
     void typicalCreateCompleteServiceHistory() {
@@ -145,7 +162,8 @@ class JurorHistoryServiceImplTest {
             () -> jurorHistoryService.createCompleteServiceHistory(jurorPool),
             "Exception must be thrown");
         assertEquals("To create a complete service history entry. "
-                + "The juror record must contain a completion date for juror " + jurorPool.getJurorNumber(), exception.getMessage(),
+                + "The juror record must contain a completion date for juror " + jurorPool.getJurorNumber(),
+            exception.getMessage(),
             "Exception message must match");
     }
 
@@ -218,21 +236,80 @@ class JurorHistoryServiceImplTest {
             HistoryCodeMod.FAILED_TO_ATTEND, "FTA status removed"));
     }
 
-    private void mockCurrentUser(String userId) {
-        securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
-        securityUtilMockedStatic.when(SecurityUtil::getActiveLogin)
-            .thenReturn(userId);
+    @Test
+    void typicalCreateDeferredLetterHistory() {
+        JurorPool jurorPool = createJurorPool();
+        jurorPool.setDeferralCode("A");
+        jurorPool.setDeferralDate(LocalDate.now(clock).plusMonths(3));
+
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.DEFERRED);
+        jurorPool.setStatus(jurorStatus);
+
+        mockCurrentUser("someNewUser");
+        jurorHistoryService.createDeferredLetterHistory(jurorPool);
+        verifyValuesAdditional(jurorPool, "someNewUser", jurorPool.getDeferralDate(), jurorPool.getDeferralCode(),
+            new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.DEFERRED_LETTER,
+                "Deferral Letter Printed"));
     }
 
+    @Test
+    void negativeCreateDeferredLetterHistoryNoDeferredToDate() {
+        JurorPool jurorPool = createJurorPool();
+        jurorPool.setDeferralCode("A");
 
-    private void verifyStandardValuesSystem(JurorPool jurorPool,
-                                            JurorHistoryPartHistoryJurorHistoryExpectedValues... expectedValues) {
-        verifyStandardValues(jurorPool, "SYSTEM", expectedValues);
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.DEFERRED);
+
+        mockCurrentUser("someNewUser");
+        MojException.InternalServerError exception = assertThrows(MojException.InternalServerError.class,
+            () -> jurorHistoryService.createDeferredLetterHistory(jurorPool),
+            "Exception must be thrown");
+        assertEquals("A deferred juror_pool record should exist for the juror relating to the original pool they were "
+                + "summoned to and deferred from",
+            exception.getMessage(),
+            "Exception message must match");
     }
 
-    private void verifyStandardValues(JurorPool jurorPool,
-                                      String userId,
-                                      JurorHistoryPartHistoryJurorHistoryExpectedValues... expectedValues) {
+    @Test
+    void negativeCreateDeferredLetterHistoryNoDeferralCode() {
+        JurorPool jurorPool = createJurorPool();
+        jurorPool.setDeferralDate(LocalDate.now(clock).plusMonths(3));
+
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.DEFERRED);
+
+        mockCurrentUser("someNewUser");
+        MojException.InternalServerError exception = assertThrows(MojException.InternalServerError.class,
+            () -> jurorHistoryService.createDeferredLetterHistory(jurorPool),
+            "Exception must be thrown");
+        assertEquals("A deferred juror_pool record should exist for the juror relating to the original pool they were "
+                + "summoned to and deferred from",
+            exception.getMessage(),
+            "Exception message must match");
+    }
+
+    @Test
+    void negativeCreateDeferredLetterHistoryNoDeferralData() {
+        JurorPool jurorPool = createJurorPool();
+
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.DEFERRED);
+
+        mockCurrentUser("someNewUser");
+        MojException.InternalServerError exception = assertThrows(MojException.InternalServerError.class,
+            () -> jurorHistoryService.createDeferredLetterHistory(jurorPool),
+            "Exception must be thrown");
+        assertEquals("A deferred juror_pool record should exist for the juror relating to the original pool they were "
+                + "summoned to and deferred from",
+            exception.getMessage(),
+            "Exception message must match");
+    }
+
+    private void verifyValuesAdditional(JurorPool jurorPool, String userId,
+                                        LocalDate additionalDateInfo, String additionalReferenceInfo,
+                                        JurorHistoryPartHistoryJurorHistoryExpectedValues... expectedValues) {
+
         ArgumentCaptor<JurorHistory> jurorHistoryArgumentCaptor = ArgumentCaptor.forClass(JurorHistory.class);
 
         verify(jurorHistoryRepository, times(expectedValues.length)).save(jurorHistoryArgumentCaptor.capture());
@@ -252,9 +329,59 @@ class JurorHistoryServiceImplTest {
                 "Info must match");
             assertEquals(LocalDateTime.now(clock), jurorHistory.getDateCreated(),
                 "Date Part must match");
+            assertEquals(additionalDateInfo, jurorHistory.getOtherInformationDate(),
+                "Other Date Info must match");
+            assertEquals(additionalReferenceInfo, jurorHistory.getOtherInformationRef(),
+                "Other Reference Info must match");
+        }
+
+    }
+
+    private void mockCurrentUser(String userId) {
+        securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
+        securityUtilMockedStatic.when(SecurityUtil::getActiveLogin)
+            .thenReturn(userId);
+    }
+
+
+    private void verifyStandardValuesSystem(JurorPool jurorPool,
+                                            JurorHistoryPartHistoryJurorHistoryExpectedValues... expectedValues) {
+        verifyStandardValues(jurorPool.getJurorNumber(),jurorPool.getPoolNumber(), "SYSTEM", expectedValues);
+    }
+
+    private void verifyStandardValues(JurorPool jurorPool,
+                                      String userId,
+                                      JurorHistoryPartHistoryJurorHistoryExpectedValues... expectedValues) {
+        verifyStandardValues(jurorPool.getJurorNumber(),jurorPool.getPoolNumber(), userId, expectedValues);
+
+    }
+    private void verifyStandardValues(String jurorNumber,
+                                      String poolNumber,
+                                      String userId,
+                                      JurorHistoryPartHistoryJurorHistoryExpectedValues... expectedValues) {
+        ArgumentCaptor<JurorHistory> jurorHistoryArgumentCaptor = ArgumentCaptor.forClass(JurorHistory.class);
+
+        verify(jurorHistoryRepository, times(expectedValues.length)).save(jurorHistoryArgumentCaptor.capture());
+
+        Iterator<JurorHistory> jurorHistoryValues = jurorHistoryArgumentCaptor.getAllValues().iterator();
+        for (JurorHistoryPartHistoryJurorHistoryExpectedValues expectedValue : expectedValues) {
+            JurorHistory jurorHistory = jurorHistoryValues.next();
+            assertEquals(jurorNumber, jurorHistory.getJurorNumber(),
+                "Juror Number must match");
+            assertEquals(poolNumber, jurorHistory.getPoolNumber(),
+                "Pool Number must match");
+            assertEquals(userId, jurorHistory.getCreatedBy(),
+                "User Id must match");
+            assertEquals(expectedValue.historyCode, jurorHistory.getHistoryCode(),
+                "History Code must match");
+            assertEquals(expectedValue.info, jurorHistory.getOtherInformation(),
+                "Info must match");
+            assertEquals(LocalDateTime.now(clock), jurorHistory.getDateCreated(),
+                "Date Part must match");
         }
     }
 
     private record JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod historyCode, String info) {
     }
+
 }

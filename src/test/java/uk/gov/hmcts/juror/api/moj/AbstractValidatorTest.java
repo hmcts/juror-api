@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
@@ -32,7 +34,9 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({
+    "PMD.TooManyMethods"
+})
 public abstract class AbstractValidatorTest<T> {
 
     protected ValidatorFactory validatorFactory;
@@ -86,11 +90,7 @@ public abstract class AbstractValidatorTest<T> {
         return new Violation[0];
     }
 
-    protected void expectNoViolations(T objectToValidate) {
-        expectNoViolations(objectToValidate, null);
-    }
-
-    protected void expectNoViolations(T objectToValidate, Class<?>[] groups) {
+    protected void assertExpectNoViolations(T objectToValidate, Class<?>... groups) {
         Set<ConstraintViolation<T>> violations;
         if (groups == null) {
             violations = validator.validate(objectToValidate);
@@ -100,25 +100,25 @@ public abstract class AbstractValidatorTest<T> {
         assertThat(violations).as("No validation violations expected").isEmpty();
     }
 
-    protected void expectViolations(T objectToValidate, Violation... expectedViolations) {
-        expectViolations(objectToValidate, null, expectedViolations);
+    protected void assertExpectViolations(T objectToValidate, Violation... expectedViolations) {
+        assertExpectViolations(objectToValidate, null, expectedViolations);
     }
 
-    protected void expectViolations(T objectToValidate, FieldTestSupport fieldTestSupport,
-                                    Violation... expectedViolations) {
-        expectViolations(objectToValidate, fieldTestSupport, List.of(expectedViolations));
+    protected void assertExpectViolations(T objectToValidate, FieldTestSupport fieldTestSupport,
+                                          Violation... expectedViolations) {
+        assertExpectViolations(objectToValidate, fieldTestSupport, List.of(expectedViolations));
     }
 
 
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-    protected void expectViolations(T objectToValidate, FieldTestSupport fieldTestSupport,
-                                    List<Violation> expectedViolations) {
-        expectViolations(objectToValidate, expectedViolations, getGroups(fieldTestSupport), false);
+    protected void assertExpectViolations(T objectToValidate, FieldTestSupport fieldTestSupport,
+                                          List<Violation> expectedViolations) {
+        assertExpectViolations(objectToValidate, expectedViolations, getGroups(fieldTestSupport), false);
     }
 
-
-    protected void expectViolations(T objectToValidate, List<Violation> expectedViolations, Class<?>[] groups,
-                                    boolean ignoredAdditionalErrors) {
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    protected void assertExpectViolations(T objectToValidate, List<Violation> expectedViolations, Class<?>[] groups,
+                                          boolean ignoredAdditionalErrors) {
         Set<ConstraintViolation<T>> violations;
         if (groups == null) {
             violations = validator.validate(objectToValidate);
@@ -166,18 +166,20 @@ public abstract class AbstractValidatorTest<T> {
         private Violation[] violations;
         private Class<?>[] groups;
 
+        @SuppressWarnings("PMD.LinguisticNaming")
         public FieldTestSupport setGroups(Class<?>... groups) {
-            this.groups = groups;
+            this.groups = groups.clone();
             return this;
         }
     }
 
+    @SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
     protected abstract class AbstractValidationFieldTestBase<V> {
         protected final List<DynamicTest> tests;
         protected final String fieldName;
         protected final BiConsumer<T, V> setFieldConsumer;
 
-        protected boolean ignoreAdditionalFailures = false;
+        protected boolean ignoreAdditionalFailures;
 
         protected AbstractValidationFieldTestBase(String fieldName,
                                                   BiConsumer<T, V> setFieldConsumer) {
@@ -194,7 +196,7 @@ public abstract class AbstractValidatorTest<T> {
             List<Violation> violations = new ArrayList<>();
             violations.add(new Violation(fieldName, getMessage(fieldTestSupport, defaultMessage)));
             violations.addAll(Arrays.asList(getOtherViolations(fieldTestSupport)));
-            AbstractValidatorTest.this.expectViolations(dto, violations, getGroups(fieldTestSupport),
+            AbstractValidatorTest.this.assertExpectViolations(dto, violations, getGroups(fieldTestSupport),
                 ignoreAdditionalFailures);
         }
 
@@ -223,8 +225,12 @@ public abstract class AbstractValidatorTest<T> {
                 DynamicTest.dynamicTest(fieldName + " should be required" + getTestSuffix(fieldTestSupport), () -> {
                     T dto = createValidObject();
                     setField(dto, validValue);
-                    expectNoViolations(dto, getGroups(fieldTestSupport));
+                    assertExpectNoViolations(dto, getGroups(fieldTestSupport));
                 }));
+        }
+
+        protected void addNotRequiredTest(V validValue) {
+            addNotRequiredTest(validValue, null);
         }
 
         protected void addAllowNotNullTest(V validValue, FieldTestSupport fieldTestSupport) {
@@ -233,7 +239,7 @@ public abstract class AbstractValidatorTest<T> {
                     () -> {
                         T dto = createValidObject();
                         setField(dto, validValue);
-                        expectNoViolations(dto, getGroups(fieldTestSupport));
+                        assertExpectNoViolations(dto, getGroups(fieldTestSupport));
                     }));
         }
 
@@ -243,7 +249,7 @@ public abstract class AbstractValidatorTest<T> {
                     () -> {
                         T dto = createValidObject();
                         setField(dto, null);
-                        expectNoViolations(dto, getGroups(fieldTestSupport));
+                        assertExpectNoViolations(dto, getGroups(fieldTestSupport));
                     }));
         }
 
@@ -254,7 +260,7 @@ public abstract class AbstractValidatorTest<T> {
                     () -> {
                         T dto = createValidObject();
                         setField(dto, null);
-                        expectNoViolations(dto, getGroups(fieldTestSupport));
+                        assertExpectNoViolations(dto, getGroups(fieldTestSupport));
                     }));
             tests.add(
                 DynamicTest.dynamicTest(fieldName + " must be null - Non-Null Value" + getTestSuffix(fieldTestSupport),
@@ -265,11 +271,9 @@ public abstract class AbstractValidatorTest<T> {
                     }));
         }
 
-        protected void addNotRequiredTest(V validValue) {
-            addNotRequiredTest(validValue, null);
-        }
 
         @TestFactory
+        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         Stream<DynamicTest> tests() {
             return tests.stream();
         }
@@ -467,7 +471,7 @@ public abstract class AbstractValidatorTest<T> {
                     () -> {
                         T dto = createValidObject();
                         setField(dto, "");
-                        expectNoViolations(dto);
+                        assertExpectNoViolations(dto);
                     }));
             addNotRequiredTest(validValue);
         }
@@ -523,5 +527,44 @@ public abstract class AbstractValidatorTest<T> {
                 expectViolations(dto, fieldName + "[0].<list element>", "must not be null", fieldTestSupport);
             }));
         }
+    }
+
+    protected abstract class AbstractValidationFieldTestMap<K, V> extends AbstractValidationFieldTestBase<Map<K, V>> {
+
+        protected AbstractValidationFieldTestMap(String fieldName, BiConsumer<T, Map<K, V>> setFieldConsumer) {
+            super(fieldName, setFieldConsumer);
+        }
+
+        @SuppressWarnings("PMD.UseConcurrentHashMap")
+        protected void addNullKeyValueInMapTest(FieldTestSupport fieldTestSupport) {
+            tests.add(DynamicTest.dynamicTest(fieldName + " must not contain a null key ", () -> {
+                T dto = createValidObject();
+                Map<K, V> map = new HashMap<>();
+                map.put(null, getValidValue());
+                setField(dto, map);
+                expectViolations(dto, fieldName + "<K>[].<map key>", "must not be null", fieldTestSupport);
+            }));
+        }
+
+        @SuppressWarnings("PMD.UseConcurrentHashMap")
+        protected void addNullValueInMapTest(FieldTestSupport fieldTestSupport) {
+            tests.add(DynamicTest.dynamicTest(fieldName + " must not contain a null value ", () -> {
+                T dto = createValidObject();
+                Map<K, V> map = new HashMap<>();
+                K key = getValidKey();
+                map.put(key, null);
+                setField(dto, map);
+                expectViolations(dto, fieldName + "[" + key + "].<map value>",
+                    "must not be null", fieldTestSupport);
+            }));
+        }
+
+        protected Map<K, V> getValidMap() {
+            return Map.of(getValidKey(), getValidValue());
+        }
+
+        protected abstract K getValidKey();
+
+        protected abstract V getValidValue();
     }
 }

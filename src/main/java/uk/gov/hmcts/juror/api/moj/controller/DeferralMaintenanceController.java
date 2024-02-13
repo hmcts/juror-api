@@ -23,8 +23,10 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralReasonRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
 import uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsService;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
 
@@ -159,19 +161,12 @@ public class DeferralMaintenanceController {
         manageDeferralsService.deleteDeferral(payload, jurorNumber);
     }
 
-    // Postponement is a special case of deferral, this endpoint makes it explicit that it's a postponement but has
-    // the same Dto
-    @PostMapping("/juror/postpone/{jurorNumber}")
-    @Operation(summary = "Postpone a specific juror",
-        description = "Mark a single juror as postponed")
-    public ResponseEntity<Void> processJurorPostponement(
+    // postponement is a special case of deferral, this endpoint makes it explicit that it's a postponement
+    @PostMapping("/juror/postpone")
+    @Operation(summary = "Postpone one or more jurors", description = "Mark one or more jurors as postponed")
+    public ResponseEntity<DeferralResponseDto> processJurorPostponement(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
-        @Parameter(description = "9-digit numeric string to identify"
-            + " the juror") @PathVariable(name = "jurorNumber")
-        @JurorNumber @Valid String jurorNumber,
-        @RequestBody @Valid DeferralReasonRequestDto deferralReasonDto) {
-        manageDeferralsService.processJurorPostponement(payload, jurorNumber, deferralReasonDto);
-        return ResponseEntity.noContent().build();
+        @RequestBody @Valid ProcessJurorPostponementRequestDto request) {
+        return ResponseEntity.ok().body(manageDeferralsService.processJurorPostponement(payload, request));
     }
-
 }

@@ -9,12 +9,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorCommsPrintFiles;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorCommsPrintFilesRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateField;
-import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateFieldRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.PrintFile;
 import uk.gov.hmcts.juror.api.bureau.domain.PrintFileRepository;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.Pool;
 import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 

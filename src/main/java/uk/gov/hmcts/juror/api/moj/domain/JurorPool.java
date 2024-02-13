@@ -155,7 +155,7 @@ public class JurorPool implements Serializable {
      *
      * @return LocalDate corresponding to return date.
      */
-    public LocalDate getReturnDate(){
+    public LocalDate getReturnDate() {
         return this.getPool().getReturnDate();
     }
 

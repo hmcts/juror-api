@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
@@ -27,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.trial.TrialService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.validation.TrialNumber;
 
 import java.util.List;
 
@@ -37,7 +40,6 @@ import java.util.List;
 @Tag(name = "Trial Management")
 public class TrialController {
 
-    private static final String BUREAU_USER = "400";
     public static final String ERROR_MESSAGE = "Bureau users are not allowed to use this service";
 
     private final TrialService trialService;
@@ -70,8 +72,11 @@ public class TrialController {
         @RequestParam("page_number") @PathVariable("pageNumber") @Valid int pageNumber,
         @RequestParam("sort_by") @PathVariable("sortBy") @Valid String sortBy,
         @RequestParam("sort_order") @PathVariable("sortOrder") @Valid String sortOrder,
+        @RequestParam(value = "trial_number",required = false)
+        @TrialNumber @Valid String trialNumber,
         @RequestParam("is_active") @PathVariable("isActive") @Valid Boolean isActive) {
-        Page<TrialListDto> trials = trialService.getTrials(payload, pageNumber, sortBy, sortOrder, isActive);
+        Page<TrialListDto> trials = trialService
+            .getTrials(payload, pageNumber, sortBy, sortOrder, isActive,trialNumber);
         return ResponseEntity.ok().body(trials);
     }
 
@@ -108,6 +113,14 @@ public class TrialController {
         @RequestBody @Valid ReturnJuryDto returnJuryDto
     ) {
         trialService.returnJury(payload, trialNumber, locationCode, returnJuryDto);
+        return ResponseEntity.ok(null);
+    }
+
+    @PatchMapping("/end-trial")
+    @Operation(summary = "End the trial")
+    @PreAuthorize(SecurityUtil.COURT_AUTH)
+    public ResponseEntity<Void> endTrial(@RequestBody EndTrialDto endTrialDto) {
+        trialService.endTrial(endTrialDto);
         return ResponseEntity.ok(null);
     }
 }

@@ -11,10 +11,10 @@ public class SummonsLetter extends LetterBase {
                          CourtLocation courtLocation,
                          CourtLocation bureauLocation) {
         super(LetterContext.builder()
-                   .jurorPool(jurorPool)
-                   .courtLocation(courtLocation)
-                   .bureauLocation(bureauLocation)
-                   .build());
+            .jurorPool(jurorPool)
+            .courtLocation(courtLocation)
+            .bureauLocation(bureauLocation)
+            .build());
     }
 
     public SummonsLetter(JurorPool jurorPool,
@@ -29,6 +29,7 @@ public class SummonsLetter extends LetterBase {
             .build());
     }
 
+    @Override
     protected void setupWelsh() {
         setFormCode(FormCode.BI_SUMMONS);
         sharedJurorSetup();
@@ -51,6 +52,7 @@ public class SummonsLetter extends LetterBase {
         addData(LetterDataType.JUROR_NUMBER, 9);
     }
 
+    @Override
     protected void setupEnglish() {
         setFormCode(FormCode.ENG_SUMMONS);
         sharedJurorSetup();

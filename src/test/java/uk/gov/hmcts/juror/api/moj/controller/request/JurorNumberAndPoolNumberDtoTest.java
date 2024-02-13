@@ -4,9 +4,6 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 
-@SuppressWarnings(
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive done via inheritance
-)
 class JurorNumberAndPoolNumberDtoTest extends AbstractValidatorTest<JurorNumberAndPoolNumberDto> {
 
     @Override
@@ -30,14 +27,14 @@ class JurorNumberAndPoolNumberDtoTest extends AbstractValidatorTest<JurorNumberA
     void positiveTypical() {
         JurorNumberAndPoolNumberDto dto = createJurorNumberAndPoolNumberDto(
             TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
-        expectNoViolations(dto);
+        assertExpectNoViolations(dto);
     }
 
     @Test
     void negativeMissingJurorNumber() {
         JurorNumberAndPoolNumberDto dto = createJurorNumberAndPoolNumberDto(
             null, TestConstants.VALID_POOL_NUMBER);
-        expectViolations(dto,
+        assertExpectViolations(dto,
             new Violation("jurorNumber", "must not be blank")
         );
     }
@@ -46,7 +43,7 @@ class JurorNumberAndPoolNumberDtoTest extends AbstractValidatorTest<JurorNumberA
     void negativeBlankJurorNumber() {
         JurorNumberAndPoolNumberDto dto = createJurorNumberAndPoolNumberDto(
             "", TestConstants.VALID_POOL_NUMBER);
-        expectViolations(dto,
+        assertExpectViolations(dto,
             new Violation("jurorNumber", "must not be blank"),
             new Violation("jurorNumber", "must match \"^\\d{9}$\"")
         );
@@ -56,7 +53,7 @@ class JurorNumberAndPoolNumberDtoTest extends AbstractValidatorTest<JurorNumberA
     void negativeInvalidJurorNumber() {
         JurorNumberAndPoolNumberDto dto = createJurorNumberAndPoolNumberDto(
             TestConstants.INVALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
-        expectViolations(dto,
+        assertExpectViolations(dto,
             new Violation("jurorNumber", "must match \"^\\d{9}$\"")
         );
     }
@@ -65,7 +62,7 @@ class JurorNumberAndPoolNumberDtoTest extends AbstractValidatorTest<JurorNumberA
     void negativeMissingPoolNumber() {
         JurorNumberAndPoolNumberDto dto = createJurorNumberAndPoolNumberDto(
             TestConstants.VALID_JUROR_NUMBER, null);
-        expectViolations(dto,
+        assertExpectViolations(dto,
             new Violation("poolNumber", "must not be blank")
         );
     }
@@ -74,7 +71,7 @@ class JurorNumberAndPoolNumberDtoTest extends AbstractValidatorTest<JurorNumberA
     void negativeBlankPoolNumber() {
         JurorNumberAndPoolNumberDto dto = createJurorNumberAndPoolNumberDto(
             TestConstants.VALID_JUROR_NUMBER, "");
-        expectViolations(dto,
+        assertExpectViolations(dto,
             new Violation("poolNumber", "must not be blank"),
             new Violation("poolNumber", "must match \"^\\d{9}$\"")
         );
@@ -84,7 +81,7 @@ class JurorNumberAndPoolNumberDtoTest extends AbstractValidatorTest<JurorNumberA
     void negativeInvalidPoolNumber() {
         JurorNumberAndPoolNumberDto dto = createJurorNumberAndPoolNumberDto(
             TestConstants.VALID_JUROR_NUMBER, TestConstants.INVALID_POOL_NUMBER);
-        expectViolations(dto,
+        assertExpectViolations(dto,
             new Violation("poolNumber", "must match \"^\\d{9}$\"")
         );
     }

@@ -21,8 +21,10 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralReasonRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.CurrentlyDeferred;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -35,7 +37,6 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
-import uk.gov.hmcts.juror.api.moj.domain.letter.PostponementLetter;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
@@ -52,6 +53,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
@@ -60,7 +62,6 @@ import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.NumberUtils;
-import uk.gov.hmcts.juror.api.moj.utils.PoolRequestUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.LocalDate;
@@ -119,8 +120,11 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     private final SummonsReplyMergeService mergeService;
     @NotNull
     private final JurorResponseAuditRepository auditRepository;
+
     @Autowired
     private final PostponementLetterServiceImpl postponementLetterService;
+    @Autowired
+    private final JurorHistoryService jurorHistoryService;
     private final PrintDataService printDataService;
 
     /**
@@ -176,73 +180,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         return deferralsUsed;
     }
 
-    private int processDeferredJurors(int deferralsRequested, Iterator<CurrentlyDeferred> deferralsIterator,
-                                      PoolRequest newPool, String userId) {
-        int deferralsUsed = 0;
-        CurrentlyDeferred deferralRecord;
-
-        int sequenceNumber = poolMemberSequenceService.getPoolMemberSequenceNumber(newPool.getPoolNumber());
-
-        while (deferralsUsed < deferralsRequested && deferralsIterator.hasNext()) {
-            deferralRecord = deferralsIterator.next();
-            try {
-                JurorPool deferredJurorPool = getPoolMember(deferralRecord, newPool.getReturnDate());
-                JurorPool newJurorPool = addMemberToNewPool(newPool, deferredJurorPool, userId, sequenceNumber);
-                sequenceNumber++;
-
-                removeMemberFromOldPool(deferredJurorPool);
-                updateJurorHistory(deferredJurorPool, newPool.getPoolNumber(), userId, JurorHistory.ADDED,
-                    HistoryCodeMod.DEFERRED_POOL_MEMBER);
-
-                if (deferralRecord.getOwner().equals(JurorDigitalApplication.JUROR_OWNER)) {
-                    printDataService.printConfirmationLetter(newJurorPool);
-                }
-
-                deferralsUsed++;
-                log.trace(String.format("Deferred juror %s has been added to Pool: %s", deferralRecord.getJurorNumber(),
-                    newPool.getPoolNumber()
-                ));
-            } catch (PoolRequestException.PoolRequestNotFound | currentlyDeferredException.DeferredMemberNotFound ex) {
-                log.error(String.format("An error occurred trying to add a deferred juror to the new Pool: %s - %s",
-                    newPool.getPoolNumber(), ex.getMessage()
-                ));
-            }
-        }
-        return deferralsUsed;
-    }
-
-    /**
-     * Use a number of records from the currently_deferred table to create new Pool Member records for a newly created
-     * Pool. When a deferred juror is used in a newly created Pool, the following system processes occur:
-     * <p/>
-     * <ul>
-     *     <li>Logically delete the previous Pool Member record (set is active to 'N')</li>
-     *     <li>Update the Pool Total of the previous Pool Member's associated Pool Request (reduce by one)</li>
-     *     <li>Create a new Bureau owned Pool Member record (OWNER = 400) for the newly requested Pool</li>
-     *     <li>Update the Pool Total of the newly requested Pool (increment by one)</li>
-     *     <li>Insert a record in the PART_HIST table for each used deferral</li>
-     *     <li>Insert a record in the POOL_HIST table to summarise the deferrals used</li>
-     *     <li>Insert/Update records in the CONFRIM_LETT table for each used deferral</li>
-     * </ul>
-     *
-     * @param newPool         a Pool Request instance, owned by the Bureau
-     * @param bureauDeferrals the number of bureau deferrals requested to be used in this Pool
-     * @param userId          the current user's username (for auditing in history tables)
-     */
-    public void useBureauDeferrals(PoolRequest newPool, int bureauDeferrals, String userId) {
-        String owner = newPool.getOwner(); //should be 400 - Bureau
-        String courtLocation = newPool.getCourtLocation().getLocCode();
-        LocalDate attendanceDate = newPool.getReturnDate();
-
-        Iterator<CurrentlyDeferred> bureauDeferralsIterator = currentlyDeferredRepository
-            .findAll(filterByCourtAndDate(owner, courtLocation, attendanceDate)).iterator();
-
-        int deferralsUsed = processBureauDeferredJurors(bureauDeferrals, bureauDeferralsIterator, newPool, userId);
-        log.info(String.format("%d deferred juror(s) have been added to Pool: %s", deferralsUsed,
-            newPool.getPoolNumber()
-        ));
-    }
-
     @Override
     @Transactional
     public void processJurorDeferral(BureauJWTPayload payload, String jurorNumber,
@@ -266,7 +203,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 updatePoolHistory(request, 1, auditorUsername);
             } else {
                 // cannot process this deferral as the new pool couldn't be found
-                throw new MojException.NotFound("Could not find supplied pool number", null);
+                throw new MojException.NotFound("Could not find supplied pool number",
+                    null);
             }
 
             removeMemberFromOldPool(jurorPool);
@@ -280,44 +218,21 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 JurorHistory.ADDED, HistoryCodeMod.DEFERRED_POOL_MEMBER);
 
             printDataService.printDeferralLetter(jurorPool);
-            updateJurorHistory(jurorPool, jurorPool.getPoolNumber(), auditorUsername,
-                "", HistoryCodeMod.DEFERRED_LETTER);
+            jurorHistoryService.createDeferredLetterHistory(jurorPool);
 
             printDataService.printConfirmationLetter(newJurorPool);
         } else {
             //this is for the deferral journey to move them to deferred state
-            setupDeferralEntry(payload, jurorNumber, deferralReasonDto, auditorUsername, jurorPool);
+            setupDeferralEntry(deferralReasonDto, auditorUsername, jurorPool);
 
             // send letter
             printDataService.printDeferralLetter(jurorPool);
-            updateJurorHistory(jurorPool, jurorPool.getPoolNumber(), auditorUsername,
-                "", HistoryCodeMod.DEFERRED_LETTER);
+            jurorHistoryService.createDeferredLetterHistory(jurorPool);
         }
 
         if (deferralReasonDto.replyMethod != null) {
             updateJurorResponse(jurorNumber, deferralReasonDto, auditorUsername);
         }
-    }
-
-    private void setupDeferralEntry(BureauJWTPayload payload, String jurorNumber,
-                                    DeferralReasonRequestDto deferralReasonDto, String auditorUsername,
-                                    JurorPool jurorPool) {
-        setDeferralPoolMember(jurorPool, deferralReasonDto, auditorUsername, true);
-        jurorPoolRepository.save(jurorPool);
-
-        if (jurorPool.getCourt() == null || jurorPool.getCourt().getLocCode() == null) {
-            throw new MojException.NotFound(
-                String.format(
-                    "Court location for pool member %s cannot be found",
-                    jurorPool.getJurorNumber()
-                ), null);
-        }
-
-        String otherInfo = deferralReasonDto.getExcusalReasonCode().equalsIgnoreCase(POSTPONE_REASON_CODE)
-            ? POSTPONE_INFO : JurorHistory.ADDED;
-        // this will update the juror history for deferred juror
-        updateJurorHistory(jurorPool, jurorPool.getPoolNumber(), auditorUsername, otherInfo,
-            HistoryCodeMod.DEFERRED_POOL_MEMBER);
     }
 
     @Override
@@ -361,8 +276,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 HistoryCodeMod.DEFERRED_POOL_MEMBER);
 
             printDataService.printDeferralLetter(jurorPool);
-            updateJurorHistory(jurorPool, jurorPool.getPoolNumber(), auditorUsername, "",
-                HistoryCodeMod.DEFERRED_LETTER);
+            jurorHistoryService.createDeferredLetterHistory(jurorPool);
 
             printDataService.printConfirmationLetter(newJurorPool);
 
@@ -383,8 +297,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
             // send letters
             printDataService.printDeferralLetter(jurorPool);
-            updateJurorHistory(jurorPool, jurorPool.getPoolNumber(), auditorUsername,
-                "", HistoryCodeMod.DEFERRED_LETTER);
+            jurorHistoryService.createDeferredLetterHistory(jurorPool);
 
         }
     }
@@ -405,7 +318,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             log.trace("Juror {} - adding pool member to requested active pool", jurorNumber);
             JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
             JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
-            final Juror juror = jurorPool.getJuror();
 
             JurorPool newJurorPool = addMemberToNewPool(poolRequest, jurorPool, payload.getLogin(),
                 poolMemberSequenceService.getPoolMemberSequenceNumber(poolRequest.getPoolNumber()));
@@ -422,62 +334,68 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     @Override
     @Transactional
-    public void processJurorPostponement(BureauJWTPayload payload, String jurorNumber,
-                                         DeferralReasonRequestDto deferralReasonDto) {
-        String auditorUsername = payload.getLogin();
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
-        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
-        String reasonCode = deferralReasonDto.getExcusalReasonCode();
+    public DeferralResponseDto processJurorPostponement(BureauJWTPayload payload,
+                                                        ProcessJurorPostponementRequestDto request) {
+        final String auditorUsername = payload.getLogin();
+        final String reasonCode = request.getExcusalReasonCode();
 
-        // validate the request for postponement
-        if (jurorPool.getPoolNumber().equalsIgnoreCase(deferralReasonDto.getPoolNumber())) {
-            throw new MojException.BadRequest("Cannot postpone to same pool", null);
-        } else if (!reasonCode.equalsIgnoreCase(POSTPONE_REASON_CODE)) {
-            throw new MojException.BadRequest("Invalid reason code for postponement", null);
-        }
+        int countJurorsPostponed = 0;
+        for (String jurorNumber : request.jurorNumbers) {
+            // validation
+            JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+            JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
-        // if not empty then we need to move the juror to the active pool
-        if (!StringUtils.isEmpty(deferralReasonDto.poolNumber)) {
-            // update old record
-            setDeferralPoolMember(jurorPool, deferralReasonDto, auditorUsername, true);
-            Optional<PoolRequest> poolRequest = poolRequestRepository
-                .findByPoolNumber(deferralReasonDto.getPoolNumber());
-
-            JurorPool newJurorPool;
-            if (poolRequest.isPresent()) {
-                PoolRequest request = poolRequest.get();
-                newJurorPool = addPostponedMemberToNewPool(request, jurorPool, auditorUsername,
-                    poolMemberSequenceService.getPoolMemberSequenceNumber(poolRequest.get().getPoolNumber()));
-
-            } else {
-                // cannot process this postponement as the new pool couldn't be found
-                throw new MojException.NotFound("Could not find supplied pool number", null);
+            if (jurorPool.getPoolNumber().equalsIgnoreCase(request.getPoolNumber())) {
+                throw new MojException.BadRequest("Cannot postpone to the same pool",
+                    null);
+            } else if (!reasonCode.equalsIgnoreCase(POSTPONE_REASON_CODE)) {
+                throw new MojException.BadRequest("Invalid reason code for postponement",
+                    null);
             }
 
-            removeMemberFromOldPool(jurorPool);
+            // start the process to postpone and move the juror to the active pool
+            if (!StringUtils.isEmpty(request.poolNumber)) {
+                // update old record
+                setDeferralPoolMember(jurorPool, request, auditorUsername, true);
 
-            // update hist for old record - postponed to new pool
-            updateJurorHistory(jurorPool, newJurorPool.getPoolNumber(), auditorUsername, POSTPONE_INFO,
-                HistoryCodeMod.DEFERRED_POOL_MEMBER);
-            // update hist for new record - added to new pool
-            updateJurorHistory(newJurorPool, newJurorPool.getPoolNumber(), auditorUsername, JurorHistory.ADDED,
-                HistoryCodeMod.DEFERRED_POOL_MEMBER);
+                PoolRequest poolRequest =
+                    poolRequestRepository.findByPoolNumber(request.getPoolNumber()).orElseThrow(() ->
+                        new MojException.NotFound("Could not find supplied pool number",
+                            null));
 
-            printDataService.printPostponeLetter(newJurorPool);
-            updateJurorHistory(jurorPool, newJurorPool.getPoolNumber(), auditorUsername, "",
-                HistoryCodeMod.POSTPONED_LETTER);
+                int sequenceNumber =
+                    poolMemberSequenceService.getPoolMemberSequenceNumber(poolRequest.getPoolNumber());
 
-            printDataService.printConfirmationLetter(jurorPool);
+                JurorPool newJurorPool = addPostponedMemberToNewPool(poolRequest, jurorPool, auditorUsername,
+                    sequenceNumber);
 
-        } else {
-            // move juror into to DEFER_DBF and update history
-            setupDeferralEntry(payload, jurorNumber, deferralReasonDto, auditorUsername, jurorPool);
+                removeMemberFromOldPool(jurorPool);
 
-            // send letter
-            printDataService.printPostponeLetter(jurorPool);
+                // update hist for old record - postponed to new pool
+                updateJurorHistory(jurorPool, newJurorPool.getPoolNumber(), auditorUsername, POSTPONE_INFO,
+                    HistoryCodeMod.DEFERRED_POOL_MEMBER);
+
+                // update hist for new record - added to new pool
+                updateJurorHistory(newJurorPool, newJurorPool.getPoolNumber(), auditorUsername, JurorHistory.ADDED,
+                    HistoryCodeMod.DEFERRED_POOL_MEMBER);
+
+                // Confirmation needs newJurorPool for attendance dates
+                printDataService.printConfirmationLetter(newJurorPool);
+            } else {
+                // move juror into to DEFER_DBF and update history
+                setupDeferralEntry(request, auditorUsername, jurorPool);
+            }
+
             updateJurorHistory(jurorPool, jurorPool.getPoolNumber(), auditorUsername, "",
                 HistoryCodeMod.POSTPONED_LETTER);
+
+            // Postponement needs the old jurorPool for deferral dates
+            printDataService.printPostponeLetter(jurorPool);
+
+            countJurorsPostponed++;
         }
+
+        return DeferralResponseDto.builder().countJurorsPostponed(countJurorsPostponed).build();
     }
 
     @Override
@@ -523,59 +441,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         dto.setDeferralPoolsSummary(optionSummaryDtos);
 
         return dto;
-    }
-
-    private void updateJurorResponse(String jurorNumber, DeferralReasonRequestDto deferralReasonDto,
-                                     String auditorUsername) {
-
-
-        AbstractJurorResponse jurorResponse = null;
-
-        if (deferralReasonDto.getReplyMethod().equals(ReplyMethod.DIGITAL)) {
-            jurorResponse = DataUtils.getJurorDigitalResponse(jurorNumber, digitalResponseRepository);
-
-        } else if (deferralReasonDto.getReplyMethod().equals(ReplyMethod.PAPER)) {
-            jurorResponse = DataUtils.getJurorPaperResponse(jurorNumber, paperResponseRepository);
-        }
-
-        // check to see whether the response has been completed already
-        if (BooleanUtils.isTrue(jurorResponse.getProcessingComplete())) {
-            final String message = String.format("Response %s has been previously merged", jurorNumber);
-            log.error(
-                "Response {} has previously been completed at {}",
-                jurorNumber,
-                jurorResponse.getCompletedAt()
-            );
-            throw new JurorResponseAlreadyCompletedException(message);
-        }
-
-        // there was code for digital to set up the optimistic locking, different from paper
-        // this is not needed as it will be covered with e-tag header
-
-        final ProcessingStatus auditStatus = jurorResponse.getProcessingStatus();
-
-        jurorResponse.setProcessingStatus(ProcessingStatus.CLOSED);
-
-        // assign staff (digital)
-        if (deferralReasonDto.getReplyMethod() == ReplyMethod.DIGITAL) {
-            assert jurorResponse instanceof DigitalResponse;
-            DigitalResponse digitalResponse = (DigitalResponse) jurorResponse;
-
-            assignOnUpdateService.assignToCurrentLogin(digitalResponse, auditorUsername);
-
-            final JurorResponseAudit responseAudit = auditRepository.save(JurorResponseAudit.builder()
-                .jurorNumber(jurorResponse.getJurorNumber())
-                .login(auditorUsername)
-                .oldProcessingStatus(auditStatus)
-                .newProcessingStatus(jurorResponse.getProcessingStatus())
-                .build());
-
-            log.trace("Audit entry: {}", responseAudit);
-            mergeService.mergeDigitalResponse(digitalResponse, auditorUsername);
-        } else {
-            assert jurorResponse instanceof PaperResponse;
-            mergeService.mergePaperResponse((PaperResponse) jurorResponse, auditorUsername);
-        }
     }
 
     /**
@@ -705,6 +570,218 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         return deferralOptions;
     }
 
+    @Override
+    public void deleteDeferral(BureauJWTPayload payload, String jurorNumber) {
+
+        String customErrorMessage = String.format("Cannot find deferred record for juror number %s - ", jurorNumber);
+
+        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
+        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
+
+        Optional<CurrentlyDeferred> currentlyDeferred = currentlyDeferredRepository.findById(jurorNumber);
+
+        if (currentlyDeferred.isPresent()) {
+            setDeletedDeferralJurorPool(jurorPool, payload.getLogin());
+        } else {
+            throw new MojException.NotFound(customErrorMessage, null);
+        }
+    }
+
+    /**
+     * Use a number of records from the currently_deferred table to create new Pool Member records for a newly created
+     * Pool. When a deferred juror is used in a newly created Pool, the following system processes occur:
+     * <p/>
+     * <ul>
+     *     <li>Logically delete the previous Pool Member record (set is active to 'N')</li>
+     *     <li>Update the Pool Total of the previous Pool Member's associated Pool Request (reduce by one)</li>
+     *     <li>Create a new Bureau owned Pool Member record (OWNER = 400) for the newly requested Pool</li>
+     *     <li>Update the Pool Total of the newly requested Pool (increment by one)</li>
+     *     <li>Insert a record in the PART_HIST table for each used deferral</li>
+     *     <li>Insert a record in the POOL_HIST table to summarise the deferrals used</li>
+     *     <li>Insert/Update records in the CONFRIM_LETT table for each used deferral</li>
+     * </ul>
+     *
+     * @param newPool         a Pool Request instance, owned by the Bureau
+     * @param bureauDeferrals the number of bureau deferrals requested to be used in this Pool
+     * @param userId          the current user's username (for auditing in history tables)
+     */
+    @Override
+    public int useBureauDeferrals(PoolRequest newPool, int bureauDeferrals, String userId) {
+        String owner = newPool.getOwner(); //should be 400 - Bureau
+        String courtLocation = newPool.getCourtLocation().getLocCode();
+        LocalDate attendanceDate = newPool.getReturnDate();
+
+        Iterator<CurrentlyDeferred> bureauDeferralsIterator = currentlyDeferredRepository
+            .findAll(filterByCourtAndDate(owner, courtLocation, attendanceDate)).iterator();
+
+        int deferralsUsed = processBureauDeferredJurors(bureauDeferrals, bureauDeferralsIterator, newPool, userId);
+        log.info(String.format("%d deferred juror(s) have been added to Pool: %s", deferralsUsed,
+            newPool.getPoolNumber()
+        ));
+        return deferralsUsed;
+    }
+
+    public void setDeferralPoolMember(JurorPool jurorPool, DeferralReasonRequestDto dto, String auditorUsername,
+                                      Boolean incrementNoDefPos) {
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.DEFERRED);
+
+        jurorPool.setDeferralDate(dto.getDeferralDate());
+        jurorPool.setNextDate(null);
+        jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.DEFERRED, jurorStatusRepository));
+        jurorPool.setUserEdtq(auditorUsername);
+        String reasonCode = dto.getExcusalReasonCode();
+        jurorPool.setDeferralCode(reasonCode);
+
+        Juror juror = jurorPool.getJuror();
+        juror.setResponded(true);
+        juror.setUserEdtq(auditorUsername);
+
+        if (reasonCode.equalsIgnoreCase(POSTPONE_REASON_CODE)) {
+            // don't want to increment this count for postponement as we can use it to determine if juror had
+            // reached limit of 2 deferrals.
+            jurorPool.setPostpone(true);
+        } else if (Boolean.TRUE.equals(incrementNoDefPos)) {
+            if (Objects.isNull(juror.getNoDefPos())) {
+                juror.setNoDefPos(1);
+            } else {
+                juror.setNoDefPos(juror.getNoDefPos() + 1);
+            }
+        }
+
+        jurorRepository.save(juror);
+        jurorPoolRepository.save(jurorPool);
+    }
+
+    public void setDeletedDeferralJurorPool(JurorPool jurorPool, String auditorUsername) {
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+        jurorPool.setDeferralDate(null);
+        jurorPool.setStatus(jurorStatus);
+        jurorPool.setUserEdtq(auditorUsername);
+        jurorPool.setDeferralCode(null);
+
+        jurorPoolRepository.save(jurorPool);
+
+        Juror juror = jurorPool.getJuror();
+        juror.setExcusalDate(null);
+        juror.setNoDefPos(juror.getNoDefPos() - 1);
+        juror.setUserEdtq(auditorUsername);
+
+        jurorRepository.save(juror);
+    }
+
+    private void setupDeferralEntry(DeferralReasonRequestDto deferralReasonDto, String auditorUsername,
+                                    JurorPool jurorPool) {
+        setDeferralPoolMember(jurorPool, deferralReasonDto, auditorUsername, true);
+        jurorPoolRepository.save(jurorPool);
+
+        if (jurorPool.getCourt() == null || jurorPool.getCourt().getLocCode() == null) {
+            throw new MojException.NotFound(
+                String.format(
+                    "Court location for pool member %s cannot be found",
+                    jurorPool.getJurorNumber()
+                ), null);
+        }
+
+        String otherInfo = deferralReasonDto.getExcusalReasonCode().equalsIgnoreCase(POSTPONE_REASON_CODE)
+            ? POSTPONE_INFO : JurorHistory.ADDED;
+        // this will update the juror history for deferred juror
+        updateJurorHistory(jurorPool, jurorPool.getPoolNumber(), auditorUsername, otherInfo,
+            HistoryCodeMod.DEFERRED_POOL_MEMBER);
+    }
+    
+    private void updateJurorResponse(String jurorNumber, DeferralReasonRequestDto deferralReasonDto,
+                                     String auditorUsername) {
+
+
+        AbstractJurorResponse jurorResponse = null;
+
+        if (deferralReasonDto.getReplyMethod().equals(ReplyMethod.DIGITAL)) {
+            jurorResponse = DataUtils.getJurorDigitalResponse(jurorNumber, digitalResponseRepository);
+
+        } else if (deferralReasonDto.getReplyMethod().equals(ReplyMethod.PAPER)) {
+            jurorResponse = DataUtils.getJurorPaperResponse(jurorNumber, paperResponseRepository);
+        }
+
+        // check to see whether the response has been completed already
+        if (BooleanUtils.isTrue(jurorResponse.getProcessingComplete())) {
+            final String message = String.format("Response %s has been previously merged", jurorNumber);
+            log.error(
+                "Response {} has previously been completed at {}",
+                jurorNumber,
+                jurorResponse.getCompletedAt()
+            );
+            throw new JurorResponseAlreadyCompletedException(message);
+        }
+
+        // there was code for digital to set up the optimistic locking, different from paper
+        // this is not needed as it will be covered with e-tag header
+
+        final ProcessingStatus auditStatus = jurorResponse.getProcessingStatus();
+
+        jurorResponse.setProcessingStatus(ProcessingStatus.CLOSED);
+
+        // assign staff (digital)
+        if (deferralReasonDto.getReplyMethod() == ReplyMethod.DIGITAL) {
+            assert jurorResponse instanceof DigitalResponse;
+            DigitalResponse digitalResponse = (DigitalResponse) jurorResponse;
+
+            assignOnUpdateService.assignToCurrentLogin(digitalResponse, auditorUsername);
+
+            final JurorResponseAudit responseAudit = auditRepository.save(JurorResponseAudit.builder()
+                .jurorNumber(jurorResponse.getJurorNumber())
+                .login(auditorUsername)
+                .oldProcessingStatus(auditStatus)
+                .newProcessingStatus(jurorResponse.getProcessingStatus())
+                .build());
+
+            log.trace("Audit entry: {}", responseAudit);
+            mergeService.mergeDigitalResponse(digitalResponse, auditorUsername);
+        } else {
+            assert jurorResponse instanceof PaperResponse;
+            mergeService.mergePaperResponse((PaperResponse) jurorResponse, auditorUsername);
+        }
+    }
+
+    private int processDeferredJurors(int deferralsRequested, Iterator<CurrentlyDeferred> deferralsIterator,
+                                      PoolRequest newPool, String userId) {
+        int deferralsUsed = 0;
+        CurrentlyDeferred deferralRecord;
+
+        int sequenceNumber = poolMemberSequenceService.getPoolMemberSequenceNumber(newPool.getPoolNumber());
+
+        while (deferralsUsed < deferralsRequested && deferralsIterator.hasNext()) {
+            deferralRecord = deferralsIterator.next();
+            try {
+                JurorPool deferredJurorPool = getPoolMember(deferralRecord, newPool.getReturnDate());
+                JurorPool newJurorPool = addMemberToNewPool(newPool, deferredJurorPool, userId, sequenceNumber);
+                sequenceNumber++;
+
+                removeMemberFromOldPool(deferredJurorPool);
+                updateJurorHistory(deferredJurorPool, newPool.getPoolNumber(), userId, JurorHistory.ADDED,
+                    HistoryCodeMod.DEFERRED_POOL_MEMBER);
+
+                if (deferralRecord.getOwner().equals(JurorDigitalApplication.JUROR_OWNER)) {
+                    printDataService.printConfirmationLetter(newJurorPool);
+                }
+
+                deferralsUsed++;
+                log.trace(String.format("Deferred juror %s has been added to Pool: %s", deferralRecord.getJurorNumber(),
+                    newPool.getPoolNumber()
+                ));
+            } catch (PoolRequestException.PoolRequestNotFound | currentlyDeferredException.DeferredMemberNotFound ex) {
+                log.error(String.format("An error occurred trying to add a deferred juror to the new Pool: %s - %s",
+                    newPool.getPoolNumber(), ex.getMessage()
+                ));
+            }
+        }
+        return deferralsUsed;
+    }
+
     private int processBureauDeferredJurors(int deferralsRequested, Iterator<CurrentlyDeferred> bureauDeferralsIterator,
                                             PoolRequest poolRequest, String userId) {
         int deferralsUsed = processDeferredJurors(deferralsRequested, bureauDeferralsIterator, poolRequest, userId);
@@ -739,10 +816,9 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     private JurorPool addPostponedMemberToNewPool(PoolRequest poolRequest, JurorPool deferredPoolMember,
                                                   String userId, int sequenceNumber) {
-        log.trace(String.format(
-            "Create new Pool Member from postponed juror: %s",
-            deferredPoolMember.getJurorNumber()
-        ));
+        log.trace(String.format("Create new Pool Member from postponed juror: %s",
+            deferredPoolMember.getJurorNumber()));
+
         JurorPool newJurorPool = new JurorPool();
         BeanUtils.copyProperties(deferredPoolMember, newJurorPool, "pool");
 
@@ -826,7 +902,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         jurorHistoryRepository.save(jurorHistory);
     }
 
-
     private List<DeferralOptionsDto.OptionSummaryDto> populateDeferralOptionsDto(String currentCourtLocation,
                                                                                  String owner,
                                                                                  List<LocalDate> preferredDates) {
@@ -836,7 +911,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
         List<DeferralOptionsDto.OptionSummaryDto> poolSummaryList = new ArrayList<>();
         final int additionalWorkingDays = 4;
-
 
         for (LocalDate preferredDate : preferredDates) {
             LocalDate weekCommencing = DateUtils.getStartOfWeekFromDate(preferredDate);
@@ -865,6 +939,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             poolSummary.setDeferralOptions(deferralOptions);
             poolSummaryList.add(poolSummary);
         }
+
         return poolSummaryList;
     }
 
@@ -881,7 +956,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
             if (owner.equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)) {
                 log.debug("Calculate current pool utilisation stats for {}", activePool.get(0, String.class));
-                int bureauUtilisation = calculateUtilisation(activePool.get(2, Integer.class), confirmedPoolMembers);
+                int bureauUtilisation = calculateUtilisation(activePool.get(2, Integer.class),
+                    confirmedPoolMembers);
                 log.debug("Calculate current pool utilisation calculated as {}", bureauUtilisation);
 
                 deferralOption.setUtilisation(Math.abs(bureauUtilisation));
@@ -899,77 +975,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     private int calculateUtilisation(Integer requested, int poolMemberCount) {
         int numberRequested = unboxIntegerValues(requested);
+
         return numberRequested - poolMemberCount;
     }
-
-    public void setDeferralPoolMember(JurorPool jurorPool, DeferralReasonRequestDto dto, String auditorUsername,
-                                      Boolean incrementNoDefPos) {
-
-        JurorStatus jurorStatus = new JurorStatus();
-        jurorStatus.setStatus(IJurorStatus.DEFERRED);
-
-        jurorPool.setDeferralDate(dto.getDeferralDate());
-        jurorPool.setNextDate(null);
-        jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.DEFERRED, jurorStatusRepository));
-        jurorPool.setUserEdtq(auditorUsername);
-        String reasonCode = dto.getExcusalReasonCode();
-        jurorPool.setDeferralCode(reasonCode);
-
-        Juror juror = jurorPool.getJuror();
-        juror.setResponded(true);
-        juror.setUserEdtq(auditorUsername);
-
-        if (reasonCode.equalsIgnoreCase(POSTPONE_REASON_CODE)) {
-            // don't want to increment this count for postponement as we can use it to determine if juror had
-            // reached limit of 2 deferrals.
-            jurorPool.setPostpone(true);
-        } else if (Boolean.TRUE.equals(incrementNoDefPos)) {
-            if (Objects.isNull(juror.getNoDefPos())) {
-                juror.setNoDefPos(1);
-            } else {
-                juror.setNoDefPos(juror.getNoDefPos() + 1);
-            }
-        }
-
-        jurorRepository.save(juror);
-        jurorPoolRepository.save(jurorPool);
-    }
-
-    @Override
-    public void deleteDeferral(BureauJWTPayload payload, String jurorNumber) {
-
-        String customErrorMessage = String.format("Cannot find deferred record for juror number %s - ", jurorNumber);
-
-        JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
-        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
-
-        Optional<CurrentlyDeferred> currentlyDeferred = currentlyDeferredRepository.findById(jurorNumber);
-
-        if (currentlyDeferred.isPresent()) {
-            setDeletedDeferralJurorPool(jurorPool, payload.getLogin());
-        } else {
-            throw new MojException.NotFound(customErrorMessage, null);
-        }
-    }
-
-    public void setDeletedDeferralJurorPool(JurorPool jurorPool, String auditorUsername) {
-
-        JurorStatus jurorStatus = new JurorStatus();
-        jurorStatus.setStatus(IJurorStatus.RESPONDED);
-
-        jurorPool.setDeferralDate(null);
-        jurorPool.setStatus(jurorStatus);
-        jurorPool.setUserEdtq(auditorUsername);
-        jurorPool.setDeferralCode(null);
-
-        jurorPoolRepository.save(jurorPool);
-
-        Juror juror = jurorPool.getJuror();
-        juror.setExcusalDate(null);
-        juror.setNoDefPos(juror.getNoDefPos() - 1);
-        juror.setUserEdtq(auditorUsername);
-
-        jurorRepository.save(juror);
-    }
-
 }

@@ -337,4 +337,17 @@ public class Appearance implements Serializable {
     public Boolean isLongTrialDay() {
         return this.attendanceType.getIsLongTrial();
     }
+
+    //TODO add travel time and court time together
+    public LocalTime getEffectiveTime() {
+        return this.getTimeSpentAtCourt().plusNanos(this.getTravelTime().toNanoOfDay());
+    }
+
+    public LocalTime getTravelTime() {
+        if (travelTime == null ) {
+            return LocalTime.of(0, 0);
+        }
+        return this.travelTime;
+    }
+
 }

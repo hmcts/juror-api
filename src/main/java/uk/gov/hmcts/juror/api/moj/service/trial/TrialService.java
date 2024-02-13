@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.service.trial;
 
 import org.springframework.data.domain.Page;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
@@ -14,7 +15,7 @@ public interface TrialService {
     TrialSummaryDto createTrial(BureauJWTPayload payload, TrialDto trialDto);
 
     Page<TrialListDto> getTrials(BureauJWTPayload payload, int pageNumber, String sortBy, String sortOrder,
-                                 boolean isActive);
+                                 boolean isActive, String trialNumber);
 
     TrialSummaryDto getTrialSummary(BureauJWTPayload payload, String trialNo, String locCode);
 
@@ -23,4 +24,6 @@ public interface TrialService {
 
     void returnJury(BureauJWTPayload payload, String trialNumber, String locationCode,
                     ReturnJuryDto jurorDetailRequestDto);
+
+    void endTrial(EndTrialDto dto);
 }

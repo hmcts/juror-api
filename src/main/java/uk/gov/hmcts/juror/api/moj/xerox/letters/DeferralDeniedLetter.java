@@ -29,6 +29,7 @@ public class DeferralDeniedLetter extends LetterBase {
             .build());
     }
 
+    @Override
     protected void setupWelsh() {
         setFormCode(FormCode.BI_DEFERRALDENIED);
         addData(LetterDataType.DATE_OF_LETTER, 18);
@@ -39,6 +40,7 @@ public class DeferralDeniedLetter extends LetterBase {
         sharedSetup();
     }
 
+    @Override
     protected void setupEnglish() {
         setFormCode(FormCode.ENG_DEFERRALDENIED);
         addData(LetterDataType.DATE_OF_LETTER, 18);

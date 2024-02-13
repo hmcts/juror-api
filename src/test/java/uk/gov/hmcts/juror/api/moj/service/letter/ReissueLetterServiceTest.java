@@ -32,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterServiceImpl;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -72,7 +73,7 @@ public class ReissueLetterServiceTest {
             String owner = "400";
             String jurorNumber = "123456789";
 
-            TestUtils.setupAuthentication(owner, "Bureau", "1");
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
 
             final ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
                 .jurorNumber(jurorNumber)
@@ -88,9 +89,8 @@ public class ReissueLetterServiceTest {
                 reissueLetterService.reissueLetterList(reissueLetterListRequestDto);
 
             List<List<Object>> data = responseDto.getData();
-            Assertions.assertThat(data).isNotNull();
-            Assertions.assertThat(data.size()).isEqualTo(1);
-            Assertions.assertThat(data.get(0).size()).isEqualTo(10);
+            Assertions.assertThat(data).isNotNull().hasSize(1);
+            Assertions.assertThat(data.get(0)).hasSize(10);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.DEFERRAL_GRANTED.getLetterQueryConsumer());
@@ -119,7 +119,7 @@ public class ReissueLetterServiceTest {
             String owner = "400";
             String jurorNumber = "123456789";
 
-            TestUtils.setupAuthentication(owner, "Bureau", "1");
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
 
             final ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
                 .jurorNumber(jurorNumber)
@@ -143,7 +143,7 @@ public class ReissueLetterServiceTest {
             String owner = "400";
             String jurorNumber = "123456789";
 
-            TestUtils.setupAuthentication(owner, "Bureau", "1");
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
 
             final ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
                 .jurorNumber(jurorNumber)
@@ -159,9 +159,8 @@ public class ReissueLetterServiceTest {
                 reissueLetterService.reissueLetterList(reissueLetterListRequestDto);
 
             List<List<Object>> data = responseDto.getData();
-            Assertions.assertThat(data).isNotNull();
-            Assertions.assertThat(data.size()).isEqualTo(1);
-            Assertions.assertThat(data.get(0).size()).isEqualTo(7);
+            Assertions.assertThat(data).isNotNull().hasSize(1);
+            Assertions.assertThat(data.get(0)).hasSize(7);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.CONFIRMATION.getLetterQueryConsumer());
@@ -182,6 +181,53 @@ public class ReissueLetterServiceTest {
             return confirmationLetters;
         }
 
+        @Test
+        @SuppressWarnings("PMD.LawOfDemeter")
+        void reissueDeferralDeniedLetterListHappyPath() {
+            String owner = "400";
+            String jurorNumber = "123456789";
+
+            TestUtils.setupAuthentication(owner, "Bureau", "1");
+
+            final ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
+                .jurorNumber(jurorNumber)
+                .letterType(LetterType.DEFERRAL_REFUSED)
+                .build();
+
+            final List<Tuple> deferralGrantedLetters = getDeferralDeniedLetters(jurorNumber);
+
+            doReturn(deferralGrantedLetters).when(bulkPrintDataRepository)
+                .findLetters(reissueLetterListRequestDto, LetterType.DEFERRAL_REFUSED.getLetterQueryConsumer());
+
+            final ReissueLetterListResponseDto responseDto =
+                reissueLetterService.reissueLetterList(reissueLetterListRequestDto);
+
+            List<List<Object>> data = responseDto.getData();
+            Assertions.assertThat(data).isNotNull().hasSize(1);
+            Assertions.assertThat(data.get(0)).hasSize(10);
+
+            verify(bulkPrintDataRepository, times(1))
+                .findLetters(reissueLetterListRequestDto, LetterType.DEFERRAL_REFUSED.getLetterQueryConsumer());
+        }
+
+        private List<Tuple> getDeferralDeniedLetters(String jurorNumber) {
+            final List<Tuple> deferralGrantedLetters = new ArrayList<>();
+            Tuple tuple = mock(Tuple.class);
+            doReturn(jurorNumber).when(tuple).get(ReissueLetterService.DataType.JUROR_NUMBER.getExpression());
+            doReturn("FIRSTNAME").when(tuple).get(ReissueLetterService.DataType.JUROR_FIRST_NAME.getExpression());
+            doReturn("LASTNAME").when(tuple).get(ReissueLetterService.DataType.JUROR_LAST_NAME.getExpression());
+            doReturn("ABC 2DE").when(tuple).get(ReissueLetterService.DataType.JUROR_POSTCODE.getExpression());
+            doReturn("Deferred").when(tuple).get(ReissueLetterService.DataType.JUROR_STATUS.getExpression());
+            doReturn(LocalDateTime.now().minusDays(10)).when(tuple)
+                .get(ReissueLetterService.DataType.JUROR_DEFERRAL_DATE_REFUSED.getExpression());
+            doReturn("A").when(tuple).get(ReissueLetterService.DataType.JUROR_DEFERRAL_REJECTED_REASON.getExpression());
+            doReturn(LocalDate.now().minusDays(10)).when(tuple)
+                .get(ReissueLetterService.DataType.DATE_PRINTED.getExpression());
+            doReturn("5226A").when(tuple).get(ReissueLetterService.DataType.FORM_CODE.getExpression());
+            deferralGrantedLetters.add(tuple);
+            return deferralGrantedLetters;
+        }
+
     }
 
     @Nested
@@ -193,7 +239,7 @@ public class ReissueLetterServiceTest {
         void reissueDeferralLetterHappyPath(String formCode) {
             String owner = "400";
 
-            TestUtils.setupAuthentication(owner, "Bureau", "1");
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
 
             final ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
                 ReissueLetterRequestDto.ReissueLetterRequestData.builder()
@@ -216,7 +262,7 @@ public class ReissueLetterServiceTest {
                 .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
                     reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
 
-            doReturn(Optional.ofNullable(null)).when(bulkPrintDataRepository)
+            doReturn(Optional.empty()).when(bulkPrintDataRepository)
                 .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
                     reissueLetterRequestData.getFormCode());
 
@@ -231,8 +277,8 @@ public class ReissueLetterServiceTest {
             when(jurorPoolRepository.findByJurorJurorNumberAndStatusOrderByDateCreatedDesc(
                 reissueLetterRequestData.getJurorNumber(), deferredStatus)).thenReturn(jurorPools);
 
-            doReturn(jurorPools).when(jurorPoolRepository).
-                findByJurorJurorNumberAndStatusOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber(),
+            doReturn(jurorPools).when(jurorPoolRepository)
+                .findByJurorJurorNumberAndStatusOrderByDateCreatedDesc(reissueLetterRequestData.getJurorNumber(),
                     deferredStatus);
 
             reissueLetterService.reissueLetter(reissueLetterRequestDto);
@@ -256,7 +302,7 @@ public class ReissueLetterServiceTest {
         void reissueLetterUnhappyAlreadyPending(String formCode) {
             String owner = "400";
 
-            TestUtils.setupAuthentication(owner, "Bureau", "1");
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
 
             final ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
                 ReissueLetterRequestDto.ReissueLetterRequestData.builder()
@@ -302,7 +348,7 @@ public class ReissueLetterServiceTest {
         void reissueLetterUnhappyNotFound(String formCode) {
             String owner = "400";
 
-            TestUtils.setupAuthentication(owner, "Bureau", "1");
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
 
             ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
                 ReissueLetterRequestDto.ReissueLetterRequestData.builder()
@@ -332,7 +378,6 @@ public class ReissueLetterServiceTest {
             verify(jurorPoolRepository, times(0))
                 .findByJurorJurorNumberAndStatusOrderByDateCreatedDesc(Mockito.anyString(), Mockito.any());
         }
-
     }
 
     @Nested
@@ -344,7 +389,7 @@ public class ReissueLetterServiceTest {
         void deleteLetterHappyPath(String formCode) {
             String owner = "400";
 
-            TestUtils.setupAuthentication(owner, "Bureau", "1");
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
 
             ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
                 ReissueLetterRequestDto.ReissueLetterRequestData.builder()
@@ -381,7 +426,7 @@ public class ReissueLetterServiceTest {
         void deleteLetterUnhappyNoData(String formCode) {
             String owner = "400";
 
-            TestUtils.setupAuthentication(owner, "Bureau", "1");
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
 
             ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
                 ReissueLetterRequestDto.ReissueLetterRequestData.builder()
@@ -407,6 +452,5 @@ public class ReissueLetterServiceTest {
             verify(bulkPrintDataRepository, times(0)).save(Mockito.any());
 
         }
-
     }
 }

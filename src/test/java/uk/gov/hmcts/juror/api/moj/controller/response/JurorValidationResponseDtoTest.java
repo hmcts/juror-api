@@ -8,9 +8,6 @@ import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 
 @DisplayName("JurorValidationResponseDto")
-@SuppressWarnings(
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive done via inheritance
-)
 class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidationResponseDto> {
 
     @Override
@@ -35,7 +32,7 @@ class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidati
 
     @Test
     void positiveTypical() {
-        expectNoViolations(
+        assertExpectNoViolations(
             createJurorValidationResponseDto(
                 "123456789",
                 "John",
@@ -50,7 +47,7 @@ class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidati
 
         @Test
         void negativeBlank() {
-            expectViolations(
+            assertExpectViolations(
                 createJurorValidationResponseDto(
                     "",
                     "John",
@@ -64,7 +61,7 @@ class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidati
 
         @Test
         void negativeNull() {
-            expectViolations(
+            assertExpectViolations(
                 createJurorValidationResponseDto(
                     null,
                     "John",
@@ -76,7 +73,7 @@ class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidati
 
         @Test
         void negativeInvalidJurorNumber() {
-            expectViolations(
+            assertExpectViolations(
                 createJurorValidationResponseDto(
                     "ABC",
                     "John",
@@ -92,7 +89,7 @@ class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidati
     class FirstName {
         @Test
         void negativeBlank() {
-            expectViolations(
+            assertExpectViolations(
                 createJurorValidationResponseDto(
                     "123456789",
                     "",
@@ -105,7 +102,7 @@ class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidati
 
         @Test
         void negativeNull() {
-            expectViolations(
+            assertExpectViolations(
                 createJurorValidationResponseDto(
                     "123456789",
                     null,
@@ -118,7 +115,7 @@ class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidati
 
         @Test
         void negativeTooLarge() {
-            expectViolations(
+            assertExpectViolations(
                 createJurorValidationResponseDto(
                     "123456789",
                     RandomStringUtils.randomAlphabetic(21),
@@ -130,7 +127,7 @@ class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidati
 
         @Test
         void negativeHasPipes() {
-            expectViolations(
+            assertExpectViolations(
                 createJurorValidationResponseDto(
                     "123456789",
                     "John|",
@@ -146,7 +143,7 @@ class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidati
     class LastName {
         @Test
         void negativeBlank() {
-            expectViolations(
+            assertExpectViolations(
                 createJurorValidationResponseDto(
                     "123456789",
                     "John",
@@ -159,7 +156,7 @@ class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidati
 
         @Test
         void negativeNull() {
-            expectViolations(
+            assertExpectViolations(
                 createJurorValidationResponseDto(
                     "123456789",
                     "John",
@@ -172,7 +169,7 @@ class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidati
 
         @Test
         void negativeTooLarge() {
-            expectViolations(
+            assertExpectViolations(
                 createJurorValidationResponseDto(
                     "123456789",
                     "John",
@@ -184,7 +181,7 @@ class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidati
 
         @Test
         void negativeHasPipes() {
-            expectViolations(
+            assertExpectViolations(
                 createJurorValidationResponseDto(
                     "123456789",
                     "John",

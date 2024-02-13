@@ -238,8 +238,7 @@ flyway {
     url = System.getenv("DB_URL")
     user = System.getenv("DB_USERNAME")
     password = System.getenv("DB_PASSWORD")
-
-    schemas = ['juror_mod']
+    schemas = ['juror','juror_digital','juror_digital_user','juror_dashboard','hk','juror_mod']
     defaultSchema = 'juror_mod'
     table = 'schema_history'
     cleanDisabled = false
@@ -312,10 +311,10 @@ sourceSets {
 }
 
 checkstyleMain {
-    maxWarnings = 404
+    maxWarnings = 398
 }
 checkstyleTest {
-    maxWarnings = 279
+    maxWarnings = 271
 }
 checkstyleIntegration{
     maxWarnings = 1272
@@ -327,13 +326,13 @@ checkstyle {
 }
 
 pmdIntegration {
-    maxFailures = 821
+    maxFailures = 809
 }
 pmdTest {
-    maxFailures = 701
+    maxFailures = 661
 }
 pmdMain {
-    maxFailures = 1337
+    maxFailures = 1283
 }
 pmd {
     maxFailures = 0
@@ -346,6 +345,12 @@ pmd {
     ruleSetFiles = files("config/pmd/ruleset.xml")
 }
 
+test {
+    if(System.getenv('JENKINS_CI_BUILD')){
+        failFast = true
+    }
+}
+
 task integration(type: Test) {
     useJUnitPlatform()
     description = 'Runs integration tests.'
@@ -354,6 +359,9 @@ task integration(type: Test) {
     classpath = sourceSets.integration.runtimeClasspath
     // This forces integration tests to always run if this task is run.
     outputs.upToDateWhen { false }
+    if(System.getenv('JENKINS_CI_BUILD')){
+        failFast = true
+    }
 }
 
 task testSuite(dependsOn: [test, integration]) {
@@ -393,3 +401,12 @@ check.dependsOn -= integration
 // Makes the whole test suite not run by default.
 check.dependsOn -= testSuite
 
+task runAllStyleChecks {
+    dependsOn 'checkstyleMain'
+    dependsOn 'checkstyleTest'
+    dependsOn 'checkstyleIntegration'
+
+    dependsOn 'pmdMain'
+    dependsOn 'pmdTest'
+    dependsOn 'pmdIntegration'
+}

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,12 +9,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
@@ -24,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
@@ -43,12 +47,14 @@ import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static uk.gov.hmcts.juror.api.TestUtils.staffBuilder;
+import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetails;
 
 /**
  * Integration tests for the Trial controller.
@@ -378,6 +384,10 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             .as("Expect protected trial to be false")
             .isEqualTo(Boolean.FALSE);
 
+        assertThat(requireNonNull(responseBody).getTrialEndDate())
+            .as("Expect end date to be null")
+            .isNull();
+
         assertThat(requireNonNull(responseBody).getIsActive())
             .as("Expect is active to be true")
             .isEqualTo(Boolean.TRUE);
@@ -412,6 +422,50 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             .as("Expect courtroom description to be")
             .isEqualTo("large room fits 100 people");
 
+    }
+
+    @Test
+    public void testGetTrialSummaryInactiveTrial() {
+        final String urlGetTrialSummary = "/api/v1/moj/trial/summary?"
+            + "trial_number=T100000024&"
+            + "location_code=462";
+
+        initialiseHeader(singletonList("462"), "462", COURT_USER);
+
+        ResponseEntity<TrialSummaryDto> responseEntity =
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
+                URI.create(urlGetTrialSummary)), TrialSummaryDto.class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("Expect request to get trial summary is successful")
+            .isEqualTo(OK);
+
+        TrialSummaryDto responseBody = responseEntity.getBody();
+        assertThat(responseBody).isNotNull();
+
+        assertThat(requireNonNull(responseBody).getTrialNumber())
+            .as("Expect trial number to be T100000024")
+            .isEqualTo("T100000024");
+
+        assertThat(requireNonNull(responseBody).getDefendants())
+            .as("Expect trial number to be TEST DEFENDANT")
+            .isEqualTo("TEST DEFENDANT");
+
+        assertThat(requireNonNull(responseBody).getTrialType())
+            .as("Expect trial number to be CIV")
+            .isEqualTo("Civil");
+
+        assertThat(requireNonNull(responseBody).getProtectedTrial())
+            .as("Expect protected trial to be false")
+            .isEqualTo(Boolean.FALSE);
+
+        assertThat(requireNonNull(responseBody).getTrialEndDate())
+            .as("Expect end date to be today's date")
+            .isEqualTo(LocalDate.now());
+
+        assertThat(requireNonNull(responseBody).getIsActive())
+            .as("Expect is active to be false")
+            .isEqualTo(Boolean.FALSE);
     }
 
     @Test
@@ -609,7 +663,86 @@ public class TrialControllerITest extends AbstractIntegrationTest {
                 + "null").isNotNull();
 
         }
+    }
 
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/EndTrial.sql"})
+    public void testEndTrialHappyPath() {
+        final String url = "/api/v1/moj/trial/end-trial";
+        final String trialNumber = "T10000002";
+        final String locationCode = "415";
+        EndTrialDto dto = createEndTrialDto();
+        dto.setTrialNumber(trialNumber);
+        initialiseHeader(singletonList(locationCode), locationCode, COURT_USER);
+
+        ResponseEntity<Void> responseEntity =
+            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, PATCH,
+                URI.create(url)), Void.class);
+
+        assertThat(responseEntity.getStatusCode()).as("Expect status code to be 200 (ok)").isEqualTo(OK);
+
+        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, locationCode);
+        assertThat(trial.getTrialEndDate()).as("Expect trial end date to not be null").isNotNull();
+        assertThat(trial.getTrialEndDate()).as("Expect trial end date to equal " + dto.getTrialEndDate())
+            .isEqualTo(dto.getTrialEndDate());
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/EndTrial.sql"})
+    public void testEndTrialJuryMembersStillInTrial() {
+        final String url = "/api/v1/moj/trial/end-trial";
+        EndTrialDto dto = createEndTrialDto();
+        initialiseHeader(singletonList("415"), "415", COURT_USER);
+
+        ResponseEntity<String> responseEntity =
+            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, PATCH,
+                URI.create(url)), String.class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("Expect status code to be 422 (ok)")
+            .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
+        assertThat(responseEntity.getBody()).as("Expect response to have json string").isNotNull();
+
+        JSONObject exceptionDetails = getExceptionDetails(responseEntity);
+        String errorMessage = exceptionDetails.getString("message");
+        String code = exceptionDetails.getString("code");
+
+        assertThat(errorMessage).as("Expect error message to not be null").isNotNull();
+        assertThat(errorMessage)
+            .as("Expect error message to equal: Cannot end trial, trial still has members")
+            .isEqualTo("Cannot end trial, trial still has members");
+        assertThat(code).as("Expect code to not be null").isNotNull();
+        assertThat(code).as("Expect code to be TRIAL_HAS_MEMBERS").isEqualTo("TRIAL_HAS_MEMBERS");
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/EndTrial.sql"})
+    public void testEndTrialPanelMembersStillInTrial() {
+        final String url = "/api/v1/moj/trial/end-trial";
+        EndTrialDto dto = createEndTrialDto();
+        dto.setTrialNumber("T10000001");
+        initialiseHeader(singletonList("415"), "415", COURT_USER);
+
+        ResponseEntity<String> responseEntity =
+            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, PATCH,
+                URI.create(url)), String.class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("Expect status code to be 422 (ok)")
+            .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
+        JSONObject exceptionDetails = getExceptionDetails(responseEntity);
+        String errorMessage = exceptionDetails.getString("message");
+        String code = exceptionDetails.getString("code");
+
+
+        assertThat(errorMessage).as("Expect error message to not be null").isNotNull();
+        assertThat(errorMessage)
+            .as("Expect error message to equal: Cannot end trial, trial still has members")
+            .isEqualTo("Cannot end trial, trial still has members");
+        assertThat(code).as("Expect code to not be null").isNotNull();
+        assertThat(code).as("Expect code to be TRIAL_HAS_MEMBERS").isEqualTo("TRIAL_HAS_MEMBERS");
     }
 
     private void initialiseHeader(List<String> courts, String owner, String loginUserType) {
@@ -667,5 +800,13 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             dtoList.add(detailRequestDto);
         }
         return dtoList;
+    }
+
+    private EndTrialDto createEndTrialDto() {
+        EndTrialDto dto = new EndTrialDto();
+        dto.setTrialEndDate(LocalDate.now());
+        dto.setTrialNumber("T10000000");
+        dto.setLocationCode("415");
+        return dto;
     }
 }

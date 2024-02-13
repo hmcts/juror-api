@@ -8,19 +8,19 @@ import uk.gov.hmcts.juror.api.moj.xerox.LetterBase;
 
 public class ExcusalDeniedLetter extends LetterBase {
     public ExcusalDeniedLetter(JurorPool jurorPool,
-                                CourtLocation courtLocation,
-                                CourtLocation bureauLocation) {
+                               CourtLocation courtLocation,
+                               CourtLocation bureauLocation) {
         super(LetterContext.builder()
-                   .jurorPool(jurorPool)
-                   .courtLocation(courtLocation)
-                   .bureauLocation(bureauLocation)
-                   .build());
+            .jurorPool(jurorPool)
+            .courtLocation(courtLocation)
+            .bureauLocation(bureauLocation)
+            .build());
     }
 
     public ExcusalDeniedLetter(JurorPool jurorPool,
-                                CourtLocation courtLocation,
-                                CourtLocation bureauLocation,
-                                WelshCourtLocation welshCourtLocation) {
+                               CourtLocation courtLocation,
+                               CourtLocation bureauLocation,
+                               WelshCourtLocation welshCourtLocation) {
         super(LetterContext.builder()
             .jurorPool(jurorPool)
             .courtLocation(courtLocation)
@@ -29,6 +29,7 @@ public class ExcusalDeniedLetter extends LetterBase {
             .build());
     }
 
+    @Override
     protected void setupWelsh() {
         setFormCode(FormCode.BI_EXCUSALDENIED);
         addData(LetterDataType.DATE_OF_LETTER, 18);
@@ -39,6 +40,7 @@ public class ExcusalDeniedLetter extends LetterBase {
         sharedSetup();
     }
 
+    @Override
     protected void setupEnglish() {
         setFormCode(FormCode.ENG_EXCUSALDENIED);
         addData(LetterDataType.DATE_OF_LETTER, 18);

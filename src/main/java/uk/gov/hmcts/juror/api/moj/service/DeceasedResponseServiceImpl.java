@@ -54,7 +54,6 @@ public class DeceasedResponseServiceImpl implements DeceasedResponseService {
     @NonNull
     private final ContactLogRepository contactLogRepository;
 
-
     @Transactional
     @Override
     public void markAsDeceased(BureauJWTPayload payload, MarkAsDeceasedDto markAsDeceasedDto) {
@@ -99,8 +98,8 @@ public class DeceasedResponseServiceImpl implements DeceasedResponseService {
 
             // create a simple paper summons record with minimal info for the juror with completed status
             createMinimalPaperSummonsRecord(juror, deceasedComment);
-
         }
+
         ContactEnquiryType enquiryType = RepositoryUtils.retrieveFromDatabase(
             ContactEnquiryCode.valueOf(UNABLE_TO_ATTEND), contactEnquiryTypeRepository);
 
@@ -144,8 +143,7 @@ public class DeceasedResponseServiceImpl implements DeceasedResponseService {
         jurorPaperResponseRepository.save(jurorPaperResponse);
     }
 
-    private void setUpAddress(PaperResponse jurorPaperResponse,
-                              Juror juror) {
+    private void setUpAddress(PaperResponse jurorPaperResponse, Juror juror) {
         jurorPaperResponse.setAddressLine1(juror.getAddressLine1());
         jurorPaperResponse.setAddressLine2(juror.getAddressLine2());
         jurorPaperResponse.setAddressLine3(juror.getAddressLine3());
@@ -153,6 +151,5 @@ public class DeceasedResponseServiceImpl implements DeceasedResponseService {
         jurorPaperResponse.setAddressLine5(juror.getAddressLine5());
         jurorPaperResponse.setPostcode(juror.getPostcode());
     }
-
 }
 

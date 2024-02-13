@@ -34,6 +34,7 @@ public class RequestInfoLetter extends LetterBase {
             .build());
     }
 
+    @Override
     protected void setupWelsh() {
         setFormCode(FormCode.BI_REQUESTINFO);
         addData(LetterDataType.DATE_OF_LETTER, 18);
@@ -44,6 +45,7 @@ public class RequestInfoLetter extends LetterBase {
         sharedSetup();
     }
 
+    @Override
     protected void setupEnglish() {
         setFormCode(FormCode.ENG_REQUESTINFO);
         addData(LetterDataType.DATE_OF_LETTER, 18);

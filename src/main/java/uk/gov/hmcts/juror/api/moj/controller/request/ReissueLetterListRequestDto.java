@@ -52,7 +52,7 @@ public class ReissueLetterListRequestDto implements Serializable {
     @Schema(name = "letter type", description = "Code indicating the type of letter to be sent")
     private LetterType letterType;
 
-    @JsonProperty(value = "show_all_queued")
+    @JsonProperty("show_all_queued")
     @Schema(description = "Flag to indicate if only queued letters should be listed")
     @ValidateIf(fields = {"jurorNumber", "poolNumber"},
         condition = ValidateIf.Condition.ANY_PRESENT,

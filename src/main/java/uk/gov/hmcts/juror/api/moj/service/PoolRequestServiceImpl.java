@@ -376,6 +376,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         }
     }
 
+    @Override
     public PoolRequestActiveListDto getActivePoolRequests(BureauJWTPayload payload, String locCode, String tab,
                                                           int offset, String sortBy, String sortOrder) {
 

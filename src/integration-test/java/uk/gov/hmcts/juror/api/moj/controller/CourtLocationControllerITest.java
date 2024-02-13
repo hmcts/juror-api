@@ -85,7 +85,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     @Test
     void testGetCourtLocationsBureauUser() {
         ResponseEntity<CourtLocationListDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
                 URI.create("/api/v1/moj/court-location/all-court-locations")), CourtLocationListDto.class);
 
         assertThat(responseEntity.getStatusCode())
@@ -106,7 +106,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     void testGetCourtLocationsCourtUser() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "462", "767", "774")));
         ResponseEntity<CourtLocationListDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
                 URI.create("/api/v1/moj/court-location/all-court-locations")), CourtLocationListDto.class);
 
         assertThat(responseEntity.getStatusCode())
@@ -162,7 +162,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
             URI.create(String.format("/api/v1/moj/court-location/catchment-areas?postcode=%s", postcode));
         httpHeaders = initialiseHeaders("1", false, userType, 89, owner);
 
-        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri);
+        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, GET, uri);
         if (httpStatus.is2xxSuccessful()) {
             ResponseEntity<CourtLocationDataDto[]> response =
                 restTemplate.exchange(requestEntity, CourtLocationDataDto[].class);
@@ -326,7 +326,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
 
             @Test
             void courtNotFound() throws Exception {
-                validateNotFound(
+                assertNotFound(
                     triggerInvalid("004", LocalDate.of(2023, 1, 1)),
                     toUrl("004", LocalDate.of(2023, 1, 1)),
                     "No court location rates are active on date: 2023-01-01 for court 004");
@@ -334,7 +334,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
 
             @Test
             void effectiveFromRatesNotFound() throws Exception {
-                validateNotFound(
+                assertNotFound(
                     triggerInvalid("103", LocalDate.of(2024, 1, 1)),
                     toUrl("103", LocalDate.of(2024, 1, 1)),
                     "No court location rates are active on date: 2024-01-01 for court 103");
@@ -346,7 +346,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
                 String url = toUrl("001", LocalDate.now());
                 final String jwt = createBureauJwt(COURT_USER, "415", "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-                validateForbiddenResponse(restTemplate.exchange(
+                assertForbiddenResponse(restTemplate.exchange(
                     new RequestEntity<>(null, httpHeaders, GET,
                         URI.create(url)),
                     String.class), url);
@@ -354,7 +354,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
 
             @Test
             void invalidLocCode() throws Exception {
-                validateInvalidPathParam(
+                assertInvalidPathParam(
                     triggerInvalid("INVALID", LocalDate.of(2024, 1, 1)),
                     "getCourtRates.locCode: size must be between 3 and 3");
             }
@@ -363,7 +363,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
             void invalidDate() throws Exception {
                 final String jwt = createBureauJwt(COURT_USER, "415", "001");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-                validateInvalidPathParam(restTemplate.exchange(
+                assertInvalidPathParam(restTemplate.exchange(
                         new RequestEntity<>(null, httpHeaders, GET,
                             URI.create(toUrl("001", "INVALID"))),
                         String.class),

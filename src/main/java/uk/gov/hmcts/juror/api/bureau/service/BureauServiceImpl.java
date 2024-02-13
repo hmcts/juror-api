@@ -59,6 +59,7 @@ public class BureauServiceImpl implements BureauService {
         return mapJurorDetailsToDto(jurorDetails);
     }
 
+    @Override
     public BureauJurorDetailDto mapJurorDetailsToDto(BureauJurorDetail jurorDetails) {
         // touch the collections to load lazy relationships within the transaction
         jurorDetails.getPhoneLogs().size();

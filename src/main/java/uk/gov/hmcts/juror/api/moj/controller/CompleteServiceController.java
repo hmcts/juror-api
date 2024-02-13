@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberListDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
 import uk.gov.hmcts.juror.api.moj.controller.response.CompleteJurorResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.CompleteServiceValidationResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceService;
 import uk.gov.hmcts.juror.api.validation.PoolNumber;
@@ -77,7 +78,7 @@ public class CompleteServiceController {
     @Operation(summary = "/api/v1/moj/complete-service - Get a list of complete jurors based on search criteria")
     @IsSeniorCourtUser
     @ResponseStatus(HttpStatus.OK)
-    public List<CompleteJurorResponse> getCompleteJurors(
+    public PaginatedList<CompleteJurorResponse> getCompleteJurors(
         @Valid @RequestBody JurorPoolSearch request) {
         return completeServiceService.search(request);
     }

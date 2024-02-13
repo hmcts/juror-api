@@ -375,6 +375,8 @@ public class UserServiceImpl implements UserService {
      * @param responseListDto List of response numbers to retrieve information on
      * @param currentUser     The user carrying out this operation.
      */
+    @Transactional(readOnly = true)
+    @Override
     public AssignmentsListDto getStaffAssignments(AssignmentsMultiRequestDto responseListDto, String currentUser) {
         List<AssignmentListDataDto> assignmentListDataDtos = new ArrayList<>();
 

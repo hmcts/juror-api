@@ -9,7 +9,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.PanelId;
 import java.util.List;
 
 @Repository
-public interface PanelRepository extends JpaRepository<Panel, PanelId>,
+public interface PanelRepository extends IPanelRepository, JpaRepository<Panel, PanelId>,
     QuerydslPredicateExecutor<Panel> {
 
     List<Panel> findByTrialTrialNumberAndTrialCourtLocationLocCode(String trialNumber, String locCode);
@@ -17,4 +17,7 @@ public interface PanelRepository extends JpaRepository<Panel, PanelId>,
     Panel findByTrialTrialNumberAndJurorPoolJurorJurorNumber(String trialNumber, String jurorNumber);
 
     boolean existsByTrialTrialNumber(String trialNumber);
+
+    boolean existsByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolPoolPoolNumberAndJurorPoolJurorJurorNumber(
+        String trialNumber, String locCode, String jurorNumber, String poolNumber);
 }

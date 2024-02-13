@@ -62,6 +62,7 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      *     property values differ between the original juror record and the newly provided juror name details,
      *     true means there is a difference, false means there is no difference
      */
+    @Override
     public Map<String, Boolean> initChangedPropertyMap(Juror juror,
                                                        JurorNameDetailsDto jurorNameDetailsDto) {
         // check for changes between the new/updated values and the juror record values
@@ -96,6 +97,7 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      *     is a
      *     difference, false means there is no difference
      */
+    @Override
     public Map<String, Boolean> initChangedPropertyMap(Juror juror,
                                                        AbstractJurorResponse jurorResponse) {
         // check for changes between the new/updated values and the juror record values
@@ -126,6 +128,7 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      *
      * @return true if the title value has changed, false if it is the same
      */
+    @Override
     public boolean hasTitleChanged(String updatedTitle, String originalTitle) {
         return (originalTitle != null && updatedTitle == null)
             || hasPropertyChanged(updatedTitle, originalTitle);
@@ -142,6 +145,7 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      *
      * @return true if either part of the juror's name has changed, false if it is the same
      */
+    @Override
     public boolean hasNameChanged(String updatedFirstName, String originalFirstname,
                                   String updatedLastName, String originalLastname) {
         return hasPropertyChanged(updatedFirstName, originalFirstname)
@@ -194,6 +198,7 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      * @param poolNumber      the pool number the juror is currently associated with, when the change is being recorded
      * @param auditorUsername the username of the current agent/officer actioning the change of juror details
      */
+    @Override
     public void recordPersonalDetailsHistory(String propertyName, Juror juror, String poolNumber,
                                              String auditorUsername) {
         JurorHistory jurorHistory = JurorHistory.builder()

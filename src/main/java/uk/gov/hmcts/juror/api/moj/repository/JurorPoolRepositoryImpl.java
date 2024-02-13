@@ -3,26 +3,27 @@ package uk.gov.hmcts.juror.api.moj.repository;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.PathBuilderFactory;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.repository.support.Querydsl;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Custom Repository implementation for the JurorPool entity.
@@ -123,7 +124,7 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
 
         return queryFactory.selectFrom(JUROR_POOL)
             .join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
-            .leftJoin(APPEARANCE).on((JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber)).and(
+            .leftJoin(APPEARANCE).on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber).and(
                 JUROR_POOL.pool.poolNumber.eq(APPEARANCE.poolNumber)))
             .where(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED))
             .where(JUROR_POOL.onCall.isNull().or(JUROR_POOL.onCall.eq(false)))  // may not need this condition
@@ -166,7 +167,7 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             )
             .from(JUROR_POOL)
             .join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
-            .leftJoin(APPEARANCE).on((JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber)).and(
+            .leftJoin(APPEARANCE).on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber).and(
                 JUROR_POOL.pool.poolNumber.eq(APPEARANCE.poolNumber)))
             .where(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED))
             .where(JUROR_POOL.isActive.eq(true))
@@ -178,10 +179,10 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
     }
 
     @Override
-    public List<JurorPool> findJurorPoolsBySearch(JurorPoolSearch search, String owner,
-                                                  Consumer<JPQLQuery<JurorPool>> queryModifiers) {
-        Querydsl querydsl = new Querydsl(entityManager, new PathBuilderFactory().create(JurorPool.class));
-
+    public <T> PaginatedList<T> findJurorPoolsBySearch(JurorPoolSearch search, String owner,
+                                                       Consumer<JPQLQuery<JurorPool>> queryModifiers,
+                                                       Function<JurorPool, T> dataMapper,
+                                                       Long maxItems) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         JPQLQuery<JurorPool> query = queryFactory
             .selectFrom(JUROR_POOL)
@@ -207,8 +208,9 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
         if (search.getPoolNumber() != null) {
             query.where(JUROR_POOL.pool.poolNumber.startsWith(search.getPoolNumber()));
         }
-        return querydsl.applyPagination(PageRequest.of(search.getPageNumber() - 1, search.getPageLimit()), query)
-            .fetch();
+
+        return PaginationUtil.toPaginatedList(query, search, JurorPoolSearch.SortField.JUROR_NUMBER, SortMethod.ASC,
+            dataMapper, maxItems);
     }
 
     private static StringExpression getJurorAttendance() {

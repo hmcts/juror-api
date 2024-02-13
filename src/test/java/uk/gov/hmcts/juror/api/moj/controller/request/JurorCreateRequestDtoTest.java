@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
 
+@SuppressWarnings("PMD.JUnit5TestShouldBePackagePrivate")
 public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreateRequestDto> {
 
     @Override
@@ -53,7 +54,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
     @Test
     void positiveTypical() {
         JurorCreateRequestDto dto = createValidJurorCreateRequestDto();
-        expectNoViolations(dto);
+        assertExpectNoViolations(dto);
     }
 
 
@@ -166,7 +167,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
             jurorCreateRequestDto.setStartDate(null);
             jurorCreateRequestDto.setPoolType(null);
 
-            JurorCreateRequestDtoTest.this.expectViolations(jurorCreateRequestDto, new Violation(
+            assertExpectViolations(jurorCreateRequestDto, new Violation(
                 "poolNumber",
                 "Field poolNumber is required if none of the following fields are present: [poolType, startDate]"
             ));
@@ -179,7 +180,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
             jurorCreateRequestDto.setStartDate(LocalDate.now());
             jurorCreateRequestDto.setPoolType(null);
 
-            JurorCreateRequestDtoTest.this.expectViolations(jurorCreateRequestDto, new Violation(
+            assertExpectViolations(jurorCreateRequestDto, new Violation(
                 "poolNumber",
                 "Field poolNumber should be excluded if any of the following fields are present: [poolType, startDate]"
             ));
@@ -192,7 +193,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
             jurorCreateRequestDto.setStartDate(null);
             jurorCreateRequestDto.setPoolType("ABC");
 
-            JurorCreateRequestDtoTest.this.expectViolations(jurorCreateRequestDto, new Violation(
+            assertExpectViolations(jurorCreateRequestDto, new Violation(
                 "poolNumber",
                 "Field poolNumber should be excluded if any of the following fields are present: [poolType, startDate]"
             ));
@@ -205,7 +206,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
             jurorCreateRequestDto.setStartDate(LocalDate.now());
             jurorCreateRequestDto.setPoolType("ABC");
 
-            JurorCreateRequestDtoTest.this.expectViolations(jurorCreateRequestDto, new Violation(
+            assertExpectViolations(jurorCreateRequestDto, new Violation(
                 "poolNumber",
                 "Field poolNumber should be excluded if any of the following fields are present: [poolType, startDate]"
             ));
@@ -226,7 +227,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
             jurorCreateRequestDto.setStartDate(null);
             jurorCreateRequestDto.setPoolType("ABC");
 
-            JurorCreateRequestDtoTest.this.expectViolations(jurorCreateRequestDto, new Violation(
+            assertExpectViolations(jurorCreateRequestDto, new Violation(
                 "startDate",
                 "Field startDate is required if none of the following fields are present: [poolNumber]"
             ));
@@ -248,7 +249,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
             jurorCreateRequestDto.setStartDate(LocalDate.now());
             jurorCreateRequestDto.setPoolType(null);
 
-            JurorCreateRequestDtoTest.this.expectViolations(jurorCreateRequestDto, new Violation(
+            assertExpectViolations(jurorCreateRequestDto, new Violation(
                 "poolType",
                 "Field poolType is required if none of the following fields are present: [poolNumber]"
             ));

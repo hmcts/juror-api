@@ -10,6 +10,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,7 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -414,7 +416,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 
-            validateInvalidPayload(response,
+            assertInvalidPayload(response,
                 new RestResponseEntityExceptionHandler.FieldError("jurorNumbers[0]", "must match \"^\\d{9}$\""));
         }
 
@@ -722,9 +724,6 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @SuppressWarnings({
-            "PMD.JUnitTestsShouldIncludeAssert"//False positive
-        })
         void negativeNotFound() throws Exception {
             String jurorNumber = "641500000";
             String poolNumber = "415220901";
@@ -741,14 +740,11 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                 ), httpHeaders,
                 HttpMethod.PATCH, URI.create(URL));
 
-            validateNotFound(template.exchange(request, String.class), URL,
+            assertNotFound(template.exchange(request, String.class), URL,
                 "No complete juror pool found for Juror number 641500000");
         }
 
         @Test
-        @SuppressWarnings({
-            "PMD.JUnitTestsShouldIncludeAssert"//False positive
-        })
         void negativeBadPayload() throws Exception {
             String jurorNumber = "641500000";
             String poolNumber = "INVALID";
@@ -765,14 +761,11 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                 ), httpHeaders,
                 HttpMethod.PATCH, URI.create(URL));
 
-            validateInvalidPathParam(template.exchange(request, String.class),
+            assertInvalidPathParam(template.exchange(request, String.class),
                 "uncompleteService.requestList[0].poolNumber: must match \"^\\d{9}$\"");
         }
 
         @Test
-        @SuppressWarnings({
-            "PMD.JUnitTestsShouldIncludeAssert"//False positive
-        })
         void negativeUnauthorisedNotSJO() throws Exception {
             String jurorNumber = "641500005";
             String poolNumber = "415220901";
@@ -789,7 +782,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                 ), httpHeaders,
                 HttpMethod.PATCH, URI.create(URL));
 
-            validateForbiddenResponse(template.exchange(request, String.class), URL);
+            assertForbiddenResponse(template.exchange(request, String.class), URL);
         }
     }
 
@@ -801,7 +794,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         public static final String URL = BASE_URL;
 
 
-        ResponseEntity<CompleteJurorResponse[]> triggerValid(JurorPoolSearch search) throws Exception {
+        ResponseEntity<PaginatedList<CompleteJurorResponse>> triggerValid(JurorPoolSearch search) throws Exception {
             final String bureauJwt = createBureauJwt("COURT_USER", "415", 9);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -809,8 +802,9 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             RequestEntity<JurorPoolSearch> request = new RequestEntity<>(search, httpHeaders,
                 HttpMethod.POST, URI.create(URL));
 
-            ResponseEntity<CompleteJurorResponse[]> response =
-                template.exchange(request, CompleteJurorResponse[].class);
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response =
+                template.exchange(request, new ParameterizedTypeReference<>() {
+                });
 
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -820,24 +814,30 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
         @Test
         void positiveJurorFirstNameSearch() throws Exception {
-            ResponseEntity<CompleteJurorResponse[]> response = triggerValid(
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response = triggerValid(
                 JurorPoolSearch.builder()
                     .jurorName("FNAMEZERO")
                     .pageLimit(25)
                     .pageNumber(1)
                     .build()
             );
-
-            assertThat(response.getBody()).isNotNull().hasSize(4);
-            validateCompleteJurorResponse641500005(response.getBody()[0]);
-            validateCompleteJurorResponse641500007(response.getBody()[1]);
-            validateCompleteJurorResponse641500008(response.getBody()[2]);
-            validateCompleteJurorResponse641500009(response.getBody()[3]);
+            PaginatedList<CompleteJurorResponse> body = response.getBody();
+            assertThat(body).isNotNull();
+            assertThat(body.getTotalPages()).isEqualTo(1L);
+            assertThat(body.getTotalItems()).isEqualTo(4L);
+            assertThat(body.getCurrentPage()).isEqualTo(1L);
+            
+            List<CompleteJurorResponse> data = body.getData();
+            assertThat(data).isNotNull().hasSize(4);
+            validateCompleteJurorResponse641500005(data.get(0));
+            validateCompleteJurorResponse641500007(data.get(1));
+            validateCompleteJurorResponse641500008(data.get(2));
+            validateCompleteJurorResponse641500009(data.get(3));
         }
 
         @Test
         void positiveJurorLastNameSearch() throws Exception {
-            ResponseEntity<CompleteJurorResponse[]> response = triggerValid(
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response = triggerValid(
                 JurorPoolSearch.builder()
                     .jurorName("LNAMEONE")
                     .pageLimit(25)
@@ -845,17 +845,24 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                     .build()
             );
 
-            assertThat(response.getBody()).isNotNull().hasSize(5);
-            validateCompleteJurorResponse641500010(response.getBody()[0]);
-            validateCompleteJurorResponse641500011(response.getBody()[1]);
-            validateCompleteJurorResponse641500012(response.getBody()[2]);
-            validateCompleteJurorResponse641500013(response.getBody()[3]);
-            validateCompleteJurorResponse641500014(response.getBody()[4]);
+            PaginatedList<CompleteJurorResponse> body = response.getBody();
+            assertThat(body).isNotNull();
+            assertThat(body.getTotalPages()).isEqualTo(1L);
+            assertThat(body.getTotalItems()).isEqualTo(5L);
+            assertThat(body.getCurrentPage()).isEqualTo(1L);
+
+            List<CompleteJurorResponse> data = body.getData();
+            assertThat(data).isNotNull().hasSize(5);
+            validateCompleteJurorResponse641500010(data.get(0));
+            validateCompleteJurorResponse641500011(data.get(1));
+            validateCompleteJurorResponse641500012(data.get(2));
+            validateCompleteJurorResponse641500013(data.get(3));
+            validateCompleteJurorResponse641500014(data.get(4));
         }
 
         @Test
         void positiveJurorFirstAndLastNameSearch() throws Exception {
-            ResponseEntity<CompleteJurorResponse[]> response = triggerValid(
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response = triggerValid(
                 JurorPoolSearch.builder()
                     .jurorName("FNAMEZEROSEVEN LNAMEZEROSE")
                     .pageLimit(25)
@@ -863,13 +870,20 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                     .build()
             );
 
-            assertThat(response.getBody()).isNotNull().hasSize(1);
-            validateCompleteJurorResponse641500007(response.getBody()[0]);
+            PaginatedList<CompleteJurorResponse> body = response.getBody();
+            assertThat(body).isNotNull();
+            assertThat(body.getTotalPages()).isEqualTo(1L);
+            assertThat(body.getTotalItems()).isEqualTo(1L);
+            assertThat(body.getCurrentPage()).isEqualTo(1L);
+
+            List<CompleteJurorResponse> data = body.getData();
+            assertThat(data).isNotNull().hasSize(1);
+            validateCompleteJurorResponse641500007(data.get(0));
         }
 
         @Test
         void positiveJurorNumberSearch() throws Exception {
-            ResponseEntity<CompleteJurorResponse[]> response = triggerValid(
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response = triggerValid(
                 JurorPoolSearch.builder()
                     .jurorNumber("64150000")
                     .pageLimit(25)
@@ -877,16 +891,23 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                     .build()
             );
 
-            assertThat(response.getBody()).isNotNull().hasSize(4);
-            validateCompleteJurorResponse641500005(response.getBody()[0]);
-            validateCompleteJurorResponse641500007(response.getBody()[1]);
-            validateCompleteJurorResponse641500008(response.getBody()[2]);
-            validateCompleteJurorResponse641500009(response.getBody()[3]);
+            PaginatedList<CompleteJurorResponse> body = response.getBody();
+            assertThat(body).isNotNull();
+            assertThat(body.getTotalPages()).isEqualTo(1L);
+            assertThat(body.getTotalItems()).isEqualTo(4L);
+            assertThat(body.getCurrentPage()).isEqualTo(1L);
+
+            List<CompleteJurorResponse> data = body.getData();
+            assertThat(data).isNotNull().hasSize(4);
+            validateCompleteJurorResponse641500005(data.get(0));
+            validateCompleteJurorResponse641500007(data.get(1));
+            validateCompleteJurorResponse641500008(data.get(2));
+            validateCompleteJurorResponse641500009(data.get(3));
         }
 
         @Test
         void positivePostCodeSearch() throws Exception {
-            ResponseEntity<CompleteJurorResponse[]> response = triggerValid(
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response = triggerValid(
                 JurorPoolSearch.builder()
                     .postcode("CH0 5AN")
                     .pageLimit(25)
@@ -894,14 +915,21 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                     .build()
             );
 
-            assertThat(response.getBody()).isNotNull().hasSize(2);
-            validateCompleteJurorResponse641500005(response.getBody()[0]);
-            validateCompleteJurorResponse641500007(response.getBody()[1]);
+            PaginatedList<CompleteJurorResponse> body = response.getBody();
+            assertThat(body).isNotNull();
+            assertThat(body.getTotalPages()).isEqualTo(1L);
+            assertThat(body.getTotalItems()).isEqualTo(2L);
+            assertThat(body.getCurrentPage()).isEqualTo(1L);
+
+            List<CompleteJurorResponse> data = body.getData();
+            assertThat(data).isNotNull().hasSize(2);
+            validateCompleteJurorResponse641500005(data.get(0));
+            validateCompleteJurorResponse641500007(data.get(1));
         }
 
         @Test
         void positivePoolNumberSearch() throws Exception {
-            ResponseEntity<CompleteJurorResponse[]> response = triggerValid(
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response = triggerValid(
                 JurorPoolSearch.builder()
                     .poolNumber("415220902")
                     .pageLimit(25)
@@ -909,15 +937,22 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                     .build()
             );
 
-            assertThat(response.getBody()).isNotNull().hasSize(3);
-            validateCompleteJurorResponse641500010(response.getBody()[0]);
-            validateCompleteJurorResponse641500011(response.getBody()[1]);
-            validateCompleteJurorResponse641500012(response.getBody()[2]);
+            PaginatedList<CompleteJurorResponse> body = response.getBody();
+            assertThat(body).isNotNull();
+            assertThat(body.getTotalPages()).isEqualTo(1L);
+            assertThat(body.getTotalItems()).isEqualTo(3L);
+            assertThat(body.getCurrentPage()).isEqualTo(1L);
+
+            List<CompleteJurorResponse> data = body.getData();
+            assertThat(data).isNotNull().hasSize(3);
+            validateCompleteJurorResponse641500010(data.get(0));
+            validateCompleteJurorResponse641500011(data.get(1));
+            validateCompleteJurorResponse641500012(data.get(2));
         }
 
         @Test
         void positivePagination() throws Exception {
-            ResponseEntity<CompleteJurorResponse[]> response = triggerValid(
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response = triggerValid(
                 JurorPoolSearch.builder()
                     .poolNumber("415")
                     .pageLimit(5)
@@ -925,12 +960,19 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                     .build()
             );
 
-            assertThat(response.getBody()).isNotNull().hasSize(5);
-            validateCompleteJurorResponse641500005(response.getBody()[0]);
-            validateCompleteJurorResponse641500007(response.getBody()[1]);
-            validateCompleteJurorResponse641500008(response.getBody()[2]);
-            validateCompleteJurorResponse641500009(response.getBody()[3]);
-            validateCompleteJurorResponse641500010(response.getBody()[4]);
+            PaginatedList<CompleteJurorResponse> body = response.getBody();
+            assertThat(body).isNotNull();
+            assertThat(body.getTotalPages()).isEqualTo(2L);
+            assertThat(body.getTotalItems()).isEqualTo(9L);
+            assertThat(body.getCurrentPage()).isEqualTo(1L);
+
+            List<CompleteJurorResponse> data = body.getData();
+            assertThat(data).isNotNull().hasSize(5);
+            validateCompleteJurorResponse641500005(data.get(0));
+            validateCompleteJurorResponse641500007(data.get(1));
+            validateCompleteJurorResponse641500008(data.get(2));
+            validateCompleteJurorResponse641500009(data.get(3));
+            validateCompleteJurorResponse641500010(data.get(4));
 
             response = triggerValid(
                 JurorPoolSearch.builder()
@@ -940,17 +982,21 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                     .build()
             );
 
-            assertThat(response.getBody()).isNotNull().hasSize(4);
-            validateCompleteJurorResponse641500011(response.getBody()[0]);
-            validateCompleteJurorResponse641500012(response.getBody()[1]);
-            validateCompleteJurorResponse641500013(response.getBody()[2]);
-            validateCompleteJurorResponse641500014(response.getBody()[3]);
+            PaginatedList<CompleteJurorResponse> body2 = response.getBody();
+            assertThat(body2).isNotNull();
+            assertThat(body2.getTotalPages()).isEqualTo(2L);
+            assertThat(body2.getTotalItems()).isEqualTo(9L);
+            assertThat(body2.getCurrentPage()).isEqualTo(2L);
+
+            List<CompleteJurorResponse> data2 = body2.getData();
+            assertThat(data2).isNotNull().hasSize(4);
+            validateCompleteJurorResponse641500011(data2.get(0));
+            validateCompleteJurorResponse641500012(data2.get(1));
+            validateCompleteJurorResponse641500013(data2.get(2));
+            validateCompleteJurorResponse641500014(data2.get(3));
         }
 
         @Test
-        @SuppressWarnings({
-            "PMD.JUnitTestsShouldIncludeAssert"//False positive
-        })
         void negativeNotFound() throws Exception {
             final String bureauJwt = createBureauJwt("COURT_USER", "415", 9);
 
@@ -964,14 +1010,11 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                     .build(), httpHeaders,
                 HttpMethod.POST, URI.create(URL));
 
-            validateNotFound(template.exchange(request, String.class), URL,
+            assertNotFound(template.exchange(request, String.class), URL,
                 "No complete juror pools found that meet your search criteria.");
         }
 
         @Test
-        @SuppressWarnings({
-            "PMD.JUnitTestsShouldIncludeAssert"//False positive
-        })
         void negativeBadPayload() throws Exception {
             final String bureauJwt = createBureauJwt("COURT_USER", "415", 1);
 
@@ -986,16 +1029,13 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                     .build(), httpHeaders,
                 HttpMethod.POST, URI.create(URL));
 
-            validateInvalidPayload(template.exchange(request, String.class),
+            assertInvalidPayload(template.exchange(request, String.class),
                 new RestResponseEntityExceptionHandler.FieldError("jurorName",
                     "Field jurorName should be excluded if any of the following fields are present: "
                         + "[jurorNumber, postcode]"));
         }
 
         @Test
-        @SuppressWarnings({
-            "PMD.JUnitTestsShouldIncludeAssert"//False positive
-        })
         void negativeUnauthorisedNotSJO() throws Exception {
             final String bureauJwt = createBureauJwt("COURT_USER", "415", 1);
 
@@ -1009,7 +1049,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
                     .build(), httpHeaders,
                 HttpMethod.POST, URI.create(URL));
 
-            validateForbiddenResponse(template.exchange(request, String.class), URL);
+            assertForbiddenResponse(template.exchange(request, String.class), URL);
         }
 
         private void validateCompleteJurorResponse641500005(CompleteJurorResponse response) {

@@ -45,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(CourtLocationController.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class CourtLocationControllerTest {
+class CourtLocationControllerTest {
 
     private static final String BASE_URL = "/api/v1/moj/court-location";
     @Autowired
@@ -59,7 +59,7 @@ public class CourtLocationControllerTest {
 
     //Tests related to operation: getAllCourtLocationsByPostcode
     @Test
-    public void getAllCourtLocationsByPostcode_bureau_happy() throws Exception {
+    void retrieveAllCourtLocationsByPostcodeBureauHappy() throws Exception {
         final ArgumentCaptor<String> postcodeCaptor = ArgumentCaptor.forClass(String.class);
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
 
@@ -87,7 +87,7 @@ public class CourtLocationControllerTest {
     }
 
     @Test
-    public void getAllCourtLocationsByPostcode_court_happy() throws Exception {
+    void retrieveAllCourtLocationsByPostcodeCourtHappy() throws Exception {
         final ArgumentCaptor<String> postcodeCaptor = ArgumentCaptor.forClass(String.class);
         BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
 
@@ -115,7 +115,7 @@ public class CourtLocationControllerTest {
     }
 
     @Test
-    public void getAllCourtLocationsByPostcode_invalidPath() throws Exception {
+    void retrieveAllCourtLocationsByPostcodeInvalidPath() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -132,7 +132,7 @@ public class CourtLocationControllerTest {
     }
 
     @Test
-    public void getAllCourtLocationsByPostcode_incorrectHttpOperation() throws Exception {
+    void retrieveAllCourtLocationsByPostcodeIncorrectHttpOperation() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -149,7 +149,7 @@ public class CourtLocationControllerTest {
     }
 
     @Test
-    public void getAllCourtLocationsByPostcode_longPostcode() throws Exception {
+    void retrieveAllCourtLocationsByPostcodeLongPostcode() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -164,7 +164,7 @@ public class CourtLocationControllerTest {
     }
 
     @Test
-    public void getAllCourtLocationsByPostcode_noPostcode() throws Exception {
+    void retrieveAllCourtLocationsByPostcodeNoPostcode() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -179,7 +179,7 @@ public class CourtLocationControllerTest {
     }
 
     @Test
-    public void getAllCourtLocationsByPostcode_blankPostcode() throws Exception {
+    void retrieveAllCourtLocationsByPostcodeBlankPostcode() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -195,7 +195,7 @@ public class CourtLocationControllerTest {
     }
 
     @Test
-    public void getAllCourtLocationsByPostcode_invalidPostcode_regExValidationFailure_format() throws Exception {
+    void retrieveAllCourtLocationsByPostcodeInvalidPostcodeRegExValidationFailureFormat() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);

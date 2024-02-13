@@ -206,6 +206,7 @@ public class UrgencyServiceImpl implements UrgencyService {
         return modifiedDate;
     }
 
+    @Override
     public boolean isSuperUrgent(JurorResponse response, Pool poolDetails) {
         try {
             if (!CLOSED.equalsIgnoreCase(response.getProcessingStatus().getDescription())
@@ -262,6 +263,7 @@ public class UrgencyServiceImpl implements UrgencyService {
 
 
     @SuppressWarnings("Duplicates")
+    @Override
     public boolean isUrgent(JurorResponse response, Pool poolDetails) {
         //Responses not closed and received within this many <b>working days</b> are urgent.
 

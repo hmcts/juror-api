@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusValidationRespo
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -22,7 +23,6 @@ import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -36,28 +36,30 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CompleteJurorResponse> search(JurorPoolSearch search) {
-        String owner = SecurityUtil.getOwner();
-        List<JurorPool> jurorPools =
+    public PaginatedList<CompleteJurorResponse> search(JurorPoolSearch search) {
+        String owner = SecurityUtil.getActiveOwner();
+
+        PaginatedList<CompleteJurorResponse> completeJurorResponses =
             jurorPoolRepository.findJurorPoolsBySearch(search, owner,
                 jurorPoolJPQLQuery -> jurorPoolJPQLQuery.where(
-                    QJurorPool.jurorPool.status.status.eq(IJurorStatus.COMPLETED)));
+                    QJurorPool.jurorPool.status.status.eq(IJurorStatus.COMPLETED)),
+                jurorPool -> {
+                    Juror juror = jurorPool.getJuror();
+                    return CompleteJurorResponse.builder()
+                        .jurorNumber(jurorPool.getJurorNumber())
+                        .poolNumber(jurorPool.getPoolNumber())
+                        .firstName(juror.getFirstName())
+                        .lastName(juror.getLastName())
+                        .postCode(juror.getPostcode())
+                        .completionDate(juror.getCompletionDate())
+                        .build();
+                },
+                500L);
 
-        if (jurorPools == null || jurorPools.isEmpty()) {
+        if (completeJurorResponses == null || completeJurorResponses.isEmpty()) {
             throw new MojException.NotFound("No complete juror pools found that meet your search criteria.", null);
         }
-        return jurorPools.stream()
-            .map(jurorPool -> {
-                Juror juror = jurorPool.getJuror();
-                return CompleteJurorResponse.builder()
-                    .jurorNumber(jurorPool.getJurorNumber())
-                    .poolNumber(jurorPool.getPoolNumber())
-                    .firstName(juror.getFirstName())
-                    .lastName(juror.getLastName())
-                    .postCode(juror.getPostcode())
-                    .completionDate(juror.getCompletionDate())
-                    .build();
-            }).toList();
+        return completeJurorResponses;
     }
 
 
@@ -86,35 +88,6 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
         }
     }
 
-    @Override
-    @Transactional
-    public void completeDismissedJurorsService(CompleteServiceJurorNumberListDto completeServiceJurorNumberListDto) {
-        for (String jurorNumber : completeServiceJurorNumberListDto.getJurorNumbers()) {
-            completeDismissedJurorsService(jurorNumber, completeServiceJurorNumberListDto.getCompletionDate());
-        }
-    }
-
-
-    @Override
-    @Transactional(readOnly = true)
-    public CompleteServiceValidationResponseDto validateCanCompleteService(String poolNumber,
-                                                                           JurorNumberListDto jurorNumberListDto) {
-        CompleteServiceValidationResponseDto completeServiceValidationResponseDto =
-            new CompleteServiceValidationResponseDto();
-        for (String jurorNumber : jurorNumberListDto.getJurorNumbers()) {
-            JurorPool jurorPool = getJurorPool(poolNumber, jurorNumber);
-            JurorStatusValidationResponseDto jurorStatusValidationResponseDto =
-                createJurorStatusValidationResponseDto(jurorPool);
-
-            if (isJurorValidForCompletion(jurorPool)) {
-                completeServiceValidationResponseDto.addValid(jurorStatusValidationResponseDto);
-            } else {
-                completeServiceValidationResponseDto.addInvalidNotResponded(jurorStatusValidationResponseDto);
-            }
-        }
-        return completeServiceValidationResponseDto;
-    }
-
     private void completeService(String poolNumber, String jurorNumber, LocalDate completionDate) {
         JurorPool jurorPool = getJurorPool(poolNumber, jurorNumber);
         if (!isJurorValidForCompletion(jurorPool)) {
@@ -131,6 +104,14 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
         jurorHistoryService.createCompleteServiceHistory(jurorPool);
         jurorRepository.save(juror);
         jurorPoolRepository.save(jurorPool);
+    }
+
+    @Override
+    @Transactional
+    public void completeDismissedJurorsService(CompleteServiceJurorNumberListDto completeServiceJurorNumberListDto) {
+        for (String jurorNumber : completeServiceJurorNumberListDto.getJurorNumbers()) {
+            completeDismissedJurorsService(jurorNumber, completeServiceJurorNumberListDto.getCompletionDate());
+        }
     }
 
     private void completeDismissedJurorsService(String jurorNumber, LocalDate completionDate) {
@@ -153,6 +134,27 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
         jurorRepository.save(juror);
         jurorPoolRepository.save(jurorPool);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CompleteServiceValidationResponseDto validateCanCompleteService(String poolNumber,
+                                                                           JurorNumberListDto jurorNumberListDto) {
+        CompleteServiceValidationResponseDto completeServiceValidationResponseDto =
+            new CompleteServiceValidationResponseDto();
+        for (String jurorNumber : jurorNumberListDto.getJurorNumbers()) {
+            JurorPool jurorPool = getJurorPool(poolNumber, jurorNumber);
+            JurorStatusValidationResponseDto jurorStatusValidationResponseDto =
+                createJurorStatusValidationResponseDto(jurorPool);
+
+            if (isJurorValidForCompletion(jurorPool)) {
+                completeServiceValidationResponseDto.addValid(jurorStatusValidationResponseDto);
+            } else {
+                completeServiceValidationResponseDto.addInvalidNotResponded(jurorStatusValidationResponseDto);
+            }
+        }
+        return completeServiceValidationResponseDto;
+    }
+
 
     private JurorStatusValidationResponseDto createJurorStatusValidationResponseDto(JurorPool jurorPool) {
         Juror juror = jurorPool.getJuror();

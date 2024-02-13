@@ -6,10 +6,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 
 @DisplayName("JurorStatusValidationResponseDto")
-@SuppressWarnings(
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive done via inheritance
-)
-public class JurorStatusValidationResponseDtoTest extends JurorValidationResponseDtoTest {
+class JurorStatusValidationResponseDtoTest extends JurorValidationResponseDtoTest {
 
 
     @Override
@@ -39,7 +36,7 @@ public class JurorStatusValidationResponseDtoTest extends JurorValidationRespons
     @Override
     @Test
     void positiveTypical() {
-        expectNoViolations(
+        assertExpectNoViolations(
             createJurorStatusValidationResponseDto(
                 "123456789",
                 "John",
@@ -55,7 +52,7 @@ public class JurorStatusValidationResponseDtoTest extends JurorValidationRespons
 
         @Test
         void negativeNull() {
-            expectViolations(
+            assertExpectViolations(
                 createJurorStatusValidationResponseDto(
                     "123456789",
                     "John",
@@ -68,7 +65,7 @@ public class JurorStatusValidationResponseDtoTest extends JurorValidationRespons
 
         @Test
         void negativeTooLarge() {
-            expectViolations(
+            assertExpectViolations(
                 createJurorStatusValidationResponseDto(
                     "123456789",
                     "John",
@@ -81,7 +78,7 @@ public class JurorStatusValidationResponseDtoTest extends JurorValidationRespons
 
         @Test
         void negativeTooSmall() {
-            expectViolations(
+            assertExpectViolations(
                 createJurorStatusValidationResponseDto(
                     "123456789",
                     "John",

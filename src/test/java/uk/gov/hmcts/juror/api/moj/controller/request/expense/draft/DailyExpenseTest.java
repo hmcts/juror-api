@@ -126,7 +126,6 @@ public class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
         @Test
         @DisplayName("Non Attendance Days should only allow [LOSS_OF_EARNINGS, EXTRA_CARE_COSTS, OTHER_COSTS, "
             + "PAY_CASH]")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void positiveNonAttendanceDayOnlyAllowedSomeTypes() {
             DailyExpense dto = createValidObject();
             dto.setApplyToAllDays(List.of(
@@ -135,19 +134,18 @@ public class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
                 DailyExpenseApplyToAllDays.PAY_CASH,
                 DailyExpenseApplyToAllDays.LOSS_OF_EARNINGS
             ));
-            expectNoViolations(dto);
+            assertExpectNoViolations(dto);
         }
 
         @Test
         @DisplayName("Non Attendance Days should not allow any types that are not "
             + "[LOSS_OF_EARNINGS, EXTRA_CARE_COSTS, OTHER_COSTS, PAY_CASH]")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void negativeNonAttendanceDayOnlyAllowedSomeTypes() {
             DailyExpense dto = createValidObject();
             dto.setApplyToAllDays(List.of(
                 DailyExpenseApplyToAllDays.TRAVEL_COSTS
             ));
-            expectViolations(dto,
+            assertExpectViolations(dto,
                 new FieldTestSupport().setGroups(DailyExpense.NonAttendanceDay.class),
                 new Violation("applyToAllDays[0].<list element>",
                     "Non Attendance day can only apply to all for [EXTRA_CARE_COSTS, OTHER_COSTS, PAY_CASH]")
@@ -155,13 +153,12 @@ public class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void attendanceDayOnlyAllowedAllTypes() {
             DailyExpense dto = createValidObject();
             dto.setApplyToAllDays(List.of(
                 DailyExpenseApplyToAllDays.values()
             ));
-            expectNoViolations(dto);
+            assertExpectNoViolations(dto);
         }
     }
 }

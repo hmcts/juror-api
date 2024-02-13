@@ -249,10 +249,10 @@ public class PoolRequestServiceTest {
 
     @Test
     public void test_savePoolRequest_newPoolFromBureau_validCourt() {
-        ArgumentCaptor<PoolRequest> poolRequestArgumentCaptor = ArgumentCaptor.forClass(PoolRequest.class);
-        PoolRequestDto poolRequestDto = createValidPoolRequestDto();
-        CourtLocation courtLocation = new CourtLocation();
-        PoolType poolType = new PoolType("CRO", "CROWN COURT");
+        final ArgumentCaptor<PoolRequest> poolRequestArgumentCaptor = ArgumentCaptor.forClass(PoolRequest.class);
+        final PoolRequestDto poolRequestDto = createValidPoolRequestDto();
+        final CourtLocation courtLocation = new CourtLocation();
+        final PoolType poolType = new PoolType("CRO", "CROWN COURT");
         PoolRequest poolRequest = new PoolRequest();
         poolRequest.setOwner("415");
 

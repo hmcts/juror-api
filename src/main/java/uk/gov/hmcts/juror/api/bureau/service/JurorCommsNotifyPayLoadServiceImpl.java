@@ -258,6 +258,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         return map;
     }
 
+    @Override
     public Boolean isWelshCourtAndComms(Boolean welsh, WelshCourtLocation welshCourtLocation) {
         log.info("inside isWelshComms");
         if (welshCourtLocation == null || welsh == null) {
@@ -269,6 +270,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         }
     }
 
+    @Override
     public WelshCourtLocation getWelshCourtLocation(String locationCode) {
         return welshCourtLocationRepository.findByLocCode(locationCode);
     }

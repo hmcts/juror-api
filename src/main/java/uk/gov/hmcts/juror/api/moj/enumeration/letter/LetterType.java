@@ -5,6 +5,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
 
@@ -25,6 +26,7 @@ public enum LetterType {
         ReissueLetterService.DataType.EXTRACTED_FLAG,
         ReissueLetterService.DataType.FORM_CODE),
         tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED))),
+
     DEFERRAL_GRANTED(List.of(FormCode.ENG_DEFERRAL, FormCode.BI_DEFERRAL), List.of(
         ReissueLetterService.DataType.JUROR_NUMBER,
         ReissueLetterService.DataType.JUROR_FIRST_NAME,
@@ -36,7 +38,48 @@ public enum LetterType {
         ReissueLetterService.DataType.DATE_PRINTED,
         ReissueLetterService.DataType.EXTRACTED_FLAG,
         ReissueLetterService.DataType.FORM_CODE),
-        tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED)));
+        tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED))),
+
+    DEFERRAL_REFUSED(List.of(FormCode.ENG_DEFERRALDENIED, FormCode.BI_DEFERRALDENIED), List.of(
+        ReissueLetterService.DataType.JUROR_NUMBER,
+        ReissueLetterService.DataType.JUROR_FIRST_NAME,
+        ReissueLetterService.DataType.JUROR_LAST_NAME,
+        ReissueLetterService.DataType.JUROR_POSTCODE,
+        ReissueLetterService.DataType.JUROR_STATUS,
+        ReissueLetterService.DataType.JUROR_DEFERRAL_DATE_REFUSED,
+        ReissueLetterService.DataType.JUROR_DEFERRAL_REJECTED_REASON,
+        ReissueLetterService.DataType.DATE_PRINTED,
+        ReissueLetterService.DataType.EXTRACTED_FLAG,
+        ReissueLetterService.DataType.FORM_CODE),
+        tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED))),
+
+    EXCUSAL_GRANTED(List.of(FormCode.ENG_EXCUSAL, FormCode.BI_EXCUSAL), List.of(
+        ReissueLetterService.DataType.JUROR_NUMBER,
+        ReissueLetterService.DataType.JUROR_FIRST_NAME,
+        ReissueLetterService.DataType.JUROR_LAST_NAME,
+        ReissueLetterService.DataType.JUROR_POSTCODE,
+        ReissueLetterService.DataType.JUROR_STATUS,
+        ReissueLetterService.DataType.JUROR_EXCUSAL_DATE,
+        ReissueLetterService.DataType.JUROR_EXCUSAL_REASON,
+        ReissueLetterService.DataType.DATE_PRINTED,
+        ReissueLetterService.DataType.EXTRACTED_FLAG,
+        ReissueLetterService.DataType.FORM_CODE),
+    tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.EXCUSED))),
+    
+    EXCUSAL_DENIED(List.of(FormCode.ENG_EXCUSALDENIED, FormCode.BI_EXCUSALDENIED), List.of(
+        ReissueLetterService.DataType.JUROR_NUMBER,
+        ReissueLetterService.DataType.JUROR_FIRST_NAME,
+        ReissueLetterService.DataType.JUROR_LAST_NAME,
+        ReissueLetterService.DataType.JUROR_POSTCODE,
+        ReissueLetterService.DataType.JUROR_STATUS,
+        ReissueLetterService.DataType.JUROR_EXCUSAL_DENIED_DATE,
+        ReissueLetterService.DataType.JUROR_EXCUSAL_REASON,
+        ReissueLetterService.DataType.DATE_PRINTED,
+        ReissueLetterService.DataType.EXTRACTED_FLAG,
+        ReissueLetterService.DataType.FORM_CODE),
+        tupleJPAQuery -> tupleJPAQuery
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED))
+            .where(QJuror.juror.excusalRejected.eq("Y")));
 
     List<FormCode> formCodes;
 

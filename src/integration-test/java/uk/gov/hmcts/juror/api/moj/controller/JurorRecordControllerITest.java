@@ -3465,14 +3465,13 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void negativeNotFound() {
             setAuthorization("COURT_USER", "414", "0");
             JurorNumberAndPoolNumberDto dto = createDto("123456789", POOL_NUMBER);
             ResponseEntity<String> response =
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            validateErrorResponse(response,
+            assertErrorResponse(response,
                 HttpStatus.NOT_FOUND,
                 URL,
                 MojException.NotFound.class,
@@ -3488,7 +3487,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<String> response =
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            validateBusinessRuleViolation(response, URL,
+            assertBusinessRuleViolation(response, URL,
                 "Juror status must be responded in order to undo the failed to attend status.",
                 JUROR_STATUS_MUST_BE_RESPONDED
             );
@@ -3511,7 +3510,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<String> response =
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            validateBusinessRuleViolation(response, URL,
+            assertBusinessRuleViolation(response, URL,
                 "This juror cannot be given a Failed To Attend status because they have been given a completion date. "
                     + "Only a Senior Jury Officer can be remove the completion date",
                 FAILED_TO_ATTEND_HAS_COMPLETION_DATE
@@ -3535,7 +3534,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<String> response =
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            validateBusinessRuleViolation(response, URL,
+            assertBusinessRuleViolation(response, URL,
                 "This juror cannot be given a Failed To Attend status because they have had attendances recorded."
                     + " The Failed To Attend status is only for jurors who have not attended at all",
                 FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD
@@ -3557,7 +3556,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<String> response =
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            validateInvalidPayload(response,
+            assertInvalidPayload(response,
                 new RestResponseEntityExceptionHandler.FieldError("jurorNumber", "must match \"^\\d{9}$\""));
 
             JurorPool jurorPool =
@@ -3578,7 +3577,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
 
-            validateForbiddenResponse(response, URL);
+            assertForbiddenResponse(response, URL);
 
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
@@ -3638,14 +3637,13 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void negativeNotFound() {
             setAuthorization("COURT_USER", "415", "9");
             JurorNumberAndPoolNumberDto dto = createDto("123456789", POOL_NUMBER);
             ResponseEntity<String> response =
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            validateErrorResponse(response,
+            assertErrorResponse(response,
                 HttpStatus.NOT_FOUND,
                 URL,
                 MojException.NotFound.class,
@@ -3661,7 +3659,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<String> response =
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            validateBusinessRuleViolation(response, URL,
+            assertBusinessRuleViolation(response, URL,
                 "Juror status must be failed to attend in order to undo the failed to attend status.",
                 JUROR_STATUS_MUST_BE_FAILED_TO_ATTEND
             );
@@ -3683,7 +3681,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<String> response =
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            validateInvalidPayload(response,
+            assertInvalidPayload(response,
                 new RestResponseEntityExceptionHandler.FieldError("jurorNumber", "must match \"^\\d{9}$\""));
 
 
@@ -3705,7 +3703,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
 
-            validateForbiddenResponse(response, URL);
+            assertForbiddenResponse(response, URL);
 
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
@@ -3725,7 +3723,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
 
-            validateForbiddenResponse(response, URL);
+            assertForbiddenResponse(response, URL);
 
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
@@ -4022,67 +4020,60 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
             void jurorNotFound() throws Exception {
                 FilterableJurorDetailsRequestDto request = createDto("023456789", null,
                     FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
-                validateNotFound(triggerInvalid(request), URL,
+                assertNotFound(triggerInvalid(request), URL,
                     "Juror not found: JurorNumber: 023456789 Revision: null");
             }
 
             @Test
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
             void jurorVersionNotFound() throws Exception {
                 FilterableJurorDetailsRequestDto request = createDto(TestConstants.VALID_JUROR_NUMBER, 9L,
                     FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
-                validateNotFound(triggerInvalid(request), URL,
+                assertNotFound(triggerInvalid(request), URL,
                     "Juror not found: JurorNumber: " + TestConstants.VALID_JUROR_NUMBER + " Revision: 9");
             }
 
             @Test
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
             void invalidPayload() throws Exception {
                 FilterableJurorDetailsRequestDto request = createDto("INVALID", 9L,
                     FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
 
-                validateInvalidPathParam(triggerInvalid(request),
+                assertInvalidPathParam(triggerInvalid(request),
                     "getJurorDetailsBulkFilterable.request[0].jurorNumber: must match \"^\\d{9}$\"");
             }
 
             @Test
             @DisplayName("Unauthorised - none court user")
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
             void unauthorisedNoneCourtUser() {
                 List<FilterableJurorDetailsRequestDto> request =
                     List.of(createDto(TestConstants.VALID_JUROR_NUMBER, null,
                         FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS));
                 setAuthorization("BUREAU_USER", "400", "1");
 
-                validateForbiddenResponse(restTemplate.exchange(
+                assertForbiddenResponse(restTemplate.exchange(
                     new RequestEntity<>(request, httpHeaders, POST, URI.create(URL)), String.class), URL);
             }
 
             @Test
             @DisplayName("Empty request body")
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
             void emptyRequest() throws Exception {
-                validateInvalidPathParam(triggerInvalid(List.of()),
+                assertInvalidPathParam(triggerInvalid(List.of()),
                     "getJurorDetailsBulkFilterable.request: size must be between 1 and 20");
             }
 
             @Test
             @DisplayName("Request body with null")
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
             void requestWithNullItem() throws Exception {
                 List<FilterableJurorDetailsRequestDto> request = new ArrayList<>();
                 request.add(null);
-                validateInvalidPathParam(triggerInvalid(request),
+                assertInvalidPathParam(triggerInvalid(request),
                     "getJurorDetailsBulkFilterable.request[0].<list element>: must not be null");
             }
 
             @Test
             @DisplayName("Request has too many items")
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
             void tooManyItems() throws Exception {
                 List<FilterableJurorDetailsRequestDto> request = new ArrayList<>();
                 final int maxRequests = 20;
@@ -4093,7 +4084,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                         .build());
                 }
 
-                validateInvalidPathParam(triggerInvalid(request),
+                assertInvalidPathParam(triggerInvalid(request),
                     "getJurorDetailsBulkFilterable.request: size must be between 1 and 20");
             }
         }
@@ -4353,7 +4344,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
 
         private void validatePoolCreation(JurorCreateRequestDto dto, PoolRequest poolRequest, String owner) {
-            CourtLocation courtLocation = courtLocationRepository.findByLocCode(dto.getLocationCode()).get();
+            final CourtLocation courtLocation = courtLocationRepository.findByLocCode(dto.getLocationCode()).get();
 
             assertNotNull(poolRequest.getPoolNumber(), "Pool number must be created");
             assertEquals(owner, poolRequest.getOwner(), "Owner must match");

@@ -23,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
@@ -632,91 +633,83 @@ class CompleteServiceServiceImplTest {
                 .jurorNumber("1234")
                 .build();
 
-            JurorPool jurorPool1 = mock(JurorPool.class);
-            Juror juror1 = mock(Juror.class);
-            when(jurorPool1.getJuror()).thenReturn(juror1);
-            when(jurorPool1.getJurorNumber()).thenReturn("111111111");
-            when(jurorPool1.getPoolNumber()).thenReturn("2222222222");
-            when(juror1.getJurorNumber()).thenReturn("111111111");
-            when(juror1.getFirstName()).thenReturn("FNAME1");
-            when(juror1.getLastName()).thenReturn("LNAME1");
-            when(juror1.getPostcode()).thenReturn("POSTCODE1");
-            when(juror1.getCompletionDate()).thenReturn(LocalDate.of(2023,1,1));
+            CompleteJurorResponse completeJurorResponse1 = mock(CompleteJurorResponse.class);
+            when(completeJurorResponse1.getJurorNumber()).thenReturn("111111111");
+            when(completeJurorResponse1.getPoolNumber()).thenReturn("2222222222");
+            when(completeJurorResponse1.getFirstName()).thenReturn("FNAME1");
+            when(completeJurorResponse1.getLastName()).thenReturn("LNAME1");
+            when(completeJurorResponse1.getPostCode()).thenReturn("POSTCODE1");
+            when(completeJurorResponse1.getCompletionDate()).thenReturn(LocalDate.of(2023, 1, 1));
 
-            JurorPool jurorPool2 = mock(JurorPool.class);
-            Juror juror2 = mock(Juror.class);
-            when(jurorPool2.getJuror()).thenReturn(juror2);
-            when(jurorPool2.getJurorNumber()).thenReturn("111111112");
-            when(jurorPool2.getPoolNumber()).thenReturn("2222222223");
-            when(juror2.getJurorNumber()).thenReturn("111111112");
-            when(juror2.getFirstName()).thenReturn("FNAME2");
-            when(juror2.getLastName()).thenReturn("LNAME2");
-            when(juror2.getPostcode()).thenReturn("POSTCODE2");
-            when(juror2.getCompletionDate()).thenReturn(LocalDate.of(2023,1,2));
+            CompleteJurorResponse completeJurorResponse2 = mock(CompleteJurorResponse.class);
+            when(completeJurorResponse2.getJurorNumber()).thenReturn("111111112");
+            when(completeJurorResponse2.getPoolNumber()).thenReturn("2222222223");
+            when(completeJurorResponse2.getFirstName()).thenReturn("FNAME2");
+            when(completeJurorResponse2.getLastName()).thenReturn("LNAME2");
+            when(completeJurorResponse2.getPostCode()).thenReturn("POSTCODE2");
+            when(completeJurorResponse2.getCompletionDate()).thenReturn(LocalDate.of(2023, 1, 2));
 
-            JurorPool jurorPool3 = mock(JurorPool.class);
-            Juror juror3 = mock(Juror.class);
-            when(jurorPool3.getJuror()).thenReturn(juror3);
-            when(jurorPool3.getJurorNumber()).thenReturn("111111113");
-            when(jurorPool3.getPoolNumber()).thenReturn("2222222224");
-            when(juror3.getJurorNumber()).thenReturn("111111113");
-            when(juror3.getFirstName()).thenReturn("FNAME3");
-            when(juror3.getLastName()).thenReturn("LNAME3");
-            when(juror3.getPostcode()).thenReturn("POSTCODE3");
-            when(juror3.getCompletionDate()).thenReturn(LocalDate.of(2023,1,3));
+            CompleteJurorResponse completeJurorResponse3 = mock(CompleteJurorResponse.class);
+            when(completeJurorResponse3.getJurorNumber()).thenReturn("111111113");
+            when(completeJurorResponse3.getPoolNumber()).thenReturn("2222222224");
+            when(completeJurorResponse3.getFirstName()).thenReturn("FNAME3");
+            when(completeJurorResponse3.getLastName()).thenReturn("LNAME3");
+            when(completeJurorResponse3.getPostCode()).thenReturn("POSTCODE3");
+            when(completeJurorResponse3.getCompletionDate()).thenReturn(LocalDate.of(2023, 1, 3));
 
             SecurityContextHolder.getContext().setAuthentication(
                 new BureauJwtAuthentication(List.of(),
                     TestUtils.createJwt("415", "COURT_USER", "0"))
             );
-            doReturn(List.of(jurorPool1, jurorPool2, jurorPool3))
+            PaginatedList<CompleteJurorResponse> result = new PaginatedList<>();
+            result.setData(List.of(completeJurorResponse1, completeJurorResponse2, completeJurorResponse3));
+            doReturn(result)
                 .when(jurorPoolRepository)
-                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any());
+                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any(), any(), eq(500L));
 
 
-            List<CompleteJurorResponse> responses =
+            PaginatedList<CompleteJurorResponse> responses =
                 completeServiceService.search(poolSearch);
 
-            assertThat(responses).isNotNull().hasSize(3);
-
-            CompleteJurorResponse response1 = responses.get(0);
+            assertThat(responses).isNotNull();
+            List<CompleteJurorResponse> data = responses.getData();
+            assertThat(data).isNotNull().hasSize(3);
+            CompleteJurorResponse response1 = data.get(0);
             assertThat(response1).isNotNull();
             assertThat(response1.getJurorNumber()).isEqualTo("111111111");
             assertThat(response1.getPoolNumber()).isEqualTo("2222222222");
             assertThat(response1.getFirstName()).isEqualTo("FNAME1");
             assertThat(response1.getLastName()).isEqualTo("LNAME1");
             assertThat(response1.getPostCode()).isEqualTo("POSTCODE1");
-            assertThat(response1.getCompletionDate()).isEqualTo(LocalDate.of(2023,1,1));
+            assertThat(response1.getCompletionDate()).isEqualTo(LocalDate.of(2023, 1, 1));
 
-            CompleteJurorResponse response2 = responses.get(1);
+            CompleteJurorResponse response2 = data.get(1);
             assertThat(response2).isNotNull();
             assertThat(response2.getJurorNumber()).isEqualTo("111111112");
             assertThat(response2.getPoolNumber()).isEqualTo("2222222223");
             assertThat(response2.getFirstName()).isEqualTo("FNAME2");
             assertThat(response2.getLastName()).isEqualTo("LNAME2");
             assertThat(response2.getPostCode()).isEqualTo("POSTCODE2");
-            assertThat(response2.getCompletionDate()).isEqualTo(LocalDate.of(2023,1,2));
+            assertThat(response2.getCompletionDate()).isEqualTo(LocalDate.of(2023, 1, 2));
 
-            CompleteJurorResponse response3 = responses.get(2);
+            CompleteJurorResponse response3 = data.get(2);
             assertThat(response3).isNotNull();
             assertThat(response3.getJurorNumber()).isEqualTo("111111113");
             assertThat(response3.getPoolNumber()).isEqualTo("2222222224");
             assertThat(response3.getFirstName()).isEqualTo("FNAME3");
             assertThat(response3.getLastName()).isEqualTo("LNAME3");
             assertThat(response3.getPostCode()).isEqualTo("POSTCODE3");
-            assertThat(response3.getCompletionDate()).isEqualTo(LocalDate.of(2023,1,3));
+            assertThat(response3.getCompletionDate()).isEqualTo(LocalDate.of(2023, 1, 3));
 
 
             verify(jurorPoolRepository, times(1))
-                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any());
-
-
+                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any(), any(), eq(500L));
         }
 
         @ParameterizedTest
         @NullSource
         @EmptySource
-        void negativePoolsNotFound(List<CompleteJurorResponse> response) {
+        void negativePoolsNotFound(List<CompleteJurorResponse> data) {
             JurorPoolSearch poolSearch = JurorPoolSearch.builder()
                 .jurorNumber("123")
                 .build();
@@ -725,9 +718,11 @@ class CompleteServiceServiceImplTest {
                 new BureauJwtAuthentication(List.of(),
                     TestUtils.createJwt("415", "COURT_USER", "0"))
             );
+            PaginatedList<CompleteJurorResponse> response = new PaginatedList<>();
+            response.setData(data);
             doReturn(response)
                 .when(jurorPoolRepository)
-                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any());
+                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any(), any(), eq(500L));
 
 
             MojException.NotFound exception = assertThrows(MojException.NotFound.class,
@@ -741,7 +736,7 @@ class CompleteServiceServiceImplTest {
 
 
             verify(jurorPoolRepository, times(1))
-                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any());
+                .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any(), any(), eq(500L));
 
         }
 

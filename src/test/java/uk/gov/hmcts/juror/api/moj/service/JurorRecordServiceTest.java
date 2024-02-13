@@ -498,6 +498,29 @@ class JurorRecordServiceTest {
 
     }
 
+    @Test
+    void testCheckJurorRecordDetailManuallyCreatedJuror() {
+        String jurorNumber = "641500094";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
+        Juror juror = jurorPool.getJuror();
+        juror.setWorkPhone("0543219876");
+
+        PendingJuror pendingJuror = new PendingJuror();
+        pendingJuror.setJurorNumber(jurorPool.getJurorNumber());
+        pendingJuror.setPoolNumber(jurorPool.getPoolNumber());
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
+        doReturn(Optional.of(pendingJuror)).when(pendingJurorRepository).findById(jurorPool.getJurorNumber());
+
+        JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
+            jurorNumber, LOC_CODE);
+
+        assertThat(jurorDetailsResponseDto.getCommonDetails().isManuallyCreated())
+            .as("Expect juror to be manually created")
+            .isEqualTo(true);
+    }
+
 
 
     @Test

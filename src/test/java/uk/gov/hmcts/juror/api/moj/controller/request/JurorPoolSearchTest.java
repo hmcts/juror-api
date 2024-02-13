@@ -1,11 +1,18 @@
 package uk.gov.hmcts.juror.api.moj.controller.request;
 
+import com.querydsl.core.types.dsl.ComparableExpressionBase;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
+
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SuppressWarnings({
-    "PMD.TooManyMethods",
-    "PMD.JUnitTestsShouldIncludeAssert" //False positive
+    "PMD.TooManyMethods"
 })
 class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
 
@@ -20,12 +27,12 @@ class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
 
     @Test
     void positiveJurorName() {
-        expectNoViolations(createValidObject());
+        assertExpectNoViolations(createValidObject());
     }
 
     @Test
     void negativeJurorNameHasJurorNumber() {
-        expectViolations(JurorPoolSearch.builder()
+        assertExpectViolations(JurorPoolSearch.builder()
                 .jurorName("BE")
                 .jurorNumber("123")
                 .pageNumber(1)
@@ -39,7 +46,7 @@ class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
 
     @Test
     void negativeJurorNameHasPostCode() {
-        expectViolations(JurorPoolSearch.builder()
+        assertExpectViolations(JurorPoolSearch.builder()
                 .jurorName("BE")
                 .postcode("CA")
                 .pageNumber(1)
@@ -54,7 +61,7 @@ class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
 
     @Test
     void positiveJurorNumber() {
-        expectNoViolations(JurorPoolSearch.builder()
+        assertExpectNoViolations(JurorPoolSearch.builder()
             .jurorNumber("123")
             .pageNumber(1)
             .pageLimit(25)
@@ -63,7 +70,7 @@ class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
 
     @Test
     void negativeJurorNumberHasPostCode() {
-        expectViolations(JurorPoolSearch.builder()
+        assertExpectViolations(JurorPoolSearch.builder()
                 .poolNumber("BE")
                 .jurorNumber("123")
                 .pageNumber(1)
@@ -77,7 +84,7 @@ class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
 
     @Test
     void positivePostCode() {
-        expectNoViolations(JurorPoolSearch.builder()
+        assertExpectNoViolations(JurorPoolSearch.builder()
             .postcode("CA")
             .pageNumber(1)
             .pageLimit(25)
@@ -86,7 +93,7 @@ class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
 
     @Test
     void positivePoolNumber() {
-        expectNoViolations(JurorPoolSearch.builder()
+        assertExpectNoViolations(JurorPoolSearch.builder()
             .poolNumber("123")
             .pageNumber(1)
             .pageLimit(25)
@@ -96,7 +103,7 @@ class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
 
     @Test
     void negativePoolNumberHasPostCode() {
-        expectViolations(JurorPoolSearch.builder()
+        assertExpectViolations(JurorPoolSearch.builder()
                 .postcode("BE")
                 .poolNumber("123")
                 .pageNumber(1)
@@ -110,7 +117,7 @@ class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
 
     @Test
     void negativePoolNumberHasJurorNumber() {
-        expectViolations(JurorPoolSearch.builder()
+        assertExpectViolations(JurorPoolSearch.builder()
                 .jurorNumber("12")
                 .poolNumber("123")
                 .pageNumber(1)
@@ -125,7 +132,7 @@ class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
 
     @Test
     void negativePoolNumberHasJurorName() {
-        expectViolations(JurorPoolSearch.builder()
+        assertExpectViolations(JurorPoolSearch.builder()
                 .jurorName("BE")
                 .poolNumber("123")
                 .pageNumber(1)
@@ -140,7 +147,7 @@ class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
 
     @Test
     void negativeEmptyPayload() {
-        expectViolations(JurorPoolSearch.builder()
+        assertExpectViolations(JurorPoolSearch.builder()
                 .pageNumber(1)
                 .pageLimit(25)
                 .build(),
@@ -152,7 +159,7 @@ class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
 
     @Test
     void negativePageNumberMin() {
-        expectViolations(JurorPoolSearch.builder()
+        assertExpectViolations(JurorPoolSearch.builder()
                 .jurorName("Name")
                 .pageNumber(0)
                 .pageLimit(25)
@@ -164,7 +171,7 @@ class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
 
     @Test
     void positivePageNumberMin() {
-        expectNoViolations(JurorPoolSearch.builder()
+        assertExpectNoViolations(JurorPoolSearch.builder()
             .jurorName("Name")
             .pageNumber(1)
             .pageLimit(25)
@@ -174,7 +181,7 @@ class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
 
     @Test
     void negativePageLimitMin() {
-        expectViolations(JurorPoolSearch.builder()
+        assertExpectViolations(JurorPoolSearch.builder()
                 .jurorName("Name")
                 .pageNumber(1)
                 .pageLimit(0)
@@ -186,11 +193,31 @@ class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
 
     @Test
     void positivePageLimitMin() {
-        expectNoViolations(JurorPoolSearch.builder()
+        assertExpectNoViolations(JurorPoolSearch.builder()
             .jurorName("Name")
             .pageNumber(1)
             .pageLimit(1)
             .build()
         );
+    }
+
+    @TestFactory
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+    Stream<DynamicTest> sortFieldTests() {
+        return Stream.of(
+            sortFieldTest(JurorPoolSearch.SortField.JUROR_NUMBER, QJuror.juror.jurorNumber),
+            sortFieldTest(JurorPoolSearch.SortField.FIRST_NAME, QJuror.juror.firstName),
+            sortFieldTest(JurorPoolSearch.SortField.LAST_NAME, QJuror.juror.lastName),
+            sortFieldTest(JurorPoolSearch.SortField.POSTCODE, QJuror.juror.postcode),
+            sortFieldTest(JurorPoolSearch.SortField.COMPLETION_DATE, QJuror.juror.completionDate)
+        );
+    }
+
+    DynamicTest sortFieldTest(JurorPoolSearch.SortField sortField, ComparableExpressionBase<?> expected) {
+        return DynamicTest.dynamicTest(sortField + " - Returns correct expression",
+            () -> {
+                assertThat(sortField).isNotNull();
+                assertThat(sortField.getComparableExpression()).isEqualTo(expected);
+            });
     }
 }

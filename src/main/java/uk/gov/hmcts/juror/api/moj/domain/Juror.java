@@ -24,12 +24,15 @@ import org.hibernate.envers.AuditOverride;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Set;
 
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER;
@@ -233,19 +236,23 @@ public class Juror extends Address implements Serializable {
 
     @Column(name = "amount_spent", precision = 8)
     @NotAudited
-    private Double amountSpent;
+    private BigDecimal amountSpent;
 
     @Column(name = "travel_time", precision = 5)
     @NotAudited
-    private Double travelTime;
+    private LocalTime travelTime;
 
     @Column(name = "financial_loss", precision = 8)
     @NotAudited
-    private Double financialLoss;
+    private BigDecimal financialLoss;
 
     @Column(name = "mileage")
     @NotAudited
     private Integer mileage;
+
+    @Column(name = "bureau_transfer_date")
+    @NotAudited
+    private LocalDate bureauTransferDate;
 
     @NotAudited
     @OneToMany(mappedBy = "juror", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)

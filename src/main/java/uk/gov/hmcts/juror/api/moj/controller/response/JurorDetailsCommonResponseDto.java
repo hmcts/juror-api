@@ -14,8 +14,10 @@ import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.PendingJuror;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -116,6 +118,9 @@ public class JurorDetailsCommonResponseDto {
     @Schema(description = "Pending Last Name", required = true)
     private String pendingLastName;
 
+    @Schema(description = "check for juror manually created")
+    private boolean manuallyCreated;
+
     /**
      * Initialise an instance of this DTO class using a JurorPool object to populate its properties.
      *
@@ -124,7 +129,8 @@ public class JurorDetailsCommonResponseDto {
     @Autowired
     public JurorDetailsCommonResponseDto(JurorPool jurorPool,
                                          JurorStatusRepository jurorStatusRepository,
-                                         ResponseExcusalService responseExcusalService) {
+                                         ResponseExcusalService responseExcusalService,
+                                         PendingJurorRepository pendingJurorRepository) {
         Juror juror = jurorPool.getJuror();
 
         this.owner = jurorPool.getOwner();
@@ -162,6 +168,8 @@ public class JurorDetailsCommonResponseDto {
 
         this.policeCheck = PoliceCheck.getDescription(juror.getPoliceCheck());
         setPendingNameChange(juror);
+
+        this.manuallyCreated = pendingJurorRepository.findById(jurorPool.getJurorNumber()).isPresent();
     }
 
     private void setPendingNameChange(Juror juror) {

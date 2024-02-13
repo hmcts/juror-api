@@ -22,8 +22,7 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.moj.controller.request.DefaultExpenseSummaryDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.ViewExpenseRequest;
+import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseItemsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.GetEnteredExpenseRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
@@ -32,19 +31,17 @@ import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseF
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseFoodAndDrink;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseTime;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseTravel;
-import uk.gov.hmcts.juror.api.moj.controller.response.expense.BulkExpenseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.expense.BulkExpenseEntryDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.DefaultExpenseResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.DailyExpenseResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.FinancialLossWarning;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseResponse;
-import uk.gov.hmcts.juror.api.moj.controller.response.expense.TotalExpenseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.AppearanceId;
+import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.FoodDrinkClaimType;
 import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
-import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.TravelMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
@@ -54,6 +51,7 @@ import uk.gov.hmcts.juror.api.utils.CustomPageImpl;
 
 import java.math.BigDecimal;
 import java.net.URI;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -65,7 +63,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.http.HttpMethod.GET;
@@ -86,6 +83,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     private static final String MIN_DATE = "?min_date=";
     private static final String URL_UNPAID_SUMMARY = "/api/v1/moj/expenses/unpaid-summary/";
     private static final String URL_DEFAULT_SUMMARY = "/api/v1/moj/expenses/default-summary/";
+
+    private static final String URL_SET_DEFAULT_EXPENSES = "/api/v1/moj/expenses/set-default-expenses/";
     public static final String BASE_URL = "/api/v1/moj/expenses";
 
     private final TestRestTemplate template;
@@ -93,6 +92,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     private final CourtLocationRepository courtLocationRepository;
 
     private HttpHeaders httpHeaders;
+
+    @Autowired
+    private Clock clock;
 
     @Override
     @BeforeEach
@@ -121,6 +123,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             ResponseEntity<CustomPageImpl<Void>> response = template.exchange(new RequestEntity<>(httpHeaders, GET,
                 uri), new ParameterizedTypeReference<>() {
             });
+
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
             CustomPageImpl<Void> responseBody = response.getBody();
@@ -170,6 +173,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             ResponseEntity<CustomPageImpl<Void>> response = template.exchange(new RequestEntity<>(httpHeaders, GET,
                 uri), new ParameterizedTypeReference<>() {
             });
+
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
             CustomPageImpl<Void> responseBody = response.getBody();
@@ -259,11 +263,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("GET /api/v1/moj/expenses/default-summary")
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp_default_expenses.sql"})
-    class SetDefaultExpenses {
+    class GetDefaultExpenses {
 
         @Test
         @DisplayName("200 Ok - Happy Path")
-        void setDefaultExpensesHappyPath() throws Exception {
+        void getDefaultExpensesHappyPath() throws Exception {
             final String jurorNumber = "641500020";
             final String courtLocation = "415";
             final String jwt = createBureauJwt(COURT_USER, courtLocation);
@@ -271,27 +275,27 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            DefaultExpenseSummaryDto dto = new DefaultExpenseSummaryDto();
+            DefaultExpenseResponseDto dto = new DefaultExpenseResponseDto();
             dto.setJurorNumber(jurorNumber);
             dto.setSmartCardNumber("12345678");
-            dto.setTotalSmartCardSpend(40.0);
-            dto.setFinancialLoss(0.0);
+            dto.setTotalSmartCardSpend(BigDecimal.valueOf(40.0));
+            dto.setFinancialLoss(BigDecimal.valueOf(0.0));
             dto.setDistanceTraveledMiles(6);
             dto.setTravelTime(LocalTime.of(4, 30));
 
-            RequestEntity<DefaultExpenseSummaryDto> request = new RequestEntity<>(
-                DefaultExpenseSummaryDto.builder()
+            RequestEntity<DefaultExpenseResponseDto> request = new RequestEntity<>(
+                DefaultExpenseResponseDto.builder()
                     .jurorNumber(jurorNumber)
-                    .totalSmartCardSpend(40.0)
+                    .totalSmartCardSpend(BigDecimal.valueOf(40.0))
                     .travelTime(LocalTime.of(4, 30))
                     .distanceTraveledMiles(6)
-                    .financialLoss(0.0)
+                    .financialLoss(BigDecimal.valueOf(0.0))
                     .build(), httpHeaders,
                 GET, uri);
-            ResponseEntity<DefaultExpenseSummaryDto> response =
-                template.exchange(request, DefaultExpenseSummaryDto.class);
+            ResponseEntity<DefaultExpenseResponseDto> response =
+                template.exchange(request, DefaultExpenseResponseDto.class);
 
-            DefaultExpenseSummaryDto responseBody = response.getBody();
+            DefaultExpenseResponseDto responseBody = response.getBody();
             assertNotNull(responseBody, "Response must be present");
 
         }
@@ -304,8 +308,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            RequestEntity<Void> request = new RequestEntity<>(httpHeaders, GET, uri);
-            ResponseEntity<Object> response = template.exchange(request, Object.class);
+            RequestEntity<DefaultExpenseResponseDto> request = new RequestEntity<>(httpHeaders, GET, uri);
+            ResponseEntity<DefaultExpenseResponseDto> response = template.exchange(request,
+                DefaultExpenseResponseDto.class);
 
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -313,596 +318,64 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("GET /api/v1/moj/expenses/{juror_number}/{identifier}")
-    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_bulkExpenseSetUp.sql"})
-    class GetBulkExpense {
-        private static final URI VIEW_EXPENSE_URI = URI.create("/api/v1/moj/expenses");
+    @DisplayName("POST /api/v1/moj/expenses/set-default-expenses/{juror_number}")
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp_default_expenses.sql"})
+    class SetDefaultExpenses {
 
         private BigDecimal createBigDecimal(double value) {
             return new BigDecimal(String.format("%.2f", value));
         }
 
-        @Nested
-        @DisplayName("Negative")
-        @SuppressWarnings("PMD.TooManyMethods")
-        class Negative {
-            private ResponseEntity<String> triggerInvalid(ViewExpenseRequest request) throws Exception {
-                return triggerInvalid(List.of(request));
-            }
+        @Test
+        @DisplayName("200 Ok - Happy Path Not Override Draft Expenses")
+        void setDefaultExpensesHappyPathNotOverride() throws Exception {
+            String jurorNumber = "641500020";
+            final String courtLocation = "415";
+            final String jwt = createBureauJwt(COURT_USER, courtLocation);
 
-            private ResponseEntity<String> triggerInvalid(List<ViewExpenseRequest> request) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, "415");
-                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-                return template.exchange(
-                    new RequestEntity<>(request, httpHeaders, GET, VIEW_EXPENSE_URI),
-                    String.class);
-            }
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            @Test
-            @DisplayName("No appearances")
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-            void noAppearances() throws Exception {
-                ViewExpenseRequest request = createRequest("641500021", "415230101");
-                validateNotFound(triggerInvalid(request), VIEW_EXPENSE_URI.getPath(), "No appearances found");
-            }
+            RequestDefaultExpensesDto payload = new RequestDefaultExpensesDto();
+            payload.setJurorNumber(jurorNumber);
+            payload.setTotalSmartCardSpend(createBigDecimal(50.0));
+            payload.setSmartCardNumber("123456789");
+            payload.setFinancialLoss(createBigDecimal(0.00));
+            payload.setTravelTime(LocalTime.of(0, 40));
+            payload.setDistanceTraveledMiles(2);
+            payload.setOverwriteExistingDraftExpenses(false);
 
-            @Test
-            @DisplayName("Invalid appearances stage")
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-            void invalidAppearanceStage() throws Exception {
-                ViewExpenseRequest request = createRequest("641500022", "415230101");
-                validateInternalServerErrorViolation(triggerInvalid(request), VIEW_EXPENSE_URI.getPath(),
-                    "Invalid appearance stage type: APPEARANCE_CONFIRMED");
-            }
+            RequestEntity<RequestDefaultExpensesDto> request = new RequestEntity<>(payload, httpHeaders, POST,
+                URI.create(URL_SET_DEFAULT_EXPENSES + jurorNumber));
+            ResponseEntity<Void> response = template.exchange(request, Void.class);
 
-            @Test
-            @DisplayName("Invalid juror number")
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-            void invalidJurorNumber() throws Exception {
-                ViewExpenseRequest request = createRequest("64150002", "415230101");
-                validateInvalidPathParam(triggerInvalid(request),
-                    "getBulkExpense.request[0].jurorNumber: must match \"^\\d{9}$\"");
-            }
-
-            @Test
-            @DisplayName("Invalid pool number")
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-            void invalidPoolNumber() throws Exception {
-                ViewExpenseRequest request = createRequest("641500020", "41523010");
-                validateInvalidPathParam(triggerInvalid(request),
-                    "getBulkExpense.request[0].identifier: must match \"^F\\d+$|^\\d{9}$\"");
-            }
-
-            @Test
-            @DisplayName("Invalid Audit number")
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-            void invalidAuditNumber() throws Exception {
-                ViewExpenseRequest request = createRequest("641500020", "FABC");
-                validateInvalidPathParam(triggerInvalid(request),
-                    "getBulkExpense.request[0].identifier: must match \"^F\\d+$|^\\d{9}$\"");
-            }
-
-            @Test
-            @DisplayName("Unauthorised - none court user")
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-            void unauthorisedNoneCourtUser() throws Exception {
-                List<ViewExpenseRequest> request = List.of(createRequest("641500020", "415230101"));
-                final String jwt = createBureauJwt(COURT_USER, "400");
-                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-                validateForbiddenResponse(template.exchange(
-                        new RequestEntity<>(request, httpHeaders, GET, VIEW_EXPENSE_URI), String.class),
-                    VIEW_EXPENSE_URI.getPath());
-            }
-
-            @Test
-            @DisplayName("Empty request body")
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-            void emptyRequest() throws Exception {
-                validateInvalidPathParam(triggerInvalid(List.of()),
-                    "getBulkExpense.request: size must be between 1 and 20");
-            }
-
-            @Test
-            @DisplayName("Request body with null")
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-            void requestWithNullItem() throws Exception {
-                List<ViewExpenseRequest> request = new ArrayList<>();
-                request.add(null);
-                validateInvalidPathParam(triggerInvalid(request),
-                    "getBulkExpense.request[0].<list element>: must not be null");
-            }
-
-            @Test
-            @DisplayName("Request has too many items")
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-            void tooManyItems() throws Exception {
-                List<ViewExpenseRequest> request = new ArrayList<>();
-                final int maxRequests = 20;
-                for (int index = 0; index < maxRequests + 1; index++) {
-                    request.add(ViewExpenseRequest.builder()
-                        .jurorNumber(String.valueOf(100_000_000 + index))
-                        .identifier("123456789")
-                        .build());
-                }
-
-                validateInvalidPathParam(triggerInvalid(request),
-                    "getBulkExpense.request: size must be between 1 and 20");
-            }
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         }
 
-        private ViewExpenseRequest createRequest(String jurorNumber, String identifier) {
-            return ViewExpenseRequest
-                .builder()
-                .jurorNumber(jurorNumber)
-                .identifier(identifier)
-                .build();
+        @Test
+        @DisplayName("200 Ok - Happy Path Override Draft Expenses")
+        void setDefaultExpensesHappyPathIsOverride() throws Exception {
+            String jurorNumber = "641500020";
+            final String courtLocation = "415";
+            final String jwt = createBureauJwt(COURT_USER, courtLocation);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+
+            RequestDefaultExpensesDto payload = new RequestDefaultExpensesDto();
+            payload.setJurorNumber(jurorNumber);
+            payload.setTotalSmartCardSpend(createBigDecimal(50.0));
+            payload.setSmartCardNumber("123456789");
+            payload.setFinancialLoss(createBigDecimal(0.00));
+            payload.setTravelTime(LocalTime.of(0, 40));
+            payload.setDistanceTraveledMiles(2);
+            payload.setOverwriteExistingDraftExpenses(true);
+
+            RequestEntity<RequestDefaultExpensesDto> request = new RequestEntity<>(payload, httpHeaders, POST,
+                URI.create(URL_SET_DEFAULT_EXPENSES + jurorNumber));
+            ResponseEntity<Void> response = template.exchange(request, Void.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         }
 
-        @Nested
-        @DisplayName("Positive")
-        class Positive {
-            private ResponseEntity<BulkExpenseDto[]> triggerValid(List<ViewExpenseRequest> request) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, "415");
-                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-                ResponseEntity<BulkExpenseDto[]> response = template.exchange(
-                    new RequestEntity<>(request, httpHeaders, GET, VIEW_EXPENSE_URI), BulkExpenseDto[].class);
-                assertThat(response.getStatusCode())
-                    .as("Expect the HTTP GET request to be successful")
-                    .isEqualTo(HttpStatus.OK);
-                return response;
-            }
-
-            private ResponseEntity<BulkExpenseDto[]> triggerValid(String jurorNumber,
-                                                                  String identifier) throws Exception {
-                return triggerValid(List.of(ViewExpenseRequest.builder()
-                    .jurorNumber(jurorNumber)
-                    .identifier(identifier)
-                    .build()));
-            }
-
-
-            @Test
-            @DisplayName("Get Draft Expenses (Pool Number)")
-            @SuppressWarnings("PMD.LinguisticNaming")
-            void getDraftExpensesTest() throws Exception {
-                ResponseEntity<BulkExpenseDto[]> response = triggerValid("641500020", "415230101");
-                BulkExpenseDto[] responseBody = response.getBody();
-                assertNotNull(responseBody, "Response must be present");
-                BulkExpenseDto expected = getDraftExpensesExpected();
-                assertArrayEquals(new BulkExpenseDto[]{expected}, responseBody,
-                    "Expect the response body to match the expected value");
-            }
-
-            @Test
-            @DisplayName("Positive - Get For Approval Expenses (Audit Number)")
-            @SuppressWarnings("PMD.LinguisticNaming")
-            void getForApprovalExpensesTest() throws Exception {
-                ResponseEntity<BulkExpenseDto[]> response = triggerValid("641500020", "F123");
-                BulkExpenseDto[] responseBody = response.getBody();
-                assertNotNull(responseBody, "Response must be present");
-                BulkExpenseDto expected = getForApprovalExpensesExpected();
-
-                assertArrayEquals(new BulkExpenseDto[]{expected}, responseBody,
-                    "Expect the response body to match the expected value");
-            }
-
-
-            @Test
-            @DisplayName("Positive - Get Approved Expenses (Audit Number)")
-            @SuppressWarnings("PMD.LinguisticNaming")
-            void getApprovedExpensesTest() throws Exception {
-                ResponseEntity<BulkExpenseDto[]> response = triggerValid("641500020", "F321");
-                BulkExpenseDto[] responseBody = response.getBody();
-                assertNotNull(responseBody, "Response must be present");
-                BulkExpenseDto expected = getApprovedExpensesExpected();
-                assertArrayEquals(new BulkExpenseDto[]{expected}, responseBody,
-                    "Expect the response body to match the expected value");
-            }
-
-            @Test
-            @DisplayName("Positive - Get Edited Expenses (Audit Number)")
-            @SuppressWarnings("PMD.LinguisticNaming")
-            void getEditedExpensesTest() throws Exception {
-                ResponseEntity<BulkExpenseDto[]> response = triggerValid("641500020", "F12345");
-                BulkExpenseDto[] responseBody = response.getBody();
-                assertNotNull(responseBody, "Response must be present");
-                BulkExpenseDto expected = getEditedExpensesExpected();
-                assertArrayEquals(new BulkExpenseDto[]{expected}, responseBody,
-                    "Expect the response body to match the expected value");
-            }
-
-            @Test
-            @DisplayName("Positive - Get Expenses Multiple")
-            @SuppressWarnings("PMD.LinguisticNaming")
-            void getMultipleExpensesTest() throws Exception {
-                ResponseEntity<BulkExpenseDto[]> response =
-                    triggerValid(List.of(
-                            //Draft
-                            ViewExpenseRequest.builder()
-                                .jurorNumber("641500020")
-                                .identifier("415230101")
-                                .build(),
-                            //For approval
-                            ViewExpenseRequest.builder()
-                                .jurorNumber("641500020")
-                                .identifier("F123")
-                                .build(),
-                            //Approved
-                            ViewExpenseRequest.builder()
-                                .jurorNumber("641500020")
-                                .identifier("F321")
-                                .build(),
-                            //Edited
-                            ViewExpenseRequest.builder()
-                                .jurorNumber("641500020")
-                                .identifier("F12345")
-                                .build()
-                        )
-                    );
-
-                BulkExpenseDto[] responseBody = response.getBody();
-                assertNotNull(responseBody, "Response must be present");
-                assertArrayEquals(new BulkExpenseDto[]{
-                        getDraftExpensesExpected(),
-                        getForApprovalExpensesExpected(),
-                        getApprovedExpensesExpected(),
-                        getEditedExpensesExpected()
-                    }, responseBody,
-                    "Expect the response body to match the expected value");
-            }
-
-            private BulkExpenseDto getDraftExpensesExpected() {
-                return BulkExpenseDto.builder()
-                    .jurorNumber("641500020")
-                    .jurorVersion(null)//Always null unless approved
-                    .submittedOn(null)
-                    .submittedBy(null)
-                    .approvedOn(null)
-                    .approvedBy(null)
-                    .type(AppearanceStage.EXPENSE_ENTERED)
-                    .mileage(2)
-                    .expenses(List.of(
-                        BulkExpenseEntryDto.builder()
-                            .appearanceDate(LocalDate.of(2023, 1, 5))
-                            .attendanceType(AttendanceType.FULL_DAY)
-                            .paymentMethod(PaymentMethod.BACS)
-                            .originalValue(null)
-                            .publicTransport(createBigDecimal(10.00))
-                            .taxi(createBigDecimal(20.00))
-                            .motorcycle(createBigDecimal(30.00))
-                            .car(createBigDecimal(40.00))
-                            .bicycle(createBigDecimal(50.00))
-                            .parking(createBigDecimal(60.00))
-                            .extraCare(createBigDecimal(70.00))
-                            .other(createBigDecimal(80.00))
-                            .lossOfEarnings(createBigDecimal(90.00))
-                            .foodAndDrink(createBigDecimal(100.00))
-                            .smartCard(createBigDecimal(25.00))
-                            .build(),
-                        BulkExpenseEntryDto.builder()
-                            .appearanceDate(LocalDate.of(2023, 1, 6))
-                            .attendanceType(AttendanceType.FULL_DAY)
-                            .paymentMethod(PaymentMethod.CASH)
-                            .originalValue(null)
-                            .publicTransport(createBigDecimal(11.00))
-                            .taxi(createBigDecimal(21.00))
-                            .motorcycle(createBigDecimal(31.00))
-                            .car(createBigDecimal(41.00))
-                            .bicycle(createBigDecimal(51.00))
-                            .parking(createBigDecimal(61.00))
-                            .extraCare(createBigDecimal(71.00))
-                            .other(createBigDecimal(81.00))
-                            .lossOfEarnings(createBigDecimal(91.00))
-                            .foodAndDrink(createBigDecimal(101.00))
-                            .smartCard(createBigDecimal(26.00))
-                            .build(),
-                        BulkExpenseEntryDto.builder()
-                            .appearanceDate(LocalDate.of(2023, 1, 7))
-                            .attendanceType(AttendanceType.HALF_DAY)
-                            .paymentMethod(PaymentMethod.BACS)
-                            .originalValue(null)
-                            .publicTransport(createBigDecimal(12.00))
-                            .taxi(createBigDecimal(22.00))
-                            .motorcycle(createBigDecimal(32.00))
-                            .car(createBigDecimal(42.00))
-                            .bicycle(createBigDecimal(52.00))
-                            .parking(createBigDecimal(62.00))
-                            .extraCare(createBigDecimal(72.00))
-                            .other(createBigDecimal(82.00))
-                            .lossOfEarnings(createBigDecimal(92.00))
-                            .foodAndDrink(createBigDecimal(102.00))
-                            .smartCard(createBigDecimal(27.00))
-                            .build()
-                    ))
-                    .totals(TotalExpenseDto.builder()
-                        .totalAmount(createBigDecimal(1602.00))
-                        .totalAmountPaidToDate(createBigDecimal(0.00))
-                        .balanceToPay(createBigDecimal(1602.00))
-                        .totalDays(3)
-
-                        .publicTransport(createBigDecimal(33.00))
-                        .taxi(createBigDecimal(63.00))
-                        .motorcycle(createBigDecimal(93.00))
-                        .car(createBigDecimal(123.00))
-                        .bicycle(createBigDecimal(153.00))
-                        .parking(createBigDecimal(183.00))
-                        .extraCare(createBigDecimal(213.00))
-                        .other(createBigDecimal(243.00))
-                        .lossOfEarnings(createBigDecimal(273.00))
-                        .foodAndDrink(createBigDecimal(303.00))
-                        .smartCard(createBigDecimal(78.00))
-                        .build())
-                    .build();
-            }
-
-            private BulkExpenseDto getForApprovalExpensesExpected() {
-                return BulkExpenseDto.builder()
-                    .jurorNumber("641500020")
-                    .jurorVersion(null)//Always null draft/for approval
-                    .approvedBy(null)
-                    .approvedOn(null)
-                    .submittedBy("smcintyre")
-                    .submittedOn(LocalDateTime.of(2024, 1, 9, 10, 0, 0))
-                    .type(AppearanceStage.EXPENSE_ENTERED)
-                    .mileage(2)
-                    .expenses(List.of(
-                        BulkExpenseEntryDto.builder()
-                            .appearanceDate(LocalDate.of(2023, 1, 8))
-                            .attendanceType(AttendanceType.FULL_DAY)
-                            .paymentMethod(PaymentMethod.BACS)
-                            .originalValue(null)
-                            .publicTransport(createBigDecimal(13.97))
-                            .taxi(createBigDecimal(23.00))
-                            .motorcycle(createBigDecimal(33.00))
-                            .car(createBigDecimal(43.00))
-                            .bicycle(createBigDecimal(53.00))
-                            .parking(createBigDecimal(63.00))
-                            .extraCare(createBigDecimal(73.00))
-                            .other(createBigDecimal(83.00))
-                            .lossOfEarnings(createBigDecimal(93.00))
-                            .foodAndDrink(createBigDecimal(103.00))
-                            .smartCard(createBigDecimal(28.00))
-                            .build(),
-                        BulkExpenseEntryDto.builder()
-                            .appearanceDate(LocalDate.of(2023, 1, 9))
-                            .attendanceType(AttendanceType.FULL_DAY)
-                            .paymentMethod(PaymentMethod.BACS)
-                            .originalValue(null)
-                            .publicTransport(createBigDecimal(14.01))
-                            .taxi(createBigDecimal(24.00))
-                            .motorcycle(createBigDecimal(34.00))
-                            .car(createBigDecimal(44.00))
-                            .bicycle(createBigDecimal(54.00))
-                            .parking(createBigDecimal(64.00))
-                            .extraCare(createBigDecimal(74.00))
-                            .other(createBigDecimal(84.00))
-                            .lossOfEarnings(createBigDecimal(94.00))
-                            .foodAndDrink(createBigDecimal(104.00))
-                            .smartCard(createBigDecimal(29.00))
-                            .build(),
-                        BulkExpenseEntryDto.builder()
-                            .appearanceDate(LocalDate.of(2023, 1, 10))
-                            .attendanceType(AttendanceType.FULL_DAY)
-                            .paymentMethod(PaymentMethod.BACS)
-                            .originalValue(null)
-                            .publicTransport(createBigDecimal(15.00))
-                            .taxi(createBigDecimal(25.00))
-                            .motorcycle(createBigDecimal(35.00))
-                            .car(createBigDecimal(45.00))
-                            .bicycle(createBigDecimal(55.00))
-                            .parking(createBigDecimal(65.00))
-                            .extraCare(createBigDecimal(75.00))
-                            .other(createBigDecimal(85.00))
-                            .lossOfEarnings(createBigDecimal(95.00))
-                            .foodAndDrink(createBigDecimal(105.00))
-                            .smartCard(createBigDecimal(30.00))
-                            .build()
-                    ))
-                    .totals(TotalExpenseDto.builder()
-                        .totalAmount(createBigDecimal(1683.98))
-                        .totalAmountPaidToDate(createBigDecimal(0.00))
-                        .balanceToPay(createBigDecimal(1683.98))
-                        .totalDays(3)
-
-                        .publicTransport(createBigDecimal(42.98))
-                        .taxi(createBigDecimal(72.00))
-                        .motorcycle(createBigDecimal(102.00))
-                        .car(createBigDecimal(132.00))
-                        .bicycle(createBigDecimal(162.00))
-                        .parking(createBigDecimal(192.00))
-                        .extraCare(createBigDecimal(222.00))
-                        .other(createBigDecimal(252.00))
-                        .lossOfEarnings(createBigDecimal(282.00))
-                        .foodAndDrink(createBigDecimal(312.00))
-                        .smartCard(createBigDecimal(87))
-                        .build())
-                    .build();
-            }
-
-            private BulkExpenseDto getApprovedExpensesExpected() {
-                return BulkExpenseDto.builder()
-                    .jurorNumber("641500020")
-                    .jurorVersion(3L)
-                    .approvedBy("alineweaver")
-                    .approvedOn(LocalDateTime.of(2024, 1, 10, 12, 0, 0))
-                    .submittedBy("sbell")
-                    .submittedOn(LocalDateTime.of(2024, 1, 9, 11, 11, 11))
-                    .type(AppearanceStage.EXPENSE_AUTHORISED)
-                    .mileage(2)
-                    .expenses(List.of(
-                        BulkExpenseEntryDto.builder()
-                            .appearanceDate(LocalDate.of(2023, 1, 11))
-                            .attendanceType(AttendanceType.FULL_DAY)
-                            .paymentMethod(PaymentMethod.BACS)
-                            .originalValue(null)
-                            .publicTransport(createBigDecimal(103.00))
-                            .taxi(createBigDecimal(93.00))
-                            .motorcycle(createBigDecimal(83.00))
-                            .car(createBigDecimal(73.00))
-                            .bicycle(createBigDecimal(63.00))
-                            .parking(createBigDecimal(53.00))
-                            .extraCare(createBigDecimal(43.00))
-                            .other(createBigDecimal(33.00))
-                            .lossOfEarnings(createBigDecimal(23.00))
-                            .foodAndDrink(createBigDecimal(13.00))
-                            .smartCard(createBigDecimal(28.00))
-                            .build(),
-                        BulkExpenseEntryDto.builder()
-                            .appearanceDate(LocalDate.of(2023, 1, 12))
-                            .attendanceType(AttendanceType.FULL_DAY)
-                            .paymentMethod(PaymentMethod.BACS)
-                            .originalValue(null)
-                            .publicTransport(createBigDecimal(104.00))
-                            .taxi(createBigDecimal(94.00))
-                            .motorcycle(createBigDecimal(84.00))
-                            .car(createBigDecimal(74.00))
-                            .bicycle(createBigDecimal(64.00))
-                            .parking(createBigDecimal(54.00))
-                            .extraCare(createBigDecimal(44.00))
-                            .other(createBigDecimal(34.00))
-                            .lossOfEarnings(createBigDecimal(24.00))
-                            .foodAndDrink(createBigDecimal(14.00))
-                            .smartCard(createBigDecimal(29.00))
-                            .build(),
-                        BulkExpenseEntryDto.builder()
-                            .appearanceDate(LocalDate.of(2023, 1, 13))
-                            .attendanceType(AttendanceType.FULL_DAY)
-                            .paymentMethod(PaymentMethod.BACS)
-                            .originalValue(null)
-                            .publicTransport(createBigDecimal(105.00))
-                            .taxi(createBigDecimal(95.00))
-                            .motorcycle(createBigDecimal(85.00))
-                            .car(createBigDecimal(75.00))
-                            .bicycle(createBigDecimal(65.00))
-                            .parking(createBigDecimal(55.00))
-                            .extraCare(createBigDecimal(45.00))
-                            .other(createBigDecimal(35.00))
-                            .lossOfEarnings(createBigDecimal(25.00))
-                            .foodAndDrink(createBigDecimal(15.00))
-                            .smartCard(createBigDecimal(30.00))
-                            .build()
-                    ))
-                    .totals(TotalExpenseDto.builder()
-                        .totalAmount(createBigDecimal(1683.00))
-                        .totalAmountPaidToDate(createBigDecimal(1683.00))
-                        .balanceToPay(createBigDecimal(0.00))
-                        .totalDays(3)
-
-                        .publicTransport(createBigDecimal(312.00))
-                        .taxi(createBigDecimal(282.00))
-                        .motorcycle(createBigDecimal(252.00))
-                        .car(createBigDecimal(222.00))
-                        .bicycle(createBigDecimal(192.00))
-                        .parking(createBigDecimal(162.00))
-                        .extraCare(createBigDecimal(132.00))
-                        .other(createBigDecimal(102.00))
-                        .lossOfEarnings(createBigDecimal(72.00))
-                        .foodAndDrink(createBigDecimal(42.00))
-                        .smartCard(createBigDecimal(87.00))
-                        .build())
-                    .build();
-            }
-
-            private BulkExpenseDto getEditedExpensesExpected() {
-                return BulkExpenseDto.builder()
-                    .jurorNumber("641500020")
-                    .jurorVersion(null)//Always null when not approved
-                    .approvedBy("alineweaver")
-                    .approvedOn(LocalDateTime.of(2024, 1, 10, 12, 0, 1))
-                    .submittedBy("sbell")
-                    .submittedOn(LocalDateTime.of(2024, 1, 9, 12, 12, 12))
-                    .type(AppearanceStage.EXPENSE_EDITED)
-                    .mileage(2)
-                    .expenses(List.of(
-                        BulkExpenseEntryDto.builder()
-                            .appearanceDate(LocalDate.of(2023, 1, 14))
-                            .attendanceType(AttendanceType.FULL_DAY)
-                            .paymentMethod(PaymentMethod.BACS)
-                            .originalValue(null)
-                            .publicTransport(createBigDecimal(103.00))
-                            .taxi(createBigDecimal(93.00))
-                            .motorcycle(createBigDecimal(83.00))
-                            .car(createBigDecimal(73.00))
-                            .bicycle(createBigDecimal(63.00))
-                            .parking(createBigDecimal(53.00))
-                            .extraCare(createBigDecimal(43.00))
-                            .other(createBigDecimal(33.00))
-                            .lossOfEarnings(createBigDecimal(23.00))
-                            .foodAndDrink(createBigDecimal(13.00))
-                            .smartCard(createBigDecimal(28.00))
-                            .build(),
-                        BulkExpenseEntryDto.builder()
-                            .appearanceDate(LocalDate.of(2023, 1, 15))
-                            .attendanceType(AttendanceType.FULL_DAY)
-                            .paymentMethod(PaymentMethod.BACS)
-                            .originalValue(BulkExpenseEntryDto.builder()
-                                .appearanceDate(LocalDate.of(2023, 1, 15))
-                                .attendanceType(AttendanceType.FULL_DAY)
-                                .paymentMethod(PaymentMethod.BACS)
-                                .publicTransport(createBigDecimal(104))
-                                .taxi(createBigDecimal(94.00))
-                                .motorcycle(createBigDecimal(84.00))
-                                .car(createBigDecimal(74.00))
-                                .bicycle(createBigDecimal(64.00))
-                                .parking(createBigDecimal(54.00))
-                                .extraCare(createBigDecimal(44))
-                                .other(createBigDecimal(34))
-                                .lossOfEarnings(createBigDecimal(24))
-                                .foodAndDrink(createBigDecimal(14))
-                                .smartCard(createBigDecimal(29))
-                                .build()
-                            )
-                            .publicTransport(createBigDecimal(134))
-                            .taxi(createBigDecimal(98))
-                            .motorcycle(createBigDecimal(95))
-                            .car(createBigDecimal(74))
-                            .bicycle(createBigDecimal(83.45))
-                            .parking(createBigDecimal(67.00))
-                            .extraCare(createBigDecimal(44.44))
-                            .other(createBigDecimal(36.03))
-                            .lossOfEarnings(createBigDecimal(24.01))
-                            .foodAndDrink(createBigDecimal(17.93))
-                            .smartCard(createBigDecimal(29))
-                            .build(),
-                        BulkExpenseEntryDto.builder()
-                            .appearanceDate(LocalDate.of(2023, 1, 16))
-                            .attendanceType(AttendanceType.FULL_DAY)
-                            .paymentMethod(PaymentMethod.BACS)
-                            .originalValue(null)
-                            .publicTransport(createBigDecimal(105.00))
-                            .taxi(createBigDecimal(95.00))
-                            .motorcycle(createBigDecimal(85.00))
-                            .car(createBigDecimal(75.00))
-                            .bicycle(createBigDecimal(65.00))
-                            .parking(createBigDecimal(55.00))
-                            .extraCare(createBigDecimal(45.00))
-                            .other(createBigDecimal(35.00))
-                            .lossOfEarnings(createBigDecimal(25.00))
-                            .foodAndDrink(createBigDecimal(15.00))
-                            .smartCard(createBigDecimal(30.00))
-                            .build()
-                    ))
-                    .totals(TotalExpenseDto.builder()
-                        .totalAmount(createBigDecimal(1766.86))
-                        .totalAmountPaidToDate(createBigDecimal(1683.00))
-                        .balanceToPay(createBigDecimal(83.86))
-                        .totalDays(3)
-
-                        .publicTransport(createBigDecimal(342.00))
-                        .taxi(createBigDecimal(286.00))
-                        .motorcycle(createBigDecimal(263.00))
-                        .car(createBigDecimal(222.00))
-                        .bicycle(createBigDecimal(211.45))
-                        .parking(createBigDecimal(175.00))
-                        .extraCare(createBigDecimal(132.44))
-                        .other(createBigDecimal(104.03))
-                        .lossOfEarnings(createBigDecimal(72.01))
-                        .foodAndDrink(createBigDecimal(45.93))
-                        .smartCard(createBigDecimal(87.00))
-                        .build())
-                    .build();
-            }
-        }
     }
 
     @SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
@@ -1003,9 +476,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert" //False positive
-            })
             void invalidJurorNumber() throws Exception {
                 final String jurorNumber = "INVALID";
                 DailyExpense request = DailyExpense.builder()
@@ -1021,14 +491,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     .build();
 
                 ResponseEntity<String> response = triggerInvalid(jurorNumber, request);
-                validateInvalidPathParam(response,
+                assertInvalidPathParam(response,
                     methodName + ".jurorNumber: must match \"^\\d{9}$\"");
             }
 
             @Test
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert" //False positive
-            })
             void noAttendancesFound() throws Exception {
                 final String jurorNumber = "123456789";
                 DailyExpense request = DailyExpense.builder()
@@ -1044,7 +511,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     .build();
 
                 ResponseEntity<String> response = triggerInvalid(jurorNumber, request);
-                validateNotFound(response, toUrl(jurorNumber),
+                assertNotFound(response, toUrl(jurorNumber),
                     "No draft appearance record found for juror: 123456789 on day: 2023-01-05");
             }
         }
@@ -1086,9 +553,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         class Negative extends AbstractDraftDailyExpense.Negative {
 
             @Test
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert" //False positive
-            })
             void negativeExpenseTotal() throws Exception {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
@@ -1103,15 +567,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         createDailyExpenseFoodAndDrink(FoodDrinkClaimType.LESS_THAN_1O_HOURS, 10.72)
                     )
                     .build();
-                validateBusinessRuleViolation(triggerInvalid(jurorNumber, request),
+                assertBusinessRuleViolation(triggerInvalid(jurorNumber, request),
                     "Total expenses cannot be less than £0. For Day "
                         + "2023-01-05", MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO);
             }
 
             @Test
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert" //False positive
-            })
             void applyToAllWith0Expense() throws Exception {
                 final String jurorNumber = "641500022";
                 DailyExpense request = DailyExpense.builder()
@@ -1125,7 +586,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     .financialLoss(createDailyExpenseFinancialLoss(0.00, 5.00, 5.00, "Desc"))
                     .applyToAllDays(List.of(DailyExpenseApplyToAllDays.OTHER_COSTS))
                     .build();
-                validateBusinessRuleViolation(triggerInvalid(jurorNumber, request),
+                assertBusinessRuleViolation(triggerInvalid(jurorNumber, request),
                     "Total expenses cannot be less than £0. For Day "
                         + "2023-01-06", MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO);
             }
@@ -1437,9 +898,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         class Negative extends AbstractDraftDailyExpense.Negative {
 
             @Test
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert" //False positive
-            })
             void hasTravelExpenses() throws Exception {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
@@ -1457,14 +915,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 ResponseEntity<String> response = triggerInvalid(jurorNumber, request);
 
-                validateInvalidPayload(response,
+                assertInvalidPayload(response,
                     new RestResponseEntityExceptionHandler.FieldError("travel", "must be null"));
             }
 
             @Test
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert" //False positive
-            })
             void hasFoodAndDrinkExpenses() throws Exception {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
@@ -1483,14 +938,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     .build();
 
                 ResponseEntity<String> response = triggerInvalid(jurorNumber, request);
-                validateInvalidPayload(response,
+                assertInvalidPayload(response,
                     new RestResponseEntityExceptionHandler.FieldError("foodAndDrink", "must be null"));
             }
 
             @Test
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert" //False positive
-            })
             void applyToAllHasTravel() throws Exception {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
@@ -1508,15 +960,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 ResponseEntity<String> response = triggerInvalid(jurorNumber, request);
 
-                validateInvalidPayload(response,
+                assertInvalidPayload(response,
                     new RestResponseEntityExceptionHandler.FieldError("applyToAllDays[0]",
                         "Non Attendance day can only apply to all for [EXTRA_CARE_COSTS, OTHER_COSTS, PAY_CASH]"));
             }
 
             @Test
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert" //False positive
-            })
             void hasTotalTravelTime() throws Exception {
                 final String jurorNumber = "641500021";
                 DailyExpense request = DailyExpense.builder()
@@ -1534,7 +983,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 ResponseEntity<String> response = triggerInvalid(jurorNumber, request);
 
-                validateInvalidPayload(response,
+                assertInvalidPayload(response,
                     new RestResponseEntityExceptionHandler.FieldError("time.travelTime", "must be null"));
             }
         }
@@ -1968,7 +1417,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             @Test
             void invalidPayload() throws Exception {
-                validateInvalidPayload(triggerInvalid(GetEnteredExpenseRequest.builder()
+                assertInvalidPayload(triggerInvalid(GetEnteredExpenseRequest.builder()
                         .jurorNumber("INVALID")
                         .poolNumber(TestConstants.VALID_POOL_NUMBER)
                         .dateOfExpense(LocalDate.now())
@@ -1981,7 +1430,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void appearanceNotFound() throws Exception {
                 LocalDate dateOfExpense = LocalDate.of(2024, 1, 11);
                 GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
-                validateNotFound(triggerInvalid(request),
+                assertNotFound(triggerInvalid(request),
                     URL, "No appearance record found for juror: 641500020 on day: 2024-01-11");
             }
 
@@ -1991,7 +1440,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
                 final String jwt = createBureauJwt(BUREAU_USER, "400");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-                validateForbiddenResponse(template.exchange(
+                assertForbiddenResponse(template.exchange(
                         new RequestEntity<>(request, httpHeaders, POST, URI.create(URL)), String.class),
                     URL);
             }
@@ -2167,12 +1616,23 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getFinancialAuditDetails())
                 .as("Financial Audit Details object should be created/associated")
                 .isNotNull();
-            assertThat(appearance.getFinancialAuditDetails().getSubmittedOn())
+            assertThat(appearance.getFinancialAuditDetails().getCreatedOn())
                 .as("Financial Audit Details object should be submitted today")
-                .isEqualToIgnoringHours(LocalDateTime.now());
-            assertThat(appearance.getFinancialAuditDetails().getSubmittedBy().getUsername())
+                .isEqualToIgnoringHours(LocalDateTime.now(clock));
+            assertThat(appearance.getFinancialAuditDetails().getCreatedBy().getUsername())
                 .as("Financial Audit Details object should be submitted by the current user")
                 .isEqualToIgnoringCase("COURT_USER");
+            assertThat(appearance.getFinancialAuditDetails().getType())
+                .as("Financial Audit Details object should be to type FOR_APPROVAL")
+                .isEqualTo(FinancialAuditDetails.Type.FOR_APPROVAL);
+
+            assertThat(appearance.getFinancialAuditDetails().getCourtLocationRevision())
+                .as("Financial Audit Details object should have the correct court revision")
+                .isEqualTo(0);
+
+            assertThat(appearance.getFinancialAuditDetails().getJurorRevision())
+                .as("Financial Audit Details object should have the correct juror revision")
+                .isEqualTo(1);
 
             assertThat(appearance.getAppearanceStage())
                 .as("Appearance stage should remain unchanged (still entered)")

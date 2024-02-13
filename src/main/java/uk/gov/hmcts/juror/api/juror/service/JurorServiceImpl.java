@@ -137,6 +137,7 @@ public class JurorServiceImpl implements JurorService {
     }
 
     @Transactional
+    @Override
     public JurorResponse saveResponse(final JurorResponseDto responseDto) {
         //checks
         if (jurorResponseRepository.findByJurorNumber(responseDto.getJurorNumber()) != null) {

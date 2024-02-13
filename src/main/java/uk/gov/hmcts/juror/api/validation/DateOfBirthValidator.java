@@ -21,9 +21,8 @@ public class DateOfBirthValidator implements ConstraintValidator<DateOfBirth, Da
     @Override
     public boolean isValid(Date date, ConstraintValidatorContext constraintValidatorContext) {
         // do not validate a null date, allow actual @NotNull to validate that state!
-        return date == null || (
-            date.toInstant().isAfter(LocalDateTime.now().minusYears(125).toInstant(ZoneOffset.UTC))
-                && date.toInstant().isBefore(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC))
-        );
+        return date == null
+            || date.toInstant().isAfter(LocalDateTime.now().minusYears(125).toInstant(ZoneOffset.UTC))
+            && date.toInstant().isBefore(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC));
     }
 }

@@ -10,6 +10,8 @@ public interface JurorHistoryService {
 
     void createPoliceCheckInProgressHistory(JurorPool jurorPool);
 
+    void createSendMessageHistory(String jurorNumber, String poolNumber, String otherInfo);
+
     void createCompleteServiceHistory(JurorPool jurorPool);
 
     void createPoliceCheckInsufficientInformationHistory(JurorPool jurorPool);
@@ -21,4 +23,7 @@ public interface JurorHistoryService {
     void createPendingJurorAuthorisedHistory(JurorPool jurorPool);
 
     void createUncompleteServiceHistory(JurorPool jurorPool);
+
+    void createDeferredLetterHistory(JurorPool jurorPool);
+
 }

@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.CompleteJurorResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.CompleteServiceValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
@@ -153,9 +154,6 @@ class CompleteServiceControllerTest {
             + "/{poolNumber}/validate";
 
         @Test
-        @SuppressWarnings({
-            "PMD.JUnitTestsShouldIncludeAssert"//False positive
-        })
         void positiveAllValidResponse() throws Exception {
             JurorNumberListDto payload = new JurorNumberListDto();
             payload.setJurorNumbers(List.of("123456789", "123456788"));
@@ -196,14 +194,11 @@ class CompleteServiceControllerTest {
                 .andExpect(jsonPath("$.valid.size()", CoreMatchers.is(2)))
                 .andExpect(jsonPath("$.invalid_not_responded.size()", CoreMatchers.is(0)));
 
-            validateJurorStatusValidationResponseDto(resultActions, "$.valid[0]", jurorStatusValidationResponseDto1);
-            validateJurorStatusValidationResponseDto(resultActions, "$.valid[1]", jurorStatusValidationResponseDto2);
+            assertJurorStatusValidationResponseDto(resultActions, "$.valid[0]", jurorStatusValidationResponseDto1);
+            assertJurorStatusValidationResponseDto(resultActions, "$.valid[1]", jurorStatusValidationResponseDto2);
         }
 
         @Test
-        @SuppressWarnings({
-            "PMD.JUnitTestsShouldIncludeAssert"//False positive
-        })
         void positiveAllInValidResponse() throws Exception {
             JurorNumberListDto payload = new JurorNumberListDto();
             payload.setJurorNumbers(List.of("123456789", "123456788", "123456787"));
@@ -252,18 +247,15 @@ class CompleteServiceControllerTest {
                 .andExpect(jsonPath("$.valid.size()", CoreMatchers.is(0)))
                 .andExpect(jsonPath("$.invalid_not_responded.size()", CoreMatchers.is(3)));
 
-            validateJurorStatusValidationResponseDto(resultActions, "$.invalid_not_responded[0]",
+            assertJurorStatusValidationResponseDto(resultActions, "$.invalid_not_responded[0]",
                 jurorStatusValidationResponseDto1);
-            validateJurorStatusValidationResponseDto(resultActions, "$.invalid_not_responded[1]",
+            assertJurorStatusValidationResponseDto(resultActions, "$.invalid_not_responded[1]",
                 jurorStatusValidationResponseDto2);
-            validateJurorStatusValidationResponseDto(resultActions, "$.invalid_not_responded[2]",
+            assertJurorStatusValidationResponseDto(resultActions, "$.invalid_not_responded[2]",
                 jurorStatusValidationResponseDto3);
         }
 
         @Test
-        @SuppressWarnings({
-            "PMD.JUnitTestsShouldIncludeAssert"//False positive
-        })
         void positiveAllMixValidAndInvalidResponse() throws Exception {
             JurorNumberListDto payload = new JurorNumberListDto();
             payload.setJurorNumbers(List.of("123456789", "123456788", "123456787"));
@@ -312,10 +304,10 @@ class CompleteServiceControllerTest {
                 .andExpect(jsonPath("$.valid.size()", CoreMatchers.is(1)))
                 .andExpect(jsonPath("$.invalid_not_responded.size()", CoreMatchers.is(2)));
 
-            validateJurorStatusValidationResponseDto(resultActions, "$.invalid_not_responded[0]",
+            assertJurorStatusValidationResponseDto(resultActions, "$.invalid_not_responded[0]",
                 jurorStatusValidationResponseDto1);
-            validateJurorStatusValidationResponseDto(resultActions, "$.valid[0]", jurorStatusValidationResponseDto2);
-            validateJurorStatusValidationResponseDto(resultActions, "$.invalid_not_responded[1]",
+            assertJurorStatusValidationResponseDto(resultActions, "$.valid[0]", jurorStatusValidationResponseDto2);
+            assertJurorStatusValidationResponseDto(resultActions, "$.invalid_not_responded[1]",
                 jurorStatusValidationResponseDto3);
         }
 
@@ -450,8 +442,10 @@ class CompleteServiceControllerTest {
                 .jurorNumber("1236")
                 .build();
 
+            PaginatedList<CompleteJurorResponse> result = new PaginatedList<>();
+            result.setData(List.of(response1, response2, response3));
             when(completeServiceService.search(poolSearch))
-                .thenReturn(List.of(response1, response2, response3));
+                .thenReturn(result);
 
             mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -459,10 +453,10 @@ class CompleteServiceControllerTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
 
-                .andExpect(jsonPath("$.size()", CoreMatchers.is(3)))
-                .andExpect(jsonPath("$.[0].juror_number", CoreMatchers.is("1234")))
-                .andExpect(jsonPath("$.[1].juror_number", CoreMatchers.is("1235")))
-                .andExpect(jsonPath("$.[2].juror_number", CoreMatchers.is("1236")));
+                .andExpect(jsonPath("$.data.size()", CoreMatchers.is(3)))
+                .andExpect(jsonPath("$.data.[0].juror_number", CoreMatchers.is("1234")))
+                .andExpect(jsonPath("$.data.[1].juror_number", CoreMatchers.is("1235")))
+                .andExpect(jsonPath("$.data.[2].juror_number", CoreMatchers.is("1236")));
 
 
             verify(completeServiceService, times(1))
@@ -511,7 +505,7 @@ class CompleteServiceControllerTest {
 
     }
 
-    private void validateJurorStatusValidationResponseDto(
+    private void assertJurorStatusValidationResponseDto(
         ResultActions resultActions, String prefix,
         JurorStatusValidationResponseDto jurorStatusValidationResponseDto) throws Exception {
 

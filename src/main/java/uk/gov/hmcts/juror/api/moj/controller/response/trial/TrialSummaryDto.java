@@ -42,4 +42,7 @@ public class TrialSummaryDto {
 
     @JsonProperty("is_jury_empanelled")
     private Boolean isJuryEmpanelled;
+
+    @JsonProperty("trial_end_date")
+    private LocalDate trialEndDate;
 }

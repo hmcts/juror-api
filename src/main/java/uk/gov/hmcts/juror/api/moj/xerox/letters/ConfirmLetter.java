@@ -12,10 +12,10 @@ public class ConfirmLetter extends LetterBase {
                          CourtLocation courtLocation,
                          CourtLocation bureauLocation) {
         super(LetterContext.builder()
-                   .jurorPool(jurorPool)
-                   .courtLocation(courtLocation)
-                   .bureauLocation(bureauLocation)
-                   .build());
+            .jurorPool(jurorPool)
+            .courtLocation(courtLocation)
+            .bureauLocation(bureauLocation)
+            .build());
     }
 
     public ConfirmLetter(JurorPool jurorPool,
@@ -30,6 +30,7 @@ public class ConfirmLetter extends LetterBase {
             .build());
     }
 
+    @Override
     protected void setupWelsh() {
         setFormCode(FormCode.BI_CONFIRMATION);
         addData(LetterDataType.DATE_OF_LETTER, 18);
@@ -45,6 +46,7 @@ public class ConfirmLetter extends LetterBase {
         sharedSetup();
     }
 
+    @Override
     protected void setupEnglish() {
         setFormCode(FormCode.ENG_CONFIRMATION);
         addData(LetterDataType.DATE_OF_LETTER, 18);

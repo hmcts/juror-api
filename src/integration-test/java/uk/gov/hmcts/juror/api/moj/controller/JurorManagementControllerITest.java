@@ -120,7 +120,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorAppearanceResponseDto.JurorAppearanceResponseData> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
-                URI.create("/api/v1/moj/juror-management/appearance")),
+                    URI.create("/api/v1/moj/juror-management/appearance")),
                 JurorAppearanceResponseDto.JurorAppearanceResponseData.class);
 
         validateAppearanceRecord(response);
@@ -223,7 +223,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(data)
                 .as("Expect check-out time to be null")
                 .extracting(AttendanceDetailsResponse.Details::getCheckOutTime)
-                .containsExactlyInAnyOrder(null,  null);
+                .containsExactlyInAnyOrder(null, null);
         }
 
         @Test
@@ -248,7 +248,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(data)
                 .as("Expect check-in time to be null")
                 .extracting(AttendanceDetailsResponse.Details::getCheckInTime)
-                .containsExactlyInAnyOrder(null,  null);
+                .containsExactlyInAnyOrder(null, null);
 
             AttendanceDetailsResponse.Summary summary = response.getBody().getSummary();
             assertThat(summary)
@@ -322,7 +322,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             jurors.add(JUROR6); // checked-out (updated)
             jurors.add(JUROR7); // checked-out (updated)
             jurors.add(JUROR3); // panelled (no change)
-            List<Tuple> tuples = appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
+            List<Tuple> tuples = appearanceRepository.retrieveAttendanceDetails(
+                buildRetrieveAttendanceDetailsDto(jurors));
             AttendanceDetailsResponse attendanceResponse = buildAttendanceResponse(tuples);
             List<AttendanceDetailsResponse.Details> retrievedDetails = attendanceResponse.getDetails();
 
@@ -375,7 +376,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(0L);
 
             // verify attendance details have been updated
-            List<Tuple> tuples = appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
+            List<Tuple> tuples = appearanceRepository.retrieveAttendanceDetails(
+                buildRetrieveAttendanceDetailsDto(jurors));
             AttendanceDetailsResponse attendanceResponse = buildAttendanceResponse(tuples);
             List<AttendanceDetailsResponse.Details> retrievedDetails = attendanceResponse.getDetails();
 
@@ -428,7 +430,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(0L);
 
             // verify attendance details have been updated
-            List<Tuple> tuples = appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
+            List<Tuple> tuples =
+                appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
             AttendanceDetailsResponse attendanceResponse = buildAttendanceResponse(tuples);
             List<AttendanceDetailsResponse.Details> retrievedDetails = attendanceResponse.getDetails();
 
@@ -494,7 +497,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             // verify attendance details have been updated
             List<String> jurors = new ArrayList<>();
             jurors.add(JUROR3);
-            List<Tuple> tuples = appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
+            List<Tuple> tuples =
+                appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
             AttendanceDetailsResponse attendanceResponse = buildAttendanceResponse(tuples);
             List<AttendanceDetailsResponse.Details> retrievedDetails = attendanceResponse.getDetails();
 
@@ -598,7 +602,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             jurors.add(JUROR5);
             jurors.add(JUROR6);
             jurors.add(JUROR7);
-            List<Tuple> tuples = appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
+            List<Tuple> tuples =
+                appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
             AttendanceDetailsResponse attendanceResponse = buildAttendanceResponse(tuples);
             List<AttendanceDetailsResponse.Details> retrievedDetails = attendanceResponse.getDetails();
 
@@ -651,7 +656,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(1L);
 
             // verify attendance details have been updated
-            List<Tuple> tuples = appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
+            List<Tuple> tuples =
+                appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
             AttendanceDetailsResponse attendanceResponse = buildAttendanceResponse(tuples);
             List<AttendanceDetailsResponse.Details> retrievedDetails = attendanceResponse.getDetails();
 
@@ -701,7 +707,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             jurors.add(JUROR6); // checked-in
             jurors.add(JUROR7); // checked-in
 
-            List<Tuple> tuples = appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
+            List<Tuple> tuples =
+                appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
             AttendanceDetailsResponse attendanceResponse = buildAttendanceResponse(tuples);
             List<AttendanceDetailsResponse.Details> details = attendanceResponse.getDetails();
 
@@ -757,7 +764,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .isEqualTo("Check-out time cannot be before check-in");
 
             // verify attendance details have NOT been updated
-            List<Tuple> tuples = appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
+            List<Tuple> tuples =
+                appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
             AttendanceDetailsResponse attendanceResponse = buildAttendanceResponse(tuples);
             List<AttendanceDetailsResponse.Details> details = attendanceResponse.getDetails();
 
@@ -833,7 +841,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(summary.getAdditionalInformation()).isBlank();
 
             // verify attendance record no longer exists
-            List<Tuple> tuples = appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
+            List<Tuple> tuples =
+                appearanceRepository.retrieveAttendanceDetails(buildRetrieveAttendanceDetailsDto(jurors));
             assertThat(tuples).size().isEqualTo(0);
         }
 
@@ -909,7 +918,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorsToDismissResponseDto> response =
             restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
-                URI.create( "/api/v1/moj/juror-management/jurors-to-dismiss")), JurorsToDismissResponseDto.class);
+                URI.create ("/api/v1/moj/juror-management/jurors-to-dismiss")), JurorsToDismissResponseDto.class);
 
         assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
         assertThat(response.getBody().getData()).isNotNull();
@@ -937,7 +946,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorsToDismissResponseDto> response =
             restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
-                URI.create( "/api/v1/moj/juror-management/jurors-to-dismiss")), JurorsToDismissResponseDto.class);
+                URI.create ("/api/v1/moj/juror-management/jurors-to-dismiss")), JurorsToDismissResponseDto.class);
 
         assertThat(response.getStatusCode()).as("Expect HTTP Status of Forbidden").isEqualTo(FORBIDDEN);
         assertThat(response.getBody().getData()).isNull();
@@ -961,7 +970,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorsToDismissResponseDto> response =
             restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
-                URI.create( "/api/v1/moj/juror-management/jurors-to-dismiss")), JurorsToDismissResponseDto.class);
+                URI.create ("/api/v1/moj/juror-management/jurors-to-dismiss")), JurorsToDismissResponseDto.class);
 
         assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
         assertThat(response.getBody().getData()).isEmpty();
@@ -992,7 +1001,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         assertThat(jurorAppearanceResponseData.getFirstName()).isEqualTo("TEST");
         assertThat(jurorAppearanceResponseData.getLastName()).isEqualTo("LASTNAME");
         assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.RESPONDED);
-        assertThat(jurorAppearanceResponseData.getCheckInTime()).isEqualTo(LocalTime.of(9,30));
+        assertThat(jurorAppearanceResponseData.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
         assertThat(jurorAppearanceResponseData.getCheckOutTime()).isNull();
     }
 
@@ -1009,7 +1018,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         assertThat(jurorAppearanceResponseData.getFirstName()).isEqualTo("TEST");
         assertThat(jurorAppearanceResponseData.getLastName()).isEqualTo("LASTNAME");
         assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.RESPONDED);
-        assertThat(jurorAppearanceResponseData.getCheckInTime()).isEqualTo(LocalTime.of(9,30));
+        assertThat(jurorAppearanceResponseData.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
         assertThat(jurorAppearanceResponseData.getCheckOutTime()).isNull();
 
         jurorAppearanceResponseData =
