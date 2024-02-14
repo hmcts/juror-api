@@ -197,8 +197,10 @@ sonarqube {
         property "sonar.projectKey", "uk.gov.hmcts.juror:juror-api"
         property "sonar.sources", "src"
         property "sonar.java.binaries", "build/classes"
-        property "sonar.exclusions", ".github/**,charts/**/,config/**,infrastructure/**,lib/**,gradle/**,data/*,src/querydsl/**,src/test/**,src/integration-test/**,src/main/resources/**"
-        property "sonar.cpd.exclusions", "src/main/resources/db/migration/*,src/main/java/uk/gov/hmcts/juror/api/moj/xerox/letters/*"
+        property "sonar.exclusions", "**/*, src/**/*"
+        property "sonar.cpd.exclusions", "**/*, src/**/*"
+        // property "sonar.exclusions", ".github/**,charts/**/,config/**,infrastructure/**,lib/**,gradle/**,data/*,src/querydsl/**,src/test/**,src/integration-test/**,src/main/resources/**"
+        // property "sonar.cpd.exclusions", "src/main/resources/db/migration/*,src/main/java/uk/gov/hmcts/juror/api/moj/xerox/letters/*"
     }
 }
 
