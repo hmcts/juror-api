@@ -6528,43 +6528,6 @@ END;
 $procedure$
 ;
 
--- DROP PROCEDURE juror.auto_generate_populate_abaccus();
-
-CREATE OR REPLACE PROCEDURE juror.auto_generate_populate_abaccus()
-    LANGUAGE plpgsql
-    SECURITY DEFINER
-AS
-$procedure$
-BEGIN
-
-    MERGE INTO abaccus a
-    USING (SELECT CASE
-                      WHEN lang = 'E' THEN current_setting('auto_generate_lc_englishformtype')::form_attr.form_type %
-                                           type
-                      ELSE current_setting('auto_generate_lc_welshformtype')::form_attr.form_type % type END form_type,
-                  loc_code,
-                  date_trunc('day',
-                             current_setting('auto_generate_ld_begin_time')::timestamp(0))                   creation_date,
-                  count(1)                                                                                   cnt
-           FROM temp_auto_generate_lett
-           GROUP BY CASE
-                        WHEN lang = 'E' THEN current_setting('auto_generate_lc_englishformtype')::form_attr.form_type %
-                                             type
-                        ELSE current_setting('auto_generate_lc_welshformtype')::form_attr.form_type % type END,
-                    loc_code, current_setting('auto_generate_ld_begin_time')::timestamp(0)) q
-    ON (a.form_type = q.form_type and a.loc_code = q.loc_code and date_trunc('day', a.creation_date) = q.creation_date)
-    WHEN matched THEN
-        UPDATE SET a.number_of_items = a.number_of_items + q.cnt
-    WHEN NOT matched THEN
-        INSERT (form_type, loc_code, creation_date, number_of_items)
-        values (q.form_type, q.loc_code, q.creation_date, q.cnt);
-
-
-END;
-
-$procedure$
-;
-
 -- DROP PROCEDURE juror.auto_generate_populate_part_hist();
 
 CREATE OR REPLACE PROCEDURE juror.auto_generate_populate_part_hist()
