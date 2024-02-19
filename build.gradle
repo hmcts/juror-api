@@ -190,10 +190,11 @@ dependencies {
 //}
 
 jacocoTestReport {
+    executionData(test, integration)
     reports {
-        xml.setRequired(true)
-        csv.setRequired(false)
-        html.getOutputLocation().set(file("${buildDir}/jacocoHtml"))
+        xml.required = true
+        csv.required = false
+        html.required = true
     }
 }
 
