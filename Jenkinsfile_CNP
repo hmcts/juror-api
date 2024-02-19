@@ -44,6 +44,15 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
   ]
 }
 
+def setupSecrets() {
+  withSubscription(subscription) {
+      withTeamSecrets(config, env) {
+      env.DB_URL = "${DB_URL}"
+      sh "env"
+    }
+  }
+}
+
 GradleBuilder builder = new GradleBuilder(this, product)
 
 withPipeline(type, product, component) {
@@ -178,5 +187,9 @@ withPipeline(type, product, component) {
 
   afterFailure('test') {
     junit '**/test-results/integration/*.xml'
+  }
+
+  before('smoketest') {
+    setupSecrets()
   }
 }
