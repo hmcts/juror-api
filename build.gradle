@@ -189,17 +189,6 @@ dependencies {
 //    options.annotationProcessorPath = configurations.querydsl
 //}
 
-jacocoTestReport {
-    executionData(test, integration)
-    reports {
-        xml.required = true
-        csv.required = false
-        html.required = true
-    }
-}
-
-project.tasks['sonarqube'].dependsOn jacocoTestReport
-
 sonarqube {
     properties {
         property "sonar.projectName", "Juror :: juror-api"
@@ -412,6 +401,17 @@ task functional(type: Test) {
     testClassesDirs = sourceSets.functionalTest.output.classesDirs
     classpath = sourceSets.functionalTest.runtimeClasspath
 }
+
+jacocoTestReport {
+    executionData(test, integration)
+    reports {
+        xml.required = true
+        csv.required = false
+        html.required = true
+    }
+}
+
+project.tasks['sonarqube'].dependsOn jacocoTestReport
 
 // https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/configuration.html
 dependencyCheck {
