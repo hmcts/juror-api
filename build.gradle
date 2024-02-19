@@ -74,6 +74,13 @@ configurations {
     dev
     integrationImplementation.extendsFrom testImplementation
     integrationRuntimeOnly.extendsFrom testRuntime
+
+    functionalTestImplementation.extendsFrom testImplementation
+    functionalTestRuntimeOnly.extendsFrom runtimeOnly
+
+    smokeTestImplementation.extendsFrom testImplementation
+    smokeTestRuntimeOnly.extendsFrom runtimeOnly
+
     compileOnly {
         extendsFrom annotationProcessor
     }
@@ -133,6 +140,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
+    implementation group: 'io.rest-assured', name: 'rest-assured'
 
 
     testImplementation('org.springframework.boot:spring-boot-starter-test')
@@ -301,6 +309,22 @@ sourceSets {
             srcDirs 'src/main/java'
             //srcDirs 'src/querydsl/java'
         }
+    }
+    functionalTest {
+        java {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+            srcDir file('src/functionalTest/java')
+        }
+        resources.srcDir file('src/functionalTest/resources')
+    }
+    smokeTest {
+        java {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+            srcDir file('src/smokeTest/java')
+        }
+        resources.srcDir file('src/smokeTest/resources')
     }
     integration {
         java {
