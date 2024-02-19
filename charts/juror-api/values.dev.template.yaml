@@ -12,7 +12,6 @@ java:
     DB_USERNAME: "hmcts"
     SCHEDULER_SERVICE_HOST: juror-scheduler-api.staging.platform.hmcts.net
     PNC_CHECK_SERVICE_HOST: juror-scheduler-execution.staging.platform.hmcts.net
-    SPRING_PROFILES_ACTIVE: development
   secrets:
     DB_PASSWORD:
       secretRef: "postgres"
