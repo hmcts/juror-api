@@ -19,7 +19,8 @@ public class JurorResponseCjsEmployment implements Serializable {
     @GeneratedValue(generator = "juror_response_cjs_employment_gen")
     @Column(name = "id")
     @SequenceGenerator(name = "juror_response_cjs_employment_gen",
-        sequenceName = "juror_mod.juror_response_cjs_employment_id_seq")
+        sequenceName = "juror_mod.juror_response_cjs_employment_id_seq",
+    allocationSize = 1)
     private Long id;
 
     @Column(name = "juror_number")
