@@ -14,7 +14,8 @@ INSERT INTO juror_mod.pool (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_R
 -- Pool 415220401 requested 2 jurors, 4 already supplied (2 surplus) - active with the bureau
  ('400', '415220401', CURRENT_DATE, 4, 2, 'CRO', '415', 'N'),
 -- Pool 415220503 requested 4 jurors, one currently supplied (3 needed) - active with the bureau
- ('400', '415220503', CURRENT_DATE + 20, 4, 3, 'CRO', '415', 'N');
+ ('400', '415220503', CURRENT_DATE + 20, 4, 3, 'CRO', '415', 'N'),
+ ('415', '222222222', CURRENT_DATE + 20, 4, 3, 'CRO', '400', 'N');
 
 -- Create juror records associated with Pool request records
 DELETE FROM juror_mod.juror;
@@ -31,9 +32,9 @@ INSERT INTO juror_mod.juror (juror_number, last_name, first_name, dob, address_l
 ('555555559', 'LNAMEFIVEFOURZERO', 'FNAMEFIVEFOURZERO', TIMESTAMP '1990-07-25 00:00:00.000000', '540 STREET NAME',
 'ANYTOWN', 'CH1 2AN', true);
 
-INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, ret_date, status, is_active) VALUES
-('400', '555555551', '415220401', current_date, 2, true),
-('400', '555555552', '415220401', current_date, 2, true),
-('400', '555555557', '415220503', current_date, 2, true),
-('400', '555555558', '415220401', current_date, 2, true),
-('400', '555555559', '415220401', current_date, 2, true);
+INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, status, is_active) VALUES
+('400', '555555551', '415220401', 2, true),
+('400', '555555552', '415220401', 2, true),
+('400', '555555557', '415220503', 2, true),
+('400', '555555558', '415220401', 2, true),
+('415', '555555559', '222222222', 2, true);

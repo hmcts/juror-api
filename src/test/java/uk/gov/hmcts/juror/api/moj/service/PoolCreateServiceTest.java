@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -328,32 +327,32 @@ public class PoolCreateServiceTest {
             .save(nilPoolArgumentCaptor.capture());
         PoolRequest nilPool = nilPoolArgumentCaptor.getValue();
 
-        Assertions.assertThat(nilPool.getPoolNumber())
+        assertThat(nilPool.getPoolNumber())
             .as("Expect pool number to be mapped from request dto")
             .isEqualTo(nilPoolRequestDto.getPoolNumber());
-        Assertions.assertThat(nilPool.getPoolType().getPoolType())
+        assertThat(nilPool.getPoolType().getPoolType())
             .as("Expect pool type to be mapped from request dto")
             .isEqualTo(nilPoolRequestDto.getPoolType());
-        Assertions.assertThat(nilPool.getNumberRequested())
+        assertThat(nilPool.getNumberRequested())
             .as("Expect number requested to be 0 (Nil Pool)")
             .isEqualTo(0);
-        Assertions.assertThat(nilPool.getTotalNoRequired())
+        assertThat(nilPool.getTotalNoRequired())
             .as("Expect total number requested to be 0 (Nil Pool)")
             .isEqualTo(0);
-        Assertions.assertThat(nilPool.getReturnDate())
+        assertThat(nilPool.getReturnDate())
             .as("Expect service start date to be mapped from request dto")
             .isEqualTo(nilPoolRequestDto.getAttendanceDate());
-        Assertions.assertThat(nilPool.getAttendTime())
+        assertThat(nilPool.getAttendTime())
             .as("Expect attendance time to be mapped from request dto")
             .isEqualToIgnoringSeconds(LocalDateTime.of(nilPoolRequestDto.getAttendanceDate(),
                 nilPoolRequestDto.getAttendanceTime()));
-        Assertions.assertThat(nilPool.getNewRequest())
+        assertThat(nilPool.getNewRequest())
             .as("Expect new request flag to be set to 'N' - no jurors need to be summoned")
             .isEqualTo('N');
-        Assertions.assertThat(nilPool.getOwner())
+        assertThat(nilPool.getOwner())
             .as("Expect owner to be set to bureau's location code")
             .isEqualTo("400");
-        Assertions.assertThat(nilPool.isNilPool())
+        assertThat(nilPool.isNilPool())
             .as("Expect nil pool flag to be set to true")
             .isTrue();
     }
@@ -401,34 +400,34 @@ public class PoolCreateServiceTest {
             nilPoolArgumentCaptor.getAllValues().stream().filter(pool -> !pool.isNilPool()).findFirst()
                 .orElse(null);
 
-        Assertions.assertThat(convertedNilPool).isNotNull();
+        assertThat(convertedNilPool).isNotNull();
 
-        Assertions.assertThat(convertedNilPool.getPoolNumber())
+        assertThat(convertedNilPool.getPoolNumber())
             .as("Expect pool number to be mapped from request dto")
             .isEqualTo(poolRequestDto.getPoolNumber());
-        Assertions.assertThat(convertedNilPool.getPoolType().getPoolType())
+        assertThat(convertedNilPool.getPoolType().getPoolType())
             .as("Expect pool type to be mapped from request dto")
             .isEqualTo(poolRequestDto.getPoolType());
-        Assertions.assertThat(convertedNilPool.getNumberRequested())
+        assertThat(convertedNilPool.getNumberRequested())
             .as("Expect number requested to be mapped from request dto")
             .isEqualTo(poolRequestDto.getNumberRequested());
-        Assertions.assertThat(convertedNilPool.getTotalNoRequired())
+        assertThat(convertedNilPool.getTotalNoRequired())
             .as("Expect total number requested to be mapped from request dto")
             .isEqualTo(poolRequestDto.getNumberRequested());
-        Assertions.assertThat(convertedNilPool.getReturnDate())
+        assertThat(convertedNilPool.getReturnDate())
             .as("Expect service start date to be mapped from request dto")
             .isEqualTo(poolRequestDto.getAttendanceDate());
-        Assertions.assertThat(convertedNilPool.getAttendTime())
+        assertThat(convertedNilPool.getAttendTime())
             .as("Expect attendance time to be mapped from request dto")
             .isEqualToIgnoringSeconds(LocalDateTime.of(poolRequestDto.getAttendanceDate(),
                 poolRequestDto.getAttendanceTime()));
-        Assertions.assertThat(convertedNilPool.getNewRequest())
+        assertThat(convertedNilPool.getNewRequest())
             .as("Expect new request flag to be set to 'N'")
             .isEqualTo('N');
-        Assertions.assertThat(convertedNilPool.getOwner())
+        assertThat(convertedNilPool.getOwner())
             .as("Expect owner to be set to bureau's location code")
             .isEqualTo("400");
-        Assertions.assertThat(convertedNilPool.isNilPool())
+        assertThat(convertedNilPool.isNilPool())
             .as("Expect nil pool flag to be set to false")
             .isFalse();
     }
@@ -529,22 +528,22 @@ public class PoolCreateServiceTest {
         PoolCreatedMembersListDto response = poolCreateService.getJurorPoolsList(payload, poolNumber);
         List<PoolCreatedMembersListDto.JurorPoolDataDto> responseData = response.getData();
 
-        Assertions.assertThat(responseData.isEmpty())
+        assertThat(responseData.isEmpty())
             .as("Expect the response to contain data items")
             .isFalse();
-        Assertions.assertThat(responseData.size())
+        assertThat(responseData.size())
             .as("Expect a single data item to be returned in the mapped response")
             .isEqualTo(1);
 
         PoolCreatedMembersListDto.JurorPoolDataDto dto = responseData.get(0);
 
-        Assertions.assertThat(dto.getOwner()).isEqualTo("Bureau");
-        Assertions.assertThat(dto.getJurorNumber()).isEqualTo("111111111");
-        Assertions.assertThat(dto.getFirstName()).isEqualTo("Test");
-        Assertions.assertThat(dto.getLastName()).isEqualTo("Person");
-        Assertions.assertThat(dto.getPostcode()).isEqualTo("CH1 2AN");
+        assertThat(dto.getOwner()).isEqualTo("Bureau");
+        assertThat(dto.getJurorNumber()).isEqualTo("111111111");
+        assertThat(dto.getFirstName()).isEqualTo("Test");
+        assertThat(dto.getLastName()).isEqualTo("Person");
+        assertThat(dto.getPostcode()).isEqualTo("CH1 2AN");
         // TODO - re-instate when juror state is migrated
-        //Assertions.assertThat(dto.getStatus()).isEqualTo("Responded");
+        //assertThat(dto.getStatus()).isEqualTo("Responded");
     }
 
     @Test
@@ -562,7 +561,7 @@ public class PoolCreateServiceTest {
 
         PoolCreatedMembersListDto response = poolCreateService.getJurorPoolsList(payload, poolNumber);
 
-        Assertions.assertThat(response)
+        assertThat(response)
             .as("Expect the response to contain no data items")
             .isNull();
     }
@@ -580,7 +579,7 @@ public class PoolCreateServiceTest {
         PoolCreatedMembersListDto response = poolCreateService.getJurorPoolsList(payload, poolNumber);
         List<PoolCreatedMembersListDto.JurorPoolDataDto> responseData = response.getData();
 
-        Assertions.assertThat(responseData.isEmpty())
+        assertThat(responseData.isEmpty())
             .as("Expect the response to contain no data items")
             .isTrue();
     }
@@ -602,22 +601,22 @@ public class PoolCreateServiceTest {
         PoolCreatedMembersListDto response = poolCreateService.getJurorPoolsList(payload, poolNumber);
         List<PoolCreatedMembersListDto.JurorPoolDataDto> responseData = response.getData();
 
-        Assertions.assertThat(responseData.isEmpty())
+        assertThat(responseData.isEmpty())
             .as("Expect the response to contain data items")
             .isFalse();
-        Assertions.assertThat(responseData.size())
+        assertThat(responseData.size())
             .as("Expect a single data item to be returned in the mapped response")
             .isEqualTo(1);
 
         PoolCreatedMembersListDto.JurorPoolDataDto dto = responseData.get(0);
 
-        Assertions.assertThat(dto.getOwner()).isEqualTo("Court");
-        Assertions.assertThat(dto.getJurorNumber()).isEqualTo("444444444");
-        Assertions.assertThat(dto.getFirstName()).isEqualTo("Test");
-        Assertions.assertThat(dto.getLastName()).isEqualTo("Person");
-        Assertions.assertThat(dto.getPostcode()).isEqualTo("CH1 2AN");
+        assertThat(dto.getOwner()).isEqualTo("Court");
+        assertThat(dto.getJurorNumber()).isEqualTo("444444444");
+        assertThat(dto.getFirstName()).isEqualTo("Test");
+        assertThat(dto.getLastName()).isEqualTo("Person");
+        assertThat(dto.getPostcode()).isEqualTo("CH1 2AN");
         // TODO - re-instate when juror state is migrated
-        //Assertions.assertThat(dto.getStatus()).isEqualTo("Responded");
+        //assertThat(dto.getStatus()).isEqualTo("Responded");
     }
 
     @Test
@@ -636,7 +635,7 @@ public class PoolCreateServiceTest {
 
         PoolCreatedMembersListDto response = poolCreateService.getJurorPoolsList(payload, poolNumber);
 
-        Assertions.assertThat(response)
+        assertThat(response)
             .as("Expect the response to contain no data items")
             .isNull();
     }

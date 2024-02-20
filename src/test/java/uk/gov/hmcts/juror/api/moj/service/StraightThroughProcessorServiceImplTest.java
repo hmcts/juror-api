@@ -300,7 +300,7 @@ public class StraightThroughProcessorServiceImplTest {
     public void test_paper_isValidResponseForStraightThroughProcessing_invalid_noServiceStartDate() {
         final LocalDate dateOfBirth = LocalDate.now().minusYears(30);
 
-        JurorPool jurorPool = createJurorPool( 1);
+        JurorPool jurorPool = createJurorPool(1);
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
 
         Assertions.assertThatExceptionOfType(IllegalArgumentException.class)

@@ -4,9 +4,9 @@ import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
@@ -43,8 +43,15 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -80,11 +87,11 @@ public class JurorManagementServiceImplTest {
 
     @Before
     public void setUpMocks() {
-        doNothing().when(certLetterService).enqueueNewLetter(Mockito.any(), Mockito.any());
-        doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(Mockito.any());
-        doReturn(null).when(poolRequestRepository).saveAndFlush(Mockito.any());
-        doReturn(null).when(jurorPoolRepository).save(Mockito.any());
-        doReturn(null).when(jurorHistoryRepository).save(Mockito.any());
+        doNothing().when(certLetterService).enqueueNewLetter(any(), any());
+        doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
+        doReturn(null).when(poolRequestRepository).saveAndFlush(any());
+        doReturn(null).when(jurorPoolRepository).save(any());
+        doReturn(null).when(jurorHistoryRepository).save(any());
 
         doReturn(Optional.of(createJurorStatus(1, "Summoned")))
             .when(jurorStatusRepository).findById(1);
@@ -109,24 +116,24 @@ public class JurorManagementServiceImplTest {
         assertThatExceptionOfType(MojException.BadRequest.class)
             .isThrownBy(() -> jurorManagementService.reassignJurors(payload, jurorManagementRequestDto));
 
-        verify(poolRequestRepository, Mockito.times(0))
-            .findByPoolNumber(Mockito.anyString());
-        verify(courtLocationRepository, Mockito.times(0))
-            .findByLocCode(Mockito.anyString());
-        verify(jurorStatusRepository, Mockito.times(0))
-            .findById(Mockito.anyInt());
-        verify(jurorPoolRepository, Mockito.times(0))
+        verify(poolRequestRepository, times(0))
+            .findByPoolNumber(anyString());
+        verify(courtLocationRepository, times(0))
+            .findByLocCode(anyString());
+        verify(jurorStatusRepository, times(0))
+            .findById(anyInt());
+        verify(jurorPoolRepository, times(0))
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
-                Mockito.anyList(), Mockito.anyBoolean(), Mockito.any(),
-                Mockito.any(CourtLocation.class), Mockito.anyList()
+                anyList(), anyBoolean(), any(),
+                any(CourtLocation.class), anyList()
             );
-        verify(confirmationLetterService, Mockito.times(0))
-            .enqueueLetter(Mockito.any());
+        verify(confirmationLetterService, times(0))
+            .enqueueLetter(any());
 
     }
 
     @Test
-    public void test_reassignJuror_validRequest_happy() {
+    public void test_reassignJuror_bureauUser_validRequest_happy() {
 
         PoolRequest poolRequest = new PoolRequest();
         poolRequest.setPoolNumber("123456789");
@@ -140,24 +147,19 @@ public class JurorManagementServiceImplTest {
         jurorStatus.setStatus(1);
         jurorStatus.setStatusDesc("Summoned");
 
-        List<JurorPool> poolMemberList = createJurorPoolList();
+        List<JurorPool> poolMemberList = createJurorPoolList("400");
 
-        when(poolRequestRepository.findByPoolNumber(Mockito.anyString()))
-            .thenReturn(Optional.of(poolRequest));
-        when(courtLocationRepository.findByLocCode(Mockito.anyString()))
-            .thenReturn(Optional.of(courtLocation));
-        when(jurorStatusRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(jurorStatus));
+        when(poolRequestRepository.findByPoolNumber(anyString())).thenReturn(Optional.of(poolRequest));
+        when(courtLocationRepository.findByLocCode(anyString())).thenReturn(Optional.of(courtLocation));
+        when(jurorStatusRepository.findById(anyInt())).thenReturn(Optional.of(jurorStatus));
         when(jurorPoolRepository.findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
-            Mockito.anyList(), Mockito.anyBoolean(), Mockito.anyString(),
-            Mockito.any(CourtLocation.class), Mockito.anyList()
-        )).thenReturn(poolMemberList);
-        when(jurorPoolRepository
-                .findByOwnerAndJurorJurorNumberAndPoolPoolNumber(Mockito.anyString(), Mockito.anyString(),
-                    Mockito.anyString()
-                ))
+            anyList(), anyBoolean(), anyString(), any(CourtLocation.class),
+            anyList())).thenReturn(poolMemberList);
+        when(jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(anyString(),
+            anyString(), anyString()))
             .thenReturn(Optional.empty());
         when(poolMemberSequenceService
-            .getPoolMemberSequenceNumber(Mockito.anyString())).thenReturn(1);
+            .getPoolMemberSequenceNumber(anyString())).thenReturn(1);
 
         BureauJWTPayload payload = buildPayload("400");
         JurorManagementRequestDto jurorManagementRequestDto = createValidJurorManagementRequestDto();
@@ -166,34 +168,205 @@ public class JurorManagementServiceImplTest {
 
         Assertions.assertThat(jurorsMoved).isEqualTo(1);
 
-        verify(poolRequestRepository, Mockito.times(2))
-            .findByPoolNumber(Mockito.anyString());
-        verify(courtLocationRepository, Mockito.times(2))
-            .findByLocCode(Mockito.anyString());
-        verify(jurorStatusRepository, Mockito.times(1))
-            .findById(Mockito.anyInt());
-        verify(jurorPoolRepository, Mockito.times(1))
+        verify(poolRequestRepository, times(2)).findByPoolNumber(anyString());
+        verify(courtLocationRepository, times(2)).findByLocCode(anyString());
+        verify(jurorStatusRepository, times(1)).findById(anyInt());
+        verify(jurorPoolRepository, times(1))
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
-                Mockito.anyList(), Mockito.anyBoolean(), Mockito.anyString(),
-                Mockito.any(CourtLocation.class), Mockito.anyList()
-            );
-        verify(jurorPoolRepository, Mockito.times(1))
-            .findByOwnerAndJurorJurorNumberAndPoolPoolNumber(Mockito.anyString(), Mockito.anyString(),
-                Mockito.anyString()
-            );
-        verify(poolMemberSequenceService, Mockito.times(1))
-            .getPoolMemberSequenceNumber(Mockito.anyString());
-        verify(jurorHistoryRepository, Mockito.times(1))
-            .save(Mockito.any(JurorHistory.class));
-        verify(confirmationLetterService, Mockito.times(1))
-            .enqueueLetter(Mockito.any());
+                anyList(), anyBoolean(), anyString(),
+                any(CourtLocation.class), anyList());
+        verify(jurorPoolRepository, times(1))
+            .findByOwnerAndJurorJurorNumberAndPoolPoolNumber(anyString(), anyString(),
+                anyString());
+        verify(poolMemberSequenceService, times(1))
+            .getPoolMemberSequenceNumber(anyString());
+        verify(jurorHistoryRepository, times(1)).save(any(JurorHistory.class));
+        verify(confirmationLetterService, times(1)).enqueueLetter(any());
+    }
 
+    @Test
+    public void test_reassignJuror_courtUser_validRequest_toCourtOwnedPool() {
+
+        String courtOwner = "415";
+        String satelliteCourtCode = "767";
+        String sourcePoolNumber = "123456789";
+        String targetPoolNumber = "987654321";
+
+        PoolRequest sourcePoolRequest = new PoolRequest();
+        sourcePoolRequest.setPoolNumber(sourcePoolNumber);
+        sourcePoolRequest.setOwner(courtOwner);
+
+        PoolRequest targetpoolRequest = new PoolRequest();
+        targetpoolRequest.setPoolNumber(targetPoolNumber);
+        targetpoolRequest.setOwner(courtOwner);
+
+        CourtLocation primaryCourtLocation = new CourtLocation();
+        primaryCourtLocation.setName("Test Primary Court");
+        primaryCourtLocation.setLocCode(courtOwner);
+        primaryCourtLocation.setOwner(courtOwner);
+
+        CourtLocation satelliteCourtLocation = new CourtLocation();
+        satelliteCourtLocation.setName("Test Satellite Court");
+        satelliteCourtLocation.setLocCode(satelliteCourtCode);
+        satelliteCourtLocation.setOwner(courtOwner);
+
+        JurorStatus respondedStatus = new JurorStatus();
+        respondedStatus.setStatus(2);
+        respondedStatus.setStatusDesc("Responded");
+
+        JurorStatus reassignedStatus = new JurorStatus();
+        reassignedStatus.setStatus(8);
+        reassignedStatus.setStatusDesc("Reassigned");
+
+        List<JurorPool> poolMemberList = createJurorPoolList(courtOwner);
+
+        when(poolRequestRepository.findByPoolNumber(sourcePoolNumber))
+            .thenReturn(Optional.of(sourcePoolRequest));
+        when(poolRequestRepository.findByPoolNumber(targetPoolNumber))
+            .thenReturn(Optional.of(targetpoolRequest));
+        when(courtLocationRepository.findByLocCode(courtOwner))
+            .thenReturn(Optional.of(primaryCourtLocation));
+        when(courtLocationRepository.findByLocCode(satelliteCourtCode))
+            .thenReturn(Optional.of(satelliteCourtLocation));
+        when(jurorStatusRepository.findById(2)).thenReturn(Optional.of(respondedStatus));
+        when(jurorStatusRepository.findById(8)).thenReturn(Optional.of(reassignedStatus));
+        when(jurorPoolRepository.findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
+            anyList(), anyBoolean(), anyString(), any(CourtLocation.class),
+            anyList())).thenReturn(poolMemberList);
+        when(jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(anyString(),
+            anyString(), anyString()))
+            .thenReturn(Optional.empty());
+        when(poolMemberSequenceService
+            .getPoolMemberSequenceNumber(anyString())).thenReturn(1);
+
+        BureauJWTPayload payload = buildPayload(courtOwner);
+        JurorManagementRequestDto jurorManagementRequestDto = new JurorManagementRequestDto(sourcePoolNumber,
+            courtOwner, List.of("123456789"), targetPoolNumber, satelliteCourtCode, LocalDate.now());
+
+        int jurorsMoved = jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
+
+        Assertions.assertThat(jurorsMoved).isEqualTo(1);
+
+        verify(poolRequestRepository, times(2))
+            .findByPoolNumber(anyString());
+        verify(courtLocationRepository, times(2))
+            .findByLocCode(anyString());
+        verify(jurorStatusRepository, times(1))
+            .findById(anyInt());
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
+                anyList(), anyBoolean(), anyString(),
+                any(CourtLocation.class), anyList());
+        verify(jurorPoolRepository, times(1))
+            .findByOwnerAndJurorJurorNumberAndPoolPoolNumber(anyString(), anyString(),
+                anyString());
+        verify(poolMemberSequenceService, times(1))
+            .getPoolMemberSequenceNumber(anyString());
+        verify(jurorHistoryRepository, times(1))
+            .save(any(JurorHistory.class));
+        verify(confirmationLetterService, never())
+            .enqueueLetter(any());
+
+        ArgumentCaptor<JurorPool> jurorPoolArgumentCaptor = ArgumentCaptor.forClass(JurorPool.class);
+        verify(jurorPoolRepository, times(2)).save(jurorPoolArgumentCaptor.capture());
+
+        JurorPool newJurorPool =
+            jurorPoolArgumentCaptor.getAllValues().stream().filter(jurorPool ->
+                jurorPool.getPoolNumber().equalsIgnoreCase(targetPoolNumber)).findFirst().orElse(null);
+        Assertions.assertThat(newJurorPool).isNotNull();
+        Assertions.assertThat(newJurorPool.getOwner()).isEqualTo("415");
+    }
+
+    @Test
+    public void test_reassignJuror_courtUser_validRequest_toBureauOwnedPool() {
+
+        String bureauOwner = "400";
+        String courtOwner = "415";
+        String sourcePoolNumber = "123456789";
+        String targetPoolNumber = "987654321";
+
+        PoolRequest sourcePoolRequest = new PoolRequest();
+        sourcePoolRequest.setPoolNumber(sourcePoolNumber);
+        sourcePoolRequest.setOwner(courtOwner);
+
+        PoolRequest targetpoolRequest = new PoolRequest();
+        targetpoolRequest.setPoolNumber(targetPoolNumber);
+        targetpoolRequest.setOwner(bureauOwner);
+
+        CourtLocation primaryCourtLocation = new CourtLocation();
+        primaryCourtLocation.setName("Test Primary Court");
+        primaryCourtLocation.setLocCode(courtOwner);
+        primaryCourtLocation.setOwner(courtOwner);
+
+        JurorStatus respondedStatus = new JurorStatus();
+        respondedStatus.setStatus(2);
+        respondedStatus.setStatusDesc("Responded");
+
+        JurorStatus reassignedStatus = new JurorStatus();
+        reassignedStatus.setStatus(8);
+        reassignedStatus.setStatusDesc("Reassigned");
+
+        List<JurorPool> poolMemberList = createJurorPoolList(courtOwner);
+
+        when(poolRequestRepository.findByPoolNumber(sourcePoolNumber)).thenReturn(Optional.of(sourcePoolRequest));
+        when(poolRequestRepository.findByPoolNumber(targetPoolNumber)).thenReturn(Optional.of(targetpoolRequest));
+        when(courtLocationRepository.findByLocCode(courtOwner)).thenReturn(Optional.of(primaryCourtLocation));
+        when(jurorStatusRepository.findById(2)).thenReturn(Optional.of(respondedStatus));
+        when(jurorStatusRepository.findById(8)).thenReturn(Optional.of(reassignedStatus));
+        when(jurorPoolRepository.findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
+            anyList(), anyBoolean(), anyString(), any(CourtLocation.class),
+            anyList())).thenReturn(poolMemberList);
+        when(jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(anyString(),
+            anyString(), anyString()))
+            .thenReturn(Optional.empty());
+        when(poolMemberSequenceService
+            .getPoolMemberSequenceNumber(anyString())).thenReturn(1);
+
+        BureauJWTPayload payload = buildPayload(courtOwner);
+        JurorManagementRequestDto jurorManagementRequestDto = new JurorManagementRequestDto(sourcePoolNumber,
+            courtOwner, List.of("123456789"), targetPoolNumber, courtOwner, LocalDate.now());
+
+        int jurorsMoved = jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
+
+        Assertions.assertThat(jurorsMoved).isEqualTo(1);
+
+        verify(poolRequestRepository, times(2))
+            .findByPoolNumber(anyString());
+        verify(courtLocationRepository, times(2))
+            .findByLocCode(anyString());
+        verify(jurorStatusRepository, times(1))
+            .findById(anyInt());
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
+                anyList(), anyBoolean(), anyString(),
+                any(CourtLocation.class), anyList());
+        verify(jurorPoolRepository, times(1))
+            .findByOwnerAndJurorJurorNumberAndPoolPoolNumber(anyString(), anyString(),
+                anyString());
+        verify(poolMemberSequenceService, times(1))
+            .getPoolMemberSequenceNumber(anyString());
+        verify(jurorHistoryRepository, times(1))
+            .save(any(JurorHistory.class));
+        verify(confirmationLetterService, never())
+            .enqueueLetter(any());
+
+        ArgumentCaptor<JurorPool> jurorPoolArgumentCaptor = ArgumentCaptor.forClass(JurorPool.class);
+        verify(jurorPoolRepository, times(2)).save(jurorPoolArgumentCaptor.capture());
+
+        JurorPool newJurorPool =
+            jurorPoolArgumentCaptor.getAllValues().stream().filter(jurorPool ->
+                jurorPool.getPoolNumber().equalsIgnoreCase(targetPoolNumber)).findFirst().orElse(null);
+        Assertions.assertThat(newJurorPool).isNotNull();
+        Assertions.assertThat(newJurorPool.getOwner()).as("The new juror pool record "
+                + "should have the same owner value as the source juror pool record - even when reassigning to a "
+                + "bureau owned pool as a jury officer (from a court owned pool)")
+            .isEqualTo("415");
     }
 
     @Test
     public void test_reassignJuror_noSourcePoolRequest() {
 
-        when(poolRequestRepository.findByPoolNumber(Mockito.anyString()))
+        when(poolRequestRepository.findByPoolNumber(anyString()))
             .thenReturn(Optional.empty());
 
         BureauJWTPayload payload = buildPayload("400");
@@ -202,19 +375,19 @@ public class JurorManagementServiceImplTest {
         assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> jurorManagementService.reassignJurors(payload, jurorManagementRequestDto));
 
-        verify(poolRequestRepository, Mockito.times(1))
-            .findByPoolNumber(Mockito.anyString());
-        verify(courtLocationRepository, Mockito.times(0))
-            .findByLocCode(Mockito.anyString());
-        verify(jurorStatusRepository, Mockito.times(0))
-            .findById(Mockito.anyInt());
-        verify(jurorPoolRepository, Mockito.times(0))
+        verify(poolRequestRepository, times(1))
+            .findByPoolNumber(anyString());
+        verify(courtLocationRepository, times(0))
+            .findByLocCode(anyString());
+        verify(jurorStatusRepository, times(0))
+            .findById(anyInt());
+        verify(jurorPoolRepository, times(0))
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
-                Mockito.anyList(), Mockito.anyBoolean(), Mockito.any(),
-                Mockito.any(CourtLocation.class), Mockito.anyList()
+                anyList(), anyBoolean(), any(),
+                any(CourtLocation.class), anyList()
             );
-        verify(confirmationLetterService, Mockito.times(0))
-            .enqueueLetter(Mockito.any());
+        verify(confirmationLetterService, times(0))
+            .enqueueLetter(any());
     }
 
     @Test
@@ -222,9 +395,9 @@ public class JurorManagementServiceImplTest {
 
         PoolRequest poolRequest = new PoolRequest();
 
-        when(poolRequestRepository.findByPoolNumber(Mockito.anyString()))
+        when(poolRequestRepository.findByPoolNumber(anyString()))
             .thenReturn(Optional.of(poolRequest));
-        when(courtLocationRepository.findByLocCode(Mockito.anyString()))
+        when(courtLocationRepository.findByLocCode(anyString()))
             .thenReturn(Optional.empty());
 
         BureauJWTPayload payload = buildPayload("400");
@@ -233,19 +406,19 @@ public class JurorManagementServiceImplTest {
         assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> jurorManagementService.reassignJurors(payload, jurorManagementRequestDto));
 
-        verify(poolRequestRepository, Mockito.times(2))
-            .findByPoolNumber(Mockito.anyString());
-        verify(courtLocationRepository, Mockito.times(1))
-            .findByLocCode(Mockito.anyString());
-        verify(jurorStatusRepository, Mockito.times(0))
-            .findById(Mockito.anyInt());
-        verify(jurorPoolRepository, Mockito.times(0))
+        verify(poolRequestRepository, times(2))
+            .findByPoolNumber(anyString());
+        verify(courtLocationRepository, times(1))
+            .findByLocCode(anyString());
+        verify(jurorStatusRepository, times(0))
+            .findById(anyInt());
+        verify(jurorPoolRepository, times(0))
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
-                Mockito.anyList(), Mockito.anyBoolean(), Mockito.any(),
-                Mockito.any(CourtLocation.class), Mockito.anyList()
+                anyList(), anyBoolean(), any(),
+                any(CourtLocation.class), anyList()
             );
-        verify(confirmationLetterService, Mockito.times(0))
-            .enqueueLetter(Mockito.any());
+        verify(confirmationLetterService, times(0))
+            .enqueueLetter(any());
     }
 
     @Test
@@ -262,15 +435,15 @@ public class JurorManagementServiceImplTest {
 
         List<JurorPool> poolMemberList = new ArrayList<>();
 
-        Mockito.when(poolRequestRepository.findByPoolNumber(Mockito.anyString()))
+        when(poolRequestRepository.findByPoolNumber(anyString()))
             .thenReturn(Optional.of(new PoolRequest()));
-        Mockito.when(courtLocationRepository.findByLocCode(Mockito.anyString()))
+        when(courtLocationRepository.findByLocCode(anyString()))
             .thenReturn(Optional.of(courtLocation));
-        when(jurorStatusRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(jurorStatus));
+        when(jurorStatusRepository.findById(anyInt())).thenReturn(Optional.of(jurorStatus));
         when(jurorPoolRepository
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
-                Mockito.anyList(), Mockito.anyBoolean(), Mockito.anyString(),
-                Mockito.any(CourtLocation.class), Mockito.anyList()
+                anyList(), anyBoolean(), anyString(),
+                any(CourtLocation.class), anyList()
             )).thenReturn(poolMemberList);
 
         BureauJWTPayload payload = buildPayload("400");
@@ -280,19 +453,19 @@ public class JurorManagementServiceImplTest {
 
         Assertions.assertThat(jurorsMoved).isEqualTo(0);
 
-        verify(poolRequestRepository, Mockito.times(2))
-            .findByPoolNumber(Mockito.anyString());
-        verify(courtLocationRepository, Mockito.times(2))
-            .findByLocCode(Mockito.anyString());
-        verify(jurorStatusRepository, Mockito.times(0))
-            .findById(Mockito.anyInt());
-        verify(jurorPoolRepository, Mockito.times(1))
+        verify(poolRequestRepository, times(2))
+            .findByPoolNumber(anyString());
+        verify(courtLocationRepository, times(2))
+            .findByLocCode(anyString());
+        verify(jurorStatusRepository, times(0))
+            .findById(anyInt());
+        verify(jurorPoolRepository, times(1))
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
-                Mockito.anyList(), Mockito.anyBoolean(), Mockito.any(),
-                Mockito.any(CourtLocation.class), Mockito.anyList()
+                anyList(), anyBoolean(), any(),
+                any(CourtLocation.class), anyList()
             );
-        verify(confirmationLetterService, Mockito.times(0))
-            .enqueueLetter(Mockito.any());
+        verify(confirmationLetterService, times(0))
+            .enqueueLetter(any());
     }
 
     @Test
@@ -324,17 +497,17 @@ public class JurorManagementServiceImplTest {
             .generatePoolNumber(targetCourtLocCode, targetStartDate);
 
         doReturn(null).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(Mockito.any(), Mockito.anyBoolean(), Mockito.any());
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
         doReturn(Collections.singletonList(testJurorPool)).when(jurorPoolRepository)
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList());
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList());
 
         doReturn(createTestPoolRequest("435230701", targetCourtLocCode,
             targetCourtLocation
-        )).when(poolRequestRepository).save(Mockito.any());
+        )).when(poolRequestRepository).save(any());
 
         int successfulCount = jurorManagementService.transferPoolMembers(payload, requestDto);
 
@@ -342,36 +515,36 @@ public class JurorManagementServiceImplTest {
             .as("Expect the single pool member to be transferred successfully")
             .isEqualTo(1);
 
-        verify(poolRequestRepository, Mockito.times(1))
+        verify(poolRequestRepository, times(1))
             .findById(sourcePoolNumber);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(targetCourtLocCode);
-        verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList()
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList()
             );
-        verify(generatePoolNumberService, Mockito.times(1))
-            .generatePoolNumber(Mockito.any(), Mockito.any());
-        verify(poolMemberSequenceService, Mockito.times(jurorNumbers.size()))
-            .getPoolMemberSequenceNumber(Mockito.any());
+        verify(generatePoolNumberService, times(1))
+            .generatePoolNumber(any(), any());
+        verify(poolMemberSequenceService, times(jurorNumbers.size()))
+            .getPoolMemberSequenceNumber(any());
 
-        verify(poolRequestRepository, Mockito.times(1))
-            .save(Mockito.any());
+        verify(poolRequestRepository, times(1))
+            .save(any());
         // one save invocation for each newly created juror, and another save invocation to update the source juror
         // record
-        verify(jurorPoolRepository, Mockito.times(jurorNumbers.size() * 2))
-            .save(Mockito.any());
-        verify(poolRequestRepository, Mockito.times(1))
-            .saveAndFlush(Mockito.any());
-        verify(jurorHistoryRepository, Mockito.times(jurorNumbers.size()))
-            .save(Mockito.any());
-        verify(certLetterService, Mockito.times(jurorNumbers.size()))
-            .enqueueNewLetter(Mockito.any(), Mockito.any());
+        verify(jurorPoolRepository, times(jurorNumbers.size() * 2))
+            .save(any());
+        verify(poolRequestRepository, times(1))
+            .saveAndFlush(any());
+        verify(jurorHistoryRepository, times(jurorNumbers.size()))
+            .save(any());
+        verify(certLetterService, times(jurorNumbers.size()))
+            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -405,17 +578,17 @@ public class JurorManagementServiceImplTest {
             .generatePoolNumber(targetCourtLocCode, targetStartDate);
 
         doReturn(null).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(Mockito.any(), Mockito.anyBoolean(), Mockito.any());
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
         doReturn(Arrays.asList(testJurorPool1, testJurorPool2, testJurorPool3)).when(jurorPoolRepository)
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList());
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList());
 
         doReturn(createTestPoolRequest("435230701", targetCourtLocCode,
             targetCourtLocation
-        )).when(poolRequestRepository).save(Mockito.any());
+        )).when(poolRequestRepository).save(any());
 
         int successfulCount = jurorManagementService.transferPoolMembers(payload, requestDto);
 
@@ -423,36 +596,36 @@ public class JurorManagementServiceImplTest {
             .as("Expect all 3 pool members to be transferred successfully")
             .isEqualTo(3);
 
-        verify(poolRequestRepository, Mockito.times(1))
+        verify(poolRequestRepository, times(1))
             .findById(sourcePoolNumber);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(targetCourtLocCode);
-        verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList()
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList()
             );
-        verify(generatePoolNumberService, Mockito.times(1))
-            .generatePoolNumber(Mockito.any(), Mockito.any());
-        verify(poolMemberSequenceService, Mockito.times(jurorNumbers.size()))
-            .getPoolMemberSequenceNumber(Mockito.any());
+        verify(generatePoolNumberService, times(1))
+            .generatePoolNumber(any(), any());
+        verify(poolMemberSequenceService, times(jurorNumbers.size()))
+            .getPoolMemberSequenceNumber(any());
 
-        verify(poolRequestRepository, Mockito.times(1))
-            .save(Mockito.any());
+        verify(poolRequestRepository, times(1))
+            .save(any());
         // one save invocation for each newly created juror, and another save invocation to update the source juror
         // record
-        verify(jurorPoolRepository, Mockito.times(jurorNumbers.size() * 2))
-            .save(Mockito.any());
-        verify(poolRequestRepository, Mockito.times(1))
-            .saveAndFlush(Mockito.any());
-        verify(jurorHistoryRepository, Mockito.times(jurorNumbers.size()))
-            .save(Mockito.any());
-        verify(certLetterService, Mockito.times(jurorNumbers.size()))
-            .enqueueNewLetter(Mockito.any(), Mockito.any());
+        verify(jurorPoolRepository, times(jurorNumbers.size() * 2))
+            .save(any());
+        verify(poolRequestRepository, times(1))
+            .saveAndFlush(any());
+        verify(jurorHistoryRepository, times(jurorNumbers.size()))
+            .save(any());
+        verify(certLetterService, times(jurorNumbers.size()))
+            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -486,16 +659,16 @@ public class JurorManagementServiceImplTest {
             .generatePoolNumber(targetCourtLocCode, targetStartDate);
 
         doReturn(historicJurorPool).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(Mockito.any(), Mockito.anyBoolean(), Mockito.any());
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
         doReturn(Collections.singletonList(sourceJurorPool)).when(jurorPoolRepository)
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList());
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList());
 
-        Mockito.doReturn(createTestPoolRequest("435230701", targetCourtLocCode, targetCourtLocation))
-            .when(poolRequestRepository).save(Mockito.any());
+        doReturn(createTestPoolRequest("435230701", targetCourtLocCode, targetCourtLocation))
+            .when(poolRequestRepository).save(any());
 
         int successfulCount = jurorManagementService.transferPoolMembers(payload, requestDto);
 
@@ -503,36 +676,36 @@ public class JurorManagementServiceImplTest {
             .as("Expect the single pool member to be transferred successfully")
             .isEqualTo(1);
 
-        verify(poolRequestRepository, Mockito.times(1))
+        verify(poolRequestRepository, times(1))
             .findById(sourcePoolNumber);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(targetCourtLocCode);
-        verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList());
-        Mockito.verify(generatePoolNumberService, Mockito.times(1))
-            .generatePoolNumber(Mockito.any(), Mockito.any());
-        verify(poolMemberSequenceService, Mockito.times(jurorNumbers.size()))
-            .getPoolMemberSequenceNumber(Mockito.any());
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList());
+        verify(generatePoolNumberService, times(1))
+            .generatePoolNumber(any(), any());
+        verify(poolMemberSequenceService, times(jurorNumbers.size()))
+            .getPoolMemberSequenceNumber(any());
 
-        verify(poolRequestRepository, Mockito.times(1))
-            .save(Mockito.any());
+        verify(poolRequestRepository, times(1))
+            .save(any());
         // one save invocation for each newly created juror, and another save invocation to update the source juror
         // record
         // plus one additional save invocation for logically deleting the previously transferred record
-        verify(jurorPoolRepository, Mockito.times((jurorNumbers.size() * 2) + 1))
-            .save(Mockito.any());
-        verify(poolRequestRepository, Mockito.times(1))
-            .saveAndFlush(Mockito.any());
-        verify(jurorHistoryRepository, Mockito.times(jurorNumbers.size()))
-            .save(Mockito.any());
-        verify(certLetterService, Mockito.times(jurorNumbers.size()))
-            .enqueueNewLetter(Mockito.any(), Mockito.any());
+        verify(jurorPoolRepository, times((jurorNumbers.size() * 2) + 1))
+            .save(any());
+        verify(poolRequestRepository, times(1))
+            .saveAndFlush(any());
+        verify(jurorHistoryRepository, times(jurorNumbers.size()))
+            .save(any());
+        verify(certLetterService, times(jurorNumbers.size()))
+            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -574,17 +747,17 @@ public class JurorManagementServiceImplTest {
             .generatePoolNumber(targetCourtLocCode, targetStartDate);
 
         doReturn(null).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(Mockito.any(), Mockito.anyBoolean(), Mockito.any());
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
         doReturn(Arrays.asList(testJurorPool1, testJurorPool2, testJurorPool4)).when(jurorPoolRepository)
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList());
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList());
 
         doReturn(createTestPoolRequest("435230701", targetCourtLocCode,
             targetCourtLocation
-        )).when(poolRequestRepository).save(Mockito.any());
+        )).when(poolRequestRepository).save(any());
 
         int successfulCount = jurorManagementService.transferPoolMembers(payload, requestDto);
 
@@ -592,36 +765,36 @@ public class JurorManagementServiceImplTest {
             .as("Expect 2 pool members to be transferred successfully (3 to be unsuccessful)")
             .isEqualTo(2);
 
-        verify(poolRequestRepository, Mockito.times(1))
+        verify(poolRequestRepository, times(1))
             .findById(sourcePoolNumber);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(targetCourtLocCode);
-        verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList()
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList()
             );
-        verify(generatePoolNumberService, Mockito.times(1))
-            .generatePoolNumber(Mockito.any(), Mockito.any());
-        verify(poolMemberSequenceService, Mockito.times(2))
-            .getPoolMemberSequenceNumber(Mockito.any());
+        verify(generatePoolNumberService, times(1))
+            .generatePoolNumber(any(), any());
+        verify(poolMemberSequenceService, times(2))
+            .getPoolMemberSequenceNumber(any());
 
-        verify(poolRequestRepository, Mockito.times(1))
-            .save(Mockito.any());
+        verify(poolRequestRepository, times(1))
+            .save(any());
         // one save invocation for each newly created juror, and another save invocation to update the source juror
         // record
-        verify(jurorPoolRepository, Mockito.times(4))
-            .save(Mockito.any());
-        verify(poolRequestRepository, Mockito.times(1))
-            .saveAndFlush(Mockito.any());
-        verify(jurorHistoryRepository, Mockito.times(2))
-            .save(Mockito.any());
-        verify(certLetterService, Mockito.times(2))
-            .enqueueNewLetter(Mockito.any(), Mockito.any());
+        verify(jurorPoolRepository, times(4))
+            .save(any());
+        verify(poolRequestRepository, times(1))
+            .saveAndFlush(any());
+        verify(jurorHistoryRepository, times(2))
+            .save(any());
+        verify(certLetterService, times(2))
+            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -645,34 +818,34 @@ public class JurorManagementServiceImplTest {
                 payload,
                 requestDto));
 
-        verify(poolRequestRepository, Mockito.never())
+        verify(poolRequestRepository, never())
             .findByPoolNumber(sourcePoolNumber);
-        verify(courtLocationRepository, Mockito.never())
+        verify(courtLocationRepository, never())
             .findByLocCode(sourceCourtLocCode);
-        verify(courtLocationRepository, Mockito.never())
+        verify(courtLocationRepository, never())
             .findByLocCode(targetCourtLocCode);
-        verify(jurorPoolRepository, Mockito.never())
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList()
+        verify(jurorPoolRepository, never())
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList()
             );
-        verify(generatePoolNumberService, Mockito.never())
-            .generatePoolNumber(Mockito.any(), Mockito.any());
-        verify(poolMemberSequenceService, Mockito.never())
-            .getPoolMemberSequenceNumber(Mockito.any());
+        verify(generatePoolNumberService, never())
+            .generatePoolNumber(any(), any());
+        verify(poolMemberSequenceService, never())
+            .getPoolMemberSequenceNumber(any());
 
-        verify(poolRequestRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(jurorPoolRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(poolRequestRepository, Mockito.never())
-            .saveAndFlush(Mockito.any());
-        verify(jurorHistoryRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(certLetterService, Mockito.never())
-            .enqueueNewLetter(Mockito.any(), Mockito.any());
+        verify(poolRequestRepository, never())
+            .save(any());
+        verify(jurorPoolRepository, never())
+            .save(any());
+        verify(poolRequestRepository, never())
+            .saveAndFlush(any());
+        verify(jurorHistoryRepository, never())
+            .save(any());
+        verify(certLetterService, never())
+            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -694,34 +867,34 @@ public class JurorManagementServiceImplTest {
                 requestDto
             ));
 
-        verify(poolRequestRepository, Mockito.never())
+        verify(poolRequestRepository, never())
             .findByPoolNumber(sourcePoolNumber);
-        verify(courtLocationRepository, Mockito.never())
+        verify(courtLocationRepository, never())
             .findByLocCode(sourceCourtLocCode);
-        verify(courtLocationRepository, Mockito.never())
+        verify(courtLocationRepository, never())
             .findByLocCode(targetCourtLocCode);
-        verify(jurorPoolRepository, Mockito.never())
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList()
+        verify(jurorPoolRepository, never())
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList()
             );
-        verify(generatePoolNumberService, Mockito.never())
-            .generatePoolNumber(Mockito.any(), Mockito.any());
-        verify(poolMemberSequenceService, Mockito.never())
-            .getPoolMemberSequenceNumber(Mockito.any());
+        verify(generatePoolNumberService, never())
+            .generatePoolNumber(any(), any());
+        verify(poolMemberSequenceService, never())
+            .getPoolMemberSequenceNumber(any());
 
-        verify(poolRequestRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(jurorPoolRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(poolRequestRepository, Mockito.never())
-            .saveAndFlush(Mockito.any());
-        verify(jurorHistoryRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(certLetterService, Mockito.never())
-            .enqueueNewLetter(Mockito.any(), Mockito.any());
+        verify(poolRequestRepository, never())
+            .save(any());
+        verify(jurorPoolRepository, never())
+            .save(any());
+        verify(poolRequestRepository, never())
+            .saveAndFlush(any());
+        verify(jurorHistoryRepository, never())
+            .save(any());
+        verify(certLetterService, never())
+            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -745,34 +918,34 @@ public class JurorManagementServiceImplTest {
                 requestDto
             ));
 
-        verify(poolRequestRepository, Mockito.times(1))
+        verify(poolRequestRepository, times(1))
             .findById(sourcePoolNumber);
-        verify(courtLocationRepository, Mockito.never())
+        verify(courtLocationRepository, never())
             .findByLocCode(sourceCourtLocCode);
-        verify(courtLocationRepository, Mockito.never())
+        verify(courtLocationRepository, never())
             .findByLocCode(targetCourtLocCode);
-        verify(jurorPoolRepository, Mockito.never())
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList()
+        verify(jurorPoolRepository, never())
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList()
             );
-        verify(generatePoolNumberService, Mockito.never())
-            .generatePoolNumber(Mockito.any(), Mockito.any());
-        verify(poolMemberSequenceService, Mockito.never())
-            .getPoolMemberSequenceNumber(Mockito.any());
+        verify(generatePoolNumberService, never())
+            .generatePoolNumber(any(), any());
+        verify(poolMemberSequenceService, never())
+            .getPoolMemberSequenceNumber(any());
 
-        verify(poolRequestRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(jurorPoolRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(poolRequestRepository, Mockito.never())
-            .saveAndFlush(Mockito.any());
-        verify(jurorHistoryRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(certLetterService, Mockito.never())
-            .enqueueNewLetter(Mockito.any(), Mockito.any());
+        verify(poolRequestRepository, never())
+            .save(any());
+        verify(jurorPoolRepository, never())
+            .save(any());
+        verify(poolRequestRepository, never())
+            .saveAndFlush(any());
+        verify(jurorHistoryRepository, never())
+            .save(any());
+        verify(certLetterService, never())
+            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -803,34 +976,34 @@ public class JurorManagementServiceImplTest {
                 requestDto
             ));
 
-        verify(poolRequestRepository, Mockito.times(1))
+        verify(poolRequestRepository, times(1))
             .findById(sourcePoolNumber);
-        verify(courtLocationRepository, Mockito.never())
+        verify(courtLocationRepository, never())
             .findByLocCode(sourceCourtLocCode);
-        verify(courtLocationRepository, Mockito.never())
+        verify(courtLocationRepository, never())
             .findByLocCode(targetCourtLocCode);
-        verify(jurorPoolRepository, Mockito.never())
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList()
+        verify(jurorPoolRepository, never())
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList()
             );
-        verify(generatePoolNumberService, Mockito.never())
-            .generatePoolNumber(Mockito.any(), Mockito.any());
-        verify(poolMemberSequenceService, Mockito.never())
-            .getPoolMemberSequenceNumber(Mockito.any());
+        verify(generatePoolNumberService, never())
+            .generatePoolNumber(any(), any());
+        verify(poolMemberSequenceService, never())
+            .getPoolMemberSequenceNumber(any());
 
-        verify(poolRequestRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(jurorPoolRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(poolRequestRepository, Mockito.never())
-            .saveAndFlush(Mockito.any());
-        verify(jurorHistoryRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(certLetterService, Mockito.never())
-            .enqueueNewLetter(Mockito.any(), Mockito.any());
+        verify(poolRequestRepository, never())
+            .save(any());
+        verify(jurorPoolRepository, never())
+            .save(any());
+        verify(poolRequestRepository, never())
+            .saveAndFlush(any());
+        verify(jurorHistoryRepository, never())
+            .save(any());
+        verify(certLetterService, never())
+            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -853,7 +1026,7 @@ public class JurorManagementServiceImplTest {
         CourtLocation courtLocation = testJurorPool.getCourt();
         doReturn(Optional.of(createTestPoolRequest(sourcePoolNumber, sourceCourtLocCode, courtLocation)))
             .when(poolRequestRepository).findById(sourcePoolNumber);
-        doReturn(Optional.empty()).when(courtLocationRepository).findByLocCode(Mockito.any());
+        doReturn(Optional.empty()).when(courtLocationRepository).findByLocCode(any());
 
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
             jurorManagementService.transferPoolMembers(
@@ -861,34 +1034,34 @@ public class JurorManagementServiceImplTest {
                 requestDto
             ));
 
-        verify(poolRequestRepository, Mockito.times(1))
+        verify(poolRequestRepository, times(1))
             .findById(sourcePoolNumber);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        verify(courtLocationRepository, Mockito.never())
+        verify(courtLocationRepository, never())
             .findByLocCode(targetCourtLocCode);
-        verify(jurorPoolRepository, Mockito.never())
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList()
+        verify(jurorPoolRepository, never())
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList()
             );
-        verify(generatePoolNumberService, Mockito.never())
-            .generatePoolNumber(Mockito.any(), Mockito.any());
-        verify(poolMemberSequenceService, Mockito.never())
-            .getPoolMemberSequenceNumber(Mockito.any());
+        verify(generatePoolNumberService, never())
+            .generatePoolNumber(any(), any());
+        verify(poolMemberSequenceService, never())
+            .getPoolMemberSequenceNumber(any());
 
-        verify(poolRequestRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(jurorPoolRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(poolRequestRepository, Mockito.never())
-            .saveAndFlush(Mockito.any());
-        verify(jurorHistoryRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(certLetterService, Mockito.never())
-            .enqueueNewLetter(Mockito.any(), Mockito.any());
+        verify(poolRequestRepository, never())
+            .save(any());
+        verify(jurorPoolRepository, never())
+            .save(any());
+        verify(poolRequestRepository, never())
+            .saveAndFlush(any());
+        verify(jurorHistoryRepository, never())
+            .save(any());
+        verify(certLetterService, never())
+            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -908,11 +1081,11 @@ public class JurorManagementServiceImplTest {
         sourceCourtLocation.setOwner("457");
         CourtLocation targetCourtLocation = createCourtLocation(targetCourtLocCode, targetCourtLocCode);
 
-        Mockito.doReturn(Optional.of(createTestPoolRequest(sourcePoolNumber, sourceCourtLocCode, sourceCourtLocation)))
+        doReturn(Optional.of(createTestPoolRequest(sourcePoolNumber, sourceCourtLocCode, sourceCourtLocation)))
             .when(poolRequestRepository).findById(sourcePoolNumber);
-        Mockito.doReturn(Optional.of(sourceCourtLocation)).when(courtLocationRepository)
+        doReturn(Optional.of(sourceCourtLocation)).when(courtLocationRepository)
             .findByLocCode(sourceCourtLocCode);
-        Mockito.doReturn(Optional.of(targetCourtLocation)).when(courtLocationRepository)
+        doReturn(Optional.of(targetCourtLocation)).when(courtLocationRepository)
             .findByLocCode(targetCourtLocCode);
 
         assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
@@ -921,30 +1094,30 @@ public class JurorManagementServiceImplTest {
                 requestDto
             ));
 
-        verify(poolRequestRepository, Mockito.times(1))
+        verify(poolRequestRepository, times(1))
             .findById(sourcePoolNumber);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        Mockito.verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(targetCourtLocCode);
-        verify(jurorPoolRepository, Mockito.never())
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(), Mockito.anyString(), Mockito.any(CourtLocation.class), Mockito.anyList());
-        Mockito.verify(generatePoolNumberService, Mockito.never())
-            .generatePoolNumber(Mockito.any(), Mockito.any());
-        verify(poolMemberSequenceService, Mockito.never())
-            .getPoolMemberSequenceNumber(Mockito.any());
+        verify(jurorPoolRepository, never())
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(), anyString(), any(CourtLocation.class), anyList());
+        verify(generatePoolNumberService, never())
+            .generatePoolNumber(any(), any());
+        verify(poolMemberSequenceService, never())
+            .getPoolMemberSequenceNumber(any());
 
-        verify(poolRequestRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(jurorPoolRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(poolRequestRepository, Mockito.never())
-            .saveAndFlush(Mockito.any());
-        verify(jurorHistoryRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(certLetterService, Mockito.never())
-            .enqueueNewLetter(Mockito.any(), Mockito.any());
+        verify(poolRequestRepository, never())
+            .save(any());
+        verify(jurorPoolRepository, never())
+            .save(any());
+        verify(poolRequestRepository, never())
+            .saveAndFlush(any());
+        verify(jurorHistoryRepository, never())
+            .save(any());
+        verify(certLetterService, never())
+            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -976,34 +1149,34 @@ public class JurorManagementServiceImplTest {
                 requestDto
             ));
 
-        verify(poolRequestRepository, Mockito.times(1))
+        verify(poolRequestRepository, times(1))
             .findById(sourcePoolNumber);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(targetCourtLocCode);
-        verify(jurorPoolRepository, Mockito.never())
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList()
+        verify(jurorPoolRepository, never())
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList()
             );
-        verify(generatePoolNumberService, Mockito.never())
-            .generatePoolNumber(Mockito.any(), Mockito.any());
-        verify(poolMemberSequenceService, Mockito.never())
-            .getPoolMemberSequenceNumber(Mockito.any());
+        verify(generatePoolNumberService, never())
+            .generatePoolNumber(any(), any());
+        verify(poolMemberSequenceService, never())
+            .getPoolMemberSequenceNumber(any());
 
-        verify(poolRequestRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(jurorPoolRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(poolRequestRepository, Mockito.never())
-            .saveAndFlush(Mockito.any());
-        verify(jurorHistoryRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(certLetterService, Mockito.never())
-            .enqueueNewLetter(Mockito.any(), Mockito.any());
+        verify(poolRequestRepository, never())
+            .save(any());
+        verify(jurorPoolRepository, never())
+            .save(any());
+        verify(poolRequestRepository, never())
+            .saveAndFlush(any());
+        verify(jurorHistoryRepository, never())
+            .save(any());
+        verify(certLetterService, never())
+            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -1038,17 +1211,17 @@ public class JurorManagementServiceImplTest {
             .generatePoolNumber(targetCourtLocCode, targetStartDate);
 
         doReturn(historicJurorPool).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(Mockito.any(), Mockito.anyBoolean(), Mockito.any());
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
         doReturn(Collections.singletonList(sourceJurorPool)).when(jurorPoolRepository)
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList());
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList());
 
         doReturn(createTestPoolRequest("435230701", targetCourtLocCode,
             targetCourtLocation
-        )).when(poolRequestRepository).save(Mockito.any());
+        )).when(poolRequestRepository).save(any());
 
         int successfulCount = jurorManagementService.transferPoolMembers(payload, requestDto);
 
@@ -1056,34 +1229,34 @@ public class JurorManagementServiceImplTest {
             .as("Expect the single pool member not to be transferred successfully")
             .isEqualTo(0);
 
-        verify(poolRequestRepository, Mockito.times(1))
+        verify(poolRequestRepository, times(1))
             .findById(sourcePoolNumber);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(targetCourtLocCode);
-        verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList()
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList()
             );
-        verify(generatePoolNumberService, Mockito.times(1))
-            .generatePoolNumber(Mockito.any(), Mockito.any());
-        verify(poolMemberSequenceService, Mockito.never())
-            .getPoolMemberSequenceNumber(Mockito.any());
+        verify(generatePoolNumberService, times(1))
+            .generatePoolNumber(any(), any());
+        verify(poolMemberSequenceService, never())
+            .getPoolMemberSequenceNumber(any());
 
-        verify(poolRequestRepository, Mockito.times(1))
-            .save(Mockito.any());
-        verify(jurorPoolRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(poolRequestRepository, Mockito.times(1))
-            .saveAndFlush(Mockito.any());
-        verify(jurorHistoryRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(certLetterService, Mockito.never())
-            .enqueueNewLetter(Mockito.any(), Mockito.any());
+        verify(poolRequestRepository, times(1))
+            .save(any());
+        verify(jurorPoolRepository, never())
+            .save(any());
+        verify(poolRequestRepository, times(1))
+            .saveAndFlush(any());
+        verify(jurorHistoryRepository, never())
+            .save(any());
+        verify(certLetterService, never())
+            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -1117,17 +1290,17 @@ public class JurorManagementServiceImplTest {
             .generatePoolNumber(targetCourtLocCode, targetStartDate);
 
         doReturn(null).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(Mockito.any(), Mockito.anyBoolean(), Mockito.any());
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
         doReturn(Collections.singletonList(sourceJurorPool)).when(jurorPoolRepository)
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList());
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList());
 
         doReturn(createTestPoolRequest("435230701", targetCourtLocCode,
             targetCourtLocation
-        )).when(poolRequestRepository).save(Mockito.any());
+        )).when(poolRequestRepository).save(any());
 
         int successfulCount = jurorManagementService.transferPoolMembers(payload, requestDto);
 
@@ -1135,34 +1308,34 @@ public class JurorManagementServiceImplTest {
             .as("Expect the single pool member not to be transferred successfully")
             .isEqualTo(0);
 
-        verify(poolRequestRepository, Mockito.times(1))
+        verify(poolRequestRepository, times(1))
             .findById(sourcePoolNumber);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(targetCourtLocCode);
-        verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList()
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList()
             );
-        verify(generatePoolNumberService, Mockito.times(1))
-            .generatePoolNumber(Mockito.any(), Mockito.any());
-        verify(poolMemberSequenceService, Mockito.never())
-            .getPoolMemberSequenceNumber(Mockito.any());
+        verify(generatePoolNumberService, times(1))
+            .generatePoolNumber(any(), any());
+        verify(poolMemberSequenceService, never())
+            .getPoolMemberSequenceNumber(any());
 
-        verify(poolRequestRepository, Mockito.times(1))
-            .save(Mockito.any());
-        verify(jurorPoolRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(poolRequestRepository, Mockito.times(1))
-            .saveAndFlush(Mockito.any());
-        verify(jurorHistoryRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(certLetterService, Mockito.never())
-            .enqueueNewLetter(Mockito.any(), Mockito.any());
+        verify(poolRequestRepository, times(1))
+            .save(any());
+        verify(jurorPoolRepository, never())
+            .save(any());
+        verify(poolRequestRepository, times(1))
+            .saveAndFlush(any());
+        verify(jurorHistoryRepository, never())
+            .save(any());
+        verify(certLetterService, never())
+            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -1195,17 +1368,17 @@ public class JurorManagementServiceImplTest {
             .generatePoolNumber(targetCourtLocCode, targetStartDate);
 
         doReturn(null).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(Mockito.any(), Mockito.anyBoolean(), Mockito.any());
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
         doReturn(Collections.singletonList(sourceJurorPool)).when(jurorPoolRepository)
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList());
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList());
 
         doReturn(createTestPoolRequest("435230701", targetCourtLocCode,
             targetCourtLocation
-        )).when(poolRequestRepository).save(Mockito.any());
+        )).when(poolRequestRepository).save(any());
 
         int successfulCount = jurorManagementService.transferPoolMembers(payload, requestDto);
 
@@ -1213,34 +1386,34 @@ public class JurorManagementServiceImplTest {
             .as("Expect the single pool member not to be transferred successfully")
             .isEqualTo(0);
 
-        verify(poolRequestRepository, Mockito.times(1))
+        verify(poolRequestRepository, times(1))
             .findById(sourcePoolNumber);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(targetCourtLocCode);
-        verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(),
-                Mockito.anyString(),
-                Mockito.any(CourtLocation.class),
-                Mockito.anyList()
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(),
+                anyString(),
+                any(CourtLocation.class),
+                anyList()
             );
-        verify(generatePoolNumberService, Mockito.times(1))
-            .generatePoolNumber(Mockito.any(), Mockito.any());
-        verify(poolMemberSequenceService, Mockito.never())
-            .getPoolMemberSequenceNumber(Mockito.any());
+        verify(generatePoolNumberService, times(1))
+            .generatePoolNumber(any(), any());
+        verify(poolMemberSequenceService, never())
+            .getPoolMemberSequenceNumber(any());
 
-        verify(poolRequestRepository, Mockito.times(1))
-            .save(Mockito.any());
-        verify(jurorPoolRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(poolRequestRepository, Mockito.times(1))
-            .saveAndFlush(Mockito.any());
-        verify(jurorHistoryRepository, Mockito.never())
-            .save(Mockito.any());
-        verify(certLetterService, Mockito.never())
-            .enqueueNewLetter(Mockito.any(), Mockito.any());
+        verify(poolRequestRepository, times(1))
+            .save(any());
+        verify(jurorPoolRepository, never())
+            .save(any());
+        verify(poolRequestRepository, times(1))
+            .saveAndFlush(any());
+        verify(jurorHistoryRepository, never())
+            .save(any());
+        verify(certLetterService, never())
+            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -1259,39 +1432,39 @@ public class JurorManagementServiceImplTest {
         CourtLocation courtLocation = testJurorPool.getCourt();
         CourtLocation targetCourtLocation = createCourtLocation(targetCourtLocCode, sourceCourtLocCode);
 
-        Mockito.doReturn(Optional.of(createTestPoolRequest(sourcePoolNumber, sourceCourtLocCode, courtLocation)))
+        doReturn(Optional.of(createTestPoolRequest(sourcePoolNumber, sourceCourtLocCode, courtLocation)))
             .when(poolRequestRepository).findById(sourcePoolNumber);
-        Mockito.doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findByLocCode(sourceCourtLocCode);
-        Mockito.doReturn(Optional.of(targetCourtLocation)).when(courtLocationRepository)
+        doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findByLocCode(sourceCourtLocCode);
+        doReturn(Optional.of(targetCourtLocation)).when(courtLocationRepository)
             .findByLocCode(targetCourtLocCode);
 
         Assertions.assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
             jurorManagementService.transferPoolMembers(payload, requestDto));
 
-        Mockito.verify(poolRequestRepository, Mockito.times(1))
+        verify(poolRequestRepository, times(1))
             .findById(sourcePoolNumber);
-        Mockito.verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        Mockito.verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(targetCourtLocCode);
-        Mockito.verify(jurorPoolRepository, Mockito.never())
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(Mockito.anyList(),
-                Mockito.anyBoolean(), Mockito.anyString(), Mockito.any(CourtLocation.class), Mockito.anyList());
-        Mockito.verify(generatePoolNumberService, Mockito.never())
-            .generatePoolNumber(Mockito.any(), Mockito.any());
-        Mockito.verify(poolMemberSequenceService, Mockito.never())
-            .getPoolMemberSequenceNumber(Mockito.any());
+        verify(jurorPoolRepository, never())
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(anyList(),
+                anyBoolean(), anyString(), any(CourtLocation.class), anyList());
+        verify(generatePoolNumberService, never())
+            .generatePoolNumber(any(), any());
+        verify(poolMemberSequenceService, never())
+            .getPoolMemberSequenceNumber(any());
 
-        Mockito.verify(poolRequestRepository, Mockito.never())
-            .save(Mockito.any());
-        Mockito.verify(jurorPoolRepository, Mockito.never())
-            .save(Mockito.any());
-        Mockito.verify(poolRequestRepository, Mockito.never())
-            .saveAndFlush(Mockito.any());
-        Mockito.verify(jurorHistoryRepository, Mockito.never())
-            .save(Mockito.any());
-        Mockito.verify(certLetterService, Mockito.never())
-            .enqueueNewLetter(Mockito.any(), Mockito.any());
+        verify(poolRequestRepository, never())
+            .save(any());
+        verify(jurorPoolRepository, never())
+            .save(any());
+        verify(poolRequestRepository, never())
+            .saveAndFlush(any());
+        verify(jurorHistoryRepository, never())
+            .save(any());
+        verify(certLetterService, never())
+            .enqueueNewLetter(any(), any());
     }
 
     @Test
@@ -1319,17 +1492,17 @@ public class JurorManagementServiceImplTest {
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findByLocCode(sourceCourtLocCode);
         doReturn(Arrays.asList(testJurorPool1, testJurorPool2, testJurorPool3, testJurorPool4))
             .when(jurorPoolRepository)
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(Mockito.anyList(), Mockito.anyBoolean(),
-                Mockito.anyString(), Mockito.any(CourtLocation.class));
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(), anyBoolean(),
+                anyString(), any(CourtLocation.class));
 
         JurorManagementResponseDto responseDto = jurorManagementService.validatePoolMembers(payload, requestDto);
 
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(Mockito.anyList(),
-                Mockito.anyBoolean(), Mockito.anyString(),
-                Mockito.any(CourtLocation.class));
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
+                anyBoolean(), anyString(),
+                any(CourtLocation.class));
 
         Assertions.assertThat(responseDto)
             .as("Expect response DTO to exist")
@@ -1369,16 +1542,16 @@ public class JurorManagementServiceImplTest {
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findByLocCode(sourceCourtLocCode);
         doReturn(Arrays.asList(testJurorPool1, testJurorPool2, testJurorPool3, testJurorPool4))
             .when(jurorPoolRepository)
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(Mockito.anyList(), Mockito.anyBoolean(),
-                Mockito.anyString(), Mockito.any(CourtLocation.class));
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(), anyBoolean(),
+                anyString(), any(CourtLocation.class));
 
         JurorManagementResponseDto responseDto = jurorManagementService.validatePoolMembers(payload, requestDto);
 
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(Mockito.anyList(),
-                Mockito.anyBoolean(), Mockito.anyString(), Mockito.any(CourtLocation.class));
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
+                anyBoolean(), anyString(), any(CourtLocation.class));
 
         Assertions.assertThat(responseDto)
             .as("Expect response DTO to exist")
@@ -1417,16 +1590,16 @@ public class JurorManagementServiceImplTest {
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findByLocCode(sourceCourtLocCode);
         doReturn(Arrays.asList(testJurorPool1, testJurorPool2, testJurorPool3, testJurorPool4))
             .when(jurorPoolRepository)
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(Mockito.anyList(), Mockito.anyBoolean(),
-                Mockito.anyString(), Mockito.any(CourtLocation.class));
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(), anyBoolean(),
+                anyString(), any(CourtLocation.class));
 
         JurorManagementResponseDto responseDto = jurorManagementService.validatePoolMembers(payload, requestDto);
 
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(Mockito.anyList(),
-                Mockito.anyBoolean(), Mockito.anyString(), Mockito.any(CourtLocation.class));
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
+                anyBoolean(), anyString(), any(CourtLocation.class));
 
         Assertions.assertThat(responseDto)
             .as("Expect response DTO to exist")
@@ -1475,17 +1648,17 @@ public class JurorManagementServiceImplTest {
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findByLocCode(sourceCourtLocCode);
         doReturn(Arrays.asList(testJurorPool1, testJurorPool2, testJurorPool3, testJurorPool4))
             .when(jurorPoolRepository)
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(Mockito.anyList(), Mockito.anyBoolean(),
-                Mockito.anyString(), Mockito.any(CourtLocation.class));
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(), anyBoolean(),
+                anyString(), any(CourtLocation.class));
 
         JurorManagementResponseDto responseDto = jurorManagementService.validatePoolMembers(payload, requestDto);
 
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(Mockito.anyList(),
-                Mockito.anyBoolean(), Mockito.anyString(),
-                Mockito.any(CourtLocation.class));
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
+                anyBoolean(), anyString(),
+                any(CourtLocation.class));
 
         Assertions.assertThat(responseDto)
             .as("Expect response DTO to exist")
@@ -1553,18 +1726,18 @@ public class JurorManagementServiceImplTest {
 
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findByLocCode(sourceCourtLocCode);
         doReturn(Collections.singletonList(testJurorPool1)).when(jurorPoolRepository)
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(Mockito.anyList(),
-                Mockito.anyBoolean(), Mockito.anyString(),
-                Mockito.any(CourtLocation.class));
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
+                anyBoolean(), anyString(),
+                any(CourtLocation.class));
 
         JurorManagementResponseDto responseDto = jurorManagementService.validatePoolMembers(payload, requestDto);
 
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        verify(jurorPoolRepository, Mockito.times(1))
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(Mockito.anyList(),
-                Mockito.anyBoolean(), Mockito.anyString(),
-                Mockito.any(CourtLocation.class));
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
+                anyBoolean(), anyString(),
+                any(CourtLocation.class));
 
         Assertions.assertThat(responseDto)
             .as("Expect response DTO to exist")
@@ -1613,9 +1786,9 @@ public class JurorManagementServiceImplTest {
         doReturn(Optional.empty()).when(courtLocationRepository).findByLocCode(sourceCourtLocCode);
         doReturn(Arrays.asList(testJurorPool1, testJurorPool2, testJurorPool3, testJurorPool4))
             .when(jurorPoolRepository)
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(Mockito.anyList(),
-                Mockito.anyBoolean(), Mockito.anyString(),
-                Mockito.any(CourtLocation.class));
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
+                anyBoolean(), anyString(),
+                any(CourtLocation.class));
 
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
             jurorManagementService.validatePoolMembers(
@@ -1623,12 +1796,12 @@ public class JurorManagementServiceImplTest {
                 requestDto
             ));
 
-        verify(courtLocationRepository, Mockito.times(1))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(sourceCourtLocCode);
-        verify(jurorPoolRepository, Mockito.never())
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(Mockito.anyList(),
-                Mockito.anyBoolean(), Mockito.anyString(),
-                Mockito.any(CourtLocation.class));
+        verify(jurorPoolRepository, never())
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
+                anyBoolean(), anyString(),
+                any(CourtLocation.class));
     }
 
     private JurorPool createTestJurorPool(String owner, String jurorNumber, String poolNumber) {
@@ -1766,7 +1939,7 @@ public class JurorManagementServiceImplTest {
         );
     }
 
-    private List<JurorPool> createJurorPoolList() {
+    private List<JurorPool> createJurorPoolList(String owner) {
 
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode("415");
@@ -1779,7 +1952,7 @@ public class JurorManagementServiceImplTest {
         juror.setJurorNumber("123456789");
 
         JurorPool jurorPool = new JurorPool();
-        jurorPool.setOwner("400");
+        jurorPool.setOwner(owner);
         jurorPool.setPool(poolRequest);
 
         juror.setAssociatedPools(Set.of(jurorPool));

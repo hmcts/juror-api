@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.bureau.domain.THistoryCode;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseDeferralServiceImpl;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.juror.domain.Pool;
 
 import java.net.URI;
 import java.time.DayOfWeek;
@@ -426,7 +427,6 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
         assertThat(exchange).describedAs(description).isNotNull();
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(exchange.getBody()).isNotNull();
-//        System.out.println("----->>>  " + exchange.getBody().getMessage());
         assertThat(exchange.getBody().getException()).isEqualTo(
             ResponseDeferralServiceImpl.DeferralDateInvalidException.class.getTypeName());
 

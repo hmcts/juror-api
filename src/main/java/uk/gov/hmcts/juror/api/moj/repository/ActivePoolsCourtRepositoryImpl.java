@@ -37,6 +37,7 @@ public class ActivePoolsCourtRepositoryImpl implements IActivePoolsCourtReposito
     EntityManager entityManager;
 
     // function to return the active pools list based on court location or date filter
+    @Override
     public List<ActivePoolsCourt> findActivePools(List<String> courts, LocalDate returnDate, String sortBy,
                                                   String order,
                                                   List<String> poolTypes) {
@@ -64,8 +65,8 @@ public class ActivePoolsCourtRepositoryImpl implements IActivePoolsCourtReposito
             .where(POOL_REQUEST.owner.notEqualsIgnoreCase("400"))
             .where(POOL_REQUEST.newRequest.eq('N'))
             .where(POOL_REQUEST.poolType.description.in(poolTypes))
-            .where((POOL_REQUEST.nilPool.eq(false).and(POOL_REQUEST.returnDate.after(LocalDate.now())))
-                .or((JUROR_POOL.isActive.isTrue().and(activeFlags.or(activeFlags2)))));
+            .where(POOL_REQUEST.nilPool.eq(false).and(POOL_REQUEST.returnDate.after(LocalDate.now()))
+                .or(JUROR_POOL.isActive.isTrue().and(activeFlags.or(activeFlags2))));
 
         if (courts != null) {
             activePoolsQuery = activePoolsQuery.where(POOL_REQUEST.courtLocation.locCode.in(courts));

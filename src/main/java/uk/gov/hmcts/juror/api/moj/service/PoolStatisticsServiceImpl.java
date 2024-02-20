@@ -33,6 +33,7 @@ public class PoolStatisticsServiceImpl implements PoolStatisticsService {
      * @param poolNumber 9 digit numeric string to identify a specific pool request to retrieve statistics for
      * @return Pool Statistics summary and calculated values mapped in to a data transfer object
      */
+    @Override
     public PoolSummaryResponseDto calculatePoolStatistics(String poolNumber) {
         PoolRequest poolRequest = getActivePoolRequest(poolNumber);
         PoolStatistics poolStatistics = getPoolStatistics(poolNumber);
@@ -67,6 +68,7 @@ public class PoolStatisticsServiceImpl implements PoolStatisticsService {
      * @param poolNumber 9 digit numeric string to identify a specific pool request
      * @return a POJO representing the calculated summary data in the POOL_STATS view
      */
+    @Override
     public PoolStatistics getPoolStatistics(String poolNumber) {
         return poolStatisticsRepository.findById(poolNumber).orElse(new PoolStatistics());
     }

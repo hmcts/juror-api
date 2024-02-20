@@ -7,6 +7,7 @@ DELETE FROM juror_mod.bulk_print_data;
 DELETE FROM juror_mod.contact_log;
 DELETE FROM juror_mod.coroner_pool_detail;
 DELETE FROM juror_mod.coroner_pool;
+DELETE FROM juror_mod.court_location_audit;
 DELETE FROM juror_mod.court_catchment_area;
 --DELETE FROM juror_mod.court_region;
 --DELETE FROM juror_mod.expenses_rates;
@@ -17,6 +18,7 @@ DELETE FROM juror_mod.pool_comments;
 DELETE FROM juror_mod.pool_history;
 DELETE FROM juror_mod.juror_pool;
 DELETE FROM juror_mod.pool;
+DELETE FROM juror_mod.message;
 
 DELETE FROM juror_mod.staff_juror_response_audit;
 DELETE FROM juror_mod.juror_response_aud;

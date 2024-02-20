@@ -23,7 +23,6 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
-import uk.gov.hmcts.juror.api.moj.domain.letter.ExcusalDeniedLetterMod;
 import uk.gov.hmcts.juror.api.moj.domain.letter.ExcusalLetterMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
@@ -35,7 +34,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.service.letter.ExcusalDeniedLetterServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.letter.ExcusalLetterServiceImpl;
 
 import java.time.LocalDate;

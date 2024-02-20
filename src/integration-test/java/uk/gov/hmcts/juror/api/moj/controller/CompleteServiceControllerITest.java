@@ -10,6 +10,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -20,14 +21,19 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.controller.request.CompleteServiceJurorNumberListDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorAndPoolRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberListDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
+import uk.gov.hmcts.juror.api.moj.controller.response.CompleteJurorResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.CompleteServiceValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusValidationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 
@@ -44,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DisplayName("Controller: /api/v1/moj/complete-service/")
+@DisplayName("Controller: /api/v1/moj/complete-service")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @SuppressWarnings({
     "PMD.LawOfDemeter",
@@ -57,6 +63,8 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
     private final JurorHistoryRepository jurorHistoryRepository;
 
     private HttpHeaders httpHeaders;
+
+    private static final String BASE_URL = "/api/v1/moj/complete-service";
 
     @Override
     @BeforeEach
@@ -120,6 +128,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             validateJurorWasCompleted(completionTime, "641500005", "415220901");
             validateJurorWasCompleted(completionTime, "641500004", "415220901");
         }
+
 
         private void validateJurorWasCompleted(LocalDate completionTime, String jurorNumber, String poolNumber) {
             JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
@@ -406,9 +415,9 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             ResponseEntity<String> response = template.exchange(request, String.class);
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-            JSONAssert
-                .assertEquals("Json Should match",
-                    "{\"status\":400,\"errors\":[\"must match \\\"^\\\\d{9}$\\\"\"]}", response.getBody(), false);
+
+            assertInvalidPayload(response,
+                new RestResponseEntityExceptionHandler.FieldError("jurorNumbers[0]", "must match \"^\\d{9}$\""));
         }
 
         @Test
@@ -617,5 +626,556 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             actual.getFirstName(), "First name should match");
         assertEquals(expected.getLastName(),
             actual.getLastName(), "Last name should match");
+    }
+
+    @Nested
+    @DisplayName("PATCH " + UncompleteService.URL)
+    @Sql({"/db/mod/truncate.sql", "/db/UncompleteServiceController.sql"})
+    class UncompleteService {
+
+        public static final String URL = BASE_URL + "/uncomplete";
+
+        private void validateJurorWasUncompleted(String jurorNumber, String poolNumber) {
+            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
+            assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
+                "Juror pool status should be responded");
+            Juror juror = jurorPool.getJuror();
+
+            assertNull(juror.getCompletionDate(),
+                "Juror completion date should be null");
+
+            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+            assertEquals(1, jurorHistories.size(), "Should only be one history entry");
+            JurorHistory jurorHistory = jurorHistories.get(0);
+            assertEquals(poolNumber, jurorHistory.getPoolNumber(), "Pool number should match");
+            assertEquals(jurorNumber, jurorHistory.getJurorNumber(), "Juror number should match");
+            assertEquals("COURT_USER", jurorHistory.getCreatedBy(), "User id should match");
+            assertEquals(HistoryCodeMod.COMPLETE_SERVICE, jurorHistory.getHistoryCode(), "History code should match");
+            assertEquals("Completion date removed", jurorHistory.getOtherInformation(), "Info should match");
+        }
+
+        @Test
+        void positiveTypicalSingle() throws Exception {
+            String jurorNumber = "641500005";
+            String poolNumber = "415220901";
+            final String bureauJwt = createBureauJwt("COURT_USER", "415", 9);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            RequestEntity<List<JurorAndPoolRequest>> request = new RequestEntity<>(
+                List.of(
+                    JurorAndPoolRequest.builder()
+                        .jurorNumber(jurorNumber)
+                        .poolNumber(poolNumber)
+                        .build()
+                ), httpHeaders,
+                HttpMethod.PATCH, URI.create(URL));
+
+
+            ResponseEntity<Void> response =
+                template.exchange(request, Void.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+
+            validateJurorWasUncompleted(jurorNumber, poolNumber);
+        }
+
+
+        @Test
+        void positiveTypicalMultiple() throws Exception {
+            String jurorNumber1 = "641500005";
+            String poolNumber1 = "415220901";
+            String jurorNumber2 = "641500006";
+            String poolNumber2 = "415220902";
+            String jurorNumber3 = "641500007";
+            String poolNumber3 = "415220902";
+            final String bureauJwt = createBureauJwt("COURT_USER", "415", 9);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            RequestEntity<List<JurorAndPoolRequest>> request = new RequestEntity<>(
+                List.of(
+                    JurorAndPoolRequest.builder()
+                        .jurorNumber(jurorNumber1)
+                        .poolNumber(poolNumber1)
+                        .build(),
+                    JurorAndPoolRequest.builder()
+                        .jurorNumber(jurorNumber2)
+                        .poolNumber(poolNumber2)
+                        .build(),
+                    JurorAndPoolRequest.builder()
+                        .jurorNumber(jurorNumber3)
+                        .poolNumber(poolNumber3)
+                        .build()
+                ), httpHeaders,
+                HttpMethod.PATCH, URI.create(URL));
+
+
+            ResponseEntity<Void> response =
+                template.exchange(request, Void.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+
+            validateJurorWasUncompleted(jurorNumber1, poolNumber1);
+            validateJurorWasUncompleted(jurorNumber2, poolNumber2);
+            validateJurorWasUncompleted(jurorNumber3, poolNumber3);
+        }
+
+        @Test
+        void negativeNotFound() throws Exception {
+            String jurorNumber = "641500000";
+            String poolNumber = "415220901";
+            final String bureauJwt = createBureauJwt("COURT_USER", "415", 9);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            RequestEntity<List<JurorAndPoolRequest>> request = new RequestEntity<>(
+                List.of(
+                    JurorAndPoolRequest.builder()
+                        .jurorNumber(jurorNumber)
+                        .poolNumber(poolNumber)
+                        .build()
+                ), httpHeaders,
+                HttpMethod.PATCH, URI.create(URL));
+
+            assertNotFound(template.exchange(request, String.class), URL,
+                "No complete juror pool found for Juror number 641500000");
+        }
+
+        @Test
+        void negativeBadPayload() throws Exception {
+            String jurorNumber = "641500000";
+            String poolNumber = "INVALID";
+            final String bureauJwt = createBureauJwt("COURT_USER", "415", 9);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            RequestEntity<List<JurorAndPoolRequest>> request = new RequestEntity<>(
+                List.of(
+                    JurorAndPoolRequest.builder()
+                        .jurorNumber(jurorNumber)
+                        .poolNumber(poolNumber)
+                        .build()
+                ), httpHeaders,
+                HttpMethod.PATCH, URI.create(URL));
+
+            assertInvalidPathParam(template.exchange(request, String.class),
+                "uncompleteService.requestList[0].poolNumber: must match \"^\\d{9}$\"");
+        }
+
+        @Test
+        void negativeUnauthorisedNotSJO() throws Exception {
+            String jurorNumber = "641500005";
+            String poolNumber = "415220901";
+            final String bureauJwt = createBureauJwt("COURT_USER", "415", 1);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            RequestEntity<List<JurorAndPoolRequest>> request = new RequestEntity<>(
+                List.of(
+                    JurorAndPoolRequest.builder()
+                        .jurorNumber(jurorNumber)
+                        .poolNumber(poolNumber)
+                        .build()
+                ), httpHeaders,
+                HttpMethod.PATCH, URI.create(URL));
+
+            assertForbiddenResponse(template.exchange(request, String.class), URL);
+        }
+    }
+
+    @Nested
+    @DisplayName("POST " + GetCompleteJurors.URL)
+    @Sql({"/db/mod/truncate.sql", "/db/CompleteServiceControllerSearch.sql"})
+    @SuppressWarnings("PMD.TooManyMethods")
+    class GetCompleteJurors {
+        public static final String URL = BASE_URL;
+
+
+        ResponseEntity<PaginatedList<CompleteJurorResponse>> triggerValid(JurorPoolSearch search) throws Exception {
+            final String bureauJwt = createBureauJwt("COURT_USER", "415", 9);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            RequestEntity<JurorPoolSearch> request = new RequestEntity<>(search, httpHeaders,
+                HttpMethod.POST, URI.create(URL));
+
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response =
+                template.exchange(request, new ParameterizedTypeReference<>() {
+                });
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+            return response;
+        }
+
+        @Test
+        void positiveJurorFirstNameSearch() throws Exception {
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response = triggerValid(
+                JurorPoolSearch.builder()
+                    .jurorName("FNAMEZERO")
+                    .pageLimit(25)
+                    .pageNumber(1)
+                    .build()
+            );
+            PaginatedList<CompleteJurorResponse> body = response.getBody();
+            assertThat(body).isNotNull();
+            assertThat(body.getTotalPages()).isEqualTo(1L);
+            assertThat(body.getTotalItems()).isEqualTo(4L);
+            assertThat(body.getCurrentPage()).isEqualTo(1L);
+            
+            List<CompleteJurorResponse> data = body.getData();
+            assertThat(data).isNotNull().hasSize(4);
+            validateCompleteJurorResponse641500005(data.get(0));
+            validateCompleteJurorResponse641500007(data.get(1));
+            validateCompleteJurorResponse641500008(data.get(2));
+            validateCompleteJurorResponse641500009(data.get(3));
+        }
+
+        @Test
+        void positiveJurorLastNameSearch() throws Exception {
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response = triggerValid(
+                JurorPoolSearch.builder()
+                    .jurorName("LNAMEONE")
+                    .pageLimit(25)
+                    .pageNumber(1)
+                    .build()
+            );
+
+            PaginatedList<CompleteJurorResponse> body = response.getBody();
+            assertThat(body).isNotNull();
+            assertThat(body.getTotalPages()).isEqualTo(1L);
+            assertThat(body.getTotalItems()).isEqualTo(5L);
+            assertThat(body.getCurrentPage()).isEqualTo(1L);
+
+            List<CompleteJurorResponse> data = body.getData();
+            assertThat(data).isNotNull().hasSize(5);
+            validateCompleteJurorResponse641500010(data.get(0));
+            validateCompleteJurorResponse641500011(data.get(1));
+            validateCompleteJurorResponse641500012(data.get(2));
+            validateCompleteJurorResponse641500013(data.get(3));
+            validateCompleteJurorResponse641500014(data.get(4));
+        }
+
+        @Test
+        void positiveJurorFirstAndLastNameSearch() throws Exception {
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response = triggerValid(
+                JurorPoolSearch.builder()
+                    .jurorName("FNAMEZEROSEVEN LNAMEZEROSE")
+                    .pageLimit(25)
+                    .pageNumber(1)
+                    .build()
+            );
+
+            PaginatedList<CompleteJurorResponse> body = response.getBody();
+            assertThat(body).isNotNull();
+            assertThat(body.getTotalPages()).isEqualTo(1L);
+            assertThat(body.getTotalItems()).isEqualTo(1L);
+            assertThat(body.getCurrentPage()).isEqualTo(1L);
+
+            List<CompleteJurorResponse> data = body.getData();
+            assertThat(data).isNotNull().hasSize(1);
+            validateCompleteJurorResponse641500007(data.get(0));
+        }
+
+        @Test
+        void positiveJurorNumberSearch() throws Exception {
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response = triggerValid(
+                JurorPoolSearch.builder()
+                    .jurorNumber("64150000")
+                    .pageLimit(25)
+                    .pageNumber(1)
+                    .build()
+            );
+
+            PaginatedList<CompleteJurorResponse> body = response.getBody();
+            assertThat(body).isNotNull();
+            assertThat(body.getTotalPages()).isEqualTo(1L);
+            assertThat(body.getTotalItems()).isEqualTo(4L);
+            assertThat(body.getCurrentPage()).isEqualTo(1L);
+
+            List<CompleteJurorResponse> data = body.getData();
+            assertThat(data).isNotNull().hasSize(4);
+            validateCompleteJurorResponse641500005(data.get(0));
+            validateCompleteJurorResponse641500007(data.get(1));
+            validateCompleteJurorResponse641500008(data.get(2));
+            validateCompleteJurorResponse641500009(data.get(3));
+        }
+
+        @Test
+        void positivePostCodeSearch() throws Exception {
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response = triggerValid(
+                JurorPoolSearch.builder()
+                    .postcode("CH0 5AN")
+                    .pageLimit(25)
+                    .pageNumber(1)
+                    .build()
+            );
+
+            PaginatedList<CompleteJurorResponse> body = response.getBody();
+            assertThat(body).isNotNull();
+            assertThat(body.getTotalPages()).isEqualTo(1L);
+            assertThat(body.getTotalItems()).isEqualTo(2L);
+            assertThat(body.getCurrentPage()).isEqualTo(1L);
+
+            List<CompleteJurorResponse> data = body.getData();
+            assertThat(data).isNotNull().hasSize(2);
+            validateCompleteJurorResponse641500005(data.get(0));
+            validateCompleteJurorResponse641500007(data.get(1));
+        }
+
+        @Test
+        void positivePoolNumberSearch() throws Exception {
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response = triggerValid(
+                JurorPoolSearch.builder()
+                    .poolNumber("415220902")
+                    .pageLimit(25)
+                    .pageNumber(1)
+                    .build()
+            );
+
+            PaginatedList<CompleteJurorResponse> body = response.getBody();
+            assertThat(body).isNotNull();
+            assertThat(body.getTotalPages()).isEqualTo(1L);
+            assertThat(body.getTotalItems()).isEqualTo(3L);
+            assertThat(body.getCurrentPage()).isEqualTo(1L);
+
+            List<CompleteJurorResponse> data = body.getData();
+            assertThat(data).isNotNull().hasSize(3);
+            validateCompleteJurorResponse641500010(data.get(0));
+            validateCompleteJurorResponse641500011(data.get(1));
+            validateCompleteJurorResponse641500012(data.get(2));
+        }
+
+        @Test
+        void positivePagination() throws Exception {
+            ResponseEntity<PaginatedList<CompleteJurorResponse>> response = triggerValid(
+                JurorPoolSearch.builder()
+                    .poolNumber("415")
+                    .pageLimit(5)
+                    .pageNumber(1)
+                    .build()
+            );
+
+            PaginatedList<CompleteJurorResponse> body = response.getBody();
+            assertThat(body).isNotNull();
+            assertThat(body.getTotalPages()).isEqualTo(2L);
+            assertThat(body.getTotalItems()).isEqualTo(9L);
+            assertThat(body.getCurrentPage()).isEqualTo(1L);
+
+            List<CompleteJurorResponse> data = body.getData();
+            assertThat(data).isNotNull().hasSize(5);
+            validateCompleteJurorResponse641500005(data.get(0));
+            validateCompleteJurorResponse641500007(data.get(1));
+            validateCompleteJurorResponse641500008(data.get(2));
+            validateCompleteJurorResponse641500009(data.get(3));
+            validateCompleteJurorResponse641500010(data.get(4));
+
+            response = triggerValid(
+                JurorPoolSearch.builder()
+                    .poolNumber("415")
+                    .pageLimit(5)
+                    .pageNumber(2)
+                    .build()
+            );
+
+            PaginatedList<CompleteJurorResponse> body2 = response.getBody();
+            assertThat(body2).isNotNull();
+            assertThat(body2.getTotalPages()).isEqualTo(2L);
+            assertThat(body2.getTotalItems()).isEqualTo(9L);
+            assertThat(body2.getCurrentPage()).isEqualTo(2L);
+
+            List<CompleteJurorResponse> data2 = body2.getData();
+            assertThat(data2).isNotNull().hasSize(4);
+            validateCompleteJurorResponse641500011(data2.get(0));
+            validateCompleteJurorResponse641500012(data2.get(1));
+            validateCompleteJurorResponse641500013(data2.get(2));
+            validateCompleteJurorResponse641500014(data2.get(3));
+        }
+
+        @Test
+        void negativeNotFound() throws Exception {
+            final String bureauJwt = createBureauJwt("COURT_USER", "415", 9);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            RequestEntity<JurorPoolSearch> request = new RequestEntity<>(
+                JurorPoolSearch.builder()
+                    .poolNumber("321")
+                    .pageLimit(5)
+                    .pageNumber(2)
+                    .build(), httpHeaders,
+                HttpMethod.POST, URI.create(URL));
+
+            assertNotFound(template.exchange(request, String.class), URL,
+                "No complete juror pools found that meet your search criteria.");
+        }
+
+        @Test
+        void negativeBadPayload() throws Exception {
+            final String bureauJwt = createBureauJwt("COURT_USER", "415", 1);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            RequestEntity<JurorPoolSearch> request = new RequestEntity<>(
+                JurorPoolSearch.builder()
+                    .jurorName("ABC")
+                    .jurorNumber("12")
+                    .pageLimit(5)
+                    .pageNumber(2)
+                    .build(), httpHeaders,
+                HttpMethod.POST, URI.create(URL));
+
+            assertInvalidPayload(template.exchange(request, String.class),
+                new RestResponseEntityExceptionHandler.FieldError("jurorName",
+                    "Field jurorName should be excluded if any of the following fields are present: "
+                        + "[jurorNumber, postcode]"));
+        }
+
+        @Test
+        void negativeUnauthorisedNotSJO() throws Exception {
+            final String bureauJwt = createBureauJwt("COURT_USER", "415", 1);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            RequestEntity<JurorPoolSearch> request = new RequestEntity<>(
+                JurorPoolSearch.builder()
+                    .poolNumber("415")
+                    .pageLimit(5)
+                    .pageNumber(2)
+                    .build(), httpHeaders,
+                HttpMethod.POST, URI.create(URL));
+
+            assertForbiddenResponse(template.exchange(request, String.class), URL);
+        }
+
+        private void validateCompleteJurorResponse641500005(CompleteJurorResponse response) {
+            validateCompleteJurorResponse(
+                response,
+                "641500005",
+                "415220901",
+                "FNAMEZEROFIVE",
+                "LNAMEZEROFIVE",
+                "CH0 5AN",
+                LocalDate.of(2023, 1, 5)
+            );
+        }
+
+        private void validateCompleteJurorResponse641500007(CompleteJurorResponse response) {
+            validateCompleteJurorResponse(
+                response,
+                "641500007",
+                "415220901",
+                "FNAMEZEROSEVEN",
+                "LNAMEZEROSEVEN",
+                "CH0 5AN",
+                LocalDate.of(2023, 1, 7)
+            );
+        }
+
+        private void validateCompleteJurorResponse641500008(CompleteJurorResponse response) {
+            validateCompleteJurorResponse(
+                response,
+                "641500008",
+                "415220901",
+                "FNAMEZEROEIGHT",
+                "LNAMEZEROEIGHT",
+                "CH0 8AN",
+                LocalDate.of(2023, 1, 8)
+            );
+        }
+
+        private void validateCompleteJurorResponse641500009(CompleteJurorResponse response) {
+            validateCompleteJurorResponse(
+                response,
+                "641500009",
+                "415220901",
+                "FNAMEZERONINE",
+                "LNAMEZERONINE",
+                "CH0 9AN",
+                LocalDate.of(2023, 1, 9)
+            );
+        }
+
+        private void validateCompleteJurorResponse641500010(CompleteJurorResponse response) {
+            validateCompleteJurorResponse(
+                response,
+                "641500010",
+                "415220902",
+                "FNAMEONEZERO",
+                "LNAMEONEZERO",
+                "CH1 0AN",
+                LocalDate.of(2023, 1, 10)
+            );
+        }
+
+        private void validateCompleteJurorResponse641500011(CompleteJurorResponse response) {
+            validateCompleteJurorResponse(
+                response,
+                "641500011",
+                "415220902",
+                "FNAMEONEONE",
+                "LNAMEONEONE",
+                "CH1 1AN",
+                LocalDate.of(2023, 1, 11)
+            );
+        }
+
+        private void validateCompleteJurorResponse641500012(CompleteJurorResponse response) {
+            validateCompleteJurorResponse(
+                response,
+                "641500012",
+                "415220902",
+                "FNAMEONETWO",
+                "LNAMEONETWO",
+                "CH1 2AN",
+                LocalDate.of(2023, 1, 12)
+            );
+        }
+
+        private void validateCompleteJurorResponse641500013(CompleteJurorResponse response) {
+            validateCompleteJurorResponse(
+                response,
+                "641500013",
+                "415220903",
+                "FNAMEONETHREE",
+                "LNAMEONETHREE",
+                "CH1 3AN",
+                LocalDate.of(2023, 1, 13)
+            );
+        }
+
+        private void validateCompleteJurorResponse641500014(CompleteJurorResponse response) {
+            validateCompleteJurorResponse(
+                response,
+                "641500014",
+                "415220903",
+                "FNAMEONEFOUR",
+                "LNAMEONEFOUR",
+                "CH1 4AN",
+                LocalDate.of(2023, 1, 14)
+            );
+        }
+
+
+        private void validateCompleteJurorResponse(CompleteJurorResponse response,
+                                                   String jurorNumber,
+                                                   String poolNumber,
+                                                   String firstName,
+                                                   String lastName,
+                                                   String postCode,
+                                                   LocalDate completionDate
+        ) {
+            assertThat(response).isNotNull();
+            assertThat(response.getJurorNumber()).isEqualTo(jurorNumber);
+            assertThat(response.getPoolNumber()).isEqualTo(poolNumber);
+            assertThat(response.getFirstName()).isEqualTo(firstName);
+            assertThat(response.getLastName()).isEqualTo(lastName);
+            assertThat(response.getPostCode()).isEqualTo(postCode);
+            assertThat(response.getCompletionDate()).isEqualTo(completionDate);
+        }
     }
 }

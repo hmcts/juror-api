@@ -190,16 +190,20 @@ public class JurorPaperResponseDto {
         + "("
         + "V=Visual Impairment"
         + "W=Wheel Chair Access"
-        + "H=Hearing Impairment"
+        + "H=Hearing Loss"
         + "M=Multiple"
         + "O=Other"
         + "I=Diabetic"
         + "D=Diet"
-        + "P=Pregnancy"
+        + "P=Pregnancy/Breastfeeding"
         + "R=Reading"
         + "L=Limited Mobility"
-        + "C=Childcare Problems"
-        + "U=Drug Dependent"
+        + "C=Caring responsibilities"
+        + "U=Medication"
+        + "J=CJS Employee"
+        + "E=Epilepsy"
+        + "A=Religious Reasons"
+        + "T=Travelling Difficulties"
         + ")"
     )
 
@@ -207,7 +211,7 @@ public class JurorPaperResponseDto {
     public static class ReasonableAdjustment {
         @JsonProperty("assistanceType")
         @Schema(description = "Assistance type", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = "V,W,"
-            + "H,M,O,I,D,P,R,L,C,U")
+            + "H,M,O,I,D,P,R,L,C,U,J,E,A,T")
         @NotNull
         private String assistanceType;
 

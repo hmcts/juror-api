@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.SpecialNeeds;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -70,9 +71,10 @@ public class JurorOverviewResponseDto {
     @Autowired
     public JurorOverviewResponseDto(JurorPool jurorPool,
                                     JurorStatusRepository jurorStatusRepository,
-                                    ResponseExcusalService responseExcusalService) {
+                                    ResponseExcusalService responseExcusalService,
+                                    PendingJurorRepository pendingJurorRepository) {
         this.commonDetails = new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
-            responseExcusalService);
+            responseExcusalService, pendingJurorRepository);
 
         Juror juror = jurorPool.getJuror();
         this.opticReference = juror.getOpticRef();

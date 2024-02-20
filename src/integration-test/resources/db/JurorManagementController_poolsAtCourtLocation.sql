@@ -122,10 +122,10 @@ INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, is_active, n
 
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,travel_time,appearance_stage,non_attendance) VALUES
-	(current_date,'641500003','415230101','415',123456789,'09:30:00',null,1.2,'CHECKED_IN',false);
+	(current_date,'641500003','415230101','415',123456789,'09:30:00',null,'01:12','CHECKED_IN',false);
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,travel_time,appearance_stage,non_attendance) VALUES
-	(current_date,'641500006','415230101','415',123456789,'09:30:00',null,1.2,'CHECKED_IN',false);
+	(current_date,'641500006','415230101','415',123456789,'09:30:00',null,'01:12','CHECKED_IN',false);
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,travel_time,appearance_stage,non_attendance) VALUES
-	(current_date,'641500005','415230101','415',123456789,'09:30:00',null,1.2,'CHECKED_IN',false);
+	(current_date,'641500005','415230101','415',123456789,'09:30:00',null,'01:12','CHECKED_IN',false);

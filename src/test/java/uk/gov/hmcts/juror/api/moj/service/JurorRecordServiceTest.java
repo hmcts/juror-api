@@ -15,7 +15,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.history.Revision;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -89,7 +88,6 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustments
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeService;
 
-import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -117,9 +115,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -208,7 +210,7 @@ class JurorRecordServiceTest {
         ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
         reasonableAdjustments.setDescription("Vision impairment");
         reasonableAdjustments.setCode("V");
-        Mockito.doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
 
         jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
 
@@ -252,16 +254,16 @@ class JurorRecordServiceTest {
         ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
         reasonableAdjustments.setDescription("Vision impairment");
         reasonableAdjustments.setCode("V");
-        Mockito.doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
 
-        Mockito.doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
 
         jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
 
         final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
-        Mockito.verify(jurorRepository, Mockito.times(1)).save(jurorArgumentCaptor.capture());
-        Mockito.verify(jurorReasonableAdjustmentRepository, Mockito.times(1)).findByJurorNumber(VALID_JUROR_NUMBER);
-        Mockito.verify(jurorReasonableAdjustmentRepository, Mockito.times(1)).save(any());
+        verify(jurorRepository, times(1)).save(jurorArgumentCaptor.capture());
+        verify(jurorReasonableAdjustmentRepository, times(1)).findByJurorNumber(VALID_JUROR_NUMBER);
+        verify(jurorReasonableAdjustmentRepository, times(1)).save(any());
 
         Juror capturedJuror = jurorArgumentCaptor.getValue();
         assertThat(capturedJuror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
@@ -278,18 +280,18 @@ class JurorRecordServiceTest {
         Juror juror = jurorPool.getJuror();
         juror.setWelsh(true);
 
-        Mockito.doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
         ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
         reasonableAdjustments.setDescription("Vision impairment");
         reasonableAdjustments.setCode("V");
-        Mockito.doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
 
         jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
 
         final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
-        Mockito.verify(jurorRepository, Mockito.times(1)).save(jurorArgumentCaptor.capture());
-        Mockito.verify(jurorReasonableAdjustmentRepository, Mockito.times(1)).findByJurorNumber(VALID_JUROR_NUMBER);
-        Mockito.verify(jurorReasonableAdjustmentRepository, Mockito.times(1)).save(any());
+        verify(jurorRepository, times(1)).save(jurorArgumentCaptor.capture());
+        verify(jurorReasonableAdjustmentRepository, times(1)).findByJurorNumber(VALID_JUROR_NUMBER);
+        verify(jurorReasonableAdjustmentRepository, times(1)).save(any());
 
         Juror capturedJuror = jurorArgumentCaptor.getValue();
         assertThat(capturedJuror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
@@ -311,15 +313,15 @@ class JurorRecordServiceTest {
         ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
         reasonableAdjustments.setDescription("Vision impairment");
         reasonableAdjustments.setCode("V");
-        Mockito.doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
-        Mockito.doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
 
         jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
 
         final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
-        Mockito.verify(jurorRepository, Mockito.times(1)).save(jurorArgumentCaptor.capture());
-        Mockito.verify(jurorReasonableAdjustmentRepository, Mockito.times(1)).findByJurorNumber(VALID_JUROR_NUMBER);
-        Mockito.verify(jurorReasonableAdjustmentRepository, Mockito.times(1)).save(any());
+        verify(jurorRepository, times(1)).save(jurorArgumentCaptor.capture());
+        verify(jurorReasonableAdjustmentRepository, times(1)).findByJurorNumber(VALID_JUROR_NUMBER);
+        verify(jurorReasonableAdjustmentRepository, times(1)).save(any());
 
         Juror capturedJuror = jurorArgumentCaptor.getValue();
         assertThat(capturedJuror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
@@ -343,14 +345,14 @@ class JurorRecordServiceTest {
         ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
         reasonableAdjustments.setDescription("Vision impairment");
         reasonableAdjustments.setCode("V");
-        Mockito.doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
 
         doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
 
         jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
 
         final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
-        Mockito.verify(jurorRepository, Mockito.times(1)).save(jurorArgumentCaptor.capture());
+        verify(jurorRepository, times(1)).save(jurorArgumentCaptor.capture());
         Juror capturedJuror = jurorArgumentCaptor.getValue();
 
         assertThat(capturedJuror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
@@ -370,7 +372,7 @@ class JurorRecordServiceTest {
         juror.setWorkPhone("0543219876");
 
         doReturn(jurorPool).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(any(), Mockito.anyBoolean(), any());
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
 
         JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
             jurorNumber, LOC_CODE);
@@ -392,7 +394,7 @@ class JurorRecordServiceTest {
         juror.setWorkPhone("0543219876");
 
         doReturn(jurorPool).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(any(), Mockito.anyBoolean(), any());
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
 
         JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
             jurorNumber, LOC_CODE);
@@ -414,7 +416,7 @@ class JurorRecordServiceTest {
         juror.setWorkPhone("0543219876");
 
         doReturn(jurorPool).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(any(), Mockito.anyBoolean(), any());
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
 
         JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
             jurorNumber, LOC_CODE);
@@ -437,7 +439,7 @@ class JurorRecordServiceTest {
         juror.setAltPhoneNumber("0987654321");
 
         doReturn(jurorPool).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(any(), Mockito.anyBoolean(), any());
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
 
         JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
             jurorNumber, LOC_CODE);
@@ -459,7 +461,7 @@ class JurorRecordServiceTest {
         juror.setPhoneNumber("0123456789");
 
         doReturn(jurorPool).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(any(), Mockito.anyBoolean(), any());
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
 
         JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
             jurorNumber, LOC_CODE);
@@ -482,7 +484,7 @@ class JurorRecordServiceTest {
         juror.setWorkPhone("0543219876");
 
         doReturn(jurorPool).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(any(), Mockito.anyBoolean(), any());
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
 
         JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
             jurorNumber, LOC_CODE);
@@ -496,14 +498,37 @@ class JurorRecordServiceTest {
 
     }
 
+    @Test
+    void testCheckJurorRecordDetailManuallyCreatedJuror() {
+        String jurorNumber = "641500094";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
+        Juror juror = jurorPool.getJuror();
+        juror.setWorkPhone("0543219876");
+
+        PendingJuror pendingJuror = new PendingJuror();
+        pendingJuror.setJurorNumber(jurorPool.getJurorNumber());
+        pendingJuror.setPoolNumber(jurorPool.getPoolNumber());
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
+        doReturn(Optional.of(pendingJuror)).when(pendingJurorRepository).findById(jurorPool.getJurorNumber());
+
+        JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
+            jurorNumber, LOC_CODE);
+
+        assertThat(jurorDetailsResponseDto.getCommonDetails().isManuallyCreated())
+            .as("Expect juror to be manually created")
+            .isEqualTo(true);
+    }
+
 
 
     @Test
     void testCheckJurorRecordNotFound() {
 
         String jurorNumber = "641500094";
-        Mockito.doReturn(new ArrayList<>()).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(any(), Mockito.anyBoolean());
+        doReturn(new ArrayList<>()).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(any(), anyBoolean());
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("415"),
             jurorNumber, LOC_CODE);
@@ -531,7 +556,7 @@ class JurorRecordServiceTest {
 
         jurorPools.get(0).getJuror().setWelsh(welshFlag);
         doReturn(jurorHistoryList).when(jurorHistoryRepository)
-            .findByJurorNumberAndDateCreatedGreaterThanEqual(Mockito.anyString(), any(LocalDate.class));
+            .findByJurorNumberAndDateCreatedGreaterThanEqual(anyString(), any(LocalDate.class));
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(LOC_CODE);
         doReturn(jurorPools.get(0)).when(jurorPoolRepository)
@@ -543,10 +568,10 @@ class JurorRecordServiceTest {
         JurorOverviewResponseDto actualResponse =
             jurorRecordService.getJurorOverview(buildPayload("400"), jurorNumber, LOC_CODE);
 
-        verify(jurorPoolRepository, Mockito.times(1))
+        verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
-        verify(jurorHistoryRepository, Mockito.times(1))
-            .findByJurorNumberAndDateCreatedGreaterThanEqual(Mockito.anyString(), any(LocalDate.class));
+        verify(jurorHistoryRepository, times(1))
+            .findByJurorNumberAndDateCreatedGreaterThanEqual(anyString(), any(LocalDate.class));
         assertEquals(expectedResponse.getWelshLanguageRequired(), actualResponse.getWelshLanguageRequired());
     }
 
@@ -556,7 +581,7 @@ class JurorRecordServiceTest {
 
         String jurorNumber = "416111111";
         String locCode = "416";
-        when(jurorPoolRepository.findByJurorNumberAndIsActiveAndCourt(any(), Mockito.anyBoolean(),
+        when(jurorPoolRepository.findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(),
             any())).thenReturn(createValidJurorPool(jurorNumber, "416"));
 
         when(courtLocationService.getCourtLocation(any())).thenReturn(getCourtLocation());
@@ -573,7 +598,7 @@ class JurorRecordServiceTest {
 
         String jurorNumber = "416010101";
         String owner = "416";
-        when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(any(), Mockito.anyBoolean()))
+        when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(any(), anyBoolean()))
             .thenReturn(createJurorPoolList(jurorNumber, owner));
 
         JurorRecordSearchDto jurorRecordSearchDto = jurorRecordService.searchJurorRecord(
@@ -615,7 +640,7 @@ class JurorRecordServiceTest {
 
         String jurorNumber = "416010101";
         String owner = "416";
-        when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(any(), Mockito.anyBoolean()))
+        when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(any(), anyBoolean()))
             .thenReturn(createJurorPoolList(jurorNumber, owner));
 
         JurorRecordSearchDto jurorRecordSearchDto = jurorRecordService.searchJurorRecord(
@@ -656,7 +681,7 @@ class JurorRecordServiceTest {
     void testSearchJurorRecordCourtUserBureauRecord() {
 
         String jurorNumber = "416010101";
-        when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(any(), Mockito.anyBoolean()))
+        when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(any(), anyBoolean()))
             .thenReturn(createJurorPoolList(jurorNumber, BUREAU_OWNER));
 
         JurorRecordSearchDto jurorRecordSearchDto = jurorRecordService.searchJurorRecord(
@@ -672,7 +697,7 @@ class JurorRecordServiceTest {
     @Test
     void testSearchJurorRecordCourtUserNotOwnedRecord() {
         String jurorNumber = "416010101";
-        when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(any(), Mockito.anyBoolean()))
+        when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(any(), anyBoolean()))
             .thenReturn(createJurorPoolList(jurorNumber, COURT_OWNER));
 
         JurorRecordSearchDto jurorRecordSearchDto = jurorRecordService.searchJurorRecord(
@@ -885,7 +910,7 @@ class JurorRecordServiceTest {
         assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
 
-        verify(contactLogRepository, Mockito.never()).saveAndFlush(any());
+        verify(contactLogRepository, never()).saveAndFlush(any());
     }
 
     @Test
@@ -908,7 +933,7 @@ class JurorRecordServiceTest {
         assertThatExceptionOfType(MojException.Forbidden.class)
             .isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
 
-        verify(contactLogRepository, Mockito.never()).saveAndFlush(any());
+        verify(contactLogRepository, never()).saveAndFlush(any());
     }
 
     @Test
@@ -960,7 +985,7 @@ class JurorRecordServiceTest {
         assertThatExceptionOfType(MojException.Forbidden.class)
             .isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
 
-        verify(contactLogRepository, Mockito.never()).saveAndFlush(any());
+        verify(contactLogRepository, never()).saveAndFlush(any());
     }
 
     @Test
@@ -983,7 +1008,7 @@ class JurorRecordServiceTest {
         assertThatExceptionOfType(MojException.Forbidden.class)
             .isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
 
-        verify(contactLogRepository, Mockito.never()).saveAndFlush(any());
+        verify(contactLogRepository, never()).saveAndFlush(any());
     }
 
     @Test
@@ -1002,7 +1027,7 @@ class JurorRecordServiceTest {
         assertThatExceptionOfType(IllegalArgumentException.class)
             .isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
 
-        verify(contactLogRepository, Mockito.never()).saveAndFlush(any());
+        verify(contactLogRepository, never()).saveAndFlush(any());
     }
 
     private JurorPool createValidJurorPool(String jurorNumber, String owner) {
@@ -1370,7 +1395,7 @@ class JurorRecordServiceTest {
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
         verify(jurorDetailRepositoryMod, times(1)).findById(jurorNumber);
-        verify(bureauService, Mockito.never()).mapJurorDetailsToDto(any());
+        verify(bureauService, never()).mapJurorDetailsToDto(any());
     }
 
     @Test
@@ -1387,8 +1412,8 @@ class JurorRecordServiceTest {
 
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        verify(jurorDetailRepositoryMod, Mockito.never()).findById(jurorNumber);
-        verify(bureauService, Mockito.never()).mapJurorDetailsToDto(any());
+        verify(jurorDetailRepositoryMod, never()).findById(jurorNumber);
+        verify(bureauService, never()).mapJurorDetailsToDto(any());
     }
 
     @ParameterizedTest
@@ -1585,7 +1610,7 @@ class JurorRecordServiceTest {
 
         jurorPools.get(0).setStatus(jurorStatus);
         doReturn(jurorHistoryList).when(jurorHistoryRepository)
-            .findByJurorNumberAndDateCreatedGreaterThanEqual(Mockito.anyString(), any(LocalDate.class));
+            .findByJurorNumberAndDateCreatedGreaterThanEqual(anyString(), any(LocalDate.class));
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
         doReturn(jurorPools.get(0)).when(jurorPoolRepository)
@@ -1596,7 +1621,7 @@ class JurorRecordServiceTest {
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
         verify(jurorHistoryRepository, times(1))
-            .findByJurorNumberAndDateCreatedGreaterThanEqual(Mockito.anyString(), any(LocalDate.class));
+            .findByJurorNumberAndDateCreatedGreaterThanEqual(anyString(), any(LocalDate.class));
     }
 
     @Test
@@ -1804,8 +1829,8 @@ class JurorRecordServiceTest {
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
         doReturn(initChangedPropertyMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
-        doNothing().when(jurorAuditChangeService).recordPersonalDetailsHistory(Mockito.anyString(),
-            any(Juror.class), Mockito.anyString(), Mockito.anyString());
+        doNothing().when(jurorAuditChangeService).recordPersonalDetailsHistory(anyString(),
+            any(Juror.class), anyString(), anyString());
 
         jurorRecordService.fixErrorInJurorName(payload, jurorNumber, dto);
 
@@ -1818,8 +1843,8 @@ class JurorRecordServiceTest {
         verify(jurorAuditChangeService, times(1))
             .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
         verify(jurorAuditChangeService, times(3))
-            .recordPersonalDetailsHistory(Mockito.anyString(), any(Juror.class), Mockito.anyString(),
-                Mockito.anyString());
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class), anyString(),
+                anyString());
     }
 
     @Test
@@ -1843,8 +1868,8 @@ class JurorRecordServiceTest {
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
         doReturn(initChangedPropertyMap(Boolean.FALSE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
-        doNothing().when(jurorAuditChangeService).recordPersonalDetailsHistory(Mockito.anyString(),
-            any(Juror.class), Mockito.anyString(), Mockito.anyString());
+        doNothing().when(jurorAuditChangeService).recordPersonalDetailsHistory(anyString(),
+            any(Juror.class), anyString(), anyString());
 
         jurorRecordService.fixErrorInJurorName(payload, jurorNumber, dto);
 
@@ -1856,8 +1881,8 @@ class JurorRecordServiceTest {
 
         verify(jurorAuditChangeService, times(1))
             .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
-        verify(jurorAuditChangeService, Mockito.never()).recordPersonalDetailsHistory(Mockito.anyString(),
-            any(Juror.class), Mockito.anyString(), Mockito.anyString());
+        verify(jurorAuditChangeService, never()).recordPersonalDetailsHistory(anyString(),
+            any(Juror.class), anyString(), anyString());
     }
 
     @Test
@@ -1879,13 +1904,13 @@ class JurorRecordServiceTest {
         assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> jurorRecordService.fixErrorInJurorName(payload, jurorNumber, dto));
 
-        verify(jurorPoolRepository, Mockito.never()).save(any());
+        verify(jurorPoolRepository, never()).save(any());
 
-        verify(jurorAuditChangeService, Mockito.never())
+        verify(jurorAuditChangeService, never())
             .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
-        verify(jurorAuditChangeService, Mockito.never())
-            .recordPersonalDetailsHistory(Mockito.anyString(), any(Juror.class), Mockito.anyString(),
-                Mockito.anyString());
+        verify(jurorAuditChangeService, never())
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class), anyString(),
+                anyString());
     }
 
     @Test
@@ -1908,13 +1933,13 @@ class JurorRecordServiceTest {
         assertThatExceptionOfType(MojException.Forbidden.class)
             .isThrownBy(() -> jurorRecordService.fixErrorInJurorName(payload, jurorNumber, dto));
 
-        verify(jurorPoolRepository, Mockito.never()).save(any());
+        verify(jurorPoolRepository, never()).save(any());
 
-        verify(jurorAuditChangeService, Mockito.never())
+        verify(jurorAuditChangeService, never())
             .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
-        verify(jurorAuditChangeService, Mockito.never())
-            .recordPersonalDetailsHistory(Mockito.anyString(), any(Juror.class), Mockito.anyString(),
-                Mockito.anyString());
+        verify(jurorAuditChangeService, never())
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class), anyString(),
+                anyString());
     }
 
     @Test
@@ -1937,13 +1962,13 @@ class JurorRecordServiceTest {
         assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> jurorRecordService.fixErrorInJurorName(payload, jurorNumber, dto));
 
-        verify(jurorPoolRepository, Mockito.never()).save(any());
+        verify(jurorPoolRepository, never()).save(any());
 
-        verify(jurorAuditChangeService, Mockito.never())
+        verify(jurorAuditChangeService, never())
             .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
-        verify(jurorAuditChangeService, Mockito.never())
-            .recordPersonalDetailsHistory(Mockito.anyString(), any(Juror.class), Mockito.anyString(),
-                Mockito.anyString());
+        verify(jurorAuditChangeService, never())
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class), anyString(),
+                anyString());
     }
 
     @Test
@@ -1985,8 +2010,8 @@ class JurorRecordServiceTest {
             dto.getDecision(), username, jurorPool.getPoolNumber());
         doReturn(initChangedPropertyMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
-        doNothing().when(jurorAuditChangeService).recordPersonalDetailsHistory(Mockito.anyString(),
-            any(Juror.class), Mockito.anyString(), Mockito.anyString());
+        doNothing().when(jurorAuditChangeService).recordPersonalDetailsHistory(anyString(),
+            any(Juror.class), anyString(), anyString());
 
         jurorRecordService.processPendingNameChange(payload, jurorNumber, dto);
 
@@ -2004,8 +2029,8 @@ class JurorRecordServiceTest {
         verify(jurorAuditChangeService, times(1))
             .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
         verify(jurorAuditChangeService, times(3))
-            .recordPersonalDetailsHistory(Mockito.anyString(), any(Juror.class), Mockito.anyString(),
-                Mockito.anyString());
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class), anyString(),
+                anyString());
         verify(jurorAuditChangeService, times(1))
             .recordContactLog(jurorPool.getJuror(), username, changeOfNameCode,
                 "Approved the juror's name change. " + notes);
@@ -2053,12 +2078,12 @@ class JurorRecordServiceTest {
             dto.getDecision(), username, jurorPool.getPoolNumber());
         doReturn(initChangedPropertyMap(Boolean.TRUE)).when(jurorAuditChangeService)
             .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
-        doNothing().when(jurorAuditChangeService).recordPersonalDetailsHistory(Mockito.anyString(),
-            any(Juror.class), Mockito.anyString(), Mockito.anyString());
+        doNothing().when(jurorAuditChangeService).recordPersonalDetailsHistory(anyString(),
+            any(Juror.class), anyString(), anyString());
 
         jurorRecordService.processPendingNameChange(payload, jurorNumber, dto);
 
-        verify(jurorPoolRepository, Mockito.never()).save(any());
+        verify(jurorPoolRepository, never()).save(any());
 
         verify(jurorRepository, times(1))
             .saveAndFlush(jurorArgumentCaptor.capture());
@@ -2067,11 +2092,11 @@ class JurorRecordServiceTest {
         assertThat(capturedJuror.getPendingFirstName()).isNull();
         assertThat(capturedJuror.getPendingLastName()).isNull();
 
-        verify(jurorAuditChangeService, Mockito.never())
+        verify(jurorAuditChangeService, never())
             .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
-        verify(jurorAuditChangeService, Mockito.never())
-            .recordPersonalDetailsHistory(Mockito.anyString(), any(Juror.class),
-                Mockito.anyString(), Mockito.anyString());
+        verify(jurorAuditChangeService, never())
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class),
+                anyString(), anyString());
         verify(jurorAuditChangeService, times(1))
             .recordContactLog(jurorPool.getJuror(), username, changeOfNameCode,
                 "Rejected the juror's name change. " + notes);
@@ -2100,20 +2125,20 @@ class JurorRecordServiceTest {
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
             jurorRecordService.processPendingNameChange(payload, jurorNumber, dto));
 
-        verify(jurorPoolRepository, Mockito.never()).save(any());
-        verify(jurorPoolRepository, Mockito.never()).saveAndFlush(any());
+        verify(jurorPoolRepository, never()).save(any());
+        verify(jurorPoolRepository, never()).saveAndFlush(any());
 
-        verify(jurorAuditChangeService, Mockito.never())
+        verify(jurorAuditChangeService, never())
             .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
-        verify(jurorAuditChangeService, Mockito.never())
-            .recordPersonalDetailsHistory(Mockito.anyString(), any(Juror.class),
-                Mockito.anyString(), Mockito.anyString());
-        verify(jurorAuditChangeService, Mockito.never())
-            .recordContactLog(any(Juror.class), Mockito.anyString(),
-                Mockito.anyString(), Mockito.anyString());
-        verify(jurorAuditChangeService, Mockito.never())
-            .recordApprovalHistoryEvent(Mockito.anyString(), any(ApprovalDecision.class),
-                Mockito.anyString(), Mockito.anyString());
+        verify(jurorAuditChangeService, never())
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class),
+                anyString(), anyString());
+        verify(jurorAuditChangeService, never())
+            .recordContactLog(any(Juror.class), anyString(),
+                anyString(), anyString());
+        verify(jurorAuditChangeService, never())
+            .recordApprovalHistoryEvent(anyString(), any(ApprovalDecision.class),
+                anyString(), anyString());
     }
 
     @Test
@@ -2134,20 +2159,20 @@ class JurorRecordServiceTest {
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
             jurorRecordService.processPendingNameChange(payload, jurorNumber, dto));
 
-        verify(jurorPoolRepository, Mockito.never()).save(any());
-        verify(jurorPoolRepository, Mockito.never()).saveAndFlush(any());
+        verify(jurorPoolRepository, never()).save(any());
+        verify(jurorPoolRepository, never()).saveAndFlush(any());
 
-        verify(jurorAuditChangeService, Mockito.never())
+        verify(jurorAuditChangeService, never())
             .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
-        verify(jurorAuditChangeService, Mockito.never())
-            .recordPersonalDetailsHistory(Mockito.anyString(), any(Juror.class),
-                Mockito.anyString(), Mockito.anyString());
-        verify(jurorAuditChangeService, Mockito.never())
-            .recordContactLog(any(Juror.class), Mockito.anyString(),
-                Mockito.anyString(), Mockito.anyString());
-        verify(jurorAuditChangeService, Mockito.never())
-            .recordApprovalHistoryEvent(Mockito.anyString(), any(ApprovalDecision.class),
-                Mockito.anyString(), Mockito.anyString());
+        verify(jurorAuditChangeService, never())
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class),
+                anyString(), anyString());
+        verify(jurorAuditChangeService, never())
+            .recordContactLog(any(Juror.class), anyString(),
+                anyString(), anyString());
+        verify(jurorAuditChangeService, never())
+            .recordApprovalHistoryEvent(anyString(), any(ApprovalDecision.class),
+                anyString(), anyString());
     }
 
     @Test
@@ -2221,7 +2246,7 @@ class JurorRecordServiceTest {
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
             jurorRecordService.updateAttendance(dto));
 
-        verify(jurorPoolRepository, Mockito.never()).save(any());
+        verify(jurorPoolRepository, never()).save(any());
     }
 
     @Test
@@ -2244,7 +2269,7 @@ class JurorRecordServiceTest {
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
             jurorRecordService.updateAttendance(dto));
 
-        verify(jurorPoolRepository, Mockito.never()).save(any());
+        verify(jurorPoolRepository, never()).save(any());
     }
 
     @Test
@@ -2266,7 +2291,7 @@ class JurorRecordServiceTest {
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
             jurorRecordService.updateAttendance(dto));
 
-        verify(jurorPoolRepository, Mockito.never()).save(any());
+        verify(jurorPoolRepository, never()).save(any());
 
     }
 
@@ -2981,7 +3006,7 @@ class JurorRecordServiceTest {
                     .checkOutTime(LocalTime.of(17, 0))
                     .attendanceType(AttendanceType.FULL_DAY)
                     .hours("8.0")
-                    .travelTime(new BigDecimal("1.5"))
+                    .travelTime(LocalTime.of(1,30))
                     .build();
             data.add(jurorAttendanceResponseData);
 
@@ -2994,9 +3019,9 @@ class JurorRecordServiceTest {
             assertEquals(1, jurorAttendanceDetailsResponseDto.getData().size(),
                 "One attendance record should be returned");
 
-            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(Mockito.anyString(),
-                Mockito.anyString());
-            verify(appearanceRepository, times(1)).getAttendanceRecords(Mockito.anyString());
+            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(anyString(),
+                anyString());
+            verify(appearanceRepository, times(1)).getAttendanceRecords(anyString());
 
         }
 
@@ -3020,7 +3045,7 @@ class JurorRecordServiceTest {
                     .checkOutTime(LocalTime.of(17, 0))
                     .attendanceType(AttendanceType.FULL_DAY)
                     .hours("8.0")
-                    .travelTime(new BigDecimal("1.5"))
+                    .travelTime(LocalTime.of(1,30))
                     .build();
             data.add(jurorAttendanceResponseData);
 
@@ -3035,8 +3060,8 @@ class JurorRecordServiceTest {
                 exception.getMessage(),
                 "Exception message must match");
 
-            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(Mockito.anyString(),
-                Mockito.anyString());
+            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(anyString(),
+                anyString());
             verifyNoInteractions(appearanceRepository);
 
         }
@@ -3048,8 +3073,8 @@ class JurorRecordServiceTest {
             final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
 
             doReturn(jurorPool).when(jurorPoolRepository)
-                .findByJurorJurorNumberAndPoolPoolNumber(Mockito.anyString(),
-                    Mockito.anyString());
+                .findByJurorJurorNumberAndPoolPoolNumber(anyString(),
+                    anyString());
 
             List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> data = new ArrayList<>();
 
@@ -3062,9 +3087,9 @@ class JurorRecordServiceTest {
             assertEquals(0, jurorAttendanceDetailsResponseDto.getData().size(),
                 "No attendance records should be returned");
 
-            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(Mockito.anyString(),
-                Mockito.anyString());
-            verify(appearanceRepository, times(1)).getAttendanceRecords(Mockito.anyString());
+            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(anyString(),
+                anyString());
+            verify(appearanceRepository, times(1)).getAttendanceRecords(anyString());
 
         }
 
@@ -3218,15 +3243,15 @@ class JurorRecordServiceTest {
                 Juror juror = mock(Juror.class);
 
                 PaymentDetails paymentDetails = mock(PaymentDetails.class);
-                paymentDetailsMockedStatic = Mockito.mockStatic(PaymentDetails.class);
+                paymentDetailsMockedStatic = mockStatic(PaymentDetails.class);
                 paymentDetailsMockedStatic.when(() -> PaymentDetails.from(juror)).thenReturn(paymentDetails);
 
                 NameDetails nameDetails = mock(NameDetails.class);
-                nameDetailsMockedStatic = Mockito.mockStatic(NameDetails.class);
+                nameDetailsMockedStatic = mockStatic(NameDetails.class);
                 nameDetailsMockedStatic.when(() -> NameDetails.from(juror)).thenReturn(nameDetails);
 
                 JurorAddressDto jurorAddressDto = mock(JurorAddressDto.class);
-                jurorAddressDtoMockedStatic = Mockito.mockStatic(JurorAddressDto.class);
+                jurorAddressDtoMockedStatic = mockStatic(JurorAddressDto.class);
                 jurorAddressDtoMockedStatic.when(() -> JurorAddressDto.from(juror)).thenReturn(jurorAddressDto);
 
                 jurorRecordService = spy(jurorRecordService);

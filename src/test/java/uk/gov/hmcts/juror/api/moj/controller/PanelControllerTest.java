@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -75,7 +76,7 @@ class PanelControllerTest {
     }
 
     @Test
-    void getJudgesForCourtLocations() throws Exception {
+    void judgesForCourtLocations() throws Exception {
         jwtPayload = createJwt("415", "COURT_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -92,12 +93,13 @@ class PanelControllerTest {
 
         when(panelService.getAvailableJurors("415")).thenReturn(availableJurorsDtoList);
 
-        mockMvc.perform(get(BASE_URL + "/available-jurors?court_location_code=415")
+        Assertions.assertThatNoException().isThrownBy(() -> mockMvc.perform(get(BASE_URL + "/available-jurors"
+                + "?court_location_code=415")
                 .principal(mockPrincipal)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(availableJurorsDto)))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE));
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE)));
     }
 
     @Test
@@ -213,10 +215,11 @@ class PanelControllerTest {
         when(panelService.processEmpanelled(dto, jwtPayload))
             .thenReturn(dtos);
 
-        mockMvc.perform(post(BASE_URL + "/process-empanelled").principal(mockPrincipal)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(dto)))
-            .andExpect(status().isOk());
+        Assertions.assertThatNoException().isThrownBy(() ->
+            mockMvc.perform(post(BASE_URL + "/process-empanelled").principal(mockPrincipal)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(asJsonString(dto)))
+                .andExpect(status().isOk()));
     }
 
     @Test
@@ -253,10 +256,11 @@ class PanelControllerTest {
         when(panelService.processEmpanelled(dto, jwtPayload))
             .thenReturn(panelListDtos);
 
-        mockMvc.perform(post(BASE_URL + "/process-empanelled").principal(mockPrincipal)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(dto)))
-            .andExpect(status().isOk());
+        Assertions.assertThatNoException().isThrownBy(() ->
+            mockMvc.perform(post(BASE_URL + "/process-empanelled").principal(mockPrincipal)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(asJsonString(dto)))
+                .andExpect(status().isOk()));
     }
 
     @Test
@@ -293,10 +297,11 @@ class PanelControllerTest {
         when(panelService.processEmpanelled(dto, jwtPayload))
             .thenReturn(panelListDtos);
 
-        mockMvc.perform(post(BASE_URL + "/process-empanelled").principal(mockPrincipal)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(dto)))
-            .andExpect(status().isOk());
+        Assertions.assertThatNoException()
+            .isThrownBy(() -> mockMvc.perform(post(BASE_URL + "/process-empanelled").principal(mockPrincipal)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(asJsonString(dto)))
+                .andExpect(status().isOk()));
     }
 
     private EmpanelListDto createEmpaneledJuror() {
@@ -306,7 +311,7 @@ class PanelControllerTest {
         dto.setLastName("LName");
         dto.setJurorNumber("111111111");
 
-        List<EmpanelDetailsDto> empanelDetailsDto = new ArrayList<EmpanelDetailsDto>();
+        List<EmpanelDetailsDto> empanelDetailsDto = new ArrayList<>();
         empanelDetailsDto.add(dto);
 
         EmpanelListDto empanelListDto = new EmpanelListDto();
@@ -316,7 +321,7 @@ class PanelControllerTest {
         return empanelListDto;
     }
 
-    private ArrayList<PanelListDto> panelListDtos() {
+    private List<PanelListDto> panelListDtos() {
         PanelListDto panelListDto = new PanelListDto();
 
         panelListDto.setFirstName("FName");

@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 
-import java.util.function.BiConsumer;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -14,7 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-class PaymentDetailsTest extends AbstractValidatorTest {
+class PaymentDetailsTest extends AbstractValidatorTest<PaymentDetails> {
 
     @Test
     void positiveFromTest() {
@@ -46,29 +44,13 @@ class PaymentDetailsTest extends AbstractValidatorTest {
             .build();
     }
 
-    class AbstractPaymentDetailsTest extends AbstractValidatorTest.AbstractValidationFieldTestString<PaymentDetails> {
-
-        private final BiConsumer<PaymentDetails, String> setFieldConsumer;
-
-        protected AbstractPaymentDetailsTest(String fieldName, BiConsumer<PaymentDetails, String> setFieldConsumer) {
-            super(fieldName);
-            this.setFieldConsumer = setFieldConsumer;
-        }
-
-        @Override
-        protected void setField(PaymentDetails baseObject, String value) {
-            setFieldConsumer.accept(baseObject, value);
-        }
-
-        @Override
-        protected PaymentDetails createValidObject() {
-            return createPaymentDetailsDto();
-        }
-
+    @Override
+    protected PaymentDetails createValidObject() {
+        return createPaymentDetailsDto();
     }
 
     @Nested
-    class SortCode extends AbstractPaymentDetailsTest {
+    class SortCode extends AbstractValidationFieldTestString {
         protected SortCode() {
             super("sortCode", PaymentDetails::setSortCode);
             addLengthTest(0, 6, null);
@@ -76,7 +58,7 @@ class PaymentDetailsTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class BankAccountName extends AbstractPaymentDetailsTest {
+    class BankAccountName extends AbstractValidationFieldTestString {
         protected BankAccountName() {
             super("bankAccountName", PaymentDetails::setBankAccountName);
             addLengthTest(0, 18, null);
@@ -84,7 +66,7 @@ class PaymentDetailsTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class BankAccountNumber extends AbstractPaymentDetailsTest {
+    class BankAccountNumber extends AbstractValidationFieldTestString {
         protected BankAccountNumber() {
             super("bankAccountNumber", PaymentDetails::setBankAccountNumber);
             addLengthTest(0, 8, null);
@@ -92,12 +74,11 @@ class PaymentDetailsTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class BuildingSocietyRollNumber extends AbstractPaymentDetailsTest {
+    class BuildingSocietyRollNumber extends AbstractValidationFieldTestString {
         protected BuildingSocietyRollNumber() {
             super("buildingSocietyRollNumber", PaymentDetails::setBuildingSocietyRollNumber);
             addLengthTest(0, 18, null);
         }
     }
-
 }
 

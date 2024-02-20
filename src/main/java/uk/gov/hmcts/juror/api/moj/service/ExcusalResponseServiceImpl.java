@@ -20,7 +20,6 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
-import uk.gov.hmcts.juror.api.moj.domain.letter.ExcusalDeniedLetterMod;
 import uk.gov.hmcts.juror.api.moj.domain.letter.ExcusalLetterMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
@@ -32,7 +31,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.service.letter.ExcusalDeniedLetterServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.letter.ExcusalLetterServiceImpl;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -88,9 +86,9 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         if (excusalDecisionDto.getReplyMethod() != null) {
             if (excusalDecisionDto.getReplyMethod().equals(ReplyMethod.PAPER)) {
-                setPaperResponseProcessingStatusToClosed(payload, excusalDecisionDto, jurorNumber);
+                setPaperResponseProcessingStatusToClosed(payload, jurorNumber);
             } else {
-                setDigitalResponseProcessingStatusToClosed(payload, excusalDecisionDto, jurorNumber);
+                setDigitalResponseProcessingStatusToClosed(payload, jurorNumber);
             }
         }
 
@@ -124,9 +122,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         }
     }
 
-    private void setPaperResponseProcessingStatusToClosed(BureauJWTPayload payload,
-                                                          ExcusalDecisionDto excusalDecisionDto,
-                                                          String jurorNumber) {
+    private void setPaperResponseProcessingStatusToClosed(BureauJWTPayload payload, String jurorNumber) {
 
         log.info(String.format("Locating PAPER response for Juror %s", jurorNumber));
         PaperResponse jurorPaperResponse = DataUtils.getJurorPaperResponse(jurorNumber, jurorPaperResponseRepository);
@@ -151,9 +147,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         log.info(String.format("PAPER response for Juror %s successfully closed", jurorNumber));
     }
 
-    private void setDigitalResponseProcessingStatusToClosed(BureauJWTPayload payload,
-                                                            ExcusalDecisionDto excusalDecisionDto,
-                                                            String jurorNumber) {
+    private void setDigitalResponseProcessingStatusToClosed(BureauJWTPayload payload, String jurorNumber) {
 
         log.info(String.format("Locating DIGITAL response for Juror %s", jurorNumber));
         DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
@@ -249,7 +243,6 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
                                             .poolNumber(jurorPool.getPoolNumber())
                                             .otherInformation("")
                                             .build());
-
     }
 
     private void sendExcusalLetter(String owner, String jurorNumber, String excusalCode) {

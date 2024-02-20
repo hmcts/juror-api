@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.isEmptyOrNull;
 import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkOwnershipForCurrentUser;
 import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.getActiveJurorRecord;
 import static uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils.unboxOptionalRecord;
@@ -221,13 +222,18 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     public AttendanceDetailsResponse deleteAttendance(BureauJWTPayload payload, UpdateAttendanceDto request) {
         final UpdateAttendanceDto.CommonData commonData = request.getCommonData();
 
+        if (request.getJuror().size() > 1 ^ commonData.getSingleJuror().equals(Boolean.FALSE)) {
+            throw new MojException.BadRequest("Cannot delete multiple juror attendance records",
+                null);
+        }
+
         if (!commonData.getStatus().equals(UpdateAttendanceStatus.DELETE)) {
             throw new MojException.BadRequest("Cannot delete attendance records for status "
                 + commonData.getStatus(), null);
         }
 
-        // ensure only a single attendance record is deleted per request
-        validateOnlySingleRecordUpdatedOrDeleted(request);
+        // ensure only a single attendance record is deleted per api call
+        validateTheNumberOfJurorsToUpdate(request);
 
         CourtLocation courtLocation = CourtLocationUtils.validateAccessToCourtLocation(commonData.getLocationCode(),
             payload.getOwner(), courtLocationRepository);
@@ -265,8 +271,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         BureauJWTPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         String locationCode = request.getLocationCode();
 
-        log.debug("User %s is retrieving jurors to dismiss for court location %s", payload.getLogin(),
-            locationCode);
+        log.debug(String.format("User %s is retrieving jurors to dismiss for court location %s", payload.getLogin(),
+            locationCode));
 
         CourtLocationUtils.validateAccessToCourtLocation(locationCode, payload.getOwner(), courtLocationRepository);
 
@@ -426,10 +432,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         // 3. retrieve details of jurors who failed to attend/non-attendance (no show)
         List<Tuple> absentTuples = appearanceRepository.retrieveNonAttendanceDetails(retrieveCommonData);
 
-        // 4. absent jurors - create and save records with minimal data
+        // 4. absent jurors - build new appearance record with minimal data
         List<Appearance> absentJurors = new ArrayList<>();
         absentTuples.forEach(tuple -> {
-            // build a new appearance record
             Appearance appearance = Appearance.builder()
                 .jurorNumber(tuple.get(0, String.class))
                 .attendanceDate(updateCommonData.getAttendanceDate())
@@ -455,7 +460,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     private AttendanceDetailsResponse updateCheckIn(UpdateAttendanceDto request, String owner) {
         validateCheckInNotNull(request.getCommonData().getCheckInTime());
 
-        validateNumberOfUpdates(request);
+        validateTheNumberOfJurorsToUpdate(request);
 
         final UpdateAttendanceDto.CommonData commonData = request.getCommonData();
 
@@ -489,7 +494,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     private AttendanceDetailsResponse updateCheckOut(UpdateAttendanceDto request, String owner) {
-        validateNumberOfUpdates(request);
+        validateTheNumberOfJurorsToUpdate(request);
 
         final UpdateAttendanceDto.CommonData commonData = request.getCommonData();
         final String locCode = commonData.getLocationCode();
@@ -544,7 +549,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     private AttendanceDetailsResponse updateCheckInAndOut(UpdateAttendanceDto request, String owner) {
-        validateOnlySingleRecordUpdatedOrDeleted(request);
+        validateTheNumberOfJurorsToUpdate(request);
 
         final UpdateAttendanceDto.CommonData commonData = request.getCommonData();
 
@@ -581,7 +586,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     private AttendanceDetailsResponse updateCheckOutPanelled(UpdateAttendanceDto request, String owner) {
-        validateNumberOfUpdates(request);
+        validateTheNumberOfJurorsToUpdate(request);
 
         final UpdateAttendanceDto.CommonData commonData = request.getCommonData();
 
@@ -671,29 +676,20 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         return jurorPool;
     }
 
-    private UpdateAttendanceDto validateNumberOfUpdates(UpdateAttendanceDto request) {
-        //ensure only a single attendance record is deleted per request
+    private void validateTheNumberOfJurorsToUpdate(UpdateAttendanceDto request) {
         UpdateAttendanceDto.CommonData commonData = request.getCommonData();
-        if (commonData.getSingleJuror().equals(Boolean.TRUE)) {
-            if (request.getJuror().size() > 1) {
-                throw new MojException.BadRequest("Multiple jurors not allowed for single record "
-                    + "update", null);
-            }
-        } else {
+
+        if (commonData.getSingleJuror().equals(Boolean.TRUE) && (request.getJuror().size() > 1)) {
+            throw new MojException.BadRequest("Multiple jurors not allowed for single record "
+                + "update", null);
+        }
+
+        if (isEmptyOrNull(request.getJuror())) {
+            // retrieve all jurors to update based on query
             request.setJuror(retrieveJurorsToUpdate(commonData, mapUpdateStatusToRetrieveTag(commonData.getStatus())));
         }
-        return request;
-    }
 
-    private void validateOnlySingleRecordUpdatedOrDeleted(UpdateAttendanceDto request) {
-        //ensure only a single attendance record is updated/deleted per request
-        UpdateAttendanceDto.CommonData commonData = request.getCommonData();
-
-        if ((commonData.getSingleJuror().equals(Boolean.FALSE))
-            || (commonData.getSingleJuror().equals(Boolean.TRUE) && request.getJuror().size() > 1)) {
-            throw new MojException.NotImplemented(
-                "Cannot delete multiple juror attendance records", null);
-        }
+        // if the above conditions are not met, the invoking method will update/delete all the jurors in the list
     }
 
     private AttendanceDetailsResponse buildAttendanceDetailsResponse(List<Tuple> tuples) {

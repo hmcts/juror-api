@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.CompleteServiceJurorNumberListDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
@@ -45,6 +46,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.TRIAL_HAS_MEMBERS;
 
 @Slf4j
 @Service
@@ -98,7 +101,7 @@ public class TrialServiceImpl implements TrialService {
 
     @Override
     public Page<TrialListDto> getTrials(BureauJWTPayload payload, int pageNumber, String sortBy, String sortOrder,
-                                        boolean isActive) {
+                                        boolean isActive, String trialNumber) {
         Sort sort = "desc".equals(sortOrder)
             ? Sort.by(sortBy).descending()
             : Sort.by(sortBy).ascending();
@@ -106,7 +109,7 @@ public class TrialServiceImpl implements TrialService {
         List<TrialListDto> dtoList = new ArrayList<>();
         Long totalTrials = trialRepository.getTotalTrialsForCourtLocations(payload.getStaff().getCourts(), isActive);
         List<Trial> trials = trialRepository.getListOfTrialsForCourtLocations(payload.getStaff().getCourts(), isActive,
-            pageable);
+            trialNumber, pageable);
 
         for (Trial trial : trials) {
             dtoList.add(createTrailListDto(trial));
@@ -209,6 +212,31 @@ public class TrialServiceImpl implements TrialService {
         }
     }
 
+    @Override
+    public void endTrial(EndTrialDto dto) {
+        List<Panel> panelList =
+            panelRepository.retrieveMembersOnTrial(dto.getTrialNumber(), dto.getLocationCode());
+
+        if (!panelList.isEmpty()) {
+            throw new MojException.BusinessRuleViolation(
+                "Cannot end trial, trial still has members",
+                TRIAL_HAS_MEMBERS);
+        }
+
+        Trial trial = trialRepository
+            .findByTrialNumberAndCourtLocationLocCode(dto.getTrialNumber(), dto.getLocationCode());
+
+        if (trial == null) {
+            throw new MojException.NotFound(
+                "Cannot find trial %s for court location %s"
+                    .formatted(dto.getTrialNumber(), dto.getLocationCode()), null);
+        }
+
+        trial.setTrialEndDate(dto.getTrialEndDate());
+        log.info("trial {} has been completed", trial.getTrialNumber());
+        trialRepository.save(trial);
+    }
+
     private List<Panel> getPanelMembersToReturn(PanelResult panelResult, int jurorStatus,
                                                 List<JurorDetailRequestDto> jurorList, List<Panel> panelList) {
         List<Panel> panelMembersToReturn = new ArrayList<>();
@@ -249,6 +277,7 @@ public class TrialServiceImpl implements TrialService {
         dto.setProtectedTrial(trial.getAnonymous());
         dto.setTrialStartDate(trial.getTrialStartDate());
         dto.setIsActive(trial.getTrialEndDate() == null);
+        dto.setTrialEndDate(trial.getTrialEndDate());
 
         List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
             trial.getTrialNumber(),
@@ -290,6 +319,5 @@ public class TrialServiceImpl implements TrialService {
         trial.setTrialType(dto.getTrialType());
         return trial;
     }
-
 
 }

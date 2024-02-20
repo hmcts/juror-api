@@ -4,8 +4,10 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralReasonRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 
 import java.time.LocalDate;
@@ -17,7 +19,7 @@ public interface ManageDeferralsService {
 
     int useCourtDeferrals(PoolRequest target, int deferralsRequested, String userId);
 
-    void useBureauDeferrals(PoolRequest newPool, int deferrals, String userId);
+    int useBureauDeferrals(PoolRequest newPool, int deferrals, String userId);
 
     DeferralOptionsDto findActivePoolsForDates(DeferralDatesRequestDto deferralDatesRequestDto,
                                                String jurorNumber, BureauJWTPayload payload);
@@ -45,6 +47,6 @@ public interface ManageDeferralsService {
 
     void deleteDeferral(BureauJWTPayload payload, String jurorNumber);
 
-    void processJurorPostponement(BureauJWTPayload payload, String jurorNumber,
-                                  DeferralReasonRequestDto deferralReasonDto);
+    DeferralResponseDto processJurorPostponement(BureauJWTPayload payload,
+                                                 ProcessJurorPostponementRequestDto processJurorRequestDto);
 }

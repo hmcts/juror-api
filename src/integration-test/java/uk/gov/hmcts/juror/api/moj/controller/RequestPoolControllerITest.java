@@ -913,7 +913,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .as("Attendance Date is mandatory and should not be null")
             .isEqualTo(HttpStatus.BAD_REQUEST);
     }
-    
+
     @Test
     @Sql("/db/RequestPoolController_initInvalidTests.sql")
     public void test_requestNewPoolFromBureau_invalidNoRequested_underMin() {
@@ -2047,7 +2047,8 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         String sortOrder = "asc";
         String locCode = "415";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "462", "774", "767")));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415",
+            Arrays.asList("415", "462", "774", "767")));
 
         String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode
             + "&offset=" + offset + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
@@ -2078,8 +2079,9 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         String requestURL = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
-        ResponseEntity<PoolsAtCourtLocationListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolsAtCourtLocationListDto.class);
+        ResponseEntity<PoolsAtCourtLocationListDto> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestURL)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -2097,7 +2099,8 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             = poolsAtCourtLocationDataDtos.get(0);
         assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 417230101")
             .isEqualTo("417230101");
-        assertThat(poolsAtCourtLocationDataDto.getJurorsInAttendance()).as("Expect there to be 2 jurors in attendance")
+        assertThat(poolsAtCourtLocationDataDto.getJurorsInAttendance())
+            .as("Expect there to be 2 jurors in attendance")
             .isEqualTo(2);
         assertThat(poolsAtCourtLocationDataDto.getJurorsOnCall()).as("Expect there to be 1 juror on call")
             .isEqualTo(1);
@@ -2123,8 +2126,9 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         String requestURL = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
-        ResponseEntity<PoolsAtCourtLocationListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolsAtCourtLocationListDto.class);
+        ResponseEntity<PoolsAtCourtLocationListDto> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestURL)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -2164,9 +2168,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         validatePoolData(poolsAtCourtLocationDataDto, serviceStartDate);
     }
 
-    private static void validatePoolData(PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto,
-                                  LocalDate serviceStartDate) {
-        assertThat(poolsAtCourtLocationDataDto.getJurorsInAttendance()).as("Expect there to be 1 juror in attendance")
+    private static void validatePoolData(
+        PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto,
+        LocalDate serviceStartDate) {
+        assertThat(poolsAtCourtLocationDataDto.getJurorsInAttendance())
+            .as("Expect there to be 1 juror in attendance")
             .isEqualTo(1);
         assertThat(poolsAtCourtLocationDataDto.getJurorsOnCall()).as("Expect there to be 0 juror on call")
             .isEqualTo(0);
@@ -2187,10 +2193,10 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         String locCode = "419";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("419", List.of("419")));
-        String requestURL = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
+        String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
         ResponseEntity<PoolsAtCourtLocationListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolsAtCourtLocationListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -2212,13 +2218,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", List.of("419")));
         String requestURL = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
-        ResponseEntity<PoolsAtCourtLocationListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolsAtCourtLocationListDto.class);
+        ResponseEntity<PoolsAtCourtLocationListDto> response = restTemplate.exchange(new RequestEntity<Void>(
+            httpHeaders, HttpMethod.GET, URI.create(requestURL)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be forbidden")
             .isEqualTo(FORBIDDEN);
-
     }
-
 }

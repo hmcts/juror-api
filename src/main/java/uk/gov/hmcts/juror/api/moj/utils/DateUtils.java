@@ -1,7 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.utils;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.DayOfWeek;
@@ -14,23 +12,21 @@ import java.util.Date;
 import java.util.List;
 
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DateUtils {
+
+    private DateUtils() {
+        // empty private constructor
+    }
 
     public static LocalDate convertToLocalDateViaMillisecond(Date dateToConvert) {
         if (dateToConvert == null) {
             return null;
         }
-        return Instant.ofEpochMilli(dateToConvert.getTime())
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate();
+        return Instant.ofEpochMilli(dateToConvert.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
     public static Date convertToDateViaInstant(LocalDate dateToConvert) {
-        return dateToConvert == null
-            ?
-            null
-            :
+        return dateToConvert == null ? null :
                 Date.from(dateToConvert.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 

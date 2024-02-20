@@ -129,4 +129,13 @@ public class DeferralLetterTest extends AbstractLetterTest {
         }
     }
 
+    @Test
+    public void confirmWelshWithoutWelshCourtProducesEnglishOutput() {
+        final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
+        setupEnglishExpectedResult();
+        DeferralLetter deferralLetter = new DeferralLetter(LetterTestUtils.testWelshJurorPool(date),
+                                                        LetterTestUtils.testCourtLocation(),
+                                                        LetterTestUtils.testBureauLocation());
+        assertThat(deferralLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
+    }
 }

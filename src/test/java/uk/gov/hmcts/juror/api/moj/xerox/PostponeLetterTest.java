@@ -128,4 +128,13 @@ public class PostponeLetterTest extends AbstractLetterTest {
         }
     }
 
+    @Test
+    public void confirmWelshWithoutWelshCourtProducesEnglishOutput() {
+        final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
+        setupEnglishExpectedResult();
+        PostponeLetter postponeLetter = new PostponeLetter(LetterTestUtils.testWelshJurorPool(date),
+                                                        LetterTestUtils.testCourtLocation(),
+                                                        LetterTestUtils.testBureauLocation());
+        assertThat(postponeLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
+    }
 }

@@ -9,6 +9,7 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -16,12 +17,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.FoodDrinkClaimType;
+import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -38,9 +42,11 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 @AllArgsConstructor
 @IdClass(AppearanceId.class)
 @Builder
+@ToString
 @Getter
 @Setter
 @Audited
+@SuppressWarnings("PMD.TooManyFields")
 public class Appearance implements Serializable {
 
     @Id
@@ -61,7 +67,7 @@ public class Appearance implements Serializable {
     private CourtLocation courtLocation;
 
     @ManyToOne
-    @JoinColumn(name = "f_audit",referencedColumnName = "id")
+    @JoinColumn(name = "f_audit", referencedColumnName = "id")
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private FinancialAuditDetails financialAuditDetails;
 
@@ -92,6 +98,10 @@ public class Appearance implements Serializable {
     @Column(name = "attendance_type")
     @Enumerated(EnumType.STRING)
     private AttendanceType attendanceType;
+
+    @Column(name = "pay_attendance_type")
+    @Enumerated(EnumType.STRING)
+    private PayAttendanceType payAttendanceType;
 
     @Column(name = "non_attendance")
     @Builder.Default
@@ -182,12 +192,35 @@ public class Appearance implements Serializable {
     @Column(name = "smart_card_paid")
     private BigDecimal smartCardAmountPaid;
 
-    /**
-     * decimal representation of elapsed time spent travelling per day, for example 1 hour 20 minutes would be stored
-     * in the database as 1.33. Or 30 minutes travel time would be stored as 0.5.
-     */
+
     @Column(name = "travel_time")
-    private BigDecimal travelTime;
+    private LocalTime travelTime;
+
+    @Column(name = "travel_by_car")
+    private Boolean traveledByCar;
+
+    @Column(name = "travel_jurors_taken_by_car")
+    @Min(0)
+    private Integer jurorsTakenCar;
+
+    @Column(name = "travel_by_motorcycle")
+    private Boolean traveledByMotorcycle;
+
+    @Column(name = "travel_jurors_taken_by_motorcycle")
+    @Min(0)
+    private Integer jurorsTakenMotorcycle;
+
+    @Column(name = "travel_by_bicycle")
+    private Boolean traveledByBicycle;
+
+
+    @Column(name = "miles_traveled")
+    private Integer milesTraveled;
+
+    @Column(name = "food_and_drink_claim_type")
+    @Enumerated(EnumType.STRING)
+    private FoodDrinkClaimType foodAndDrinkClaimType;
+
 
     /**
      * The date the expense was approved for payment to be processed.
@@ -293,4 +326,28 @@ public class Appearance implements Serializable {
             .add(getOrZero(this.getMiscAmountPaid()))
             .subtract(getOrZero(this.getSmartCardAmountPaid()));
     }
+
+    public LocalTime getTimeSpentAtCourt() {
+        if (timeOut == null || timeIn == null) {
+            return LocalTime.of(0, 0);
+        }
+        return this.timeOut.minusNanos(this.timeIn.toNanoOfDay());
+    }
+
+    public Boolean isLongTrialDay() {
+        return this.attendanceType.getIsLongTrial();
+    }
+
+    //TODO add travel time and court time together
+    public LocalTime getEffectiveTime() {
+        return this.getTimeSpentAtCourt().plusNanos(this.getTravelTime().toNanoOfDay());
+    }
+
+    public LocalTime getTravelTime() {
+        if (travelTime == null ) {
+            return LocalTime.of(0, 0);
+        }
+        return this.travelTime;
+    }
+
 }

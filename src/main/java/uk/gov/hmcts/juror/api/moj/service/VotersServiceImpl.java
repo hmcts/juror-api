@@ -32,6 +32,7 @@ public class VotersServiceImpl implements VotersService {
     private final SystemParameterRepository systemParameterRepository;
 
     /* function returns a map of juror number and flag values */
+    @Override
     public Map<String,String> getVoters(String owner, PoolCreateRequestDto poolCreateRequestDto) throws SQLException {
 
         LocalDate attendanceDate = poolCreateRequestDto.getStartDate();
@@ -59,7 +60,7 @@ public class VotersServiceImpl implements VotersService {
         return voterMap;
     }
 
-
+    @Override
     public Map<String,String> getVotersForCoronerPool(String postcode, int number,
                                                       String locCode) throws SQLException {
 

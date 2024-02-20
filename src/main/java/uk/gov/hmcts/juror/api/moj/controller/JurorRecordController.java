@@ -68,6 +68,7 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/moj/juror-record", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Juror Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class JurorRecordController {
 
     @NonNull
@@ -273,6 +274,7 @@ public class JurorRecordController {
      * including digital summons reply data.
      *
      * @param jurorId Juror number of the response to view
+     *
      * @return Fully populated DTO for juror records with a digital summons reply
      */
     @GetMapping(path = "/digital-detail/{jurorId}")
@@ -309,7 +311,7 @@ public class JurorRecordController {
                              @Size(min = 9, max = 9)
                              @PathVariable("jurorNumber")
                              @Valid @JurorNumber String jurorNumber) {
-        boolean isBureauUser = payload.getOwner().equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER);
+        boolean isBureauUser = JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner());
         boolean isTeamLeader = payload.getStaff().getRank().equals(SecurityUtil.TEAM_LEADER_LEVEL);
 
         if (isBureauUser && !isTeamLeader) {
@@ -338,7 +340,7 @@ public class JurorRecordController {
                                           @Parameter(description = "Valid juror number", required = true)
                                           @JurorNumber @PathVariable("jurorNumber")
                                           @Valid String jurorNumber) {
-        boolean isBureauUser = payload.getOwner().equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER);
+        boolean isBureauUser = JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner());
 
         if (isBureauUser) {
             throw new MojException.Forbidden("User has insufficient permission to perform "
@@ -413,6 +415,7 @@ public class JurorRecordController {
      *
      * @param jurorNumber Unique Juror number of the juror
      * @param poolNumber  a complete (min 9 digit) pool number that identifies a unique pool entry
+     *
      * @return Fully populated DTO of a juror's attendance details in a pool
      */
     @GetMapping(path = "/attendance-detail/{jurorNumber}/{poolNumber}")

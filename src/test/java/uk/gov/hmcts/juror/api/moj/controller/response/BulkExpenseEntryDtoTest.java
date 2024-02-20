@@ -20,13 +20,18 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 
-class BulkExpenseEntryDtoTest extends AbstractValidatorTest {
+class BulkExpenseEntryDtoTest extends AbstractValidatorTest<BulkExpenseEntryDto> {
     public static BulkExpenseEntryDto createValid() {
         BulkExpenseEntryDto bulkExpenseEntryDto = new BulkExpenseEntryDto();
         bulkExpenseEntryDto.setAppearanceDate(LocalDate.now());
         bulkExpenseEntryDto.setAttendanceType(AttendanceType.FULL_DAY);
         bulkExpenseEntryDto.setPaymentMethod(PaymentMethod.BACS);
         return bulkExpenseEntryDto;
+    }
+
+    @Override
+    protected BulkExpenseEntryDto createValidObject() {
+        return createValid();
     }
 
     @ParameterizedTest(name = "Positive - from appearance is mapped correctly {0}")
@@ -89,79 +94,36 @@ class BulkExpenseEntryDtoTest extends AbstractValidatorTest {
         verifyNoMoreInteractions(appearance);
     }
 
+
     @Nested
-    class AppearanceDate extends AbstractValidationFieldTestLocalDate<BulkExpenseEntryDto> {
+    class AppearanceDate extends AbstractValidationFieldTestLocalDate {
         protected AppearanceDate() {
-            super("appearanceDate");
+            super("appearanceDate", BulkExpenseEntryDto::setAppearanceDate);
             addRequiredTest(null);
-        }
-
-
-        @Override
-        protected void setField(BulkExpenseEntryDto baseObject, LocalDate value) {
-            baseObject.setAppearanceDate(value);
-        }
-
-        @Override
-        protected BulkExpenseEntryDto createValidObject() {
-            return createValid();
         }
     }
 
     @Nested
-    class AttendanceTypeTest extends AbstractValidationFieldTestBase<BulkExpenseEntryDto, AttendanceType> {
+    class AttendanceTypeTest extends AbstractValidationFieldTestBase<AttendanceType> {
         protected AttendanceTypeTest() {
-            super("attendanceType");
+            super("attendanceType", BulkExpenseEntryDto::setAttendanceType);
             addRequiredTest(null);
-        }
-
-        @Override
-        protected void setField(BulkExpenseEntryDto baseObject, AttendanceType value) {
-            baseObject.setAttendanceType(value);
-        }
-
-        @Override
-        protected BulkExpenseEntryDto createValidObject() {
-            return createValid();
         }
     }
 
     @Nested
-    class PaymentMethodTest extends AbstractValidationFieldTestBase<BulkExpenseEntryDto, PaymentMethod> {
+    class PaymentMethodTest extends AbstractValidationFieldTestBase<PaymentMethod> {
         protected PaymentMethodTest() {
-            super("paymentMethod");
+            super("paymentMethod", BulkExpenseEntryDto::setPaymentMethod);
             addRequiredTest(null);
-        }
-
-
-        @Override
-        protected void setField(BulkExpenseEntryDto baseObject, PaymentMethod value) {
-            baseObject.setPaymentMethod(value);
-        }
-
-        @Override
-        protected BulkExpenseEntryDto createValidObject() {
-            return createValid();
         }
     }
 
     @Nested
-    class OriginalValue extends AbstractValidationFieldTestBase<BulkExpenseEntryDto, BulkExpenseEntryDto> {
+    class OriginalValue extends AbstractValidationFieldTestBase<BulkExpenseEntryDto> {
         protected OriginalValue() {
-            super("originalValue");
+            super("originalValue", BulkExpenseEntryDto::setOriginalValue);
             addNotRequiredTest(createValid());
         }
-
-
-        @Override
-        protected void setField(BulkExpenseEntryDto baseObject, BulkExpenseEntryDto value) {
-            baseObject.setOriginalValue(value);
-        }
-
-        @Override
-        protected BulkExpenseEntryDto createValidObject() {
-            return createValid();
-        }
     }
-
 }

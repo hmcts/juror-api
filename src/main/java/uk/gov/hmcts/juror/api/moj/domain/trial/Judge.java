@@ -28,7 +28,7 @@ public class Judge implements Serializable {
     @Id
     @Column(name = "id")
     @GeneratedValue(generator = "judge_gen")
-    @SequenceGenerator(name = "judge_gen", sequenceName = "juror_mod.judge_id_seq")
+    @SequenceGenerator(name = "judge_gen", sequenceName = "juror_mod.judge_id_seq", allocationSize = 1)
     private long id;
 
     @Column(name = "owner")

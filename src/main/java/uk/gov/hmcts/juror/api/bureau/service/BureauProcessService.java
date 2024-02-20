@@ -11,5 +11,6 @@ public interface BureauProcessService extends ScheduledService {
      * @param
      * @return
      */
+    @Override
     void process();
 }

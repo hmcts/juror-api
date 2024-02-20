@@ -53,7 +53,7 @@ public class PoolCreateITest {
             assertThat(resultSet).isNotEmpty();
             assertThat(resultSet.size()).isEqualTo(6); // should be 5 * 1.2 = 6
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 

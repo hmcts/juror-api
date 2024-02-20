@@ -5,10 +5,12 @@ import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 
 import java.util.List;
 
-@SuppressWarnings(
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive done via inheritance
-)
-class JurorNumberListDtoTest extends AbstractValidatorTest {
+class JurorNumberListDtoTest extends AbstractValidatorTest<JurorNumberListDto> {
+
+    @Override
+    protected JurorNumberListDto createValidObject() {
+        return createJurorNumberListDto(List.of("123456789", "123456788"));
+    }
 
     protected JurorNumberListDto createJurorNumberListDto(List<String> jurorNumbers) {
         JurorNumberListDto jurorNumberListDto = new JurorNumberListDto();
@@ -19,14 +21,14 @@ class JurorNumberListDtoTest extends AbstractValidatorTest {
     @Test
     void positiveJurorNumbers() {
         JurorNumberListDto jurorNumberListDto = createJurorNumberListDto(List.of("123456789", "123456788"));
-        expectNoViolations(jurorNumberListDto);
+        assertExpectNoViolations(jurorNumberListDto);
     }
 
     @Test
     void negativeJurorNumbersEmpty() {
         JurorNumberListDto jurorNumberListDto = createJurorNumberListDto(List.of());
 
-        expectViolations(jurorNumberListDto,
+        assertExpectViolations(jurorNumberListDto,
             new Violation("jurorNumbers", "must not be empty")
         );
     }
@@ -34,7 +36,7 @@ class JurorNumberListDtoTest extends AbstractValidatorTest {
     @Test
     void negativeJurorNumbersNull() {
         JurorNumberListDto jurorNumberListDto = createJurorNumberListDto(null);
-        expectViolations(jurorNumberListDto,
+        assertExpectViolations(jurorNumberListDto,
             new Violation("jurorNumbers", "must not be empty")
         );
     }
@@ -42,7 +44,7 @@ class JurorNumberListDtoTest extends AbstractValidatorTest {
     @Test
     void negativeJurorNumberInvalidTooLarge() {
         JurorNumberListDto jurorNumberListDto = createJurorNumberListDto(List.of("1234567890"));
-        expectViolations(jurorNumberListDto,
+        assertExpectViolations(jurorNumberListDto,
             new Violation("jurorNumbers[0].<list element>", "must match \"^\\d{9}$\"")
         );
     }
@@ -50,7 +52,7 @@ class JurorNumberListDtoTest extends AbstractValidatorTest {
     @Test
     void negativeJurorNumberInvalidTooSmall() {
         JurorNumberListDto jurorNumberListDto = createJurorNumberListDto(List.of("12345678"));
-        expectViolations(jurorNumberListDto,
+        assertExpectViolations(jurorNumberListDto,
             new Violation("jurorNumbers[0].<list element>", "must match \"^\\d{9}$\"")
         );
     }
@@ -58,7 +60,7 @@ class JurorNumberListDtoTest extends AbstractValidatorTest {
     @Test
     void negativeJurorNumberInvalidNotNumeric() {
         JurorNumberListDto jurorNumberListDto = createJurorNumberListDto(List.of("ABC"));
-        expectViolations(jurorNumberListDto,
+        assertExpectViolations(jurorNumberListDto,
             new Violation("jurorNumbers[0].<list element>", "must match \"^\\d{9}$\"")
         );
     }

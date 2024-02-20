@@ -17,17 +17,27 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCode;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.ExcusalDecisionDto;
-import uk.gov.hmcts.juror.api.moj.domain.*;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
+import uk.gov.hmcts.juror.api.moj.domain.ExcusalDecision;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
-import uk.gov.hmcts.juror.api.moj.domain.letter.ExcusalDeniedLetterMod;
 import uk.gov.hmcts.juror.api.moj.domain.letter.ExcusalLetterMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
-import uk.gov.hmcts.juror.api.moj.repository.*;
+import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
+import uk.gov.hmcts.juror.api.moj.repository.ExcuseDeniedLetterRepository;
+import uk.gov.hmcts.juror.api.moj.repository.ExcuseLetterRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -46,6 +56,7 @@ import static uk.gov.hmcts.juror.api.moj.domain.ExcusalDecision.REFUSE;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
 
     @Value("${jwt.secret.bureau}")
@@ -549,7 +560,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         List<ExcusalLetterMod> excusalLetters = new ArrayList<>();
         excusalLetterIterable.forEach(excusalLetters::add);
 
-        if (excusalCode.equals(ExcusalCode.DECEASED)) {
+        if (ExcusalCode.DECEASED.equals(excusalCode)) {
             assertThat(excusalLetters.size())
                 .as("Expect no excusal letter for deceased jurors")
                 .isEqualTo(0);

@@ -56,6 +56,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = "notify.disabled=false"
 )
+@SuppressWarnings("PMD.LawOfDemeter")
 public class PublicEndpointControllerIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate template;
@@ -111,12 +112,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         assertThat(exchange).describedAs(description).isNotNull();
         assertThat(exchange.getStatusCode()).isNotEqualTo(HttpStatus.OK);
-        System.out.println("-------> status code : " + exchange.getStatusCode());
         assertThat(exchange.getBody().getStatus()).isNotEqualTo(HttpStatus.OK.value())
             .isEqualTo(exchange.getStatusCode().value());
-        System.out.println("-------> exception : " + exchange.getBody().getException());
-        System.out.println("-------> message : " + exchange.getBody().getMessage());
-        System.out.println("-------> error : " + exchange.getBody().getError());
         assertThat(exchange.getBody().getException()).isEqualTo(InvalidJwtAuthenticationException.class.getName());
         assertThat(exchange.getBody().getMessage()).isEqualTo("Authentication header may not be empty!");
     }

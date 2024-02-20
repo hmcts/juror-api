@@ -31,7 +31,11 @@ public class MojException extends RuntimeException {
         private final ErrorCode errorCode;
 
         public BusinessRuleViolation(String customErrorMessage, ErrorCode errorCode) {
-            super(customErrorMessage, null);
+            this(customErrorMessage, errorCode, null);
+        }
+
+        public BusinessRuleViolation(String customErrorMessage, ErrorCode errorCode, Throwable cause) {
+            super(customErrorMessage, cause);
             this.errorCode = errorCode;
         }
 
@@ -42,7 +46,16 @@ public class MojException extends RuntimeException {
             FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD,
             JUROR_STATUS_MUST_BE_FAILED_TO_ATTEND,
             JUROR_STATUS_MUST_BE_RESPONDED,
-            LETTER_CANNOT_GENERATE_ON_WEEKEND;
+            LETTER_CANNOT_GENERATE_ON_WEEKEND,
+            EXPENSES_CANNOT_BE_LESS_THAN_ZERO,
+            INVALID_FORMAT,
+            PLACEHOLDER_MUST_HAVE_VALUE,
+            INVALID_SEND_TYPE,
+            JUROR_MUST_HAVE_EMAIL,
+            JUROR_MUST_HAVE_PHONE_NUMBER,
+            JUROR_NOT_APART_OF_TRIAL,
+            MAX_ITEMS_EXCEEDED,
+            TRIAL_HAS_MEMBERS
         }
     }
 

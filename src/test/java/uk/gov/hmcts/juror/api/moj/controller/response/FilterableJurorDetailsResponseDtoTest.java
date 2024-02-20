@@ -5,9 +5,10 @@ import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAddressDtoTest;
 
-public class FilterableJurorDetailsResponseDtoTest extends AbstractValidatorTest {
+class FilterableJurorDetailsResponseDtoTest extends AbstractValidatorTest<FilterableJurorDetailsResponseDto> {
 
-    private FilterableJurorDetailsResponseDto createValidNameDetailsDto() {
+    @Override
+    protected FilterableJurorDetailsResponseDto createValidObject() {
         return FilterableJurorDetailsResponseDto.builder()
             .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
             .jurorVersion(1L)
@@ -18,50 +19,22 @@ public class FilterableJurorDetailsResponseDtoTest extends AbstractValidatorTest
     }
 
     @Nested
-    class JurorNumberTest extends
-        AbstractValidatorTest.AbstractValidationFieldTestString<FilterableJurorDetailsResponseDto> {
+    class JurorNumberTest extends AbstractValidationFieldTestString {
 
         protected JurorNumberTest() {
-            super("jurorNumber");
+            super("jurorNumber", FilterableJurorDetailsResponseDto::setJurorNumber);
             ignoreAdditionalFailures();
             addNotBlankTest(null);
             addInvalidPatternTest("INVALID", "^\\d{9}$", null);
         }
-
-        @Override
-        protected void setField(FilterableJurorDetailsResponseDto baseObject, String value) {
-            baseObject.setJurorNumber(value);
-        }
-
-        @Override
-        protected FilterableJurorDetailsResponseDto createValidObject() {
-            return createValidNameDetailsDto();
-        }
     }
 
     @Nested
-    class JurorVersionTest extends
-        AbstractValidatorTest.AbstractValidationFieldTestNumeric<FilterableJurorDetailsResponseDto, Long> {
+    class JurorVersionTest extends AbstractValidationFieldTestLong {
 
         protected JurorVersionTest() {
-            super("jurorVersion");
+            super("jurorVersion", FilterableJurorDetailsResponseDto::setJurorVersion);
             addMustBePositive(null);
-        }
-
-
-        @Override
-        protected void setField(FilterableJurorDetailsResponseDto baseObject, Long value) {
-            baseObject.setJurorVersion(value);
-        }
-
-        @Override
-        protected FilterableJurorDetailsResponseDto createValidObject() {
-            return createValidNameDetailsDto();
-        }
-
-        @Override
-        protected Long toNumber(String value) {
-            return Long.parseLong(value);
         }
     }
 }

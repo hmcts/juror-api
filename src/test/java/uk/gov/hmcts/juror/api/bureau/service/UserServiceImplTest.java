@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.request.MultipleStaffAssignmentDto;
@@ -34,8 +35,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.bureau.domain.UserQueries.owner;
 
 /**
@@ -219,10 +222,14 @@ public class UserServiceImplTest {
             .describedAs("Mock db query return is not ordered")
             .extracting("name").containsExactly("Bob", "Charlie", "Ali");
 
-        SecurityContextHolder.getContext().setAuthentication(
-            new BureauJwtAuthentication(List.of(),
-            TestUtils.createJwt("400","BUREAU_USER","0"))
-        );
+        BureauJwtAuthentication auth = mock(BureauJwtAuthentication.class);
+        when(auth.getPrincipal())
+            .thenReturn(TestUtils.createJwt("400", "BUREAU_USER", "0", List.of("400")));
+        SecurityContext securityContext = mock(SecurityContext.class);
+
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+
         given(mockuserRepository.findAll(UserQueries.active().and(owner("400")), UserQueries.sortNameAsc()))
             .willReturn(staffList);
 
@@ -233,7 +240,7 @@ public class UserServiceImplTest {
             .extracting("name")
             .containsExactly("Ali", "Bob", "Charlie");
 
-        verify(mockuserRepository,times(1)).findAll(UserQueries.active().and(owner("400")), UserQueries.sortNameAsc());
+        verify(mockuserRepository, times(1)).findAll(UserQueries.active().and(owner("400")), UserQueries.sortNameAsc());
     }
 
     @Test

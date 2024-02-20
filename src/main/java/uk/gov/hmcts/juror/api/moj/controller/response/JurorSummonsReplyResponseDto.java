@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
 
 import java.time.LocalDate;
 
@@ -44,8 +45,9 @@ public class JurorSummonsReplyResponseDto {
     @Autowired
     public JurorSummonsReplyResponseDto(JurorPool jurorPool,
                                         JurorStatusRepository jurorStatusRepository,
-                                        ResponseExcusalService responseExcusalService) {
+                                        ResponseExcusalService responseExcusalService,
+                                        PendingJurorRepository pendingJurorRepository) {
         this.commonDetails = new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
-            responseExcusalService);
+            responseExcusalService, pendingJurorRepository);
     }
 }

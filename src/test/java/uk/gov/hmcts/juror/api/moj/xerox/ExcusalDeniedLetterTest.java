@@ -143,4 +143,13 @@ public class ExcusalDeniedLetterTest extends AbstractLetterTest {
         }
     }
 
+    @Test
+    public void confirmWelshWithoutWelshCourtProducesEnglishOutput() {
+        final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
+        setupEnglishExpectedResult();
+        ExcusalDeniedLetter excusalDeniedLetter = new ExcusalDeniedLetter(LetterTestUtils.testWelshJurorPool(date),
+                                                        LetterTestUtils.testCourtLocation(),
+                                                        LetterTestUtils.testBureauLocation());
+        assertThat(excusalDeniedLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
+    }
 }

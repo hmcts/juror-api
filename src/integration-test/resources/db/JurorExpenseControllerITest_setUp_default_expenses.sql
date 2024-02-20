@@ -7,8 +7,27 @@ values ('400', '415230101', '2023-01-05', 5, 5, 'CRO', '415','N', '2023-01-05 09
 insert into juror_mod.juror (juror_number, last_name, first_name, dob, address_line_1, address_line_4, postcode,
 responded, smart_card, mileage, travel_time, amount_spent, financial_loss) values
 ('641500020', 'Lnametwozero', 'Fnametwozero', current_date - interval '20 years', '520 Street Name', 'Any town', 'CH1 2AN',
- 'Y', '12345678', '5', 4.5, '20.0', '0.0');
+ 'Y', '12345678', '5', '00:40', '20.0', '0.0');
 
 -- create juror_pool associative record
 insert into juror_mod.juror_pool (owner, juror_number, pool_number, status, is_active) values
 ('415', '641500020', '415230101', 2, true);
+
+INSERT INTO juror_mod.appearance
+(attendance_date, juror_number, loc_code, time_in, time_out, non_attendance,
+ mileage_due, mileage_paid, travel_time, expense_submitted_date, sat_on_jury, pool_number, pay_cash,
+ public_transport_total_due,
+ public_transport_total_paid, hired_vehicle_total_due, hired_vehicle_total_paid,
+ motorcycle_total_due, motorcycle_total_paid,
+ car_total_due, car_total_paid, pedal_cycle_total_due, pedal_cycle_total_paid,
+ parking_total_due, parking_total_paid, childcare_total_due, childcare_total_paid,
+ misc_total_due, misc_total_paid, loss_of_earnings_due, loss_of_earnings_paid,
+ subsistence_due, subsistence_paid, smart_card_due, smart_card_paid, attendance_type, pay_attendance_type,
+ is_draft_expense, f_audit,
+ appearance_stage)
+values
+    -- expenses for 641500020
+    --3 Draft
+    ('2023-01-05', '641500020', '415', '09:30', '16:00', false, 10, 0, '00:40', '2023-01-19', true, '415230101',
+     false, 10, 0, 20, 0, 30, 0, 40, 0, 50, 0, 60, 0, 70, 0, 80, 0, 90, 0, 100, 0, 25, 0, 'FULL_DAY', 'FULL_DAY', true,
+     null, 'EXPENSE_ENTERED');

@@ -21,6 +21,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -36,9 +37,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @SuppressWarnings({
     "PMD.AbstractClassWithoutAbstractMethod",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.LawOfDemeter"
 })
 public abstract class AbstractIntegrationTest {
+
+    protected static final String BUREAU_USER = "BUREAU_USER";
+    protected static final String COURT_USER = "COURT_USER";
+
     @SuppressWarnings("SpringJavaAutowiredMembersInspection")
     @Autowired
     protected JdbcTemplate jdbcTemplate;
@@ -123,6 +129,10 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected String createBureauJwt(String login, String owner) throws Exception {
+        return createBureauJwt(login, owner, owner);
+    }
+
+    protected String createBureauJwt(String login, String owner, String... courts) throws Exception {
         return mintBureauJwt(BureauJWTPayload.builder()
             .userLevel("1")
             .login(login)
@@ -130,14 +140,29 @@ public abstract class AbstractIntegrationTest {
                 .name("Test User")
                 .active(1)
                 .rank(1)
+                .courts(List.of(courts))
                 .build())
             .daysToExpire(89)
             .owner(owner)
             .build());
     }
 
-    protected void validateForbiddenResponse(ResponseEntity<String> response, String url) {
-        validateErrorResponse(response,
+    protected String createBureauJwt(String login, String owner, int rank) throws Exception {
+        return mintBureauJwt(BureauJWTPayload.builder()
+            .userLevel(String.valueOf(rank))
+            .login(login)
+            .staff(BureauJWTPayload.Staff.builder()
+                .name("Test User")
+                .active(1)
+                .rank(rank)
+                .build())
+            .daysToExpire(89)
+            .owner(owner)
+            .build());
+    }
+
+    protected void assertForbiddenResponse(ResponseEntity<String> response, String url) {
+        assertErrorResponse(response,
             HttpStatus.FORBIDDEN,
             url,
             AccessDeniedException.class,
@@ -145,11 +170,11 @@ public abstract class AbstractIntegrationTest {
     }
 
     @SneakyThrows
-    protected void validateErrorResponse(ResponseEntity<String> response,
-                                         HttpStatus status,
-                                         String url,
-                                         Class<? extends Exception> exceptionClass,
-                                         String message) {
+    protected void assertErrorResponse(ResponseEntity<String> response,
+                                       HttpStatus status,
+                                       String url,
+                                       Class<? extends Exception> exceptionClass,
+                                       String message) {
         assertThat(response).isNotNull();
         log.debug("Response: {}", response);
         assertThat(response.getStatusCode()).isEqualTo(status);
@@ -165,9 +190,16 @@ public abstract class AbstractIntegrationTest {
                 response.getBody(), false);
     }
 
+    protected void assertBusinessRuleViolation(ResponseEntity<String> response, String message,
+                                               MojException.BusinessRuleViolation.ErrorCode code) {
+        assertBusinessRuleViolation(response, null, message, code);
+    }
+
     @SneakyThrows
-    protected void validateBusinessRuleViolation(ResponseEntity<String> response, String url, String message,
-                                                 MojException.BusinessRuleViolation.ErrorCode code) {
+    @Deprecated
+    //Use one without url
+    protected void assertBusinessRuleViolation(ResponseEntity<String> response, String url, String message,
+                                               MojException.BusinessRuleViolation.ErrorCode code) {
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
@@ -180,17 +212,17 @@ public abstract class AbstractIntegrationTest {
                 response.getBody(), false);
     }
 
-    protected void validateInternalServerErrorViolation(ResponseEntity<String> response, String url,
-                                                        String expectedError) {
-        validateErrorResponse(response,
+    protected void assertInternalServerErrorViolation(ResponseEntity<String> response, String url,
+                                                      String expectedError) {
+        assertErrorResponse(response,
             HttpStatus.INTERNAL_SERVER_ERROR,
             url,
             MojException.InternalServerError.class,
             expectedError);
     }
 
-    protected void validateInvalidPathParam(ResponseEntity<String> response, String url,
-                                            String expectedMessage) throws JsonProcessingException {
+    protected void assertInvalidPathParam(ResponseEntity<String> response,
+                                          String expectedMessage) throws JsonProcessingException {
 
         assertThat(response).isNotNull();
         log.debug("Response: {}", response);
@@ -205,17 +237,18 @@ public abstract class AbstractIntegrationTest {
     }
 
     @SneakyThrows
-    protected void validateNotFound(ResponseEntity<String> response, String url, String message) {
-        validateErrorResponse(response,
+    protected void assertNotFound(ResponseEntity<String> response, String url, String message) {
+        assertErrorResponse(response,
             HttpStatus.NOT_FOUND,
             url,
             MojException.NotFound.class,
             message);
     }
 
+
     @SneakyThrows
-    protected void validateInvalidPayload(ResponseEntity<String> response,
-                                          String... errors) {
+    protected void assertInvalidPayload(ResponseEntity<String> response,
+                                        RestResponseEntityExceptionHandler.FieldError... errors) {
         log.debug("Response: {}", response);
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -233,7 +266,7 @@ public abstract class AbstractIntegrationTest {
     @Data
     private static class InvalidPayload {
         private int status;
-        private List<String> errors;
+        private List<RestResponseEntityExceptionHandler.FieldError> errors;
     }
 
     @Data

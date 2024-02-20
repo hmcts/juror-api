@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface WelshCourtLocationRepository extends CrudRepository<WelshCourtLocation, String> {
 
     WelshCourtLocation findByLocCode(String locCode);
+
+    boolean existsByLocCode(String locCode);
 }

@@ -10,9 +10,10 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 
 import java.util.List;
 
-public class BulkExpenseDtoTest extends AbstractValidatorTest {
+class BulkExpenseDtoTest extends AbstractValidatorTest<BulkExpenseDto> {
 
-    private BulkExpenseDto createValidBulkExpenseDto() {
+    @Override
+    protected BulkExpenseDto createValidObject() {
         BulkExpenseDto bulkExpenseDto = new BulkExpenseDto();
         bulkExpenseDto.setJurorNumber(TestConstants.VALID_JUROR_NUMBER);
         bulkExpenseDto.setType(AppearanceStage.EXPENSE_ENTERED);
@@ -23,125 +24,53 @@ public class BulkExpenseDtoTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class JurorNumber extends AbstractValidationFieldTestString<BulkExpenseDto> {
+    class JurorNumber extends AbstractValidationFieldTestString {
         protected JurorNumber() {
-            super("jurorNumber");
+            super("jurorNumber", BulkExpenseDto::setJurorNumber);
             ignoreAdditionalFailures();
             addNotBlankTest(null);
             addInvalidPatternTest("12345678", "^\\d{9}$", null);
         }
-
-        @Override
-        protected void setField(BulkExpenseDto baseObject, String value) {
-            baseObject.setJurorNumber(value);
-        }
-
-        @Override
-        protected BulkExpenseDto createValidObject() {
-            return createValidBulkExpenseDto();
-        }
     }
 
     @Nested
-    class JurorVersion extends AbstractValidationFieldTestNumeric<BulkExpenseDto, Long> {
+    class JurorVersion extends AbstractValidationFieldTestLong {
         protected JurorVersion() {
-            super("jurorVersion");
+            super("jurorVersion", BulkExpenseDto::setJurorVersion);
             addNotRequiredTest(1L);
         }
-
-
-        @Override
-        protected void setField(BulkExpenseDto baseObject, Long value) {
-            baseObject.setJurorVersion(value);
-        }
-
-        @Override
-        protected BulkExpenseDto createValidObject() {
-            return createValidBulkExpenseDto();
-        }
-
-        @Override
-        protected Long toNumber(String value) {
-            return Long.parseLong(value);
-        }
     }
 
     @Nested
-    class TypeTest extends AbstractValidationFieldTestBase<BulkExpenseDto, AppearanceStage> {
+    class TypeTest extends AbstractValidationFieldTestBase<AppearanceStage> {
         protected TypeTest() {
-            super("type");
+            super("type", BulkExpenseDto::setType);
             addRequiredTest(null);
         }
-
-        @Override
-        protected void setField(BulkExpenseDto baseObject, AppearanceStage value) {
-            baseObject.setType(value);
-        }
-
-        @Override
-        protected BulkExpenseDto createValidObject() {
-            return createValidBulkExpenseDto();
-        }
     }
 
     @Nested
-    class Mileage extends AbstractValidationFieldTestNumeric<BulkExpenseDto, Integer> {
+    class Mileage extends AbstractValidationFieldTestInteger {
         protected Mileage() {
-            super("mileage");
+            super("mileage", BulkExpenseDto::setMileage);
             addRequiredTest(null);
             addMustBePositive(null);
         }
-
-        @Override
-        protected void setField(BulkExpenseDto baseObject, Integer value) {
-            baseObject.setMileage(value);
-        }
-
-        @Override
-        protected BulkExpenseDto createValidObject() {
-            return createValidBulkExpenseDto();
-        }
-
-        @Override
-        protected Integer toNumber(String value) {
-            return Integer.parseInt(value);
-        }
     }
 
     @Nested
-    class Expenses extends AbstractValidationFieldTestBase<BulkExpenseDto, List<BulkExpenseEntryDto>> {
+    class Expenses extends AbstractValidationFieldTestBase<List<BulkExpenseEntryDto>> {
         protected Expenses() {
-            super("expenses");
+            super("expenses", BulkExpenseDto::setExpenses);
             addRequiredTest(null);
-        }
-
-        @Override
-        protected void setField(BulkExpenseDto baseObject, List<BulkExpenseEntryDto> value) {
-            baseObject.setExpenses(value);
-        }
-
-        @Override
-        protected BulkExpenseDto createValidObject() {
-            return createValidBulkExpenseDto();
         }
     }
 
     @Nested
-    class Totals extends AbstractValidationFieldTestBase<BulkExpenseDto, TotalExpenseDto> {
+    class Totals extends AbstractValidationFieldTestBase<TotalExpenseDto> {
         protected Totals() {
-            super("totals");
+            super("totals", BulkExpenseDto::setTotals);
             addRequiredTest(null);
-        }
-
-
-        @Override
-        protected void setField(BulkExpenseDto baseObject, TotalExpenseDto value) {
-            baseObject.setTotals(value);
-        }
-
-        @Override
-        protected BulkExpenseDto createValidObject() {
-            return createValidBulkExpenseDto();
         }
     }
 }

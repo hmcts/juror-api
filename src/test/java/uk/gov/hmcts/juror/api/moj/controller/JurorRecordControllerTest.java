@@ -129,8 +129,7 @@ class JurorRecordControllerTest {
         JurorOverviewResponseDto dto = new JurorOverviewResponseDto();
         dto.setCommonDetails(commonDto);
 
-        doReturn(dto).when(jurorRecordService)
-            .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
+        Mockito.doReturn(dto).when(jurorRecordService).getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
 
         mockMvc.perform(get("/api/v1/moj/juror-record/overview/" + JUROR_NUMBER + "/" + LOC_CODE)
                 .principal(mockPrincipal)

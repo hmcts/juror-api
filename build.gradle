@@ -74,6 +74,13 @@ configurations {
     dev
     integrationImplementation.extendsFrom testImplementation
     integrationRuntimeOnly.extendsFrom testRuntime
+
+    functionalTestImplementation.extendsFrom testImplementation
+    functionalTestRuntimeOnly.extendsFrom runtimeOnly
+
+    smokeTestImplementation.extendsFrom testImplementation
+    smokeTestRuntimeOnly.extendsFrom runtimeOnly
+
     compileOnly {
         extendsFrom annotationProcessor
     }
@@ -133,6 +140,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
+    implementation group: 'io.rest-assured', name: 'rest-assured'
 
 
     testImplementation('org.springframework.boot:spring-boot-starter-test')
@@ -143,7 +151,6 @@ dependencies {
     testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:2.36.0'
     testImplementation('org.assertj:assertj-core:3.23.1')
     testImplementation 'org.mockito:mockito-core:5.6.0'
-
 
     testImplementation('org.ajbrown:name-machine:1.0.0')
     testImplementation('org.projectlombok:lombok')
@@ -182,24 +189,17 @@ dependencies {
 //    options.annotationProcessorPath = configurations.querydsl
 //}
 
-jacocoTestReport {
-    reports {
-        xml.setRequired(true)
-        csv.setRequired(false)
-        html.getOutputLocation().set(file("${buildDir}/jacocoHtml"))
-    }
-}
-
-project.tasks['sonarqube'].dependsOn jacocoTestReport
-
 sonarqube {
     properties {
         property "sonar.projectName", "Juror :: juror-api"
         property "sonar.projectKey", "uk.gov.hmcts.juror:juror-api"
         property "sonar.sources", "src"
         property "sonar.java.binaries", "build/classes"
-        property "sonar.exclusions", "docs/*,docker/*,notify/*,libraries/*,gradle/**/*,data/*,src/querydsl/**/*,src/test/**,src/integration-test/**,src/main/resources/db/modernisationMigration/*"
-        property "sonar.cpd.exclusions", "src/main/resources/db/migration/*,src/main/java/uk/gov/hmcts/juror/api/moj/xerox/letters/*"
+        property "sonar.exclusions", "**/*, src/**/*"
+        property "sonar.test.exclusions", "**/*, src/test/**/*"
+        property "sonar.cpd.exclusions", "**/*, src/**/*"
+        // property "sonar.exclusions", ".github/**,charts/**/,config/**,infrastructure/**,lib/**,gradle/**,data/*,src/querydsl/**,src/test/**,src/integration-test/**,src/main/resources/**"
+        // property "sonar.cpd.exclusions", "src/main/resources/db/migration/*,src/main/java/uk/gov/hmcts/juror/api/moj/xerox/letters/*"
     }
 }
 
@@ -239,8 +239,7 @@ flyway {
     url = System.getenv("DB_URL")
     user = System.getenv("DB_USERNAME")
     password = System.getenv("DB_PASSWORD")
-
-    schemas = ['juror_mod']
+    schemas = ['juror','juror_digital','juror_digital_user','juror_dashboard','hk','juror_mod']
     defaultSchema = 'juror_mod'
     table = 'schema_history'
     cleanDisabled = false
@@ -301,6 +300,22 @@ sourceSets {
             //srcDirs 'src/querydsl/java'
         }
     }
+    functionalTest {
+        java {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+            srcDir file('src/functionalTest/java')
+        }
+        resources.srcDir file('src/functionalTest/resources')
+    }
+    smokeTest {
+        java {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+            srcDir file('src/smokeTest/java')
+        }
+        resources.srcDir file('src/smokeTest/resources')
+    }
     integration {
         java {
             compileClasspath += main.output + test.output + test.compileClasspath
@@ -313,13 +328,13 @@ sourceSets {
 }
 
 checkstyleMain {
-    maxWarnings = 427
+    maxWarnings = 398
 }
 checkstyleTest {
-    maxWarnings = 281
+    maxWarnings = 271
 }
 checkstyleIntegration{
-    maxWarnings = 1287
+    maxWarnings = 1272
 }
 checkstyle {
     maxWarnings = 0
@@ -328,13 +343,13 @@ checkstyle {
 }
 
 pmdIntegration {
-    maxFailures = 961
+    maxFailures = 809
 }
 pmdTest {
-    maxFailures = 816
+    maxFailures = 661
 }
 pmdMain {
-    maxFailures = 1374
+    maxFailures = 1283
 }
 pmd {
     maxFailures = 0
@@ -347,6 +362,12 @@ pmd {
     ruleSetFiles = files("config/pmd/ruleset.xml")
 }
 
+test {
+    if(System.getenv('JENKINS_CI_BUILD')){
+        failFast = true
+    }
+}
+
 task integration(type: Test) {
     useJUnitPlatform()
     description = 'Runs integration tests.'
@@ -355,6 +376,9 @@ task integration(type: Test) {
     classpath = sourceSets.integration.runtimeClasspath
     // This forces integration tests to always run if this task is run.
     outputs.upToDateWhen { false }
+    if(System.getenv('JENKINS_CI_BUILD')){
+        failFast = true
+    }
 }
 
 task testSuite(dependsOn: [test, integration]) {
@@ -364,6 +388,32 @@ task testSuite(dependsOn: [test, integration]) {
     // This forces the test suite to always run if this task is run.
     outputs.upToDateWhen { false }
 }
+
+task smoke(type: Test) {
+    useJUnitPlatform()
+    description = "Runs Smoke Tests"
+    testClassesDirs = sourceSets.smokeTest.output.classesDirs
+    classpath = sourceSets.smokeTest.runtimeClasspath
+}
+
+task functional(type: Test) {
+    useJUnitPlatform()
+    description = "Runs functional tests"
+    group = "Verification"
+    testClassesDirs = sourceSets.functionalTest.output.classesDirs
+    classpath = sourceSets.functionalTest.runtimeClasspath
+}
+
+jacocoTestReport {
+    executionData(test, integration)
+    reports {
+        xml.required = true
+        csv.required = false
+        html.required = true
+    }
+}
+
+project.tasks['sonarqube'].dependsOn jacocoTestReport
 
 // https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/configuration.html
 dependencyCheck {
@@ -394,3 +444,21 @@ check.dependsOn -= integration
 // Makes the whole test suite not run by default.
 check.dependsOn -= testSuite
 
+task runAllStyleChecks {
+    dependsOn 'checkstyleMain'
+    dependsOn 'checkstyleTest'
+    dependsOn 'checkstyleIntegration'
+
+    dependsOn 'pmdMain'
+    dependsOn 'pmdTest'
+    dependsOn 'pmdIntegration'
+}
+
+// Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
+rootProject.tasks.named("processSmokeTestResources") {
+    duplicatesStrategy = 'include'
+}
+
+wrapper {
+    distributionType = Wrapper.DistributionType.ALL
+}

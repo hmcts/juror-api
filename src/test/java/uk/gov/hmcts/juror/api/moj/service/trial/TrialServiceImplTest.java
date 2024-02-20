@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service.trial;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
@@ -30,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -39,6 +42,7 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceServiceImpl;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -126,11 +130,28 @@ class TrialServiceImplTest {
     @Test
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void testGetTrials() {
-        when(trialRepository.getListOfTrialsForCourtLocations(createCourtList(), Boolean.TRUE, createPageable()))
+        when(trialRepository.getListOfTrialsForCourtLocations(createCourtList(), Boolean.TRUE, null, createPageable()))
             .thenReturn(createTrialList());
 
         Page<TrialListDto> trials = trialService.getTrials(createJwtPayload("415", "COURT_USER"),
-            0, "trialNumber", "desc", Boolean.TRUE);
+            0, "trialNumber", "desc", Boolean.TRUE, null);
+
+        assertThat(trials)
+            .as("List of trials should be in desc order based on trial number")
+            .hasSize(2)
+            .extracting(TrialListDto::getTrialNumber)
+            .containsExactly("T100000025", "T100000024");
+    }
+
+    @Test
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
+    void testGetTrialsWithJurorNumber() {
+        when(
+            trialRepository.getListOfTrialsForCourtLocations(createCourtList(), Boolean.TRUE, "1234", createPageable()))
+            .thenReturn(createTrialList());
+
+        Page<TrialListDto> trials = trialService.getTrials(createJwtPayload("415", "COURT_USER"),
+            0, "trialNumber", "desc", Boolean.TRUE, "1234");
 
         assertThat(trials)
             .as("List of trials should be in desc order based on trial number")
@@ -164,7 +185,39 @@ class TrialServiceImplTest {
         assertThat(trialSummary.getCourtroomsDto().getRoomNumber()).isEqualTo("67");
         assertThat(trialSummary.getCourtroomsDto().getDescription()).isEqualTo("Courtroom 1");
         assertThat(trialSummary.getProtectedTrial()).isEqualTo(Boolean.TRUE);
+        assertThat(trialSummary.getTrialEndDate()).isNull();
         assertThat(trialSummary.getIsActive()).isEqualTo(Boolean.TRUE);
+    }
+
+    @Test
+    void testGetTrialSummaryInactiveTrial() {
+        Trial inactiveTrial = createTrial("T100000025");
+        inactiveTrial.setTrialEndDate(LocalDate.now());
+        when(trialRepository.findByTrialNumberAndCourtLocationLocCode("T100000025", "415"))
+            .thenReturn(inactiveTrial);
+
+        TrialSummaryDto trialSummary = trialService.getTrialSummary(
+            createJwtPayload("415", "COURT_USER"), "T100000025", "415");
+
+        verify(trialRepository, times(1))
+            .findByTrialNumberAndCourtLocationLocCode(anyString(), anyString());
+        verify(courtroomRepository, never()).findById(anyLong());
+        verify(courtLocationRepository, never()).findByLocCode(anyString());
+        verify(judgeRepository, never()).findById(anyLong());
+        verify(trialRepository, never()).save(any(Trial.class));
+
+        assertThat(trialSummary.getTrialNumber()).isEqualTo("T100000025");
+        assertThat(trialSummary.getDefendants()).isEqualTo("Joe, Jo, Jon");
+        assertThat(trialSummary.getTrialType()).isEqualTo("Criminal");
+        assertThat(trialSummary.getJudge().getId()).isEqualTo(21L);
+        assertThat(trialSummary.getJudge().getCode()).isEqualTo("1234");
+        assertThat(trialSummary.getJudge().getDescription()).isEqualTo("Mr Judge");
+        assertThat(trialSummary.getCourtroomsDto().getId()).isEqualTo(1L);
+        assertThat(trialSummary.getCourtroomsDto().getRoomNumber()).isEqualTo("67");
+        assertThat(trialSummary.getCourtroomsDto().getDescription()).isEqualTo("Courtroom 1");
+        assertThat(trialSummary.getProtectedTrial()).isEqualTo(Boolean.TRUE);
+        assertThat(trialSummary.getTrialEndDate()).isEqualTo(LocalDate.now());
+        assertThat(trialSummary.getIsActive()).isEqualTo(Boolean.FALSE);
     }
 
     @Test
@@ -341,6 +394,40 @@ class TrialServiceImplTest {
         verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(any());
     }
 
+    @Test
+    void testEndTrialHappyPath() {
+        final String trialNumber = "T100000000";
+        when(trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, "415"))
+            .thenReturn(createTrial(trialNumber));
+        when(panelRepository.retrieveMembersOnTrial(trialNumber, "415"))
+            .thenReturn(new ArrayList<>());
+
+        trialService.endTrial(createEndTrialDto());
+
+        verify(panelRepository, times(1)).retrieveMembersOnTrial(anyString(), anyString());
+        verify(trialRepository, times(1)).save(any());
+    }
+
+    @Test
+    void testEndTrialMembersInTrial() {
+        final String trialNumber = "T100000000";
+        List<Panel> panelMembers = createPanelMembers(10, PanelResult.JUROR, trialNumber, IJurorStatus.JUROR);
+        when(panelRepository.retrieveMembersOnTrial(trialNumber, "415"))
+            .thenReturn(panelMembers);
+
+        Assertions.assertThrows(
+            MojException.BusinessRuleViolation.class, () -> trialService.endTrial(createEndTrialDto()));
+    }
+
+    @Test
+    void testEndTrialCannotFindTrial() {
+        final String trialNumber = "T100000000";
+        when(trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, "415"))
+            .thenReturn(createTrial(trialNumber));
+        EndTrialDto dto = createEndTrialDto();
+        dto.setTrialNumber("T1");
+        Assertions.assertThrows(MojException.NotFound.class, () -> trialService.endTrial(dto));
+    }
 
     private Trial createTrial(String trialNumber) {
         Trial trial = new Trial();
@@ -576,5 +663,12 @@ class TrialServiceImplTest {
         return appearance;
     }
 
+    private EndTrialDto createEndTrialDto() {
+        EndTrialDto dto = new EndTrialDto();
+        dto.setTrialEndDate(LocalDate.now());
+        dto.setTrialNumber("T100000000");
+        dto.setLocationCode("415");
+        return dto;
+    }
 }
 

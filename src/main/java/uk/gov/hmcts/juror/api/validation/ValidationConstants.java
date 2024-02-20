@@ -3,7 +3,7 @@ package uk.gov.hmcts.juror.api.validation;
 /**
  * Validation constants.
  */
-public abstract class ValidationConstants {
+public final class ValidationConstants {
     public static final String NO_PIPES_REGEX = "^$|^[^|]+$";
     public static final String POSTCODE_REGEX = "^$|(([gG][iI][rR] {0,}0[aA]{2})|(("
         + "([a-pr-uwyzA-PR-UWYZ][a-hk-yA-HK-Y]?[0-9][0-9]?)|(([a-pr-uwyzA-PR-UWYZ][0-9][a-hjkstuwA-HJKSTUW])|"
@@ -16,6 +16,7 @@ public abstract class ValidationConstants {
     public static final String THIRD_PARTY_PHONE_SECONDARY_REGEX = "^(?:.{8,15})|$";
     public static final String JUROR_NUMBER = "^\\d{9}$";
     public static final String POOL_NUMBER = "^\\d{9}$";
+    public static final String TRIAL_NUMBER = "^.{0,16}$";
     public static final String LOCATION_CODE = "^\\d{3}$";
     public static final String EMAIL_ADDRESS_REGEX = "^(?:[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\"
         + ".[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f"
@@ -29,4 +30,8 @@ public abstract class ValidationConstants {
     public static final String TWO_DIGIT_REGEX = "^\\d{2}$";
     public static final String FOUR_DIGIT_REGEX = "^\\d{4}$";
     public static final String PHONE_NO_REGEX = "^[04(+][0-9\\s-()]{8,14}$";
+
+    private ValidationConstants() {
+
+    }
 }

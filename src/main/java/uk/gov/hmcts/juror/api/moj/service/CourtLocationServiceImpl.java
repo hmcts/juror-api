@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.history.RevisionSort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
@@ -12,10 +13,14 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationListDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.CourtRates;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtQueriesRepository;
+import uk.gov.hmcts.juror.api.moj.utils.RevisionUtil;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -70,18 +75,12 @@ public class CourtLocationServiceImpl implements CourtLocationService {
 
     @Override
     public CourtLocation getCourtLocation(String locCode) {
-        Optional<CourtLocation> courtLocation = courtLocationRepository.findByLocCode(locCode);
-        return courtLocation.isPresent()
-            ?
-            courtLocation.get()
-            :
-                null;
+        return courtLocationRepository.findByLocCode(locCode).orElse(null);
     }
 
     @Override
     public CourtLocation getCourtLocationByName(String locName) {
-        Optional<CourtLocation> courtLocation = courtLocationRepository.findByName(locName);
-        return courtLocation.orElse(null);
+        return courtLocationRepository.findByName(locName).orElse(null);
     }
 
     @Override
@@ -89,16 +88,45 @@ public class CourtLocationServiceImpl implements CourtLocationService {
         return courtQueriesRepository.getCourtDetailsFilteredByPostcode(postcode);
     }
 
+    CourtLocation getCourtLocationFromEffectiveFromDate(String locCode, LocalDate date) {
+
+        return RevisionUtil.findRevisionsSorted(courtLocationRepository, locCode, RevisionSort.desc())
+            .filter(courtLocationRevision -> {
+                LocalDate effectiveFrom = courtLocationRevision.getEntity().getRatesEffectiveFrom();
+                return effectiveFrom == null || !date.isBefore(effectiveFrom);
+            })
+            .findFirst().orElseThrow(() -> new MojException.NotFound(
+                "No court location rates are active on date: " + date
+                    + " for court " + locCode, null))
+            .getEntity();
+    }
+
+    @Override
+    public CourtRates getCourtRates(String locCode, LocalDate date) {
+        CourtLocation courtLocation = getCourtLocationFromEffectiveFromDate(locCode, date);
+
+        return CourtRates.builder()
+            .carRate0Passengers(courtLocation.getCarMileageRatePerMile0Passengers())
+            .carRate1Passenger(courtLocation.getCarMileageRatePerMile1Passengers())
+            .carRate2OrMorePassenger(courtLocation.getCarMileageRatePerMile2OrMorePassengers())
+            .motorcycleRate0Passenger(courtLocation.getMotorcycleMileageRatePerMile0Passengers())
+            .motorcycleRate1OrMorePassenger(courtLocation.getMotorcycleMileageRatePerMile1Passengers())
+            .bicycleRate0OrMorePassenger(courtLocation.getBikeRate())
+            .substanceRateStandard(courtLocation.getSubstanceRateStandard())
+            .substanceRateLongDay(courtLocation.getSubstanceRateLongDay())
+            .financialLossHalfDayLimit(courtLocation.getLimitFinancialLossHalfDay())
+            .financialLossFullDayLimit(courtLocation.getLimitFinancialLossFullDay())
+            .financialLossHalfDayLongTrialLimit(courtLocation.getLimitFinancialLossHalfDayLongTrial())
+            .financialLossFullDayLongTrialLimit(courtLocation.getLimitFinancialLossFullDayLongTrial())
+            .publicTransportSoftLimit(courtLocation.getPublicTransportSoftLimit())
+            .build();
+    }
+
     @Override
     public BigDecimal getYieldForCourtLocation(String locCode) {
-
-        Optional<CourtLocation> courtLocationRecord = courtLocationRepository.findByLocCode(locCode);
-        BigDecimal yield = BigDecimal.ZERO;
-
-        if (courtLocationRecord.isPresent()) {
-            yield = courtLocationRecord.get().getYield();
-        }
-        return yield;
+        return courtLocationRepository.findByLocCode(locCode)
+            .map(CourtLocation::getYield)
+            .orElse(BigDecimal.ZERO);
     }
 
     @Override
@@ -122,6 +150,7 @@ public class CourtLocationServiceImpl implements CourtLocationService {
         }
         return votersLock > 0;
     }
+
 
     @Override
     public boolean releaseVotersLock(String locCode) {

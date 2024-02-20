@@ -9,7 +9,7 @@ import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
  * Repository for {@link BulkPrintData}.
  */
 @Repository
-public interface BulkPrintDataRepository extends JpaRepository<BulkPrintData, Long>,
+public interface BulkPrintDataRepository extends IReissueLetterRepository, JpaRepository<BulkPrintData, Long>,
     QuerydslPredicateExecutor<BulkPrintData> {
     long countByJurorNo(String jurorNo);
 

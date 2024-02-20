@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
@@ -23,22 +24,20 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
- * Excusal Response service.
+ * Deferral Response service.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class DeferralResponseServiceImpl implements DeferralResponseService {
 
-    public static final String EXCUSAL_REJECTED_CODE = "Z";
+    public static final String DEFERRAL_REJECTED_CODE = "Z";
+    public static final String DEFERRAL_DENIED_INFO = "Deferral Denied - %s";
 
     @NonNull
     private final ExcusalCodeRepository excusalCodeRepository;
@@ -78,51 +77,55 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         log.debug("End of deferral processing");
     }
 
+    @SuppressWarnings("java:S125")
     private void declineDeferralForJurorPool(BureauJWTPayload payload, DeferralRequestDto deferralRequestDto,
                                              JurorPool jurorPool) {
+
+        String username = payload.getLogin();
 
         JurorStatus jurorStatus = new JurorStatus();
         jurorStatus.setStatus(IJurorStatus.RESPONDED);
         jurorPool.setStatus(jurorStatus);
-        jurorPool.setUserEdtq(payload.getLogin());
+        jurorPool.setUserEdtq(username);
+        jurorPool.setDeferralCode(deferralRequestDto.getDeferralReason());
         jurorPool.setDeferralDate(null);
         jurorPoolRepository.save(jurorPool);
 
         Juror juror = jurorPool.getJuror();
         juror.setResponded(true);
-        juror.setExcusalCode(deferralRequestDto.getDeferralReason());
-        juror.setUserEdtq(payload.getLogin());
-        juror.setExcusalRejected(EXCUSAL_REJECTED_CODE);
+        juror.setUserEdtq(username);
+        juror.setExcusalRejected(DEFERRAL_REJECTED_CODE);
         juror.setExcusalDate(null);
         jurorRepository.save(juror);
 
-        // update Part_Hist RESPONDED and DEFERRED statuses
+        // update Juror History - create deferral denied status event
         JurorHistory jurorHistory = JurorHistory.builder()
             .jurorNumber(jurorPool.getJurorNumber())
             .dateCreated(LocalDateTime.now())
-            .historyCode(HistoryCodeMod.RESPONDED_POSITIVELY)
-            .createdBy(payload.getLogin())
+            .historyCode(HistoryCodeMod.DEFERRED_POOL_MEMBER)
+            .createdBy(username)
             .poolNumber(jurorPool.getPoolNumber())
-            .otherInformation(JurorHistory.RESPONDED)
+            /* Other information text is used for (re-)issuing deferral denied letters - please be aware of this
+                dependency before making any changes! */
+            .otherInformation(String.format(DEFERRAL_DENIED_INFO, deferralRequestDto.getDeferralReason()))
             .build();
 
         jurorHistoryRepository.save(jurorHistory);
 
-        jurorHistory.setHistoryCode(HistoryCodeMod.DEFERRED_POOL_MEMBER);
-        jurorHistory.setOtherInformation("Deferral Denied - " + juror.getExcusalCode());
+        if (JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner())) {
+            // only Bureau users should enqueue a letter automatically
+            printDataService.printDeferralDeniedLetter(jurorPool);
 
-        jurorHistoryRepository.save(jurorHistory);
-
-        printDataService.printDeferralDeniedLetter(jurorPool);
-        
-        jurorHistoryRepository.save(JurorHistory.builder()
-                                            .jurorNumber(jurorPool.getJurorNumber())
-                                            .dateCreated(LocalDateTime.now())
-                                            .historyCode(HistoryCodeMod.NON_DEFERRED_LETTER)
-                                            .createdBy(payload.getLogin())
-                                            .poolNumber(jurorPool.getPoolNumber())
-                                            .otherInformation("")
-                                            .build());
+            // update Juror History - create deferral denied letter event
+            jurorHistoryRepository.save(JurorHistory.builder()
+                .jurorNumber(jurorPool.getJurorNumber())
+                .dateCreated(LocalDateTime.now())
+                .historyCode(HistoryCodeMod.NON_DEFERRED_LETTER)
+                .createdBy(payload.getLogin())
+                .poolNumber(jurorPool.getPoolNumber())
+                .otherInformation("")
+                .build());
+        }
     }
 
     private void checkExcusalCodeIsValid(String excusalCode) {

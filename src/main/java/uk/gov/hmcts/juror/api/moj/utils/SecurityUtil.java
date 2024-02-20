@@ -21,6 +21,8 @@ public final class SecurityUtil {
     public static final String TEAM_LEADER_LEVEL_STR = String.valueOf(TEAM_LEADER_LEVEL);
 
 
+    public static final String LOC_CODE_AUTH = "isAuthenticated() && principal.staff.courts.contains(#loc_code)";
+
     private SecurityUtil() {
         throw new IllegalStateException("Utility class");
     }
@@ -45,6 +47,10 @@ public final class SecurityUtil {
 
     public static String getActiveLogin() {
         return getActiveUsersBureauPayload().getLogin();
+    }
+
+    public static String getActiveOwner() {
+        return getActiveUsersBureauPayload().getOwner();
     }
 
     /**

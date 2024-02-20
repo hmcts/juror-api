@@ -805,6 +805,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         return getJurorPaperResponse(jurorNumber);
     }
 
+    @Override
     public void updateJurorReplyTypeDetails(BureauJWTPayload payload, ReplyTypeDetailsDto replyTypeDetailsDto,
                                             final String jurorNumber) {
 
@@ -836,6 +837,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
     }
 
+    @Override
     public void updateJurorSignatureDetails(BureauJWTPayload payload, SignatureDetailsDto signatureDetailsDto,
                                             final String jurorNumber) {
 

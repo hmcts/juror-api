@@ -9,12 +9,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorCommsPrintFiles;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorCommsPrintFilesRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateField;
-import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateFieldRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.PrintFile;
 import uk.gov.hmcts.juror.api.bureau.domain.PrintFileRepository;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.Pool;
 import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 
@@ -38,11 +36,7 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
     private static final String JUROR_NUMBER = "111222333";
     private static final String TEMPLATE_ID = "123456789";
 
-    private JurorResponse juror;
     private Pool pool;
-    private NotifyTemplateField templateField1, templateField2, templateField3;
-    private JurorCommsPrintFiles jurorCommsPrintFiles1, JurorCommsPrintFiles2;
-    private PrintFile printFile;
     List<NotifyTemplateField> templateFields = new LinkedList<>();
     List<JurorCommsPrintFiles> jurorCommsPrintFilesList = new LinkedList<>();
     List<PrintFile> printFileList = new LinkedList<>();
@@ -50,13 +44,7 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
     Date currentDate = Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC));
 
     @Mock
-    private NotifyTemplateFieldRepository notifyTemplateFieldRepository;
-
-    @Mock
     private JurorCommsPrintFilesRepository jurorCommsPrintFilesRepository;
-
-    @Mock
-    private JurorResponseRepository jurorResponseRepository;
 
     @Mock
     private PoolRepository poolRepository;
@@ -72,7 +60,7 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
 
     @Before
     public void setUp() throws Exception {
-        juror = JurorResponse.builder()
+        JurorResponse juror = JurorResponse.builder()
             .jurorNumber(JUROR_NUMBER)
             .firstName("Farah")
             .lastName("Lee")
@@ -87,7 +75,7 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
             .welsh(false)
             .build();
 
-        jurorCommsPrintFiles1 = new JurorCommsPrintFiles();
+        JurorCommsPrintFiles jurorCommsPrintFiles1 = new JurorCommsPrintFiles();
         jurorCommsPrintFiles1.setPrintFileName("File001");
         jurorCommsPrintFiles1.setCreationDate(currentDate);
         jurorCommsPrintFiles1.setFormType("5224A");
@@ -96,7 +84,7 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
         jurorCommsPrintFiles1.setTemplateId("abcd1234");
         jurorCommsPrintFiles1.setDetailRec("    Farah     Lee       YYY   " + JUROR_NUMBER + "XX     ");
 
-        JurorCommsPrintFiles2 = new JurorCommsPrintFiles();
+        JurorCommsPrintFiles JurorCommsPrintFiles2 = new JurorCommsPrintFiles();
         JurorCommsPrintFiles2.setPrintFileName("File001");
         JurorCommsPrintFiles2.setCreationDate(currentDate);
         JurorCommsPrintFiles2.setFormType("5229A");
@@ -108,7 +96,7 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
         jurorCommsPrintFilesList.add(jurorCommsPrintFiles1);
         jurorCommsPrintFilesList.add(JurorCommsPrintFiles2);
 
-        templateField1 = NotifyTemplateField.builder()
+        NotifyTemplateField templateField1 = NotifyTemplateField.builder()
             .id(1L)
             .templateId(TEMPLATE_ID)
             .templateField("FIRSTNAME")
@@ -117,7 +105,7 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
             .positionTo(14)
             .build();
 
-        templateField2 = NotifyTemplateField.builder()
+        NotifyTemplateField templateField2 = NotifyTemplateField.builder()
             .id(2L)
             .templateId(TEMPLATE_ID)
             .templateField("LASTNAME")
@@ -125,7 +113,7 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
             .positionFrom(15)
             .positionTo(24)
             .build();
-        templateField3 = NotifyTemplateField.builder()
+        NotifyTemplateField templateField3 = NotifyTemplateField.builder()
             .id(3L)
             .templateId(TEMPLATE_ID)
             .templateField("JUROR NUMBER")
@@ -138,7 +126,7 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
         templateFields.add(templateField2);
         templateFields.add(templateField3);
 
-        printFile = new PrintFile();
+        PrintFile printFile = new PrintFile();
         printFile.setPrintFileName("File001");
         printFile.setCreationDate(currentDate);
         printFile.setPartNo("123456789");
@@ -166,46 +154,10 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
 
     @Test
     public void process_noPending_PrintFiles() {
-        given(jurorCommsPrintFilesRepository.findAll()).willReturn(new LinkedList<JurorCommsPrintFiles>());
+        given(jurorCommsPrintFilesRepository.findAll()).willReturn(new LinkedList<>());
 
         service.process();
         verifyNoInteractions(jurorCommsNotificationService);
         verifyNoInteractions(printFileRepository);
     }
-
-    //@Test(expected = NullPointerException.class)
-    /*
-    @Test(expected = JurorCommsNotificationServiceException.class)
-    public void process_unableToUpdate_PrintFiles() throws Exception {
-
-        given(jurorCommsPrintFilesRepository.findAll()).willReturn(jurorCommsPrintFilesList);
-
-        service.process();
-        verify(jurorCommsNotificationService, times(2)).sendJurorComms(any(Pool.class), any
-        (JurorCommsNotifyTemplateType.class),
-                anyString(), anyString(), anyBoolean());
-        verifyNoInteractions(printFileRepository);
-    }
-
-    //@Test(expected = NullPointerException.class)
-    @Test(expected = JurorCommsNotificationServiceException.class)
-    public void process_sendComms_Failure() throws Exception {
-
-        JurorCommsPrintFiles invalidJurorCommsPrintFile = new JurorCommsPrintFiles();
-        invalidJurorCommsPrintFile.setPrintFileName("File001");
-        invalidJurorCommsPrintFile.setCreationDate(currentDate);
-        invalidJurorCommsPrintFile.setJurorNumber("123456789");
-        invalidJurorCommsPrintFile.setDigitalComms("N");
-        invalidJurorCommsPrintFile.setTemplateId("abcd1234");
-        invalidJurorCommsPrintFile.setDetailRec("    Farah     Lee       YYY   ");
-
-        List<JurorCommsPrintFiles> invalidCommsPrintFilesList = new LinkedList<>();
-        invalidCommsPrintFilesList.add(invalidJurorCommsPrintFile);
-
-        given(jurorCommsPrintFilesRepository.findAll()).willReturn(invalidCommsPrintFilesList);
-
-        service.process();
-        verifyNoInteractions(printFileRepository);
-    }
-  */
 }

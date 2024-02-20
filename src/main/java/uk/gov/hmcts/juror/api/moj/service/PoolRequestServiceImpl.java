@@ -207,11 +207,8 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         // validate the court location exists
         RepositoryUtils.retrieveFromDatabase(locationCode, courtLocationRepository);
 
-        return holidaysRepository.findOne(isCourtHoliday(locationCode, Date.valueOf(attendanceDate))).isPresent()
-            ?
-            DayType.HOLIDAY
-            :
-                DayType.BUSINESS_DAY;
+        return holidaysRepository.findOne(isCourtHoliday(locationCode, Date.valueOf(attendanceDate)))
+            .isPresent() ? DayType.HOLIDAY : DayType.BUSINESS_DAY;
     }
 
     /**
@@ -379,6 +376,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         }
     }
 
+    @Override
     public PoolRequestActiveListDto getActivePoolRequests(BureauJWTPayload payload, String locCode, String tab,
                                                           int offset, String sortBy, String sortOrder) {
 
@@ -439,7 +437,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
 
                 activePoolsCourtPage = convertListToPage(activePoolsCourtList, pageable);
 
-                if (activePoolsCourtPage == null || activePoolsCourtPage.isEmpty()) {
+                if (activePoolsCourtPage.isEmpty()) {
                     //nothing found for search criteria, return empty list
                     return new PoolRequestActiveListDto(data, 0);
                 }
@@ -461,9 +459,9 @@ public class PoolRequestServiceImpl implements PoolRequestService {
                     List<CourtLocation> courtLocations = courtLocationRepository.findByLocCodeIn(courts);
                     List<String> courtNames = new ArrayList<>();
 
-                    courtLocations.forEach(c -> {
+                    for (CourtLocation c : courtLocations) {
                         courtNames.add(c.getName());
-                    });
+                    }
                     activePoolsBureauList = activePoolsBureauRepository.findByPoolTypeInAndCourtNameIn(
                         POOL_TYPES_DESC_LIST, courtNames, pageable);
                 } else {
@@ -520,7 +518,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
 
                 activePoolsCourtPage = convertListToPage(activePoolsCourtList, pageable);
 
-                if (activePoolsCourtPage == null || activePoolsCourtPage.isEmpty()) {
+                if (activePoolsCourtPage.isEmpty()) {
                     //nothing found for search criteria, return empty list
                     return new PoolRequestActiveListDto(data, 0);
                 }

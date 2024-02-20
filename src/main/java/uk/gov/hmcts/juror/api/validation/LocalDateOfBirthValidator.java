@@ -19,9 +19,8 @@ public class LocalDateOfBirthValidator implements ConstraintValidator<LocalDateO
     @Override
     public boolean isValid(LocalDate date, ConstraintValidatorContext constraintValidatorContext) {
         // do not validate a null date, allow actual @NotNull to validate that state!
-        return date == null || (
-            date.isAfter(ChronoLocalDate.from(LocalDateTime.now().minusYears(125)))
-                && date.isBefore(ChronoLocalDate.from(LocalDateTime.now().minusDays(1)))
-        );
+        return date == null
+            || date.isAfter(ChronoLocalDate.from(LocalDateTime.now().minusYears(125)))
+            && date.isBefore(ChronoLocalDate.from(LocalDateTime.now().minusDays(1)));
     }
 }

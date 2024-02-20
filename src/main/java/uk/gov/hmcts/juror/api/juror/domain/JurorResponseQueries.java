@@ -11,7 +11,6 @@ import java.util.List;
  *
  * @since JDB-283
  */
-
 public class JurorResponseQueries {
 
 

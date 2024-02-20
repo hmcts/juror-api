@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +17,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
@@ -41,12 +43,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -148,7 +153,7 @@ class TrialControllerTest {
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
-        when(trialService.getTrials(jwtPayload, 0, "trialNumber", "desc", Boolean.FALSE))
+        when(trialService.getTrials(jwtPayload, 0, "trialNumber", "desc", Boolean.FALSE, null))
             .thenReturn(createTrialList());
 
         mockMvc.perform(get(BASE_URL + methodUrl).principal(mockPrincipal))
@@ -159,7 +164,30 @@ class TrialControllerTest {
                 "T100000025", "T100000021")));
 
         verify(trialService, times(1))
-            .getTrials(any(BureauJWTPayload.class), anyInt(), anyString(), anyString(), anyBoolean());
+            .getTrials(any(BureauJWTPayload.class), anyInt(), anyString(), anyString(), anyBoolean(), isNull());
+    }
+
+    @Test
+    void testGetTrialsWithTrialNumberFilter() throws Exception {
+        final String methodUrl = "/list?page_number=0&sort_by=trialNumber&sort_order=desc&is_active=false"
+            + "&trial_number=1234";
+
+        jwtPayload = createJwt("415", "COURT_USER");
+        BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+        when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+
+        when(trialService.getTrials(jwtPayload, 0, "trialNumber", "desc", Boolean.FALSE, "1234"))
+            .thenReturn(createTrialList());
+
+        mockMvc.perform(get(BASE_URL + methodUrl).principal(mockPrincipal))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").value(notNullValue()))
+            .andExpect(jsonPath("$.content.length()", is(2)))
+            .andExpect(jsonPath("$.content.[*].trial_number").value(containsInRelativeOrder(
+                "T100000025", "T100000021")));
+
+        verify(trialService, times(1))
+            .getTrials(any(BureauJWTPayload.class), eq(0), eq("trialNumber"), eq("desc"), eq(false), eq("1234"));
     }
 
     @Test
@@ -196,6 +224,9 @@ class TrialControllerTest {
     }
 
     @Test
+    @SuppressWarnings({
+        "PMD.JUnitTestsShouldIncludeAssert"//False positive
+    })
     void testReturnJury() throws Exception {
         final String methodUrl = "/return-jury?trial_number=T10000000&location_code=415";
 
@@ -203,15 +234,17 @@ class TrialControllerTest {
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
-        mockMvc.perform(post(BASE_URL + methodUrl)
+        Assertions.assertThatNoException().isThrownBy(() -> mockMvc.perform(post(BASE_URL + methodUrl)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(createReturnJuryDto()))
                 .principal(mockPrincipal))
-            .andExpect(status().isOk());
-
+            .andExpect(status().isOk()));
     }
 
     @Test
+    @SuppressWarnings({
+        "PMD.JUnitTestsShouldIncludeAssert"//False positive
+    })
     void testReturnPanel() throws Exception {
         final String methodUrl = "/return-panel?trial_number=T10000000&location_code=415";
 
@@ -219,10 +252,25 @@ class TrialControllerTest {
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
-        mockMvc.perform(post(BASE_URL + methodUrl)
+        Assertions.assertThatNoException().isThrownBy(() -> mockMvc.perform(post(BASE_URL + methodUrl)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(createReturnPanelDto())).principal(mockPrincipal))
-            .andExpect(status().isOk());
+            .andExpect(status().isOk()));
+    }
+
+    @Test
+    void testEndTrial() throws Exception {
+        final String methodUrl = "/end-trial";
+
+        jwtPayload = createJwt("415", "COURT_USER");
+        BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+        when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+
+        Assertions.assertThatNoException().isThrownBy(() -> mockMvc.perform(patch(BASE_URL + methodUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(createEndTrialDto()))
+                .principal(mockPrincipal))
+            .andExpect(status().isOk()));
     }
 
 
@@ -290,7 +338,7 @@ class TrialControllerTest {
 
         return trialDto;
     }
-
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private ReturnJuryDto createReturnJuryDto() {
         ReturnJuryDto dto = new ReturnJuryDto();
 
@@ -316,6 +364,7 @@ class TrialControllerTest {
         return dto;
     }
 
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private List<JurorDetailRequestDto> createReturnPanelDto() {
         List<JurorDetailRequestDto> jurorDetailRequestDtos = new ArrayList<>();
 
@@ -328,5 +377,13 @@ class TrialControllerTest {
             jurorDetailRequestDtos.add(detailRequestDto);
         }
         return jurorDetailRequestDtos;
+    }
+
+    private EndTrialDto createEndTrialDto() {
+        EndTrialDto dto = new EndTrialDto();
+        dto.setTrialEndDate(now());
+        dto.setTrialNumber("T10000000");
+        dto.setLocationCode("415");
+        return dto;
     }
 }

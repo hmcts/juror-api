@@ -11,11 +11,16 @@ import java.util.List;
 import static org.mockito.Mockito.mock;
 
 @DisplayName("CompleteServiceValidationResponseDto")
-@SuppressWarnings(
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive done via inheritance
-)
-class CompleteServiceValidationResponseDtoTest extends AbstractValidatorTest {
+class CompleteServiceValidationResponseDtoTest extends AbstractValidatorTest<CompleteServiceValidationResponseDto> {
 
+
+    @Override
+    protected CompleteServiceValidationResponseDto createValidObject() {
+        return createCompleteServiceValidationResponseDto(
+            List.of(mock(JurorStatusValidationResponseDto.class)),
+            List.of(mock(JurorStatusValidationResponseDto.class))
+        );
+    }
 
     private CompleteServiceValidationResponseDto createCompleteServiceValidationResponseDto(
         List<JurorStatusValidationResponseDto> valid,
@@ -29,7 +34,7 @@ class CompleteServiceValidationResponseDtoTest extends AbstractValidatorTest {
 
     @Test
     void positiveTypical() {
-        expectNoViolations(
+        assertExpectNoViolations(
             createCompleteServiceValidationResponseDto(
                 List.of(mock(JurorStatusValidationResponseDto.class)),
                 List.of(mock(JurorStatusValidationResponseDto.class))
@@ -37,13 +42,14 @@ class CompleteServiceValidationResponseDtoTest extends AbstractValidatorTest {
         );
     }
 
+
     @DisplayName("status")
     @Nested
     class Valid {
 
         @Test
         void negativeNullList() {
-            expectViolations(
+            assertExpectViolations(
                 createCompleteServiceValidationResponseDto(
                     null,
                     List.of(mock(JurorStatusValidationResponseDto.class))
@@ -59,7 +65,7 @@ class CompleteServiceValidationResponseDtoTest extends AbstractValidatorTest {
             listWithNull.add(null);
             listWithNull.add(mock(JurorStatusValidationResponseDto.class));
 
-            expectViolations(
+            assertExpectViolations(
                 createCompleteServiceValidationResponseDto(
                     listWithNull,
                     List.of(mock(JurorStatusValidationResponseDto.class))
@@ -74,7 +80,7 @@ class CompleteServiceValidationResponseDtoTest extends AbstractValidatorTest {
     class InvalidNotResponded {
         @Test
         void negativeNullList() {
-            expectViolations(
+            assertExpectViolations(
                 createCompleteServiceValidationResponseDto(
                     List.of(mock(JurorStatusValidationResponseDto.class)),
                     null
@@ -90,7 +96,7 @@ class CompleteServiceValidationResponseDtoTest extends AbstractValidatorTest {
             listWithNull.add(null);
             listWithNull.add(mock(JurorStatusValidationResponseDto.class));
 
-            expectViolations(
+            assertExpectViolations(
                 createCompleteServiceValidationResponseDto(
                     List.of(mock(JurorStatusValidationResponseDto.class)),
                     listWithNull

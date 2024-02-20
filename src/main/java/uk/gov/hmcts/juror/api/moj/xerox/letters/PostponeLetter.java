@@ -3,47 +3,35 @@ package uk.gov.hmcts.juror.api.moj.xerox.letters;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
-import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.xerox.LetterBase;
 
 public class PostponeLetter extends LetterBase {
 
     public PostponeLetter(JurorPool jurorPool,
-                         CourtLocation courtLocation,
-                         CourtLocation bureauLocation) {
+                          CourtLocation courtLocation,
+                          CourtLocation bureauLocation) {
         super(LetterContext.builder()
-                   .juror(jurorPool.getJuror())
-                   .jurorPool(jurorPool)
-                   .courtLocation(courtLocation)
-                   .bureauLocation(bureauLocation)
-                   .build());
-        setup(jurorPool.getJuror());
+            .jurorPool(jurorPool)
+            .courtLocation(courtLocation)
+            .bureauLocation(bureauLocation)
+            .build());
     }
 
     public PostponeLetter(JurorPool jurorPool,
-                         CourtLocation courtLocation,
-                         CourtLocation bureauLocation,
-                         WelshCourtLocation welshCourtLocation) {
+                          CourtLocation courtLocation,
+                          CourtLocation bureauLocation,
+                          WelshCourtLocation welshCourtLocation) {
         super(LetterContext.builder()
-            .juror(jurorPool.getJuror())
             .jurorPool(jurorPool)
             .courtLocation(courtLocation)
             .welshCourtLocation(welshCourtLocation)
             .bureauLocation(bureauLocation)
             .build());
-        setup(jurorPool.getJuror());
     }
 
-    private void setup(Juror juror) {
-        if (Boolean.TRUE.equals(juror.getWelsh())) {
-            setupWelsh();
-        } else {
-            setupEnglish();
-        }
-    }
-
-    private void setupWelsh() {
+    @Override
+    protected void setupWelsh() {
         setFormCode(FormCode.BI_POSTPONE);
         addData(LetterDataType.DATE_OF_LETTER, 18);
         addData(LetterDataType.WELSH_COURT_NAME, 40);
@@ -59,7 +47,8 @@ public class PostponeLetter extends LetterBase {
         addData(LetterDataType.DEFERRAL_TIME, 8);
     }
 
-    private void setupEnglish() {
+    @Override
+    protected void setupEnglish() {
         setFormCode(FormCode.ENG_POSTPONE);
         addData(LetterDataType.DATE_OF_LETTER, 18);
         addData(LetterDataType.COURT_NAME, 59);

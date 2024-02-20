@@ -78,6 +78,7 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
         this.assignOnUpdateService = assignOnUpdateService;
     }
 
+    @Override
     public List<ResponseDisqualifyController.DisqualifyCodeDto> getDisqualifyReasons() throws DisqualifyException.UnableToRetrieveDisqualifyCodeList {
         Iterable<DisqualifyCodeEntity> disqualifyReasonsList = disqualifyCodeRepository.findAll();
         if (!disqualifyReasonsList.iterator().hasNext()) {
@@ -92,6 +93,7 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
     }
 
     @Transactional
+    @Override
     public boolean disqualifyJuror(String jurorId, DisqualifyCodeDto disqualifyCodeDto,
                                    String login) throws DisqualifyException {
         if (!isValidDisqualifyCode(jurorId, disqualifyCodeDto.getDisqualifyCode())) {

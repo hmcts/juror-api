@@ -22,6 +22,7 @@ public interface IAppearanceRepository {
     List<Tuple> retrieveAttendanceDetails(RetrieveAttendanceDetailsDto request);
 
     List<Tuple> retrieveNonAttendanceDetails(RetrieveAttendanceDetailsDto.CommonData commonData);
+
     List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> getAttendanceRecords(String jurorNumber);
 
     List<Tuple> getAvailableJurors(String locCode);

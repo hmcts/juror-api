@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeConverter;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -60,8 +61,27 @@ public class JurorHistory implements Serializable {
     @Column(name = "user_id")
     private String createdBy;
 
+    /**
+     * Additional text information to provide more detail or context surrounding this history event.
+     */
     @Column(name = "other_information")
     private String otherInformation;
+
+
+    /**
+     * Additional date information supporting this history event, for example populate the deferred_to date here when
+     * creating a deferral letter printed history event.
+     */
+    @Column(name = "other_info_date")
+    private LocalDate otherInformationDate;
+
+
+    /**
+     * Additional reference data information supporting this history event, for example populate the deferral reason
+     * code here when creating a deferral letter printed history event.
+     */
+    @Column(name = "other_info_reference")
+    private String otherInformationRef;
 
     @Column(name = "pool_number")
     private String poolNumber;

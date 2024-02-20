@@ -2,7 +2,8 @@ package uk.gov.hmcts.juror.api.moj.exception;
 
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -21,12 +22,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @ControllerAdvice(basePackages = {"uk.gov.hmcts.juror.api.moj"})
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    @ExceptionHandler(FinancialLossLimitExceededException.class)
+    public ResponseEntity<FinancialLossLimitExceededException.RequestBody> handleFinancialLossLimitExceededException(
+        FinancialLossLimitExceededException ex,
+        WebRequest request) {
+        return new ResponseEntity<>(ex.getResponseBody(), HttpStatus.UNPROCESSABLE_ENTITY);
+    }
 
     @ExceptionHandler({PoolRequestException.DuplicatePoolRequest.class,
         PoolRequestException.PoolRequestDateInvalid.class})
@@ -151,12 +158,11 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         body.put("timestamp", LocalDateTime.now().format(dateTimeFormatter));
         body.put("status", status.value());
 
-        List<String> errors = ex.getBindingResult()
+        List<FieldError> errors = ex.getBindingResult()
             .getFieldErrors()
             .stream()
-            .map(DefaultMessageSourceResolvable::getDefaultMessage)
-            .collect(Collectors.toList());
-
+            .map(fieldError -> new FieldError(fieldError.getField(), fieldError.getDefaultMessage()))
+            .toList();
         body.put("errors", errors);
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
@@ -169,4 +175,10 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         return body;
     }
 
+    @Data
+    @AllArgsConstructor
+    public static class FieldError {
+        private final String field;
+        private final String message;
+    }
 }

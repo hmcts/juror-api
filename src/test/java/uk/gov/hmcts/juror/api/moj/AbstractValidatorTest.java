@@ -6,6 +6,7 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.AbstractCollectionAssert;
 import org.assertj.core.api.ObjectAssert;
@@ -16,19 +17,27 @@ import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
-public class AbstractValidatorTest {
+@SuppressWarnings({
+    "PMD.TooManyMethods"
+})
+public abstract class AbstractValidatorTest<T> {
 
     protected ValidatorFactory validatorFactory;
     protected Validator validator;
@@ -39,29 +48,83 @@ public class AbstractValidatorTest {
         validator = validatorFactory.getValidator();
     }
 
+    protected abstract T createValidObject();
+
     @AfterEach
     public void close() {
         validatorFactory.close();
     }
 
-    protected <T> void expectNoViolations(T objectToValidate) {
-        Set<ConstraintViolation<T>> violations = validator.validate(objectToValidate);
+    protected final String getMessage(FieldTestSupport fieldTestSupport, String defaultValue) {
+        if (fieldTestSupport != null && fieldTestSupport.message != null) {
+            return fieldTestSupport.message;
+        }
+        return defaultValue;
+    }
+
+    protected String getTestSuffix(FieldTestSupport fieldTestSupport) {
+        String value = "";
+        if (fieldTestSupport == null) {
+            return value;
+        }
+        if (fieldTestSupport.getGroups() != null) {
+            value += " for groups ["
+                + Arrays.stream(fieldTestSupport.getGroups())
+                .map(Class::getSimpleName).collect(
+                    Collectors.joining(", ")) + "]";
+        }
+        return value;
+    }
+
+    private Class<?>[] getGroups(FieldTestSupport fieldTestSupport) {
+        if (fieldTestSupport != null && fieldTestSupport.groups != null) {
+            return fieldTestSupport.groups;
+        }
+        return null;
+    }
+
+    protected final Violation[] getOtherViolations(FieldTestSupport fieldTestSupport) {
+        if (fieldTestSupport != null && fieldTestSupport.violations != null) {
+            return fieldTestSupport.violations;
+        }
+        return new Violation[0];
+    }
+
+    protected void assertExpectNoViolations(T objectToValidate, Class<?>... groups) {
+        Set<ConstraintViolation<T>> violations;
+        if (groups == null) {
+            violations = validator.validate(objectToValidate);
+        } else {
+            violations = validator.validate(objectToValidate, groups);
+        }
         assertThat(violations).as("No validation violations expected").isEmpty();
     }
 
+    protected void assertExpectViolations(T objectToValidate, Violation... expectedViolations) {
+        assertExpectViolations(objectToValidate, null, expectedViolations);
+    }
 
-    protected <T> void expectViolations(T objectToValidate, Violation... expectedViolations) {
-        expectViolations(objectToValidate, List.of(expectedViolations));
+    protected void assertExpectViolations(T objectToValidate, FieldTestSupport fieldTestSupport,
+                                          Violation... expectedViolations) {
+        assertExpectViolations(objectToValidate, fieldTestSupport, List.of(expectedViolations));
+    }
+
+
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    protected void assertExpectViolations(T objectToValidate, FieldTestSupport fieldTestSupport,
+                                          List<Violation> expectedViolations) {
+        assertExpectViolations(objectToValidate, expectedViolations, getGroups(fieldTestSupport), false);
     }
 
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-    protected <T> void expectViolations(T objectToValidate, List<Violation> expectedViolations) {
-        expectViolations(objectToValidate, expectedViolations, false);
-    }
-
-    protected <T> void expectViolations(T objectToValidate, List<Violation> expectedViolations,
-                                        boolean ignoredAdditionalErrors) {
-        Set<ConstraintViolation<T>> violations = validator.validate(objectToValidate);
+    protected void assertExpectViolations(T objectToValidate, List<Violation> expectedViolations, Class<?>[] groups,
+                                          boolean ignoredAdditionalErrors) {
+        Set<ConstraintViolation<T>> violations;
+        if (groups == null) {
+            violations = validator.validate(objectToValidate);
+        } else {
+            violations = validator.validate(objectToValidate, groups);
+        }
 
         AbstractCollectionAssert<?, Collection<? extends ConstraintViolation<T>>, ConstraintViolation<T>,
             ObjectAssert<ConstraintViolation<T>>>
@@ -97,24 +160,31 @@ public class AbstractValidatorTest {
 
     @Setter
     @Getter
-    public class FieldTestSupport {
+    @Accessors(chain = true)
+    public static class FieldTestSupport {
         private String message;
         private Violation[] violations;
+        private Class<?>[] groups;
 
-        public FieldTestSupport(String message, Violation... violations) {
-            this.message = message;
-            this.violations = violations;
+        @SuppressWarnings("PMD.LinguisticNaming")
+        public FieldTestSupport setGroups(Class<?>... groups) {
+            this.groups = groups.clone();
+            return this;
         }
     }
 
-    protected abstract class AbstractValidationFieldTestBase<O, T> {
+    @SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
+    protected abstract class AbstractValidationFieldTestBase<V> {
         protected final List<DynamicTest> tests;
         protected final String fieldName;
+        protected final BiConsumer<T, V> setFieldConsumer;
 
-        protected boolean ignoreAdditionalFailures = false;
+        protected boolean ignoreAdditionalFailures;
 
-        protected AbstractValidationFieldTestBase(String fieldName) {
+        protected AbstractValidationFieldTestBase(String fieldName,
+                                                  BiConsumer<T, V> setFieldConsumer) {
             this.tests = new ArrayList<>();
+            this.setFieldConsumer = setFieldConsumer;
             this.fieldName = fieldName;
         }
 
@@ -122,58 +192,97 @@ public class AbstractValidatorTest {
             this.ignoreAdditionalFailures = true;
         }
 
-        void expectViolations(O dto, String fieldName, String defaultMessage, FieldTestSupport fieldTestSupport) {
+        void expectViolations(T dto, String fieldName, String defaultMessage, FieldTestSupport fieldTestSupport) {
             List<Violation> violations = new ArrayList<>();
             violations.add(new Violation(fieldName, getMessage(fieldTestSupport, defaultMessage)));
             violations.addAll(Arrays.asList(getOtherViolations(fieldTestSupport)));
-            AbstractValidatorTest.this.expectViolations(dto, violations, ignoreAdditionalFailures);
+            AbstractValidatorTest.this.assertExpectViolations(dto, violations, getGroups(fieldTestSupport),
+                ignoreAdditionalFailures);
         }
 
-        protected abstract void setField(O baseObject, T value);
-
-        protected abstract O createValidObject();
-
-        protected final String getMessage(FieldTestSupport fieldTestSupport, String defaultValue) {
-            if (fieldTestSupport != null && fieldTestSupport.message != null) {
-                return fieldTestSupport.message;
-            }
-            return defaultValue;
+        protected T createValidObject() {
+            return AbstractValidatorTest.this.createValidObject();
         }
 
-        protected final Violation[] getOtherViolations(FieldTestSupport fieldTestSupport) {
-            if (fieldTestSupport != null) {
-                return fieldTestSupport.violations;
-            }
-            return new Violation[0];
+
+        protected void setField(T baseObject, V value) {
+            setFieldConsumer.accept(baseObject, value);
         }
+
 
         protected void addRequiredTest(FieldTestSupport fieldTestSupport) {
-            tests.add(DynamicTest.dynamicTest(fieldName + " should reject null values", () -> {
-                O dto = createValidObject();
-                setField(dto, null);
-                expectViolations(dto, fieldName, "must not be null", fieldTestSupport);
-            }));
+            tests.add(
+                DynamicTest.dynamicTest(fieldName + " should reject null values" + getTestSuffix(fieldTestSupport),
+                    () -> {
+                        T dto = createValidObject();
+                        setField(dto, null);
+                        expectViolations(dto, fieldName, "must not be null", fieldTestSupport);
+                    }));
         }
 
-        protected void addNotRequiredTest(T validValue) {
-            tests.add(DynamicTest.dynamicTest(fieldName + " should be required", () -> {
-                O dto = createValidObject();
-                setField(dto, validValue);
-                expectNoViolations(dto);
-            }));
+        protected void addNotRequiredTest(V validValue, FieldTestSupport fieldTestSupport) {
+            tests.add(
+                DynamicTest.dynamicTest(fieldName + " should be required" + getTestSuffix(fieldTestSupport), () -> {
+                    T dto = createValidObject();
+                    setField(dto, validValue);
+                    assertExpectNoViolations(dto, getGroups(fieldTestSupport));
+                }));
         }
+
+        protected void addNotRequiredTest(V validValue) {
+            addNotRequiredTest(validValue, null);
+        }
+
+        protected void addAllowNotNullTest(V validValue, FieldTestSupport fieldTestSupport) {
+            tests.add(
+                DynamicTest.dynamicTest(fieldName + " must allow none null values" + getTestSuffix(fieldTestSupport),
+                    () -> {
+                        T dto = createValidObject();
+                        setField(dto, validValue);
+                        assertExpectNoViolations(dto, getGroups(fieldTestSupport));
+                    }));
+        }
+
+        protected void addAllowNullTest(FieldTestSupport fieldTestSupport) {
+            tests.add(
+                DynamicTest.dynamicTest(fieldName + " must allow null values" + getTestSuffix(fieldTestSupport),
+                    () -> {
+                        T dto = createValidObject();
+                        setField(dto, null);
+                        assertExpectNoViolations(dto, getGroups(fieldTestSupport));
+                    }));
+        }
+
+
+        protected void addNullTest(V validValue, FieldTestSupport fieldTestSupport) {
+            tests.add(
+                DynamicTest.dynamicTest(fieldName + " must be null - Null Value" + getTestSuffix(fieldTestSupport),
+                    () -> {
+                        T dto = createValidObject();
+                        setField(dto, null);
+                        assertExpectNoViolations(dto, getGroups(fieldTestSupport));
+                    }));
+            tests.add(
+                DynamicTest.dynamicTest(fieldName + " must be null - Non-Null Value" + getTestSuffix(fieldTestSupport),
+                    () -> {
+                        T dto = createValidObject();
+                        setField(dto, validValue);
+                        expectViolations(dto, fieldName, "must be null", fieldTestSupport);
+                    }));
+        }
+
 
         @TestFactory
+        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         Stream<DynamicTest> tests() {
             return tests.stream();
         }
     }
 
-    protected abstract class AbstractValidationFieldTestLocalDate<O> extends AbstractValidationFieldTestBase<O,
-        LocalDate> {
+    protected abstract class AbstractValidationFieldTestLocalDate extends AbstractValidationFieldTestBase<LocalDate> {
 
-        protected AbstractValidationFieldTestLocalDate(String fieldName) {
-            super(fieldName);
+        protected AbstractValidationFieldTestLocalDate(String fieldName, BiConsumer<T, LocalDate> setFieldConsumer) {
+            super(fieldName, setFieldConsumer);
         }
 
 
@@ -183,58 +292,130 @@ public class AbstractValidatorTest {
         }
 
         protected void addMinDateTest(LocalDate minDate, FieldTestSupport fieldTestSupport) {
-            tests.add(DynamicTest.dynamicTest(fieldName + " should be after " + minDate + " - day before allowed",
+            tests.add(DynamicTest.dynamicTest(
+                fieldName + " should be after " + minDate + " - day before allowed" + getTestSuffix(fieldTestSupport),
                 () -> {
-                    O dto = createValidObject();
+                    T dto = createValidObject();
                     setField(dto, minDate.minusDays(1));
                     expectViolations(dto, fieldName, "tbc", fieldTestSupport);
                 }));
-            tests.add(DynamicTest.dynamicTest(fieldName + " should be after " + minDate + " - day of allowed", () -> {
-                O dto = createValidObject();
-                setField(dto, minDate);
-                expectViolations(dto, fieldName, "tbc", fieldTestSupport);
-            }));
+            tests.add(DynamicTest.dynamicTest(
+                fieldName + " should be after " + minDate + " - day of allowed" + getTestSuffix(fieldTestSupport),
+                () -> {
+                    T dto = createValidObject();
+                    setField(dto, minDate);
+                    expectViolations(dto, fieldName, "tbc", fieldTestSupport);
+                }));
         }
 
         protected void addMaxDateTest(LocalDate maxDate, FieldTestSupport fieldTestSupport) {
-            tests.add(DynamicTest.dynamicTest(fieldName + " should be after " + maxDate + " - day after allowed",
+            tests.add(DynamicTest.dynamicTest(
+                fieldName + " should be after " + maxDate + " - day after allowed" + getTestSuffix(fieldTestSupport),
                 () -> {
-                    O dto = createValidObject();
+                    T dto = createValidObject();
                     setField(dto, maxDate.plusDays(1));
                     expectViolations(dto, fieldName, "tbc", fieldTestSupport);
                 }));
-            tests.add(DynamicTest.dynamicTest(fieldName + " should be after " + maxDate + " - day of allowed", () -> {
-                O dto = createValidObject();
-                setField(dto, maxDate);
-                expectViolations(dto, fieldName, "tbc", fieldTestSupport);
-            }));
+            tests.add(DynamicTest.dynamicTest(
+                fieldName + " should be after " + maxDate + " - day of allowed" + getTestSuffix(fieldTestSupport),
+                () -> {
+                    T dto = createValidObject();
+                    setField(dto, maxDate);
+                    expectViolations(dto, fieldName, "tbc", fieldTestSupport);
+                }));
 
         }
     }
 
-    protected abstract class AbstractValidationFieldTestNumeric<O, T extends Number>
-        extends AbstractValidationFieldTestBase<O, T> {
+    protected abstract class AbstractValidationFieldTestLong
+        extends AbstractValidationFieldTestNumeric<Long> {
 
-        protected AbstractValidationFieldTestNumeric(String fieldName) {
-            super(fieldName);
+        protected AbstractValidationFieldTestLong(String fieldName, BiConsumer<T, Long> setFieldConsumer) {
+            super(fieldName, setFieldConsumer);
         }
 
-        protected abstract T toNumber(String value);
+        @Override
+        protected Long toNumber(String value) {
+            return Long.parseLong(value);
+        }
+
+        @Override
+        protected Long add(Long minimum, int value) {
+            return minimum + value;
+        }
+    }
+
+    protected abstract class AbstractValidationFieldTestInteger
+        extends AbstractValidationFieldTestNumeric<Integer> {
+
+        protected AbstractValidationFieldTestInteger(String fieldName, BiConsumer<T, Integer> setFieldConsumer) {
+            super(fieldName, setFieldConsumer);
+        }
+
+        @Override
+        protected Integer toNumber(String value) {
+            return Integer.parseInt(value);
+        }
+
+        @Override
+        protected Integer add(Integer minimum, int value) {
+            return minimum + value;
+        }
+    }
+
+    protected abstract class AbstractValidationFieldTestBigDecimal
+        extends AbstractValidationFieldTestNumeric<BigDecimal> {
+
+        protected AbstractValidationFieldTestBigDecimal(String fieldName, BiConsumer<T, BigDecimal> setFieldConsumer) {
+            super(fieldName, setFieldConsumer);
+        }
+
+        @Override
+        protected BigDecimal toNumber(String value) {
+            return new BigDecimal(value);
+        }
+
+        @Override
+        protected BigDecimal add(BigDecimal minimum, int value) {
+            return minimum.add(toNumber(String.valueOf(value)));
+        }
+    }
+
+    protected abstract class AbstractValidationFieldTestNumeric<V extends Number>
+        extends AbstractValidationFieldTestBase<V> {
+
+        protected AbstractValidationFieldTestNumeric(String fieldName, BiConsumer<T, V> setFieldConsumer) {
+            super(fieldName, setFieldConsumer);
+        }
+
+        protected abstract V toNumber(String value);
 
         protected void addMustBePositive(FieldTestSupport fieldTestSupport) {
-            tests.add(DynamicTest.dynamicTest(fieldName + " be a positive number", () -> {
-                O dto = createValidObject();
-                setField(dto, toNumber("0"));
-                expectViolations(dto, fieldName, "must be greater than 0", fieldTestSupport);
-            }));
+            tests.add(
+                DynamicTest.dynamicTest(fieldName + " be a positive number" + getTestSuffix(fieldTestSupport), () -> {
+                    T dto = createValidObject();
+                    setField(dto, toNumber("0"));
+                    expectViolations(dto, fieldName, "must be greater than 0", fieldTestSupport);
+                }));
         }
+
+        protected void addMin(V minimum, FieldTestSupport fieldTestSupport) {
+            tests.add(
+                DynamicTest.dynamicTest(fieldName + " be a least " + minimum + getTestSuffix(fieldTestSupport), () -> {
+                    T dto = createValidObject();
+                    setField(dto, add(minimum, -1));
+                    expectViolations(dto, fieldName, "must be greater than or equal to " + minimum, fieldTestSupport);
+                }));
+        }
+
+        protected abstract V add(V minimum, int value);
 
     }
 
-    protected abstract class AbstractValidationFieldTestString<O> extends AbstractValidationFieldTestBase<O, String> {
+    protected abstract class AbstractValidationFieldTestString extends AbstractValidationFieldTestBase<String> {
 
-        protected AbstractValidationFieldTestString(String fieldName) {
-            super(fieldName);
+        protected AbstractValidationFieldTestString(String fieldName, BiConsumer<T, String> setFieldConsumer) {
+            super(fieldName, setFieldConsumer);
         }
 
 
@@ -257,47 +438,54 @@ public class AbstractValidatorTest {
         protected void addLengthTest(String invalidMinValue, String invalidMaxValue, int minLength, int maxLength,
                                      FieldTestSupport fieldTestSupport) {
 
-            tests.add(DynamicTest.dynamicTest(fieldName + " should not be longer then " + maxLength, () -> {
-                O dto = createValidObject();
-                setField(dto, invalidMaxValue);
-                expectViolations(dto, fieldName, "length must be between " + minLength + " and " + maxLength,
-                    fieldTestSupport);
-            }));
-            if (minLength > 0) {
-                tests.add(DynamicTest.dynamicTest(fieldName + " should not be shorter then " + minLength, () -> {
-                    O dto = createValidObject();
-                    setField(dto, invalidMinValue);
+            tests.add(DynamicTest.dynamicTest(
+                fieldName + " should not be longer then " + maxLength + getTestSuffix(fieldTestSupport), () -> {
+                    T dto = createValidObject();
+                    setField(dto, invalidMaxValue);
                     expectViolations(dto, fieldName, "length must be between " + minLength + " and " + maxLength,
                         fieldTestSupport);
                 }));
+            if (minLength > 0) {
+                tests.add(DynamicTest.dynamicTest(
+                    fieldName + " should not be shorter then " + minLength + getTestSuffix(fieldTestSupport), () -> {
+                        T dto = createValidObject();
+                        setField(dto, invalidMinValue);
+                        expectViolations(dto, fieldName, "length must be between " + minLength + " and " + maxLength,
+                            fieldTestSupport);
+                    }));
             }
         }
 
         protected void addContainsPipesTest(FieldTestSupport fieldTestSupport) {
-            tests.add(DynamicTest.dynamicTest(fieldName + " should not contain pipes", () -> {
-                O dto = createValidObject();
-                setField(dto, "ABC|DEF");
-                expectViolations(dto, fieldName, "must match \"^$|^[^|]+$\"", fieldTestSupport);
-            }));
+            tests.add(DynamicTest.dynamicTest(fieldName + " should not contain pipes" + getTestSuffix(fieldTestSupport),
+                () -> {
+                    T dto = createValidObject();
+                    setField(dto, "ABC|DEF");
+                    expectViolations(dto, fieldName, "must match \"^$|^[^|]+$\"", fieldTestSupport);
+                }));
         }
 
         protected void addAllowBlankTest(String validValue) {
-            tests.add(DynamicTest.dynamicTest(fieldName + " should allow blank values", () -> {
-                O dto = createValidObject();
-                setField(dto, "");
-                expectNoViolations(dto);
-            }));
+            tests.add(
+                DynamicTest.dynamicTest(fieldName + " should allow blank values",
+                    () -> {
+                        T dto = createValidObject();
+                        setField(dto, "");
+                        assertExpectNoViolations(dto);
+                    }));
             addNotRequiredTest(validValue);
         }
 
         protected void addNotBlankTest(FieldTestSupport fieldTestSupport) {
-            tests.add(DynamicTest.dynamicTest(fieldName + " should reject blank values", () -> {
-                O dto = createValidObject();
-                setField(dto, "");
-                expectViolations(dto, fieldName, "must not be blank", fieldTestSupport);
-            }));
+            tests.add(
+                DynamicTest.dynamicTest(fieldName + " should reject blank values" + getTestSuffix(fieldTestSupport),
+                    () -> {
+                        T dto = createValidObject();
+                        setField(dto, "");
+                        expectViolations(dto, fieldName, "must not be blank", fieldTestSupport);
+                    }));
             if (fieldTestSupport == null) {
-                addRequiredTest(new FieldTestSupport("must not be blank"));
+                addRequiredTest(new FieldTestSupport().setMessage("must not be blank"));
             } else {
                 fieldTestSupport.setMessage(getMessage(fieldTestSupport, "must not be blank"));
                 addRequiredTest(fieldTestSupport);
@@ -306,23 +494,25 @@ public class AbstractValidatorTest {
 
         protected void addInvalidPatternTest(String invalidValue, String pattern,
                                              FieldTestSupport fieldTestSupport) {
-            tests.add(DynamicTest.dynamicTest(fieldName + " must match pattern: " + pattern, () -> {
-                O dto = createValidObject();
-                setField(dto, invalidValue);
-                expectViolations(dto, fieldName, "must match \"" + pattern + "\"", fieldTestSupport);
-            }));
+            tests.add(
+                DynamicTest.dynamicTest(fieldName + " must match pattern: " + pattern + getTestSuffix(fieldTestSupport),
+                    () -> {
+                        T dto = createValidObject();
+                        setField(dto, invalidValue);
+                        expectViolations(dto, fieldName, "must match \"" + pattern + "\"", fieldTestSupport);
+                    }));
         }
     }
 
-    protected abstract class AbstractValidationFieldTestList<O, T> extends AbstractValidationFieldTestBase<O, List<T>> {
+    protected abstract class AbstractValidationFieldTestList<V> extends AbstractValidationFieldTestBase<List<V>> {
 
-        protected AbstractValidationFieldTestList(String fieldName) {
-            super(fieldName);
+        protected AbstractValidationFieldTestList(String fieldName, BiConsumer<T, List<V>> setFieldConsumer) {
+            super(fieldName, setFieldConsumer);
         }
 
         protected void addNotEmptyTest(FieldTestSupport fieldTestSupport) {
             tests.add(DynamicTest.dynamicTest(fieldName + " must not be empty", () -> {
-                O dto = createValidObject();
+                T dto = createValidObject();
                 setField(dto, Collections.emptyList());
                 expectViolations(dto, fieldName, "must not be empty", fieldTestSupport);
             }));
@@ -330,12 +520,51 @@ public class AbstractValidatorTest {
 
         protected void addNullValueInListTest(FieldTestSupport fieldTestSupport) {
             tests.add(DynamicTest.dynamicTest(fieldName + " must not contain a null value", () -> {
-                O dto = createValidObject();
-                ArrayList<T> list = new ArrayList<>();
+                T dto = createValidObject();
+                ArrayList<V> list = new ArrayList<>();
                 list.add(null);
                 setField(dto, list);
                 expectViolations(dto, fieldName + "[0].<list element>", "must not be null", fieldTestSupport);
             }));
         }
+    }
+
+    protected abstract class AbstractValidationFieldTestMap<K, V> extends AbstractValidationFieldTestBase<Map<K, V>> {
+
+        protected AbstractValidationFieldTestMap(String fieldName, BiConsumer<T, Map<K, V>> setFieldConsumer) {
+            super(fieldName, setFieldConsumer);
+        }
+
+        @SuppressWarnings("PMD.UseConcurrentHashMap")
+        protected void addNullKeyValueInMapTest(FieldTestSupport fieldTestSupport) {
+            tests.add(DynamicTest.dynamicTest(fieldName + " must not contain a null key ", () -> {
+                T dto = createValidObject();
+                Map<K, V> map = new HashMap<>();
+                map.put(null, getValidValue());
+                setField(dto, map);
+                expectViolations(dto, fieldName + "<K>[].<map key>", "must not be null", fieldTestSupport);
+            }));
+        }
+
+        @SuppressWarnings("PMD.UseConcurrentHashMap")
+        protected void addNullValueInMapTest(FieldTestSupport fieldTestSupport) {
+            tests.add(DynamicTest.dynamicTest(fieldName + " must not contain a null value ", () -> {
+                T dto = createValidObject();
+                Map<K, V> map = new HashMap<>();
+                K key = getValidKey();
+                map.put(key, null);
+                setField(dto, map);
+                expectViolations(dto, fieldName + "[" + key + "].<map value>",
+                    "must not be null", fieldTestSupport);
+            }));
+        }
+
+        protected Map<K, V> getValidMap() {
+            return Map.of(getValidKey(), getValidValue());
+        }
+
+        protected abstract K getValidKey();
+
+        protected abstract V getValidValue();
     }
 }

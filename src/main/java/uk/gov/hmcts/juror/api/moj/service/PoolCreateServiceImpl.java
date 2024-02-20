@@ -113,6 +113,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     @NonNull
     private final CoronerPoolRepository coronerPoolRepository;
 
+    @Override
     public PoolRequestItemDto getPoolRequest(String poolNumber, String owner) {
 
 
@@ -174,9 +175,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
      * @param locationCode 3-digit numeric string unique identifier for court locations
      * @param deferredTo   the date the pool is being requested for to check if there are any jurors who have
      *                     deferred to this date
-     *
      * @return a count of deferral records matching the predicate criteria
      */
+    @Override
     public int getBureauDeferrals(String locationCode, LocalDate deferredTo) {
         return (int) manageDeferralsService.getDeferralsCount(BUREAU_OWNER_CODE, locationCode, deferredTo);
     }
@@ -199,6 +200,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
      * @param poolCreateRequestDto Request DT Object from front end
      * @param payload              Authentication payload to indicate user type/level
      */
+    @Transactional
+    @Override
     public void lockVotersAndCreatePool(BureauJWTPayload payload, PoolCreateRequestDto poolCreateRequestDto) {
         log.info("Processing pool creation for pool number {}", poolCreateRequestDto.getPoolNumber());
 
@@ -245,6 +248,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
      * - Update the Juror History table with selected voters
      * - Update the Bulk Print Data table for summons letters for selected voters
      */
+    @Override
     public void lockVotersAndSummonAdditionalCitizens(BureauJWTPayload payload,
                                                       PoolAdditionalSummonsDto poolAdditionalSummonsDto) {
 
@@ -267,6 +271,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     }
 
     @Transactional
+    @Override
     public void createPool(BureauJWTPayload payload, PoolCreateRequestDto poolCreateRequestDto) {
 
         // Get a list of Pool members from voters table
@@ -281,10 +286,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         String owner = payload.getOwner();
         String userId = payload.getLogin();
         updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, numSelected,
-            PoolHistory.NEW_POOL_REQUEST_SUFFIX);
-        updateJurorHistory(owner, userId, jurorPools);
-        processBureauDeferrals(poolCreateRequestDto, userId);
+            PoolHistory.NEW_POOL_REQUEST_SUFFIX, HistoryCode.PHSI);
 
+        updateJurorHistory(owner, userId, jurorPools);
+        processBureauDeferrals(poolCreateRequestDto, userId, true);
     }
 
     @Transactional
@@ -303,10 +308,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         String userId = payload.getLogin();
 
         updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, numSelected,
-            PoolHistory.ADD_POOL_MEMBERS_SUFFIX
+            PoolHistory.ADD_POOL_MEMBERS_SUFFIX, HistoryCode.PHSI
         );
         updateJurorHistory(owner, userId, jurorPools);
-        processBureauDeferrals(poolCreateRequestDto, userId);
+        processBureauDeferrals(poolCreateRequestDto, userId, false);
     }
 
     private PoolCreateRequestDto setupPoolRequestDto(PoolAdditionalSummonsDto poolAdditionalSummonsDto) {
@@ -331,9 +336,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         return poolCreateRequestDto;
     }
 
-    private void updatePoolHistory(String poolNumber, String userId, int numSelected, String suffix) {
+    private void updatePoolHistory(String poolNumber, String userId, int numSelected, String suffix,
+                                   HistoryCode historyCode) {
         log.debug(String.format("Update Pool History table for Pool : %s", poolNumber));
-        poolHistoryRepository.save(new PoolHistory(poolNumber, LocalDateTime.now(), HistoryCode.PHSI, userId,
+        poolHistoryRepository.save(new PoolHistory(poolNumber, LocalDateTime.now(), historyCode, userId,
             numSelected + suffix
         ));
     }
@@ -533,6 +539,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         }
     }
 
+    @Override
     public PoolCreatedMembersListDto getJurorPoolsList(BureauJWTPayload payload, String poolNumber) {
         String owner = payload.getOwner();
         PoolRequest poolRequest = PoolRequestUtils.getActivePoolRecord(poolRequestRepository, poolNumber);
@@ -566,6 +573,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         return new PoolCreatedMembersListDto(poolMemberDtoList);
     }
 
+    @Override
     public List<VotersLocPostcodeTotals.CourtCatchmentSummaryItem> getAvailableVotersByLocation(String areaCode,
                                                                                                 boolean isCoronerPool) {
 
@@ -577,21 +585,34 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         return votersLocPostcodeTotalsService.getCourtCatchmentSummaryItems(areaCode, isCoronerPool);
     }
 
-    private void processBureauDeferrals(PoolCreateRequestDto poolCreateRequestDto, String userId) {
+    private void processBureauDeferrals(PoolCreateRequestDto poolCreateRequestDto, String userId, boolean isNewPool) {
         int bureauDeferrals = poolCreateRequestDto.getBureauDeferrals();
         if (bureauDeferrals > 0) {
             String poolNumber = poolCreateRequestDto.getPoolNumber();
             PoolRequest poolRequest = RepositoryUtils.retrieveFromDatabase(poolNumber, poolRequestRepository);
-            manageDeferralsService.useBureauDeferrals(poolRequest, bureauDeferrals, userId);
+            int deferralsUsed = manageDeferralsService.useBureauDeferrals(poolRequest, bureauDeferrals, userId);
+            if (deferralsUsed > 0) {
+                updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, deferralsUsed,
+                    isNewPool ? PoolHistory.NEW_POOL_REQUEST_SUFFIX : PoolHistory.ADD_POOL_MEMBERS_SUFFIX,
+                    HistoryCode.PHSI
+                );
+            }
         }
     }
 
     private void processCourtDeferrals(PoolRequest poolRequest, int courtDeferrals, String userId) {
         if (courtDeferrals > 0) {
-            manageDeferralsService.useCourtDeferrals(poolRequest, courtDeferrals, userId);
+            int deferralsUsed = manageDeferralsService.useCourtDeferrals(poolRequest, courtDeferrals, userId);
+            if (deferralsUsed > 0) {
+                updatePoolHistory(poolRequest.getPoolNumber(), userId, deferralsUsed,
+                    PoolHistory.ADD_POOL_MEMBERS_SUFFIX,
+                    HistoryCode.PHSI
+                );
+            }
         }
     }
 
+    @Override
     public NilPoolResponseDto checkForDeferrals(String owner, NilPoolRequestDto nilPoolRequestDto) {
 
         NilPoolResponseDto nilPoolResponseDto = new NilPoolResponseDto();
@@ -647,6 +668,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
     }
 
+    @Override
     public void createNilPool(String owner, NilPoolRequestDto nilPoolRequestDto) {
 
         String poolNumber = nilPoolRequestDto.getPoolNumber();
@@ -690,6 +712,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     }
 
     @Transactional
+    @Override
     public void convertNilPool(PoolRequestDto poolRequestDto, BureauJWTPayload payload) {
 
         String poolNumber = poolRequestDto.getPoolNumber();
@@ -729,6 +752,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     }
 
     @Transactional(readOnly = true)
+    @Override
     public CoronerPoolItemDto getCoronerPool(String poolNumber) {
         log.debug("Entered get coroner pool function");
 
@@ -793,6 +817,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     }
 
     @Transactional
+    @Override
     public String createCoronerPool(String owner, CoronerPoolRequestDto coronerPoolRequestDto) {
         log.debug("Entered create coroner pool function");
 
@@ -831,6 +856,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     }
 
     @Transactional
+    @Override
     public void addCitizensToCoronerPool(String owner,
                                          CoronerPoolAddCitizenRequestDto coronerPoolAddCitizenRequestDto) {
         log.debug("Entered add citizens to coroner pool function");
@@ -894,8 +920,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         }
     }
 
-    private static List<CoronerPoolAddCitizenRequestDto.PostCodeAndNumbers>
-        getPostCodesAndNumbers(CoronerPoolAddCitizenRequestDto coronerPoolAddCitizenRequestDto, String poolNumber) {
+    private static List<CoronerPoolAddCitizenRequestDto.PostCodeAndNumbers> getPostCodesAndNumbers(
+        CoronerPoolAddCitizenRequestDto coronerPoolAddCitizenRequestDto, String poolNumber) {
 
         List<CoronerPoolAddCitizenRequestDto.PostCodeAndNumbers> postCodeAndNumbersList =
             coronerPoolAddCitizenRequestDto.getPostcodeAndNumbers();

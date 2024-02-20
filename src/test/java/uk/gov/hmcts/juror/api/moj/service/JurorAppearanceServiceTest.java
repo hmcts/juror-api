@@ -937,7 +937,7 @@ class JurorAppearanceServiceTest {
         request.getCommonData().setCheckOutTime(null);
 
         // invoke actual service method under test
-        MojException.NotImplemented exception = assertThrows(MojException.NotImplemented.class,
+        MojException.BadRequest exception = assertThrows(MojException.BadRequest.class,
             () -> jurorAppearanceService.deleteAttendance(buildPayload(OWNER_415, List.of(LOC_415)), request),
             "Expected exception to be thrown when SingleJuror flag is false");
 
@@ -970,7 +970,7 @@ class JurorAppearanceServiceTest {
         request.getCommonData().setSingleJuror(Boolean.TRUE);
 
         // invoke actual service method under test
-        MojException.NotImplemented exception = assertThrows(MojException.NotImplemented.class,
+        MojException.BadRequest exception = assertThrows(MojException.BadRequest.class,
             () -> jurorAppearanceService.deleteAttendance(buildPayload(OWNER_415, List.of(LOC_415)), request),
             "Expected exception to be thrown when multiple juror attendance records are being deleted");
 

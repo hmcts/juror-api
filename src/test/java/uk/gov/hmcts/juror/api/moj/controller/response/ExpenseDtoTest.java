@@ -6,11 +6,10 @@ import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.ExpenseDto;
 
 import java.math.BigDecimal;
-import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ExpenseDtoTest extends AbstractValidatorTest {
+class ExpenseDtoTest extends AbstractValidatorTest<ExpenseDto> {
 
     @Test
     void positiveGetTotal() {
@@ -31,7 +30,7 @@ class ExpenseDtoTest extends AbstractValidatorTest {
     }
 
     @Test
-    void positiveAddExpenseDto(){
+    void positiveAddExpenseDto() {
         ExpenseDto origionalExpenseDto = ExpenseDto.builder()
             .publicTransport(new BigDecimal("1.00"))
             .taxi(new BigDecimal("2.00"))
@@ -71,117 +70,100 @@ class ExpenseDtoTest extends AbstractValidatorTest {
             .smartCard(new BigDecimal("20.10"))
             .build();
 
-        assertEquals(expectedExpenseDto,origionalExpenseDto.addExpenseDto(expenseDtoToAdd),
+        assertEquals(expectedExpenseDto, origionalExpenseDto.addExpenseDto(expenseDtoToAdd),
             "Expenses should add correctly");
     }
 
-
-    class AbstractExpenseDtoTest extends AbstractValidatorTest.AbstractValidationFieldTestBase<ExpenseDto, BigDecimal> {
-
-        private final BiConsumer<ExpenseDto, BigDecimal> setFieldConsumer;
-
-        protected AbstractExpenseDtoTest(String fieldName, BiConsumer<ExpenseDto, BigDecimal> setFieldConsumer) {
-            super(fieldName);
-            this.setFieldConsumer = setFieldConsumer;
-        }
-
-
-        @Override
-        protected void setField(ExpenseDto baseObject, BigDecimal value) {
-            setFieldConsumer.accept(baseObject, value);
-        }
-
-        @Override
-        protected ExpenseDto createValidObject() {
-            return new ExpenseDto();
-        }
+    @Override
+    protected ExpenseDto createValidObject() {
+        return new ExpenseDto();
     }
 
     @Nested
-    class PublicTransport extends AbstractExpenseDtoTest {
+    class PublicTransport extends AbstractValidationFieldTestBigDecimal {
         protected PublicTransport() {
             super("publicTransport", ExpenseDto::setPublicTransport);
-            addRequiredTest(new FieldTestSupport(null));
+            addRequiredTest(null);
         }
     }
 
     @Nested
-    class TaxiTest extends AbstractExpenseDtoTest {
+    class TaxiTest extends AbstractValidationFieldTestBigDecimal {
         protected TaxiTest() {
             super("taxi", ExpenseDto::setTaxi);
-            addRequiredTest(new FieldTestSupport(null));
+            addRequiredTest(null);
         }
     }
 
     @Nested
-    class Motorcycle extends AbstractExpenseDtoTest {
+    class Motorcycle extends AbstractValidationFieldTestBigDecimal {
         protected Motorcycle() {
             super("motorcycle", ExpenseDto::setMotorcycle);
-            addRequiredTest(new FieldTestSupport(null));
+            addRequiredTest(null);
         }
     }
 
     @Nested
-    class CarTest extends AbstractExpenseDtoTest {
+    class CarTest extends AbstractValidationFieldTestBigDecimal {
         protected CarTest() {
             super("car", ExpenseDto::setCar);
-            addRequiredTest(new FieldTestSupport(null));
+            addRequiredTest(null);
         }
     }
 
     @Nested
-    class Bicycle extends AbstractExpenseDtoTest {
+    class Bicycle extends AbstractValidationFieldTestBigDecimal {
         protected Bicycle() {
             super("bicycle", ExpenseDto::setBicycle);
-            addRequiredTest(new FieldTestSupport(null));
+            addRequiredTest(null);
         }
     }
 
     @Nested
-    class Parking extends AbstractExpenseDtoTest {
+    class Parking extends AbstractValidationFieldTestBigDecimal {
         protected Parking() {
             super("parking", ExpenseDto::setParking);
-            addRequiredTest(new FieldTestSupport(null));
+            addRequiredTest(null);
         }
     }
 
     @Nested
-    class FoodAndDrink extends AbstractExpenseDtoTest {
+    class FoodAndDrink extends AbstractValidationFieldTestBigDecimal {
         protected FoodAndDrink() {
             super("foodAndDrink", ExpenseDto::setFoodAndDrink);
-            addRequiredTest(new FieldTestSupport(null));
+            addRequiredTest(null);
         }
     }
 
     @Nested
-    class LossOfEarnings extends AbstractExpenseDtoTest {
+    class LossOfEarnings extends AbstractValidationFieldTestBigDecimal {
         protected LossOfEarnings() {
             super("lossOfEarnings", ExpenseDto::setLossOfEarnings);
-            addRequiredTest(new FieldTestSupport(null));
+            addRequiredTest(null);
         }
     }
 
     @Nested
-    class ExtraCare extends AbstractExpenseDtoTest {
+    class ExtraCare extends AbstractValidationFieldTestBigDecimal {
         protected ExtraCare() {
             super("extraCare", ExpenseDto::setExtraCare);
-            addRequiredTest(new FieldTestSupport(null));
+            addRequiredTest(null);
         }
     }
 
     @Nested
-    class Other extends AbstractExpenseDtoTest {
+    class Other extends AbstractValidationFieldTestBigDecimal {
         protected Other() {
             super("other", ExpenseDto::setOther);
-            addRequiredTest(new FieldTestSupport(null));
+            addRequiredTest(null);
         }
     }
 
     @Nested
-    class SmartCard extends AbstractExpenseDtoTest {
+    class SmartCard extends AbstractValidationFieldTestBigDecimal {
         protected SmartCard() {
             super("smartCard", ExpenseDto::setSmartCard);
-            addRequiredTest(new FieldTestSupport(null));
+            addRequiredTest(null);
         }
     }
 }

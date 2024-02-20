@@ -5,14 +5,12 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
-import java.util.function.BiConsumer;
-
 @SuppressWarnings({
     "PMD.JUnitTestsShouldIncludeAssert",//False positive done via inheritance
     "PMD.JUnit5TestShouldBePackagePrivate"
 }
 )
-public class JurorAddressDtoTest extends AbstractValidatorTest {
+public class JurorAddressDtoTest extends AbstractValidatorTest<JurorAddressDto> {
 
 
     @SuppressWarnings("PMD.UseObjectForClearerAPI")
@@ -39,44 +37,30 @@ public class JurorAddressDtoTest extends AbstractValidatorTest {
         );
     }
 
+    @Override
+    public JurorAddressDto createValidObject() {
+        return createValidJurorAddressDto();
+    }
+
     @Test
     void positiveTypical() {
         JurorAddressDto dto = createValidJurorAddressDto();
-        expectNoViolations(dto);
+        assertExpectNoViolations(dto);
     }
 
-    class AbstractJurorAddressDtoTest extends AbstractValidationFieldTestString<JurorAddressDto> {
-
-        private final BiConsumer<JurorAddressDto, String> setFieldConsumer;
-
-        protected AbstractJurorAddressDtoTest(String fieldName, BiConsumer<JurorAddressDto, String> setFieldConsumer) {
-            super(fieldName);
-            this.setFieldConsumer = setFieldConsumer;
-        }
-
-        @Override
-        protected void setField(JurorAddressDto baseObject, String value) {
-            setFieldConsumer.accept(baseObject, value);
-        }
-
-        @Override
-        protected JurorAddressDto createValidObject() {
-            return createValidJurorAddressDto();
-        }
-    }
 
     @Nested
-    class LineOne extends AbstractJurorAddressDtoTest {
+    class LineOne extends AbstractValidationFieldTestString {
         protected LineOne() {
             super("lineOne", JurorAddressDto::setLineOne);
-            addNotBlankTest(new FieldTestSupport("Address line 1 cannot be blank"));
+            addNotBlankTest(new FieldTestSupport().setMessage("Address line 1 cannot be blank"));
             addMaxLengthTest(35, null);
             addContainsPipesTest(null);
         }
     }
 
     @Nested
-    class LineTwo extends AbstractJurorAddressDtoTest {
+    class LineTwo extends AbstractValidationFieldTestString {
         protected LineTwo() {
             super("lineTwo", JurorAddressDto::setLineTwo);
             addAllowBlankTest("ABC");
@@ -86,7 +70,7 @@ public class JurorAddressDtoTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class LineThree extends AbstractJurorAddressDtoTest {
+    class LineThree extends AbstractValidationFieldTestString {
         protected LineThree() {
             super("lineThree", JurorAddressDto::setLineThree);
             addAllowBlankTest("A");
@@ -96,17 +80,17 @@ public class JurorAddressDtoTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class TownTest extends AbstractJurorAddressDtoTest {
+    class TownTest extends AbstractValidationFieldTestString {
         protected TownTest() {
             super("town", JurorAddressDto::setTown);
-            addNotBlankTest(new FieldTestSupport("Address town/city cannot be blank"));
+            addNotBlankTest(new FieldTestSupport().setMessage("Address town/city cannot be blank"));
             addMaxLengthTest(35, null);
             addContainsPipesTest(null);
         }
     }
 
     @Nested
-    class County extends AbstractJurorAddressDtoTest {
+    class County extends AbstractValidationFieldTestString {
         protected County() {
             super("county", JurorAddressDto::setCounty);
             addAllowBlankTest("ABC");
@@ -116,7 +100,7 @@ public class JurorAddressDtoTest extends AbstractValidatorTest {
     }
 
     @Nested
-    class Postcode extends AbstractJurorAddressDtoTest {
+    class Postcode extends AbstractValidationFieldTestString {
         protected Postcode() {
             super("postcode", JurorAddressDto::setPostcode);
             addNotBlankTest(null);

@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
@@ -17,7 +18,7 @@ import static org.mockito.Mockito.when;
 
 public final class TestUtils {
 
-    private static final ObjectMapper objectMapper;
+    public static final ObjectMapper objectMapper;
 
     static {
         objectMapper = new ObjectMapper().findAndRegisterModules();
@@ -44,7 +45,18 @@ public final class TestUtils {
         return BureauJWTPayload.builder()
             .owner(owner)
             .login(username)
-            .staff(staffBuilder(username,Integer.valueOf(userLevel), List.of("415","400")))
+            .staff(staffBuilder(username, Integer.valueOf(userLevel), List.of("415", "400")))
+            .userLevel(userLevel)
+            .daysToExpire(89)
+            .passwordWarning(false)
+            .build();
+    }
+
+    public static BureauJWTPayload createJwt(String owner, String username, String userLevel, List<String> courts) {
+        return BureauJWTPayload.builder()
+            .owner(owner)
+            .login(username)
+            .staff(staffBuilder(username, Integer.valueOf(userLevel), courts))
             .userLevel(userLevel)
             .daysToExpire(89)
             .passwordWarning(false)
@@ -81,6 +93,7 @@ public final class TestUtils {
      * Serialise a java object into a JSON string.
      *
      * @param obj the Java object to be serialised in to a JSON string
+     *
      * @return a String containing the object structure and data in JSON format
      */
     @SneakyThrows
@@ -105,4 +118,16 @@ public final class TestUtils {
         when(bureauJwtAuthentication.getPrincipal()).thenReturn(bureauJwtPayload);
         SecurityContextHolder.getContext().setAuthentication(bureauJwtAuthentication);
     }
+
+    public static void setUpMockAuthentication(String owner, String username, String userLevel, List<String> courts) {
+
+        BureauJwtAuthentication auth = mock(BureauJwtAuthentication.class);
+        when(auth.getPrincipal())
+            .thenReturn(TestUtils.createJwt(owner, username, userLevel, courts));
+        SecurityContext securityContext = mock(SecurityContext.class);
+
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+    }
+    
 }

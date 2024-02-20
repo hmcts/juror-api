@@ -40,7 +40,23 @@ public class LetterBase {
         this.letterContext = context;
         this.data = new ArrayList<>();
         this.jurorNumber = context.jurorPool.getJuror().getJurorNumber();
+        this.setup(context.jurorPool.getJuror());
     }
+
+    protected void setup(Juror juror) {
+        if (Boolean.TRUE.equals(juror.getWelsh()) && ContextType.WELSH_COURT_LOCATION.validate(letterContext)) {
+            setupWelsh();
+        } else {
+            setupEnglish();
+        }
+    }
+
+
+    protected void setupWelsh() {
+    } // Override me
+
+    protected void setupEnglish() {
+    } // Override me
 
     public String getFormCode() {
         return formCode.getCode();
@@ -71,8 +87,8 @@ public class LetterBase {
         String[] dateParts = dateString.split("\\s");
 
         String welshDay = XeroxConstants.WELSH_DATE_TRANSLATION_MAP.get(dateParts[0]);
-        String welshMonth = XeroxConstants.WELSH_DATE_TRANSLATION_MAP.
-            get(dateParts[2].substring(0, dateParts[2].length() - 1));
+        String welshMonth = XeroxConstants.WELSH_DATE_TRANSLATION_MAP
+            .get(dateParts[2].substring(0, dateParts[2].length() - 1));
 
         return format("%s %s %s, %s", welshDay, dateParts[1], welshMonth, dateParts[3]);
     }
@@ -166,6 +182,7 @@ public class LetterBase {
         JUROR_POSTCODE(context -> context.getJurorPool().getJuror().getPostcode(), ContextType.JUROR_POOL),
         JUROR_NUMBER(context -> context.getJurorPool().getJuror().getJurorNumber(), ContextType.JUROR_POOL),
         POOL_NUMBER(context -> context.getJurorPool().getPoolNumber(), ContextType.JUROR_POOL),
+        ADDITIONAL_INFORMATION(LetterContext::getAdditionalInformation, ContextType.ADDITIONAL_INFORMATION),
         WELSH_COURT_NAME(context -> context.getWelshCourtLocation().getLocCourtName(),
                          ContextType.WELSH_COURT_LOCATION),
         WELSH_COURT_ADDRESS1(context -> context.getWelshCourtLocation().getAddress1(),
@@ -205,11 +222,11 @@ public class LetterBase {
 
 
     private enum ContextType {
-        JUROR(context -> context.getJurorPool().getJuror() != null),
         JUROR_POOL(context -> context.getJurorPool() != null),
         COURT_LOCATION(context -> context.getCourtLocation() != null),
         BUREAU_LOCATION(context -> context.getBureauLocation() != null),
-        WELSH_COURT_LOCATION(context -> context.getWelshCourtLocation() != null);
+        WELSH_COURT_LOCATION(context -> context.getWelshCourtLocation() != null),
+        ADDITIONAL_INFORMATION(context -> context.getAdditionalInformation() != null);
 
         private final Function<LetterContext, Boolean> validateFunction;
 
@@ -225,11 +242,11 @@ public class LetterBase {
     @Builder
     @Getter
     public static class LetterContext {
-        private final Juror juror;
         private final JurorPool jurorPool;
         private final CourtLocation courtLocation;
         private final CourtLocation bureauLocation;
         private final WelshCourtLocation welshCourtLocation;
+        private final String additionalInformation;
     }
 
 }

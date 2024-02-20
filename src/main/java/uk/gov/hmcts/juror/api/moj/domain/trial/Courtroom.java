@@ -28,7 +28,8 @@ public class Courtroom implements Serializable {
     @Id
     @Column(name = "id")
     @GeneratedValue(generator = "courtroom_gen")
-    @SequenceGenerator(name = "courtroom_gen", sequenceName = "juror_mod.courtroom_id_seq")
+    @SequenceGenerator(name = "courtroom_gen", sequenceName = "juror_mod.courtroom_id_seq",
+        allocationSize = 1)
     private long id;
 
     @Column(name = "owner")

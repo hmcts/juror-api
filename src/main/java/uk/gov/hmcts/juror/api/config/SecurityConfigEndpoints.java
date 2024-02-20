@@ -126,6 +126,7 @@ public class SecurityConfigEndpoints {
         return web -> web
             .ignoring()
             .requestMatchers(
+                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/"),
                 AntPathRequestMatcher.antMatcher(HttpMethod.GET, ERROR),
                 AntPathRequestMatcher.antMatcher(HttpMethod.POST, ERROR),
                 AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/webjars/**"),

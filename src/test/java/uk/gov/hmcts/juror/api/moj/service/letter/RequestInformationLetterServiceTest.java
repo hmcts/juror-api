@@ -3,10 +3,8 @@ package uk.gov.hmcts.juror.api.moj.service.letter;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
@@ -18,14 +16,13 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
-import uk.gov.hmcts.juror.api.moj.domain.letter.RequestLetter;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.MissingInformation;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.letter.RequestLetterRepository;
+import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyStatusUpdateService;
 
 import java.util.ArrayList;
@@ -35,6 +32,14 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.matches;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static uk.gov.hmcts.juror.api.moj.enumeration.letter.MissingInformation.buildMissingInformationString;
 
 @RunWith(SpringRunner.class)
 public class RequestInformationLetterServiceTest {
@@ -44,11 +49,11 @@ public class RequestInformationLetterServiceTest {
     @Mock
     private SummonsReplyStatusUpdateService summonsReplyStatusUpdateService;
     @Mock
-    private JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-    @Mock
     private JurorPoolRepository jurorPoolRepository;
     @Mock
-    private JurorDigitalResponseRepositoryMod jurorResponseRepository;
+    private PrintDataService printDataService;
+    @Mock
+    private JurorHistoryRepository jurorHistoryRepository;
 
     @InjectMocks
     RequestInformationLetterServiceImpl requestInformationLetterService;
@@ -74,18 +79,18 @@ public class RequestInformationLetterServiceTest {
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(jurorPool);
 
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
+        doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
-        Mockito.doNothing().when(summonsReplyStatusUpdateService)
+        doNothing().when(summonsReplyStatusUpdateService)
             .updateJurorResponseStatus(jurorNumber, ProcessingStatus.AWAITING_CONTACT, payload);
 
         requestInformationLetterService.requestInformation(payload, additionalInformationDto);
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
+        verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
-        Mockito.verify(requestLetterRepository, Mockito.times(1)).findById(Mockito.any());
-        Mockito.verify(requestLetterRepository, Mockito.times(1)).save(Mockito.any());
-        Mockito.verify(summonsReplyStatusUpdateService, Mockito.times(1))
+        verify(printDataService, times(1)).printRequestInfoLetter(any(), any());
+        verify(jurorHistoryRepository, times(1)).save(any());
+        verify(summonsReplyStatusUpdateService, times(1))
             .updateDigitalJurorResponseStatus(jurorNumber, ProcessingStatus.AWAITING_CONTACT, payload);
     }
 
@@ -103,25 +108,24 @@ public class RequestInformationLetterServiceTest {
         AdditionalInformationDto additionalInformationDto = new AdditionalInformationDto(jurorNumber, ReplyMethod.PAPER,
             Collections.singletonList(MissingInformation.SIGNATURE));
 
-        Mockito.doReturn(Collections.singletonList(createJurorPool(jurorNumber, owner))).when(jurorPoolRepository)
+        doReturn(Collections.singletonList(createJurorPool(jurorNumber, owner))).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
 
         Assertions.assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() -> {
             requestInformationLetterService.requestInformation(payload, additionalInformationDto);
         });
 
-        Mockito.verify(jurorPoolRepository, Mockito.never())
+        verify(jurorPoolRepository, never())
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
-        Mockito.verify(requestLetterRepository, Mockito.never()).findById(Mockito.any());
-        Mockito.verify(requestLetterRepository, Mockito.never()).save(Mockito.any());
-        Mockito.verify(summonsReplyStatusUpdateService, Mockito.never())
+        verify(printDataService, never()).printRequestInfoLetter(any(), any());
+        verify(jurorHistoryRepository, never()).save(any());
+        verify(summonsReplyStatusUpdateService, never())
             .updateJurorResponseStatus(jurorNumber, ProcessingStatus.AWAITING_CONTACT, payload);
     }
 
     // testing scenario when paper response is missing a signature (manual letter required instead)
     @Test
     public void queueRequestLetter_BureauUser_PaperResponse_Welsh() {
-        final ArgumentCaptor<RequestLetter> requestLetterArgumentCaptor = ArgumentCaptor.forClass(RequestLetter.class);
         String owner = "400";
         String jurorNumber = "123456789";
 
@@ -138,25 +142,21 @@ public class RequestInformationLetterServiceTest {
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(jurorPool);
 
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
+        doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
-        Mockito.doNothing().when(summonsReplyStatusUpdateService)
+        doNothing().when(summonsReplyStatusUpdateService)
             .updateDigitalJurorResponseStatus(jurorNumber, ProcessingStatus.AWAITING_CONTACT, payload);
 
         requestInformationLetterService.requestInformation(payload, additionalInformationDto);
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
+        verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
-        Mockito.verify(requestLetterRepository, Mockito.times(1)).findById(Mockito.any());
+        verify(printDataService, times(1)).printRequestInfoLetter(
+            any(),
+            matches(buildMissingInformationString(additionalInformationDto.getMissingInformation(),true)));
+        verify(jurorHistoryRepository, times(1)).save(any());
 
-        Mockito.verify(requestLetterRepository, Mockito.times(1)).save(requestLetterArgumentCaptor.capture());
-        RequestLetter requestLetter = requestLetterArgumentCaptor.getValue();
-        Assertions.assertThat(requestLetter.getRequiredInformation())
-            .isEqualTo(
-                MissingInformation.buildMissingInformationString(additionalInformationDto.getMissingInformation(),
-                    true));
-
-        Mockito.verify(summonsReplyStatusUpdateService, Mockito.times(1))
+        verify(summonsReplyStatusUpdateService, times(1))
             .updateJurorResponseStatus(jurorNumber, ProcessingStatus.AWAITING_CONTACT, payload);
     }
 
@@ -176,18 +176,18 @@ public class RequestInformationLetterServiceTest {
 
         AdditionalInformationDto additionalInformationDto = getAdditionalInformationDto(jurorNumber);
 
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
+        doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
 
         assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> requestInformationLetterService.requestInformation(payload, additionalInformationDto));
 
-        Mockito.verify(summonsReplyStatusUpdateService, Mockito.never())
+        verify(summonsReplyStatusUpdateService, never())
             .updateJurorResponseStatus(jurorNumber, ProcessingStatus.AWAITING_CONTACT, payload);
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
+        verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
-        Mockito.verify(requestLetterRepository, Mockito.never()).findById(Mockito.any());
-        Mockito.verify(requestLetterRepository, Mockito.never()).save(Mockito.any());
+        verify(requestLetterRepository, never()).findById(any());
+        verify(requestLetterRepository, never()).save(any());
     }
 
     // testing scenario when associated juror record is not owned by user
@@ -216,20 +216,20 @@ public class RequestInformationLetterServiceTest {
 
         AdditionalInformationDto additionalInformationDto = getAdditionalInformationDto(jurorNumber);
 
-        Mockito.doReturn(jurorPools).when(jurorPoolRepository)
+        doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
-        Mockito.doNothing().when(summonsReplyStatusUpdateService)
+        doNothing().when(summonsReplyStatusUpdateService)
             .updateJurorResponseStatus(jurorNumber, ProcessingStatus.AWAITING_CONTACT, payload);
 
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
             requestInformationLetterService.requestInformation(payload, additionalInformationDto));
 
-        Mockito.verify(summonsReplyStatusUpdateService, Mockito.never())
+        verify(summonsReplyStatusUpdateService, never())
             .updateJurorResponseStatus(jurorNumber, ProcessingStatus.AWAITING_CONTACT, payload);
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
+        verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
-        Mockito.verify(requestLetterRepository, Mockito.never()).findById(Mockito.any());
-        Mockito.verify(requestLetterRepository, Mockito.never()).save(Mockito.any());
+        verify(requestLetterRepository, never()).findById(any());
+        verify(requestLetterRepository, never()).save(any());
     }
 
     private AdditionalInformationDto getAdditionalInformationDto(String jurorNumber) {

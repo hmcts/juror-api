@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -39,22 +41,23 @@ public class FinancialAuditDetails implements Serializable {
     private Long id;
 
 
-    @Column(name = "submitted_on")
-    private LocalDateTime submittedOn;
+    @Column(name = "created_on")
+    private LocalDateTime createdOn;
 
     @ManyToOne
-    @JoinColumn(name = "submitted_by", referencedColumnName = "username")
-    private User submittedBy;
+    @JoinColumn(name = "created_by", referencedColumnName = "username")
+    private User createdBy;
 
-    @Column(name = "approved_on")
-    private LocalDateTime approvedOn;
+    @Column(name = "juror_revision")
+    private Long jurorRevision;
 
-    @ManyToOne
-    @JoinColumn(name = "approved_by", referencedColumnName = "username")
-    private User approvedBy;
+    @Column(name = "court_location_revision")
+    private Long courtLocationRevision;
 
-    @Column(name = "juror_revision_when_approved")
-    private Long jurorRevisionWhenApproved;
+    @Column(name = "type")
+    @Enumerated(EnumType.STRING)
+    private Type type;
+
 
     /**
      * In Heritage the financial audit number was prefixed by the letter "F" - in the new schema JPA will call a
@@ -65,5 +68,12 @@ public class FinancialAuditDetails implements Serializable {
      */
     public String getFinancialAuditNumber() {
         return F_AUDIT_PREFIX + this.id;
+    }
+
+
+    public enum Type {
+        FOR_APPROVAL,
+        APPROVED,
+        EDIT
     }
 }

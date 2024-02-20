@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
@@ -89,6 +88,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private static final String JUROR_NUMBER_111222333 = "111222333";
     private static final String JUROR_NUMBER_222222222 = "222222222";
     private static final String JUROR_NUMBER_555555555 = "555555555";
+    private static final String JUROR_NUMBER_333222111 = "333222111";
+    private static final String JUROR_NUMBER_352004504 = "352004504";
 
     private static final String URI_PERSONAL_DETAILS = "/api/v1/moj/juror-response/juror/%s/details/personal";
     private static final String URI_RETRIEVE_JUROR_RESPONSES = "/api/v1/moj/juror-response/retrieve";
@@ -115,8 +116,6 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private final UserRepository userRepository;
     private final JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
 
-    private final JdbcTemplate jdbcTemplate;
-
     @Override
     @BeforeEach
     public void setUp() throws Exception {
@@ -134,39 +133,39 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         void updatePaperResponsePersonalDetailsBureauUserBureauOwnerHappy() {
             JurorPersonalDetailsDto jurorPersonalDetailsDto = createJurorPersonalDetailsDto();
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "400", NO_CONTENT);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "400", NO_CONTENT);
 
-            validateUpdatedPaperResponsePersonalDetails(JUROR_NUMBER_123456789, jurorPersonalDetailsDto);
+            assertUpdatedPaperResponsePersonalDetails(JUROR_NUMBER_123456789, jurorPersonalDetailsDto);
         }
 
         @Test
         void updatePaperResponsePersonalDetailsCourtUserCourtOwnerHappy() {
             JurorPersonalDetailsDto jurorPersonalDetailsDto = createJurorPersonalDetailsDto();
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, COURT_USER, "415", NO_CONTENT);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, COURT_USER, "415", NO_CONTENT);
 
-            validateUpdatedPaperResponsePersonalDetails(JUROR_NUMBER_987654321, jurorPersonalDetailsDto);
+            assertUpdatedPaperResponsePersonalDetails(JUROR_NUMBER_987654321, jurorPersonalDetailsDto);
         }
 
         @Test
         void updatePaperResponsePersonalDetailsBureauUserCourtOwnerNotAuthorised() {
             JurorPersonalDetailsDto jurorPersonalDetailsDto = createJurorPersonalDetailsDto();
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, BUREAU_USER, "400", FORBIDDEN);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, BUREAU_USER, "400", FORBIDDEN);
         }
 
         @Test
         void updatePaperResponsePersonalDetailsCourtUserCourtOwnerNotAuthorisedNotOwner() {
             JurorPersonalDetailsDto jurorPersonalDetailsDto = createJurorPersonalDetailsDto();
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, BUREAU_USER, "416", FORBIDDEN);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, BUREAU_USER, "416", FORBIDDEN);
         }
 
         @Test
         void updatePaperResponsePersonalDetailsCourtUserBureauOwnerNotAuthorised() {
             JurorPersonalDetailsDto jurorPersonalDetailsDto = createJurorPersonalDetailsDto();
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "415", FORBIDDEN);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "415", FORBIDDEN);
         }
 
         @Test
@@ -174,9 +173,9 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorPersonalDetailsDto jurorPersonalDetailsDto = createJurorPersonalDetailsDto();
             jurorPersonalDetailsDto.setAddressLineOne("Delete from XX where XX = XX;");
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "400", NO_CONTENT);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "400", NO_CONTENT);
 
-            validateUpdatedPaperResponsePersonalDetails(JUROR_NUMBER_123456789, jurorPersonalDetailsDto);
+            assertUpdatedPaperResponsePersonalDetails(JUROR_NUMBER_123456789, jurorPersonalDetailsDto);
         }
 
         @Test
@@ -184,7 +183,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorPersonalDetailsDto jurorPersonalDetailsDto = createJurorPersonalDetailsDto();
             jurorPersonalDetailsDto.setAddressLineOne(" ");
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "400", BAD_REQUEST);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "400", BAD_REQUEST);
         }
     }
 
@@ -202,7 +201,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorPersonalDetailsDto jurorPersonalDetailsDto = createJurorPersonalDetailsDto();
             jurorPersonalDetailsDto.setReplyMethod(ReplyMethod.DIGITAL);
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "400", NO_CONTENT);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "400", NO_CONTENT);
 
             validateUpdatedDigitalResponsePersonalDetails(JUROR_NUMBER_123456789, jurorDigitalResponseOriginal,
                 jurorPersonalDetailsDto);
@@ -217,7 +216,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorPersonalDetailsDto jurorPersonalDetailsDto = createJurorPersonalDetailsDto();
             jurorPersonalDetailsDto.setReplyMethod(ReplyMethod.DIGITAL);
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, COURT_USER, "415", NO_CONTENT);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, COURT_USER, "415", NO_CONTENT);
 
             validateUpdatedDigitalResponsePersonalDetails(JUROR_NUMBER_987654321, jurorDigitalResponseOriginal,
                 jurorPersonalDetailsDto);
@@ -228,7 +227,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorPersonalDetailsDto jurorPersonalDetailsDto = createJurorPersonalDetailsDto();
             jurorPersonalDetailsDto.setReplyMethod(ReplyMethod.DIGITAL);
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, BUREAU_USER, "400", FORBIDDEN);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, BUREAU_USER, "400", FORBIDDEN);
         }
 
         @Test
@@ -236,7 +235,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorPersonalDetailsDto jurorPersonalDetailsDto = createJurorPersonalDetailsDto();
             jurorPersonalDetailsDto.setReplyMethod(ReplyMethod.DIGITAL);
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, BUREAU_USER, "416", FORBIDDEN);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, BUREAU_USER, "416", FORBIDDEN);
         }
 
         @Test
@@ -245,7 +244,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorPersonalDetailsDto jurorPersonalDetailsDto = createJurorPersonalDetailsDto();
             jurorPersonalDetailsDto.setReplyMethod(ReplyMethod.DIGITAL);
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "415", FORBIDDEN);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "415", FORBIDDEN);
         }
     }
 
@@ -261,9 +260,9 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
                 LocalDate.now().minusYears(18).plusWeeks(7));
             jurorPersonalDetailsDto.setThirdParty(null);
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "400", NO_CONTENT);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "400", NO_CONTENT);
 
-            validateUpdatedPaperResponsePersonalDetails(JUROR_NUMBER_123456789, jurorPersonalDetailsDto);
+            assertUpdatedPaperResponsePersonalDetails(JUROR_NUMBER_123456789, jurorPersonalDetailsDto);
             validateAgeDisqualificationMergedJurorRecord(JUROR_NUMBER_123456789, ReplyMethod.PAPER,
                 IJurorStatus.DISQUALIFIED);
             verifyAgeDisqualification(JUROR_NUMBER_123456789);
@@ -276,9 +275,9 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
                 LocalDate.of(2022, 5, 3).minusYears(80));
             jurorPersonalDetailsDto.setThirdParty(null);
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, COURT_USER, "415", NO_CONTENT);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, COURT_USER, "415", NO_CONTENT);
 
-            validateUpdatedPaperResponsePersonalDetails(JUROR_NUMBER_987654321, jurorPersonalDetailsDto);
+            assertUpdatedPaperResponsePersonalDetails(JUROR_NUMBER_987654321, jurorPersonalDetailsDto);
             validateAgeDisqualificationMergedJurorRecord(JUROR_NUMBER_987654321, ReplyMethod.PAPER,
                 IJurorStatus.DISQUALIFIED);
             verifyAgeDisqualification(JUROR_NUMBER_987654321);
@@ -290,9 +289,9 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             jurorPersonalDetailsDto.setDateOfBirth(
                 LocalDate.of(2022, 5, 3).minusYears(17));
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "400", NO_CONTENT);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "400", NO_CONTENT);
 
-            validateUpdatedPaperResponsePersonalDetails(JUROR_NUMBER_123456789, jurorPersonalDetailsDto);
+            assertUpdatedPaperResponsePersonalDetails(JUROR_NUMBER_123456789, jurorPersonalDetailsDto);
             verifyStraightThroughAgeDisqualificationNotProcessed(JUROR_NUMBER_123456789, ReplyMethod.PAPER,
                 IJurorStatus.SUMMONED);
         }
@@ -304,9 +303,9 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
                 LocalDate.of(2022, 5, 3).minusYears(80));
             jurorPersonalDetailsDto.setThirdParty(null);
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_111111111, COURT_USER, "415", NO_CONTENT);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_111111111, COURT_USER, "415", NO_CONTENT);
 
-            validateUpdatedPaperResponsePersonalDetails(JUROR_NUMBER_111111111, jurorPersonalDetailsDto);
+            assertUpdatedPaperResponsePersonalDetails(JUROR_NUMBER_111111111, jurorPersonalDetailsDto);
             verifyStraightThroughAgeDisqualificationNotProcessed(JUROR_NUMBER_111111111, ReplyMethod.PAPER,
                 IJurorStatus.RESPONDED);
         }
@@ -329,7 +328,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
                 LocalDate.now().minusYears(18).plusWeeks(7));
             jurorPersonalDetailsDto.setThirdParty(null);
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, BUREAU_USER, "415", NO_CONTENT);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, BUREAU_USER, "415", NO_CONTENT);
 
             validateUpdatedDigitalResponsePersonalDetails(JUROR_NUMBER_987654321, jurorDigitalResponseOriginal,
                 jurorPersonalDetailsDto);
@@ -350,7 +349,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
                 LocalDate.of(2022, 5, 3).minusYears(80));
             jurorPersonalDetailsDto.setThirdParty(null);
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, COURT_USER, "415", NO_CONTENT);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_987654321, COURT_USER, "415", NO_CONTENT);
 
             validateUpdatedDigitalResponsePersonalDetails(JUROR_NUMBER_987654321, jurorDigitalResponseOriginal,
                 jurorPersonalDetailsDto);
@@ -370,7 +369,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             jurorPersonalDetailsDto.setDateOfBirth(
                 LocalDate.of(2022, 5, 3).minusYears(17));
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "400", NO_CONTENT);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_123456789, BUREAU_USER, "400", NO_CONTENT);
 
             validateUpdatedDigitalResponsePersonalDetails(JUROR_NUMBER_123456789, jurorDigitalResponseOriginal,
                 jurorPersonalDetailsDto);
@@ -390,7 +389,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
                 LocalDate.of(2022, 5, 3).minusYears(80));
             jurorPersonalDetailsDto.setThirdParty(null);
 
-            templateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_111111111, COURT_USER, "415", NO_CONTENT);
+            assertTemplateExchange(jurorPersonalDetailsDto, JUROR_NUMBER_111111111, COURT_USER, "415", NO_CONTENT);
 
             validateUpdatedDigitalResponsePersonalDetails(JUROR_NUMBER_111111111, jurorDigitalResponseOriginal,
                 jurorPersonalDetailsDto);
@@ -640,7 +639,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     @SuppressWarnings({"java:S1192"})
     class RetrieveJurorResponses {
         @Test
-        @DisplayName("Retrieve juror response, team leader - basic and advanced search criteria is ok")
+        @DisplayName("Retrieve juror response, team leader - basic and advanced search criteria is okay")
         void teamLeaderFilterByBasicAndAdvancedSearchCriteria()  {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setJurorNumber(JUROR_NUMBER_111222333);
@@ -661,23 +660,21 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Retrieve juror response, team leader - advanced search for filter Processing Status Completed")
+        @DisplayName("Retrieve juror response, team leader - advanced search for filter Processing Status Completed "
+            + "is okay")
         void teamLeaderFilterAdvancedSearchFilterIsProcessingStatusCompleted()  {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
-            request.setProcessingStatus(JurorResponseRetrieveRequestDto.Status.COMPLETED);
+            request.setProcessingStatus(Collections.singletonList(ProcessingStatus.CLOSED));
 
             setHeaders(OWNER_400, TEAM_LEADER, "1");
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, OK);
 
             JurorResponseRetrieveResponseDto body = response.getBody();
             assertThat(body).isNotNull();
-            assertThat(body.getRecordCount()).as("Record count should be 2").isEqualTo(2);
+            assertThat(body.getRecordCount()).as("Record count should be 1").isEqualTo(1);
 
             // validate data
             List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = body.getRecords();
-            validateData(records.get(1),  JUROR_NUMBER_555555555, "415220502", "Test5Paper",
-                "Person5Paper", "CH1 2AN", "Chester", "JDoe",
-                ProcessingStatus.AWAITING_COURT_REPLY, LocalDate.of(2023, 3, 9));
 
             validateData(records.get(0),  JUROR_NUMBER_222222222, "415220502", "Test4Paper",
                 "Person4Paper", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
@@ -686,10 +683,10 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Retrieve juror response, team leader - advanced search for filter Processing Status Awaiting "
-            + "Court Reply")
+            + "Court Reply is okay")
         void teamLeaderFilterAdvancedSearchFilterIsProcessingStatusAwaitingCourtReply()  {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
-            request.setProcessingStatus(JurorResponseRetrieveRequestDto.Status.AWAITING_COURT_REPLY);
+            request.setProcessingStatus(Collections.singletonList(ProcessingStatus.AWAITING_COURT_REPLY));
 
             setHeaders(OWNER_400, TEAM_LEADER, "1");
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, OK);
@@ -706,7 +703,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Retrieve juror response, team leader - basic search for filter lastname")
+        @DisplayName("Retrieve juror response, team leader - basic search for filter lastname is okay")
         void teamLeaderFilterBasicSearchFilterLastname()  {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setLastName("Person5Paper");
@@ -726,7 +723,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Retrieve juror response, team leader - advanced search for filter isUrgent")
+        @DisplayName("Retrieve juror response, team leader - advanced search for filter isUrgent is okay")
         void teamLeaderFilterAdvancedSearchFilterIsUrgent()  {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setLastName("Person5Paper");
@@ -746,7 +743,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Retrieve juror response, team leader - no records matching search criteria")
+        @DisplayName("Retrieve juror response, team leader - no records matching search criteria is okay")
         void teamLeaderFilterNoRecordsMatchingSearchCriteria()  {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setLastName("Person99Paper");
@@ -760,7 +757,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Retrieve juror response, bureau user - filter by juror number is ok")
+        @DisplayName("Retrieve juror response, bureau user - filter by juror number is okay")
         void bureauOfficerFilterByJurorNumber() {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setJurorNumber(JUROR_NUMBER_111222333);
@@ -925,8 +922,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         }
     }
 
-    private void templateExchange(JurorPersonalDetailsDto jurorPersonalDetailsDto, String jurorNumber,
-                                  String userType, String owner, HttpStatus httpStatus) {
+    private void assertTemplateExchange(JurorPersonalDetailsDto jurorPersonalDetailsDto, String jurorNumber,
+                                        String userType, String owner, HttpStatus httpStatus) {
         final URI uri = URI.create(String.format(URI_PERSONAL_DETAILS, jurorNumber));
         httpHeaders = initialiseHeaders("1", false, userType, 89, owner);
 
@@ -962,8 +959,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         return jurorPersonalDetailsDto;
     }
 
-    private void validateUpdatedPaperResponsePersonalDetails(String jurorNumber,
-                                                             JurorPersonalDetailsDto jurorPersonalDetailsDto) {
+    private void assertUpdatedPaperResponsePersonalDetails(String jurorNumber,
+                                                           JurorPersonalDetailsDto jurorPersonalDetailsDto) {
 
         PaperResponse updatedJurorPaperResponseOpt = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
         assertThat(updatedJurorPaperResponseOpt).isNotNull();

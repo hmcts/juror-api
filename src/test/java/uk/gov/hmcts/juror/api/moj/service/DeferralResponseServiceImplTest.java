@@ -87,8 +87,8 @@ public class DeferralResponseServiceImplTest {
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
 
         verify(jurorPoolRepository, times(1)).save(any());
-        verify(jurorHistoryRepository, times(3)).save(any());
-        verify(printDataService, times(1)).printDeferralDeniedLetter(any());
+        verify(jurorHistoryRepository, times(1)).save(any());
+        verify(printDataService, never()).printDeferralDeniedLetter(any());
 
     }
 
@@ -105,7 +105,7 @@ public class DeferralResponseServiceImplTest {
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
 
         verify(jurorPoolRepository, times(1)).save(any());
-        verify(jurorHistoryRepository, times(3)).save(any());
+        verify(jurorHistoryRepository, times(2)).save(any());
         verify(printDataService, times(1)).printDeferralDeniedLetter(any());
     }
 

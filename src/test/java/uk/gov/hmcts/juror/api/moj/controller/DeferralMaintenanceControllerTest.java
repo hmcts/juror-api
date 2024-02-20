@@ -21,7 +21,9 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
@@ -33,14 +35,14 @@ import uk.gov.hmcts.juror.api.moj.service.BulkServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsServiceImpl;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -67,20 +69,19 @@ class DeferralMaintenanceControllerTest {
     @MockBean
     private CurrentlyDeferredRepository currentlyDeferredRepository;
     @MockBean
-    private PoolRequestRepository poolRequestRepository;
-    @MockBean
     private JurorPoolRepository jurorPoolRepository;
+    @MockBean
+    private PoolRequestRepository poolRequestRepository;
 
     @MockBean
     private ManageDeferralsServiceImpl deferralsService;
 
     @Nested
     @DisplayName("GET " + BASE_URL + "/available-pools/{locationCode}/{jurorNumber}")
-    class getDeferralOptionsForDatesAndCourtLocation {
-
+    class GetDeferralOptionsForDatesAndCourtLocation {
         @Test
         @DisplayName("Valid Request Court User")
-            public void happyPathCourtUser() throws Exception {
+        void happyPathCourtUser() throws Exception {
             final String jurorNumber = "111111111";
             final String currentCourtLocation = "415";
             BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
@@ -114,7 +115,7 @@ class DeferralMaintenanceControllerTest {
                 LocalDate.of(2023, 6, 26)));
 
             DeferralOptionsDto deferralOptionsDto = new DeferralOptionsDto();
-            DeferralOptionsDto.OptionSummaryDto optionSummaryDto= new DeferralOptionsDto.OptionSummaryDto();
+            DeferralOptionsDto.OptionSummaryDto optionSummaryDto = new DeferralOptionsDto.OptionSummaryDto();
 
             optionSummaryDto.setWeekCommencing(LocalDate.of(2023, 5, 30));
 
@@ -139,7 +140,7 @@ class DeferralMaintenanceControllerTest {
 
         @Test
         @DisplayName("Valid Request Bureau User")
-        public void happyPathBureauUser() throws Exception {
+        void happyPathBureauUser() throws Exception {
             final String jurorNumber = "111111111";
             final String currentCourtLocation = "400";
 
@@ -171,7 +172,7 @@ class DeferralMaintenanceControllerTest {
                 LocalDate.of(2023, 6, 26)));
 
             DeferralOptionsDto deferralOptionsDto = new DeferralOptionsDto();
-            DeferralOptionsDto.OptionSummaryDto optionSummaryDto= new DeferralOptionsDto.OptionSummaryDto();
+            DeferralOptionsDto.OptionSummaryDto optionSummaryDto = new DeferralOptionsDto.OptionSummaryDto();
 
             optionSummaryDto.setWeekCommencing(LocalDate.of(2023, 5, 30));
 
@@ -191,11 +192,11 @@ class DeferralMaintenanceControllerTest {
 
             verify(deferralsService, times(1)).findActivePoolsForDatesAndLocCode(eq(dto),
                 eq(jurorNumber),eq(currentCourtLocation),any());
-             }
+        }
 
         @Test
         @DisplayName("Invalid Request No Location Code")
-        public void unHappyPathInvalidJurorNumber() throws Exception {
+        void unHappyPathInvalidJurorNumber() throws Exception {
             String jurorNumber = "111111111";
             String locationCode = " 415";
             BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
@@ -230,9 +231,6 @@ class DeferralMaintenanceControllerTest {
             doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
                 .findByJurorJurorNumberAndIsActive(jurorNumber, true);
 
-            DeferralOptionsDto deferralOptionsDto = deferralsService.findActivePoolsForDatesAndLocCode(dto,
-                jurorNumber, locationCode, jwtPayload);
-
             mockMvc.perform(post(String.format(BASE_URL + "/available-pools/123456788/111111111/deferral_dates"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .principal(mockPrincipal))
@@ -246,7 +244,7 @@ class DeferralMaintenanceControllerTest {
 
         @Test
         @DisplayName("Invalid Request No Location Code")
-        public void unHappyPathInvalidLocationCode() throws Exception {
+        void unHappyPathInvalidLocationCode() throws Exception {
             String jurorNumber = "111111111";
             String locationCode = " 415";
             BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
@@ -282,9 +280,6 @@ class DeferralMaintenanceControllerTest {
             doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
                 .findByJurorJurorNumberAndIsActive(jurorNumber, true);
 
-            DeferralOptionsDto deferralOptionsDto = deferralsService.findActivePoolsForDatesAndLocCode(dto,
-                jurorNumber, locationCode, jwtPayload);
-
             mockMvc.perform(post(String.format(BASE_URL + "/available-pools/null/111111111/deferral_dates"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .principal(mockPrincipal))
@@ -298,7 +293,7 @@ class DeferralMaintenanceControllerTest {
 
         @Test
         @DisplayName("Invalid Request No Location Code")
-        public void unHappyPathInvalidUrl() throws Exception {
+        void unHappyPathInvalidUrl() throws Exception {
 
             BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
 
@@ -317,6 +312,134 @@ class DeferralMaintenanceControllerTest {
             verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any());
 
             verify(currentlyDeferredRepository, never()).count(any(BooleanExpression.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("POST Process juror postponement")
+    class ProcessJurorPostponement {
+        static final String URL = "/api/v1/moj/deferral-maintenance/juror/postpone";
+        BureauJWTPayload jwtPayload;
+
+        @Test
+        @DisplayName("Process juror postponement - happy path")
+        void happyPath() throws Exception {
+            BureauJwtAuthentication mockPrincipal = getBureauJwtAuthentication();
+            ProcessJurorPostponementRequestDto request = getProcessJurorPostponementRequestDto();
+            DeferralResponseDto response = getDeferralResponseDto();
+
+            when(deferralsService.processJurorPostponement(jwtPayload, request)).thenReturn(response);
+
+            mockMvc.perform(post(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(request))
+                    .principal(mockPrincipal))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk());
+
+            verify(deferralsService, times(1)).processJurorPostponement(any(), any());
+        }
+
+        @Test
+        @DisplayName("Process juror postponement - invalid url")
+        void invalidUrl() throws Exception {
+            BureauJwtAuthentication mockPrincipal = getBureauJwtAuthentication();
+            ProcessJurorPostponementRequestDto request = getProcessJurorPostponementRequestDto();
+            DeferralResponseDto response = getDeferralResponseDto();
+
+            when(deferralsService.processJurorPostponement(jwtPayload, request)).thenReturn(response);
+
+            mockMvc.perform(post(URL + "/123456789")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(request))
+                    .principal(mockPrincipal))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isNotFound());
+
+            verify(deferralsService, never()).processJurorPostponement(any(), any());
+        }
+
+        @Test
+        @DisplayName("Process juror postponement - empty juror number list")
+        void invalidPayloadEmptyJurorNumbers() throws Exception {
+            BureauJwtAuthentication mockPrincipal = getBureauJwtAuthentication();
+            ProcessJurorPostponementRequestDto request = getProcessJurorPostponementRequestDto();
+            request.setJurorNumbers(new ArrayList<>());
+
+            DeferralResponseDto response = getDeferralResponseDto();
+
+            when(deferralsService.processJurorPostponement(jwtPayload, request)).thenReturn(response);
+
+            mockMvc.perform(post(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(request))
+                    .principal(mockPrincipal))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+
+            verify(deferralsService, never()).processJurorPostponement(any(), any());
+        }
+
+        @Test
+        @DisplayName("Process juror postponement - null juror numbers")
+        void invalidPayloadNullJurorNumbers() throws Exception {
+            BureauJwtAuthentication mockPrincipal = getBureauJwtAuthentication();
+            ProcessJurorPostponementRequestDto request = getProcessJurorPostponementRequestDto();
+            request.setJurorNumbers(null);
+
+            DeferralResponseDto response = getDeferralResponseDto();
+
+            when(deferralsService.processJurorPostponement(jwtPayload, request)).thenReturn(response);
+
+            mockMvc.perform(post(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(request))
+                    .principal(mockPrincipal))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+
+            verify(deferralsService, never()).processJurorPostponement(any(), any());
+        }
+
+        @Test
+        @DisplayName("Process juror postponement - invalid Http method")
+        void invalidPayloadHttpMethod() throws Exception {
+            BureauJwtAuthentication mockPrincipal = getBureauJwtAuthentication();
+            ProcessJurorPostponementRequestDto request = getProcessJurorPostponementRequestDto();
+            DeferralResponseDto response = getDeferralResponseDto();
+
+            when(deferralsService.processJurorPostponement(jwtPayload, request)).thenReturn(response);
+
+            mockMvc.perform(get(URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(request))
+                    .principal(mockPrincipal))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isMethodNotAllowed());
+
+            verify(deferralsService, never()).processJurorPostponement(any(), any());
+        }
+
+        private BureauJwtAuthentication getBureauJwtAuthentication() {
+            jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+            BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+            when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+            return mockPrincipal;
+        }
+
+        private static ProcessJurorPostponementRequestDto getProcessJurorPostponementRequestDto() {
+            ProcessJurorPostponementRequestDto request = new ProcessJurorPostponementRequestDto();
+            request.setDeferralDate(LocalDate.now().plusDays(10));
+            request.setPoolNumber("999999999");
+            request.setExcusalReasonCode("P");
+            request.setJurorNumbers(Collections.singletonList("999999999"));
+            return request;
+        }
+
+        private static DeferralResponseDto getDeferralResponseDto() {
+            return DeferralResponseDto.builder()
+                .countJurorsPostponed(1)
+                .build();
         }
     }
 }
