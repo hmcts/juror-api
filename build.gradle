@@ -92,7 +92,7 @@ dependencies {
     //Internal dependency overrides
     implementation 'org.yaml:snakeyaml:2.2'
     implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.19'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.13'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.19'
     implementation 'org.json:json:20230618'
     //
     implementation('org.springframework.boot:spring-boot-starter-actuator')
