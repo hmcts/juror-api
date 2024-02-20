@@ -107,7 +107,7 @@ dependencies {
     runtimeOnly "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
     runtimeOnly "org.flywaydb:flyway-core:${flywayVersion}"
 
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.2'
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     implementation 'javax.mail:mail:1.4.7'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.2'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.2'
