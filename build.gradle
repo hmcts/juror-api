@@ -215,13 +215,12 @@ test {
 tasks.withType(Test).configureEach() {
 
     dependsOn compileJava
-    if (!System.getenv('JENKINS_CI_BUILD')) {
-        println('NOT running in CI mode! (JENKINS_CI_BUILD env variable not found).')
-        //systemProperty "spring.profiles.active", "development"
+    if (!System.getenv('BUILD_ID')) {
+        println('NOT running in CI mode! (BUILD_ID env variable not found).')
         systemProperty "spring.profiles.active", "development,test"
     } else {
-        println('Running in CI mode! (JENKINS_CI_BUILD env variable present).')
-        systemProperty "spring.profiles.active", project.property('springProfile') + ',test'
+        println('Running in CI mode! (BUILD_ID env variable present).')
+        systemProperty "spring.profiles.active", "development,test"
         testLogging {
             events "failed", "standard_out"
             exceptionFormat "full"
@@ -364,7 +363,7 @@ pmd {
 }
 
 test {
-    if(System.getenv('JENKINS_CI_BUILD')){
+    if(System.getenv('BUILD_ID')){
         failFast = true
     }
 }
@@ -377,7 +376,7 @@ task integration(type: Test) {
     classpath = sourceSets.integration.runtimeClasspath
     // This forces integration tests to always run if this task is run.
     outputs.upToDateWhen { false }
-    if(System.getenv('JENKINS_CI_BUILD')){
+    if(System.getenv('BUILD_ID')){
         failFast = true
     }
 }
@@ -440,8 +439,7 @@ dependencyCheck {
     ]
 }
 
-// Makes integration tests not run by default.
-check.dependsOn -= integration
+project.tasks['check'].dependsOn integration
 // Makes the whole test suite not run by default.
 check.dependsOn -= testSuite
 
