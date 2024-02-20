@@ -263,7 +263,7 @@ processResources.finalizedBy(copyDocs)
 
 
 wrapper {
-    gradleVersion = '8.3'
+    gradleVersion = '8.6'
 }
 
 cyclonedxBom {
