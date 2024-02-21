@@ -1,6 +1,4 @@
+# Don't modify this file, it is only needed for the pipeline to set the image and ingressHost
 java:
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_FQDN}
-enviroment:
-  SCHEDULER_SERVICE_HOST: juror-scheduler-api.staging.platform.hmcts.net
-  PNC_CHECK_SERVICE_HOST: juror-scheduler-execution.staging.platform.hmcts.net
