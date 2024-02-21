@@ -156,7 +156,7 @@ dependencies {
     testImplementation('org.projectlombok:lombok')
     testAnnotationProcessor('org.projectlombok:lombok')
 
-    testImplementation('net.bytebuddy:byte-buddy:1.12.19')
+    testImplementation('net.bytebuddy:byte-buddy:1.14.12')
     testImplementation('junit:junit:4.13.2')
 
     // Validation
