@@ -1,14 +1,15 @@
 package uk.gov.hmcts.juror.api.bureau.Notify;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.bureau.domain.AppSettingRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetailRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateMapping;
@@ -37,9 +38,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "notify.disabled=false")
-public class JurorCommsNotifyAdapterImplIntegrationTest extends ContainerTest {
+class JurorCommsNotifyAdapterImplIntegrationTest extends ContainerTest {
     private static final String DEV_FIRST_PERSON_TEMPLATE_ID = "ec33ab68-b917-4f25-918e-50d3291edef6"; // new
     // 1st_straight_through
     private static final String DEV_FIRST_PERSON_CY_TEMPLATE_ID = "aea4140b-2e2f-423b-8146-cd9615bfbc9e"; //
@@ -115,24 +116,24 @@ public class JurorCommsNotifyAdapterImplIntegrationTest extends ContainerTest {
      */
     private JurorCommsNotificationServiceImpl utilJurorCommsService;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() {
         utilJurorCommsService = new JurorCommsNotificationServiceImpl(mockNotifyAdapter,
             notifyTemplateMappingRepository,
             jurorCommsNotifyPayLoadService);
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         verifyNoInteractions(mockNotifyAdapter);
     }
 
-    @Test(timeout = 9000L)
+    @Test
+    @Timeout(9000)
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
-    public void sendCommsEmail_service_confirmation_english() {
+    void sendCommsEmailServiceConfirmationEnglish() {
         // create the notification data class
-        final String JUROR_CONFIRMATION = "CONFRIM_JUROR_ENG";
         final String JUROR_NUMBER = "111222333";
         final String TITLE = "Mr";
         final String FIRST_NAME = "Harry";
@@ -158,8 +159,6 @@ public class JurorCommsNotifyAdapterImplIntegrationTest extends ContainerTest {
         payLoad.put(LAST_NAME_VAL, VALUE_2);
         payLoad.put(EMAIL_ADDRESS, EMAIL);
 
-
-        final LocalDateTime now = LocalDateTime.now();
 
         final NotifyTemplateMapping testNotifyTemplate = new NotifyTemplateMapping();
         testNotifyTemplate.setTemplateId(DEV_CONFIRM_JUROR_ENG_TEMPLATE_ID);
@@ -188,12 +187,12 @@ public class JurorCommsNotifyAdapterImplIntegrationTest extends ContainerTest {
     }
 
 
-    @Test(timeout = 9000L)
+    @Test
+    @Timeout(9000)
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
-    public void sendCommsEmail_sendToCourtEmail_english() {
+    void sendCommsEmailSendToCourtEmailEnglish() {
         // create the notification data class
-        final String JUROR_CONFIRMATION = "SENT_TO_COURT";
         final String JUROR_NUMBER = "111222333";
         final String TITLE = "Mr";
         final String FIRST_NAME = "Harry";
@@ -258,12 +257,12 @@ public class JurorCommsNotifyAdapterImplIntegrationTest extends ContainerTest {
     }
 
 
-    @Test(timeout = 9000L)
+    @Test
+    @Timeout(9000)
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
-    public void sendCommsSms_sendToCourtSms_english() {
+    void sendCommsSmsSendToCourtSmsEnglish() {
         // create the notification data class
-        final String JUROR_CONFIRMATION = "SENT_TO_COURT";
         final String JUROR_NUMBER = "111222333";
         final String TITLE = "Mr";
         final String FIRST_NAME = "Harry";
@@ -301,8 +300,6 @@ public class JurorCommsNotifyAdapterImplIntegrationTest extends ContainerTest {
         payLoad.put(EMAIL_ADDRESS, EMAIL);
         payLoad.put("phone number", PHONE_NUMBER);
 
-
-        final LocalDateTime now = LocalDateTime.now();
 
         final NotifyTemplateMapping testNotifyTemplate = new NotifyTemplateMapping();
         testNotifyTemplate.setTemplateId(DEV_SENT_TO_COURT_SMS_ENG_TEMPLATE_ID);

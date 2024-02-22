@@ -1,14 +1,15 @@
 package uk.gov.hmcts.juror.api.juror.notify;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.bureau.domain.AppSetting;
 import uk.gov.hmcts.juror.api.bureau.domain.AppSettingRepository;
 import uk.gov.hmcts.juror.api.bureau.service.AppSettingService;
@@ -27,9 +28,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "notify.disabled=false")
-public class NotifyAdapterImplIntegrationTest extends ContainerTest {
+class NotifyAdapterImplIntegrationTest extends ContainerTest {
     private static final String DEV_FIRST_PERSON_TEMPLATE_ID = "ec33ab68-b917-4f25-918e-50d3291edef6"; // new
     // 1st_straight_through
     private static final String DEV_FIRST_PERSON_CY_TEMPLATE_ID = "aea4140b-2e2f-423b-8146-cd9615bfbc9e"; //
@@ -72,21 +73,22 @@ public class NotifyAdapterImplIntegrationTest extends ContainerTest {
      */
     private JurorNotificationServiceImpl utilService;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         utilService = new JurorNotificationServiceImpl(mockNotifyAdapter, responseInspector, appSettingRepository);
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         verifyNoInteractions(mockNotifyAdapter);
     }
 
-    @Test(timeout = 9000L)
+    @Test
+    @Timeout(9000)
     @Sql("/db/truncate.sql")
     @Sql("/db/welsh_enabled.sql")
     @Sql("/db/notify_adapter_pool.sql")
-    public void sendEmail_firstPersonResponse() {
+    void sendEmailFirstPersonResponse() {
         // create the notification data class
         final String JUROR_NUMBER = "888222011";
         final String TITLE = "Mr";
@@ -128,11 +130,12 @@ public class NotifyAdapterImplIntegrationTest extends ContainerTest {
         verify(appSettingRepository).findById(anyString());
     }
 
-    @Test(timeout = 9000L)
+    @Test
+    @Timeout(9000)
     @Sql("/db/truncate.sql")
     @Sql("/db/welsh_enabled.sql")
     @Sql("/db/notify_adapter_pool.sql")
-    public void sendEmail_firstPersonResponse_welshLanguage() {
+    void sendEmailFirstPersonResponseWelshLanguage() {
         // create the notification data class
         final String JUROR_NUMBER = "888222000";
         final String TITLE = "Mr";
@@ -180,11 +183,12 @@ public class NotifyAdapterImplIntegrationTest extends ContainerTest {
 
     }
 
-    @Test(timeout = 9000L)
+    @Test
+    @Timeout(9000)
     @Sql("/db/truncate.sql")
     @Sql("/db/welsh_enabled.sql")
     @Sql("/db/notify_adapter_pool.sql")
-    public void sendEmail_thirdPartyResponse_jurorDetail() {
+    void sendEmailThirdPartyResponseJurorDetail() {
         // create the notification data class
         final String JUROR_NUMBER = "888222011";
         final String TITLE = "Mr";
@@ -231,11 +235,12 @@ public class NotifyAdapterImplIntegrationTest extends ContainerTest {
         verify(appSettingRepository).findById(anyString());
     }
 
-    @Test(timeout = 9000L)
+    @Test
+    @Timeout(9000)
     @Sql("/db/truncate.sql")
     @Sql("/db/welsh_enabled.sql")
     @Sql("/db/notify_adapter_pool.sql")
-    public void sendEmail_thirdPartyResponse_jurorDetail_welshLanguage() {
+    void sendEmailThirdPartyResponseJurorDetailWelshLanguage() {
         // create the notification data class
         final String JUROR_NUMBER = "888222000";
         final String TITLE = "Mr";
@@ -287,11 +292,12 @@ public class NotifyAdapterImplIntegrationTest extends ContainerTest {
 
     }
 
-    @Test(timeout = 9000L)
+    @Test
+    @Timeout(9000)
     @Sql("/db/truncate.sql")
     @Sql("/db/welsh_enabled.sql")
     @Sql("/db/notify_adapter_pool.sql")
-    public void sendEmail_thirdPartyResponse_thirdPartyDetail() {
+    void sendEmailThirdPartyResponseThirdPartyDetail() {
         // create the notification data class
         final String JUROR_NUMBER = "888222011";
         final String TITLE = "Mr";
