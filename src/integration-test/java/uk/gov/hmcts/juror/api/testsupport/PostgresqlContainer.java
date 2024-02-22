@@ -46,7 +46,6 @@ public class PostgresqlContainer extends PostgreSQLContainer<PostgresqlContainer
             .table("schema_history")
             .dataSource(jdbcUrl, username, password)
             .schemas("juror", "juror_digital", "juror_digital_user", "juror_dashboard", "hk", "juror_mod")
-            .sqlMigrationPrefix("scheduler-V")
             .load();
         flyway.migrate();
     }
