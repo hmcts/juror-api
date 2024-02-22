@@ -248,7 +248,7 @@ flyway {
     url = "jdbc:postgresql://$dbHost:$dbPort/$dbName"
     user = "$dbUserName"
     password = "$dbPassword"
-    schemas = ['juror','juror_digital','juror_digital_user','juror_dashboard','hk','juror_mod']
+    schemas = ['juror', 'juror_digital', 'juror_digital_user', 'juror_dashboard', 'hk', 'juror_mod']
     defaultSchema = 'juror_mod'
     table = 'schema_history'
     cleanDisabled = false
@@ -342,7 +342,7 @@ checkstyleMain {
 checkstyleTest {
     maxWarnings = 261
 }
-checkstyleIntegrationTest{
+checkstyleIntegrationTest {
     maxWarnings = 1272
 }
 checkstyle {
@@ -363,8 +363,8 @@ pmdMain {
 pmd {
     maxFailures = 0
     toolVersion = "6.55.0"
-    sourceSets = [sourceSets.main, sourceSets.test, sourceSets.integrationTest
-    ]
+    sourceSets = [sourceSets.main, sourceSets.test, sourceSets.integrationTest,
+                  sourceSets.functionalTest, sourceSets.smokeTest]
     reportsDir = file("$project.buildDir/reports/pmd")
     // https://github.com/pmd/pmd/issues/876
     ruleSets = []
@@ -372,8 +372,8 @@ pmd {
 }
 
 test {
-    if(System.getenv('BUILD_ID')){
-//TODO remove temp disable to see all errors        failFast = true
+    if (System.getenv('BUILD_ID')) {
+        failFast = true
     }
 }
 
@@ -385,8 +385,8 @@ task integration(type: Test) {
     classpath = sourceSets.integrationTest.runtimeClasspath
     // This forces integration tests to always run if this task is run.
     outputs.upToDateWhen { false }
-    if(System.getenv('BUILD_ID')){
-//TODO remove temp disable to see all errors        failFast = true
+    if (System.getenv('BUILD_ID')) {
+        failFast = true
     }
 }
 
@@ -456,14 +456,21 @@ task runAllStyleChecks {
     dependsOn 'checkstyleMain'
     dependsOn 'checkstyleTest'
     dependsOn 'checkstyleIntegrationTest'
+    dependsOn 'checkstyleSmokeTest'
+    dependsOn 'checkstyleFunctionalTest'
 
     dependsOn 'pmdMain'
     dependsOn 'pmdTest'
     dependsOn 'pmdIntegrationTest'
+    dependsOn 'pmdSmokeTest'
+    dependsOn 'pmdFunctionalTest'
 }
 
 // Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
 rootProject.tasks.named("processSmokeTestResources") {
+    duplicatesStrategy = 'include'
+}
+rootProject.tasks.named("processFunctionalTestResources") {
     duplicatesStrategy = 'include'
 }
 

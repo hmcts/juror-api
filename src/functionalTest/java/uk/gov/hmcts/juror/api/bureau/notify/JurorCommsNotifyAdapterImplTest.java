@@ -117,7 +117,6 @@ class JurorCommsNotifyAdapterImplTest {
 
     @Test
     @Timeout(9)
-    @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     void sendCommsEmailServiceConfirmationEnglish() {
         // create the notification data class
@@ -176,7 +175,6 @@ class JurorCommsNotifyAdapterImplTest {
 
     @Test
     @Timeout(9)
-    @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     void sendCommsEmailSendToCourtEmailEnglish() {
         // create the notification data class
@@ -243,7 +241,6 @@ class JurorCommsNotifyAdapterImplTest {
 
     @Test
     @Timeout(9)
-    @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     void sendCommsSmsSendToCourtSmsEnglish() {
         // create the notification data class
