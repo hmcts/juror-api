@@ -6,7 +6,7 @@ VALUES (0, EXTRACT(EPOCH FROM current_date)),
        (3, EXTRACT(EPOCH FROM current_date)),
        (4, EXTRACT(EPOCH FROM current_date)),
        (5, EXTRACT(EPOCH FROM current_date));
-SELECT setval('public.rev_info_seq', 5, true);
+SELECT setval('juror_mod.rev_info_seq', 5, true);
 
 SELECT setval('juror_mod.appearance_f_audit_seq', 1, true);
 

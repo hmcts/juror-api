@@ -33,7 +33,7 @@ VALUES (1, EXTRACT(EPOCH FROM current_date)),--Appearance
        (3, EXTRACT(EPOCH FROM current_date)),--juror
        (4, EXTRACT(EPOCH FROM current_date));--juror;
 
-SELECT setval('public.rev_info_seq', 4, true);
+SELECT setval('juror_mod.rev_info_seq', 4, true);
 
 
 INSERT INTO juror_mod.users (owner, username, name, level, active, team_id, version, password)

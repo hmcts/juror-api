@@ -40,7 +40,7 @@ VALUES (0, EXTRACT(EPOCH FROM current_date)),
        (4, EXTRACT(EPOCH FROM current_date)),
        (5, EXTRACT(EPOCH FROM current_date)),
        (6, EXTRACT(EPOCH FROM current_date));
-SELECT setval('public.rev_info_seq', 6, true);
+SELECT setval('juror_mod.rev_info_seq', 6, true);
 
 
 INSERT INTO juror_mod.court_location_audit (revision, rev_type, loc_code, rate_per_mile_car_0_passengers,
