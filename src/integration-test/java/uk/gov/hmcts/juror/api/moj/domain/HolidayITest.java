@@ -11,6 +11,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.juror.domain.Holidays;
 import uk.gov.hmcts.juror.api.juror.domain.HolidaysRepository;
+import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -23,7 +24,7 @@ import static uk.gov.hmcts.juror.api.juror.domain.HolidaysQueries.isCourtHoliday
 @Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-public class HolidayITest {
+public class HolidayITest extends ContainerTest {
     @Autowired
     HolidaysRepository holidaysRepository;
 

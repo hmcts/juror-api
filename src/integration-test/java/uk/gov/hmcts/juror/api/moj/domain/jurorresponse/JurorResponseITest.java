@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseR
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
+import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -25,7 +26,7 @@ import java.util.Collections;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Sql({"/db/mod/truncate.sql", "/db/jurorresponse/JurorResponseITest.sql"})
-public class JurorResponseITest {
+public class JurorResponseITest extends ContainerTest {
     @Autowired
     JurorPaperResponseRepositoryMod paperResponseRepository;
 

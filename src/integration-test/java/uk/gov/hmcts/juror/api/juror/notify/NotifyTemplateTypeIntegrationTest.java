@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,7 +28,7 @@ import static uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType.WELSH_TOKEN
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class NotifyTemplateTypeIntegrationTest {
+public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     private static final boolean WITH_ADJUSTMENTS = true;
     private static final boolean NO_ADJUSTMENTS = false;
 

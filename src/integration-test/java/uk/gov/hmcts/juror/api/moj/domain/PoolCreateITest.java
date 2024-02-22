@@ -11,6 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.moj.repository.VotersRepository;
+import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -24,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-public class PoolCreateITest {
+public class PoolCreateITest extends ContainerTest {
 
 
     @Autowired
