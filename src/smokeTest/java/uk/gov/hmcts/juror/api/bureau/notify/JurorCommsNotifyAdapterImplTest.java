@@ -1,4 +1,4 @@
-package uk.gov.hmcts.juror.api.bureau.Notify;
+package uk.gov.hmcts.juror.api.bureau.notify;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,18 +14,14 @@ import uk.gov.hmcts.juror.api.bureau.domain.AppSettingRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetailRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateMapping;
 import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateMappingRepository;
-import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsNotificationServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsNotifyPayLoadService;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.Pool;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotificationReceipt;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyAdapter;
-import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotification;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotificationReceipt;
-import uk.gov.hmcts.juror.api.juror.service.JurorNotificationServiceImpl;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.time.LocalDateTime;
@@ -60,25 +56,25 @@ class JurorCommsNotifyAdapterImplTest {
     //SENT_TO_COURT_ENG_SMS
 
     /**
-     * bean under test
+     * bean under test.
      */
     @Autowired
     private NotifyAdapter notifyAdapter;
 
     /**
-     * mock provided to JurorCommsNotificationServiceImpl constructor only
+     * mock provided to JurorCommsNotificationServiceImpl constructor only.
      */
     @Mock
     private NotifyAdapter mockNotifyAdapter;
 
     /**
-     * mock provided to JurorCommsNotificationServiceImpl constructor only
+     * mock provided to JurorCommsNotificationServiceImpl constructor only.
      */
     @Autowired
     private ResponseInspector responseInspector;
 
     /**
-     * mock provided to JurorCommsNotificationServiceImpl constructor only
+     * mock provided to JurorCommsNotificationServiceImpl constructor only.
      */
     @Mock
     private AppSettingRepository appSettingRepository;
@@ -98,13 +94,13 @@ class JurorCommsNotifyAdapterImplTest {
     private JurorCommsNotifyPayLoadService jurorCommsNotifyPayLoadService;
 
     /**
-     * Used to access utility method
+     * Used to access utility method.
      * {@link JurorNotificationServiceImpl#createEmailNotification(JurorResponse, NotifyTemplateType)} only!
      */
     //private JurorNotificationServiceImpl utilService;
 
     /**
-     * Used to access utility method only!
+     * Used to access utility method only.
      */
     private JurorCommsNotificationServiceImpl utilJurorCommsService;
 
@@ -126,30 +122,30 @@ class JurorCommsNotifyAdapterImplTest {
     @Sql("/db/notify_template_mapping.sql")
     void sendCommsEmailServiceConfirmationEnglish() {
         // create the notification data class
-        final String JUROR_NUMBER = "111222333";
-        final String TITLE = "Mr";
-        final String FIRST_NAME = "Harry";
-        final String LAST_NAME = "Test";
-        final String EMAIL = "confirmed.test@cgi.com";
+        final String jurorNUmber = "111222333";
+        final String title = "Mr";
+        final String firstName = "Harry";
+        final String lastName = "Test";
+        final String email = "confirmed.test@cgi.com";
 
         final Pool pool = Pool.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .title(TITLE)
-            .firstName(FIRST_NAME)
-            .lastName(LAST_NAME)
-            .email(EMAIL)
+            .jurorNumber(jurorNUmber)
+            .title(title)
+            .firstName(firstName)
+            .lastName(lastName)
+            .email(email)
             .welsh(false)
             .build();
 
 
         Map<String, String> payLoad = new HashMap<>();
-        payLoad.put(JUROR_NUM, JUROR_NUMBER);
+        payLoad.put(JUROR_NUM, jurorNUmber);
         payLoad.put("courtname", COURT_NAME);
         payLoad.put(SERVICES_START_DATE, VALUE_2);
         payLoad.put(SERVICES_START_TIME, "value3");
         payLoad.put(FIRST_NAME_VAL, VALUE_2);
         payLoad.put(LAST_NAME_VAL, VALUE_2);
-        payLoad.put(EMAIL_ADDRESS, EMAIL);
+        payLoad.put(EMAIL_ADDRESS, email);
 
 
         final NotifyTemplateMapping testNotifyTemplate = new NotifyTemplateMapping();
@@ -162,7 +158,7 @@ class JurorCommsNotifyAdapterImplTest {
             payLoad
         );
 
-        assertThat(emailNotification.getRecipientEmail()).as("Recipient email is correct").isEqualTo(EMAIL);
+        assertThat(emailNotification.getRecipientEmail()).as("Recipient email is correct").isEqualTo(email);
 
         // send the email using the real Notify.gov
         final EmailNotificationReceipt emailNotificationReceipt = notifyAdapter.sendCommsEmail(emailNotification);
@@ -171,11 +167,11 @@ class JurorCommsNotifyAdapterImplTest {
             .isEqualTo(UUID.fromString(DEV_CONFIRM_JUROR_ENG_TEMPLATE_ID));
         assertThat(emailNotificationReceipt.getReference())
             .as("Juror number is the Notify reference")
-            .isEqualTo(JUROR_NUMBER);
+            .isEqualTo(jurorNUmber);
         assertThat(emailNotificationReceipt.getBody())
             .as("Body is not empty and contains payload information")
             .isNotEmpty()
-            .contains(JUROR_NUMBER);
+            .contains(jurorNUmber);
     }
 
 
@@ -185,24 +181,24 @@ class JurorCommsNotifyAdapterImplTest {
     @Sql("/db/notify_template_mapping.sql")
     void sendCommsEmailSendToCourtEmailEnglish() {
         // create the notification data class
-        final String JUROR_NUMBER = "111222333";
-        final String TITLE = "Mr";
-        final String FIRST_NAME = "Harry";
-        final String LAST_NAME = "Test";
-        final String EMAIL = "confirmed.test@cgi.com";
+        final String jurorNumber = "111222333";
+        final String title = "Mr";
+        final String firstName = "Harry";
+        final String lastName = "Test";
+        final String email = "confirmed.test@cgi.com";
 
         final Pool pool = Pool.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .title(TITLE)
-            .firstName(FIRST_NAME)
-            .lastName(LAST_NAME)
-            .email(EMAIL)
+            .jurorNumber(jurorNumber)
+            .title(title)
+            .firstName(firstName)
+            .lastName(lastName)
+            .email(email)
             .welsh(false)
             .build();
 
 
         Map<String, String> payLoad = new HashMap<>();
-        payLoad.put(JUROR_NUM, JUROR_NUMBER);
+        payLoad.put(JUROR_NUM, jurorNumber);
         payLoad.put("court", COURT_NAME);
         payLoad.put(SERVICES_START_DATE, "12 August 2019");
         payLoad.put(SERVICES_START_TIME, "09:30");
@@ -217,7 +213,7 @@ class JurorCommsNotifyAdapterImplTest {
         payLoad.put(COURT_PHONE, "07834987345");
         payLoad.put(FIRST_NAME_VAL, VALUE_2);
         payLoad.put(LAST_NAME_VAL, VALUE_2);
-        payLoad.put(EMAIL_ADDRESS, EMAIL);
+        payLoad.put(EMAIL_ADDRESS, email);
 
 
         final LocalDateTime now = LocalDateTime.now();
@@ -232,7 +228,7 @@ class JurorCommsNotifyAdapterImplTest {
             payLoad
         );
 
-        assertThat(emailNotification.getRecipientEmail()).as("Recipient email is correct").isEqualTo(EMAIL);
+        assertThat(emailNotification.getRecipientEmail()).as("Recipient email is correct").isEqualTo(email);
 
         // send the email using the real Notify.gov
         final EmailNotificationReceipt emailNotificationReceipt = notifyAdapter.sendCommsEmail(emailNotification);
@@ -241,11 +237,11 @@ class JurorCommsNotifyAdapterImplTest {
             .isEqualTo(UUID.fromString(DEV_SENT_TO_COURT_EMAIL_ENG_TEMPLATE_ID));
         assertThat(emailNotificationReceipt.getReference())
             .as("Juror number is the Notify reference")
-            .isEqualTo(JUROR_NUMBER);
+            .isEqualTo(jurorNumber);
         assertThat(emailNotificationReceipt.getBody())
             .as("Body is not empty and contains payload information")
             .isNotEmpty()
-            .contains(JUROR_NUMBER);
+            .contains(jurorNumber);
     }
 
 
@@ -255,26 +251,26 @@ class JurorCommsNotifyAdapterImplTest {
     @Sql("/db/notify_template_mapping.sql")
     void sendCommsSmsSendToCourtSmsEnglish() {
         // create the notification data class
-        final String JUROR_NUMBER = "111222333";
-        final String TITLE = "Mr";
-        final String FIRST_NAME = "Harry";
-        final String LAST_NAME = "Test";
-        final String EMAIL = "confirmed.test@cgi.com";
-        final String PHONE_NUMBER = "44776-301-1119";
+        final String jurorNumber = "111222333";
+        final String title = "Mr";
+        final String firstName = "Harry";
+        final String lastName = "Test";
+        final String email = "confirmed.test@cgi.com";
+        final String phoneNumber = "44776-301-1119";
 
         final Pool pool = Pool.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .title(TITLE)
-            .firstName(FIRST_NAME)
-            .lastName(LAST_NAME)
-            .email(EMAIL)
+            .jurorNumber(jurorNumber)
+            .title(title)
+            .firstName(firstName)
+            .lastName(lastName)
+            .email(email)
             .welsh(false)
-            .altPhoneNumber(PHONE_NUMBER)
+            .altPhoneNumber(phoneNumber)
             .build();
 
 
         Map<String, String> payLoad = new HashMap<>();
-        payLoad.put(JUROR_NUM, JUROR_NUMBER);
+        payLoad.put(JUROR_NUM, jurorNumber);
         payLoad.put("court", COURT_NAME);
         payLoad.put(SERVICES_START_DATE, "12 August 2019");
         payLoad.put(SERVICES_START_TIME, "09:30");
@@ -289,8 +285,8 @@ class JurorCommsNotifyAdapterImplTest {
         payLoad.put(COURT_PHONE, "07834987345");
         payLoad.put(FIRST_NAME_VAL, VALUE_2);
         payLoad.put(LAST_NAME_VAL, VALUE_2);
-        payLoad.put(EMAIL_ADDRESS, EMAIL);
-        payLoad.put("phone number", PHONE_NUMBER);
+        payLoad.put(EMAIL_ADDRESS, email);
+        payLoad.put("phone number", phoneNumber);
 
 
         final NotifyTemplateMapping testNotifyTemplate = new NotifyTemplateMapping();
@@ -304,7 +300,7 @@ class JurorCommsNotifyAdapterImplTest {
         );
 
         assertThat(smsNotification.getReceipientPhoneNumber()).as("Recipient phone number is correct")
-            .isEqualTo(PHONE_NUMBER);
+            .isEqualTo(phoneNumber);
 
         // send the sms using the real Notify.gov
         final SmsNotificationReceipt smsNotificationReceipt = notifyAdapter.sendCommsSms(smsNotification);
@@ -313,7 +309,7 @@ class JurorCommsNotifyAdapterImplTest {
             .isEqualTo(UUID.fromString(DEV_SENT_TO_COURT_SMS_ENG_TEMPLATE_ID));
         assertThat(smsNotificationReceipt.getReference())
             .as("Juror number is the Notify reference")
-            .isEqualTo(JUROR_NUMBER);
+            .isEqualTo(jurorNumber);
         assertThat(smsNotificationReceipt.getBody())
             .as("Body is not empty and contains payload information")
             .isNotEmpty()

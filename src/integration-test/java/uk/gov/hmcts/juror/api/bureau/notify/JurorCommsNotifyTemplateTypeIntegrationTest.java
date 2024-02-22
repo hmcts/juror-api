@@ -1,4 +1,4 @@
-package uk.gov.hmcts.juror.api.bureau.Notify;
+package uk.gov.hmcts.juror.api.bureau.notify;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
@@ -8,7 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
 import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
 import java.util.Set;
