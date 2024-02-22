@@ -303,23 +303,24 @@ public class PoolRequestServiceTest {
 
     @Test
     public void test_savePoolRequest_newPoolFromBureau_validBureau() {
-        ArgumentCaptor<PoolRequest> poolRequestArgumentCaptor = ArgumentCaptor.forClass(PoolRequest.class);
 
-        PoolRequestDto poolRequestDto = createValidPoolRequestDto();
-        CourtLocation courtLocation = new CourtLocation();
-        PoolType poolType = new PoolType("CRO", "CROWN COURT");
         PoolRequest poolRequest = new PoolRequest();
         poolRequest.setOwner("415");
 
         String poolId = "123456789";
         Mockito.when(poolRequestRepository.saveAndFlush(Mockito.any())).thenReturn(poolRequest);
         Mockito.when(poolRequestRepository.findById(poolId)).thenReturn(Optional.empty());
+
+        CourtLocation courtLocation = new CourtLocation();
         Mockito.when(courtLocationRepository.findById("415")).thenReturn(Optional.of(courtLocation));
+        PoolType poolType = new PoolType("CRO", "CROWN COURT");
         Mockito.when(poolTypeRepository.findById("CRO")).thenReturn(Optional.of(poolType));
         Mockito.when(poolRequestRepository.saveAndFlush(Mockito.any())).thenReturn(new PoolRequest());
 
+        PoolRequestDto poolRequestDto = createValidPoolRequestDto();
         poolRequestService.savePoolRequest(poolRequestDto, buildPayload("400"));
 
+        ArgumentCaptor<PoolRequest> poolRequestArgumentCaptor = ArgumentCaptor.forClass(PoolRequest.class);
         Mockito.verify(poolRequestRepository, Mockito.times(1)).findById(poolId);
         Mockito.verify(poolRequestRepository, Mockito.times(1))
             .saveAndFlush(poolRequestArgumentCaptor.capture());
@@ -373,8 +374,8 @@ public class PoolRequestServiceTest {
 
     @Test
     public void test_savePoolRequest_newCourtOnlyPool_validCourt() {
-        ArgumentCaptor<PoolRequest> poolRequestArgumentCaptor = ArgumentCaptor.forClass(PoolRequest.class);
-        String courtOwner = "415";
+
+
 
         PoolRequestDto poolRequestDto = createValidPoolRequestDto();
         poolRequestDto.setCourtOnly(true);
@@ -388,12 +389,14 @@ public class PoolRequestServiceTest {
 
         Mockito.doReturn(null).when(poolRequestRepository).saveAndFlush(Mockito.any());
         Mockito.when(poolRequestRepository.findById(poolNumber)).thenReturn(Optional.empty());
+        String courtOwner = "415";
         Mockito.when(courtLocationRepository.findById(courtOwner)).thenReturn(Optional.of(courtLocation));
         Mockito.when(poolTypeRepository.findById("CRO")).thenReturn(Optional.of(poolType));
 
         poolRequestService.savePoolRequest(poolRequestDto, buildPayload(courtOwner));
 
         Mockito.verify(poolRequestRepository, Mockito.times(1)).findById(poolNumber);
+        ArgumentCaptor<PoolRequest> poolRequestArgumentCaptor = ArgumentCaptor.forClass(PoolRequest.class);
         Mockito.verify(poolRequestRepository, Mockito.times(1))
             .saveAndFlush(poolRequestArgumentCaptor.capture());
         PoolRequest poolRequest = poolRequestArgumentCaptor.getValue();
@@ -430,7 +433,7 @@ public class PoolRequestServiceTest {
 
     @Test
     public void test_savePoolRequest_newCourtOnlyPool_invalidBureauUser() {
-        String bureauOwner = "400";
+
 
         PoolRequestDto poolRequestDto = createValidPoolRequestDto();
         poolRequestDto.setCourtOnly(true);
@@ -441,6 +444,7 @@ public class PoolRequestServiceTest {
 
         Mockito.when(poolRequestRepository.findById(poolNumber)).thenReturn(Optional.empty());
 
+        String bureauOwner = "400";
         assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
             poolRequestService.savePoolRequest(poolRequestDto, buildPayload(bureauOwner)));
 

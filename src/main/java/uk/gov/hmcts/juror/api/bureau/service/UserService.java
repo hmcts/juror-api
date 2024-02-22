@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
+import uk.gov.hmcts.juror.api.moj.domain.User;
 
 /**
  * Operations for modifying the staff assignment of juror responses.
@@ -56,6 +57,8 @@ public interface UserService {
      * @param urgentJurorResponse Previously persisted juror response entity
      */
     void assignUrgentResponse(JurorResponse urgentJurorResponse);
+
+    User findByUsername(String activeLogin);
 
 
     class NoMatchForLoginException extends Exception {

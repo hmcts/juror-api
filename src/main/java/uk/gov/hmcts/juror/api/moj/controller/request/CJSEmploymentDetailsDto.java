@@ -21,6 +21,6 @@ public class CJSEmploymentDetailsDto {
 
     @JsonProperty("cjsEmployment")
     @Schema(description = "Array of any Criminal Justice System employment of the Juror")
-    private List<JurorPaperResponseDto.CJSEmployment> cjsEmployment;
+    private List<JurorPaperResponseDto.CjsEmployment> cjsEmployment;
 
 }

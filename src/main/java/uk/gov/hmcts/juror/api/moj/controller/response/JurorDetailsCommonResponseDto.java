@@ -14,7 +14,6 @@ import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.PendingJuror;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
@@ -26,12 +25,12 @@ import java.util.Optional;
 /**
  * Response DTO for Juror common details on the Juror record.
  */
+@SuppressWarnings("PMD.TooManyFields")
 @Getter
 @Setter
 @NoArgsConstructor
 @Schema(description = "Juror detail common information for the Juror Record")
 public class JurorDetailsCommonResponseDto {
-
 
     @Schema(name = "Owner", description = "Current owner")
     private String owner;

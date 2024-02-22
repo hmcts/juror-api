@@ -13,7 +13,6 @@ import java.util.Optional;
 import java.util.Set;
 
 
-
 @Repository
 public interface AppearanceRepository extends
     IAppearanceRepository, JpaRepository<Appearance, AppearanceId>,
@@ -25,14 +24,13 @@ public interface AppearanceRepository extends
 
     Appearance findByJurorNumberAndAttendanceDate(String jurorNumber, LocalDate attendanceDate);
 
-    List<Appearance> findAllByJurorNumberAndFinancialAuditDetailsId(String jurorNumber, long financialAuditDetails);
-
     List<Appearance> findAllByJurorNumberAndPoolNumber(String jurorNumber, String poolNumber);
 
     List<Appearance> findAllByJurorNumberAndAppearanceStageInAndCourtLocationOwnerAndIsDraftExpenseTrueOrderByAttendanceDateDesc(
         String jurorNumber,
-         Set<AppearanceStage> stages,
-         String owner);
+        Set<AppearanceStage> stages,
+        String owner);
+
     Optional<Appearance> findByJurorNumberAndPoolNumberAndAttendanceDateAndIsDraftExpenseTrue(String jurorNumber,
                                                                                               String poolNumber,
                                                                                               LocalDate attendanceDate);
@@ -41,4 +39,9 @@ public interface AppearanceRepository extends
                                                                          String poolNumber, LocalDate attendanceDate);
 
     List<Appearance> findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(String jurorNumber, String poolNumber);
+
+
+    List<Appearance> findAllByCourtLocationLocCodeAndAppearanceStageAndPayCashAndIsDraftExpenseFalse(String locCode,
+                                                                                                      AppearanceStage appearanceStage,
+                                                                                                     boolean payCash);
 }

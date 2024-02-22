@@ -10,7 +10,7 @@ INSERT INTO juror_mod.court_location_audit (revision, rev_type, loc_code, rate_p
                                             limit_financial_loss_half_day, limit_financial_loss_full_day,
                                             limit_financial_loss_half_day_long_trial,
                                             limit_financial_loss_full_day_long_trial, public_transport_soft_limit,
-                                            rate_substance_standard, rate_substance_long_day, rates_effective_from)
+                                            rate_subsistence_standard, rate_subsistence_long_day, rates_effective_from)
 VALUES (0, 2, '415', 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.6, 0.7, 0.8, 0.9, 0.11, 0.12, 0.13, '2023-01-01');
 
 
@@ -39,8 +39,8 @@ VALUES ('415', 'COURT_USER', 'Court User', 0, true, 1, 1, '5baa61e4c9b93f3f'),
        ('400', 'BUREAU_USER', 'Bureau User', 1, true, 1, 1, '5baa61e4c9b93f3f');
 
 INSERT INTO juror_mod.appearance
-(attendance_date, juror_number, loc_code, time_in, time_out, non_attendance, mileage_due, mileage_paid, travel_time,
- expense_submitted_date, sat_on_jury, pool_number, pay_cash, public_transport_total_due,
+(version, attendance_date, juror_number, loc_code, time_in, time_out, non_attendance,
+ travel_time, sat_on_jury, pool_number, pay_cash, public_transport_total_due,
  public_transport_total_paid, hired_vehicle_total_due, hired_vehicle_total_paid, motorcycle_total_due,
  motorcycle_total_paid, car_total_due, car_total_paid, pedal_cycle_total_due, pedal_cycle_total_paid,
  parking_total_due, parking_total_paid, childcare_total_due, childcare_total_paid, misc_total_due, misc_total_paid,
@@ -49,12 +49,12 @@ INSERT INTO juror_mod.appearance
 values
 -- expenses for 641500020
 -- 3 Draft
-('2024-01-02', '641500020', '415', '09:30', '16:00', false, 10, 0, '00:40', '2024-01-19', true, '415230101',
+(1, '2024-01-02', '641500020', '415', '09:30', '16:00', false, '00:40',  true, '415230101',
  false, 10, 0, 20, 0, 30, 0, 40, 0, 50, 0, 60, 0, 70, 0, 80, 0, 90, 0, 100, 0, 25, 0, 'FULL_DAY', true,
  null, 'EXPENSE_ENTERED'),
-('2024-01-03', '641500020', '415', '09:30', '16:00', false, 10, 0, '00:40', '2024-01-19', true, '415230101',
+(1, '2024-01-03', '641500020', '415', '09:30', '16:00', false,  '00:40',  true, '415230101',
  true, 11, 0, 21, 0, 31, 0, 41, 0, 51, 0, 61, 0, 71, 0, 81, 0, 91, 0, 101, 0, 26, 0, 'FULL_DAY', true,
  null, 'EXPENSE_ENTERED'),
-('2024-01-04', '641500020', '415', '09:30', '16:00', false, 10, 0, '00:40', '2024-01-19', true, '415230101',
+(1, '2024-01-04', '641500020', '415', '09:30', '16:00', false, '00:40',  true, '415230101',
  false, 12, 0, 22, 0, 32, 0, 42, 0, 52, 0, 62, 0, 72, 0, 82, 0, 92, 0, 102, 0, 27, 0, 'HALF_DAY', true,
  null, 'EXPENSE_ENTERED');

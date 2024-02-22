@@ -55,7 +55,14 @@ public class MojException extends RuntimeException {
             JUROR_MUST_HAVE_PHONE_NUMBER,
             JUROR_NOT_APART_OF_TRIAL,
             MAX_ITEMS_EXCEEDED,
-            TRIAL_HAS_MEMBERS
+            TRIAL_HAS_MEMBERS,
+            ATTENDANCE_RECORD_ALREADY_EXISTS,
+            APPEARANCE_RECORD_BEFORE_SERVICE_START_DATE,
+            DATA_OUT_OF_DATE,
+            CAN_NOT_APPROVE_OWN_EDIT,
+            EXPENSE_VALUES_REDUCED_LESS_THAN_PAID,
+            CAN_NOT_APPROVE_MORE_THAN_LIMIT,
+            WRONG_EXPENSE_TYPE
         }
     }
 

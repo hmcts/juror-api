@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.court.QDeferralGrantedLetterList
 
 import java.util.List;
 
+@SuppressWarnings("PMD.LawOfDemeter")
 public class DeferralGrantedLetterListRepositoryImpl implements IDeferralGrantedLetterListRepository {
 
     @PersistenceContext

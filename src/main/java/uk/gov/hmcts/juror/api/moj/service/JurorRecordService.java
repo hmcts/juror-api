@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.UpdateAttendanceRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactEnquiryTypeListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
@@ -80,5 +81,8 @@ public interface JurorRecordService {
     void processPendingJuror(ProcessPendingJurorRequestDto processPendingJurorRequestDto);
 
     void updateAttendance(UpdateAttendanceRequestDto dto);
+
+    void editJurorsBankDetails(RequestBankDetailsDto dto);
+
 
 }

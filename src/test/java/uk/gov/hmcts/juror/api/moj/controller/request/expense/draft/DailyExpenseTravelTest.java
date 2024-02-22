@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.moj.controller.request.expense.draft;
 
 import org.junit.jupiter.api.Nested;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
-import uk.gov.hmcts.juror.api.moj.enumeration.TravelMethod;
 
 import java.math.BigDecimal;
 

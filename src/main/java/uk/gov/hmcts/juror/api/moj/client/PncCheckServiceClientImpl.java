@@ -80,8 +80,8 @@ public class PncCheckServiceClientImpl extends AbstractRemoteRestClient implemen
             .jurorNumber(juror.getJurorNumber())
             .name(NameDetails.builder()
                 .firstName(juror.getFirstName().replaceAll("\\s.*", ""))
-                .middleName(juror.getFirstName().contains(" ") ?
-                    juror.getFirstName().replaceAll(".*?\\s", "") : null)
+                .middleName(juror.getFirstName().contains(" ")
+                    ? juror.getFirstName().replaceAll(".*?\\s", "") : null)
                 .lastName(juror.getLastName())
                 .build())
             .build();

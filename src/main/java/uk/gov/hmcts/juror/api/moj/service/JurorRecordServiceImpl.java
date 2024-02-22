@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.UpdateAttendanceRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactEnquiryTypeListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
@@ -736,7 +737,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Override
     public void setJurorNotes(String jurorNumber, String notes, String owner) {
         Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, jurorNumber);
-        JurorUtils.checkOwnershipForCurrentUser(juror, owner);
+        JurorUtils.checkOwnershipForCurrentUser(juror, owner, true);
         juror.setNotes(notes);
 
         jurorRepository.saveAndFlush(juror);
@@ -1193,6 +1194,22 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         responseDto.setNextDate(jurorPool.getNextDate());
 
         return responseDto;
+    }
+
+    @Override
+    public void editJurorsBankDetails(RequestBankDetailsDto dto) {
+        Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, dto.getJurorNumber());
+
+        juror.setSortCode(dto.getSortCode());
+        juror.setBankAccountNumber(dto.getAccountNumber());
+        juror.setBankAccountName(dto.getAccountHolderName());
+
+        jurorRepository.save(juror);
+
+        jurorHistoryService.createEditBankAccountNameHistory(dto.getJurorNumber());
+        jurorHistoryService.createEditBankAccountNumberHistory(dto.getJurorNumber());
+        jurorHistoryService.createEditBankSortCodeHistory(dto.getJurorNumber());
+
     }
 
     private JurorPool getJurorPool(String jurorNumber, String poolNumber) {

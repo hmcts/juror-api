@@ -37,10 +37,6 @@ public class RequestDefaultExpensesDto {
     @JsonProperty("smart_card")
     private String smartCardNumber;
 
-    @JsonProperty("amount_spent")
-    @Schema(description = "Total spent for smart card")
-    private BigDecimal totalSmartCardSpend;
-
     @JsonProperty("apply_to_all_draft")
     boolean overwriteExistingDraftExpenses;
 

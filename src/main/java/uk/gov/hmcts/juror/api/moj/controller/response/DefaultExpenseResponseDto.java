@@ -31,12 +31,11 @@ public class DefaultExpenseResponseDto {
     private LocalTime travelTime;
 
     @JsonProperty("mileage")
-    private int distanceTraveledMiles;
+    private Integer distanceTraveledMiles;
 
     @JsonProperty("smart_card")
     private String smartCardNumber;
 
-    @JsonProperty("amount_spent")
-    @Schema(description = "Total spent for smart card")
-    private BigDecimal totalSmartCardSpend;
+    @JsonProperty("claiming_subsistence_allowance")
+    private boolean claimingSubsistenceAllowance;
 }

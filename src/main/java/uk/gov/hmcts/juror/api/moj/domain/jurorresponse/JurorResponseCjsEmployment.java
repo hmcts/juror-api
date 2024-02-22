@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.domain.jurorresponse;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -16,11 +17,10 @@ import java.io.Serializable;
 @Data
 public class JurorResponseCjsEmployment implements Serializable {
     @Id
-    @GeneratedValue(generator = "juror_response_cjs_employment_gen")
+    @GeneratedValue(generator = "juror_response_cjs_employment_gen", strategy = GenerationType.SEQUENCE)
     @Column(name = "id")
-    @SequenceGenerator(name = "juror_response_cjs_employment_gen",
-        sequenceName = "juror_mod.juror_response_cjs_employment_id_seq",
-    allocationSize = 1)
+    @SequenceGenerator(name = "juror_response_cjs_employment_gen", schema = "juror_mod",
+        sequenceName = "juror_response_cjs_employment_id_seq", allocationSize = 1)
     private Long id;
 
     @Column(name = "juror_number")

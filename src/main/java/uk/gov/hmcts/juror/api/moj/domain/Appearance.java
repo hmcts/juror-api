@@ -9,6 +9,7 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -19,6 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
@@ -26,11 +28,11 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.FoodDrinkClaimType;
 import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
+import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
@@ -48,6 +50,10 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 @Audited
 @SuppressWarnings("PMD.TooManyFields")
 public class Appearance implements Serializable {
+
+    @Version
+    @NotAudited
+    private Long version;
 
     @Id
     @Column(name = "juror_number")
@@ -106,12 +112,6 @@ public class Appearance implements Serializable {
     @Column(name = "non_attendance")
     @Builder.Default
     private Boolean nonAttendanceDay = false;
-
-    @Column(name = "mileage_due")
-    private Integer mileageDue;
-
-    @Column(name = "mileage_paid")
-    private Integer mileagePaid;
 
     @Column(name = "misc_description")
     private String miscDescription;
@@ -221,19 +221,6 @@ public class Appearance implements Serializable {
     @Enumerated(EnumType.STRING)
     private FoodDrinkClaimType foodAndDrinkClaimType;
 
-
-    /**
-     * The date the expense was approved for payment to be processed.
-     */
-    @Column(name = "payment_approved_date")
-    private LocalDateTime paymentApprovedDate;
-
-    /**
-     * The date the juror submitted their expense to the court.
-     */
-    @Column(name = "expense_submitted_date")
-    private LocalDate expenseSubmittedDate;
-
     /**
      * Flag indicating whether the expense is being "saved for later" in a draft state (true) or if it is ready to be
      * authorised (false).
@@ -252,50 +239,6 @@ public class Appearance implements Serializable {
         return "JurorNumber: " + this.jurorNumber + ", "
             + "AttendanceDate: " + this.attendanceDate + ", "
             + "CourtLocation: " + this.courtLocation;
-    }
-
-    public BigDecimal getPublicTransportTotal() {
-        return getOrZero(this.publicTransportDue).add(getOrZero(this.publicTransportPaid));
-    }
-
-    public BigDecimal getHiredVehicleTotal() {
-        return getOrZero(this.hiredVehicleDue).add(getOrZero(this.hiredVehiclePaid));
-    }
-
-    public BigDecimal getMotorcycleTotal() {
-        return getOrZero(this.motorcycleDue).add(getOrZero(this.motorcyclePaid));
-    }
-
-    public BigDecimal getCarTotal() {
-        return getOrZero(this.carDue).add(getOrZero(this.carPaid));
-    }
-
-    public BigDecimal getBicycleTotal() {
-        return getOrZero(this.bicycleDue).add(getOrZero(this.bicyclePaid));
-    }
-
-    public BigDecimal getParkingTotal() {
-        return getOrZero(this.parkingDue).add(getOrZero(this.parkingPaid));
-    }
-
-    public BigDecimal getSubsistenceTotal() {
-        return getOrZero(this.subsistenceDue).add(getOrZero(this.subsistencePaid));
-    }
-
-    public BigDecimal getLossOfEarningsTotal() {
-        return getOrZero(this.lossOfEarningsDue).add(getOrZero(this.lossOfEarningsPaid));
-    }
-
-    public BigDecimal getChildcareTotal() {
-        return getOrZero(this.childcareDue).add(getOrZero(this.childcarePaid));
-    }
-
-    public BigDecimal getMiscAmountTotal() {
-        return getOrZero(this.miscAmountDue).add(getOrZero(this.miscAmountPaid));
-    }
-
-    public BigDecimal getSmartCardAmountTotal() {
-        return getOrZero(this.smartCardAmountDue).add(getOrZero(this.smartCardAmountPaid));
     }
 
     //Does not include smart card reduction
@@ -327,6 +270,10 @@ public class Appearance implements Serializable {
             .subtract(getOrZero(this.getSmartCardAmountPaid()));
     }
 
+    public BigDecimal getBalanceToPay() {
+        return this.getTotalDue().subtract(this.getTotalPaid());
+    }
+
     public LocalTime getTimeSpentAtCourt() {
         if (timeOut == null || timeIn == null) {
             return LocalTime.of(0, 0);
@@ -344,10 +291,126 @@ public class Appearance implements Serializable {
     }
 
     public LocalTime getTravelTime() {
-        if (travelTime == null ) {
+        if (travelTime == null) {
             return LocalTime.of(0, 0);
         }
         return this.travelTime;
     }
 
+    public BigDecimal getTotalFinancialLossDue() {
+        return
+            getOrZero(this.getLossOfEarningsDue())
+                .add(getOrZero(this.getChildcareDue()))
+                .add(getOrZero(this.getMiscAmountDue()));
+    }
+
+    public BigDecimal getTotalFinancialLossPaid() {
+        return
+            getOrZero(this.getLossOfEarningsPaid())
+                .add(getOrZero(this.getChildcarePaid()))
+                .add(getOrZero(this.getMiscAmountPaid()));
+    }
+
+    public BigDecimal getTotalTravelDue() {
+        return
+            getOrZero(this.getCarDue())
+                .add(getOrZero(this.getMotorcycleDue()))
+                .add(getOrZero(this.getBicycleDue()))
+                .add(getOrZero(this.getParkingDue()))
+                .add(getOrZero(this.getPublicTransportDue()))
+                .add(getOrZero(this.getHiredVehicleDue()));
+    }
+
+    public BigDecimal getTotalTravelPaid() {
+        return
+            getOrZero(this.getCarPaid())
+                .add(getOrZero(this.getMotorcyclePaid()))
+                .add(getOrZero(this.getBicyclePaid()))
+                .add(getOrZero(this.getParkingPaid()))
+                .add(getOrZero(this.getPublicTransportPaid()))
+                .add(getOrZero(this.getHiredVehiclePaid()));
+    }
+
+    public BigDecimal getSubsistenceTotalDue() {
+        return getOrZero(this.getSubsistenceDue())
+            .subtract(getOrZero(this.getSmartCardAmountDue()));
+    }
+
+    public BigDecimal getSubsistenceTotalPaid() {
+        return getOrZero(this.getSubsistencePaid())
+            .subtract(getOrZero(this.getSmartCardAmountPaid()));
+    }
+
+
+    public BigDecimal getTotalChanged() {
+        return getTotalDue().subtract(getTotalPaid());
+    }
+
+    public BigDecimal getFinancialLossTotalChanged() {
+        return getTotalFinancialLossDue().subtract(getTotalFinancialLossPaid());
+    }
+
+    public BigDecimal getSubsistenceTotalChanged() {
+        return getSubsistenceTotalDue()
+            .subtract(getSubsistenceTotalPaid());
+    }
+
+    public BigDecimal getTravelTotalChanged() {
+        return getTotalTravelDue().subtract(getTotalTravelPaid());
+    }
+
+    public boolean isExpenseDetailsValid() {
+        return
+            BigDecimalUtils.isGreaterThanOrEqualTo(
+                getOrZero(this.getPublicTransportDue()),
+                getOrZero(this.getPublicTransportPaid())
+            )
+                && BigDecimalUtils.isGreaterThanOrEqualTo(
+                getOrZero(this.getHiredVehicleDue()),
+                getOrZero(this.getHiredVehiclePaid())
+            )
+                && BigDecimalUtils.isGreaterThanOrEqualTo(
+                getOrZero(this.getMotorcycleDue()),
+                getOrZero(this.getMotorcyclePaid())
+            )
+                && BigDecimalUtils.isGreaterThanOrEqualTo(
+                getOrZero(this.getCarDue()),
+                getOrZero(this.getCarPaid())
+            )
+                && BigDecimalUtils.isGreaterThanOrEqualTo(
+                getOrZero(this.getBicycleDue()),
+                getOrZero(this.getBicyclePaid())
+            )
+                && BigDecimalUtils.isGreaterThanOrEqualTo(
+                getOrZero(this.getParkingDue()),
+                getOrZero(this.getParkingPaid())
+            )
+                && BigDecimalUtils.isGreaterThanOrEqualTo(
+                getOrZero(this.getSubsistenceDue()),
+                getOrZero(this.getSubsistencePaid())
+            )
+                && BigDecimalUtils.isGreaterThanOrEqualTo(
+                getOrZero(this.getLossOfEarningsDue()),
+                getOrZero(this.getLossOfEarningsPaid())
+            )
+                && BigDecimalUtils.isGreaterThanOrEqualTo(
+                getOrZero(this.getChildcareDue()),
+                getOrZero(this.getChildcarePaid())
+            )
+                && BigDecimalUtils.isGreaterThanOrEqualTo(
+                getOrZero(this.getMiscAmountDue()),
+                getOrZero(this.getMiscAmountPaid())
+            )
+                && BigDecimalUtils.isGreaterThanOrEqualTo(
+                getOrZero(this.getTotalDue()),
+                getOrZero(this.getTotalPaid())
+            )
+                //TODO confirm
+                && (!(AppearanceStage.EXPENSE_EDITED.equals(this.getAppearanceStage())
+                    || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage()))
+                    || BigDecimalUtils.isGreaterThanOrEqualTo(
+                    getOrZero(this.getSmartCardAmountPaid()),
+                    getOrZero(this.getSmartCardAmountDue())
+                ));
+    }
 }

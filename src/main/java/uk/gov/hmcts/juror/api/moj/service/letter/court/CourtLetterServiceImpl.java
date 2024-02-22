@@ -1,23 +1,32 @@
-package uk.gov.hmcts.juror.api.moj.service.letter;
+package uk.gov.hmcts.juror.api.moj.service.letter.court;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.WordUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeEntity;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CourtLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.DeferralLetterData;
+import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ExcusalLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.NonDeferralLetterData;
+import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.WithdrawalLetterData;
 import uk.gov.hmcts.juror.api.moj.domain.letter.CourtLetterSearchCriteria;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralDeniedLetterList;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralGrantedLetterList;
+import uk.gov.hmcts.juror.api.moj.domain.letter.court.ExcusalGrantedLetterList;
+import uk.gov.hmcts.juror.api.moj.domain.letter.court.WithdrawalLetterList;
+import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.DeferralDeniedLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.DeferralGrantedLetterListRepository;
+import uk.gov.hmcts.juror.api.moj.repository.letter.court.ExcusalGrantedLetterListRepository;
+import uk.gov.hmcts.juror.api.moj.repository.letter.court.WithdrawalLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDateTime;
@@ -28,41 +37,42 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Primary
 public class CourtLetterServiceImpl implements CourtLetterService {
 
     private final DeferralGrantedLetterListRepository deferralGrantedLetterListRepository;
+    private final ExcusalGrantedLetterListRepository excusalGrantedLetterListRepository;
     private final DeferralDeniedLetterListRepository deferralDeniedLetterListRepository;
+    private final WithdrawalLetterListRepository withdrawalLetterListRepository;
     private final ExcusalCodeRepository excusalCodeRepository;
 
-    // String constants for response headings
-    private static final String JUROR_NUMBER = "Juror number";
-    private static final String FIRST_NAME = "First name";
-    private static final String LAST_NAME = "Last name";
-    private static final String POSTCODE = "Postcode";
-    private static final String STATUS = "Status";
-    private static final String DEFERRED_TO = "Deferred to";
-    private static final String DATE_REFUSED = "Date refused";
-    private static final String REASON = "Reason";
-    private static final String DATE_PRINTED = "Date printed";
-    private static final String POOL_NUMBER = "Pool number";
+    @Autowired
+    private final CourtPostponementLetterServiceImpl courtPostponementLetterService;
 
-    // String constants for data type descriptions
-    private static final String STRING = "string";
-    private static final String DATE = "date";
-    private static final String HIDDEN = "hidden";
+    @Autowired
+    private final CourtExcusalRefusedLetterServiceImpl courtExcusalRefusedLetterService;
+
+    // String constants for response headings
+    private static final String DATE_REFUSED = "Date refused";
+    private static final String DEFERRED_TO = "Deferred to";
+    private static final String DATE_EXCUSED = "Date excused";
+    private static final String DATE_DISQUALIFIED = "Date disqualified";
 
     @Override
     @Transactional(readOnly = true)
-    public LetterListResponseDto getEligibleList(CourtLetterListRequestDto courtLetterListRequestDto) {
+    public LetterListResponseDto getEligibleList(CourtLetterListRequestDto request) {
 
-        CourtLetterType letterType = courtLetterListRequestDto.getLetterType();
+        CourtLetterType letterType = request.getLetterType();
 
         return switch (letterType) {
-            case DEFERRAL_GRANTED -> getEligibleDeferralGrantedList(courtLetterListRequestDto);
-            case DEFERRAL_REFUSED -> getEligibleDeferralDeniedList(courtLetterListRequestDto);
+            case DEFERRAL_GRANTED -> getEligibleDeferralGrantedList(request);
+            case DEFERRAL_REFUSED -> getEligibleDeferralDeniedList(request);
+            case WITHDRAWAL -> getEligibleWithdrawalList(request);
+            case POSTPONED -> courtPostponementLetterService.getEligibleList(request);
+            case EXCUSAL_GRANTED -> getEligibleExcusalGrantedList(request);
+            case EXCUSAL_REFUSED -> courtExcusalRefusedLetterService.getEligibleList(request);
             default -> throw new MojException.InternalServerError("Letter type not yet implemented", null);
         };
-
     }
 
     private LetterListResponseDto getEligibleDeferralGrantedList(CourtLetterListRequestDto courtLetterListRequestDto) {
@@ -125,17 +135,6 @@ public class CourtLetterServiceImpl implements CourtLetterService {
         return responseDto;
     }
 
-
-    private CourtLetterSearchCriteria buildSearchCriteria(CourtLetterListRequestDto courtLetterListRequestDto) {
-        return CourtLetterSearchCriteria.builder()
-            .jurorNumber(courtLetterListRequestDto.getJurorNumber())
-            .jurorName(courtLetterListRequestDto.getJurorName())
-            .postcode(courtLetterListRequestDto.getJurorPostcode())
-            .poolNumber(courtLetterListRequestDto.getPoolNumber())
-            .includePrinted(courtLetterListRequestDto.isIncludePrinted())
-            .build();
-    }
-
     private List<DeferralLetterData> serialiseDeferralLetterData(List<DeferralGrantedLetterList> eligibleJurorRecords,
                                                                  boolean isIncludePrinted) {
         List<DeferralLetterData> deferralLetterDataList = new ArrayList<>();
@@ -153,7 +152,9 @@ public class CourtLetterServiceImpl implements CourtLetterService {
 
             if (isIncludePrinted) {
                 LocalDateTime datePrinted = result.getDatePrinted();
-                deferralLetterData.datePrinted(datePrinted != null ? datePrinted.toLocalDate() : null);
+                deferralLetterData.datePrinted(datePrinted != null
+                    ? datePrinted.toLocalDate()
+                    : null);
             }
 
             deferralLetterDataList.add(deferralLetterData.build());
@@ -181,12 +182,74 @@ public class CourtLetterServiceImpl implements CourtLetterService {
 
             if (isIncludePrinted) {
                 LocalDateTime datePrinted = result.getDatePrinted();
-                nonDeferralLetterData.datePrinted(datePrinted != null ? datePrinted.toLocalDate() : null);
+                nonDeferralLetterData.datePrinted(datePrinted != null
+                    ? datePrinted.toLocalDate()
+                    : null);
             }
 
             deferralLetterDataList.add(nonDeferralLetterData.build());
         }
         return deferralLetterDataList;
+    }
+
+    private LetterListResponseDto getEligibleWithdrawalList(CourtLetterListRequestDto courtLetterListRequestDto) {
+        log.trace("Enter getEligibleWithdrawalList");
+
+        String owner = SecurityUtil.getActiveOwner();
+
+        CourtLetterSearchCriteria searchCriteria = buildSearchCriteria(courtLetterListRequestDto);
+
+        log.debug("Find jurors eligible for a court withdrawal letter for the primary court: {}", owner);
+        List<WithdrawalLetterList> eligibleJurorRecords =
+            withdrawalLetterListRepository.findJurorsEligibleForWithdrawalLetter(searchCriteria, owner);
+        log.debug("{} records found", eligibleJurorRecords.size());
+
+        List<String> headings =
+            List.of(JUROR_NUMBER, FIRST_NAME, LAST_NAME, POSTCODE, STATUS, DATE_DISQUALIFIED, REASON,
+                DATE_PRINTED, POOL_NUMBER);
+
+        List<String> dataTypes = List.of(STRING, STRING, STRING, STRING, STRING, DATE, STRING, DATE, HIDDEN);
+
+        List<WithdrawalLetterData> withdrawalLetterDataList =
+            serialiseWithdrawalLetterData(eligibleJurorRecords, courtLetterListRequestDto.isIncludePrinted());
+
+        LetterListResponseDto responseDto = LetterListResponseDto.builder()
+            .headings(headings)
+            .dataTypes(dataTypes)
+            .data(withdrawalLetterDataList)
+            .build();
+
+        log.trace("Exit getEligibleWithdrawalGrantedList");
+        return responseDto;
+
+    }
+
+    private List<WithdrawalLetterData> serialiseWithdrawalLetterData(List<WithdrawalLetterList> eligibleJurorRecords,
+                                                                     boolean isIncludePrinted) {
+        List<WithdrawalLetterData> withdrawalLetterDataList = new ArrayList<>();
+        for (WithdrawalLetterList result : eligibleJurorRecords) {
+
+            WithdrawalLetterData.WithdrawalLetterDataBuilder withdrawalLetterData = WithdrawalLetterData.builder()
+                .jurorNumber(result.getJurorNumber())
+                .firstName(result.getFirstName())
+                .lastName(result.getLastName())
+                .postcode(result.getPostcode())
+                .status(result.getStatus())
+                .dateDisqualified(result.getDateDisqualified())
+                .reason(WordUtils.capitalizeFully(DisqualifyCode.getDisqualifyCode(
+                    result.getDisqualifiedCode()).getDescription()))
+                .poolNumber(result.getPoolNumber());
+
+            if (isIncludePrinted) {
+                LocalDateTime datePrinted = result.getDatePrinted();
+                withdrawalLetterData.datePrinted(datePrinted != null
+                    ? datePrinted.toLocalDate()
+                    : null);
+            }
+
+            withdrawalLetterDataList.add(withdrawalLetterData.build());
+        }
+        return withdrawalLetterDataList;
     }
 
     private String getDeferralReasonDescription(String otherInfoText) {
@@ -201,6 +264,63 @@ public class CourtLetterServiceImpl implements CourtLetterService {
 
         return excusalCodeOpt.map(excusalCodeEntity -> WordUtils.capitalizeFully(excusalCodeEntity.getDescription()))
             .orElse(null);
+    }
+
+    private LetterListResponseDto getEligibleExcusalGrantedList(CourtLetterListRequestDto courtLetterListRequestDto) {
+        log.trace("Enter getEligibleExcusalGrantedList");
+
+        String owner = SecurityUtil.getActiveOwner();
+
+        CourtLetterSearchCriteria searchCriteria = buildSearchCriteria(courtLetterListRequestDto);
+
+        log.debug("Find jurors eligible for a court excusal granted letter for the primary court: {}", owner);
+        List<ExcusalGrantedLetterList> eligibleJurorRecords =
+            excusalGrantedLetterListRepository.findJurorsEligibleForExcusalGrantedLetter(searchCriteria, owner);
+        log.debug("{} records found", eligibleJurorRecords.size());
+
+        List<String> headings = List.of(JUROR_NUMBER, FIRST_NAME, LAST_NAME, POSTCODE, STATUS, DATE_EXCUSED, REASON,
+            DATE_PRINTED, POOL_NUMBER);
+
+        List<String> dataTypes = List.of(STRING, STRING, STRING, STRING, STRING, DATE, STRING, DATE, HIDDEN);
+
+        List<ExcusalLetterData> excusalLetterDataList =
+            serialiseExcusalGrantedLetterData(eligibleJurorRecords, courtLetterListRequestDto.isIncludePrinted());
+
+        LetterListResponseDto responseDto = LetterListResponseDto.builder()
+            .headings(headings)
+            .dataTypes(dataTypes)
+            .data(excusalLetterDataList)
+            .build();
+
+        log.trace("Exit getEligibleExcusalGrantedList");
+        return responseDto;
+    }
+
+    private List<ExcusalLetterData> serialiseExcusalGrantedLetterData(
+        List<ExcusalGrantedLetterList> eligibleJurorRecords,
+        boolean isIncludePrinted) {
+        List<ExcusalLetterData> excusalLetterDataList = new ArrayList<>();
+        for (ExcusalGrantedLetterList result : eligibleJurorRecords) {
+
+            ExcusalLetterData.ExcusalLetterDataBuilder excusalLetterData = ExcusalLetterData.builder()
+                .jurorNumber(result.getJurorNumber())
+                .firstName(result.getFirstName())
+                .lastName(result.getLastName())
+                .postcode(result.getPostcode())
+                .status(result.getStatus())
+                .dateExcused(result.getDateExcused())
+                .reason(WordUtils.capitalizeFully(result.getReason()))
+                .poolNumber(result.getPoolNumber());
+
+            if (isIncludePrinted) {
+                LocalDateTime datePrinted = result.getDatePrinted();
+                excusalLetterData.datePrinted(datePrinted != null
+                    ? datePrinted.toLocalDate()
+                    : null);
+            }
+            excusalLetterDataList.add(excusalLetterData.build());
+        }
+        return excusalLetterDataList;
     }
 
 }

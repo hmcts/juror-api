@@ -41,6 +41,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.UpdateAttendanceRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactEnquiryTypeListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
@@ -120,6 +121,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_STATUS_MUST_BE_RESPONDED;
 import static uk.gov.hmcts.juror.api.moj.utils.SecurityUtil.JURY_OFFICER_LEVEL;
 import static uk.gov.hmcts.juror.api.moj.utils.SecurityUtil.SENIOR_JUROR_OFFICER_LEVEL;
+import static uk.gov.hmcts.juror.api.moj.utils.SecurityUtil.STANDARD_USER_LEVEL;
 
 
 /**
@@ -2167,8 +2169,23 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 URI.create(GET_JUROR_NOTES_URL)), Void.class);
 
         assertThat(patchResponse.getStatusCode())
-            .as("Expect the HTTP PATCH request to be unsuccessful")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+            .as("Expect the HTTP PATCH request to be successful")
+            .isEqualTo(HttpStatus.NO_CONTENT);
+
+        ResponseEntity<JurorNotesDto> getResponse =
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+
+        assertThat(getResponse.getStatusCode())
+            .as("Expect the HTTP GET request to be successful")
+            .isEqualTo(HttpStatus.OK);
+
+        assertThat(getResponse.getBody()).isNotNull();
+        JurorNotesDto responseBody = getResponse.getBody();
+
+        assertThat(responseBody.getNotes())
+            .as("The juror record should be present and available to the current user to view notes")
+            .isEqualTo(updateNotes.getNotes());
     }
 
     @Test
@@ -4313,6 +4330,171 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be NOT_FOUND")
                 .isEqualTo(HttpStatus.FORBIDDEN);
+        }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editBankDetails.sql"})
+        void editJurorsBankDetails() throws Exception {
+            final String url = BASE_URL + "/update-bank-details";
+            String jurorNumber = "123456789";
+
+            RequestBankDetailsDto dto = new RequestBankDetailsDto();
+            dto.setJurorNumber(jurorNumber);
+            dto.setAccountNumber("12345678");
+            dto.setSortCode("112233");
+            dto.setAccountHolderName("Mr Fname Lname");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+                JURY_OFFICER_LEVEL));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
+                    URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be OK")
+                .isEqualTo(HttpStatus.OK);
+
+            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+
+            List<JurorHistory> historyList = jurorHistoryRepository.findByJurorNumber(jurorNumber);
+
+            assertThat(juror.getSortCode()).isEqualTo(dto.getSortCode());
+            assertThat(juror.getBankAccountName()).isEqualTo(dto.getAccountHolderName());
+            assertThat(juror.getBankAccountNumber()).isEqualTo(dto.getAccountNumber());
+
+            assertThat(historyList.get(0).getJurorNumber()).isEqualTo(jurorNumber);
+            assertThat(historyList.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
+            assertThat(historyList.get(0).getOtherInformation()).isEqualTo("Bank Account Name Changed");
+
+            assertThat(historyList.get(1).getJurorNumber()).isEqualTo(jurorNumber);
+            assertThat(historyList.get(1).getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
+            assertThat(historyList.get(1).getOtherInformation()).isEqualTo("Bank Acct No Changed");
+
+            assertThat(historyList.get(2).getJurorNumber()).isEqualTo(jurorNumber);
+            assertThat(historyList.get(2).getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
+            assertThat(historyList.get(2).getOtherInformation()).isEqualTo("Bank Sort Code Changed");
+
+        }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editBankDetails.sql"})
+        void editJurorsBankDetailsJurorNumberNotFound() throws Exception {
+            final String url = BASE_URL + "/update-bank-details";
+            String jurorNumber = "987654321";
+
+            RequestBankDetailsDto dto = new RequestBankDetailsDto();
+            dto.setJurorNumber(jurorNumber);
+            dto.setAccountNumber("12345678");
+            dto.setSortCode("112233");
+            dto.setAccountHolderName("Mr Fname Lname");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+                JURY_OFFICER_LEVEL));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
+                    URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be NOT_FOUND")
+                .isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editBankDetails.sql"})
+        void editJurorsBankDetailsInvalidAccess() throws Exception {
+            final String url = BASE_URL + "/update-bank-details";
+            String jurorNumber = "987654321";
+
+            RequestBankDetailsDto dto = new RequestBankDetailsDto();
+            dto.setJurorNumber(jurorNumber);
+            dto.setAccountNumber("12345678");
+            dto.setSortCode("112233");
+            dto.setAccountHolderName("Mr Fname Lname");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("415"),
+                STANDARD_USER_LEVEL));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
+                    URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be FORBIDDEN")
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editBankDetails.sql"})
+        void editJurorsBankDetailsInvalidBankAccNo() throws Exception {
+            final String url = BASE_URL + "/update-bank-details";
+            String jurorNumber = "123456789";
+
+            RequestBankDetailsDto dto = new RequestBankDetailsDto();
+            dto.setJurorNumber(jurorNumber);
+            dto.setAccountNumber("123456789");
+            dto.setSortCode("112233");
+            dto.setAccountHolderName("Mr Fname Lname");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+                JURY_OFFICER_LEVEL));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
+                    URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be BAD_REQUEST")
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editBankDetails.sql"})
+        void editJurorsBankDetailsInvalidBankAccSortCode() throws Exception {
+            final String url = BASE_URL + "/update-bank-details";
+            String jurorNumber = "123456789";
+
+            RequestBankDetailsDto dto = new RequestBankDetailsDto();
+            dto.setJurorNumber(jurorNumber);
+            dto.setAccountNumber("12345678");
+            dto.setSortCode("11223344");
+            dto.setAccountHolderName("Mr Fname Lname");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+                JURY_OFFICER_LEVEL));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
+                    URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be BAD_REQUEST")
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editBankDetails.sql"})
+        void editJurorsBankDetailsInvalidBankAccName() throws Exception {
+            final String url = BASE_URL + "/update-bank-details";
+            String jurorNumber = "123456789";
+
+            RequestBankDetailsDto dto = new RequestBankDetailsDto();
+            dto.setJurorNumber(jurorNumber);
+            dto.setAccountNumber("12345678");
+            dto.setSortCode("112233");
+            dto.setAccountHolderName("Mr Fname Lname Too Long");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+                JURY_OFFICER_LEVEL));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
+                    URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be BAD_REQUEST")
+                .isEqualTo(HttpStatus.BAD_REQUEST);
         }
 
 

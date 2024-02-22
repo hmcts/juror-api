@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.gov.hmcts.juror.api.bureau.controller.response.CourtCatchmentStatusDto;
@@ -39,6 +40,7 @@ public class CourtCatchmentServiceImpl implements CourtCatchmentService {
     }
 
     @Override
+    @Transactional
     public CourtCatchmentStatusDto CourtCatchmentFinder(String jurorNumber) {
 
         Optional<Pool> optPool = poolRepository.findOne(QPool.pool.jurorNumber.eq(jurorNumber));

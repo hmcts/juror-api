@@ -329,10 +329,10 @@ sourceSets {
 }
 
 checkstyleMain {
-    maxWarnings = 398
+    maxWarnings = 382
 }
 checkstyleTest {
-    maxWarnings = 271
+    maxWarnings = 261
 }
 checkstyleIntegration{
     maxWarnings = 1272
@@ -344,13 +344,13 @@ checkstyle {
 }
 
 pmdIntegration {
-    maxFailures = 809
+    maxFailures = 801
 }
 pmdTest {
-    maxFailures = 661
+    maxFailures = 656
 }
 pmdMain {
-    maxFailures = 1283
+    maxFailures = 1220
 }
 pmd {
     maxFailures = 0

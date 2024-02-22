@@ -20,10 +20,10 @@ import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
 import java.time.LocalDate;
 import java.util.Arrays;
 
-
 /**
  * Response DTO for Juror details on the Juror record.
  */
+@SuppressWarnings("PMD.TooManyFields")
 @Setter
 @Getter
 @NoArgsConstructor

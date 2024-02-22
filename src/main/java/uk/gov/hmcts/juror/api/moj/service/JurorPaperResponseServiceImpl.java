@@ -441,7 +441,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     private void setUpCjsEmployment(PaperResponse jurorPaperResponse,
                                     JurorPaperResponseDto jurorPaperResponseDto) {
 
-        List<JurorPaperResponseDto.CJSEmployment> cjsEmployment = jurorPaperResponseDto.getCjsEmployment();
+        List<JurorPaperResponseDto.CjsEmployment> cjsEmployment = jurorPaperResponseDto.getCjsEmployment();
         List<JurorResponseCjsEmployment> cjsEmployments = new ArrayList<>();
         final String jurorNumber = jurorPaperResponseDto.getJurorNumber();
 

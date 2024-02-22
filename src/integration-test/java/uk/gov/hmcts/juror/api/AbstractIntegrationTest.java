@@ -169,6 +169,16 @@ public abstract class AbstractIntegrationTest {
             "Forbidden");
     }
 
+
+    protected void assertMojForbiddenResponse(ResponseEntity<String> response, String url, String message) {
+        assertErrorResponse(response,
+            HttpStatus.FORBIDDEN,
+            url,
+            MojException.Forbidden.class,
+            message);
+    }
+
+
     @SneakyThrows
     protected void assertErrorResponse(ResponseEntity<String> response,
                                        HttpStatus status,

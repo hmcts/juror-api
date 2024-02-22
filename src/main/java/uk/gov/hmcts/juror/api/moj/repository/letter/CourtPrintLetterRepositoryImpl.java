@@ -10,13 +10,17 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.QWelshCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.POSTPONED;
 
 @Component
 @SuppressWarnings("PMD.LawOfDemeter")
@@ -26,12 +30,10 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
     EntityManager entityManager;
 
     private static final QWelshCourtLocation WELSH_COURT_LOCATION = QWelshCourtLocation.welshCourtLocation;
-
     private static final QCourtLocation COURT_LOCATION = QCourtLocation.courtLocation;
-
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
-
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
+    private static final QJuror JUROR = QJuror.juror;
 
     @Override
     public Tuple retrievePrintInformation(String jurorNumber, CourtLetterType courtLetterType, boolean welsh,
@@ -40,12 +42,24 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
 
         // Add switch/if statements for separate letter types e.g. certificate of attendance
         switch (courtLetterType) {
-            case DEFERRAL_GRANTED -> {
+            case DEFERRAL_GRANTED, POSTPONED -> {
                 expressions.add(JUROR_POOL.deferralDate);
                 expressions.add(JUROR_POOL.deferralCode);
             }
+            case EXCUSAL_GRANTED -> {
+                expressions.add(JUROR.excusalCode);
+                expressions.add(JUROR.excusalDate);
+            }
+            case WITHDRAWAL -> {
+                expressions.add(JUROR.disqualifyDate);
+                expressions.add(JUROR.disqualifyCode);
+            }
             case DEFERRAL_REFUSED -> {
                 // no additional database properties to add to the to query expressions
+            }
+            case EXCUSAL_REFUSED -> {
+                expressions.add(JUROR_POOL.juror.excusalCode);
+                expressions.add(JUROR_POOL.juror.excusalDate);
             }
             default -> throw new MojException.NotImplemented("letter type not implemented", null);
         }
@@ -55,6 +69,7 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
             queryFactory
                 .select(expressions.toArray(new Expression<?>[0]))
                 .from(JUROR_POOL)
+                .join(JUROR).on(JUROR.eq(JUROR_POOL.juror))
                 .join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
                 .join(COURT_LOCATION).on(COURT_LOCATION.eq(POOL_REQUEST.courtLocation));
 
@@ -63,10 +78,15 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
         }
 
         switch (courtLetterType) {
-            case DEFERRAL_GRANTED, POSTPONED -> query
-                .where(JUROR_POOL.status.status.eq(IJurorStatus.DEFERRED))
-                .orderBy(JUROR_POOL.deferralDate.desc());
-            case DEFERRAL_REFUSED -> query
+            case DEFERRAL_GRANTED, POSTPONED -> {
+                if (POSTPONED.equals(courtLetterType)) {
+                    query.join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
+                        .where(JUROR_POOL.deferralCode.eq(ExcusalCodeEnum.P.getCode()));
+                }
+                query.where(JUROR_POOL.status.status.eq(IJurorStatus.DEFERRED))
+                    .orderBy(JUROR_POOL.deferralDate.desc());
+            }
+            case DEFERRAL_REFUSED, EXCUSAL_REFUSED -> query
                 .where(JUROR_POOL.isActive.eq(true));
             case EXCUSAL_GRANTED -> query
                 .where(JUROR_POOL.status.status.eq(IJurorStatus.EXCUSED))

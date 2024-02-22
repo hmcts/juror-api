@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
 import java.util.List;
 
+@SuppressWarnings("PMD.LawOfDemeter")
 public class PanelRepositoryImpl implements IPanelRepository {
     @PersistenceContext
     EntityManager entityManager;

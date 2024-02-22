@@ -35,6 +35,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDtoTest;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.UpdateAttendanceRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactEnquiryTypeListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
@@ -197,6 +198,64 @@ class JurorRecordServiceTest {
     private Clock clock;
     @InjectMocks
     JurorRecordServiceImpl jurorRecordService;
+
+    @Nested
+    @DisplayName("void editJurorsBankDetails(RequestBankDetailsDto)")
+    class editJurorsBankDetails {
+
+        @Test
+        void happyPath() {
+            String jurorNumber = "123456789";
+
+            RequestBankDetailsDto dto = new RequestBankDetailsDto();
+            dto.setJurorNumber(jurorNumber);
+            dto.setSortCode("115578");
+            dto.setAccountNumber("87654321");
+            dto.setAccountHolderName("Mr Fname Lname");
+
+            Juror juror = new Juror();
+            juror.setJurorNumber(jurorNumber);
+
+            when(jurorRepository.findById(jurorNumber)).thenReturn(Optional.of(juror));
+            jurorRecordService.editJurorsBankDetails(dto);
+
+            verify(jurorRepository, times(1)).findById(jurorNumber);
+            verify(jurorRepository, times(1)).save(juror);
+            verify(jurorHistoryService, times(1)).createEditBankSortCodeHistory(jurorNumber);
+            verify(jurorHistoryService, times(1)).createEditBankAccountNameHistory(jurorNumber);
+            verify(jurorHistoryService, times(1)).
+                createEditBankAccountNumberHistory(jurorNumber);
+
+            assertThat(juror.getBankAccountName()).isEqualTo(dto.getAccountHolderName());
+            assertThat(juror.getBankAccountNumber()).isEqualTo(dto.getAccountNumber());
+            assertThat(juror.getSortCode()).isEqualTo(dto.getSortCode());
+
+
+        }
+
+        @Test
+        void jurorNumberNotFound() {
+            String jurorNumber = "123456789";
+
+            RequestBankDetailsDto dto = new RequestBankDetailsDto();
+            dto.setJurorNumber(jurorNumber);
+            dto.setSortCode("115578");
+            dto.setAccountNumber("987654321");
+            dto.setAccountHolderName("Mr Fname Lname");
+
+            Juror juror = new Juror();
+
+            assertThatExceptionOfType(MojException.NotFound.class)
+                .isThrownBy(() -> jurorRecordService.editJurorsBankDetails(dto));
+
+            verify(jurorRepository, times(1)).findById(jurorNumber);
+            verify(jurorRepository, never()).save(juror);
+            verify(jurorHistoryService, never()).createEditBankSortCodeHistory(jurorNumber);
+            verify(jurorHistoryService, never()).createEditBankAccountNameHistory(jurorNumber);
+            verify(jurorHistoryService, never()).
+                createEditBankAccountNumberHistory(jurorNumber);
+        }
+    }
 
 
     @Test
@@ -1296,9 +1355,7 @@ class JurorRecordServiceTest {
         JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
 
         doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(jurorNumber);
-
-        assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
-            jurorRecordService.setJurorNotes(jurorNumber, notes, BUREAU_OWNER));
+        assertThatNoException().isThrownBy(() -> jurorRecordService.setJurorNotes(jurorNumber, notes, BUREAU_OWNER));
     }
 
     @Test
