@@ -26,7 +26,6 @@ import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotification;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotificationReceipt;
 import uk.gov.hmcts.juror.api.juror.service.JurorNotificationServiceImpl;
-import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.time.LocalDateTime;
@@ -40,15 +39,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "notify.disabled=false")
-class JurorCommsNotifyAdapterImplIntegrationTest extends ContainerTest {
-    private static final String DEV_FIRST_PERSON_TEMPLATE_ID = "ec33ab68-b917-4f25-918e-50d3291edef6"; // new
-    // 1st_straight_through
-    private static final String DEV_FIRST_PERSON_CY_TEMPLATE_ID = "aea4140b-2e2f-423b-8146-cd9615bfbc9e"; //
-    // 1st_straight_through_wel
-    private static final String DEV_THIRD_PARTY_TEMPLATE_ID = "1701b1b1-1b7f-4a7c-b320-41e731480d6f";  // new
-    // 3rd_straight_through
-    private static final String DEV_THIRD_PARTY_CY_TEMPLATE_ID = "591f6e20-bfb8-44d0-92ad-b6b8b8889f49"; //
-    // 3rd_straight_through_wel
+class JurorCommsNotifyAdapterImplTest {
+
     private static final String JUROR_NUM = "juror number";
     private static final String COURT_NAME = "PRESTON";
     private static final String VALUE_2 = "value2";

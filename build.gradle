@@ -373,7 +373,7 @@ pmd {
 
 test {
     if(System.getenv('BUILD_ID')){
-        failFast = true
+//TODO remove temp disable to see all errors        failFast = true
     }
 }
 
@@ -386,7 +386,7 @@ task integration(type: Test) {
     // This forces integration tests to always run if this task is run.
     outputs.upToDateWhen { false }
     if(System.getenv('BUILD_ID')){
-        failFast = true
+//TODO remove temp disable to see all errors        failFast = true
     }
 }
 
