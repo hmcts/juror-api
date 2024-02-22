@@ -24,10 +24,9 @@ import uk.gov.hmcts.juror.api.juror.notify.SmsNotification;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotificationReceipt;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -138,7 +137,7 @@ class JurorCommsNotifyAdapterImplTest {
             .build();
 
 
-        Map<String, String> payLoad = new HashMap<>();
+        Map<String, String> payLoad = new ConcurrentHashMap<>();
         payLoad.put(JUROR_NUM, jurorNUmber);
         payLoad.put("courtname", COURT_NAME);
         payLoad.put(SERVICES_START_DATE, VALUE_2);
@@ -197,7 +196,7 @@ class JurorCommsNotifyAdapterImplTest {
             .build();
 
 
-        Map<String, String> payLoad = new HashMap<>();
+        Map<String, String> payLoad = new ConcurrentHashMap<>();
         payLoad.put(JUROR_NUM, jurorNumber);
         payLoad.put("court", COURT_NAME);
         payLoad.put(SERVICES_START_DATE, "12 August 2019");
@@ -214,9 +213,6 @@ class JurorCommsNotifyAdapterImplTest {
         payLoad.put(FIRST_NAME_VAL, VALUE_2);
         payLoad.put(LAST_NAME_VAL, VALUE_2);
         payLoad.put(EMAIL_ADDRESS, email);
-
-
-        final LocalDateTime now = LocalDateTime.now();
 
         final NotifyTemplateMapping testNotifyTemplate = new NotifyTemplateMapping();
         testNotifyTemplate.setTemplateId(DEV_SENT_TO_COURT_EMAIL_ENG_TEMPLATE_ID);
@@ -269,7 +265,7 @@ class JurorCommsNotifyAdapterImplTest {
             .build();
 
 
-        Map<String, String> payLoad = new HashMap<>();
+        Map<String, String> payLoad = new ConcurrentHashMap<>();
         payLoad.put(JUROR_NUM, jurorNumber);
         payLoad.put("court", COURT_NAME);
         payLoad.put(SERVICES_START_DATE, "12 August 2019");
