@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
+import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,7 +26,7 @@ import static uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class JurorCommsNotifyTemplateTypeIntegrationTest {
+public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
 
     private static final boolean CY_LANG_TRUE = true;
     private static final boolean CY_LANG_FALSE = false;

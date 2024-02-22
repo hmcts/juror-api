@@ -22,6 +22,7 @@ import org.springframework.test.context.ActiveProfiles;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
+import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
 import java.sql.SQLException;
 import java.time.Instant;
@@ -40,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
     "PMD.TooManyMethods",
     "PMD.LawOfDemeter"
 })
-public abstract class AbstractIntegrationTest {
+public abstract class AbstractIntegrationTest extends ContainerTest {
 
     protected static final String BUREAU_USER = "BUREAU_USER";
     protected static final String COURT_USER = "COURT_USER";

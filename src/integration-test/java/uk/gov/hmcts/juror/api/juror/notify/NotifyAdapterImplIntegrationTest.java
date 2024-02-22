@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.bureau.domain.AppSettingRepository;
 import uk.gov.hmcts.juror.api.bureau.service.AppSettingService;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.service.JurorNotificationServiceImpl;
+import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.util.Optional;
@@ -28,7 +29,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "notify.disabled=false")
-public class NotifyAdapterImplIntegrationTest {
+public class NotifyAdapterImplIntegrationTest extends ContainerTest {
     private static final String DEV_FIRST_PERSON_TEMPLATE_ID = "ec33ab68-b917-4f25-918e-50d3291edef6"; // new
     // 1st_straight_through
     private static final String DEV_FIRST_PERSON_CY_TEMPLATE_ID = "aea4140b-2e2f-423b-8146-cd9615bfbc9e"; //

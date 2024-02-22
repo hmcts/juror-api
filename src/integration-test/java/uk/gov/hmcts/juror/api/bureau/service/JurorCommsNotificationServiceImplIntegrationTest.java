@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.Pool;
 import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
+import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class JurorCommsNotificationServiceImplIntegrationTest {
+public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerTest {
     private static final String UUID_REGEX = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f" +
         "]{12}$";
     private static final String NOTIFY_TEMPLATE_SQL = "SELECT TEMPLATE_ID FROM JUROR_DIGITAL.NOTIFY_TEMPLATE_MAPPING" +

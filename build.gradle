@@ -72,8 +72,8 @@ repositories {
 
 configurations {
     dev
-    integrationImplementation.extendsFrom testImplementation
-    integrationRuntimeOnly.extendsFrom testRuntime
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom runtimeOnly
 
     functionalTestImplementation.extendsFrom testImplementation
     functionalTestRuntimeOnly.extendsFrom runtimeOnly
@@ -104,8 +104,8 @@ dependencies {
     //implementation("com.oracle:ojdbc6:${oracleVersion}")
     //implementation("com.oracle.database.jdbc:ojdbc11:23.2.0.0")
     implementation group: 'org.postgresql', name: 'postgresql', version: "${postgresVersion}"
-    runtimeOnly "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
-    runtimeOnly "org.flywaydb:flyway-core:${flywayVersion}"
+    implementation "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
+    implementation "org.flywaydb:flyway-core:${flywayVersion}"
 
     implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     implementation 'javax.mail:mail:1.4.7'
@@ -159,6 +159,9 @@ dependencies {
 
     testImplementation('net.bytebuddy:byte-buddy:1.14.12')
     testImplementation('junit:junit:4.13.2')
+    testImplementation "org.testcontainers:testcontainers:1.19.5"
+    testImplementation "org.testcontainers:junit-jupiter:1.19.5"
+    testImplementation 'org.testcontainers:postgresql:1.19.5'
 
     // Validation
     testImplementation 'org.wiremock:wiremock:3.2.0'
@@ -236,9 +239,15 @@ tasks.withType(Test).configureEach() {
 
 // Flyway must align with application.yml
 flyway {
-    url = System.getenv("DB_URL")
-    user = System.getenv("DB_USERNAME")
-    password = System.getenv("DB_PASSWORD")
+    def dbHost = System.getenv("DB_HOST") ?: "localhost"
+    def dbPort = System.getenv("DB_PORT") ?: "5432"
+    def dbName = System.getenv("DB_NAME") ?: "juror"
+    def dbUserName = System.getenv("DB_USER_NAME") ?: "system"
+    def dbPassword = System.getenv("DB_PASSWORD") ?: "postgres"
+
+    url = "jdbc:postgresql://$dbHost:$dbPort/$dbName"
+    user = "$dbUserName"
+    password = "$dbPassword"
     schemas = ['juror','juror_digital','juror_digital_user','juror_dashboard','hk','juror_mod']
     defaultSchema = 'juror_mod'
     table = 'schema_history'
@@ -316,7 +325,7 @@ sourceSets {
         }
         resources.srcDir file('src/smokeTest/resources')
     }
-    integration {
+    integrationTest {
         java {
             compileClasspath += main.output + test.output + test.compileClasspath
             runtimeClasspath += main.output + test.output + test.runtimeClasspath
@@ -333,7 +342,7 @@ checkstyleMain {
 checkstyleTest {
     maxWarnings = 261
 }
-checkstyleIntegration{
+checkstyleIntegrationTest{
     maxWarnings = 1272
 }
 checkstyle {
@@ -342,7 +351,7 @@ checkstyle {
     getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
-pmdIntegration {
+pmdIntegrationTest {
     maxFailures = 801
 }
 pmdTest {
@@ -354,7 +363,7 @@ pmdMain {
 pmd {
     maxFailures = 0
     toolVersion = "6.55.0"
-    sourceSets = [sourceSets.main, sourceSets.test, sourceSets.integration
+    sourceSets = [sourceSets.main, sourceSets.test, sourceSets.integrationTest
     ]
     reportsDir = file("$project.buildDir/reports/pmd")
     // https://github.com/pmd/pmd/issues/876
@@ -372,8 +381,8 @@ task integration(type: Test) {
     useJUnitPlatform()
     description = 'Runs integration tests.'
     group = 'verification'
-    testClassesDirs = sourceSets.integration.output.classesDirs
-    classpath = sourceSets.integration.runtimeClasspath
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
     // This forces integration tests to always run if this task is run.
     outputs.upToDateWhen { false }
     if(System.getenv('BUILD_ID')){
@@ -446,11 +455,11 @@ check.dependsOn -= testSuite
 task runAllStyleChecks {
     dependsOn 'checkstyleMain'
     dependsOn 'checkstyleTest'
-    dependsOn 'checkstyleIntegration'
+    dependsOn 'checkstyleIntegrationTest'
 
     dependsOn 'pmdMain'
     dependsOn 'pmdTest'
-    dependsOn 'pmdIntegration'
+    dependsOn 'pmdIntegrationTest'
 }
 
 // Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
