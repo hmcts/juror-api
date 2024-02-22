@@ -129,7 +129,7 @@ class JurorCommsNotifyAdapterImplIntegrationTest extends ContainerTest {
     }
 
     @Test
-    @Timeout(9000)
+    @Timeout(9)
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     void sendCommsEmailServiceConfirmationEnglish() {
@@ -188,7 +188,7 @@ class JurorCommsNotifyAdapterImplIntegrationTest extends ContainerTest {
 
 
     @Test
-    @Timeout(9000)
+    @Timeout(9)
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     void sendCommsEmailSendToCourtEmailEnglish() {
@@ -258,7 +258,7 @@ class JurorCommsNotifyAdapterImplIntegrationTest extends ContainerTest {
 
 
     @Test
-    @Timeout(9000)
+    @Timeout(9)
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     void sendCommsSmsSendToCourtSmsEnglish() {

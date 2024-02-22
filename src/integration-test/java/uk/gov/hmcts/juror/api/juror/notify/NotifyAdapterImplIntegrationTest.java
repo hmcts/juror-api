@@ -84,7 +84,7 @@ class NotifyAdapterImplIntegrationTest extends ContainerTest {
     }
 
     @Test
-    @Timeout(9000)
+    @Timeout(9)
     @Sql("/db/truncate.sql")
     @Sql("/db/welsh_enabled.sql")
     @Sql("/db/notify_adapter_pool.sql")
@@ -131,7 +131,7 @@ class NotifyAdapterImplIntegrationTest extends ContainerTest {
     }
 
     @Test
-    @Timeout(9000)
+    @Timeout(9)
     @Sql("/db/truncate.sql")
     @Sql("/db/welsh_enabled.sql")
     @Sql("/db/notify_adapter_pool.sql")
@@ -184,7 +184,7 @@ class NotifyAdapterImplIntegrationTest extends ContainerTest {
     }
 
     @Test
-    @Timeout(9000)
+    @Timeout(9)
     @Sql("/db/truncate.sql")
     @Sql("/db/welsh_enabled.sql")
     @Sql("/db/notify_adapter_pool.sql")
@@ -236,7 +236,7 @@ class NotifyAdapterImplIntegrationTest extends ContainerTest {
     }
 
     @Test
-    @Timeout(9000)
+    @Timeout(9)
     @Sql("/db/truncate.sql")
     @Sql("/db/welsh_enabled.sql")
     @Sql("/db/notify_adapter_pool.sql")
@@ -293,7 +293,7 @@ class NotifyAdapterImplIntegrationTest extends ContainerTest {
     }
 
     @Test
-    @Timeout(9000)
+    @Timeout(9)
     @Sql("/db/truncate.sql")
     @Sql("/db/welsh_enabled.sql")
     @Sql("/db/notify_adapter_pool.sql")
