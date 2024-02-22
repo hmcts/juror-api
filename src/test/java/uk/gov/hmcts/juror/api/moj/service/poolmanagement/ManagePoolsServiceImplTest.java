@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.moj.service.poolmanagement;
 
 import com.querydsl.core.Tuple;
 import junit.framework.TestCase;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +29,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
@@ -220,11 +220,11 @@ public class ManagePoolsServiceImplTest extends TestCase {
         assertThat(stats.get(2, LocalDate.class))
             .as(stringLogMessage(), LocalDate.now())
             .isEqualTo(LocalDate.now());
-        verify(poolStatisticsRepository, Mockito.times(0))
-            .getStatisticsByCourtLocationAndPoolType(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-                Mockito.anyInt());
-        verify(poolStatisticsRepository, Mockito.times(1))
-            .getNilPools(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyInt());
+        verify(poolStatisticsRepository, times(0))
+            .getStatisticsByCourtLocationAndPoolType(anyString(), anyString(), anyString(),
+                anyInt());
+        verify(poolStatisticsRepository, times(1))
+            .getNilPools(anyString(), anyString(), anyString(), anyInt());
     }
 
     @Test
@@ -233,11 +233,11 @@ public class ManagePoolsServiceImplTest extends TestCase {
         SummoningProgressResponseDTO dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
 
-        verify(poolStatisticsRepository, Mockito.times(1))
+        verify(poolStatisticsRepository, times(1))
             .getStatisticsByCourtLocationAndPoolType(
-                Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyInt());
-        verify(poolStatisticsRepository, Mockito.times(1)).getNilPools(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyInt());
+                anyString(), anyString(), anyString(), anyInt());
+        verify(poolStatisticsRepository, times(1)).getNilPools(
+            anyString(), anyString(), anyString(), anyInt());
 
         assertThat(dto.getStatsByWeek().size())
             .as("Expected size to be eight")
@@ -266,7 +266,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
     @Test
     public void test_getPoolMonitoringStats_unhappyPath() {
         BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
-        Assertions.assertThatExceptionOfType(MojException.NotFound.class)
+        assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> managePoolsService.getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, "HGH"));
     }
 
@@ -317,7 +317,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
     @Test
     public void test_getPoolMonitoringStats_nilPoolsOnly() {
         BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
-        Mockito.doReturn(null).when(poolStatisticsRepository).getStatisticsByCourtLocationAndPoolType(
+        doReturn(null).when(poolStatisticsRepository).getStatisticsByCourtLocationAndPoolType(
             bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
         SummoningProgressResponseDTO dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
@@ -370,9 +370,9 @@ public class ManagePoolsServiceImplTest extends TestCase {
         tuples.add(t);
 
         t = Mockito.mock(Tuple.class);
-        Mockito.doReturn(0).when(t).get(1, int.class);
-        Mockito.doReturn(LocalDate.now()).when(t).get(2, LocalDate.class);
-        Mockito.doReturn(String.format("%s%02d", "4152306", 9)).when(t).get(0, String.class);
+        doReturn(0).when(t).get(1, int.class);
+        doReturn(LocalDate.now()).when(t).get(2, LocalDate.class);
+        doReturn(String.format("%s%02d", "4152306", 9)).when(t).get(0, String.class);
         tuples.add(t);
         return tuples;
     }

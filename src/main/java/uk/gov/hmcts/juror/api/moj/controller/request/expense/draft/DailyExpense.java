@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller.request.expense.draft;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -21,16 +22,16 @@ public class DailyExpense {
 
     @JsonProperty("date_of_expense")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @NotNull(groups = {AttendanceDay.class, NonAttendanceDay.class})
+    @NotNull(groups = {AttendanceDay.class, NonAttendanceDay.class, EditDay.class})
     private LocalDate dateOfExpense;
 
     @PoolNumber
     @JsonProperty("pool_number")
-    @NotBlank(groups = {AttendanceDay.class, NonAttendanceDay.class})
+    @NotBlank(groups = {AttendanceDay.class, NonAttendanceDay.class, EditDay.class})
     private String poolNumber;
 
     @JsonProperty("pay_cash")
-    @NotNull(groups = {AttendanceDay.class, NonAttendanceDay.class})
+    @NotNull(groups = {AttendanceDay.class, NonAttendanceDay.class, EditDay.class})
     private Boolean payCash;
 
     @JsonProperty("time")
@@ -53,6 +54,7 @@ public class DailyExpense {
 
     @JsonProperty("apply_to_days")
     @Valid
+    @Null(groups = {EditDay.class})
     private List<
         @Valid
         @NotNull
@@ -62,6 +64,7 @@ public class DailyExpense {
             groups = NonAttendanceDay.class)
             DailyExpenseApplyToAllDays> applyToAllDays;
 
+    @JsonIgnore
     public List<DailyExpenseApplyToAllDays> getApplyToAllDays() {
         if (applyToAllDays == null) {
             return List.of();
@@ -74,6 +77,10 @@ public class DailyExpense {
     }
 
     public interface NonAttendanceDay {
+
+    }
+
+    public interface EditDay {
 
     }
 }

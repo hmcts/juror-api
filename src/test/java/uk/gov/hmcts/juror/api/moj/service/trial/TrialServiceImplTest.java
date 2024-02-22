@@ -192,7 +192,7 @@ class TrialServiceImplTest {
     @Test
     void testGetTrialSummaryInactiveTrial() {
         Trial inactiveTrial = createTrial("T100000025");
-        inactiveTrial.setTrialEndDate(LocalDate.now());
+        inactiveTrial.setTrialEndDate(now());
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode("T100000025", "415"))
             .thenReturn(inactiveTrial);
 
@@ -216,7 +216,7 @@ class TrialServiceImplTest {
         assertThat(trialSummary.getCourtroomsDto().getRoomNumber()).isEqualTo("67");
         assertThat(trialSummary.getCourtroomsDto().getDescription()).isEqualTo("Courtroom 1");
         assertThat(trialSummary.getProtectedTrial()).isEqualTo(Boolean.TRUE);
-        assertThat(trialSummary.getTrialEndDate()).isEqualTo(LocalDate.now());
+        assertThat(trialSummary.getTrialEndDate()).isEqualTo(now());
         assertThat(trialSummary.getIsActive()).isEqualTo(Boolean.FALSE);
     }
 
@@ -665,7 +665,7 @@ class TrialServiceImplTest {
 
     private EndTrialDto createEndTrialDto() {
         EndTrialDto dto = new EndTrialDto();
-        dto.setTrialEndDate(LocalDate.now());
+        dto.setTrialEndDate(now());
         dto.setTrialNumber("T100000000");
         dto.setLocationCode("415");
         return dto;

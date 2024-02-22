@@ -1,4 +1,4 @@
-package uk.gov.hmcts.juror.api.moj.service.letter;
+package uk.gov.hmcts.juror.api.moj.service.letter.court;
 
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.PrintLettersRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDataResponseDto;

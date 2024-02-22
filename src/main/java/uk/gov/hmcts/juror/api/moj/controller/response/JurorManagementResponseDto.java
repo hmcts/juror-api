@@ -16,18 +16,21 @@ import java.util.List;
 public class JurorManagementResponseDto implements Serializable {
 
     @JsonProperty("availableForMove")
-    @Schema(name = "Available For Move(transfer/reassign)", description = "List of juror numbers who pass validation and can be "
-        + "moved")
+    @Schema(name = "Available For Move(transfer/reassign)", description =
+        "List of juror numbers who pass validation and can be "
+            + "moved")
     private List<String> availableForMove;
 
     @JsonProperty("unavailableForMove")
-    @Schema(name = "Unavailable For Move(transfer/reassign)", description = "List of juror numbers who failed validation and cannot "
-        + "be moved")
+    @Schema(name = "Unavailable For Move(transfer/reassign)", description =
+        "List of juror numbers who failed validation and cannot "
+            + "be moved")
     private List<ValidationFailure> unavailableForMove;
 
     @Setter
     @Getter
-    @Schema(description = "Breakdown of pool members who failed initial validation and are not available for Move(transfer/reassign)")
+    @Schema(description = "Breakdown of pool members who failed initial validation and are not available for Move"
+        + "(transfer/reassign)")
     public static class ValidationFailure implements Serializable {
 
         @JsonProperty("jurorNumber")
@@ -35,7 +38,8 @@ public class JurorManagementResponseDto implements Serializable {
         private String jurorNumber;
 
         @JsonProperty("failureReason")
-        @Schema(name = "Failure Reason", description = "Description of why this juror failed validations Move(transfer/reassign)")
+        @Schema(name = "Failure Reason", description = "Description of why this juror failed validations Move"
+            + "(transfer/reassign)")
         private String failureReason;
 
     }

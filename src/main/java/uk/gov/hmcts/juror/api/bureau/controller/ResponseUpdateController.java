@@ -128,7 +128,8 @@ public class ResponseUpdateController {
         validateJurorNumberPathVariable(jurorId);
 
         final BureauJWTPayload jwtPayload = (BureauJWTPayload) jwt.getPrincipal();
-        responseUpdateService.updateJurorDetailsFirstPerson(firstPersonJurorDetailsDto, jurorId, jwtPayload.getLogin());
+        responseUpdateService.updateJurorDetailsFirstPerson(firstPersonJurorDetailsDto, jurorId, jwtPayload
+            .getLogin());
         log.info("Updated first person juror details section for juror {}", jurorId);
         return ResponseEntity.noContent().build();
     }

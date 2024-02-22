@@ -10,7 +10,9 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
@@ -21,6 +23,8 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -28,6 +32,8 @@ import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -39,20 +45,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.APPEARANCE_RECORD_BEFORE_SERVICE_START_DATE;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.ATTENDANCE_RECORD_ALREADY_EXISTS;
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.isEmptyOrNull;
 import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkOwnershipForCurrentUser;
 import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.getActiveJurorRecord;
 import static uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils.unboxOptionalRecord;
 
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.GodClass"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.GodClass", "PMD.CyclomaticComplexity",
+    "PMD.LawOfDemeter"})
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class JurorAppearanceServiceImpl implements JurorAppearanceService {
+    private final PoolRequestRepository poolRequestRepository;
     private final JurorPoolRepository jurorPoolRepository;
     private final AppearanceRepository appearanceRepository;
     private final CourtLocationRepository courtLocationRepository;
     private final JurorRepository jurorRepository;
+    private final JurorExpenseService jurorExpenseService;
 
     @Override
     @Transactional
@@ -117,32 +128,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         }
 
         return appearanceDataList.get(0);
-    }
-
-    private static void validateAppearanceStage(String jurorNumber, AppearanceStage appearanceStage,
-                                                Appearance appearance) {
-        if (appearance.getAppearanceStage().equals(AppearanceStage.CHECKED_IN) && appearanceStage.equals(
-            AppearanceStage.CHECKED_IN)) {
-            throw new MojException.BadRequest("Juror " + jurorNumber + " has already checked in", null);
-        } else if (appearance.getAppearanceStage().equals(AppearanceStage.CHECKED_OUT)) {
-            throw new MojException.BadRequest("Juror " + jurorNumber + " has already checked out", null);
-        } else if (appearance.getAppearanceStage().equals(AppearanceStage.APPEARANCE_CONFIRMED)) {
-            throw new MojException.BadRequest("Juror " + jurorNumber + " has already confirmed their attendance", null);
-        }
-    }
-
-    private void validateTimeAndAppearanceStage(LocalTime checkInTime, LocalTime checkOutTime,
-                                                AppearanceStage appearanceStage) {
-        if (appearanceStage == AppearanceStage.CHECKED_IN) {
-            validateCheckInNotNull(checkInTime);
-        } else if (appearanceStage == AppearanceStage.CHECKED_OUT) {
-            validateCheckOutNotNull(checkOutTime);
-        } else {
-            throw new MojException.BadRequest("Invalid appearance stage and time combination supplied", null);
-        }
-
-        validateBothCheckInAndOutTimeNotNull(checkInTime, checkOutTime);
-        validateBothCheckInAndOutTimeNotSet(checkInTime, checkOutTime);
     }
 
     @Override
@@ -219,18 +204,48 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     @Transactional
+    @SuppressWarnings("PMD.LawOfDemeter")
+    public String updateAttendanceDate(UpdateAttendanceDateDto request) {
+        log.trace(String.format("Entered method: updateAttendanceDate(). There are %s jurors to update",
+            request.getJurorNumbers().size()));
+
+        BureauJWTPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        List<JurorPool> updatedJurorPools = new ArrayList<>();
+
+        for (String jurorNumber : request.getJurorNumbers()) {
+            JurorPool jurorPool = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumberAndIsActive(
+                payload.getOwner(), jurorNumber, request.getPoolNumber(), Boolean.TRUE);
+
+            if (jurorPool == null) {
+                log.trace(String.format("In method: updateAttendanceDate().  No juror pool found matching criteria "
+                    + "for juror %s.  Attendance date not updated", jurorNumber));
+            } else if (jurorPool.getStatus().getStatus() != IJurorStatus.RESPONDED
+                && jurorPool.getStatus().getStatus() != IJurorStatus.PANEL
+                && jurorPool.getStatus().getStatus() != IJurorStatus.JUROR) {
+                log.trace(String.format("In method: updateAttendanceDate(). Status is %s for juror %s. "
+                    + "Attendance date not updated", jurorPool.getStatus().getStatus(), jurorNumber));
+            } else {
+                // update the juror next (attendance) date and clear on call flag in case it is set
+                jurorPool.setNextDate(request.getAttendanceDate());
+                jurorPool.setOnCall(Boolean.FALSE);
+
+                updatedJurorPools.add(jurorPool);
+            }
+        }
+
+        if (!updatedJurorPools.isEmpty()) {
+            jurorPoolRepository.saveAllAndFlush(updatedJurorPools);
+        }
+
+        String message = String.format("Attendance date updated for %s juror(s)", updatedJurorPools.size());
+        log.trace("Exiting method: updateAttendanceDate(). " + message);
+        return message;
+    }
+
+    @Override
+    @Transactional
     public AttendanceDetailsResponse deleteAttendance(BureauJWTPayload payload, UpdateAttendanceDto request) {
-        final UpdateAttendanceDto.CommonData commonData = request.getCommonData();
-
-        if (request.getJuror().size() > 1 ^ commonData.getSingleJuror().equals(Boolean.FALSE)) {
-            throw new MojException.BadRequest("Cannot delete multiple juror attendance records",
-                null);
-        }
-
-        if (!commonData.getStatus().equals(UpdateAttendanceStatus.DELETE)) {
-            throw new MojException.BadRequest("Cannot delete attendance records for status "
-                + commonData.getStatus(), null);
-        }
+        final UpdateAttendanceDto.CommonData commonData = validateDeleteRequest(request);
 
         // ensure only a single attendance record is deleted per api call
         validateTheNumberOfJurorsToUpdate(request);
@@ -303,6 +318,124 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         return new JurorsToDismissResponseDto(jurorsToDismissResponseData);
     }
 
+    @Override
+    @Transactional
+    public void addNonAttendance(JurorNonAttendanceDto request) {
+
+        // validate the court user has access to the juror and pool
+        BureauJWTPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        final String locationCode = request.getLocationCode();
+        final LocalDate nonAttendanceDate = request.getNonAttendanceDate();
+
+        log.debug(String.format("User %s is adding a non attendance day for juror %s", payload.getLogin(),
+            request.getJurorNumber()));
+
+        CourtLocation courtLocation = courtLocationRepository.findByLocCode(locationCode).orElseThrow(
+            () -> new MojException.NotFound("Court location " + locationCode + " not found", null)
+        );
+
+        CourtLocationUtils.validateAccessToCourtLocation(locationCode, payload.getOwner(), courtLocationRepository);
+        JurorPool jurorPool = validateJurorPoolAndStartDate(request, nonAttendanceDate);
+        checkExistingAttendance(request, nonAttendanceDate);
+
+        // create a new Appearance record for juror
+        Appearance appearance = Appearance.builder()
+            .jurorNumber(request.getJurorNumber())
+            .attendanceDate(nonAttendanceDate)
+            .courtLocation(courtLocation)
+            .poolNumber(request.getPoolNumber())
+            .nonAttendanceDay(Boolean.TRUE)
+            .attendanceType(AttendanceType.NON_ATTENDANCE)
+            .appearanceStage(AppearanceStage.EXPENSE_ENTERED)
+            .payAttendanceType(PayAttendanceType.FULL_DAY)
+            .isDraftExpense(true)
+            .createdBy(payload.getLogin())
+            .build();
+
+        jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
+
+        appearanceRepository.saveAndFlush(appearance);
+
+        log.debug("Completed adding a non attendance day for juror " + request.getJurorNumber());
+    }
+
+    private void checkExistingAttendance(JurorNonAttendanceDto request, LocalDate nonAttendanceDate) {
+        // check if there is already an appearance record for the juror for the non-attendance date
+        final String jurorNumber = request.getJurorNumber();
+        appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber, request.getPoolNumber(),
+                nonAttendanceDate)
+            .ifPresent(appearance -> {
+                if (appearance.getAppearanceStage() != null) {
+                    throw new MojException.BusinessRuleViolation("Juror " + jurorNumber + " already has an "
+                        + "attendance record for the date " + nonAttendanceDate, ATTENDANCE_RECORD_ALREADY_EXISTS);
+                }
+
+                if (appearance.getNoShow() != null && appearance.getNoShow()) {
+                    // this record will get replaced with the new non-attendance record
+                    appearanceRepository.delete(appearance);
+                    log.info("Deleted existing no-show record for juror " + jurorNumber + " on date "
+                        + nonAttendanceDate);
+                }
+            });
+    }
+
+    private JurorPool validateJurorPoolAndStartDate(JurorNonAttendanceDto request, LocalDate nonAttendanceDate) {
+        JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(request.getJurorNumber(),
+            request.getPoolNumber());
+
+        if (jurorPool == null) {
+            throw new MojException.NotFound("Juror not found in Pool " + request.getPoolNumber(), null);
+        }
+
+        if (jurorPool.getPool().getReturnDate().isAfter(nonAttendanceDate)) {
+            throw new MojException.BusinessRuleViolation(
+                "Non-attendance date is before the service start date of the pool",
+                APPEARANCE_RECORD_BEFORE_SERVICE_START_DATE);
+        }
+        return jurorPool;
+    }
+
+    private static void validateAppearanceStage(String jurorNumber, AppearanceStage appearanceStage,
+                                                Appearance appearance) {
+        if (appearance.getAppearanceStage().equals(AppearanceStage.CHECKED_IN) && appearanceStage.equals(
+            AppearanceStage.CHECKED_IN)) {
+            throw new MojException.BadRequest("Juror " + jurorNumber + " has already checked in", null);
+        } else if (appearance.getAppearanceStage().equals(AppearanceStage.CHECKED_OUT)) {
+            throw new MojException.BadRequest("Juror " + jurorNumber + " has already checked out", null);
+        } else if (appearance.getAppearanceStage().equals(AppearanceStage.APPEARANCE_CONFIRMED)) {
+            throw new MojException.BadRequest("Juror " + jurorNumber + " has already confirmed their attendance", null);
+        }
+    }
+
+    private void validateTimeAndAppearanceStage(LocalTime checkInTime, LocalTime checkOutTime,
+                                                AppearanceStage appearanceStage) {
+        if (appearanceStage == AppearanceStage.CHECKED_IN) {
+            validateCheckInNotNull(checkInTime);
+        } else if (appearanceStage == AppearanceStage.CHECKED_OUT) {
+            validateCheckOutNotNull(checkOutTime);
+        } else {
+            throw new MojException.BadRequest("Invalid appearance stage and time combination supplied", null);
+        }
+
+        validateBothCheckInAndOutTimeNotNull(checkInTime, checkOutTime);
+        validateBothCheckInAndOutTimeNotSet(checkInTime, checkOutTime);
+    }
+
+    private static UpdateAttendanceDto.CommonData validateDeleteRequest(UpdateAttendanceDto request) {
+        final UpdateAttendanceDto.CommonData commonData = request.getCommonData();
+
+        if (request.getJuror().size() > 1 ^ commonData.getSingleJuror().equals(Boolean.FALSE)) {
+            throw new MojException.BadRequest("Cannot delete multiple juror attendance records",
+                null);
+        }
+
+        if (!commonData.getStatus().equals(UpdateAttendanceStatus.DELETE)) {
+            throw new MojException.BadRequest("Cannot delete attendance records for status "
+                + commonData.getStatus(), null);
+        }
+        return commonData;
+    }
+
     private List<JurorsToDismissResponseDto.JurorsToDismissData> buildJurorsToDismissResponse(
         List<Tuple> jurorsToDismissTuples) {
         List<JurorsToDismissResponseDto.JurorsToDismissData> jurorsToDismissResponseData = new ArrayList<>();
@@ -373,8 +506,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     private Appearance retrieveExistingAppearanceDetails(String locCode,
                                                          String jurorNumber, LocalDate attendanceDate) {
-        CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setLocCode(locCode);
+        CourtLocation courtLocation = courtLocationRepository.findByLocCode(locCode)
+            .orElseThrow(() -> new MojException.NotFound("Court location not found", null));
 
         return unboxOptionalRecord(appearanceRepository
             .findById(new AppearanceId(jurorNumber, attendanceDate, courtLocation)), jurorNumber);
@@ -413,8 +546,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         // 2. checked-in jurors - update and save records
         List<AppearanceId> appearanceIds = new ArrayList<>();
 
-        CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setLocCode(updateCommonData.getLocationCode());
+        CourtLocation courtLocation = courtLocationRepository.findByLocCode(updateCommonData.getLocationCode())
+            .orElseThrow(() -> new MojException.NotFound("Court location not found", null));
 
         checkedInJurors.forEach(tuple -> {
             // build array of appearanceIds
@@ -426,6 +559,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         List<Appearance> checkedInAttendances = appearanceRepository.findAllById(appearanceIds);
         checkedInAttendances.forEach(appearance -> appearance.setAppearanceStage(AppearanceStage.APPEARANCE_CONFIRMED));
+
+        jurorExpenseService.applyDefaultExpenses(checkedInAttendances);
 
         appearanceRepository.saveAllAndFlush(checkedInAttendances);
 
@@ -621,11 +756,18 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     private void validateJuror(String owner, String jurorNumber) {
         // validate the juror record exists, and user has ownership of the record
-        Juror activeJurorRecord = getActiveJurorRecord(jurorRepository, jurorNumber);
-        checkOwnershipForCurrentUser(activeJurorRecord, owner);
+        Juror activeJurorRecord = validateOwnership(owner, jurorNumber);
 
         // check juror status to make sure they can be checked in or out
         validateJurorStatus(activeJurorRecord);
+    }
+
+    private Juror validateOwnership(String owner, String jurorNumber) {
+        // validate the juror record exists, and user has ownership of the record
+        Juror activeJurorRecord = getActiveJurorRecord(jurorRepository, jurorNumber);
+        checkOwnershipForCurrentUser(activeJurorRecord, owner);
+
+        return activeJurorRecord;
     }
 
     private void validateBothCheckInAndOutTimeNotNull(LocalTime checkInTime, LocalTime checkOutTime) {

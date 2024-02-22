@@ -1313,9 +1313,9 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
-        List<JurorPaperResponseDto.CJSEmployment> cjsEmploymentList = new ArrayList<>();
+        List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
         // create a different CJS employer to the one in the database
-        JurorPaperResponseDto.CJSEmployment cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        JurorPaperResponseDto.CjsEmployment cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer("National Crime Agency")
             .cjsEmployerDetails("Details of employment at NCA")
             .build();
@@ -1346,9 +1346,9 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
 
-        List<JurorPaperResponseDto.CJSEmployment> cjsEmploymentList = new ArrayList<>();
+        List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
         // create a different CJS employer to the one in the database
-        JurorPaperResponseDto.CJSEmployment cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        JurorPaperResponseDto.CjsEmployment cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer("National Crime Agency")
             .cjsEmployerDetails("Details of employment at NCA")
             .build();
@@ -1379,9 +1379,9 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
-        List<JurorPaperResponseDto.CJSEmployment> cjsEmploymentList = new ArrayList<>();
+        List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
         // create a different CJS employer to the one in the database
-        JurorPaperResponseDto.CJSEmployment cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        JurorPaperResponseDto.CjsEmployment cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer("National Crime Agency")
             .cjsEmployerDetails("Details of employment at NCA")
             .build();
@@ -1404,9 +1404,9 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
 
-        List<JurorPaperResponseDto.CJSEmployment> cjsEmploymentList = new ArrayList<>();
+        List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
         // create a different CJS employer to the one in the database
-        JurorPaperResponseDto.CJSEmployment cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        JurorPaperResponseDto.CjsEmployment cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer("National Crime Agency")
             .cjsEmployerDetails("Details of employment at NCA")
             .build();
@@ -1429,9 +1429,9 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
 
-        List<JurorPaperResponseDto.CJSEmployment> cjsEmploymentList = new ArrayList<>();
+        List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
         // create a different CJS employer to the one in the database
-        JurorPaperResponseDto.CJSEmployment cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        JurorPaperResponseDto.CjsEmployment cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer("National Crime Agency")
             .cjsEmployerDetails("Details of employment at NCA")
             .build();
@@ -1453,9 +1453,9 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
-        List<JurorPaperResponseDto.CJSEmployment> cjsEmploymentList = new ArrayList<>();
+        List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
 
-        JurorPaperResponseDto.CJSEmployment cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        JurorPaperResponseDto.CjsEmployment cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer("!£$%^&*()_+")
             .cjsEmployerDetails("Details of an invalid CJS employment.")
             .build();
@@ -1478,14 +1478,14 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
-        List<JurorPaperResponseDto.CJSEmployment> cjsEmploymentList = new ArrayList<>();
+        List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
 
-        JurorPaperResponseDto.CJSEmployment cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        JurorPaperResponseDto.CjsEmployment cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer("Police Force")
             .cjsEmployerDetails("Some test details")
             .build();
         cjsEmploymentList.add(cjsEmployment);
-        cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer("Police Force")
             .cjsEmployerDetails("Some test details")
             .build();
@@ -1995,7 +1995,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             jurorPaperResponseCjsRepository.findByJurorNumber(requestDto.getJurorNumber());
         if (cjsEmployments.size() == 1) {
             JurorResponseCjsEmployment actualCjsEmployment = cjsEmployments.get(0);
-            JurorPaperResponseDto.CJSEmployment expectedCjsEmployment = requestDto.getCjsEmployment().get(0);
+            JurorPaperResponseDto.CjsEmployment expectedCjsEmployment = requestDto.getCjsEmployment().get(0);
             assertThat(actualCjsEmployment.getCjsEmployer()).isEqualTo(expectedCjsEmployment.getCjsEmployer());
             assertThat(actualCjsEmployment.getCjsEmployerDetails()).isEqualTo(
                 expectedCjsEmployment.getCjsEmployerDetails());
@@ -2050,8 +2050,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         jurorPaperResponseDto.setAddressPostcode("CH1 2AN");
     }
 
-    private JurorPaperResponseDto.CJSEmployment buildCjsEmployment(String employerName) {
-        return JurorPaperResponseDto.CJSEmployment.builder()
+    private JurorPaperResponseDto.CjsEmployment buildCjsEmployment(String employerName) {
+        return JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer(employerName)
             .cjsEmployerDetails("Some test details")
             .build();

@@ -633,7 +633,7 @@ public class JurorPaperResponseDtoTest {
     @Test
     public void test_setCjsEmployment_valid() {
         JurorPaperResponseDto response = createBasicResponse();
-        JurorPaperResponseDto.CJSEmployment cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        JurorPaperResponseDto.CjsEmployment cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer("Police")
             .cjsEmployerDetails("Some test details")
             .build();
@@ -645,25 +645,25 @@ public class JurorPaperResponseDtoTest {
 
     @Test
     public void test_cjsEmployment_valid() {
-        JurorPaperResponseDto.CJSEmployment cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        JurorPaperResponseDto.CjsEmployment cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer("Police")
             .cjsEmployerDetails("Some test details")
             .build();
 
-        Set<ConstraintViolation<JurorPaperResponseDto.CJSEmployment>> violations = validator.validate(cjsEmployment);
+        Set<ConstraintViolation<JurorPaperResponseDto.CjsEmployment>> violations = validator.validate(cjsEmployment);
         assertThat(violations).as("No validation violations expected").isEmpty();
     }
 
     @Test
     public void test_cjsEmployment_invalidEmployer() {
-        JurorPaperResponseDto.CJSEmployment cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        JurorPaperResponseDto.CjsEmployment cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployerDetails("Some test details")
             .build();
 
-        Set<ConstraintViolation<JurorPaperResponseDto.CJSEmployment>> violations = validator.validate(cjsEmployment);
+        Set<ConstraintViolation<JurorPaperResponseDto.CjsEmployment>> violations = validator.validate(cjsEmployment);
         assertThat(violations).as("Validation violation expected (cjs employer is null)").isNotEmpty();
 
-        ConstraintViolation<JurorPaperResponseDto.CJSEmployment> constraintViolation =
+        ConstraintViolation<JurorPaperResponseDto.CjsEmployment> constraintViolation =
             violations.stream().findFirst().get();
         assertThat(constraintViolation.getPropertyPath().toString())
             .as("Expect the CJS Employer property to be the cause of the constraint violation")

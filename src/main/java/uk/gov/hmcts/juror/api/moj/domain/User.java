@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.domain.lisener.UserListener;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
@@ -108,6 +109,10 @@ public class User implements Serializable {
     @Deprecated(forRemoval = true)
     private Boolean loginEnabledYn;
 
+    @Column(name = "approval_limit")
+    private BigDecimal approvalLimit;
+    @Column(name = "can_approve")
+    private boolean canApprove;
 
     public Boolean isTeamLeader() {
         return level == SecurityUtil.TEAM_LEADER_LEVEL;

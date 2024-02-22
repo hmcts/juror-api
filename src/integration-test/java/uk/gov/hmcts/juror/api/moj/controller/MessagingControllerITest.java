@@ -2042,7 +2042,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 );
                 this.tests.add(DynamicContainer.dynamicContainer(MessageType.SENTENCING_INVITE_COURT.name(),
                     List.of(
-                        DynamicTest.dynamicTest("English Court - Email",
+                        DynamicTest.dynamicTest(MessageType.SENTENCING_INVITE_COURT+" English Court - Email",
                             () -> addTest(MessageType.SENTENCING_INVITE_COURT,
                                 TestData.ENGLISH_LOC_CODE,
                                 Map.of(
@@ -2086,7 +2086,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                     .build()
                             )
                         ),
-                        DynamicTest.dynamicTest("Welsh Court - Email",
+                        DynamicTest.dynamicTest(MessageType.SENTENCING_INVITE_COURT+" Welsh Court - Email",
                             () -> addTest(MessageType.SENTENCING_INVITE_COURT,
                                 TestData.WELSH_LOC_CODE,
                                 Map.of(
@@ -2134,7 +2134,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
                 this.tests.add(DynamicContainer.dynamicContainer(MessageType.SENTENCING_DATE_COURT.name(),
                     List.of(
-                        DynamicTest.dynamicTest("English Court - Email",
+                        DynamicTest.dynamicTest(MessageType.SENTENCING_DATE_COURT + " English Court - Email",
                             () -> addTest(MessageType.SENTENCING_DATE_COURT,
                                 TestData.ENGLISH_LOC_CODE,
                                 Map.of(
@@ -2168,7 +2168,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                     .welshMessage(null)
                                     .build())
                         ),
-                        DynamicTest.dynamicTest("Welsh Court - Email",
+                        DynamicTest.dynamicTest(MessageType.SENTENCING_DATE_COURT + " Welsh Court - Email",
                             () -> addTest(MessageType.SENTENCING_DATE_COURT,
                                 TestData.WELSH_LOC_CODE,
                                 Map.of(
@@ -2333,7 +2333,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
                 if (supportsEmail) {
                     dynamicTests.add(
-                        DynamicTest.dynamicTest("English Court - Email",
+                        DynamicTest.dynamicTest(messageType + " English Court - Email",
                             () -> addTest(messageType,
                                 TestData.ENGLISH_LOC_CODE,
                                 englishMessage,
@@ -2346,7 +2346,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         )
                     );
                     dynamicTests.add(
-                        DynamicTest.dynamicTest("Welsh Court - Email",
+                        DynamicTest.dynamicTest(messageType + " Welsh Court - Email",
                             () -> addTest(messageType,
                                 TestData.WELSH_LOC_CODE,
                                 welshEnglishMessage,
@@ -2361,7 +2361,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 }
                 if (supportsSms) {
                     dynamicTests.add(
-                        DynamicTest.dynamicTest("English Court - SMS",
+                        DynamicTest.dynamicTest(messageType + " English Court - SMS",
                             () -> addTest(messageType,
                                 TestData.ENGLISH_LOC_CODE,
                                 englishMessage,
@@ -2374,7 +2374,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         )
                     );
                     dynamicTests.add(
-                        DynamicTest.dynamicTest("Welsh Court - SMS",
+                        DynamicTest.dynamicTest(messageType + " Welsh Court - SMS",
                             () -> addTest(messageType,
                                 TestData.WELSH_LOC_CODE,
                                 welshEnglishMessage,
@@ -2389,7 +2389,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 }
                 if (supportsEmail && supportsSms) {
                     dynamicTests.add(
-                        DynamicTest.dynamicTest("English Court - Email & SMS",
+                        DynamicTest.dynamicTest(messageType + " English Court - Email & SMS",
                             () -> addTest(messageType,
                                 TestData.ENGLISH_LOC_CODE,
                                 englishMessage,
@@ -2402,7 +2402,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         )
                     );
                     dynamicTests.add(
-                        DynamicTest.dynamicTest("Welsh Court - Email & SMS",
+                        DynamicTest.dynamicTest(messageType + " Welsh Court - Email & SMS",
                             () -> addTest(messageType,
                                 TestData.WELSH_LOC_CODE,
                                 welshEnglishMessage,

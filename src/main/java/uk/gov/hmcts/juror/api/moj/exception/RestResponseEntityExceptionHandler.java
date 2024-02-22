@@ -4,6 +4,8 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.postgresql.util.PSQLException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -70,7 +72,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler({ConstraintViolationException.class})
+    @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> handleValidationException(ValidationException ex, WebRequest request) {
         Map<String, Object> body = createGenericErrorResponseBody(ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
@@ -137,7 +139,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         return new ResponseEntity<>(body, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    @ExceptionHandler(value = {SQLException.class,
+    @ExceptionHandler(value = {SQLException.class, PSQLException.class,
         DateException.DateParseException.class,
         JurorPaperResponseException.UnableToFindJurorRecord.class,
         JurorRecordException.MultipleJurorRecordsFound.class,
@@ -146,6 +148,13 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     })
     public ResponseEntity<Object> handleInternalServerError(Throwable ex, WebRequest request) {
         Map<String, Object> body = createGenericErrorResponseBody(ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Object> handleDataIntegrityViolationException(RuntimeException ex, WebRequest request) {
+        Map<String, Object> body = createGenericErrorResponseBody("Data Integrity Violation - please refer to the "
+            + "log files");
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

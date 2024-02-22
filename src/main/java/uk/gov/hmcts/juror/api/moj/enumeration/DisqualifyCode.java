@@ -24,4 +24,13 @@ public enum DisqualifyCode {
     public static String getDescription(DisqualifyCode code) {
         return code.description;
     }
+
+    public static DisqualifyCode getDisqualifyCode(String code) {
+        for (DisqualifyCode disqualifyCode : DisqualifyCode.values()) {
+            if (disqualifyCode.getCode().equals(code)) {
+                return disqualifyCode;
+            }
+        }
+        return null;
+    }
 }

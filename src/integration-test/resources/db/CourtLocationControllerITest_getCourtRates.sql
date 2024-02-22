@@ -1,6 +1,4 @@
-delete
-from juror_mod.court_location
-where loc_code in ('001', '002', '003');
+delete from juror_mod.court_location where loc_code in ('001', '002', '003');
 
 INSERT into juror_mod.court_location
 (loc_code,
@@ -15,8 +13,8 @@ INSERT into juror_mod.court_location
  limit_financial_loss_full_day,
  limit_financial_loss_half_day_long_trial,
  limit_financial_loss_full_day_long_trial,
- rate_substance_standard,
- rate_substance_long_day)
+ rate_subsistence_standard,
+ rate_subsistence_long_day)
 values ('001', '2023-01-05', 1.01, 2.02, 3.03, 4.04, 5.05, 6.06, 7.07, 8.08, 9.09, 10.010, 11.011, 12.012),
        ('002', '2023-05-06', 3.01, 2.02, 3.03, 4.04, 5.05, 6.06, 7.07, 8.08, 9.09, 10.010, 11.011, 12.012),
        ('003', '2023-09-06', 3.01, 2.02, 3.03, 4.04, 5.05, 6.06, 7.07, 8.08, 9.09, 10.010, 11.011, 12.012)
@@ -49,8 +47,8 @@ INSERT into juror_mod.court_location_audit
  limit_financial_loss_full_day,
  limit_financial_loss_half_day_long_trial,
  limit_financial_loss_full_day_long_trial,
- rate_substance_standard,
- rate_substance_long_day,
+ rate_subsistence_standard,
+ rate_subsistence_long_day,
  public_transport_soft_limit)
 values (1, 1, '001', '2023-01-05', 1.01, 2.02, 3.03, 4.04, 5.05, 6.06, 7.07, 8.08, 9.09, 10.010, 11.011, 12.012,
         13.013),

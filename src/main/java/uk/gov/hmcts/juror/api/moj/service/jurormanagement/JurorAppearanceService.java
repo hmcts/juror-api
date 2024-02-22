@@ -3,7 +3,9 @@ package uk.gov.hmcts.juror.api.moj.service.jurormanagement;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
@@ -24,7 +26,11 @@ public interface JurorAppearanceService {
 
     AttendanceDetailsResponse updateAttendance(BureauJWTPayload payload, UpdateAttendanceDto request);
 
+    String updateAttendanceDate(UpdateAttendanceDateDto request);
+
     AttendanceDetailsResponse deleteAttendance(BureauJWTPayload payload, UpdateAttendanceDto request);
 
     JurorsToDismissResponseDto retrieveJurorsToDismiss(JurorsToDismissRequestDto request);
+
+    void addNonAttendance(JurorNonAttendanceDto request);
 }

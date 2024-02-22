@@ -43,8 +43,7 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest {
     public void enumValues() {
         assertThat(JurorCommsNotifyTemplateType.values())
             .hasSize(4)
-            .containsOnly(LETTER_COMMS, SENT_TO_COURT, SU_SENT_TO_COURT, COMMS)
-        ;
+            .containsOnly(LETTER_COMMS, SENT_TO_COURT, SU_SENT_TO_COURT, COMMS);
     }
 
     @Test

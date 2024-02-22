@@ -39,12 +39,12 @@ public class CourtLocationServiceImpl implements CourtLocationService {
 
 
     /**
-     * Retrieves court location records from the database (using the JWT to filter out court locations the current user
-     * does not own or have access to) and populates a lightweight DTO of selected properties for each record.
-     *
-     * @return a Data Transfer Object containing a list of court locations with a selection of court location properties
-     * filtered based on the currently logged-in user's access
-     */
+    * Retrieves court location records from the database (using the JWT to filter out court locations the current user
+    * does not own or have access to) and populates a lightweight DTO of selected properties for each record.
+    *
+    * @return a Data Transfer Object containing a list of court locations with a selection of court location properties
+    *       filtered based on the currently logged-in user's access.
+    */
     @Override
     @Transactional(readOnly = true)
     public CourtLocationListDto buildCourtLocationDataResponse(BureauJWTPayload payload) {
@@ -65,7 +65,7 @@ public class CourtLocationServiceImpl implements CourtLocationService {
      * access/permissions.
      *
      * @return a Data Transfer Object containing an unfiltered list of court locations with a selection of court
-     * location properties
+     *      location properties.
      */
     @Override
     public CourtLocationListDto buildAllCourtLocationDataResponse() {
@@ -112,8 +112,8 @@ public class CourtLocationServiceImpl implements CourtLocationService {
             .motorcycleRate0Passenger(courtLocation.getMotorcycleMileageRatePerMile0Passengers())
             .motorcycleRate1OrMorePassenger(courtLocation.getMotorcycleMileageRatePerMile1Passengers())
             .bicycleRate0OrMorePassenger(courtLocation.getBikeRate())
-            .substanceRateStandard(courtLocation.getSubstanceRateStandard())
-            .substanceRateLongDay(courtLocation.getSubstanceRateLongDay())
+            .subsistenceRateStandard(courtLocation.getSubsistenceRateStandard())
+            .subsistenceRateLongDay(courtLocation.getSubsistenceRateLongDay())
             .financialLossHalfDayLimit(courtLocation.getLimitFinancialLossHalfDay())
             .financialLossFullDayLimit(courtLocation.getLimitFinancialLossFullDay())
             .financialLossHalfDayLongTrialLimit(courtLocation.getLimitFinancialLossHalfDayLongTrial())

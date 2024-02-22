@@ -26,7 +26,10 @@ public class LetterListResponseDto {
     @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
     @JsonSubTypes({
         @JsonSubTypes.Type(value = DeferralLetterData.class, name = "Deferral Letter Data"),
-        @JsonSubTypes.Type(value = NonDeferralLetterData.class, name = "Deferral Denied Letter Data")
+        @JsonSubTypes.Type(value = WithdrawalLetterData.class, name = "Withdrawal Letter Data"),
+        @JsonSubTypes.Type(value = ExcusalLetterData.class, name = "Excusal Letter Data"),
+        @JsonSubTypes.Type(value = NonDeferralLetterData.class, name = "Deferral Denied Letter Data"),
+        @JsonSubTypes.Type(value = PostponeLetterData.class, name = "Postpone Letter Data"),
     })
     private List<? extends LetterResponseData> data;
 

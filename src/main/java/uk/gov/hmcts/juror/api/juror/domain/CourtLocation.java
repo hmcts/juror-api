@@ -44,6 +44,10 @@ public class CourtLocation implements Serializable {
     @NotAudited
     private String name;
 
+    @Column(name = "cost_centre")
+    @NotAudited
+    private String costCentre;
+
 
     @Column(name = "loc_court_name")
     @NotAudited
@@ -201,10 +205,10 @@ public class CourtLocation implements Serializable {
     @Column(name = "limit_financial_loss_full_day_long_trial")
     private BigDecimal limitFinancialLossFullDayLongTrial;
 
-    @Column(name = "rate_substance_standard")
-    private BigDecimal substanceRateStandard;
-    @Column(name = "rate_substance_long_day")
-    private BigDecimal substanceRateLongDay;
+    @Column(name = "rate_subsistence_standard")
+    private BigDecimal subsistenceRateStandard;
+    @Column(name = "rate_subsistence_long_day")
+    private BigDecimal subsistenceRateLongDay;
 
     @Column(name = "public_transport_soft_limit")
     private BigDecimal publicTransportSoftLimit;

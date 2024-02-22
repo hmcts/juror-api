@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.controller;
 
 import com.querydsl.core.Tuple;
 import org.json.JSONObject;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -21,35 +22,50 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
+import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 
+import java.math.BigDecimal;
 import java.net.URI;
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static java.time.LocalDate.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.PATCH;
+import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.APPEARANCE_CONFIRMED;
 import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.CHECKED_IN;
 import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.CHECKED_OUT;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.ATTENDANCE_RECORD_ALREADY_EXISTS;
 import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetails;
 
 /**
@@ -62,6 +78,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     private static final String JUROR1 = "111111111";
     private static final String JUROR2 = "222222222";
     private static final String JUROR3 = "333333333";
+    private static final String JUROR4 = "444444444";
     private static final String JUROR5 = "555555555";
     private static final String JUROR6 = "666666666";
     private static final String JUROR7 = "777777777";
@@ -72,12 +89,14 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     private static final String HTTP_STATUS_OK_MESSAGE = "Expect the HTTP status to be OK";
     private static final String HTTP_STATUS_BAD_REQUEST_MESSAGE = "Expect the HTTP status to be BAD_REQUEST";
 
-
     @Autowired
     private TestRestTemplate restTemplate;
 
     @Autowired
     private AppearanceRepository appearanceRepository;
+
+    @Autowired
+    private JurorPoolRepository jurorPoolRepository;
 
     @Autowired
     private JurorAppearanceService jurorAppearanceService;
@@ -820,6 +839,289 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
+    @DisplayName("PATCH Update attendance date")
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDate.sql"})
+    class UpdateAttendanceDate {
+        static final LocalDate ATTENDANCE_DATE = LocalDate.now().plusMonths(1);
+        static final String POOL_NUMBER_415230101 = "415230101";
+        static final String URL_ATTENDANCE_DATE = "/attendance-date";
+        static final String UPDATED_ATTENDANCE_DATE_MESSAGE = "Attendance date should have been updated to "
+            + ATTENDANCE_DATE;
+        static final String RESPONSE_MESSAGE = "Response message from api should confirm %s jurors were updated";
+        static final String RESPONSE_EQUAL_TO = "Attendance date updated for %s juror(s)";
+
+        @Test
+        @DisplayName("Update attendance date - all jurors updated successfully")
+        void updateAttendanceDateAllUpdatedSuccessfully() {
+            List<String> jurorNumbers = new ArrayList<>();
+            jurorNumbers.add(JUROR1);
+            jurorNumbers.add(JUROR2);
+            UpdateAttendanceDateDto request = buildUpdateAttendanceDateDto(jurorNumbers);
+
+            // check the attendance date for one of the jurors before invoking the api
+            LocalDate attendanceDateBefore = retrieveAttendanceDate(JUROR1, POOL_NUMBER_415230101);
+            assertThat(attendanceDateBefore).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isNotEqualTo(ATTENDANCE_DATE);
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE + URL_ATTENDANCE_DATE)), String.class);
+
+            assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+            assertThat(responseEntity.getBody())
+                .as(String.format(RESPONSE_MESSAGE, 2))
+                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 2));
+
+            // verify the attendance date was updated successfully
+            LocalDate attendanceDateAfterJuror1 = retrieveAttendanceDate(JUROR1, POOL_NUMBER_415230101);
+            assertThat(attendanceDateAfterJuror1).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isEqualTo(ATTENDANCE_DATE);
+
+            LocalDate attendanceDateAfterJuror2 = retrieveAttendanceDate(JUROR2, POOL_NUMBER_415230101);
+            assertThat(attendanceDateAfterJuror2).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isEqualTo(ATTENDANCE_DATE);
+        }
+
+        @Test
+        @DisplayName("Update attendance date - some jurors updated successfully")
+        void updateAttendanceDateSomeUpdatedSuccessfully() {
+            List<String> jurorNumbers = new ArrayList<>();
+            jurorNumbers.add(JUROR1);
+            jurorNumbers.add(JUROR2);
+            jurorNumbers.add("123456799"); // this juror does not exist
+            UpdateAttendanceDateDto request = buildUpdateAttendanceDateDto(jurorNumbers);
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE + URL_ATTENDANCE_DATE)), String.class);
+
+            assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+            assertThat(responseEntity.getBody())
+                .as(String.format(RESPONSE_MESSAGE, 2))
+                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 2));
+
+            // verify the attendance date was updated successfully for two jurors
+            LocalDate attendanceDateAfterJuror1 = retrieveAttendanceDate(JUROR1, POOL_NUMBER_415230101);
+            assertThat(attendanceDateAfterJuror1).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isEqualTo(ATTENDANCE_DATE);
+
+            LocalDate attendanceDateAfterJuror2 = retrieveAttendanceDate(JUROR2, POOL_NUMBER_415230101);
+            assertThat(attendanceDateAfterJuror2).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isEqualTo(ATTENDANCE_DATE);
+        }
+
+        @Test
+        @DisplayName("Update attendance date - on-call flag updated")
+        void updateAttendanceDateOnCallFlagUpdated() {
+            List<String> jurorNumbers = new ArrayList<>();
+            jurorNumbers.add(JUROR6);
+            UpdateAttendanceDateDto request = buildUpdateAttendanceDateDto(jurorNumbers);
+
+            // check the on-call flag before invoking the api
+            Boolean onCallFlagBefore =
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR6, POOL_NUMBER_415230101).getOnCall();
+            assertThat(onCallFlagBefore).as("On-call flag should be True").isEqualTo(Boolean.TRUE);
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE + URL_ATTENDANCE_DATE)), String.class);
+
+            assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+            assertThat(responseEntity.getBody())
+                .as(String.format(RESPONSE_MESSAGE, 1))
+                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 1));
+
+            // verify the on-call flag was updated successfully
+            Boolean onCallFlagAfter =
+                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR6, POOL_NUMBER_415230101).getOnCall();
+            assertThat(onCallFlagAfter).as("On-call flag should be False").isEqualTo(Boolean.FALSE);
+        }
+
+        @Test
+        @DisplayName("Update attendance date - criteria is not met (record does not belong to officer)")
+        void updateAttendanceDateCriteriaNotMetOwner() {
+            List<String> jurorNumbers = new ArrayList<>();
+            jurorNumbers.add(JUROR3);
+            UpdateAttendanceDateDto request = buildUpdateAttendanceDateDto(jurorNumbers);
+
+            // check the attendance date before invoking the api
+            LocalDate attendanceDateBefore = retrieveAttendanceDate(JUROR3, POOL_NUMBER_415230101);
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE + URL_ATTENDANCE_DATE)), String.class);
+
+            assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+            assertThat(responseEntity.getBody())
+                .as(String.format(RESPONSE_MESSAGE, 0))
+                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 0));
+
+            // verify the attendance date was not updated
+            LocalDate attendanceDateAfter = retrieveAttendanceDate(JUROR3, POOL_NUMBER_415230101);
+            assertThat(attendanceDateAfter).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isEqualTo(attendanceDateBefore);
+        }
+
+        @Test
+        @DisplayName("Update attendance date - criteria is not met (juror number does not exist)")
+        void updateAttendanceDateCriteriaNotMetJurorNumber() {
+            List<String> jurorNumbers = new ArrayList<>();
+            jurorNumbers.add("123456799");
+            UpdateAttendanceDateDto request = buildUpdateAttendanceDateDto(jurorNumbers);
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE + URL_ATTENDANCE_DATE)), String.class);
+
+            assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+            assertThat(responseEntity.getBody())
+                .as(String.format(RESPONSE_MESSAGE, 0))
+                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 0));
+        }
+
+        @Test
+        @DisplayName("Update attendance date - criteria is not met (juror in a different pool)")
+        void updateAttendanceDateCriteriaNotMetPoolNumber() {
+            List<String> jurorNumbers = new ArrayList<>();
+            jurorNumbers.add(JUROR4);
+            UpdateAttendanceDateDto request = buildUpdateAttendanceDateDto(jurorNumbers);
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE + URL_ATTENDANCE_DATE)), String.class);
+
+            assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+            assertThat(responseEntity.getBody())
+                .as(String.format(RESPONSE_MESSAGE, 0))
+                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 0));
+        }
+
+        @Test
+        @DisplayName("Update attendance date - criteria is not met (is not active juror pool)")
+        void updateAttendanceDateCriteriaNotMetIsNotActive() {
+            List<String> jurorNumbers = new ArrayList<>();
+            jurorNumbers.add(JUROR5);
+            UpdateAttendanceDateDto request = buildUpdateAttendanceDateDto(jurorNumbers);
+
+            LocalDate attendanceDateBefore = retrieveAttendanceDate(JUROR5, POOL_NUMBER_415230101);
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE + URL_ATTENDANCE_DATE)), String.class);
+
+            assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+            assertThat(responseEntity.getBody())
+                .as(String.format(RESPONSE_MESSAGE, 0))
+                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 0));
+
+            // verify the attendance date was not updated
+            LocalDate attendanceDateAfter = retrieveAttendanceDate(JUROR5, POOL_NUMBER_415230101);
+            assertThat(attendanceDateAfter).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isEqualTo(attendanceDateBefore);
+        }
+
+        @Test
+        @DisplayName("Update attendance date - criteria is not met (status is excused)")
+        void updateAttendanceDateCriteriaNotMetStatusIsExcused() {
+            List<String> jurorNumbers = new ArrayList<>();
+            jurorNumbers.add(JUROR7);
+            UpdateAttendanceDateDto request = buildUpdateAttendanceDateDto(jurorNumbers);
+
+            LocalDate attendanceDateBefore = retrieveAttendanceDate(JUROR7, POOL_NUMBER_415230101);
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE + URL_ATTENDANCE_DATE)), String.class);
+
+            assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+            assertThat(responseEntity.getBody())
+                .as(String.format(RESPONSE_MESSAGE, 0))
+                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 0));
+
+            // verify the attendance date was not updated
+            LocalDate attendanceDateAfter = retrieveAttendanceDate(JUROR7, POOL_NUMBER_415230101);
+            assertThat(attendanceDateAfter).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isEqualTo(attendanceDateBefore);
+        }
+
+        @Test
+        @DisplayName("Update attendance date - invalid request (no juror numbers)")
+        void updateAttendanceDateInvalidRequestNoJurorNumbers() {
+            List<String> jurorNumbers = new ArrayList<>();
+            UpdateAttendanceDateDto request = buildUpdateAttendanceDateDto(jurorNumbers);
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE + URL_ATTENDANCE_DATE)), String.class);
+
+            assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(BAD_REQUEST);
+            assertInvalidPayload(responseEntity,
+                new RestResponseEntityExceptionHandler.FieldError("jurorNumbers",
+                    "Request should contain at least one juror number"));
+        }
+
+        @Test
+        @DisplayName("Update attendance date - invalid request (no pool number)")
+        void updateAttendanceDateInvalidRequestNoPoolNumber() {
+            UpdateAttendanceDateDto request = UpdateAttendanceDateDto.builder()
+                .jurorNumbers(Collections.singletonList(JUROR1))
+                .attendanceDate(ATTENDANCE_DATE)
+                .poolNumber(null)
+                .build();
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE + URL_ATTENDANCE_DATE)), String.class);
+
+            assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(BAD_REQUEST);
+            assertInvalidPayload(responseEntity,
+                new RestResponseEntityExceptionHandler.FieldError("poolNumber",
+                    "Request should contain a valid pool number"));
+        }
+
+        @Test
+        @DisplayName("Update attendance date - invalid request (invalid pool number)")
+        void updateAttendanceDateInvalidRequestInvalidPoolNumber() {
+            UpdateAttendanceDateDto request = UpdateAttendanceDateDto.builder()
+                .jurorNumbers(Collections.singletonList(JUROR1))
+                .attendanceDate(ATTENDANCE_DATE)
+                .poolNumber("12345")
+                .build();
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE + URL_ATTENDANCE_DATE)), String.class);
+
+            assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(BAD_REQUEST);
+            assertInvalidPayload(responseEntity,
+                new RestResponseEntityExceptionHandler.FieldError("poolNumber", "must match \"^\\d{9}$\""));
+        }
+
+        @Test
+        @DisplayName("Update attendance date - invalid request (missing attendance date)")
+        void updateAttendanceDateInvalidRequestMissingAttendanceDate() {
+            UpdateAttendanceDateDto request = UpdateAttendanceDateDto.builder()
+                .jurorNumbers(Collections.singletonList(JUROR1))
+                .attendanceDate(null)
+                .poolNumber(POOL_NUMBER_415230101)
+                .build();
+
+            ResponseEntity<String> responseEntity =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE + URL_ATTENDANCE_DATE)), String.class);
+
+            assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(BAD_REQUEST);
+            assertInvalidPayload(responseEntity,
+                new RestResponseEntityExceptionHandler.FieldError("attendanceDate",
+                    "Request should contain the new attendance date"));
+        }
+
+        private LocalDate retrieveAttendanceDate(String jurorNumber, String poolNumber) {
+            return jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber).getNextDate();
+        }
+
+        private UpdateAttendanceDateDto buildUpdateAttendanceDateDto(List<String> jurorNumbers) {
+            return UpdateAttendanceDateDto.builder()
+                .jurorNumbers(jurorNumbers)
+                .attendanceDate(ATTENDANCE_DATE)
+                .poolNumber(POOL_NUMBER_415230101)
+                .build();
+        }
+    }
+
+    @Nested
     @DisplayName("DELETE Delete attendance")
     class DeleteAttendance {
 
@@ -918,7 +1220,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorsToDismissResponseDto> response =
             restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
-                URI.create ("/api/v1/moj/juror-management/jurors-to-dismiss")), JurorsToDismissResponseDto.class);
+                URI.create("/api/v1/moj/juror-management/jurors-to-dismiss")), JurorsToDismissResponseDto.class);
 
         assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
         assertThat(response.getBody().getData()).isNotNull();
@@ -946,7 +1248,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorsToDismissResponseDto> response =
             restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
-                URI.create ("/api/v1/moj/juror-management/jurors-to-dismiss")), JurorsToDismissResponseDto.class);
+                URI.create("/api/v1/moj/juror-management/jurors-to-dismiss")), JurorsToDismissResponseDto.class);
 
         assertThat(response.getStatusCode()).as("Expect HTTP Status of Forbidden").isEqualTo(FORBIDDEN);
         assertThat(response.getBody().getData()).isNull();
@@ -970,7 +1272,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorsToDismissResponseDto> response =
             restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
-                URI.create ("/api/v1/moj/juror-management/jurors-to-dismiss")), JurorsToDismissResponseDto.class);
+                URI.create("/api/v1/moj/juror-management/jurors-to-dismiss")), JurorsToDismissResponseDto.class);
 
         assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
         assertThat(response.getBody().getData()).isEmpty();
@@ -1030,5 +1332,181 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             jurorAppearanceResponseDto.getData().get(2);
         assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR3);
         assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.PANEL);
+    }
+
+
+    @Nested
+    @DisplayName("Non Attendance tests")
+    class NonAttendance {
+
+        @Test
+        @DisplayName("Add non attendance - record okay")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql"})
+        void addNonAttendanceHappy() {
+
+            JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
+                .jurorNumber("111111111")
+                .nonAttendanceDate(now())
+                .poolNumber("415230101")
+                .locationCode("415")
+                .build();
+
+            ResponseEntity<String> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
+                    URI.create("/api/v1/moj/juror-management/non-attendance")), String.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status created expected").isEqualTo(CREATED);
+
+            // verify non-attendance record has been added
+            Optional<Appearance> appearanceOpt =
+                appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(request.getJurorNumber(),
+                    "415230101", request.getNonAttendanceDate());
+            assertThat(appearanceOpt).isNotEmpty();
+            Appearance appearance = appearanceOpt.get();
+            assertThat(appearance.getJurorNumber()).isEqualTo(request.getJurorNumber());
+            assertThat(appearance.getAttendanceDate()).isEqualTo(request.getNonAttendanceDate());
+            assertThat(appearance.getPoolNumber()).isEqualTo(request.getPoolNumber());
+            assertThat(appearance.getCourtLocation().getLocCode()).isEqualTo(request.getLocationCode());
+            assertThat(appearance.getNonAttendanceDay()).isTrue();
+            assertThat(appearance.getLossOfEarningsDue()).isEqualTo(BigDecimal.valueOf(31.63));
+
+        }
+
+        @Test
+        @DisplayName("Add non attendance - loss over limit")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql"})
+        void addNonAttendanceHappyLossOverLimit() {
+
+            JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
+                .jurorNumber("222222222")
+                .nonAttendanceDate(now())
+                .poolNumber("415230101")
+                .locationCode("415")
+                .build();
+
+            ResponseEntity<String> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
+                    URI.create("/api/v1/moj/juror-management/non-attendance")), String.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status created expected").isEqualTo(CREATED);
+
+            // verify non-attendance record has been added
+            Optional<Appearance> appearanceOpt =
+                appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(request.getJurorNumber(),
+                    "415230101", request.getNonAttendanceDate());
+            assertThat(appearanceOpt).isNotEmpty();
+            Appearance appearance = appearanceOpt.get();
+            assertThat(appearance.getJurorNumber()).isEqualTo(request.getJurorNumber());
+            assertThat(appearance.getAttendanceDate()).isEqualTo(request.getNonAttendanceDate());
+            assertThat(appearance.getPoolNumber()).isEqualTo(request.getPoolNumber());
+            assertThat(appearance.getCourtLocation().getLocCode()).isEqualTo(request.getLocationCode());
+            assertThat(appearance.getNonAttendanceDay()).isTrue();
+            assertThat(appearance.getLossOfEarningsDue()).isEqualTo(BigDecimal.valueOf(32.47));
+
+        }
+
+        @Test
+        @DisplayName("Add non attendance - record already present")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql"})
+        void addNonAttendanceUnhappyAlreadyPresent() {
+
+            JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
+                .jurorNumber("222222222")
+                .nonAttendanceDate(now().minusDays(1))
+                .poolNumber("415230101")
+                .locationCode("415")
+                .build();
+
+            ResponseEntity<String> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
+                    URI.create("/api/v1/moj/juror-management/non-attendance")), String.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status unprocessable entity expected")
+                .isEqualTo(UNPROCESSABLE_ENTITY);
+
+            assertBusinessRuleViolation
+                (response, "Juror 222222222 already has an attendance "
+                    + "record for the date " + now().minusDays(1), ATTENDANCE_RECORD_ALREADY_EXISTS);
+
+        }
+
+        @Test
+        @DisplayName("Add non attendance - no show record already present")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql"})
+        void addNonAttendanceUnhappyNoShowAlreadyPresent() {
+
+            JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
+                .jurorNumber("333333333")
+                .nonAttendanceDate(now().minusDays(1))
+                .poolNumber("415230101")
+                .locationCode("415")
+                .build();
+
+            ResponseEntity<String> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
+                    URI.create("/api/v1/moj/juror-management/non-attendance")), String.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status created expected").isEqualTo(CREATED);
+
+            // verify non-attendance record has been added
+            Optional<Appearance> appearanceOpt =
+                appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(request.getJurorNumber(),
+                    "415230101", request.getNonAttendanceDate());
+            assertThat(appearanceOpt).isNotEmpty();
+            Appearance appearance = appearanceOpt.get();
+            assertThat(appearance.getJurorNumber()).isEqualTo(request.getJurorNumber());
+            assertThat(appearance.getAttendanceDate()).isEqualTo(request.getNonAttendanceDate());
+            assertThat(appearance.getPoolNumber()).isEqualTo(request.getPoolNumber());
+            assertThat(appearance.getCourtLocation().getLocCode()).isEqualTo(request.getLocationCode());
+            assertThat(appearance.getNonAttendanceDay()).isTrue();
+            assertThat(appearance.getLossOfEarningsDue()).isEqualTo(BigDecimal.valueOf(30.13));
+        }
+
+        @Test
+        @DisplayName("Add non attendance - invalid court location")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql"})
+        void addNonAttendanceUnhappyInvalidCourt() {
+
+            JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
+                .jurorNumber("222222222")
+                .nonAttendanceDate(now().minusDays(1))
+                .poolNumber("415230101")
+                .locationCode("999")
+                .build();
+
+            ResponseEntity<String> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
+                    URI.create("/api/v1/moj/juror-management/non-attendance")), String.class);
+
+            assertNotFound(response, "/api/v1/moj/juror-management/non-attendance",
+                "Court location 999 not found");
+        }
+
+        @Test
+        @DisplayName("Add non attendance - add a non attendance record invalid date")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql"})
+        void addNonAttendanceUnhappyInvalidDateBeforeStartDate() {
+
+            JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
+                .jurorNumber("111111111")
+                .nonAttendanceDate(now().minusDays(20))
+                .poolNumber("415230101")
+                .locationCode("415")
+                .build();
+
+            ResponseEntity<String> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
+                    URI.create("/api/v1/moj/juror-management/non-attendance")), String.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status unprocessable entity expected")
+                .isEqualTo(UNPROCESSABLE_ENTITY);
+
+            JSONObject exceptionDetails = getExceptionDetails(response);
+            assertThat(exceptionDetails.getString("message")).isEqualTo("Non-attendance date is "
+                + "before the service start date of the pool");
+            assertThat(exceptionDetails.getString("code")).isEqualTo("APPEARANCE_RECORD_BEFORE_SERVICE_START_DATE");
+
+        }
+
     }
 }

@@ -17,6 +17,7 @@ import java.util.List;
  */
 @Slf4j
 @Component
+@SuppressWarnings("PMD.LawOfDemeter")
 public class CourtQueriesRepositoryImpl implements CourtQueriesRepository {
 
     private static final QCourtCatchmentArea COURT_CATCHMENT = QCourtCatchmentArea.courtCatchmentArea;

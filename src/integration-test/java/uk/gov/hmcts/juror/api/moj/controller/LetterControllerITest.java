@@ -31,15 +31,19 @@ import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CourtLetterLis
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.PrintLettersRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.DeferralLetterData;
+import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ExcusalLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.NonDeferralLetterData;
+import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PostponeLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDataResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.WithdrawalLetterData;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.letter.LetterId;
 import uk.gov.hmcts.juror.api.moj.domain.letter.RequestLetter;
+import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
@@ -50,6 +54,7 @@ import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.letter.RequestLetterRepository;
+import uk.gov.hmcts.juror.api.moj.repository.letter.court.PostponementLetterListRepository;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -79,6 +84,8 @@ import static uk.gov.hmcts.juror.api.TestUtils.objectMapper;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.LawOfDemeter"})
 class LetterControllerITest extends AbstractIntegrationTest {
+    private static final String GET_LETTER_LIST_URI = "/api/v1/moj/letter/court-letter-list";
+
     @Autowired
     private TestRestTemplate template;
     @Autowired
@@ -91,6 +98,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
     private BulkPrintDataRepository bulkPrintDataRepository;
     @Autowired
     private ExcusalCodeRepository excusalCodeRepository;
+    @Autowired
+    private PostponementLetterListRepository postponementLetterListRepository;
 
     private HttpHeaders httpHeaders;
 
@@ -101,7 +110,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
-
 
     @Nested
     @DisplayName("POST /api/v1/moj/letter/request-information")
@@ -484,8 +492,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("POST /api/v1/moj/letter/court-letter-list")
     class CourtLetterList {
-
-        private static final String GET_LETTER_LIST_URI = "/api/v1/moj/letter/court-letter-list";
 
         @Nested
         @DisplayName("Deferral Granted List")
@@ -1322,6 +1328,343 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         + "[poolNumber]"));
             }
         }
+    }
+
+    @Nested
+    @DisplayName("Excusal Granted : POST /api/v1/moj/letter/court-letter-list")
+    class ExcusalGrantedCourtLetterList {
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_ExcusalGranted.sql"})
+        void courtLetterListExcusalGrantedJurorNumberSearchExcludePrinted() {
+
+            final String jurorNumber = "555555562";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorNumber(jurorNumber)
+                .letterType(CourtLetterType.EXCUSAL_GRANTED)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(0);
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_ExcusalGranted.sql"})
+        void courtLetterListExcusalGrantedJurorNumberSearchIncludePrinted() {
+
+            final String jurorNumber = "555555562";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorNumber(jurorNumber)
+                .letterType(CourtLetterType.EXCUSAL_GRANTED)
+                .includePrinted(true)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(1);
+
+            ExcusalLetterData data = (ExcusalLetterData) responseBody.get(0);
+            assertThat(data.getJurorNumber()).isEqualTo(jurorNumber);
+            assertThat(data.getFirstName()).isEqualTo("FNAME2");
+            assertThat(data.getLastName()).isEqualTo("LNAME2");
+            assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
+            assertThat(data.getStatus()).isEqualTo("Excused");
+            assertThat(data.getDateExcused()).isEqualTo(LocalDate.now().minusDays(5));
+            assertThat(data.getReason()).isEqualToIgnoringCase(ExcusalCodeEnum.valueOf("A").getDescription());
+            assertThat(data.getDatePrinted()).isEqualTo(LocalDate.now().minusDays(2));
+            assertThat(data.getPoolNumber()).isEqualTo("415220502");
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_ExcusalGranted.sql"})
+        void courtLetterListExcusalGrantedJurorNumberSearchBureauExcusal() {
+
+            final String jurorNumber = "555555561";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorNumber(jurorNumber)
+                .letterType(CourtLetterType.EXCUSAL_GRANTED)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(0);
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_ExcusalGranted.sql"})
+        void courtLetterListExcusalGrantedJurorNameSearch() {
+
+            final String jurorNumber = "555555563";
+            final String jurorName = "FNAME3";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorName(jurorName)
+                .letterType(CourtLetterType.EXCUSAL_GRANTED)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(1);
+
+            ExcusalLetterData data = (ExcusalLetterData) responseBody.get(0);
+            assertThat(data.getJurorNumber()).isEqualTo(jurorNumber);
+            assertThat(data.getFirstName()).isEqualTo("FNAME3");
+            assertThat(data.getLastName()).isEqualTo("LNAME3");
+            assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
+            assertThat(data.getStatus()).isEqualTo("Excused");
+            assertThat(data.getDateExcused()).isEqualTo(LocalDate.now().minusDays(5));
+            assertThat(data.getReason()).isEqualToIgnoringCase(ExcusalCodeEnum.valueOf("A").getDescription());
+            assertThat(data.getDatePrinted()).isNull();
+            assertThat(data.getPoolNumber()).isEqualTo("415220502");
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_ExcusalGranted.sql"})
+        void courtLetterListExcusalGrantedJurorNameSearchIncludePrinted() {
+            final String jurorName = "FNAME3";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorName(jurorName)
+                .letterType(CourtLetterType.EXCUSAL_GRANTED)
+                .includePrinted(true)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(3);
+
+            List<ExcusalLetterData> dataList = responseBody.stream()
+                .map(data -> (ExcusalLetterData) data)
+                .filter(data -> "FNAME3".equalsIgnoreCase(data.getFirstName()))
+                .toList();
+
+            assertThat(dataList).size().isEqualTo(3);
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_ExcusalGranted.sql"})
+        void courtLetterListExcusalGrantedJurorPostcodeSearch() {
+
+            final String postcode = "CH1 2AN";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorPostcode(postcode)
+                .letterType(CourtLetterType.EXCUSAL_GRANTED)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(2);
+
+            List<ExcusalLetterData> dataList = responseBody.stream()
+                .map(data -> (ExcusalLetterData) data)
+                .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
+                .toList();
+
+            assertThat(dataList).size().isEqualTo(2);
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_ExcusalGranted.sql"})
+        void courtLetterListExcusalGrantedJurorPostcodeSearchIncludePrinted() {
+
+            final String postcode = "CH1 2AN";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorPostcode(postcode)
+                .letterType(CourtLetterType.EXCUSAL_GRANTED)
+                .includePrinted(true)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(6);
+
+            List<ExcusalLetterData> dataList = responseBody.stream()
+                .map(data -> (ExcusalLetterData) data)
+                .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
+                .toList();
+
+            assertThat(dataList).size().isEqualTo(6);
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_ExcusalGranted.sql"})
+        void courtLetterListExcusalGrantedPoolNumberSearchExcludePrinted() {
+
+            final String poolNumber = "415220502";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .poolNumber(poolNumber)
+                .letterType(CourtLetterType.EXCUSAL_GRANTED)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(2);
+
+            List<ExcusalLetterData> dataList = responseBody.stream()
+                .map(data -> (ExcusalLetterData) data)
+                .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
+                .toList();
+
+            assertThat(dataList).size().isEqualTo(2);
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_ExcusalGranted.sql"})
+        void courtLetterListExcusalGrantedPoolNumberSearchIncludePrinted() {
+
+            final String poolNumber = "415220502";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .poolNumber(poolNumber)
+                .letterType(CourtLetterType.EXCUSAL_GRANTED)
+                .includePrinted(true)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(6);
+
+            List<ExcusalLetterData> dataList = responseBody.stream()
+                .map(data -> (ExcusalLetterData) data)
+                .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
+                .toList();
+
+            assertThat(dataList).size().isEqualTo(6);
+        }
+
     }
 
     @Nested
@@ -2899,6 +3242,927 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     .as("Expect welsh to be true")
                     .isTrue();
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("Withdrawal : POST /api/v1/moj/letter/court-letter-list")
+    class WithdrawalCourtLetterList {
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_Withdrawal.sql"})
+        void courtLetterListWithdrawalJurorNumberSearchExcludePrinted() {
+
+            final String jurorNumber = "555555555";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorNumber(jurorNumber)
+                .letterType(CourtLetterType.WITHDRAWAL)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(0);
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_Withdrawal.sql"})
+        void courtLetterListWithdrawalJurorNumberSearchIncludePrinted() {
+
+            final String jurorNumber = "555555555";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorNumber(jurorNumber)
+                .letterType(CourtLetterType.WITHDRAWAL)
+                .includePrinted(true)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(1);
+
+            WithdrawalLetterData data = (WithdrawalLetterData) responseBody.get(0);
+            assertThat(data.getJurorNumber()).isEqualTo(jurorNumber);
+            assertThat(data.getFirstName()).isEqualTo("FNAME1");
+            assertThat(data.getLastName()).isEqualTo("LNAME1");
+            assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
+            assertThat(data.getStatus()).isEqualTo("Disqualified");
+            assertThat(data.getDateDisqualified()).isEqualTo(LocalDate.now().minusDays(5));
+            assertThat(data.getReason()).isEqualToIgnoringCase("Age");
+            assertThat(data.getDatePrinted()).isEqualTo(LocalDate.now().minusDays(5));
+            assertThat(data.getPoolNumber()).isEqualTo("415220502");
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_Withdrawal.sql"})
+        void courtLetterListWithdrawalJurorNumberSearchBureauWithdrawal() {
+
+            final String jurorNumber = "555555556";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorNumber(jurorNumber)
+                .letterType(CourtLetterType.WITHDRAWAL)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(0);
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_Withdrawal.sql"})
+        void courtLetterListWithdrawalJurorNameSearch() {
+
+            final String jurorNumber = "555555557";
+            final String jurorName = "FNAME3";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorName(jurorName)
+                .letterType(CourtLetterType.WITHDRAWAL)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(1);
+
+            WithdrawalLetterData data = (WithdrawalLetterData) responseBody.get(0);
+            assertThat(data.getJurorNumber()).isEqualTo(jurorNumber);
+            assertThat(data.getFirstName()).isEqualTo("FNAME3");
+            assertThat(data.getLastName()).isEqualTo("LNAME3");
+            assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
+            assertThat(data.getStatus()).isEqualTo("Disqualified");
+            assertThat(data.getDateDisqualified()).isEqualTo(LocalDate.now().minusDays(5));
+            assertThat(data.getReason()).isEqualToIgnoringCase("Age");
+            assertThat(data.getDatePrinted()).isNull();
+            assertThat(data.getPoolNumber()).isEqualTo("415220502");
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_Withdrawal.sql"})
+        void courtLetterListWithdrawalJurorNameSearchIncludePrinted() {
+            final String jurorName = "FNAME3";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorName(jurorName)
+                .letterType(CourtLetterType.WITHDRAWAL)
+                .includePrinted(true)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(2);
+
+            List<WithdrawalLetterData> dataList = responseBody.stream()
+                .map(data -> (WithdrawalLetterData) data)
+                .filter(data -> "FNAME3".equalsIgnoreCase(data.getFirstName()))
+                .toList();
+
+            assertThat(dataList).size().isEqualTo(2);
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_Withdrawal.sql"})
+        void courtLetterListWithdrawalJurorPostcodeSearch() {
+
+            final String postcode = "CH1 2AN";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorPostcode(postcode)
+                .letterType(CourtLetterType.WITHDRAWAL)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(2);
+
+            List<WithdrawalLetterData> dataList = responseBody.stream()
+                .map(data -> (WithdrawalLetterData) data)
+                .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
+                .toList();
+
+            assertThat(dataList).size().isEqualTo(2);
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_Withdrawal.sql"})
+        void courtLetterListWithdrawalJurorPostcodeSearchIncludePrinted() {
+
+            final String postcode = "CH1 2AN";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorPostcode(postcode)
+                .letterType(CourtLetterType.WITHDRAWAL)
+                .includePrinted(true)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(4);
+
+            List<WithdrawalLetterData> dataList = responseBody.stream()
+                .map(data -> (WithdrawalLetterData) data)
+                .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
+                .toList();
+
+            assertThat(dataList).size().isEqualTo(4);
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_Withdrawal.sql"})
+        void courtLetterListWithdrawalPoolNumberSearchExcludePrinted() {
+
+            final String poolNumber = "415220502";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .poolNumber(poolNumber)
+                .letterType(CourtLetterType.WITHDRAWAL)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(2);
+
+            List<WithdrawalLetterData> dataList = responseBody.stream()
+                .map(data -> (WithdrawalLetterData) data)
+                .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
+                .toList();
+
+            assertThat(dataList).size().isEqualTo(2);
+        }
+
+        @Test
+        @SneakyThrows
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_Withdrawal.sql"})
+        void courtLetterListWithdrawalPoolNumberSearchIncludePrinted() {
+
+            final String poolNumber = "415220502";
+            final String payload = createBureauJwt("COURT_USER", "415");
+            final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .poolNumber(poolNumber)
+                .letterType(CourtLetterType.WITHDRAWAL)
+                .includePrinted(true)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(4);
+
+            List<WithdrawalLetterData> dataList = responseBody.stream()
+                .map(data -> (WithdrawalLetterData) data)
+                .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
+                .toList();
+
+            assertThat(dataList).size().isEqualTo(4);
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /api/v1/moj/letter/print-court-letter (postponement)")
+    @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_Postponement.sql"})
+    class PrintCourtLettersPostponement {
+        static final String JUROR_NUMBER = "5555555";
+        static final URI URL = URI.create("/api/v1/moj/letter/print-court-letter");
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Reissue Postponement Letter - Happy path - English")
+        void reissuePostponementLetterHappy() {
+            List<String> jurorNumbers = new ArrayList<>();
+            jurorNumbers.add(JUROR_NUMBER + "61");
+            jurorNumbers.add(JUROR_NUMBER + "62");
+            jurorNumbers.add(JUROR_NUMBER +"63");
+            jurorNumbers.add(JUROR_NUMBER +"65"); // welsh
+
+            final String payload = createBureauJwt("COURT_USER", "415");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            PrintLettersRequestDto requestDto = PrintLettersRequestDto.builder()
+                .jurorNumbers(jurorNumbers)
+                .letterType(CourtLetterType.POSTPONED)
+                .build();
+
+            RequestEntity<PrintLettersRequestDto> request = new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(request,
+                PrintLetterDataResponseDto[].class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+
+            PrintLetterDataResponseDto[] data = response.getBody();
+            assertThat(data.length).as("Expect 3 letters").isEqualTo(3);
+
+            verifyDataEnglish(data[0], "61");
+            verifyDataEnglish(data[1], "62");
+            verifyDataEnglish(data[2], "63");
+        }
+
+        private void verifyDataEnglish(PrintLetterDataResponseDto dto, String jurorPostfix) {
+            assertThat(dto.getCourtName())
+                .as("Expect court name to be " + "The Crown Court\nat CHESTER")
+                .isEqualTo("The Crown Court\nat CHESTER");
+            assertThat(dto.getCourtAddressLine1()).as("Expect address line 1 to be 'THE CASTLE'")
+                .isEqualTo("THE CASTLE");
+            assertThat(dto.getCourtAddressLine2()).as("Expect address line 2 to be 'CHESTER'")
+                .isEqualTo("CHESTER");
+            assertThat(dto.getCourtAddressLine3()).as("Expect address line 3 to be null").isNull();
+            assertThat(dto.getCourtAddressLine4()).as("Expect address line 4 to be null").isNull();
+            assertThat(dto.getCourtAddressLine5()).as("Expect address line 5 to be null").isNull();
+            assertThat(dto.getCourtAddressLine6()).as("Expect address line 6 to be null").isNull();
+            assertThat(dto.getCourtPostCode()).as("Expect post code to be 'CH1 2AN'")
+                .isEqualTo("CH1 2AN");
+            assertThat(dto.getCourtPhoneNumber()).as("Expect court number to be 01244 356726")
+                .isEqualTo("01244 356726");
+            assertThat(dto.getUrl()).as("Expect URL to be www.gov.uk/jury-service")
+                .isEqualTo("www.gov.uk/jury-service");
+            assertThat(dto.getSignature()).as("Expect signatory to be Jury Manager")
+                .isEqualTo("Jury Manager\n\nAn Officer of the Crown Court");
+            assertThat(dto.getJurorFirstName()).as("Expect first name to be Juror " + jurorPostfix)
+                .isEqualTo("JurorForename"  + jurorPostfix);
+            assertThat(dto.getJurorLastName()).as("Expect last name to be JurorSurname" + jurorPostfix)
+                .isEqualTo("JurorSurname" + jurorPostfix);
+            assertThat(dto.getJurorAddressLine1()).as("Expect address line 1 to be Address Line 1")
+                .isEqualTo("Address Line 1");
+            assertThat(dto.getJurorAddressLine2()).as("Expect address line 2 to be Address  Line 2")
+                .isEqualTo("Address Line 2");
+            assertThat(dto.getJurorAddressLine3()).as("Expect address line 3 to be Address Line 3")
+                .isEqualTo("Address Line 3");
+            assertThat(dto.getJurorAddressLine4()).as("Expect address line 4 to be CARDIFF")
+                .isEqualTo("CARDIFF");
+            assertThat(dto.getJurorAddressLine5())
+                .as("Expect address line 5 to be Some County")
+                .isEqualTo("Some County");
+            assertThat(dto.getJurorPostcode()).as("Expect post code to be CH1 2AN")
+                .isEqualTo("CH1 2AN");
+            assertThat(dto.getJurorNumber()).as("Expect juror number to be 5555555" + jurorPostfix)
+                .isEqualTo(JUROR_NUMBER + jurorPostfix);
+            assertThat(dto.getPostponedToDate())
+                .as("Expect postponed date to be " + LocalDate.now().plusDays(10))
+                .isEqualTo(LocalDate.now().plusDays(10).format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
+            assertThat(dto.getAttendTime())
+                .as("Expect attend time to be " + LocalTime.of(9, 00))
+                .isEqualTo(LocalTime.of(9, 00));
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /api/v1/moj/letter/court-letter-list (Postponement)")
+    @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_Postponement.sql"})
+    class CourtLetterListPostponement {
+        static final URI URL = URI.create(GET_LETTER_LIST_URI);
+        static final String JUROR_555555562 = "555555562";
+        static final String COURT_USER = "COURT_USER";
+        static final String OWNER_415 = "415";
+        static final String RESPONSE_OK_MESSAGE = "Expect HTTP Response to be OK";
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Postponement letter criteria met - juror number is valid and exclude printed letters")
+        void courtLetterListPostponedJurorNumberSearchExcludePrinted() {
+            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorNumber(JUROR_555555562)
+                .letterType(CourtLetterType.POSTPONED)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as(RESPONSE_OK_MESSAGE)
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(0);
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Postponement letter criteria met - juror number and include printed")
+        void courtLetterListPostponedJurorNumberSearchIncludePrinted() {
+            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorNumber(JUROR_555555562)
+                .letterType(CourtLetterType.POSTPONED)
+                .includePrinted(true)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as(RESPONSE_OK_MESSAGE)
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(1);
+
+            PostponeLetterData data = (PostponeLetterData) responseBody.get(0);
+            assertThat(data.getJurorNumber()).isEqualTo(JUROR_555555562);
+            assertThat(data.getFirstName()).isEqualTo("JurorForename62");
+            assertThat(data.getLastName()).isEqualTo("JurorSurname62");
+            assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
+            assertThat(data.getStatus()).isEqualTo("Postponed");
+            assertThat(data.getPostponedTo()).isEqualTo(LocalDate.now().plusDays(10));
+            String reason = excusalCodeRepository.findById("P").orElse(new ExcusalCodeEntity()).getDescription();
+            assertThat(data.getReason()).isEqualToIgnoringCase(reason);
+            assertThat(data.getDatePrinted()).isEqualTo(LocalDate.now().minusDays(9));
+            assertThat(data.getPoolNumber()).isEqualTo("415220401");
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Postponement letter criteria not met - bureau deferral")
+        void courtLetterListPostponedJurorNumberSearchBureauDeferral() {
+            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorNumber("555555569")
+                .letterType(CourtLetterType.POSTPONED)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as(RESPONSE_OK_MESSAGE)
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(0);
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Postponement letter criteria met - juror forename")
+        void courtLetterListPostponedJurorNameSearch() {
+            final String jurorName = "JurorForename67";
+            final String payload = createBureauJwt("COURT_USER", "415");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorName(jurorName)
+                .letterType(CourtLetterType.POSTPONED)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as(RESPONSE_OK_MESSAGE)
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(1);
+
+            PostponeLetterData data = (PostponeLetterData) responseBody.get(0);
+            assertThat(data.getJurorNumber()).isEqualTo("555555567");
+            assertThat(data.getFirstName()).isEqualTo(jurorName);
+            assertThat(data.getLastName()).isEqualTo("JurorSurname67");
+            assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
+            assertThat(data.getStatus()).isEqualTo("Postponed");
+            assertThat(data.getPostponedTo()).isEqualTo(LocalDate.now().plusDays(13));
+            String reason = excusalCodeRepository.findById("P").orElse(new ExcusalCodeEntity()).getDescription();
+            assertThat(data.getReason()).isEqualToIgnoringCase(reason);
+            assertThat(data.getDatePrinted()).isNull();
+            assertThat(data.getPoolNumber()).isEqualTo("415220401");
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /api/v1/moj/letter/print-court-letter (Excusal granted)")
+    @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_ExcusalGranted.sql"})
+    class PrintCourtLettersExcusalGranted {
+        static final String JUROR_NUMBER = "5555555";
+        static final URI URL = URI.create("/api/v1/moj/letter/print-court-letter");
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Reissue Excusal Granted Letter - Happy path - English")
+        void reissueExcusalGrantedLetterHappy() {
+            List<String> jurorNumbers = new ArrayList<>();
+            jurorNumbers.add(JUROR_NUMBER + "62");
+
+            final String payload = createBureauJwt("COURT_USER", "415");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            PrintLettersRequestDto requestDto = PrintLettersRequestDto.builder()
+                .jurorNumbers(jurorNumbers)
+                .letterType(CourtLetterType.EXCUSAL_GRANTED)
+                .build();
+
+            RequestEntity<PrintLettersRequestDto> request = new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(request,
+                PrintLetterDataResponseDto[].class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+
+            PrintLetterDataResponseDto[] data = response.getBody();
+            assertThat(data.length).as("Expect 1 letter").isEqualTo(1);
+
+            verifyDataEnglish(data[0], "62");
+
+        }
+
+        private void verifyDataEnglish(PrintLetterDataResponseDto dto, String jurorPostfix) {
+            assertThat(dto.getCourtName())
+                .as("Expect court name to be " + "The Crown Court\nat CHESTER")
+                .isEqualTo("The Crown Court\nat CHESTER");
+            assertThat(dto.getCourtAddressLine1()).as("Expect address line 1 to be 'THE CASTLE'")
+                .isEqualTo("THE CASTLE");
+            assertThat(dto.getCourtAddressLine2()).as("Expect address line 2 to be 'CHESTER'")
+                .isEqualTo("CHESTER");
+            assertThat(dto.getCourtAddressLine3()).as("Expect address line 3 to be null").isNull();
+            assertThat(dto.getCourtAddressLine4()).as("Expect address line 4 to be null").isNull();
+            assertThat(dto.getCourtAddressLine5()).as("Expect address line 5 to be null").isNull();
+            assertThat(dto.getCourtAddressLine6()).as("Expect address line 6 to be null").isNull();
+            assertThat(dto.getCourtPostCode()).as("Expect post code to be 'CH1 2AN'")
+                .isEqualTo("CH1 2AN");
+            assertThat(dto.getCourtPhoneNumber()).as("Expect court number to be 01244 356726")
+                .isEqualTo("01244 356726");
+            assertThat(dto.getUrl()).as("Expect URL to be www.gov.uk/jury-service")
+                .isEqualTo("www.gov.uk/jury-service");
+            assertThat(dto.getSignature()).as("Expect signatory to be Jury Manager")
+                .isEqualTo("Jury Manager\n\nAn Officer of the Crown Court");
+            assertThat(dto.getJurorFirstName()).as("Expect first name to be FNAME2")
+                .isEqualTo("FNAME2");
+            assertThat(dto.getJurorLastName()).as("Expect last name to be LNAME2")
+                .isEqualTo("LNAME2");
+            assertThat(dto.getJurorAddressLine1()).as("Expect address line 1 to be Address Line 1")
+                .isEqualTo("Address Line 1");
+            assertThat(dto.getJurorAddressLine2()).as("Expect address line 2 to be Address  Line 2")
+                .isEqualTo("Address Line 2");
+            assertThat(dto.getJurorAddressLine3()).as("Expect address line 3 to be Address Line 3")
+                .isEqualTo("Address Line3");
+            assertThat(dto.getJurorAddressLine4()).as("Expect address line 4 to be CARDIFF")
+                .isEqualTo("Some Town");
+            assertThat(dto.getJurorAddressLine5())
+                .as("Expect address line 5 to be Some County")
+                .isEqualTo("Some County");
+            assertThat(dto.getJurorPostcode()).as("Expect post code to be CH1 2AN")
+                .isEqualTo("CH1 2AN");
+            assertThat(dto.getJurorNumber()).as("Expect juror number to be 5555555" + jurorPostfix)
+                .isEqualTo(JUROR_NUMBER + jurorPostfix);
+        }
+    }
+
+
+    @Nested
+    @DisplayName("POST /api/v1/moj/letter/print-court-letter (Withdrawal)")
+    @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_Withdrawal.sql"})
+    class PrintCourtLettersWithdrawal {
+        static final String JUROR_NUMBER = "5555555";
+        static final URI URL = URI.create("/api/v1/moj/letter/print-court-letter");
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Reissue Excusal Granted Letter - Happy path - English")
+        void reissueWithdrawalLetterHappy() {
+            List<String> jurorNumbers = new ArrayList<>();
+            jurorNumbers.add(JUROR_NUMBER + "55");
+
+            final String payload = createBureauJwt("COURT_USER", "415");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            PrintLettersRequestDto requestDto = PrintLettersRequestDto.builder()
+                .jurorNumbers(jurorNumbers)
+                .letterType(CourtLetterType.WITHDRAWAL)
+                .build();
+
+            RequestEntity<PrintLettersRequestDto> request = new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(request,
+                PrintLetterDataResponseDto[].class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+
+            PrintLetterDataResponseDto[] data = response.getBody();
+            assertThat(data.length).as("Expect 1 letter").isEqualTo(1);
+
+            verifyDataEnglish(data[0], "55");
+
+        }
+
+        private void verifyDataEnglish(PrintLetterDataResponseDto dto, String jurorPostfix) {
+            assertThat(dto.getCourtName())
+                .as("Expect court name to be " + "The Crown Court\nat CHESTER")
+                .isEqualTo("The Crown Court\nat CHESTER");
+            assertThat(dto.getCourtAddressLine1()).as("Expect address line 1 to be 'THE CASTLE'")
+                .isEqualTo("THE CASTLE");
+            assertThat(dto.getCourtAddressLine2()).as("Expect address line 2 to be 'CHESTER'")
+                .isEqualTo("CHESTER");
+            assertThat(dto.getCourtAddressLine3()).as("Expect address line 3 to be null").isNull();
+            assertThat(dto.getCourtAddressLine4()).as("Expect address line 4 to be null").isNull();
+            assertThat(dto.getCourtAddressLine5()).as("Expect address line 5 to be null").isNull();
+            assertThat(dto.getCourtAddressLine6()).as("Expect address line 6 to be null").isNull();
+            assertThat(dto.getCourtPostCode()).as("Expect post code to be 'CH1 2AN'")
+                .isEqualTo("CH1 2AN");
+            assertThat(dto.getCourtPhoneNumber()).as("Expect court number to be 01244 356726")
+                .isEqualTo("01244 356726");
+            assertThat(dto.getUrl()).as("Expect URL to be www.gov.uk/jury-service")
+                .isEqualTo("www.gov.uk/jury-service");
+            assertThat(dto.getSignature()).as("Expect signatory to be Jury Manager")
+                .isEqualTo("Jury Manager\n\nAn Officer of the Crown Court");
+            assertThat(dto.getJurorFirstName()).as("Expect first name to be FNAME1")
+                .isEqualTo("FNAME1");
+            assertThat(dto.getJurorLastName()).as("Expect last name to be LNAME1")
+                .isEqualTo("LNAME1");
+            assertThat(dto.getJurorAddressLine1()).as("Expect address line 1 to be Address Line 1")
+                .isEqualTo("Address Line 1");
+            assertThat(dto.getJurorAddressLine2()).as("Expect address line 2 to be Address  Line 2")
+                .isEqualTo("Address Line 2");
+            assertThat(dto.getJurorAddressLine3()).as("Expect address line 3 to be Address Line 3")
+                .isEqualTo("Address Line 3");
+            assertThat(dto.getJurorAddressLine4()).as("Expect address line 4 to be CARDIFF")
+                .isEqualTo("Some Town");
+            assertThat(dto.getJurorAddressLine5())
+                .as("Expect address line 5 to be Some County")
+                .isEqualTo("Some County");
+            assertThat(dto.getJurorPostcode()).as("Expect post code to be CH1 2AN")
+                .isEqualTo("CH1 2AN");
+            assertThat(dto.getJurorNumber()).as("Expect juror number to be 5555555" + jurorPostfix)
+                .isEqualTo(JUROR_NUMBER + jurorPostfix);
+        }
+    }
+
+    @Nested
+    @DisplayName("POST - /api/v1/moj/letter/print-court-letter (Excusal Refusal)")
+    @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_ExcusalDenied.sql"})
+    class PrintCourtLetterExcusalDenied {
+        static final String jurorNumber = "123456789";
+        static final String welshJurorNumber = "987654321";
+        static final URI URL = URI.create("/api/v1/moj/letter/print-court-letter");
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Reissue Excusal Denied Letter - Happy path - English")
+        void printCourtLetterExcusalDeniedHappyPath() {
+            final String payload = createBureauJwt("COURT_USER", "415");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            PrintLettersRequestDto requestDto = PrintLettersRequestDto.builder()
+                .jurorNumbers(Collections.singletonList(jurorNumber))
+                .letterType(CourtLetterType.EXCUSAL_REFUSED)
+                .build();
+
+            RequestEntity<PrintLettersRequestDto> request = new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(request,
+                PrintLetterDataResponseDto[].class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+
+            PrintLetterDataResponseDto[] data = response.getBody();
+            assertThat(data.length).as("Expect 1 letter").isEqualTo(1);
+
+            verifyEnglishLetter(data[0]);
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Reissue Excusal Denied Letter - Happy path - Welsh")
+        void printCourtLetterExcusalDeniedHappyPathWelsh() {
+            final String payload = createBureauJwt("COURT_USER", "457");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            PrintLettersRequestDto requestDto = PrintLettersRequestDto.builder()
+                .jurorNumbers(Collections.singletonList(welshJurorNumber))
+                .letterType(CourtLetterType.EXCUSAL_REFUSED)
+                .build();
+
+            RequestEntity<PrintLettersRequestDto> request = new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(request,
+                PrintLetterDataResponseDto[].class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+
+            PrintLetterDataResponseDto[] data = response.getBody();
+            assertThat(data.length).as("Expect 1 letter").isEqualTo(1);
+
+            verifyWelshLetter(data[0]);
+        }
+
+        private void verifyEnglishLetter(PrintLetterDataResponseDto dto) {
+            assertThat(dto.getCourtName())
+                .as("Expect court name to be " + "The Crown Court\nat CHESTER")
+                .isEqualTo("The Crown Court\nat CHESTER");
+            assertThat(dto.getCourtAddressLine1()).as("Expect address line 1 to be 'THE CASTLE'")
+                .isEqualTo("THE CASTLE");
+            assertThat(dto.getCourtAddressLine2()).as("Expect address line 2 to be 'CHESTER'")
+                .isEqualTo("CHESTER");
+            assertThat(dto.getCourtAddressLine3()).as("Expect address line 3 to be null").isNull();
+            assertThat(dto.getCourtAddressLine4()).as("Expect address line 4 to be null").isNull();
+            assertThat(dto.getCourtAddressLine5()).as("Expect address line 5 to be null").isNull();
+            assertThat(dto.getCourtAddressLine6()).as("Expect address line 6 to be null").isNull();
+            assertThat(dto.getCourtPostCode()).as("Expect post code to be 'CH1 2AN'")
+                .isEqualTo("CH1 2AN");
+            assertThat(dto.getCourtPhoneNumber()).as("Expect court number to be 01244 356726")
+                .isEqualTo("01244 356726");
+            assertThat(dto.getUrl()).as("Expect URL to be www.gov.uk/jury-service")
+                .isEqualTo("www.gov.uk/jury-service");
+            assertThat(dto.getSignature()).as("Expect signatory to be Jury Manager")
+                .isEqualTo("Jury Manager\n\nAn Officer of the Crown Court");
+            assertThat(dto.getJurorFirstName()).as("Expect first name to be FNAME")
+                .isEqualTo("FNAME");
+            assertThat(dto.getJurorLastName()).as("Expect last name to be LNAME")
+                .isEqualTo("LNAME");
+            assertThat(dto.getJurorAddressLine1()).as("Expect address line 1 to be Address Line 1")
+                .isEqualTo("Address Line 1");
+            assertThat(dto.getJurorAddressLine2()).as("Expect address line 2 to be Address  Line 2")
+                .isEqualTo("Address Line 2");
+            assertThat(dto.getJurorAddressLine3()).as("Expect address line 3 to be Address Line 3")
+                .isEqualTo("Address Line 3");
+            assertThat(dto.getJurorAddressLine4()).as("Expect address line 4 to be CARDIFF")
+                .isEqualTo("CARDIFF");
+            assertThat(dto.getJurorAddressLine5())
+                .as("Expect address line 5 to be Some County")
+                .isEqualTo("Some County");
+            assertThat(dto.getJurorPostcode()).as("Expect post code to be CH1 2AN")
+                .isEqualTo("CH1 2AN");
+            assertThat(dto.getJurorNumber()).as("Expect juror number to be 123456789")
+                .isEqualTo(jurorNumber);
+            assertThat(dto.getCourtManager()).as("Expect the court manager to not be null").isNotNull();
+            assertThat(dto.getCourtManager())
+                .as("Expect the court manager to be The Court Manager")
+                .isEqualTo("The Court Manager");
+        }
+
+        private void verifyWelshLetter(PrintLetterDataResponseDto dto) {
+            assertThat(dto.getCourtName())
+                .as("Expect court name to be " + "Llys y Goron\nynAbertawe")
+                .isEqualTo("Llys y Goron\nynAbertawe");
+            assertThat(dto.getCourtAddressLine1())
+                .as("Expect address line 1 to be 'Y LLYSOEDD BARN'")
+                .isEqualTo("Y LLYSOEDD BARN");
+            assertThat(dto.getCourtAddressLine2())
+                .as("Expect address line 2 to be 'LON SAN HELEN'")
+                .isEqualTo("LON SAN HELEN");
+            assertThat(dto.getCourtAddressLine3())
+                .as("Expect address line 3 to be ABERTAWE")
+                .isEqualTo("ABERTAWE");
+            assertThat(dto.getCourtAddressLine4())
+                .as("Expect address line 4 to be null")
+                .isNull();
+            assertThat(dto.getCourtAddressLine5())
+                .as("Expect address line 5 to be null")
+                .isNull();
+            assertThat(dto.getCourtAddressLine6())
+                .as("Expect address line 6 to be null")
+                .isNull();
+            assertThat(dto.getCourtPostCode())
+                .as("Expect post code to be 'SA1 4PF'")
+                .isEqualTo("SA1 4PF");
+            assertThat(dto.getCourtPhoneNumber())
+                .as("Expect court number to be 01792 637067")
+                .isEqualTo("01792 637067");
+
+            assertThat(dto.getUrl())
+                .as("Expect URL to be www.gov.uk/jury-service")
+                .isEqualTo("www.gov.uk/jury-service");
+            assertThat(dto.getSignature())
+                .as("Expect signatory to be Jury Manager")
+                .isEqualTo("Jury Manager\n\nSwyddog Llys");
+
+            assertThat(dto.getJurorFirstName())
+                .as("Expect first name to be FNAME")
+                .isEqualTo("FNAME");
+            assertThat(dto.getJurorLastName())
+                .as("Expect last name to be LNAME")
+                .isEqualTo("LNAME");
+            assertThat(dto.getJurorAddressLine1())
+                .as("Expect address line 1 to be Address Line 1")
+                .isEqualTo("Address Line 1");
+            assertThat(dto.getJurorAddressLine2())
+                .as("Expect address line 2 to be Address Line 2")
+                .isEqualTo("Address Line 2");
+            assertThat(dto.getJurorAddressLine3())
+                .as("Expect address line 3 to be Address Line 3")
+                .isEqualTo("Address Line 3");
+            assertThat(dto.getJurorAddressLine4())
+                .as("Expect address line 4 to be CARDIFF")
+                .isEqualTo("CARDIFF");
+            assertThat(dto.getJurorAddressLine5())
+                .as("Expect address line 5 to be Some County")
+                .isEqualTo("Some County");
+            assertThat(dto.getJurorPostcode())
+                .as("Expect post code to be CH1 2AN")
+                .isEqualTo("CH1 2AN");
+            assertThat(dto.getJurorNumber())
+                .as("Expect juror number to be " + welshJurorNumber)
+                .isEqualTo(welshJurorNumber);
+            assertThat(dto.getWelsh())
+                .as("Expect welsh to be true")
+                .isTrue();
+            assertThat(dto.getCourtManager())
+                .as("Expect court manager to be Y Rheolwr Llys")
+                .isEqualTo("Y Rheolwr Llys");
         }
     }
 }

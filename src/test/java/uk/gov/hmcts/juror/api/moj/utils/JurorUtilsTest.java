@@ -150,6 +150,28 @@ public class JurorUtilsTest {
     }
 
     @Test
+    public void test_checkOwnershipForCurrentUser_bureauUser_courtOwned_alwaysAllowBureauFalse() {
+        String jurorNumber = "111111111";
+        String owner = "416";
+        JurorPool jurorPool = createJurorPool(jurorNumber, owner);
+        Juror juror = jurorPool.getJuror();
+
+        Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+            JurorUtils.checkOwnershipForCurrentUser(juror, "400",false));
+    }
+
+    @Test
+    public void test_checkOwnershipForCurrentUser_bureauUser_courtOwned_alwaysAllowBureauTrue() {
+        String jurorNumber = "111111111";
+        String owner = "416";
+        JurorPool jurorPool = createJurorPool(jurorNumber, owner);
+        Juror juror = jurorPool.getJuror();
+
+        Assertions.assertThatNoException().isThrownBy(() ->
+            JurorUtils.checkOwnershipForCurrentUser(juror, "400",true));
+    }
+
+    @Test
     public void test_getActiveJurorRecord_recordExists() {
         Juror jurorOne = new Juror();
         jurorOne.setJurorNumber("111111111");

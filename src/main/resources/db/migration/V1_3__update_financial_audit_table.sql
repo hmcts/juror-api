@@ -37,3 +37,26 @@ ALTER TABLE juror_mod.financial_audit_details
     DROP COLUMN approved_on;
 ALTER TABLE juror_mod.financial_audit_details
     DROP COLUMN juror_revision_when_approved;
+
+
+CREATE TABLE juror_mod.financial_audit_details_appearances
+(
+    financial_audit_id int8       NOT NULL,
+    juror_number       varchar(9) NOT NULL,
+    attendance_date    date       NOT NULL,
+    loc_code           varchar(3) NOT NULL,
+    appearance_version int8       NOT NULL,
+
+    CONSTRAINT financial_audit_details_appearances_pkey PRIMARY KEY (financial_audit_id, juror_number,
+                                                                     attendance_date, loc_code,
+                                                                     appearance_version),
+    CONSTRAINT financial_audit_details_appearances_financial_audit_id_fk FOREIGN KEY (financial_audit_id) REFERENCES
+        juror_mod.financial_audit_details (id),
+    CONSTRAINT financial_audit_details_appearances_app_loc_code_fk FOREIGN KEY (loc_code) REFERENCES juror_mod
+        .court_location (loc_code),
+    CONSTRAINT financial_audit_details_appearances_appearance_juror_fk FOREIGN KEY (juror_number) REFERENCES
+        juror_mod.juror (juror_number)
+);
+
+ALTER TABLE juror_mod.appearance
+    ADD COLUMN version bigint NOT NULL default 1;

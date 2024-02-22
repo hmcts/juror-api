@@ -48,9 +48,11 @@ import uk.gov.hmcts.juror.api.juror.domain.QJurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.QPool;
 import uk.gov.hmcts.juror.api.moj.domain.QUser;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -212,7 +214,7 @@ public class UserServiceImpl implements UserService {
                 ?
                 assignToUser.getUsername()
                 :
-                null)
+                    null)
             .jurorNumber(jurorResponse.getJurorNumber())
             .dateReceived(jurorResponse.getDateReceived())
             .staffAssignmentDate(assignmentDate)
@@ -242,7 +244,7 @@ public class UserServiceImpl implements UserService {
             ?
             jurorResponse.getStaff().getUsername()
             :
-            null;
+                null;
         log.info(
             "Updated staff assignment: '{}' assigned '{}' to response '{}' on '{}'",
             assigningUser.getUsername(),
@@ -281,8 +283,9 @@ public class UserServiceImpl implements UserService {
     public StaffRosterResponseDto activeStaffRoster() {
         log.trace("Getting active staff roster");
         final List<User> activeStaffList =
-            Lists.newArrayList(userRepository.findAll(active().and(owner(SecurityUtil.getActiveUsersBureauPayload().getOwner())),
-            sortNameAsc()));
+            Lists.newArrayList(
+                userRepository.findAll(active().and(owner(SecurityUtil.getActiveUsersBureauPayload().getOwner())),
+                    sortNameAsc()));
         log.debug("Found {} active staff members", activeStaffList.size());
         return StaffRosterResponseDto.builder()
             .data(activeStaffList.stream()
@@ -306,6 +309,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Assign urgent response.
+     *
      * @param urgentJurorResponse Previously persisted juror response entity
      * @throws StaffAssignmentException Failed to assign the response to a staff member
      */
@@ -369,6 +373,15 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public User findByUsername(String username) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new MojException.NotFound("User not found", null);
+        }
+        return user;
+    }
+
     /**
      * Get multiple staff assignments.
      *
@@ -417,17 +430,17 @@ public class UserServiceImpl implements UserService {
                 ?
                 jurorTitle
                 :
-                "");
+                    "");
             jurorDisplayName.append((jurorFirstName != null)
                 ?
                 " " + jurorFirstName
                 :
-                "");
+                    "");
             jurorDisplayName.append((jurorLastName != null)
                 ?
                 " " + jurorLastName
                 :
-                "");
+                    "");
 
             AssignmentListDataDto assignmentListDataDto = new AssignmentListDataDto(
                 jurorResponse.getJurorNumber(),
@@ -740,7 +753,9 @@ public class UserServiceImpl implements UserService {
             null,
             null,
             0,
-            true
+            true,
+            BigDecimal.ZERO,
+            false
         );
         if (log.isTraceEnabled()) {
             log.trace("Converted {} and {} into {}", dto, teamEntity, staff);

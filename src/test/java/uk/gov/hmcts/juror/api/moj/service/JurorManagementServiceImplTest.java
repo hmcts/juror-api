@@ -55,6 +55,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("PMD.ExcessiveImports")
 @RunWith(SpringRunner.class)
 public class JurorManagementServiceImplTest {
 
@@ -698,7 +699,7 @@ public class JurorManagementServiceImplTest {
         // one save invocation for each newly created juror, and another save invocation to update the source juror
         // record
         // plus one additional save invocation for logically deleting the previously transferred record
-        verify(jurorPoolRepository, times((jurorNumbers.size() * 2) + 1))
+        verify(jurorPoolRepository, times(jurorNumbers.size() * 2 + 1))
             .save(any());
         verify(poolRequestRepository, times(1))
             .saveAndFlush(any());
@@ -1438,7 +1439,7 @@ public class JurorManagementServiceImplTest {
         doReturn(Optional.of(targetCourtLocation)).when(courtLocationRepository)
             .findByLocCode(targetCourtLocCode);
 
-        Assertions.assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
+        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
             jurorManagementService.transferPoolMembers(payload, requestDto));
 
         verify(poolRequestRepository, times(1))
@@ -1682,8 +1683,8 @@ public class JurorManagementServiceImplTest {
         Assertions.assertThat(validationFailure1)
             .as("Expect juror 222222222 to be unavailable for transfer")
             .isNotNull();
-        Assertions.assertThat(validationFailure1.getFailureReason())
-            .isEqualTo(JurorManagementConstants.ABOVE_AGE_LIMIT_MESSAGE);
+        Assertions.assertThat(JurorManagementConstants.ABOVE_AGE_LIMIT_MESSAGE)
+            .isEqualTo(validationFailure1.getFailureReason());
 
         JurorManagementResponseDto.ValidationFailure validationFailure2 = validationFailures.stream()
             .filter(unavailable -> unavailable.getJurorNumber().equalsIgnoreCase("333333333"))
@@ -1700,8 +1701,8 @@ public class JurorManagementServiceImplTest {
         Assertions.assertThat(validationFailure3)
             .as("Expect juror 555555555 to be unavailable for transfer")
             .isNotNull();
-        Assertions.assertThat(validationFailure3.getFailureReason())
-            .isEqualTo(JurorManagementConstants.NO_ACTIVE_RECORD_MESSAGE);
+        Assertions.assertThat(JurorManagementConstants.NO_ACTIVE_RECORD_MESSAGE)
+            .isEqualTo(validationFailure3.getFailureReason());
     }
 
     @Test

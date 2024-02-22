@@ -45,6 +45,10 @@ public final class JurorUtils {
         log.trace("Exit checkReadAccessForCurrentUser");
     }
 
+    public static void checkOwnershipForCurrentUser(Juror juror, String owner) {
+        checkOwnershipForCurrentUser(juror, owner, false);
+    }
+
     /**
      * Users are only authorised to edit a record they own.
      * Bureau user's can view any record but can only write to a record they own
@@ -53,9 +57,13 @@ public final class JurorUtils {
      * @param juror Juror record object
      * @param owner 3-digit numeric string to uniquely identify a court location
      */
-    public static void checkOwnershipForCurrentUser(Juror juror, String owner) {
+    public static void checkOwnershipForCurrentUser(Juror juror, String owner, boolean bureauAlwaysAllowed) {
         log.trace("Enter checkOwnershipForCurrentUser");
         log.debug("Check if current user (owner = {}) owns juror record: {}", owner, juror.getJurorNumber());
+        if (bureauAlwaysAllowed && owner.equals(SecurityUtil.BUREAU_OWNER)) {
+            log.debug("Bureau user is always allowed to edit juror records");
+            return;
+        }
 
         List<String> activeJurorPoolOwners = juror.getAssociatedPools().stream()
             .map(JurorPool::getOwner)
@@ -74,7 +82,6 @@ public final class JurorUtils {
      *
      * @param jurorRepository JPA interface to the database to generate and execute SQL queries
      * @param jurorNumber     9-digit numeric string to identify jurors
-     *
      * @return a juror record, there should be only one juror record
      */
     public static Juror getActiveJurorRecord(JurorRepository jurorRepository, String jurorNumber) {
@@ -116,7 +123,6 @@ public final class JurorUtils {
      *
      * @param dateOfBirth      juror's date of birth
      * @param serviceStartDate first date the juror is due to attend court for their service
-     *
      * @return integer representation of age in whole years
      * @throws IllegalArgumentException thrown if either argument is null
      */

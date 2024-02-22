@@ -119,7 +119,7 @@ public class JurorPaperResponseDto {
 
     @JsonProperty("cjsEmployment")
     @Schema(description = "Array of any Criminal Justice System employment of the Juror")
-    private List<CJSEmployment> cjsEmployment;
+    private List<CjsEmployment> cjsEmployment;
 
     @JsonProperty("specialNeeds")
     @Schema(description = "Array of any special requirements of the Juror at the court location")
@@ -225,7 +225,7 @@ public class JurorPaperResponseDto {
     @NoArgsConstructor
     @Getter
     @Schema(description = "Criminal Justice System employment object for the Juror")
-    public static class CJSEmployment {
+    public static class CjsEmployment {
         @JsonProperty("cjsEmployer")
         @Schema(description = "CJS employer name", requiredMode = Schema.RequiredMode.REQUIRED, example = "Police")
         @NotNull

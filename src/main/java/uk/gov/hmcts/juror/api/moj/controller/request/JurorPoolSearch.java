@@ -24,6 +24,7 @@ public class JurorPoolSearch implements IsPageable {
     @ValidateIf(fields = {"jurorNumber", "postcode", "poolNumber"},
         condition = ValidateIf.Condition.NONE_PRESENT,
         type = ValidateIf.Type.REQUIRE)
+    @JsonProperty("juror_name")
     private String jurorName;
 
     @ValidateIf(fields = {"jurorName", "postcode"},
@@ -32,6 +33,7 @@ public class JurorPoolSearch implements IsPageable {
     @ValidateIf(fields = {"jurorName", "postcode", "poolNumber"},
         condition = ValidateIf.Condition.NONE_PRESENT,
         type = ValidateIf.Type.REQUIRE)
+    @JsonProperty("juror_number")
     private String jurorNumber;
 
     @ValidateIf(fields = {"jurorNumber", "jurorName"},
@@ -40,6 +42,7 @@ public class JurorPoolSearch implements IsPageable {
     @ValidateIf(fields = {"jurorNumber", "jurorName", "poolNumber"},
         condition = ValidateIf.Condition.NONE_PRESENT,
         type = ValidateIf.Type.REQUIRE)
+    @JsonProperty("postcode")
     private String postcode;
 
     @ValidateIf(fields = {"postcode", "jurorNumber", "jurorName"},
@@ -48,6 +51,7 @@ public class JurorPoolSearch implements IsPageable {
     @ValidateIf(fields = {"postcode", "jurorNumber", "jurorName"},
         condition = ValidateIf.Condition.NONE_PRESENT,
         type = ValidateIf.Type.REQUIRE)
+    @JsonProperty("pool_number")
     private String poolNumber;
 
     @Min(1)
