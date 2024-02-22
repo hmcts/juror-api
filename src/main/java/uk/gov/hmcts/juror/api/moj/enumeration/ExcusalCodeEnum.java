@@ -6,7 +6,6 @@ import lombok.Getter;
 
 /**
  * Excusal codes (reasons), mapped to the database table t_exc_code.
- *
  * (removed deceased as that is a separate flow)
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

@@ -7,6 +7,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.config.security.IsSeniorCourtUser;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
+import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -14,8 +16,10 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -94,6 +98,79 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     @Override
+    public void createEditBankSortCodeHistory(String jurorNumber) {
+        registerHistory(jurorNumber, null, HistoryCodeMod.CHANGE_PERSONAL_DETAILS, "Bank Sort Code Changed",
+            SecurityUtil.getActiveLogin());
+    }
+    @Override
+    public void createEditBankAccountNameHistory(String jurorNumber) {
+        registerHistory(jurorNumber, null, HistoryCodeMod.CHANGE_PERSONAL_DETAILS, "Bank Account Name Changed",
+            SecurityUtil.getActiveLogin());
+    }
+    @Override
+    public void createEditBankAccountNumberHistory(String jurorNumber) {
+        registerHistory(jurorNumber, null, HistoryCodeMod.CHANGE_PERSONAL_DETAILS, "Bank Acct No Changed",
+            SecurityUtil.getActiveLogin());
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    public void createExpenseForApprovalHistory(FinancialAuditDetails financialAuditDetails,
+                                                Appearance appearance) {
+        registerHistoryWithAdditionalInfo(appearance.getJurorNumber(),
+            appearance.getPoolNumber(),
+            HistoryCodeMod.APPEARANCE_PAYMENTS,
+            BigDecimalUtils.currencyFormat(appearance.getTotalDue()),
+            SecurityUtil.getActiveLogin(),
+            appearance.getAttendanceDate(),
+            financialAuditDetails.getFinancialAuditNumber());
+    }
+
+    @Override
+    @PreAuthorize("isAuthenticated()")
+    public void createExpenseEditHistory(FinancialAuditDetails financialAuditDetails,
+                                         Appearance appearance) {
+        registerHistoryWithAdditionalInfo(appearance.getJurorNumber(),
+            appearance.getPoolNumber(),
+            HistoryCodeMod.EDIT_PAYMENTS,
+            BigDecimalUtils.currencyFormat(appearance.getTotalDue()),
+            SecurityUtil.getActiveLogin(),
+            appearance.getAttendanceDate(),
+            financialAuditDetails.getFinancialAuditNumber());
+    }
+
+    @Override
+    @PreAuthorize("isAuthenticated()")
+    public void createExpenseApproveCash(String jurorNumber,
+                                         String poolNumber,
+                                         FinancialAuditDetails financialAuditDetails,
+                                         LocalDate latestAppearanceDate,
+                                         BigDecimal totalAmount) {
+        registerHistoryWithAdditionalInfo(jurorNumber,
+            poolNumber,
+            HistoryCodeMod.CASH_PAYMENT_APPROVAL,
+            BigDecimalUtils.currencyFormat(totalAmount),
+            SecurityUtil.getActiveLogin(),
+            latestAppearanceDate,
+            financialAuditDetails.getFinancialAuditNumber());
+    }
+
+    @Override
+    @PreAuthorize("isAuthenticated()")
+    public void createExpenseApproveBacs(String jurorNumber,
+                                         String poolNumber,
+                                         FinancialAuditDetails financialAuditDetails,
+                                         LocalDate latestAppearanceDate,
+                                         BigDecimal totalAmount) {
+        registerHistoryWithAdditionalInfo(jurorNumber,
+            poolNumber,
+            HistoryCodeMod.ARAMIS_EXPENSES_FILE_CREATED,
+            BigDecimalUtils.currencyFormat(totalAmount),
+            SecurityUtil.getActiveLogin(),
+            latestAppearanceDate,
+            financialAuditDetails.getFinancialAuditNumber());
+    }
+
+    @Override
     @IsCourtUser
     public void createFailedToAttendHistory(JurorPool jurorPool) {
         if (jurorPool.getStatus().getStatus() != IJurorStatus.FAILED_TO_ATTEND) {
@@ -165,12 +242,27 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
 
     private void registerHistoryWithAdditionalInfo(JurorPool jurorPool, HistoryCodeMod historyCode, String info,
                                                    String userId, LocalDate otherInfoDate, String otherInfoRef) {
+        registerHistoryWithAdditionalInfo(
+            jurorPool.getJurorNumber(),
+            jurorPool.getPoolNumber(),
+            historyCode,
+            info,
+            userId,
+            otherInfoDate,
+            otherInfoRef
+        );
+    }
+
+    private void registerHistoryWithAdditionalInfo(String jurorNumber, String poolNumber,
+                                                   HistoryCodeMod historyCode,
+                                                   String info,
+                                                   String userId, LocalDate otherInfoDate, String otherInfoRef) {
         log.debug("Creating part history for juror {} with code {} and info {} for userId {}",
-            jurorPool.getJurorNumber(), historyCode, info, userId);
+            jurorNumber, historyCode, info, userId);
 
         save(JurorHistory.builder()
-            .poolNumber(jurorPool.getPoolNumber())
-            .jurorNumber(jurorPool.getJuror().getJurorNumber())
+            .poolNumber(poolNumber)
+            .jurorNumber(jurorNumber)
             .dateCreated(LocalDateTime.now(clock))
             .createdBy(userId)
             .historyCode(historyCode)
@@ -179,4 +271,5 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
             .otherInformationRef(otherInfoRef)
             .build());
     }
+
 }

@@ -49,7 +49,7 @@ public class JurorExpenseCalcServiceImplTest {
     }
 
     @Test
-    public void getExpensesCalcResults_HappyPath() {
+    public void retrieveExpensesCalcResults_HappyPath() {
         given(expensesratesRepository.findAll()).willReturn(expensesRates);
 
         jurorExpensesCalcRequestDto = JurorExpensesCalcRequestDto.builder()
@@ -67,7 +67,7 @@ public class JurorExpenseCalcServiceImplTest {
     }
 
     @Test(expected = JurorExpenseCalcException.FailedToRetrieveRateData.class)
-    public void getExpensesCalcResults_NoRateData() {
+    public void retrieveExpensesCalcResults_NoRateData() {
         given(expensesratesRepository.findAll()).willReturn(expensesRates = new ArrayList<>());
 
         jurorExpensesCalcRequestDto = JurorExpensesCalcRequestDto.builder()
@@ -85,7 +85,7 @@ public class JurorExpenseCalcServiceImplTest {
 
 
     @Test(expected = JurorExpenseCalcException.MissingParamsInRequest.class)
-    public void getExpensesCalcResults_MissingParam() {
+    public void retrieveExpensesCalcResults_MissingParam() {
 
         //missing travellingModes
         jurorExpensesCalcRequestDto = JurorExpensesCalcRequestDto.builder()

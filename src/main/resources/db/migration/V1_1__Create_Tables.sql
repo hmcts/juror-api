@@ -1,7 +1,7 @@
--- DROP ROLE juror;
+--DROP ROLE juror;
 
 do
-$$begin if not exists (select * from pg_user where usename = 'juror') then
+$$begin if not exists (select * from pg_catalog.pg_roles where rolname = 'juror') then
     CREATE ROLE juror WITH
         NOSUPERUSER
         NOCREATEDB
@@ -16,7 +16,7 @@ $$
 ;
 -- DROP ROLE juror_digital;
 do
-$$begin if not exists (select * from pg_user where usename = 'juror_digital') then
+$$begin if not exists (select * from pg_catalog.pg_roles where rolname = 'juror_digital') then
     CREATE ROLE juror_digital WITH
         NOSUPERUSER
         NOCREATEDB
@@ -31,7 +31,7 @@ end if;end
 ;
 -- DROP ROLE juror_digital_user;
 do
-$$begin if not exists (select * from pg_user where usename = 'juror_digital_user') then
+$$begin if not exists (select * from pg_catalog.pg_roles where rolname = 'juror_digital_user') then
     CREATE ROLE juror_digital_user WITH
         NOSUPERUSER
         NOCREATEDB
@@ -46,7 +46,7 @@ $$
 ;
 -- DROP ROLE juror_mod;
 do
-$$begin if not exists (select * from pg_user where usename = 'juror_mod') then
+$$begin if not exists (select * from pg_catalog.pg_roles where rolname = 'juror_mod') then
     CREATE ROLE juror_mod WITH
         NOSUPERUSER
         NOCREATEDB

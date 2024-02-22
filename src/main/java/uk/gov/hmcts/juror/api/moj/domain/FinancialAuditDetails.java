@@ -11,12 +11,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -24,10 +23,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "financial_audit_details", schema = "juror_mod")
 @NoArgsConstructor
+@Data
 @AllArgsConstructor
 @Builder
-@Getter
-@Setter
+@ToString
 public class FinancialAuditDetails implements Serializable {
     private static final String F_AUDIT_GENERATOR_NAME = "appearance_f_audit_gen";
     public static final String F_AUDIT_PREFIX = "F";
@@ -37,7 +36,6 @@ public class FinancialAuditDetails implements Serializable {
     @GeneratedValue(generator = F_AUDIT_GENERATOR_NAME, strategy = GenerationType.SEQUENCE)
     @SequenceGenerator(name = F_AUDIT_GENERATOR_NAME, schema = "juror_mod", sequenceName = "appearance_f_audit_seq",
         allocationSize = 1)
-    @Getter(value = AccessLevel.NONE)
     private Long id;
 
 
@@ -73,7 +71,8 @@ public class FinancialAuditDetails implements Serializable {
 
     public enum Type {
         FOR_APPROVAL,
-        APPROVED,
+        APPROVED_CASH,
+        APPROVED_BACS,
         EDIT
     }
 }

@@ -33,9 +33,9 @@ import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListRes
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDataResponseDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
-import uk.gov.hmcts.juror.api.moj.service.letter.CourtLetterPrintService;
-import uk.gov.hmcts.juror.api.moj.service.letter.CourtLetterService;
 import uk.gov.hmcts.juror.api.moj.service.letter.RequestInformationLetterService;
+import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtLetterPrintService;
+import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtLetterService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.List;
@@ -49,7 +49,7 @@ import java.util.List;
 @Validated
 @Tag(name = "Summons Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LawOfDemeter"})
 public class LetterController {
 
     @NonNull

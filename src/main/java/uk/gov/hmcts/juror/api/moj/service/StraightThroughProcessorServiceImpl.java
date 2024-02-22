@@ -52,7 +52,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
     @Autowired
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     @Autowired
-    private final JurorResponseCjsEmploymentRepositoryMod jurorResponseCJSRepository;
+    private final JurorResponseCjsEmploymentRepositoryMod jurorResponseCjsRepository;
     @Autowired
     private final JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;
     @Autowired
@@ -76,7 +76,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
     @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
     public StraightThroughProcessorServiceImpl(
         @NonNull final JurorPaperResponseRepositoryMod jurorPaperResponseRepository,
-        @NonNull final JurorResponseCjsEmploymentRepositoryMod jurorResponseCJSRepository,
+        @NonNull final JurorResponseCjsEmploymentRepositoryMod jurorResponseCjsRepository,
         @NonNull final JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository,
         @NonNull final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository,
         @NonNull final JurorRepository jurorRepository,
@@ -87,7 +87,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
         @NonNull final SummonsReplyMergeService mergeService,
         @NonNull final LetterService<DisqualificationLetterMod> disqualificationLetterService) {
         this.jurorPaperResponseRepository = jurorPaperResponseRepository;
-        this.jurorResponseCJSRepository = jurorResponseCJSRepository;
+        this.jurorResponseCjsRepository = jurorResponseCjsRepository;
         this.jurorReasonableAdjustmentRepository = jurorReasonableAdjustmentRepository;
         this.jurorDigitalResponseRepository = jurorDigitalResponseRepository;
         this.jurorRepository = jurorRepository;
@@ -160,7 +160,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
         }
 
         // carry out CJS employment validation
-        if (!jurorResponseCJSRepository.findByJurorNumber(jurorPool.getJurorNumber()).isEmpty()) {
+        if (!jurorResponseCjsRepository.findByJurorNumber(jurorPool.getJurorNumber()).isEmpty()) {
             log.debug("Criminal Justice System employment must not be provided to qualify as straight-through");
             return false;
         }
@@ -244,8 +244,8 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
     public boolean isValidForStraightThroughAgeDisqualification(DigitalResponse jurorDigitalResponse,
                                                                 LocalDate returnDate, JurorPool jurorPool) {
         return hasPassedValidationForStraightThroughProcessing(jurorDigitalResponse.getReplyType(),
-            jurorDigitalResponse.getRelationship(), jurorPool) &&
-            !isJurorAgeValidForServiceStartDate(jurorPool.getJurorNumber(),
+            jurorDigitalResponse.getRelationship(), jurorPool)
+            && !isJurorAgeValidForServiceStartDate(jurorPool.getJurorNumber(),
                 jurorDigitalResponse.getDateOfBirth(), returnDate);
     }
 

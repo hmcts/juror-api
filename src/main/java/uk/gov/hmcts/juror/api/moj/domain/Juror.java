@@ -24,7 +24,6 @@ import org.hibernate.envers.AuditOverride;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.validator.constraints.Length;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -149,10 +148,9 @@ public class Juror extends Address implements Serializable {
     @Column(name = "reasonable_adj_msg")
     private String reasonableAdjustmentMessage;
 
-    @NotAudited
     @Length(max = 20)
-    @Column(name = "smart_card")
-    private String smartCard;
+    @Column(name = "smart_card_number")
+    private String smartCardNumber;
 
     @NotAudited
     @Column(name = "completion_date")
@@ -234,10 +232,6 @@ public class Juror extends Address implements Serializable {
     @Pattern(regexp = NO_PIPES_REGEX)
     private String pendingLastName;
 
-    @Column(name = "amount_spent", precision = 8)
-    @NotAudited
-    private BigDecimal amountSpent;
-
     @Column(name = "travel_time", precision = 5)
     @NotAudited
     private LocalTime travelTime;
@@ -249,6 +243,9 @@ public class Juror extends Address implements Serializable {
     @Column(name = "mileage")
     @NotAudited
     private Integer mileage;
+
+    @Column(name = "claiming_subsistence_allowance")
+    private boolean claimingSubsistenceAllowance;
 
     @Column(name = "bureau_transfer_date")
     @NotAudited
@@ -267,5 +264,9 @@ public class Juror extends Address implements Serializable {
     @PreUpdate
     private void preUpdate() {
         lastUpdate = LocalDateTime.now();
+    }
+
+    public String getName() {
+        return String.format("%s %s %s", title, firstName, lastName);
     }
 }

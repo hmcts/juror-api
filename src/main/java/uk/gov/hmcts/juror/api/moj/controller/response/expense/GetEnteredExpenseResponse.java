@@ -24,6 +24,9 @@ public class GetEnteredExpenseResponse {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfExpense;
 
+    @JsonProperty("none_attendance_day")
+    private Boolean noneAttendanceDay;
+
     @JsonProperty("appearance_stage")
     private AppearanceStage stage;
 
@@ -54,6 +57,7 @@ public class GetEnteredExpenseResponse {
     @NoArgsConstructor
     public static class DailyExpenseTimeEntered extends DailyExpenseTime {
         @JsonProperty("time_spent_at_court")
+        @JsonFormat(pattern = "HH:mm")
         private LocalTime timeSpentAtCourt;
     }
 }

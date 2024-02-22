@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QUser;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 
@@ -81,7 +82,7 @@ public class UserRepositoryTest extends AbstractIntegrationTest {
         final String NEW_LOGIN = "rvilliers";
         final String NEW_NAME = "Ronald Villiers";
         final User newStaff =
-            userRepository.save(User.builder().owner("400").username(NEW_LOGIN).name(NEW_NAME).level(1).active(true).build());
+            userRepository.save(User.builder().owner("400").username(NEW_LOGIN).approvalLimit(BigDecimal.ZERO).name(NEW_NAME).level(1).active(true).build());
 
         assertThat(newStaff).isNotNull();
 

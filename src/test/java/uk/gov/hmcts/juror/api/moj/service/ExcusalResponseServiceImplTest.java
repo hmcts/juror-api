@@ -45,9 +45,12 @@ import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 @RunWith(SpringRunner.class)
 public class ExcusalResponseServiceImplTest {
 
+    private static final String JUROR_NUMBER = "123456789";
+    private static final String JUROR_NUMBER2 = "987654321";
     @Mock
     private ExcusalCodeRepository excusalCodeRepository;
     @Mock
@@ -124,7 +127,7 @@ public class ExcusalResponseServiceImplTest {
 
         verifyHappyPaperPath(payload, jurorNumber);
         verifyHappyRefuseJurorPoolPath();
-        verifyHappyExcusalDeniedLetter(payload, jurorNumber);
+        verifyHappyExcusalDeniedLetter();
     }
 
     @Test
@@ -145,264 +148,313 @@ public class ExcusalResponseServiceImplTest {
 
         verifyHappyPaperPath(courtPayload, jurorNumber);
         verifyHappyRefuseJurorPoolPath();
-        verifyHappyExcusalDeniedLetter(courtPayload, jurorNumber);
+
+        Mockito.verify(printDataService, Mockito.times(0))
+            .printExcusalDeniedLetter(any());
     }
 
     @Test
     public void test_grantExcusalRequest_happyPath_paperResponse_bureauUser_bureauOwner() {
-        String jurorNumber = "123456789";
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
 
-        PaperResponse jurorPaperResponse = createTestJurorPaperResponse(jurorNumber);
-        Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        PaperResponse jurorPaperResponse = createTestJurorPaperResponse(JUROR_NUMBER);
+        Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber(JUROR_NUMBER);
 
-        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber);
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner("400");
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_NUMBER);
+        jurorPool.setJuror(new Juror());
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("987654321");
+        jurorPool.setPool(new PoolRequest());
+
+        Mockito.doReturn(List.of(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_NUMBER, true);
+
+        final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyHappyPaperPath(payload, jurorNumber);
+        verifyHappyPaperPath(payload, JUROR_NUMBER);
         verifyHappyGrantJurorPoolPath();
-        verifyHappyExcusalLetter(payload, jurorNumber, excusalDecisionDto);
+        verifyHappyExcusalLetter(jurorPool, excusalDecisionDto);
     }
 
     @Test
     public void test_grantExcusalRequest_happyPath_paperResponse_courtUser_courtOwner() {
-        String jurorNumber = "987654321";
-        BureauJWTPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
+        final BureauJWTPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
 
-        PaperResponse jurorPaperResponse = createTestJurorPaperResponse(jurorNumber);
-        Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        PaperResponse jurorPaperResponse = createTestJurorPaperResponse(JUROR_NUMBER2);
+        Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber(JUROR_NUMBER2);
 
-        excusalResponseService.respondToExcusalRequest(courtPayload, excusalDecisionDto, jurorNumber);
+        excusalResponseService.respondToExcusalRequest(courtPayload, excusalDecisionDto, JUROR_NUMBER2);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyHappyPaperPath(courtPayload, jurorNumber);
-        verifyHappyGrantJurorPoolPath();
-        verifyHappyExcusalLetter(courtPayload, jurorNumber, excusalDecisionDto);
+        verifyHappyPaperPath(courtPayload, JUROR_NUMBER2);
+        verifyHappyGrantJurorPoolPathNoLetter(); // court users don't automatically send letters
     }
 
     @Test
     public void test_refuseExcusalRequest_happyPath_digitalResponse_bureauUser_bureauOwner() {
-        String jurorNumber = "123456789";
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setReplyMethod(ReplyMethod.DIGITAL);
 
-        DigitalResponse jurorResponse = createTestJurorDigitalResponse(jurorNumber);
-        Mockito.doReturn(jurorResponse).when(jurorResponseRepository).findByJurorNumber(jurorNumber);
+        DigitalResponse jurorResponse = createTestJurorDigitalResponse(JUROR_NUMBER);
+        Mockito.doReturn(jurorResponse).when(jurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
 
-        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber);
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyHappyDigitalPath(payload, jurorNumber);
+        verifyHappyDigitalPath(payload, JUROR_NUMBER);
         verifyHappyRefuseJurorPoolPath();
-        verifyHappyExcusalDeniedLetter(payload, jurorNumber);
+        verifyHappyExcusalDeniedLetter();
     }
 
     @Test
     public void test_refuseExcusalRequest_happyPath_digitalResponse_courtUser_courtOwner() {
-        String jurorNumber = "987654321";
-        BureauJWTPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
+        final BureauJWTPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setReplyMethod(ReplyMethod.DIGITAL);
 
-        DigitalResponse jurorResponse = createTestJurorDigitalResponse(jurorNumber);
-        Mockito.doReturn(jurorResponse).when(jurorResponseRepository).findByJurorNumber(jurorNumber);
+        DigitalResponse jurorResponse = createTestJurorDigitalResponse(JUROR_NUMBER2);
+        Mockito.doReturn(jurorResponse).when(jurorResponseRepository).findByJurorNumber(JUROR_NUMBER2);
 
-        excusalResponseService.respondToExcusalRequest(courtPayload, excusalDecisionDto, jurorNumber);
+        excusalResponseService.respondToExcusalRequest(courtPayload, excusalDecisionDto, JUROR_NUMBER2);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyHappyDigitalPath(courtPayload, jurorNumber);
+        verifyHappyDigitalPath(courtPayload, JUROR_NUMBER2);
         verifyHappyRefuseJurorPoolPath();
-        verifyHappyExcusalDeniedLetter(courtPayload, jurorNumber);
+        Mockito.verify(printDataService, Mockito.times(0))
+            .printExcusalDeniedLetter(any());
     }
 
     @Test
     public void test_grantExcusalRequest_happyPath_digitalResponse_bureauUser_bureauOwner() {
-        String jurorNumber = "123456789";
         final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setReplyMethod(ReplyMethod.DIGITAL);
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
 
-        DigitalResponse jurorResponse = createTestJurorDigitalResponse(jurorNumber);
-        Mockito.doReturn(jurorResponse).when(jurorResponseRepository).findByJurorNumber(jurorNumber);
+        DigitalResponse jurorResponse = createTestJurorDigitalResponse(JUROR_NUMBER);
+        Mockito.doReturn(jurorResponse).when(jurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
 
-        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber);
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner("400");
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_NUMBER);
+        jurorPool.setJuror(new Juror());
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("987654321");
+        jurorPool.setPool(new PoolRequest());
+
+        Mockito.doReturn(List.of(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_NUMBER, true);
+
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyHappyDigitalPath(payload, jurorNumber);
+        verifyHappyDigitalPath(payload, JUROR_NUMBER);
         verifyHappyGrantJurorPoolPath();
-        verifyHappyExcusalLetter(payload, jurorNumber, excusalDecisionDto);
+        verifyHappyExcusalLetter(jurorPool, excusalDecisionDto);
     }
 
     @Test
     public void test_grantExcusalRequest_happyPath_digitalResponse_courtUser_courtOwner() {
-        String jurorNumber = "987654321";
         final BureauJWTPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setReplyMethod(ReplyMethod.DIGITAL);
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
 
-        DigitalResponse jurorResponse = createTestJurorDigitalResponse(jurorNumber);
-        Mockito.doReturn(jurorResponse).when(jurorResponseRepository).findByJurorNumber(jurorNumber);
+        DigitalResponse jurorResponse = createTestJurorDigitalResponse(JUROR_NUMBER2);
+        Mockito.doReturn(jurorResponse).when(jurorResponseRepository).findByJurorNumber(JUROR_NUMBER2);
 
-        excusalResponseService.respondToExcusalRequest(courtPayload, excusalDecisionDto, jurorNumber);
+        excusalResponseService.respondToExcusalRequest(courtPayload, excusalDecisionDto, JUROR_NUMBER2);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyHappyDigitalPath(courtPayload, jurorNumber);
-        verifyHappyGrantJurorPoolPath();
-        verifyHappyExcusalLetter(courtPayload, jurorNumber, excusalDecisionDto);
+        verifyHappyDigitalPath(courtPayload, JUROR_NUMBER2);
+        verifyHappyGrantJurorPoolPathNoLetter(); // court users don't automatically send letters
     }
 
     @Test
     public void test_grantExcusalRequest_happyPath_excusalCodeDeceased() {
-        String jurorNumber = "123456789";
         final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
         excusalDecisionDto.setExcusalReasonCode(ExcusalCode.DECEASED);
 
-        PaperResponse jurorPaperResponse = createTestJurorPaperResponse(jurorNumber);
-        Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        PaperResponse jurorPaperResponse = createTestJurorPaperResponse(JUROR_NUMBER);
+        Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber(JUROR_NUMBER);
 
-        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber);
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner("400");
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_NUMBER);
+        jurorPool.setJuror(new Juror());
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("987654321");
+        jurorPool.setPool(new PoolRequest());
+
+        Mockito.doReturn(List.of(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_NUMBER, true);
+
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyHappyPaperPath(payload, jurorNumber);
-        verifyHappyGrantJurorPoolPath();
-        verifyHappyExcusalLetter(payload, jurorNumber, excusalDecisionDto);
+        verifyHappyPaperPath(payload, JUROR_NUMBER);
+        verifyHappyGrantJurorPoolPathNoLetter(); // deceased jurors don't get letters
+        verifyHappyExcusalLetter(jurorPool, excusalDecisionDto);
     }
 
     @Test
     public void test_excusalRequest_paperResponse_bureauUser_courtOwner() {
-        String jurorNumber = "987654321";
         BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
 
-        PaperResponse jurorPaperResponse = createTestJurorPaperResponse(jurorNumber);
-        Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        PaperResponse jurorPaperResponse = createTestJurorPaperResponse(JUROR_NUMBER2);
+        Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber(JUROR_NUMBER2);
 
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class)
-            .isThrownBy(() -> excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber));
+            .isThrownBy(() -> excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto,
+                JUROR_NUMBER2));
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyFailedInitialChecksPath(payload, jurorNumber);
+        verifyFailedInitialChecksPath(payload, JUROR_NUMBER2);
     }
 
     @Test
     public void test_excusalRequest_paperResponse_courtUser_bureauOwner() {
-        String jurorNumber = "123456789";
         BureauJWTPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
 
-        PaperResponse jurorPaperResponse = createTestJurorPaperResponse(jurorNumber);
-        Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        PaperResponse jurorPaperResponse = createTestJurorPaperResponse(JUROR_NUMBER);
+        Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber(JUROR_NUMBER);
 
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class)
             .isThrownBy(() -> excusalResponseService.respondToExcusalRequest(courtPayload, excusalDecisionDto,
-                jurorNumber));
+                JUROR_NUMBER));
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyFailedInitialChecksPath(courtPayload, jurorNumber);
+        verifyFailedInitialChecksPath(courtPayload, JUROR_NUMBER);
     }
 
     @Test
     public void test_excusalRequest_paperResponse_alreadyClosed() {
-        String jurorNumber = "123456789";
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        final ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
 
-        ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
-
-        PaperResponse jurorPaperResponse = createTestJurorPaperResponse(jurorNumber);
+        PaperResponse jurorPaperResponse = createTestJurorPaperResponse(JUROR_NUMBER);
         jurorPaperResponse.setProcessingStatus(ProcessingStatus.CLOSED);
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
 
-        Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber(JUROR_NUMBER);
 
-        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber);
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner("400");
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_NUMBER);
+        jurorPool.setJuror(new Juror());
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("987654321");
+        jurorPool.setPool(new PoolRequest());
+
+        Mockito.doReturn(List.of(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_NUMBER, true);
+
+        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).findByJurorNumber(jurorNumber);
-        Mockito.verify(jurorResponseRepository, Mockito.never()).findByJurorNumber(jurorNumber);
-        verifyHappyExcusalLetter(payload, jurorNumber, excusalDecisionDto);
+        Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).findByJurorNumber(JUROR_NUMBER);
+        Mockito.verify(jurorResponseRepository, Mockito.never()).findByJurorNumber(JUROR_NUMBER);
+        verifyHappyExcusalLetter(jurorPool, excusalDecisionDto);
     }
 
     @Test
     public void test_excusalRequest_digitalResponse_alreadyClosed() {
-        String jurorNumber = "123456789";
         final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setReplyMethod(ReplyMethod.DIGITAL);
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
 
-        DigitalResponse jurorResponse = createTestJurorDigitalResponse(jurorNumber);
+        DigitalResponse jurorResponse = createTestJurorDigitalResponse(JUROR_NUMBER);
         jurorResponse.setProcessingStatus(ProcessingStatus.CLOSED);
-        Mockito.doReturn(jurorResponse).when(jurorResponseRepository).findByJurorNumber(jurorNumber);
+        Mockito.doReturn(jurorResponse).when(jurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
 
-        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber);
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner("400");
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_NUMBER);
+        jurorPool.setJuror(new Juror());
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("987654321");
+        jurorPool.setPool(new PoolRequest());
+
+        Mockito.doReturn(List.of(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_NUMBER, true);
+
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        Mockito.verify(jurorPaperResponseRepository, Mockito.never()).findById(jurorNumber);
-        Mockito.verify(jurorResponseRepository, Mockito.times(1)).findByJurorNumber(jurorNumber);
-        verifyHappyExcusalLetter(payload, jurorNumber, excusalDecisionDto);
+        Mockito.verify(jurorPaperResponseRepository, Mockito.never()).findById(JUROR_NUMBER);
+        Mockito.verify(jurorResponseRepository, Mockito.times(1)).findByJurorNumber(JUROR_NUMBER);
+        verifyHappyExcusalLetter(jurorPool, excusalDecisionDto);
     }
 
     @Test
     public void test_excusalRequest_invalidExcusalCode() {
-        String jurorNumber = "123456789";
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setExcusalReasonCode("E");
 
         Assertions.assertThatExceptionOfType(ExcusalResponseException.InvalidExcusalCode.class)
-            .isThrownBy(() -> excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber));
+            .isThrownBy(() -> excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto,
+                JUROR_NUMBER));
 
         Mockito.verify(jurorPoolRepository, Mockito.never())
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyFailedInitialChecksPath(payload, jurorNumber);
+        verifyFailedInitialChecksPath(payload, JUROR_NUMBER);
     }
 
     @Test
     public void test_excusalRequest_unableToRetrieveValidExcusalCodeList() {
-        String jurorNumber = "123456789";
         BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         List<ExcusalCodeEntity> emptyList = Collections.emptyList();
@@ -411,12 +463,13 @@ public class ExcusalResponseServiceImplTest {
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
 
         Assertions.assertThatExceptionOfType(ExcusalResponseException.UnableToRetrieveExcusalCodeList.class)
-            .isThrownBy(() -> excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber));
+            .isThrownBy(() -> excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto,
+                JUROR_NUMBER));
 
         Mockito.verify(jurorPoolRepository, Mockito.never())
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyFailedInitialChecksPath(payload, jurorNumber);
+        verifyFailedInitialChecksPath(payload, JUROR_NUMBER);
     }
 
     @Test
@@ -437,124 +490,144 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_excusalRequest_paperResponseDoesNotExist() {
-        String jurorNumber = "123456789";
         BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setExcusalReasonCode("A");
 
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
+        Mockito.doReturn(null).when(jurorPaperResponseRepository).findByJurorNumber(JUROR_NUMBER);
 
         Assertions.assertThatExceptionOfType(MojException.NotFound.class)
-            .isThrownBy(() -> excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber));
+            .isThrownBy(() -> excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto,
+                JUROR_NUMBER));
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).findByJurorNumber(jurorNumber);
-        Mockito.verify(jurorResponseRepository, Mockito.never()).findByJurorNumber(jurorNumber);
+        Mockito.verify(jurorPaperResponseRepository, Mockito.times(1))
+            .findByJurorNumber(JUROR_NUMBER);
+        Mockito.verify(jurorResponseRepository, Mockito.never()).findByJurorNumber(JUROR_NUMBER);
 
-        verifyFailedAtResponseStatusPath(payload, jurorNumber);
+        verifyFailedAtResponseStatusPath(payload);
     }
 
     @Test
     public void test_excusalRequest_withoutResponse_grant_bureauUser_bureauOwner() {
-        String jurorNumber = "123456789";
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
-        ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.GRANT);
+        final ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.GRANT);
 
-        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber);
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner("400");
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_NUMBER);
+        jurorPool.setJuror(new Juror());
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("987654321");
+        jurorPool.setPool(new PoolRequest());
+
+        Mockito.doReturn(List.of(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_NUMBER, true);
+
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
         verifyHappyGrantJurorPoolPath();
-        verifyHappyExcusalLetter(payload, jurorNumber, excusalDecisionDto);
+        verifyHappyExcusalLetter(jurorPool, excusalDecisionDto);
     }
 
     @Test
     public void test_excusalRequest_withoutResponse_refuse_bureauUser_bureauOwner() {
-        String jurorNumber = "123456789";
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
-        ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.REFUSE);
+        final ExcusalDecisionDto excusalDecisionDto =
+            createTestExcusalDecisionRequestNoResponse(ExcusalDecision.REFUSE);
 
-        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber);
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
         verifyHappyRefuseJurorPoolPath();
-        verifyHappyExcusalDeniedLetter(payload, jurorNumber);
+        verifyHappyExcusalDeniedLetter();
     }
 
     @Test
     public void test_excusalRequest_withoutResponse_grant_courtUser_courtOwner() {
-        String jurorNumber = "987654321";
-        BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER");
+        final BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER");
 
-        ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.GRANT);
+        final ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.GRANT);
 
-        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber);
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner("415");
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_NUMBER);
+        jurorPool.setJuror(new Juror());
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("987654321");
+        jurorPool.setPool(new PoolRequest());
+
+        Mockito.doReturn(List.of(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_NUMBER, true);
+
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyHappyGrantJurorPoolPath();
-        verifyHappyExcusalLetter(payload, jurorNumber, excusalDecisionDto);
+        verifyHappyGrantJurorPoolPathNoLetter(); // court users don't automatically send letters
     }
 
     @Test
     public void test_excusalRequest_withoutResponse_refuse_courtUser_courtOwner() {
-        String jurorNumber = "987654321";
-        BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER");
+        final BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.REFUSE);
 
-        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber);
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER2);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
         verifyHappyRefuseJurorPoolPath();
-        verifyHappyExcusalDeniedLetter(payload, jurorNumber);
+        Mockito.verify(printDataService, Mockito.times(0))
+            .printExcusalDeniedLetter(any());
     }
 
     @Test
     public void test_excusalRequest_withoutResponse_grant_bureauUser_courtOwner() {
-        String jurorNumber = "987654321";
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.GRANT);
 
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class)
             .isThrownBy(() -> {
-                excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber);
+                excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER2);
             });
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyFailedInitialChecksPath(payload, jurorNumber);
+        verifyFailedInitialChecksPath(payload, JUROR_NUMBER2);
     }
 
     @Test
     public void test_excusalRequest_withoutResponse_grant_courtUser_bureauOwner() {
-        String jurorNumber = "123456789";
-        BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER");
+        final BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.GRANT);
 
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class)
             .isThrownBy(() -> {
-                excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, jurorNumber);
+                excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
             });
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyFailedInitialChecksPath(payload, jurorNumber);
+        verifyFailedInitialChecksPath(payload, JUROR_NUMBER);
     }
 
     private void verifyHappyRefuseJurorPoolPath() {
@@ -564,7 +637,13 @@ public class ExcusalResponseServiceImplTest {
 
     private void verifyHappyGrantJurorPoolPath() {
         Mockito.verify(jurorPoolRepository, Mockito.times(1)).save(any());
+        Mockito.verify(jurorHistoryRepository, Mockito.times(2)).save(any());
+    }
+
+    private void verifyHappyGrantJurorPoolPathNoLetter() {
+        Mockito.verify(jurorPoolRepository, Mockito.times(1)).save(any());
         Mockito.verify(jurorHistoryRepository, Mockito.times(1)).save(any());
+        Mockito.verify(printDataService, Mockito.never()).printExcusalLetter(Mockito.any());
     }
 
     private void verifyHappyPaperPath(BureauJWTPayload payload, String jurorNumber) {
@@ -584,7 +663,7 @@ public class ExcusalResponseServiceImplTest {
         Mockito.verify(mergeService, Mockito.times(1)).mergeDigitalResponse(any(), any());
     }
 
-    private void verifyHappyExcusalDeniedLetter(BureauJWTPayload payload, String jurorNumber) {
+    private void verifyHappyExcusalDeniedLetter() {
         Mockito.verify(printDataService, Mockito.times(1))
             .printExcusalDeniedLetter(any());
         // Negative check for excusal letter
@@ -593,22 +672,20 @@ public class ExcusalResponseServiceImplTest {
 //        Mockito.verify(excusalLetterService, Mockito.never()).enqueueLetter(any());
     }
 
-    private void verifyHappyExcusalLetter(BureauJWTPayload payload, String jurorNumber,
+    private void verifyHappyExcusalLetter(JurorPool jurorPool,
                                           ExcusalDecisionDto excusalDecisionDto) {
-        if (excusalDecisionDto.getExcusalReasonCode().equals(ExcusalCode.DECEASED)) {
-            Mockito.verify(excusalLetterService, Mockito.never())
-                .getLetterToEnqueue(payload.getOwner(), jurorNumber);
-            Mockito.verify(excusalLetterService, Mockito.never()).enqueueLetter(any());
+        if (ExcusalCode.DECEASED.equals(excusalDecisionDto.getExcusalReasonCode())) {
+            Mockito.verify(printDataService, Mockito.never())
+                .printExcusalLetter(jurorPool);
         } else {
-            Mockito.verify(excusalLetterService, Mockito.times(1))
-                .getLetterToEnqueue(payload.getOwner(), jurorNumber);
-            Mockito.verify(excusalLetterService, Mockito.times(1)).enqueueLetter(any());
+            Mockito.verify(printDataService, Mockito.times(1))
+                .printExcusalLetter(jurorPool);
         }
         Mockito.verify(printDataService, Mockito.never())
             .printExcusalDeniedLetter(any());
     }
 
-    private void verifyFailedAtResponseStatusPath(BureauJWTPayload payload, String jurorNumber) {
+    private void verifyFailedAtResponseStatusPath(BureauJWTPayload payload) {
         Mockito.verify(userRepository, Mockito.never()).findByUsername(payload.getLogin());
         Mockito.verify(mergeService, Mockito.never()).mergePaperResponse(any(), any());
         Mockito.verify(mergeService, Mockito.never()).mergeDigitalResponse(any(), any());

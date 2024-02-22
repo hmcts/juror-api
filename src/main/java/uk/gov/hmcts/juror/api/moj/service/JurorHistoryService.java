@@ -1,6 +1,11 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
+import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public interface JurorHistoryService {
 
@@ -16,6 +21,18 @@ public interface JurorHistoryService {
 
     void createPoliceCheckInsufficientInformationHistory(JurorPool jurorPool);
 
+    void createExpenseApproveCash(String jurorNumber,
+                                  String poolNumber,
+                                  FinancialAuditDetails financialAuditDetails,
+                                  LocalDate latestAppearanceDate,
+                                  BigDecimal totalAmount);
+
+    void createExpenseApproveBacs(String jurorNumber,
+                                  String poolNumber,
+                                  FinancialAuditDetails financialAuditDetails,
+                                  LocalDate latestAppearanceDate,
+                                  BigDecimal totalAmount);
+
     void createFailedToAttendHistory(JurorPool jurorPool);
 
     void createUndoFailedToAttendHistory(JurorPool jurorPool);
@@ -26,4 +43,13 @@ public interface JurorHistoryService {
 
     void createDeferredLetterHistory(JurorPool jurorPool);
 
+    void createEditBankSortCodeHistory(String jurorNumber);
+    void createEditBankAccountNumberHistory(String jurorNumber);
+    void createEditBankAccountNameHistory(String jurorNumber);
+
+    void createExpenseForApprovalHistory(FinancialAuditDetails financialAuditDetails,
+                                         Appearance appearance);
+
+    void createExpenseEditHistory(FinancialAuditDetails financialAuditDetails,
+                                  Appearance appearance);
 }

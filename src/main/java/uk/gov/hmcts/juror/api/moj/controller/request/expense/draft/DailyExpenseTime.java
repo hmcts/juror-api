@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller.request.expense.draft;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
@@ -16,11 +17,13 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DailyExpenseTime {
-    @NotNull(groups = {DailyExpense.AttendanceDay.class, DailyExpense.NonAttendanceDay.class})
+    @NotNull(groups = {DailyExpense.AttendanceDay.class, DailyExpense.NonAttendanceDay.class,
+        DailyExpense.EditDay.class})
     @JsonProperty("pay_attendance")
     private PayAttendanceType payAttendance;
 
     @Null(groups = {DailyExpense.NonAttendanceDay.class})
     @JsonProperty("travel_time")
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime travelTime;
 }

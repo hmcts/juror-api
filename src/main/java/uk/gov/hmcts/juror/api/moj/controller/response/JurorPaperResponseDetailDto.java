@@ -26,6 +26,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 /**
  * Request DTO for Juror Paper Responses (as a business process).
  */
+@SuppressWarnings("PMD.TooManyFields")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter

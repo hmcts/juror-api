@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -36,6 +35,7 @@ import static org.springframework.http.HttpMethod.GET;
 /**
  * Integration tests for the API endpoints defined in {@link CourtLocationController}.
  */
+@SuppressWarnings("PMD.LawOfDemeter")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CourtLocationControllerITest extends AbstractIntegrationTest {
@@ -180,6 +180,8 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("GET " + GetCourtRates.URL)
     @Sql({"/db/mod/truncate.sql", "/db/CourtLocationControllerITest_getCourtRates.sql"})
+    @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
+        statements = {"delete from juror_mod.court_location where loc_code in ('001', '002', '003')"})
     class GetCourtRates {
         public static final String URL = BASE_URL + "/{loc_code}/{date}/rates";
 
@@ -226,8 +228,8 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
                 assertThat(rates.getFinancialLossFullDayLimit()).isEqualTo(new BigDecimal("8.08000"));
                 assertThat(rates.getFinancialLossHalfDayLongTrialLimit()).isEqualTo(new BigDecimal("9.09000"));
                 assertThat(rates.getFinancialLossFullDayLongTrialLimit()).isEqualTo(new BigDecimal("10.01000"));
-                assertThat(rates.getSubstanceRateStandard()).isEqualTo(new BigDecimal("11.01100"));
-                assertThat(rates.getSubstanceRateLongDay()).isEqualTo(new BigDecimal("12.01200"));
+                assertThat(rates.getSubsistenceRateStandard()).isEqualTo(new BigDecimal("11.01100"));
+                assertThat(rates.getSubsistenceRateLongDay()).isEqualTo(new BigDecimal("12.01200"));
                 assertThat(rates.getPublicTransportSoftLimit()).isEqualTo(new BigDecimal("13.01300"));
             }
 
@@ -247,8 +249,8 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
                 assertThat(rates.getFinancialLossFullDayLimit()).isEqualTo(new BigDecimal("8.08000"));
                 assertThat(rates.getFinancialLossHalfDayLongTrialLimit()).isEqualTo(new BigDecimal("9.09000"));
                 assertThat(rates.getFinancialLossFullDayLongTrialLimit()).isEqualTo(new BigDecimal("10.01000"));
-                assertThat(rates.getSubstanceRateStandard()).isEqualTo(new BigDecimal("11.01100"));
-                assertThat(rates.getSubstanceRateLongDay()).isEqualTo(new BigDecimal("12.01200"));
+                assertThat(rates.getSubsistenceRateStandard()).isEqualTo(new BigDecimal("11.01100"));
+                assertThat(rates.getSubsistenceRateLongDay()).isEqualTo(new BigDecimal("12.01200"));
                 assertThat(rates.getPublicTransportSoftLimit()).isEqualTo(new BigDecimal("13.01300"));
 
 
@@ -266,8 +268,8 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
                 assertThat(rates2.getFinancialLossFullDayLimit()).isEqualTo(new BigDecimal("8.08000"));
                 assertThat(rates2.getFinancialLossHalfDayLongTrialLimit()).isEqualTo(new BigDecimal("9.09000"));
                 assertThat(rates2.getFinancialLossFullDayLongTrialLimit()).isEqualTo(new BigDecimal("10.01000"));
-                assertThat(rates2.getSubstanceRateStandard()).isEqualTo(new BigDecimal("11.01100"));
-                assertThat(rates2.getSubstanceRateLongDay()).isEqualTo(new BigDecimal("12.01200"));
+                assertThat(rates2.getSubsistenceRateStandard()).isEqualTo(new BigDecimal("11.01100"));
+                assertThat(rates2.getSubsistenceRateLongDay()).isEqualTo(new BigDecimal("12.01200"));
                 assertThat(rates2.getPublicTransportSoftLimit()).isEqualTo(new BigDecimal("13.01300"));
             }
 
@@ -287,8 +289,8 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
                 assertThat(rates.getFinancialLossFullDayLimit()).isEqualTo(new BigDecimal("8.08000"));
                 assertThat(rates.getFinancialLossHalfDayLongTrialLimit()).isEqualTo(new BigDecimal("9.09000"));
                 assertThat(rates.getFinancialLossFullDayLongTrialLimit()).isEqualTo(new BigDecimal("10.01000"));
-                assertThat(rates.getSubstanceRateStandard()).isEqualTo(new BigDecimal("11.01100"));
-                assertThat(rates.getSubstanceRateLongDay()).isEqualTo(new BigDecimal("12.01200"));
+                assertThat(rates.getSubsistenceRateStandard()).isEqualTo(new BigDecimal("11.01100"));
+                assertThat(rates.getSubsistenceRateLongDay()).isEqualTo(new BigDecimal("12.01200"));
                 assertThat(rates.getPublicTransportSoftLimit()).isEqualTo(new BigDecimal("13.01300"));
 
 
@@ -306,8 +308,8 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
                 assertThat(rates2.getFinancialLossFullDayLimit()).isEqualTo(new BigDecimal("5.08000"));
                 assertThat(rates2.getFinancialLossHalfDayLongTrialLimit()).isEqualTo(new BigDecimal("5.09000"));
                 assertThat(rates2.getFinancialLossFullDayLongTrialLimit()).isEqualTo(new BigDecimal("5.01000"));
-                assertThat(rates2.getSubstanceRateStandard()).isEqualTo(new BigDecimal("5.01100"));
-                assertThat(rates2.getSubstanceRateLongDay()).isEqualTo(new BigDecimal("5.01200"));
+                assertThat(rates2.getSubsistenceRateStandard()).isEqualTo(new BigDecimal("5.01100"));
+                assertThat(rates2.getSubsistenceRateLongDay()).isEqualTo(new BigDecimal("5.01200"));
                 assertThat(rates2.getPublicTransportSoftLimit()).isEqualTo(new BigDecimal("5.01300"));
             }
         }

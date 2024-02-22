@@ -3,17 +3,19 @@ package uk.gov.hmcts.juror.api.moj.domain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 class AppearanceTest {
@@ -33,115 +35,6 @@ class AppearanceTest {
             + "NoArgsConstructor");
     }
 
-    @DisplayName("PublicTransportTotal")
-    @Nested
-    class PublicTransportTotal extends AbstractAppearanceIndividualTotalSumTest {
-        private PublicTransportTotal() {
-            super(Appearance::getPublicTransportTotal,
-                Appearance::setPublicTransportDue,
-                Appearance::setPublicTransportPaid);
-        }
-    }
-
-    @DisplayName("HiredVehicleTotal")
-    @Nested
-    class HiredVehicleTotal extends AbstractAppearanceIndividualTotalSumTest {
-        private HiredVehicleTotal() {
-            super(Appearance::getHiredVehicleTotal,
-                Appearance::setHiredVehicleDue,
-                Appearance::setHiredVehiclePaid);
-        }
-    }
-
-    @DisplayName("MotorcycleTotal")
-    @Nested
-    class MotorcycleTotal extends AbstractAppearanceIndividualTotalSumTest {
-        private MotorcycleTotal() {
-            super(Appearance::getMotorcycleTotal,
-                Appearance::setMotorcycleDue,
-                Appearance::setMotorcyclePaid);
-        }
-    }
-
-    @DisplayName("CarTotal")
-    @Nested
-    class CarTotal extends AbstractAppearanceIndividualTotalSumTest {
-        private CarTotal() {
-            super(Appearance::getCarTotal,
-                Appearance::setCarDue,
-                Appearance::setCarPaid);
-        }
-    }
-
-    @DisplayName("BicycleTotal")
-    @Nested
-    class BicycleTotal extends AbstractAppearanceIndividualTotalSumTest {
-        private BicycleTotal() {
-            super(Appearance::getBicycleTotal,
-                Appearance::setBicycleDue,
-                Appearance::setBicyclePaid);
-        }
-    }
-
-    @DisplayName("ParkingTotal")
-    @Nested
-    class ParkingTotal extends AbstractAppearanceIndividualTotalSumTest {
-        private ParkingTotal() {
-            super(Appearance::getParkingTotal,
-                Appearance::setParkingDue,
-                Appearance::setParkingPaid);
-        }
-    }
-
-    @DisplayName("SubsistenceTotal")
-    @Nested
-    class SubsistenceTotal extends AbstractAppearanceIndividualTotalSumTest {
-        private SubsistenceTotal() {
-            super(Appearance::getSubsistenceTotal,
-                Appearance::setSubsistenceDue,
-                Appearance::setSubsistencePaid);
-        }
-    }
-
-    @DisplayName("LossOfEarningsTotal")
-    @Nested
-    class LossOfEarningsTotal extends AbstractAppearanceIndividualTotalSumTest {
-        private LossOfEarningsTotal() {
-            super(Appearance::getLossOfEarningsTotal,
-                Appearance::setLossOfEarningsDue,
-                Appearance::setLossOfEarningsPaid);
-        }
-    }
-
-    @DisplayName("ChildcareTotal")
-    @Nested
-    class ChildcareTotal extends AbstractAppearanceIndividualTotalSumTest {
-        private ChildcareTotal() {
-            super(Appearance::getChildcareTotal,
-                Appearance::setChildcareDue,
-                Appearance::setChildcarePaid);
-        }
-    }
-
-    @DisplayName("MiscAmountTotal")
-    @Nested
-    class MiscAmountTotal extends AbstractAppearanceIndividualTotalSumTest {
-        private MiscAmountTotal() {
-            super(Appearance::getMiscAmountTotal,
-                Appearance::setMiscAmountDue,
-                Appearance::setMiscAmountPaid);
-        }
-    }
-
-    @DisplayName("SmartCardAmount")
-    @Nested
-    class SmartCardAmountTotal extends AbstractAppearanceIndividualTotalSumTest {
-        private SmartCardAmountTotal() {
-            super(Appearance::getSmartCardAmountTotal,
-                Appearance::setSmartCardAmountDue,
-                Appearance::setSmartCardAmountPaid);
-        }
-    }
 
     private Appearance getAppearanceForTotals() {
         return Appearance.builder()
@@ -306,54 +199,363 @@ class AppearanceTest {
         assertThat(appearance.isLongTrialDay()).isNull();
     }
 
-    @SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
-    abstract static class AbstractAppearanceIndividualTotalSumTest {
+    @Test
+    void positiveGetTotalChanged() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(new BigDecimal("3.01")).when(appearance).getTotalDue();
+        doReturn(new BigDecimal("1.00")).when(appearance).getTotalPaid();
+        assertThat(appearance.getTotalChanged())
+            .isEqualTo(new BigDecimal("2.01"));
+    }
 
-        private final Function<Appearance, BigDecimal> getTotalSupplier;
-        private final BiConsumer<Appearance, BigDecimal> setDueAmount;
-        private final BiConsumer<Appearance, BigDecimal> setPaidAmount;
+    @Test
+    void positiveGetFinancialLossTotal() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(new BigDecimal("3.00")).when(appearance).getLossOfEarningsDue();
+        doReturn(new BigDecimal("1.00")).when(appearance).getLossOfEarningsPaid();
 
-        private AbstractAppearanceIndividualTotalSumTest(Function<Appearance, BigDecimal> getTotalSupplier,
-                                                         BiConsumer<Appearance, BigDecimal> setDueAmount,
-                                                         BiConsumer<Appearance, BigDecimal> setPaidAmount) {
-            this.getTotalSupplier = getTotalSupplier;
-            this.setDueAmount = setDueAmount;
-            this.setPaidAmount = setPaidAmount;
-        }
 
-        private Appearance createAppearance() {
-            return new Appearance();
-        }
+        doReturn(new BigDecimal("30.00")).when(appearance).getChildcareDue();
+        doReturn(new BigDecimal("10.00")).when(appearance).getChildcarePaid();
 
-        private void triggerTest(BigDecimal dueValue, BigDecimal paidValue) {
-            Appearance appearance = createAppearance();
-            setDueAmount.accept(appearance, dueValue);
-            setPaidAmount.accept(appearance, paidValue);
 
-            assertEquals(
-                Optional.ofNullable(dueValue).orElse(BigDecimal.ZERO)
-                    .add(Optional.ofNullable(paidValue).orElse(BigDecimal.ZERO)),
-                getTotalSupplier.apply(appearance),
-                "Expect sum of due and paid to match"
-            );
+        doReturn(new BigDecimal("300.00")).when(appearance).getMiscAmountDue();
+        doReturn(new BigDecimal("100.00")).when(appearance).getMiscAmountPaid();
+        assertThat(appearance.getTotalChanged())
+            .isEqualTo(new BigDecimal("222.00"));
+    }
+
+    @Test
+    void positiveGetBalanceToPay() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(new BigDecimal("100.00")).when(appearance).getTotalDue();
+        doReturn(new BigDecimal("95.20")).when(appearance).getTotalPaid();
+        assertThat(appearance.getBalanceToPay()).isEqualTo(
+            new BigDecimal("4.80"));
+    }
+
+    @Test
+    void positiveGetTotalFinancialLossDue() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(new BigDecimal("1.00")).when(appearance).getLossOfEarningsDue();
+        doReturn(new BigDecimal("10.00")).when(appearance).getChildcareDue();
+        doReturn(new BigDecimal("100.00")).when(appearance).getMiscAmountDue();
+        assertThat(appearance.getTotalFinancialLossDue()).isEqualTo(
+            new BigDecimal("111.00"));
+    }
+
+    @Test
+    void positiveGetTotalFinancialLossDueNullValues() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(null).when(appearance).getLossOfEarningsDue();
+        doReturn(null).when(appearance).getChildcareDue();
+        doReturn(null).when(appearance).getMiscAmountDue();
+        assertThat(appearance.getTotalFinancialLossDue()).isZero();
+
+    }
+
+    @Test
+    void positiveGetTotalTravelDue() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(new BigDecimal("1.00")).when(appearance).getCarDue();
+        doReturn(new BigDecimal("10.00")).when(appearance).getMotorcycleDue();
+        doReturn(new BigDecimal("100.00")).when(appearance).getBicycleDue();
+        doReturn(new BigDecimal("1000.00")).when(appearance).getParkingDue();
+        doReturn(new BigDecimal("10000.00")).when(appearance).getPublicTransportDue();
+        doReturn(new BigDecimal("100000.00")).when(appearance).getHiredVehicleDue();
+        assertThat(appearance.getTotalTravelDue()).isEqualTo(
+            new BigDecimal("111111.00"));
+    }
+
+    @Test
+    void positiveGetTotalTravelDueNullValues() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(null).when(appearance).getCarDue();
+        doReturn(null).when(appearance).getMotorcycleDue();
+        doReturn(null).when(appearance).getBicycleDue();
+        doReturn(null).when(appearance).getParkingDue();
+        doReturn(null).when(appearance).getPublicTransportDue();
+        doReturn(null).when(appearance).getHiredVehicleDue();
+        assertThat(appearance.getTotalTravelDue()).isZero();
+    }
+
+    @Test
+    void positiveGetTotalFinancialLossPaid() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(new BigDecimal("1.00")).when(appearance).getLossOfEarningsPaid();
+        doReturn(new BigDecimal("10.00")).when(appearance).getChildcarePaid();
+        doReturn(new BigDecimal("100.00")).when(appearance).getMiscAmountPaid();
+        assertThat(appearance.getTotalFinancialLossPaid()).isEqualTo(
+            new BigDecimal("111.00"));
+    }
+
+    @Test
+    void positiveGetTotalFinancialLossPaidNullValues() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(null).when(appearance).getLossOfEarningsPaid();
+        doReturn(null).when(appearance).getChildcarePaid();
+        doReturn(null).when(appearance).getMiscAmountPaid();
+        assertThat(appearance.getTotalFinancialLossPaid()).isZero();
+
+    }
+
+    @Test
+    void positiveGetTotalTravelPaid() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(new BigDecimal("1.00")).when(appearance).getCarPaid();
+        doReturn(new BigDecimal("10.00")).when(appearance).getMotorcyclePaid();
+        doReturn(new BigDecimal("100.00")).when(appearance).getBicyclePaid();
+        doReturn(new BigDecimal("1000.00")).when(appearance).getParkingPaid();
+        doReturn(new BigDecimal("10000.00")).when(appearance).getPublicTransportPaid();
+        doReturn(new BigDecimal("100000.00")).when(appearance).getHiredVehiclePaid();
+        assertThat(appearance.getTotalTravelPaid()).isEqualTo(
+            new BigDecimal("111111.00"));
+    }
+
+    @Test
+    void positiveGetTotalTravelPaidNullValues() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(null).when(appearance).getCarPaid();
+        doReturn(null).when(appearance).getMotorcyclePaid();
+        doReturn(null).when(appearance).getBicyclePaid();
+        doReturn(null).when(appearance).getParkingPaid();
+        doReturn(null).when(appearance).getPublicTransportPaid();
+        doReturn(null).when(appearance).getHiredVehiclePaid();
+        assertThat(appearance.getTotalTravelDue()).isZero();
+    }
+
+
+    @Test
+    void positiveGetSubsistenceTotal() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(new BigDecimal("300.00")).when(appearance).getSubsistenceDue();
+        doReturn(new BigDecimal("100.00")).when(appearance).getSubsistencePaid();
+
+        doReturn(new BigDecimal("10.00")).when(appearance).getSmartCardAmountDue();
+        doReturn(new BigDecimal("30.00")).when(appearance).getSmartCardAmountPaid();
+
+        assertThat(appearance.getTotalChanged())
+            .isEqualTo(new BigDecimal("220.00"));
+    }
+
+    @Test
+    void positiveGetTravelTotal() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(new BigDecimal("3.00")).when(appearance).getCarDue();
+        doReturn(new BigDecimal("1.00")).when(appearance).getCarPaid();
+
+        doReturn(new BigDecimal("30.00")).when(appearance).getMotorcycleDue();
+        doReturn(new BigDecimal("10.00")).when(appearance).getMotorcyclePaid();
+
+        doReturn(new BigDecimal("300.00")).when(appearance).getBicycleDue();
+        doReturn(new BigDecimal("100.00")).when(appearance).getBicyclePaid();
+
+        doReturn(new BigDecimal("3000.00")).when(appearance).getParkingDue();
+        doReturn(new BigDecimal("1000.00")).when(appearance).getParkingPaid();
+
+        doReturn(new BigDecimal("30000.00")).when(appearance).getPublicTransportDue();
+        doReturn(new BigDecimal("10000.00")).when(appearance).getPublicTransportPaid();
+
+        doReturn(new BigDecimal("300000.00")).when(appearance).getHiredVehicleDue();
+        doReturn(new BigDecimal("100000.00")).when(appearance).getHiredVehiclePaid();
+
+        assertThat(appearance.getTotalChanged())
+            .isEqualTo(new BigDecimal("222222.00"));
+    }
+
+    @Test
+    void positiveGetSubsistenceTotalDue() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(new BigDecimal("10.00")).when(appearance).getSubsistenceDue();
+        doReturn(new BigDecimal("1.00")).when(appearance).getSmartCardAmountDue();
+        assertThat(appearance.getSubsistenceTotalDue()).isEqualTo(
+            new BigDecimal("9.00"));
+    }
+
+    @Test
+    void positiveGetSubsistenceTotalDueNullValues() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(null).when(appearance).getSubsistenceDue();
+        doReturn(null).when(appearance).getSmartCardAmountDue();
+        assertThat(appearance.getSubsistenceTotalDue()).isZero();
+    }
+
+    @Test
+    void positiveGetSubsistenceTotalPaid() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(new BigDecimal("10.00")).when(appearance).getSubsistencePaid();
+        doReturn(new BigDecimal("1.00")).when(appearance).getSmartCardAmountPaid();
+        assertThat(appearance.getSubsistenceTotalPaid()).isEqualTo(
+            new BigDecimal("9.00"));
+    }
+
+    @Test
+    void positiveGetSubsistenceTotalPaidNullValues() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(null).when(appearance).getSubsistencePaid();
+        doReturn(null).when(appearance).getSmartCardAmountPaid();
+        assertThat(appearance.getSubsistenceTotalPaid()).isZero();
+    }
+
+    @Test
+    void positiveGetSubsistenceTotalChanged() {
+        Appearance appearance = spy(new Appearance());
+        doReturn(new BigDecimal("20.00")).when(appearance).getSubsistenceDue();
+        doReturn(new BigDecimal("10.00")).when(appearance).getSubsistencePaid();
+
+        doReturn(new BigDecimal("3.00")).when(appearance).getSmartCardAmountDue();
+        doReturn(new BigDecimal("1.00")).when(appearance).getSmartCardAmountPaid();
+
+        assertThat(appearance.getTotalChanged())
+            .isEqualTo(new BigDecimal("8.00"));
+    }
+
+
+    @Nested
+    @DisplayName("isExpenseDetailsValid()")
+    class IsExpenseDetailsValid {
+
+        private Appearance mockAppearance() {
+            Appearance appearance = spy(new Appearance());
+
+            doReturn(BigDecimal.ZERO).when(appearance).getPublicTransportDue();
+            doReturn(BigDecimal.ZERO).when(appearance).getPublicTransportPaid();
+            doReturn(BigDecimal.ZERO).when(appearance).getHiredVehicleDue();
+            doReturn(BigDecimal.ZERO).when(appearance).getHiredVehiclePaid();
+            doReturn(BigDecimal.ZERO).when(appearance).getMotorcycleDue();
+            doReturn(BigDecimal.ZERO).when(appearance).getMotorcyclePaid();
+            doReturn(BigDecimal.ZERO).when(appearance).getCarDue();
+            doReturn(BigDecimal.ZERO).when(appearance).getCarPaid();
+            doReturn(BigDecimal.ZERO).when(appearance).getBicycleDue();
+            doReturn(BigDecimal.ZERO).when(appearance).getBicyclePaid();
+            doReturn(BigDecimal.ZERO).when(appearance).getParkingDue();
+            doReturn(BigDecimal.ZERO).when(appearance).getParkingPaid();
+            doReturn(BigDecimal.ZERO).when(appearance).getSubsistenceDue();
+            doReturn(BigDecimal.ZERO).when(appearance).getSubsistencePaid();
+            doReturn(BigDecimal.ZERO).when(appearance).getLossOfEarningsDue();
+            doReturn(BigDecimal.ZERO).when(appearance).getLossOfEarningsPaid();
+            doReturn(BigDecimal.ZERO).when(appearance).getChildcareDue();
+            doReturn(BigDecimal.ZERO).when(appearance).getChildcarePaid();
+            doReturn(BigDecimal.ZERO).when(appearance).getMiscAmountDue();
+            doReturn(BigDecimal.ZERO).when(appearance).getMiscAmountPaid();
+            doReturn(BigDecimal.ZERO).when(appearance).getTotalDue();
+            doReturn(BigDecimal.ZERO).when(appearance).getTotalPaid();
+            doReturn(AppearanceStage.EXPENSE_EDITED).when(appearance).getAppearanceStage();
+            doReturn(BigDecimal.ZERO).when(appearance).getSmartCardAmountDue();
+            doReturn(BigDecimal.ZERO).when(appearance).getSmartCardAmountPaid();
+            return appearance;
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-        void positiveDueAmountNullPaidNotNull() {
-            triggerTest(null, new BigDecimal("1.11"));
+        void positiveTypical() {
+            Appearance appearance = mockAppearance();
+            assertThat(appearance.isExpenseDetailsValid()).isTrue();
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-        void positiveDueAmountNotNullPaidNull() {
-            triggerTest(new BigDecimal("6.31"), null);
+        void negativePublicTransport() {
+            Appearance appearance = mockAppearance();
+            doReturn(new BigDecimal("0.01")).when(appearance).getPublicTransportPaid();
+            assertThat(appearance.isExpenseDetailsValid()).isFalse();
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-        void positiveDueAmountNotNullPaidNotNull() {
-            triggerTest(new BigDecimal("3.11"), new BigDecimal("6.71"));
+        void negativeHiredVehicle() {
+            Appearance appearance = mockAppearance();
+            doReturn(new BigDecimal("0.01")).when(appearance).getHiredVehiclePaid();
+            assertThat(appearance.isExpenseDetailsValid()).isFalse();
+        }
+
+        @Test
+        void negativeMotorcycle() {
+            Appearance appearance = mockAppearance();
+            doReturn(new BigDecimal("0.01")).when(appearance).getMotorcyclePaid();
+            assertThat(appearance.isExpenseDetailsValid()).isFalse();
+        }
+
+        @Test
+        void negativeCar() {
+            Appearance appearance = mockAppearance();
+            doReturn(new BigDecimal("0.01")).when(appearance).getCarPaid();
+            assertThat(appearance.isExpenseDetailsValid()).isFalse();
+        }
+
+        @Test
+        void negativeBicycle() {
+            Appearance appearance = mockAppearance();
+            doReturn(new BigDecimal("0.01")).when(appearance).getBicyclePaid();
+            assertThat(appearance.isExpenseDetailsValid()).isFalse();
+        }
+
+        @Test
+        void negativeParking() {
+            Appearance appearance = mockAppearance();
+            doReturn(new BigDecimal("0.01")).when(appearance).getParkingPaid();
+            assertThat(appearance.isExpenseDetailsValid()).isFalse();
+        }
+
+        @Test
+        void negativeSubsistence() {
+            Appearance appearance = mockAppearance();
+            doReturn(new BigDecimal("0.01")).when(appearance).getSubsistencePaid();
+            assertThat(appearance.isExpenseDetailsValid()).isFalse();
+        }
+
+        @Test
+        void negativeLossOfEarnings() {
+            Appearance appearance = mockAppearance();
+            doReturn(new BigDecimal("0.01")).when(appearance).getLossOfEarningsPaid();
+            assertThat(appearance.isExpenseDetailsValid()).isFalse();
+        }
+
+        @Test
+        void negativeChildcare() {
+            Appearance appearance = mockAppearance();
+            doReturn(new BigDecimal("0.01")).when(appearance).getChildcarePaid();
+            assertThat(appearance.isExpenseDetailsValid()).isFalse();
+        }
+
+        @Test
+        void negativeMiscAmount() {
+            Appearance appearance = mockAppearance();
+            doReturn(new BigDecimal("0.01")).when(appearance).getMiscAmountPaid();
+            assertThat(appearance.isExpenseDetailsValid()).isFalse();
+        }
+
+        @Test
+        void negativeTotalPaid() {
+            Appearance appearance = mockAppearance();
+            doReturn(new BigDecimal("0.01")).when(appearance).getTotalPaid();
+            assertThat(appearance.isExpenseDetailsValid()).isFalse();
+        }
+
+        @Test
+        void negativeSmartCardAmountEdited() {
+            Appearance appearance = mockAppearance();
+            doReturn(AppearanceStage.EXPENSE_EDITED).when(appearance).getAppearanceStage();
+            doReturn(new BigDecimal("1.0")).when(appearance).getSmartCardAmountDue();
+            doReturn(new BigDecimal("0.9")).when(appearance).getSmartCardAmountPaid();
+            assertThat(appearance.isExpenseDetailsValid()).isFalse();
+        }
+
+        @Test
+        void negativeSmartCardAmountAuthorised() {
+            Appearance appearance = mockAppearance();
+            doReturn(AppearanceStage.EXPENSE_AUTHORISED).when(appearance).getAppearanceStage();
+            doReturn(new BigDecimal("1.0")).when(appearance).getSmartCardAmountDue();
+            doReturn(new BigDecimal("0.9")).when(appearance).getSmartCardAmountPaid();
+            assertThat(appearance.isExpenseDetailsValid()).isFalse();
+        }
+
+        @ParameterizedTest
+        @EnumSource(value = AppearanceStage.class, mode = EnumSource.Mode.EXCLUDE,
+            names = {"EXPENSE_EDITED", "EXPENSE_AUTHORISED"})
+        void positiveSmartCardAmountNotEditedOrAuthorised(AppearanceStage stage) {
+            Appearance appearance = mockAppearance();
+            doReturn(stage).when(appearance).getAppearanceStage();
+            doReturn(new BigDecimal("1.0")).when(appearance).getSmartCardAmountDue();
+            doReturn(new BigDecimal("0.0")).when(appearance).getSmartCardAmountPaid();
+            assertThat(appearance.isExpenseDetailsValid()).isTrue();
         }
     }
 }

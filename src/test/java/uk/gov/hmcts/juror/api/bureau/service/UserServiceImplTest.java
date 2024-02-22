@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.request.MultipleStaffAssignmentDto;
 import uk.gov.hmcts.juror.api.bureau.controller.request.StaffAssignmentRequestDto;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 
 import java.util.ArrayList;
@@ -32,9 +34,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -362,6 +366,26 @@ public class UserServiceImplTest {
         verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAudit.class));
         verify(mockJurorResponseRepository, times(2)).save(any(JurorResponse.class));
         verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAudit.class));
+
+
+    }
+
+    @Test
+    public void positiveFindByUsernameFound() {
+        User user = mock(User.class);
+        doReturn(user).when(mockuserRepository).findByUsername("USER321");
+        assertThat(userService.findByUsername("USER321")).isEqualTo(user);
+    }
+
+    @Test
+    public void negativeFindByUsernameNotFound() {
+        doReturn(null).when(mockuserRepository).findByUsername("USER321");
+        MojException.NotFound exception = assertThrows(MojException.NotFound.class,
+            () -> userService.findByUsername("USER321"),
+            "Expected findByUsername to throw not found exception hen user is not found");
+        assertThat(exception).isNotNull();
+        assertThat(exception.getCause()).isNull();
+        assertThat(exception.getMessage()).isEqualTo("User not found");
 
 
     }

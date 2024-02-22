@@ -42,6 +42,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@SuppressWarnings("PMD.ExcessiveImports")
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(CourtLocationController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -212,7 +213,7 @@ class CourtLocationControllerTest {
     }
 
     @Test
-    public void getAllCourtLocationsByPostcode_invalidPostcode_space() throws Exception {
+    void retrieveAllCourtLocationsByPostcodeInvalidPostcodeSpace() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -240,17 +241,15 @@ class CourtLocationControllerTest {
         );
     }
 
-
     @Nested
     class GetCourtRates
         extends AbstractControllerTest<Void, GetCourtRates> {
         private static final String URL = BASE_URL + "/{loc_code}/{date}/rates";
         private static final BureauJwtAuthentication MOCK_PRINCIPAL = mock(BureauJwtAuthentication.class);
-        private BureauJWTPayload bureauJwtPayload;
 
         protected GetCourtRates() {
             super(HttpMethod.GET, URL, MOCK_PRINCIPAL);
-            bureauJwtPayload = TestUtils.createJwt("415", "COURT_USER");
+            BureauJWTPayload bureauJwtPayload = TestUtils.createJwt("415", "COURT_USER");
             when(MOCK_PRINCIPAL.getPrincipal()).thenReturn(bureauJwtPayload);
         }
 

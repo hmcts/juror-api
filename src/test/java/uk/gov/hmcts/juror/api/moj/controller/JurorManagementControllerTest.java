@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -15,6 +16,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
@@ -35,10 +37,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.juror.api.TestUtils.asJsonString;
@@ -197,6 +201,71 @@ class JurorManagementControllerTest {
             .andExpect(status().isBadRequest());
 
         verify(jurorAppearanceService, never()).deleteAttendance(any(), any());
+    }
+
+    @Test
+    void addNonAttendanceOkay() throws Exception {
+        final String url = "/api/v1/moj/juror-management/non-attendance";
+        JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
+            .jurorNumber("111111111")
+            .nonAttendanceDate(now())
+            .poolNumber("415230101")
+            .locationCode("415")
+            .build();
+
+        mockMvc.perform(post(url)
+                .principal(mock(BureauJwtAuthentication.class))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(request)))
+            .andExpect(status().isCreated());
+
+        ArgumentCaptor<JurorNonAttendanceDto> requestCaptor = ArgumentCaptor.forClass(JurorNonAttendanceDto.class);
+
+        verify(jurorAppearanceService, times(1)).addNonAttendance(requestCaptor.capture());
+
+        JurorNonAttendanceDto capturedRequest = requestCaptor.getValue();
+
+        assertThat(capturedRequest.getJurorNumber()).isEqualTo(request.getJurorNumber());
+        assertThat(capturedRequest.getNonAttendanceDate()).isEqualTo(request.getNonAttendanceDate());
+        assertThat(capturedRequest.getPoolNumber()).isEqualTo(request.getPoolNumber());
+        assertThat(capturedRequest.getLocationCode()).isEqualTo(request.getLocationCode());
+
+    }
+
+    @Test
+    void addNonAttendanceUnhappyJurorNumberMissing() throws Exception {
+        final String url = "/api/v1/moj/juror-management/non-attendance";
+        JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
+            .nonAttendanceDate(now())
+            .poolNumber("415230101")
+            .locationCode("415")
+            .build();
+
+        mockMvc.perform(post(url)
+                .principal(mock(BureauJwtAuthentication.class))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(request)))
+            .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(jurorAppearanceService);
+    }
+
+    @Test
+    void addNonAttendanceIncorrectHttpMethodPut() throws Exception {
+        final String url = "/api/v1/moj/juror-management/non-attendance";
+        JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
+            .nonAttendanceDate(now())
+            .jurorNumber("111111111")
+            .locationCode("415")
+            .build();
+
+        mockMvc.perform(put(url)
+                .principal(mock(BureauJwtAuthentication.class))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(request)))
+            .andExpect(status().isMethodNotAllowed());
+
+        verifyNoInteractions(jurorAppearanceService);
     }
 
     private UpdateAttendanceDto buildUpdateAttendanceDto(List<String> jurors) {

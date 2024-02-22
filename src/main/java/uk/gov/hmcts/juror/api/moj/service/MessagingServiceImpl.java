@@ -40,7 +40,6 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_MUST_HAVE_EMAIL;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_MUST_HAVE_PHONE_NUMBER;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_NOT_APART_OF_TRIAL;
-import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.MAX_ITEMS_EXCEEDED;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.PLACEHOLDER_MUST_HAVE_VALUE;
 
 @Service
@@ -268,8 +267,7 @@ public class MessagingServiceImpl implements MessagingService {
         }
 
         historyService.createSendMessageHistory(jurorAndSendType.getJurorNumber(),
-            jurorAndSendType.getPoolNumber(),
-            otherInfo);//TODO confirm
+            jurorAndSendType.getPoolNumber(), otherInfo);
         return message;
     }
 

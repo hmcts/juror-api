@@ -11,7 +11,6 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,8 +30,8 @@ import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.MissingInformation;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
-import uk.gov.hmcts.juror.api.moj.service.letter.CourtLetterPrintService;
-import uk.gov.hmcts.juror.api.moj.service.letter.CourtLetterService;
+import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtLetterPrintService;
+import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtLetterService;
 import uk.gov.hmcts.juror.api.moj.service.letter.RequestInformationLetterService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 

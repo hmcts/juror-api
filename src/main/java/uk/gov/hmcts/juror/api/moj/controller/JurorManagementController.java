@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,16 +16,20 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
@@ -89,6 +94,14 @@ public class JurorManagementController {
         return ResponseEntity.ok(jurorAppearanceService.updateAttendance(payload, request));
     }
 
+    @PatchMapping("/attendance/attendance-date")
+    @Operation(description = "Update juror attendance date")
+    @IsCourtUser
+    public ResponseEntity<String> updateAttendanceDate(
+        @RequestBody @Valid UpdateAttendanceDateDto request) {
+        return ResponseEntity.ok(jurorAppearanceService.updateAttendanceDate(request));
+    }
+
     @DeleteMapping("/attendance")
     @Operation(description = "Delete the attendance record for a juror")
     public ResponseEntity<AttendanceDetailsResponse> deleteAttendance(
@@ -97,6 +110,16 @@ public class JurorManagementController {
         validateOwner(payload);
 
         return ResponseEntity.ok(jurorAppearanceService.deleteAttendance(payload, request));
+    }
+
+    @PostMapping("/non-attendance")
+    @IsCourtUser
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(description = "Add a non-attendance day for a juror")
+    public void addNonAttendance(
+        @RequestBody @Valid JurorNonAttendanceDto jurorNonAttendanceDto) {
+
+        jurorAppearanceService.addNonAttendance(jurorNonAttendanceDto);
     }
 
     @GetMapping("/jurors-to-dismiss")

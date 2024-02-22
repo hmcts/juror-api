@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 import java.time.LocalDate;
 import java.util.List;
 
+@SuppressWarnings("PMD.LawOfDemeter")
 public class PoolStatisticsRepositoryImpl implements IPoolStatisticsRepository {
     @PersistenceContext
     EntityManager entityManager;

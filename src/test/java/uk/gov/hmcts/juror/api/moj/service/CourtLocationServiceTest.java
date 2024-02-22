@@ -229,8 +229,8 @@ public class CourtLocationServiceTest {
         courtLocation.setLimitFinancialLossFullDay(new BigDecimal("8.08000"));
         courtLocation.setLimitFinancialLossHalfDayLongTrial(new BigDecimal("9.09000"));
         courtLocation.setLimitFinancialLossFullDayLongTrial(new BigDecimal("10.01000"));
-        courtLocation.setSubstanceRateStandard(new BigDecimal("11.01100"));
-        courtLocation.setSubstanceRateLongDay(new BigDecimal("12.01200"));
+        courtLocation.setSubsistenceRateStandard(new BigDecimal("11.01100"));
+        courtLocation.setSubsistenceRateLongDay(new BigDecimal("12.01200"));
         courtLocation.setPublicTransportSoftLimit(new BigDecimal("13.01300"));
 
         doReturn(courtLocation).when(courtLocationService)
@@ -252,8 +252,8 @@ public class CourtLocationServiceTest {
         assertThat(courtRates.getFinancialLossHalfDayLongTrialLimit()).isEqualTo(new BigDecimal("9.09000"));
         assertThat(courtRates.getFinancialLossFullDayLongTrialLimit()).isEqualTo(new BigDecimal("10.01000"));
 
-        assertThat(courtRates.getSubstanceRateStandard()).isEqualTo(new BigDecimal("11.01100"));
-        assertThat(courtRates.getSubstanceRateLongDay()).isEqualTo(new BigDecimal("12.01200"));
+        assertThat(courtRates.getSubsistenceRateStandard()).isEqualTo(new BigDecimal("11.01100"));
+        assertThat(courtRates.getSubsistenceRateLongDay()).isEqualTo(new BigDecimal("12.01200"));
         assertThat(courtRates.getPublicTransportSoftLimit()).isEqualTo(new BigDecimal("13.01300"));
     }
 

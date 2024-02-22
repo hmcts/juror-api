@@ -28,10 +28,10 @@ class FoodDrinkClaimTypeTest {
     void getRateMoreThan10Hours() {
         CourtLocation courtLocation = mock(CourtLocation.class);
         BigDecimal rate = new BigDecimal("5.12");
-        when(courtLocation.getSubstanceRateLongDay()).thenReturn(rate);
+        when(courtLocation.getSubsistenceRateLongDay()).thenReturn(rate);
         assertThat(FoodDrinkClaimType.MORE_THAN_10_HOURS.getRate(courtLocation))
             .isEqualTo(rate);
-        verify(courtLocation, times(1)).getSubstanceRateLongDay();
+        verify(courtLocation, times(1)).getSubsistenceRateLongDay();
         verifyNoMoreInteractions(courtLocation);
     }
 }

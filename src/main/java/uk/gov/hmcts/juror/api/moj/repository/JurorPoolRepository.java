@@ -43,4 +43,7 @@ public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository
                                                                JurorStatus status);
 
     List<JurorPool> findByJurorJurorNumberAndStatusOrderByDateCreatedDesc(String jurorNumber, JurorStatus status);
+
+    JurorPool findByOwnerAndJurorJurorNumberAndPoolPoolNumberAndIsActive(String owner, String jurorNumber,
+                                                                         String poolNumber, boolean isActive);
 }

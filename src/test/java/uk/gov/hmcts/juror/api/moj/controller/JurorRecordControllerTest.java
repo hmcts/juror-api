@@ -27,6 +27,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -45,9 +46,11 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsCommonResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -56,6 +59,7 @@ import uk.gov.hmcts.juror.api.moj.service.BulkServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.JurorRecordService;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -90,7 +94,6 @@ class JurorRecordControllerTest {
     private static final String USERNAME_BUREAU = "BUREAU_USER";
 
 
-
     @MockBean
     private JurorRecordService jurorRecordService;
 
@@ -113,7 +116,6 @@ class JurorRecordControllerTest {
             .setCustomArgumentResolvers(new PrincipalDetailsArgumentResolver())
             .build();
     }
-
 
     @Test
     public void test_bureauUser_getJurorOverview_happyPath() throws Exception {
@@ -154,10 +156,10 @@ class JurorRecordControllerTest {
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(bureauJwtPayload);
 
-        LocalDate localDateCommonDto = LocalDate.of(2021,2,2);
+        LocalDate localDateCommonDto = LocalDate.of(2021, 2, 2);
 
         JurorDetailsCommonResponseDto commonDto = createCommonDto(localDateCommonDto, OWNER_BUREAU);
-        LocalDate overviewResponseLocalDate = LocalDate.of(2021,1,1);
+        LocalDate overviewResponseLocalDate = LocalDate.of(2021, 1, 1);
         JurorOverviewResponseDto dto = createJurorOverviewResponseDto(commonDto, overviewResponseLocalDate);
 
         doReturn(dto).when(jurorRecordService)
@@ -1337,7 +1339,7 @@ class JurorRecordControllerTest {
 
         public UndoUpdateJurorToFailedToAttend() {
             super(HttpMethod.PATCH, URL, MOCK_PRINCIPAL);
-            bureauJwtPayload = TestUtils.createJwt("415", "COURT_USER","9");
+            bureauJwtPayload = TestUtils.createJwt("415", "COURT_USER", "9");
             Mockito.when(MOCK_PRINCIPAL.getPrincipal()).thenReturn(bureauJwtPayload);
         }
 
@@ -1393,7 +1395,7 @@ class JurorRecordControllerTest {
         @BeforeEach
         void beforeEach() {
             bureauJwtPayload = TestUtils.createJwt("415", "COURT_USER");
-            Mockito.when(MOCK_PRINCIPAL.getPrincipal()).thenReturn(bureauJwtPayload);
+            when(MOCK_PRINCIPAL.getPrincipal()).thenReturn(bureauJwtPayload);
             this.setMockMvc(mockMvc);
         }
 
@@ -1479,6 +1481,120 @@ class JurorRecordControllerTest {
                     .getJurorDetails(payload);
                 verifyNoMoreInteractions(jurorRecordService);
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("PATCH editBankDetails(RequestBankDetailsDto)")
+    public class EditBankDetails {
+        @org.junit.jupiter.api.Test
+        void happyPath_editBankDetails() throws Exception {
+            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
+                Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
+            BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+            when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+
+            String jurorNumber = "123456789";
+
+            RequestBankDetailsDto dto = new RequestBankDetailsDto();
+            dto.setJurorNumber(jurorNumber);
+            dto.setSortCode("115578");
+            dto.setAccountNumber("87654321");
+            dto.setAccountHolderName("Mr Fname Lname");
+
+            Juror juror = new Juror();
+            juror.setJurorNumber(jurorNumber);
+
+            doNothing().when(jurorRecordService).editJurorsBankDetails(dto);
+
+            mockMvc.perform(patch(String.format(BASE_URL + "/update-bank-details"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(dto)))
+                .andExpect(status().isOk());
+
+            verify(jurorRecordService, times(1)).editJurorsBankDetails(dto);
+        }
+
+        @org.junit.jupiter.api.Test
+        void invalidAccountNumber() throws Exception {
+            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
+                Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
+            BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+            when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+            String jurorNumber = "123456789";
+
+            RequestBankDetailsDto dto = new RequestBankDetailsDto();
+            dto.setJurorNumber(jurorNumber);
+            dto.setSortCode("115578");
+            dto.setAccountNumber("987654321");
+            dto.setAccountHolderName("Mr Fname Lname");
+
+            Juror juror = new Juror();
+            juror.setJurorNumber(jurorNumber);
+
+            mockMvc.perform(patch(String.format(BASE_URL + "/update-bank-details"))
+                    .content(TestUtils.asJsonString(dto))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .principal(mockPrincipal))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+
+        }
+
+        @org.junit.jupiter.api.Test
+        void wrongSortCode() throws Exception {
+            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
+                Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
+            BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+            when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+            String jurorNumber = "123456789";
+
+            RequestBankDetailsDto dto = new RequestBankDetailsDto();
+            dto.setJurorNumber(jurorNumber);
+            dto.setSortCode("11557812356");
+            dto.setAccountNumber("87654321");
+            dto.setAccountHolderName("Mr Fname Lname");
+
+            Juror juror = new Juror();
+            juror.setJurorNumber(jurorNumber);
+
+            mockMvc.perform(patch(String.format(BASE_URL + "/update-bank-details"))
+                    .content(TestUtils.asJsonString(dto))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .principal(mockPrincipal))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+
+        }
+
+        @org.junit.jupiter.api.Test
+        void wrongAccountName() throws Exception {
+            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
+                Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
+            BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+            when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+            String jurorNumber = "123456789";
+
+            RequestBankDetailsDto dto = new RequestBankDetailsDto();
+            dto.setJurorNumber(jurorNumber);
+            dto.setSortCode("112233");
+            dto.setAccountNumber("87654321");
+            dto.setAccountHolderName("Mr Fname Lname extra");
+
+            Juror juror = new Juror();
+            juror.setJurorNumber(jurorNumber);
+
+            mockMvc.perform(patch(String.format(BASE_URL + "/update-bank-details"))
+                    .content(TestUtils.asJsonString(dto))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .principal(mockPrincipal))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+
         }
     }
 }

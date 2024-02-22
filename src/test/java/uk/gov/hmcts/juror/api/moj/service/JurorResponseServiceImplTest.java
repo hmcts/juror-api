@@ -295,8 +295,8 @@ public class JurorResponseServiceImplTest extends TestCase {
     public void test_updateDigitalResponse_PersonalDetails_dateOfBirth_tooOld() {
 
         Mockito.doReturn(true).when(straightThroughProcessorService)
-            .isValidForStraightThroughAgeDisqualification(Mockito.any(DigitalResponse.class), Mockito.any(LocalDate.class),
-                Mockito.any(JurorPool.class));
+            .isValidForStraightThroughAgeDisqualification(Mockito.any(DigitalResponse.class),
+                Mockito.any(LocalDate.class), Mockito.any(JurorPool.class));
 
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
         personalDetailsDto.setDateOfBirth(LocalDate.now().minusYears(80));
@@ -346,7 +346,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         return jurorPool;
     }
 
-    private PoolRequest mockPoolRequest(String poolNumber, String owner){
+    private PoolRequest mockPoolRequest(String poolNumber, String owner) {
         PoolRequest mockPoolRequest = new PoolRequest();
         mockPoolRequest.setPoolNumber(poolNumber);
         mockPoolRequest.setOwner(owner);

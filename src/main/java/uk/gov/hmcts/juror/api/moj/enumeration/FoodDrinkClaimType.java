@@ -7,8 +7,8 @@ import java.util.function.Function;
 
 public enum FoodDrinkClaimType {
     NONE(courtLocation -> BigDecimal.ZERO),
-    LESS_THAN_1O_HOURS(CourtLocation::getSubstanceRateStandard),
-    MORE_THAN_10_HOURS(CourtLocation::getSubstanceRateLongDay);
+    LESS_THAN_OR_EQUAL_TO_10_HOURS(CourtLocation::getSubsistenceRateStandard),
+    MORE_THAN_10_HOURS(CourtLocation::getSubsistenceRateLongDay);
 
     private final Function<CourtLocation, BigDecimal> getRateFunction;
 

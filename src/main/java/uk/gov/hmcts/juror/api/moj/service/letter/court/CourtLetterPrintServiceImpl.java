@@ -1,4 +1,4 @@
-package uk.gov.hmcts.juror.api.moj.service.letter;
+package uk.gov.hmcts.juror.api.moj.service.letter.court;
 
 import com.querydsl.core.Tuple;
 import lombok.NonNull;
@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.PrintLettersRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDataResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
@@ -30,6 +31,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.DEFERRAL_GRANTED;
 
 @Service
 @Slf4j
@@ -51,11 +54,11 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
     @NonNull
     private final CourtPrintLetterRepository courtPrintLetterRepository;
 
-
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
     private static final QWelshCourtLocation WELSH_COURT_LOCATION = QWelshCourtLocation.welshCourtLocation;
     private static final QCourtLocation COURT_LOCATION = QCourtLocation.courtLocation;
+    private static final QJuror JUROR = QJuror.juror;
 
     //System parameter setting for english and welsh url's
     private static final int ENGLISH_URL_PARAM = 102;
@@ -84,45 +87,68 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
         String owner = SecurityUtil.getActiveOwner();
 
         for (String jurorNumber : jurorNumbers) {
+
+            // retrieve print information
             boolean welsh = BooleanUtils.toBoolean(jurorRepository.findByJurorNumber(jurorNumber).getWelsh());
             Tuple data = courtPrintLetterRepository.retrievePrintInformation(jurorNumber,
                 printLettersRequestDto.getLetterType(), welsh, owner);
 
-            // add history item
-            switch (printLettersRequestDto.getLetterType()) {
-                case DEFERRAL_GRANTED -> {
-                    JurorHistory jurorHistory = JurorHistory.builder()
-                        .jurorNumber(jurorNumber)
-                        .dateCreated(LocalDateTime.now())
-                        .historyCode(HistoryCodeMod.DEFERRED_LETTER)
-                        .createdBy(login)
-                        .poolNumber(data.get(JUROR_POOL.pool.poolNumber))
-                        .otherInformation("Reissued deferral letter")
-                        .otherInformationRef(data.get(JUROR_POOL.deferralCode))
-                        .otherInformationDate(data.get(JUROR_POOL.deferralDate))
-                        .build();
+            if (data == null) {
+                continue;
+            }
 
-                    jurorHistoryRepository.save(jurorHistory);
+            // add history item
+            JurorHistory.JurorHistoryBuilder jurorHistory = JurorHistory.builder()
+                .jurorNumber(jurorNumber)
+                .dateCreated(LocalDateTime.now())
+                .createdBy(login)
+                .poolNumber(data.get(POOL_REQUEST.poolNumber));
+
+            switch (printLettersRequestDto.getLetterType()) {
+                case DEFERRAL_GRANTED, POSTPONED -> {
+                    jurorHistory.otherInformationRef(data.get(JUROR_POOL.deferralCode));
+                    jurorHistory.otherInformationDate(data.get(JUROR_POOL.deferralDate));
+
+                    if (DEFERRAL_GRANTED.equals(printLettersRequestDto.getLetterType())) {
+                        jurorHistory.historyCode(HistoryCodeMod.DEFERRED_LETTER);
+                        jurorHistory.otherInformation("Reissued deferral letter");
+                    } else {
+                        jurorHistory.historyCode(HistoryCodeMod.POSTPONED_LETTER);
+                        jurorHistory.otherInformation("Reissued postponed letter");
+                    }
+                }
+                case EXCUSAL_GRANTED -> {
+                    jurorHistory.historyCode(HistoryCodeMod.EXCUSED_LETTER);
+                    jurorHistory.otherInformation("Reissued excusal letter");
+                    jurorHistory.otherInformationRef(data.get(JUROR.excusalCode));
+                    jurorHistory.otherInformationDate(data.get(JUROR.excusalDate));
                 }
                 case DEFERRAL_REFUSED -> {
-                    JurorHistory jurorHistory = JurorHistory.builder()
-                        .jurorNumber(jurorNumber)
-                        .dateCreated(LocalDateTime.now())
-                        .historyCode(HistoryCodeMod.NON_DEFERRED_LETTER)
-                        .createdBy(login)
-                        .poolNumber(data.get(POOL_REQUEST.poolNumber))
-                        .otherInformation("Print Deferral Denied Letter")
-                        .otherInformationRef(data.get(JUROR_POOL.deferralCode))
-                        .build();
-
-                    jurorHistoryRepository.save(jurorHistory);
+                    jurorHistory.historyCode(HistoryCodeMod.NON_DEFERRED_LETTER);
+                    jurorHistory.otherInformation("Print Deferral Denied Letter");
+                    jurorHistory.otherInformationRef(data.get(JUROR_POOL.deferralCode));
+                }
+                case WITHDRAWAL -> {
+                    jurorHistory.historyCode(HistoryCodeMod.WITHDRAWAL_LETTER);
+                    jurorHistory.otherInformation("Reissued withdrawal letter");
+                    jurorHistory.otherInformationRef(data.get(JUROR.disqualifyCode));
+                    jurorHistory.otherInformationDate(data.get(JUROR.disqualifyDate));
+                }
+                case EXCUSAL_REFUSED -> {
+                    jurorHistory.historyCode(HistoryCodeMod.NON_EXCUSED_LETTER);
+                    jurorHistory.otherInformation("Reissued excusal denied letter");
+                    jurorHistory.otherInformationRef(data.get(JUROR_POOL.juror.excusalCode));
+                    jurorHistory.otherInformationDate(data.get(JUROR_POOL.juror.excusalDate));
                 }
                 default -> throw new MojException.NotImplemented("letter type not implemented", null);
             }
+            JurorHistory history = jurorHistory.build();
 
-            boolean welshInformation =
-                welshCourtLocationRepository
-                    .existsByLocCode(Objects.requireNonNull(data).get(COURT_LOCATION.locCode));
+            jurorHistoryRepository.save(history);
+
+            // create the print letter response
+            boolean welshInformation = welshCourtLocationRepository
+                .existsByLocCode(Objects.requireNonNull(data).get(COURT_LOCATION.locCode));
 
             letters.add(createPrintLetterDataResponseDto(data, welshInformation, printLettersRequestDto));
         }
@@ -161,6 +187,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             builder.courtAddressLine6(data.get(COURT_LOCATION.address6));
             builder.url(englishUrl);
         }
+
         builder.courtPhoneNumber(data.get(COURT_LOCATION.locPhone));
         builder.signature(formatSignature(data.get(COURT_LOCATION.signatory), data.get(COURT_LOCATION.locCode), welsh));
         builder.courtPostCode(data.get(COURT_LOCATION.postcode));
@@ -175,20 +202,26 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
         builder.jurorPostcode(data.get(JUROR_POOL.juror.postcode));
         builder.jurorNumber(data.get(JUROR_POOL.juror.jurorNumber));
         LocalDateTime attendanceTime = data.get(POOL_REQUEST.attendTime);
-        builder.attendTime(attendanceTime != null ? attendanceTime.toLocalTime() : null);
+        builder.attendTime(attendanceTime != null
+            ? attendanceTime.toLocalTime()
+            : null);
         builder.date(formatDate(LocalDate.now(), welsh));
 
         switch (dto.getLetterType()) {
-            case DEFERRAL_GRANTED -> builder.deferredToDate(formatDate(
-                Objects.requireNonNull(data.get(JUROR_POOL.deferralDate)), welsh));
+            case DEFERRAL_GRANTED -> builder
+                .deferredToDate(formatDate(Objects.requireNonNull(data.get(JUROR_POOL.deferralDate)), welsh));
+            case POSTPONED -> builder
+                .postponedToDate(formatDate(Objects.requireNonNull(data.get(JUROR_POOL.deferralDate)), welsh));
             case DEFERRAL_REFUSED, EXCUSAL_REFUSED -> builder.courtManager(formatCourtManager(welsh));
+            case EXCUSAL_GRANTED, WITHDRAWAL -> {
+                // do nothing as no additional fields are required
+            }
             default -> throw new MojException.NotImplemented("letter type not implemented",
                 null);
         }
 
         return builder.build();
     }
-
 
     private String formatEnglishCourt(String courtName, String locationCode) {
         if (ROYAL_COURTS_OF_JUSTICE.equalsIgnoreCase(locationCode)) {

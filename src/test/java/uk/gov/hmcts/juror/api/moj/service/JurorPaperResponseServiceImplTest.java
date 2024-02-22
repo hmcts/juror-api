@@ -448,7 +448,7 @@ public class JurorPaperResponseServiceImplTest {
     public void test_saveResponse_withCjs_noSpecialNeeds() {
         BureauJWTPayload payload = buildPayload();
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
-        List<JurorPaperResponseDto.CJSEmployment> cjsEmployment =
+        List<JurorPaperResponseDto.CjsEmployment> cjsEmployment =
             Collections.singletonList(buildCjsEmployment(CjsEmploymentType.POLICE.getEmployer()));
         responseDto.setCjsEmployment(cjsEmployment);
 
@@ -494,7 +494,7 @@ public class JurorPaperResponseServiceImplTest {
     public void test_saveResponse_withCjs_withSpecialNeeds() {
         BureauJWTPayload payload = buildPayload();
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
-        List<JurorPaperResponseDto.CJSEmployment> cjsEmployment =
+        List<JurorPaperResponseDto.CjsEmployment> cjsEmployment =
             Collections.singletonList(buildCjsEmployment(CjsEmploymentType.POLICE.getEmployer()));
         responseDto.setCjsEmployment(cjsEmployment);
         List<JurorPaperResponseDto.ReasonableAdjustment> specialNeeds =
@@ -520,7 +520,7 @@ public class JurorPaperResponseServiceImplTest {
     public void test_saveResponse_invalidCjsEmployer() {
         BureauJWTPayload payload = buildPayload();
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
-        List<JurorPaperResponseDto.CJSEmployment> cjsEmployment =
+        List<JurorPaperResponseDto.CjsEmployment> cjsEmployment =
             Collections.singletonList(buildCjsEmployment("!£$%^&*()_+"));
         responseDto.setCjsEmployment(cjsEmployment);
 
@@ -532,8 +532,8 @@ public class JurorPaperResponseServiceImplTest {
     public void test_saveResponse_duplicateCjsEmployer() {
         final BureauJWTPayload payload = buildPayload();
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
-        JurorPaperResponseDto.CJSEmployment cjsEmployment = buildCjsEmployment(CjsEmploymentType.POLICE.getEmployer());
-        List<JurorPaperResponseDto.CJSEmployment> cjsEmploymentList = new ArrayList<>();
+        JurorPaperResponseDto.CjsEmployment cjsEmployment = buildCjsEmployment(CjsEmploymentType.POLICE.getEmployer());
+        List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
         cjsEmploymentList.add(cjsEmployment);
         cjsEmploymentList.add(cjsEmployment);
         responseDto.setCjsEmployment(cjsEmploymentList);
@@ -706,8 +706,8 @@ public class JurorPaperResponseServiceImplTest {
     public void test_updatePaperResponse_CjsEmployment_InvalidEmployer() {
         final BureauJWTPayload payload = buildPayload();
         CJSEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
-        List<JurorPaperResponseDto.CJSEmployment> cjsEmploymentList = new ArrayList<>();
-        JurorPaperResponseDto.CJSEmployment cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
+        JurorPaperResponseDto.CjsEmployment cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer("Air Force")
             .cjsEmployerDetails("Air force Details text").build();
         cjsEmploymentList.add(cjsEmployment);
@@ -1192,13 +1192,13 @@ public class JurorPaperResponseServiceImplTest {
     private CJSEmploymentDetailsDto buildCjsEmploymentDetailsDto() {
         final CJSEmploymentDetailsDto cjsEmploymentDetailsDto = new CJSEmploymentDetailsDto();
 
-        List<JurorPaperResponseDto.CJSEmployment> cjsEmploymentList = new ArrayList<>();
+        List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
 
-        JurorPaperResponseDto.CJSEmployment cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        JurorPaperResponseDto.CjsEmployment cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer(CjsEmploymentType.POLICE.getEmployer())
             .cjsEmployerDetails("Police Details text").build();
         cjsEmploymentList.add(cjsEmployment);
-        cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer(CjsEmploymentType.NCA.getEmployer())
             .cjsEmployerDetails("NCA Details text").build();
         cjsEmploymentList.add(cjsEmployment);
@@ -1209,13 +1209,13 @@ public class JurorPaperResponseServiceImplTest {
     private CJSEmploymentDetailsDto buildDuplicateCjsEmploymentDetailsDto() {
         final CJSEmploymentDetailsDto cjsEmploymentDetailsDto = new CJSEmploymentDetailsDto();
 
-        List<JurorPaperResponseDto.CJSEmployment> cjsEmploymentList = new ArrayList<>();
+        List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
 
-        JurorPaperResponseDto.CJSEmployment cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        JurorPaperResponseDto.CjsEmployment cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer(CjsEmploymentType.POLICE.getEmployer())
             .cjsEmployerDetails("Police Details text").build();
         cjsEmploymentList.add(cjsEmployment);
-        cjsEmployment = JurorPaperResponseDto.CJSEmployment.builder()
+        cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer(CjsEmploymentType.POLICE.getEmployer())
             .cjsEmployerDetails("Police Details text").build();
         cjsEmploymentList.add(cjsEmployment);
@@ -1374,8 +1374,8 @@ public class JurorPaperResponseServiceImplTest {
         jurorPaperResponseDto.setAddressPostcode("CH1 2AN");
     }
 
-    private JurorPaperResponseDto.CJSEmployment buildCjsEmployment(String employerName) {
-        return JurorPaperResponseDto.CJSEmployment.builder()
+    private JurorPaperResponseDto.CjsEmployment buildCjsEmployment(String employerName) {
+        return JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer(employerName)
             .cjsEmployerDetails("Some test details")
             .build();

@@ -142,7 +142,19 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
         validateRefuseExcusal(jurorPool, excusalDecisionDto, login);
 
-        validateExcusalDeniedLetter();
+        Iterable<BulkPrintData> bulkPrintDataIterable = bulkPrintDataRepository.findAll();
+        List<BulkPrintData> bulkPrintData = new ArrayList<>();
+        bulkPrintDataIterable.forEach((data) -> {
+            if (data.getFormAttribute().getFormType().equals(FormCode.BI_EXCUSALDENIED.getCode())
+                || data.getFormAttribute().getFormType().equals(FormCode.ENG_EXCUSALDENIED.getCode())) {
+                bulkPrintData.add(data);
+            }
+        });
+
+        // there should be zero letters as this is a court journey
+        assertThat(bulkPrintData.size())
+            .as("Expect zero letters to be queued in the bulk print table")
+            .isEqualTo(0);
     }
 
     @Test
@@ -197,7 +209,6 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
 
         JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
         validateExcusal(jurorPool, excusalDecisionDto, login);
-        validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
     }
 
     @Test
@@ -249,7 +260,19 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
 
         JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
         validateRefuseExcusal(jurorPool, excusalDecisionDto, login);
-        validateExcusalDeniedLetter();
+        Iterable<BulkPrintData> bulkPrintDataIterable = bulkPrintDataRepository.findAll();
+        List<BulkPrintData> bulkPrintData = new ArrayList<>();
+        bulkPrintDataIterable.forEach((data) -> {
+            if (data.getFormAttribute().getFormType().equals(FormCode.BI_EXCUSALDENIED.getCode())
+                || data.getFormAttribute().getFormType().equals(FormCode.ENG_EXCUSALDENIED.getCode())) {
+                bulkPrintData.add(data);
+            }
+        });
+
+        // there should be zero letters as this is a court journey
+        assertThat(bulkPrintData.size())
+            .as("Expect zero letters to be queued in the bulk print table")
+            .isEqualTo(0);
     }
 
     @Test
@@ -303,7 +326,6 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
 
         JurorPool jurorPool = JurorPoolUtils.getSingleActiveJurorPool(jurorPoolRepository, jurorNumber);
         validateExcusal(jurorPool, excusalDecisionDto, login);
-        validateExcusalLetter(excusalDecisionDto.getExcusalReasonCode());
     }
 
     @Test
@@ -556,8 +578,8 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     }
 
     private void validateExcusalLetter(String excusalCode) {
-        Iterable<ExcusalLetterMod> excusalLetterIterable = excusalLetterRepository.findAll();
-        List<ExcusalLetterMod> excusalLetters = new ArrayList<>();
+        Iterable<BulkPrintData> excusalLetterIterable = bulkPrintDataRepository.findAll();
+        List<BulkPrintData> excusalLetters = new ArrayList<>();
         excusalLetterIterable.forEach(excusalLetters::add);
 
         if (ExcusalCode.DECEASED.equals(excusalCode)) {

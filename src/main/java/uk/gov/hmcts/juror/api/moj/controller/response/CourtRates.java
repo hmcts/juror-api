@@ -24,10 +24,10 @@ public class CourtRates {
     @JsonProperty("bicycle_rate_0_or_more_passengers")
     private BigDecimal bicycleRate0OrMorePassenger;
 
-    @JsonProperty("substance_rate_standard")
-    private BigDecimal substanceRateStandard;
-    @JsonProperty("substance_rate_long_day")
-    private BigDecimal substanceRateLongDay;
+    @JsonProperty("subsistence_rate_standard")
+    private BigDecimal subsistenceRateStandard;
+    @JsonProperty("subsistence_rate_long_day")
+    private BigDecimal subsistenceRateLongDay;
 
     @JsonProperty("financial_loss_half_day_limit")
     private BigDecimal financialLossHalfDayLimit;
