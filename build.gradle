@@ -159,9 +159,9 @@ dependencies {
 
     testImplementation('net.bytebuddy:byte-buddy:1.14.12')
     testImplementation('junit:junit:4.13.2')
-    testImplementation "org.testcontainers:testcontainers:1.19.5"
-    testImplementation "org.testcontainers:junit-jupiter:1.19.5"
-    testImplementation 'org.testcontainers:postgresql:1.19.5'
+    testImplementation "org.testcontainers:testcontainers:1.19.6"
+    testImplementation "org.testcontainers:junit-jupiter:1.19.6"
+    testImplementation 'org.testcontainers:postgresql:1.19.6'
 
     // Validation
     testImplementation 'org.wiremock:wiremock:3.2.0'
