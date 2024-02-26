@@ -151,7 +151,7 @@ dependencies {
     //testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
     testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:2.38.0'
     testImplementation('org.assertj:assertj-core:3.25.3')
-    testImplementation 'org.mockito:mockito-core:5.6.0'
+    testImplementation 'org.mockito:mockito-core:5.10.0'
 
     testImplementation('org.ajbrown:name-machine:1.0.0')
     testImplementation('org.projectlombok:lombok')
