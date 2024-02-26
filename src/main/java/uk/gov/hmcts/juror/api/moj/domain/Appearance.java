@@ -28,12 +28,14 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.FoodDrinkClaimType;
 import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Set;
 
 import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER;
@@ -104,10 +106,6 @@ public class Appearance implements Serializable {
     @Column(name = "attendance_type")
     @Enumerated(EnumType.STRING)
     private AttendanceType attendanceType;
-
-    @Column(name = "pay_attendance_type")
-    @Enumerated(EnumType.STRING)
-    private PayAttendanceType payAttendanceType;
 
     @Column(name = "non_attendance")
     @Builder.Default
@@ -405,12 +403,29 @@ public class Appearance implements Serializable {
                 getOrZero(this.getTotalDue()),
                 getOrZero(this.getTotalPaid())
             )
-                //TODO confirm
                 && (!(AppearanceStage.EXPENSE_EDITED.equals(this.getAppearanceStage())
-                    || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage()))
-                    || BigDecimalUtils.isGreaterThanOrEqualTo(
-                    getOrZero(this.getSmartCardAmountPaid()),
-                    getOrZero(this.getSmartCardAmountDue())
-                ));
+                || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage()))
+                || BigDecimalUtils.isGreaterThanOrEqualTo(
+                getOrZero(this.getSmartCardAmountPaid()),
+                getOrZero(this.getSmartCardAmountDue())
+            ));
+    }
+
+    public void setPayAttendanceType(PayAttendanceType payAttendanceType) {
+        if (Set.of(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE, AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
+            .contains(this.getAttendanceType())) {
+            return;
+        }
+        setAttendanceType(
+            payAttendanceType.getAttendanceType(this.isLongTrialDay())
+        );
+    }
+
+    public PayAttendanceType getPayAttendanceType() {
+        return getAttendanceType().getPayAttendanceType();
+    }
+
+    public boolean isFullDay() {
+        return getEffectiveTime().isAfter(LocalTime.of(4, 0));
     }
 }

@@ -14,6 +14,8 @@ public enum FormCode {
     BI_EXCUSALDENIED("5226C", PrintDataService::printExcusalDeniedLetter, IJurorStatus.SUMMONED),
     ENG_SUMMONS("5221", PrintDataService::printSummonsLetter, IJurorStatus.SUMMONED),
     BI_SUMMONS("5221C", PrintDataService::printSummonsLetter, IJurorStatus.SUMMONED),
+    ENG_SUMMONS_REMINDER("5228", PrintDataService::printSummonsReminderLetter, IJurorStatus.SUMMONED),
+    BI_SUMMONS_REMINDER("5228C", PrintDataService::printSummonsReminderLetter, IJurorStatus.SUMMONED),
     ENG_CONFIRMATION("5224A", PrintDataService::printConfirmationLetter, IJurorStatus.RESPONDED),
     BI_CONFIRMATION("5224AC", PrintDataService::printConfirmationLetter, IJurorStatus.RESPONDED),
     ENG_DEFERRAL("5229A", PrintDataService::printDeferralLetter, IJurorStatus.DEFERRED),

@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service.expense;
 import org.springframework.data.domain.Page;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApportionSmartCardRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApproveExpenseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CalculateTotalExpenseRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
@@ -70,4 +71,8 @@ public interface JurorExpenseService {
                                                  LocalDate fromInclusive, LocalDate toInclusive);
 
     void updateExpense(String jurorNumber, ExpenseType type, List<DailyExpense> request);
+
+    boolean isLongTrialDay(String jurorNumber, String poolNumber, LocalDate localDate);
+
+    void apportionSmartCard(ApportionSmartCardRequest request);
 }

@@ -343,7 +343,7 @@ checkstyleTest {
     maxWarnings = 261
 }
 checkstyleIntegrationTest {
-    maxWarnings = 1272
+    maxWarnings = 1242
 }
 checkstyle {
     maxWarnings = 0
@@ -355,7 +355,7 @@ pmdIntegrationTest {
     maxFailures = 801
 }
 pmdTest {
-    maxFailures = 656
+    maxFailures = 639
 }
 pmdMain {
     maxFailures = 1220

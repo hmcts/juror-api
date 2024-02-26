@@ -9,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -33,6 +35,7 @@ import java.util.List;
 /**
  * Custom Repository implementation for the Appearance entity.
  */
+@Slf4j
 @SuppressWarnings({"PMD.LawOfDemeter", "PMD.TooManyMethods"})
 public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     @PersistenceContext
@@ -168,59 +171,6 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         }
 
         return appearanceDataList;
-    }
-
-    @Override
-    @SuppressWarnings("PMD.LawOfDemeter")
-    public List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> getAttendanceRecords(
-        String jurorNumber) {
-
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
-        JPAQuery<Tuple> query = queryFactory.select(
-                APPEARANCE.attendanceDate.as("attendance_date"),
-                APPEARANCE.timeIn.as("time_in"),
-                APPEARANCE.timeOut.as("time_out"),
-                APPEARANCE.travelTime.as("time_travel")
-            )
-            .from(APPEARANCE)
-            .where(APPEARANCE.jurorNumber.eq(jurorNumber))
-            .where(APPEARANCE.appearanceStage.eq(AppearanceStage.APPEARANCE_CONFIRMED))
-            .orderBy(APPEARANCE.attendanceDate.asc());
-
-        List<Tuple> tuples = query.orderBy(APPEARANCE.jurorNumber.asc()).fetch();
-
-        List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> attendanceDataList = new ArrayList<>();
-
-        for (Tuple tuple : tuples) {
-
-            LocalTime timeIn = tuple.get(1, LocalTime.class);
-            LocalTime timeOut = tuple.get(2, LocalTime.class);
-            double hours = 0.0;
-            if (timeOut != null && timeIn != null) {
-                hours = (double) Duration.between(timeIn, timeOut).toMinutes() / 60;
-            }
-
-            AttendanceType attendanceType = AttendanceType.ABSENT;
-            if (hours >= 4) {
-                attendanceType = AttendanceType.FULL_DAY;
-            } else if (hours > 0 && hours < 4) {
-                attendanceType = AttendanceType.HALF_DAY;
-            }
-
-            JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData
-                appearanceData = JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData.builder()
-                .attendanceDate(tuple.get(0, LocalDate.class))
-                .checkInTime(timeIn)
-                .checkOutTime(timeOut)
-                .hours(String.format("%.1f", hours))  // format to 1 decimal place
-                .attendanceType(attendanceType)
-                .travelTime(ObjectUtils.defaultIfNull(tuple.get(3, LocalTime.class), LocalTime.of(0,0)))
-                .build();
-            attendanceDataList.add(appearanceData);
-        }
-
-        return attendanceDataList;
     }
 
     @Override

@@ -3,7 +3,6 @@ package uk.gov.hmcts.juror.api.moj.controller.request.letter.court;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -68,7 +67,6 @@ public class CourtLetterListRequestDto {
 
     @JsonProperty("include_printed")
     @Schema(description = "Flag to indicate if previously printed letters should be included in the list")
-    @Getter(AccessLevel.NONE)
     @ValidateIf(fields = {"jurorNumber", "jurorName", "jurorPostcode", "poolNumber"},
         condition = ValidateIf.Condition.NONE_PRESENT,
         type = ValidateIf.Type.EXCLUDE)

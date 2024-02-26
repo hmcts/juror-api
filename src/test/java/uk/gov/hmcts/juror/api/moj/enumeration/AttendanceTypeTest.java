@@ -4,47 +4,71 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+@SuppressWarnings({
+    "PMD.LawOfDemeter",
+    "PMD.LinguisticNaming"
+})
 class AttendanceTypeTest {
 
     @Test
     void fullDay() {
-        validate(AttendanceType.FULL_DAY, "Full day", false);
+        assertConstructor(AttendanceType.FULL_DAY, "Full day", false, PayAttendanceType.FULL_DAY);
     }
 
     @Test
     void halfDay() {
-        validate(AttendanceType.HALF_DAY, "Half day", false);
+        assertConstructor(AttendanceType.HALF_DAY, "Half day", false, PayAttendanceType.HALF_DAY);
     }
 
     @Test
     void fullDayLongTrial() {
-        validate(AttendanceType.FULL_DAY_LONG_TRIAL, "Full day (>10 days)", true);
+        assertConstructor(AttendanceType.FULL_DAY_LONG_TRIAL, "Full day (>10 days)", true, PayAttendanceType.FULL_DAY);
     }
 
     @Test
     void halfDayLongTrial() {
-        validate(AttendanceType.HALF_DAY_LONG_TRIAL, "Half day (>10 days)", true);
+        assertConstructor(AttendanceType.HALF_DAY_LONG_TRIAL, "Half day (>10 days)", true, PayAttendanceType.HALF_DAY);
     }
 
     @Test
     void absent() {
-        validate(AttendanceType.ABSENT, "Absent (no show)", null);
+        assertConstructor(AttendanceType.ABSENT, "Absent (no show)", null, null);
     }
 
     @Test
     void nonAttendance() {
-        validate(AttendanceType.NON_ATTENDANCE, "Non-attendance day", false);
+        assertConstructor(AttendanceType.NON_ATTENDANCE, "Non-attendance day", false, PayAttendanceType.FULL_DAY);
     }
 
     @Test
     void nonAttendanceLongTrial() {
-        validate(AttendanceType.NON_ATTENDANCE_LONG_TRIAL, "Non-attendance day (>10 days)", true);
+        assertConstructor(AttendanceType.NON_ATTENDANCE_LONG_TRIAL, "Non-attendance day (>10 days)", true,
+            PayAttendanceType.FULL_DAY);
     }
 
 
-    void validate(AttendanceType type, String displayName, Boolean isLongTrial) {
+    void assertConstructor(AttendanceType type, String displayName, Boolean isLongTrial,
+                           PayAttendanceType payAttendanceType) {
         assertThat(type.getDisplayName())
             .isEqualTo(displayName);
         assertThat(type.getIsLongTrial()).isEqualTo(isLongTrial);
+        assertThat(type.getPayAttendanceType()).isEqualTo(payAttendanceType);
+    }
+
+    @Test
+    void getPayAttendanceTypeIsFullDayNull() {
+        assertThat(AttendanceType.ABSENT.getPayAttendanceType()).isNull();
+    }
+
+    @Test
+    void getPayAttendanceTypeIsFullTrue() {
+        assertThat(AttendanceType.FULL_DAY.getPayAttendanceType())
+            .isEqualTo(PayAttendanceType.FULL_DAY);
+    }
+
+    @Test
+    void getPayAttendanceTypeIsFullFalse() {
+        assertThat(AttendanceType.HALF_DAY.getPayAttendanceType())
+            .isEqualTo(PayAttendanceType.HALF_DAY);
     }
 }

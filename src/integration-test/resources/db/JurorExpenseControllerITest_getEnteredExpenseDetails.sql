@@ -35,7 +35,7 @@ INSERT INTO juror_mod.appearance
  car_total_due, car_total_paid, pedal_cycle_total_due, pedal_cycle_total_paid,
  parking_total_due, parking_total_paid, childcare_total_due, childcare_total_paid,
  misc_total_due, misc_total_paid, misc_description, loss_of_earnings_due, loss_of_earnings_paid,
- subsistence_due, subsistence_paid, smart_card_due, smart_card_paid, attendance_type, pay_attendance_type,
+ subsistence_due, subsistence_paid, smart_card_due, smart_card_paid, attendance_type,
  is_draft_expense, f_audit,
  appearance_stage,
  travel_by_car, travel_jurors_taken_by_car,
@@ -46,17 +46,16 @@ values
     --3 Draft
     ('2023-01-05', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      true, 10, 0, 20, 0, 30, 0, 40, 0, 50, 0, 60, 0, 70, 0, 80, 0, 'Desc 1', 90, 0, 100, 0, 25, 0, 'FULL_DAY',
-     'FULL_DAY', true, null, 'EXPENSE_ENTERED', true, 1, true, 2, true, 4, 'LESS_THAN_OR_EQUAL_TO_10_HOURS'),
+     true, null, 'EXPENSE_ENTERED', true, 1, true, 2, true, 4, 'LESS_THAN_OR_EQUAL_TO_10_HOURS'),
     ('2023-01-06', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      true, 11, 0, 21, 0, 31, 0, 41, 0, 51, 0, 61, 0, 71, 0, 81, 0, 'Desc 2', 91, 0, 101, 0, 26, 0, 'FULL_DAY',
-     'FULL_DAY', true, null, 'EXPENSE_ENTERED', null, null, null, null, null, null, null),
+     true, null, 'EXPENSE_ENTERED', null, null, null, null, null, null, null),
     -- For approval
     ('2023-01-08', '641500020', '415', '09:00', '13:00', false, '00:40', true, '415230101',
      false, 13.97, 0, 23, 0, 33, 0, 43, 0, 53, 0, 63, 0, 73, 0, 83, 0, 'Desc 3', 93, 0, 103, 0, 28, 0, 'HALF_DAY',
-     'HALF_DAY', false, '123', 'EXPENSE_ENTERED', null, null, false, null, true, 6, 'NONE'),
+     false, '123', 'EXPENSE_ENTERED', null, null, false, null, true, 6, 'NONE'),
     -- For Approved
     ('2023-01-11', '641500020', '415', '09:35', '16:00', false, '01:43', true, '415230101',
      false, 103, 93, 93, 93, 83, 83, 73, 73, 63, 63, 53, 53, 43, 43, 33, 33, 'Desc 4', 23, 23, 13, 13, 28.52, 28.52,
-     'FULL_DAY',
      'FULL_DAY', false, '321', 'EXPENSE_AUTHORISED', true, 3, null, null, null, 9, 'MORE_THAN_10_HOURS')
 ;

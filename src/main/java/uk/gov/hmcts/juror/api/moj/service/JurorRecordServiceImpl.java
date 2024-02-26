@@ -46,6 +46,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
@@ -65,6 +66,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
@@ -99,10 +101,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.springframework.transaction.annotation.Propagation.REQUIRED;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD;
@@ -117,6 +121,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkReadAccessForCurr
  */
 @Slf4j
 @Service
+@SuppressWarnings({"PMD.TooManyMethods","PMD.LawOfDemeter","PMD.ExcessiveImports"})
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorRecordServiceImpl implements JurorRecordService {
     private static final Character NEW_REQUEST_STATE = 'N';
@@ -205,7 +210,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         ReasonableAdjustments reasonableAdjustments =
             RepositoryUtils.retrieveFromDatabase(requestDto.getSpecialNeed(), reasonableAdjustmentsRepository);
 
-        if(jurorReasonableAdjustmentRepository.findByJurorNumber(jurorNumber).isEmpty()) {
+        if (jurorReasonableAdjustmentRepository.findByJurorNumber(jurorNumber).isEmpty()) {
             JurorReasonableAdjustment jurorReasonableAdjustment = new JurorReasonableAdjustment();
             jurorReasonableAdjustment.setJurorNumber(jurorNumber);
             jurorReasonableAdjustment.setReasonableAdjustment(reasonableAdjustments);
@@ -1180,20 +1185,42 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         // run custom query to return the required data.
         List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> jurorAttendanceDetails =
-            appearanceRepository.getAttendanceRecords(jurorNumber);
+            getAttendanceData(jurorNumber, poolNumber);
+        jurorAttendanceDetails.sort(Comparator
+            .comparing(JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData::getAttendanceDate));
         responseDto.setData(jurorAttendanceDetails);
 
         responseDto.setAbsences((int) jurorAttendanceDetails.stream()
-            .filter(p -> p.getAttendanceType().equals(AttendanceType.ABSENT)).count());
+            .filter(p -> AttendanceType.ABSENT.equals(p.getAttendanceType())).count());
 
         responseDto.setAttendances((int) jurorAttendanceDetails.stream()
-            .filter(p -> p.getAttendanceType().equals(AttendanceType.FULL_DAY)
-                || p.getAttendanceType().equals(AttendanceType.HALF_DAY)).count());
+            .filter(p -> AttendanceType.FULL_DAY.equals(p.getAttendanceType())
+                || AttendanceType.HALF_DAY.equals(p.getAttendanceType())
+                || AttendanceType.FULL_DAY_LONG_TRIAL.equals(p.getAttendanceType())
+                || AttendanceType.HALF_DAY_LONG_TRIAL.equals(p.getAttendanceType()))
+            .count());
+
+        responseDto.setNonAttendances((int) jurorAttendanceDetails.stream()
+            .filter(p -> AttendanceType.NON_ATTENDANCE.equals(p.getAttendanceType())).count());
 
         responseDto.setOnCall(ObjectUtils.defaultIfNull(jurorPool.getOnCall(), false));
         responseDto.setNextDate(jurorPool.getNextDate());
 
         return responseDto;
+    }
+
+    private List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> getAttendanceData(String jurorNumber,
+                                                                                                  String poolNumber) {
+
+        List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
+
+        return appearances.stream()
+            .filter(appearance -> AppearanceStage.APPEARANCE_CONFIRMED.equals(appearance.getAppearanceStage())
+                || AppearanceStage.EXPENSE_ENTERED.equals(appearance.getAppearanceStage())
+                || AppearanceStage.EXPENSE_AUTHORISED.equals(appearance.getAppearanceStage())
+                || AppearanceStage.EXPENSE_EDITED.equals(appearance.getAppearanceStage()))
+            .map(appearance -> new JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData(appearance))
+            .collect(Collectors.toList());
     }
 
     @Override

@@ -8,17 +8,24 @@ class PayAttendanceTypeTest {
 
     @Test
     void fullDay() {
-        validate(PayAttendanceType.FULL_DAY, "Full day");
+        assertConstructor(PayAttendanceType.FULL_DAY, "Full day", AttendanceType.FULL_DAY,
+            AttendanceType.FULL_DAY_LONG_TRIAL);
     }
 
     @Test
     void halfDay() {
-        validate(PayAttendanceType.HALF_DAY, "Half day");
+        assertConstructor(PayAttendanceType.HALF_DAY, "Half day", AttendanceType.HALF_DAY,
+            AttendanceType.HALF_DAY_LONG_TRIAL);
     }
 
 
-    void validate(PayAttendanceType type, String displayName) {
+    void assertConstructor(PayAttendanceType type, String displayName, AttendanceType attendanceType,
+                           AttendanceType longTrialAttendanceType) {
         assertThat(type.getDisplayName())
             .isEqualTo(displayName);
+        assertThat(type.getAttendanceType(false))
+            .isEqualTo(attendanceType);
+        assertThat(type.getAttendanceType(true))
+            .isEqualTo(longTrialAttendanceType);
     }
 }

@@ -7,6 +7,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import uk.gov.hmcts.juror.api.config.Settings;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
@@ -44,12 +45,12 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
 
     @Override
     public List<Tuple> findLetters(ReissueLetterListRequestDto request, Consumer<JPAQuery<Tuple>> queryConsumer) {
-        JPAQueryFactory queryFactory =  getQueryFactory();
+        JPAQueryFactory queryFactory = getQueryFactory();
 
         JPAQuery<Tuple> query = queryFactory.selectDistinct(
-            request.getLetterType().getReissueDataTypes().stream()
-                .map(ReissueLetterService.DataType::getExpression)
-                .toArray(Expression[]::new))
+                request.getLetterType().getReissueDataTypes().stream()
+                    .map(ReissueLetterService.DataType::getExpression)
+                    .toArray(Expression[]::new))
             .from(JUROR);  // must query Juror table for every letter type
 
         Set<Class<? extends EntityPathBase<?>>> entityPathBaseSet = request.getLetterType()
@@ -84,21 +85,30 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
         query.where(JUROR_POOL.isActive.eq(true));
         query.where(JUROR_POOL.owner.eq(SecurityUtil.BUREAU_OWNER));
 
-        //TODO use include new search criteria / validate, e.g. Name, Postcode etc
-        if (request.getJurorNumber() != null) {
-            query.where(JUROR.jurorNumber.eq(request.getJurorNumber()));
-        } else if (request.getPoolNumber() != null) {
-            query.where(JUROR_POOL.pool.poolNumber.eq(request.getPoolNumber()));
-        } else if (request.getShowAllQueued()) {
-            query.where(BULK_PRINT_DATA.extractedFlag.isNull().or(BULK_PRINT_DATA.extractedFlag.eq(false)));
-        } else {
-            throw new MojException.InternalServerError("Invalid criteria provided for letter search",
-                null);
-        }
+        addFilters(query,request);
 
         return query
             .orderBy(BULK_PRINT_DATA.creationDate.desc())
             .orderBy(JUROR.jurorNumber.asc()).fetch();
+    }
+
+    private void addFilters(JPAQuery<Tuple> query, ReissueLetterListRequestDto request) {
+        if (request.getJurorNumber() != null) {
+            query.where(JUROR.jurorNumber.eq(request.getJurorNumber()));
+        } else if (request.getPoolNumber() != null) {
+            query.where(JUROR_POOL.pool.poolNumber.eq(request.getPoolNumber()));
+        } else if (Boolean.TRUE.equals(request.getShowAllQueued())) {
+            query.where(BULK_PRINT_DATA.extractedFlag.isNull().or(BULK_PRINT_DATA.extractedFlag.eq(false)));
+        } else if (request.getJurorName() != null) {
+            query.where(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName).toLowerCase()
+                .likeIgnoreCase("%" + request.getJurorName().toLowerCase(Settings.LOCALE) + "%"));
+        } else if (request.getJurorPostcode() != null) {
+            query.where(QJuror.juror.postcode.toLowerCase()
+                .eq(request.getJurorPostcode().toLowerCase(Settings.LOCALE)));
+        } else {
+            throw new MojException.InternalServerError("Invalid criteria provided for letter search",
+                null);
+        }
     }
 
     @Override

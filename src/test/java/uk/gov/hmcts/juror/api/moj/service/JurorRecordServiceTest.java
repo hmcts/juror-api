@@ -46,6 +46,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.NameDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PaymentDetails;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
@@ -63,6 +64,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
@@ -133,7 +135,7 @@ import static org.mockito.Mockito.when;
 
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings({"PMD.ExcessiveImports","PMD.LawOfDemeter"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LawOfDemeter"})
 class JurorRecordServiceTest {
 
     private static final String BUREAU_OWNER = "400";
@@ -360,7 +362,7 @@ class JurorRecordServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = { true, false})
+    @ValueSource(booleans = {true, false})
     void testEditJurorRecordUpdateNullWelshFlag(Boolean welshLanguageRequired) {
         EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
         requestDto.setWelshLanguageRequired(welshLanguageRequired);
@@ -579,7 +581,6 @@ class JurorRecordServiceTest {
             .as("Expect juror to be manually created")
             .isEqualTo(true);
     }
-
 
 
     @Test
@@ -3055,19 +3056,22 @@ class JurorRecordServiceTest {
                 .findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
                     TestConstants.VALID_POOL_NUMBER);
 
-            List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> data = new ArrayList<>();
-            JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData jurorAttendanceResponseData =
-                JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData.builder()
+            List<Appearance> appearances = new ArrayList<>();
+            Appearance appearance =
+                Appearance.builder()
                     .attendanceDate(LocalDate.now())
-                    .checkInTime(LocalTime.of(9, 0))
-                    .checkOutTime(LocalTime.of(17, 0))
+                    .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                    .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                    .timeIn(LocalTime.of(9, 0))
+                    .timeOut(LocalTime.of(17, 0))
                     .attendanceType(AttendanceType.FULL_DAY)
-                    .hours("8.0")
-                    .travelTime(LocalTime.of(1,30))
+                    .travelTime(LocalTime.of(1, 30))
+                    .appearanceStage(AppearanceStage.APPEARANCE_CONFIRMED)
                     .build();
-            data.add(jurorAttendanceResponseData);
+            appearances.add(appearance);
 
-            doReturn(data).when(appearanceRepository).getAttendanceRecords(TestConstants.VALID_JUROR_NUMBER);
+            doReturn(appearances).when(appearanceRepository).findAllByJurorNumberAndPoolNumber(
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
 
             JurorAttendanceDetailsResponseDto jurorAttendanceDetailsResponseDto =
                 jurorRecordService.getJurorAttendanceDetails(TestConstants.VALID_JUROR_NUMBER,
@@ -3076,9 +3080,11 @@ class JurorRecordServiceTest {
             assertEquals(1, jurorAttendanceDetailsResponseDto.getData().size(),
                 "One attendance record should be returned");
 
-            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(anyString(),
-                anyString());
-            verify(appearanceRepository, times(1)).getAttendanceRecords(anyString());
+            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
+
+            verify(appearanceRepository, times(1))
+                .findAllByJurorNumberAndPoolNumber(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
 
         }
 
@@ -3095,18 +3101,6 @@ class JurorRecordServiceTest {
                     TestConstants.VALID_POOL_NUMBER);
 
             List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> data = new ArrayList<>();
-            JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData jurorAttendanceResponseData =
-                JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData.builder()
-                    .attendanceDate(LocalDate.now())
-                    .checkInTime(LocalTime.of(9, 0))
-                    .checkOutTime(LocalTime.of(17, 0))
-                    .attendanceType(AttendanceType.FULL_DAY)
-                    .hours("8.0")
-                    .travelTime(LocalTime.of(1,30))
-                    .build();
-            data.add(jurorAttendanceResponseData);
-
-            doReturn(data).when(appearanceRepository).getAttendanceRecords(TestConstants.VALID_JUROR_NUMBER);
 
             MojException.Forbidden exception =
                 assertThrows(MojException.Forbidden.class,
@@ -3133,9 +3127,10 @@ class JurorRecordServiceTest {
                 .findByJurorJurorNumberAndPoolPoolNumber(anyString(),
                     anyString());
 
-            List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> data = new ArrayList<>();
+            List<Appearance> appearances = new ArrayList<>();
 
-            doReturn(data).when(appearanceRepository).getAttendanceRecords(TestConstants.VALID_JUROR_NUMBER);
+            doReturn(appearances).when(appearanceRepository).findAllByJurorNumberAndPoolNumber(
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
 
             JurorAttendanceDetailsResponseDto jurorAttendanceDetailsResponseDto =
                 jurorRecordService.getJurorAttendanceDetails(TestConstants.VALID_JUROR_NUMBER,
@@ -3146,7 +3141,9 @@ class JurorRecordServiceTest {
 
             verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(anyString(),
                 anyString());
-            verify(appearanceRepository, times(1)).getAttendanceRecords(anyString());
+            verify(appearanceRepository, times(1))
+                .findAllByJurorNumberAndPoolNumber(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
+
 
         }
 
@@ -3387,7 +3384,7 @@ class JurorRecordServiceTest {
 
                 MojException.NotFound exception = assertThrows(MojException.NotFound.class,
                     () -> jurorRecordService.getJuror(TestConstants.VALID_JUROR_NUMBER, null),
-                    "When juror can not be found an exception should be thrown");
+                    "When juror cannot be found an exception should be thrown");
 
                 assertThat(exception.getMessage()).isNotNull().isEqualTo(
                     "Juror not found: JurorNumber: " + TestConstants.VALID_JUROR_NUMBER + " Revision: null"
@@ -3402,7 +3399,7 @@ class JurorRecordServiceTest {
 
                 MojException.NotFound exception = assertThrows(MojException.NotFound.class,
                     () -> jurorRecordService.getJuror(TestConstants.VALID_JUROR_NUMBER, 1L),
-                    "When juror can not be found an exception should be thrown");
+                    "When juror cannot be found an exception should be thrown");
 
                 assertThat(exception.getMessage()).isNotNull().isEqualTo(
                     "Juror not found: JurorNumber: " + TestConstants.VALID_JUROR_NUMBER + " Revision: 1"

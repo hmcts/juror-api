@@ -139,7 +139,7 @@ public class ValidateIfValidator implements ConstraintValidator<ValidateIfTrigge
 
     private Method getMethodFromField(Field field) {
         String methodName = null;
-        String prefix = field.getType().equals(Boolean.class) ? "is" : "get";
+        String prefix = field.getType().isPrimitive() && field.getType().equals(Boolean.class) ? "is" : "get";
         try {
             methodName = prefix + field.getName().substring(0, 1).toUpperCase()
                 + field.getName().substring(1);

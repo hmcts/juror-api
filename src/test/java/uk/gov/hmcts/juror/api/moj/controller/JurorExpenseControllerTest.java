@@ -25,6 +25,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApportionSmartCardRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApproveExpenseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CalculateTotalExpenseRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
@@ -77,6 +78,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -1139,6 +1141,7 @@ class JurorExpenseControllerTest {
             }
         }
     }
+
     @Nested
     @DisplayName("GET " + GetCounts.URL)
     class GetCounts {
@@ -1201,6 +1204,7 @@ class JurorExpenseControllerTest {
             }
         }
     }
+
     @Nested
     @DisplayName("POST " + PostEditDailyExpense.URL)
     class PostEditDailyExpense {
@@ -1350,4 +1354,55 @@ class JurorExpenseControllerTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("PATCH " + ApportionSmartCard.URL)
+    class ApportionSmartCard {
+        public static final String URL = BASE_URL + "/smartcard";
+
+
+        private ApportionSmartCardRequest getValidPayload() {
+            return ApportionSmartCardRequest.builder()
+                .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                .smartCardAmount(new BigDecimal("100.00"))
+                .attendanceDates(List.of(LocalDate.of(2023, 1, 17)))
+                .build();
+        }
+
+        @Nested
+        @DisplayName("Positive")
+        class Positive {
+
+            @Test
+            void typical() throws Exception {
+                ApportionSmartCardRequest payload = getValidPayload();
+                mockMvc.perform(patch(URL)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(TestUtils.asJsonString(payload)))
+                    .andDo(MockMvcResultHandlers.print())
+                    .andExpect(status().isAccepted());
+
+                verify(jurorExpenseService, times(1))
+                    .apportionSmartCard(payload);
+            }
+        }
+
+        @Nested
+        @DisplayName("Negative")
+        class Negative {
+            @Test
+            void invalidPayload() throws Exception {
+                ApportionSmartCardRequest payload = getValidPayload();
+                payload.setJurorNumber(TestConstants.INVALID_JUROR_NUMBER);
+                mockMvc.perform(patch(URL)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(TestUtils.asJsonString(payload)))
+                    .andDo(MockMvcResultHandlers.print())
+                    .andExpect(status().isBadRequest());
+                verifyNoInteractions(jurorExpenseService);
+            }
+        }
+    }
+
 }

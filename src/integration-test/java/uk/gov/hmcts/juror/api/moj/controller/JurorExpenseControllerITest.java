@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApportionSmartCardRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApproveExpenseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CalculateTotalExpenseRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
@@ -87,6 +88,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.POST;
 
 @ExtendWith(SpringExtension.class)
@@ -1627,6 +1629,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         public static final String URL = BASE_URL + "/view/{type}";
 
         public static final String JUROR_NUMBER = "641500020";
+        public static final String JUROR_NUMBER_NO_APPEARANCES = "641500024";
         public static final String POOL_NUMBER = "415230101";
 
         public String toUrl(ExpenseType expenseType) {
@@ -1865,6 +1868,94 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .balanceToPay(new BigDecimal("360.00"))
                         .build());
             }
+
+            @Test
+            void appearancesNotFoundApproved() throws Exception {
+                ResponseEntity<CombinedSimplifiedExpenseDetailDto> response = triggerValid(ExpenseType.APPROVED,
+                   new JurorNumberAndPoolNumberDto(JUROR_NUMBER_NO_APPEARANCES, POOL_NUMBER));
+
+                CombinedSimplifiedExpenseDetailDto body = response.getBody();
+                assertThat(body.getExpenseDetails()).hasSize(0);
+
+                CombinedSimplifiedExpenseDetailDto.Total total = body.getTotal();
+                assertThat(total).isEqualTo(
+                    CombinedSimplifiedExpenseDetailDto.Total.builder()
+                        .totalAttendances(0)
+                        .financialLoss(BigDecimal.ZERO)
+                        .travel(BigDecimal.ZERO)
+                        .foodAndDrink(BigDecimal.ZERO)
+                        .smartcard(BigDecimal.ZERO)
+                        .totalDue(BigDecimal.ZERO)
+                        .totalPaid(BigDecimal.ZERO)
+                        .balanceToPay(BigDecimal.ZERO)
+                        .build());
+            }
+
+            @Test
+            void appearancesNotFoundForApproval() throws Exception {
+                ResponseEntity<CombinedSimplifiedExpenseDetailDto> response = triggerValid(ExpenseType.FOR_APPROVAL,
+                    new JurorNumberAndPoolNumberDto(JUROR_NUMBER_NO_APPEARANCES, POOL_NUMBER));
+
+                CombinedSimplifiedExpenseDetailDto body = response.getBody();
+                assertThat(body.getExpenseDetails()).hasSize(0);
+
+                CombinedSimplifiedExpenseDetailDto.Total total = body.getTotal();
+                assertThat(total).isEqualTo(
+                    CombinedSimplifiedExpenseDetailDto.Total.builder()
+                        .totalAttendances(0)
+                        .financialLoss(BigDecimal.ZERO)
+                        .travel(BigDecimal.ZERO)
+                        .foodAndDrink(BigDecimal.ZERO)
+                        .smartcard(BigDecimal.ZERO)
+                        .totalDue(BigDecimal.ZERO)
+                        .totalPaid(BigDecimal.ZERO)
+                        .balanceToPay(BigDecimal.ZERO)
+                        .build());
+            }
+
+            @Test
+            void appearancesNotFoundForReapproval() throws Exception {
+                ResponseEntity<CombinedSimplifiedExpenseDetailDto> response = triggerValid(ExpenseType.FOR_REAPPROVAL,
+                    new JurorNumberAndPoolNumberDto(JUROR_NUMBER_NO_APPEARANCES, POOL_NUMBER));
+
+                CombinedSimplifiedExpenseDetailDto body = response.getBody();
+                assertThat(body.getExpenseDetails()).hasSize(0);
+
+                CombinedSimplifiedExpenseDetailDto.Total total = body.getTotal();
+                assertThat(total).isEqualTo(
+                    CombinedSimplifiedExpenseDetailDto.Total.builder()
+                        .totalAttendances(0)
+                        .financialLoss(BigDecimal.ZERO)
+                        .travel(BigDecimal.ZERO)
+                        .foodAndDrink(BigDecimal.ZERO)
+                        .smartcard(BigDecimal.ZERO)
+                        .totalDue(BigDecimal.ZERO)
+                        .totalPaid(BigDecimal.ZERO)
+                        .balanceToPay(BigDecimal.ZERO)
+                        .build());
+            }
+
+            @Test
+            void appearancesFoundButNotApplicable() throws Exception {
+                ResponseEntity<CombinedSimplifiedExpenseDetailDto> response = triggerValid(ExpenseType.FOR_APPROVAL,
+                    new JurorNumberAndPoolNumberDto("641500021", POOL_NUMBER));
+
+                CombinedSimplifiedExpenseDetailDto body = response.getBody();
+                assertThat(body.getExpenseDetails()).hasSize(0);
+
+                CombinedSimplifiedExpenseDetailDto.Total total = body.getTotal();
+                assertThat(total).isEqualTo(
+                    CombinedSimplifiedExpenseDetailDto.Total.builder()
+                        .totalAttendances(0)
+                        .financialLoss(BigDecimal.ZERO)
+                        .travel(BigDecimal.ZERO)
+                        .foodAndDrink(BigDecimal.ZERO)
+                        .smartcard(BigDecimal.ZERO)
+                        .totalDue(BigDecimal.ZERO)
+                        .totalPaid(BigDecimal.ZERO)
+                        .balanceToPay(BigDecimal.ZERO)
+                        .build());
+            }
         }
 
         @Nested
@@ -1882,25 +1973,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void appearancesNotFound() throws Exception {
-                final String type = ExpenseType.FOR_APPROVAL.name();
-                assertNotFound(triggerInvalid(type,
-                        new JurorNumberAndPoolNumberDto("641500021", "415230100"), "415"),
-                    toUrl(type),
-                    "No expenses found for juror: 641500021 in pool 415230100 of type FOR_APPROVAL");
-            }
-
-            @Test
-            void appearancesFoundButNotApplicable() throws Exception {
-                final String type = ExpenseType.FOR_APPROVAL.name();
-                assertNotFound(triggerInvalid(type,
-                        new JurorNumberAndPoolNumberDto("641500021", "415230101"), "415"),
-                    toUrl(type),
-                    "No expenses found for juror: 641500021 in pool 415230101 of type FOR_APPROVAL");
-
-            }
-
-            @Test
             void forbiddenIsBureauUser() throws Exception {
                 final String type = ExpenseType.FOR_APPROVAL.name();
                 assertForbiddenResponse(triggerInvalid(type,
@@ -1914,7 +1986,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertMojForbiddenResponse(triggerInvalid(type,
                         new JurorNumberAndPoolNumberDto(JUROR_NUMBER, POOL_NUMBER),
                         "414"), toUrl(type),
-                    "Juror can not access this juror pool");
+                    "User cannot access this juror pool");
             }
         }
     }
@@ -1927,6 +1999,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         public static final String URL = BASE_URL + "/draft/{juror_number}/{pool_number}";
 
         public static final String JUROR_NUMBER = "641500020";
+        public static final String JUROR_NUMBER_NO_APPEARANCES = "641500024";
         public static final String POOL_NUMBER = "415230101";
 
         public String toUrl(String jurorNumber, String poolNumber) {
@@ -2039,6 +2112,33 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .build()
                 );
             }
+
+            @Test
+            void appearancesNotFound() throws Exception {
+                ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> response =
+                    triggerValid(JUROR_NUMBER_NO_APPEARANCES, POOL_NUMBER);
+                CombinedExpenseDetailsDto<ExpenseDetailsDto> body = response.getBody();
+
+                assertThat(body.getExpenseDetails()).hasSize(0);
+
+                CombinedExpenseDetailsDto.Total total = body.getTotal();
+                assertThat(total).isEqualTo(
+                    CombinedExpenseDetailsDto.Total.builder()
+                        .totalDays(0)
+                        .lossOfEarnings(BigDecimal.ZERO)
+                        .extraCare(BigDecimal.ZERO)
+                        .other(BigDecimal.ZERO)
+                        .publicTransport(BigDecimal.ZERO)
+                        .taxi(BigDecimal.ZERO)
+                        .motorcycle(BigDecimal.ZERO)
+                        .car(BigDecimal.ZERO)
+                        .bicycle(BigDecimal.ZERO)
+                        .parking(BigDecimal.ZERO)
+                        .foodAndDrink(BigDecimal.ZERO)
+                        .smartCard(BigDecimal.ZERO)
+                        .build()
+                );
+            }
         }
 
         @Nested
@@ -2055,17 +2155,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void appearancesNotFound() throws Exception {
-                assertNotFound(triggerInvalid("641500021", "415230100", "415"),
-                    toUrl("641500021", "415230100"),
-                    "No draft expenses found for juror: 641500021");
-            }
-
-            @Test
             void canNotAccessJurorPool() throws Exception {
                 assertMojForbiddenResponse(triggerInvalid(JUROR_NUMBER, POOL_NUMBER, "414"),
                     toUrl(JUROR_NUMBER, POOL_NUMBER),
-                    "Juror can not access this juror pool");
+                    "User cannot access this juror pool");
             }
 
             @Test
@@ -2426,7 +2519,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                     .version(1L)
                                     .build()
                             )
-                        ).build()), "User can not approve an expense they have edited",
+                        ).build()), "User cannot approve an expense they have edited",
                     MojException.BusinessRuleViolation.ErrorCode.CAN_NOT_APPROVE_OWN_EDIT);
             }
 
@@ -2454,7 +2547,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                         .build()
                                 )
                             )
-                            .build()), "User can not approve expenses over £100.00",
+                            .build()), "User cannot approve expenses over £100.00",
                     MojException.BusinessRuleViolation.ErrorCode.CAN_NOT_APPROVE_MORE_THAN_LIMIT);
             }
 
@@ -2624,7 +2717,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     )
                     .build();
                 assertBusinessRuleViolation(triggerInvalid(jurorNumber, ExpenseType.APPROVED.name(), request),
-                    "Updated expense values can not be less than the paid amount",
+                    "Updated expense values cannot be less than the paid amount",
                     MojException.BusinessRuleViolation.ErrorCode.EXPENSE_VALUES_REDUCED_LESS_THAN_PAID);
             }
         }
@@ -3296,7 +3389,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                 )
                                 .build()
                         ))
-                        .build()), "Updated expense values can not be less than the paid amount",
+                        .build()), "Updated expense values cannot be less than the paid amount",
                     MojException.BusinessRuleViolation.ErrorCode.EXPENSE_VALUES_REDUCED_LESS_THAN_PAID);
             }
         }
@@ -3375,7 +3468,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void canNotAccessJurorPool() throws Exception {
                 assertMojForbiddenResponse(triggerInvalid("641500020", "415230101", "414"),
                     toUrl("641500020", "415230101"),
-                    "Juror can not access this juror pool");
+                    "User cannot access this juror pool");
             }
 
             @Test
@@ -3842,6 +3935,138 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void unauthorizedLocCodeNotPartOfUser() throws Exception {
                 assertForbiddenResponse(triggerInvalid("415", "414", null, null, PaymentMethod.BACS.name()),
                     toUrl("414", PaymentMethod.BACS.name(), null, null));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("PATCH " + ApportionSmartCard.URL)
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql"})
+    class ApportionSmartCard {
+        public static final String URL = BASE_URL + "/smartcard";
+
+        private static final String JUROR_NUMBER = "641500020";
+        private static final String POOL_NUMBER = "415230101";
+
+        private static final List<LocalDate> ATTENDANCE_DATES = List.of(
+            LocalDate.of(2023, 1, 5),
+            LocalDate.of(2023, 1, 6),
+            LocalDate.of(2023, 1, 7)
+        );
+
+        protected ApportionSmartCardRequest getValidPayload(BigDecimal smartCardAmount) {
+            return ApportionSmartCardRequest.builder()
+                .jurorNumber(JUROR_NUMBER)
+                .poolNumber(POOL_NUMBER)
+                .smartCardAmount(smartCardAmount)
+                .attendanceDates(ATTENDANCE_DATES)
+                .build();
+        }
+
+        @Nested
+        @DisplayName("Positive")
+        class Positive {
+            protected ResponseEntity<Void> triggerValid(ApportionSmartCardRequest request) throws Exception {
+                final String jwt = createBureauJwt(COURT_USER, "415");
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+                ResponseEntity<Void> response = template.exchange(
+                    new RequestEntity<>(request, httpHeaders, PATCH,
+                        URI.create(URL)),
+                    Void.class);
+                assertThat(response.getStatusCode())
+                    .as("Expect the HTTP GET request to be successful")
+                    .isEqualTo(HttpStatus.ACCEPTED);
+                return response;
+            }
+
+            private void assertAppearance(LocalDate localDate,
+                                          BigDecimal expectedSmartCardAmount) {
+                Appearance appearance = appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(
+                    ApportionSmartCard.JUROR_NUMBER, ApportionSmartCard.POOL_NUMBER, localDate).orElseThrow();
+                assertThat(appearance.getSmartCardAmountDue()).isEqualTo(expectedSmartCardAmount);
+            }
+
+            @Test
+            void typical() throws Exception {
+                triggerValid(getValidPayload(new BigDecimal("90.00")));
+
+                assertAppearance(ATTENDANCE_DATES.get(0),
+                    new BigDecimal("30.00"));
+                assertAppearance(ATTENDANCE_DATES.get(1),
+                    new BigDecimal("30.00"));
+                assertAppearance(ATTENDANCE_DATES.get(2),
+                    new BigDecimal("30.00"));
+            }
+
+
+            @Test
+            void typicalWithRoundingErrorsAccountedFor() throws Exception {
+                triggerValid(getValidPayload(new BigDecimal("100.00")));
+
+                assertAppearance(ATTENDANCE_DATES.get(0),
+                    new BigDecimal("33.33"));
+                assertAppearance(ATTENDANCE_DATES.get(1),
+                    new BigDecimal("33.33"));
+                assertAppearance(ATTENDANCE_DATES.get(2),
+                    new BigDecimal("33.34"));
+            }
+        }
+
+        @Nested
+        @DisplayName("Negative")
+        class Negative {
+            protected ResponseEntity<String> triggerInvalid(ApportionSmartCardRequest request,
+                                                            String owner) throws Exception {
+                final String jwt = createBureauJwt(COURT_USER, owner);
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+                return template.exchange(
+                    new RequestEntity<>(request, httpHeaders, PATCH,
+                        URI.create(URL)),
+                    String.class);
+            }
+
+            @Test
+            void invalidPayload() throws Exception {
+                assertInvalidPayload(triggerInvalid(getValidPayload(new BigDecimal("-0.01")), "415"),
+                    new RestResponseEntityExceptionHandler.FieldError("smartCardAmount",
+                        "must be greater than or equal to 0"));
+            }
+
+            @Test
+            void forbiddenIsBureauUser() throws Exception {
+                assertForbiddenResponse(triggerInvalid(getValidPayload(new BigDecimal("90.00")), "400"),
+                    URL);
+            }
+
+            @Test
+            void forbiddenNotPartOfPoolCourt() throws Exception {
+                assertMojForbiddenResponse(triggerInvalid(getValidPayload(new BigDecimal("90.00")), "414"),
+                    URL, "User cannot access this juror pool");
+            }
+
+            @Test
+            void jurorNotFound() throws Exception {
+                ApportionSmartCardRequest payload = getValidPayload(new BigDecimal("90.00"));
+                payload.setJurorNumber(TestConstants.VALID_JUROR_NUMBER);
+                assertNotFound(triggerInvalid(payload, "415"), URL,
+                    "One or more appearance records not found for Juror Number: 123456789, Pool Number: 415230101 and "
+                        + "Attendance Dates provided");
+            }
+
+            @Test
+            void negativeExpenseAmount() throws Exception {
+                assertBusinessRuleViolation(triggerInvalid(getValidPayload(new BigDecimal("900000.00")), "415"),
+                    "Total expenses cannot be less than £0. For Day 2023-01-05",
+                    MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO);
+            }
+
+            @Test
+            void newValueMoreThenPaid() throws Exception {
+                ApportionSmartCardRequest payload = getValidPayload(new BigDecimal("90.00"));
+                payload.setAttendanceDates(List.of(LocalDate.of(2023, 1, 11)));
+                assertBusinessRuleViolation(triggerInvalid(payload, "415"),
+                    "Updated expense values cannot be less than the paid amount",
+                    MojException.BusinessRuleViolation.ErrorCode.EXPENSE_VALUES_REDUCED_LESS_THAN_PAID);
             }
         }
     }
