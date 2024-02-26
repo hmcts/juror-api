@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.PostponeLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.RequestInfoLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.SummonsLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.SummonsReminderLetter;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.Objects;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings("PMD.TooManyMethods")
 public class PrintDataServiceImpl implements PrintDataService {
     private final BulkPrintDataRepository bulkPrintDataRepository;
     private final FormAttributeRepository formAttributeRepository;
@@ -42,31 +44,45 @@ public class PrintDataServiceImpl implements PrintDataService {
     public void bulkPrintSummonsLetter(List<JurorPool> jurorPools) {
         if (jurorPools == null || jurorPools.isEmpty()) {
             throw new MojException.InternalServerError(
-                "Attempted to print summons letters for empty jurorPool list", new Exception());
+                "Attempted to print summons letters for empty jurorPool list", null);
         }
 
         jurorPools.forEach(jurorPool -> {
             //queue a letter if juror is not disqualified
             if (!Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)) {
                 commitData(new SummonsLetter(jurorPool,
-                                         jurorPool.getCourt(),
-                                         courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
-                                         welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+                    jurorPool.getCourt(),
+                    courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+                    welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
                 ));
             }
         });
     }
 
     @Override
+    public void printSummonsReminderLetter(JurorPool jurorPool) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to print summons reminder letter for null jurorPool", null);
+        }
+
+        commitData(new SummonsReminderLetter(
+            jurorPool, jurorPool.getCourt(),
+            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+        ));
+    }
+
+    @Override
     public void printDeferralLetter(JurorPool jurorPool) {
         if (jurorPool == null) {
             throw new MojException.InternalServerError(
-                "Attempted to print deferral letter for null jurorPool", new Exception());
+                "Attempted to print deferral letter for null jurorPool", null);
         }
 
         commitData(new DeferralLetter(jurorPool, jurorPool.getCourt(),
-                                      courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
-                                      welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
         ));
     }
 
@@ -74,13 +90,13 @@ public class PrintDataServiceImpl implements PrintDataService {
     public void printDeferralDeniedLetter(JurorPool jurorPool) {
         if (jurorPool == null) {
             throw new MojException.InternalServerError(
-                "Attempted to print deferral denied letter for null jurorPool", new Exception());
+                "Attempted to print deferral denied letter for null jurorPool", null);
         }
 
         commitData(new DeferralDeniedLetter(jurorPool, jurorPool.getCourt(),
-                                            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
-                                            welshCourtLocationRepository
-                                                .findByLocCode(jurorPool.getCourt().getLocCode())
+            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            welshCourtLocationRepository
+                .findByLocCode(jurorPool.getCourt().getLocCode())
         ));
     }
 
@@ -88,13 +104,13 @@ public class PrintDataServiceImpl implements PrintDataService {
     public void printExcusalDeniedLetter(JurorPool jurorPool) {
         if (jurorPool == null) {
             throw new MojException.InternalServerError(
-                "Attempted to print excusal denied letter for null jurorPool", new Exception());
+                "Attempted to print excusal denied letter for null jurorPool", null);
         }
 
         commitData(new ExcusalDeniedLetter(jurorPool, jurorPool.getCourt(),
-                                            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
-                                            welshCourtLocationRepository
-                                                .findByLocCode(jurorPool.getCourt().getLocCode())
+            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            welshCourtLocationRepository
+                .findByLocCode(jurorPool.getCourt().getLocCode())
         ));
     }
 
@@ -102,12 +118,12 @@ public class PrintDataServiceImpl implements PrintDataService {
     public void printConfirmationLetter(JurorPool jurorPool) {
         if (jurorPool == null) {
             throw new MojException.InternalServerError(
-                "Attempted to print confirmation letter for null jurorPool", new Exception());
+                "Attempted to print confirmation letter for null jurorPool", null);
         }
 
         commitData(new ConfirmLetter(jurorPool, jurorPool.getCourt(),
-                                     courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
-                                     welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
         ));
     }
 
@@ -115,7 +131,7 @@ public class PrintDataServiceImpl implements PrintDataService {
     public void printPostponeLetter(JurorPool jurorPool) {
         if (jurorPool == null) {
             throw new MojException.InternalServerError(
-                "Attempted to print postpone letter for null jurorPool", new Exception());
+                "Attempted to print postpone letter for null jurorPool", null);
         }
 
         commitData(new PostponeLetter(jurorPool, jurorPool.getCourt(),
@@ -128,7 +144,7 @@ public class PrintDataServiceImpl implements PrintDataService {
     public void printExcusalLetter(JurorPool jurorPool) {
         if (jurorPool == null) {
             throw new MojException.InternalServerError(
-                "Attempted to print excusal letter for null jurorPool", new Exception());
+                "Attempted to print excusal letter for null jurorPool", null);
         }
 
         commitData(new ExcusalLetter(jurorPool, jurorPool.getCourt(),
@@ -145,8 +161,8 @@ public class PrintDataServiceImpl implements PrintDataService {
         }
 
         commitData(new RequestInfoLetter(jurorPool, additionalInfo, jurorPool.getCourt(),
-                                     courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
-                                     welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
         ));
     }
 
@@ -154,7 +170,7 @@ public class PrintDataServiceImpl implements PrintDataService {
     public void printWithdrawalLetter(JurorPool jurorPool) {
         if (jurorPool == null) {
             throw new MojException.InternalServerError(
-                "Attempted to print withdrawal letter for null jurorPool", new Exception());
+                "Attempted to print withdrawal letter for null jurorPool", null);
         }
 
         commitData(new ExcusalLetter(jurorPool, jurorPool.getCourt(),
@@ -169,7 +185,7 @@ public class PrintDataServiceImpl implements PrintDataService {
         BulkPrintData bulkPrintData = new BulkPrintData();
         bulkPrintData.setCreationDate(date);
         bulkPrintData.setFormAttribute(RepositoryUtils.retrieveFromDatabase(letter.getFormCode(),
-                                                                            formAttributeRepository));
+            formAttributeRepository));
         bulkPrintData.setDetailRec(letter.getLetterString());
         bulkPrintData.setJurorNo(letter.getJurorNumber());
         bulkPrintDataRepository.save(bulkPrintData);

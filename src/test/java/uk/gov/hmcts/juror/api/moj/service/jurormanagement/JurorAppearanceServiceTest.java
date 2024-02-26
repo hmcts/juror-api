@@ -1,4 +1,4 @@
-package uk.gov.hmcts.juror.api.moj.service;
+package uk.gov.hmcts.juror.api.moj.service.jurormanagement;
 
 import com.querydsl.core.Tuple;
 import org.junit.jupiter.api.DisplayName;
@@ -112,7 +112,10 @@ class JurorAppearanceServiceTest {
         Juror juror = new Juror();
         juror.setJurorNumber(JUROR_123456789);
 
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("123456789");
         JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
+        jurorPool.setPool(poolRequest);
         juror.setAssociatedPools(Collections.singleton(jurorPool));
         CourtLocation courtLocation = getCourtLocation();
 
@@ -154,7 +157,10 @@ class JurorAppearanceServiceTest {
         Juror juror = new Juror();
         juror.setJurorNumber(JUROR_123456789);
 
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("123456789");
         JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
+        jurorPool.setPool(poolRequest);
         juror.setAssociatedPools(Collections.singleton(jurorPool));
         CourtLocation courtLocation = getCourtLocation();
 
@@ -2206,6 +2212,7 @@ class JurorAppearanceServiceTest {
 
             Appearance appearance = new Appearance();
             appearance.setNoShow(true);
+            appearance.setAttendanceType(AttendanceType.ABSENT);
 
             LocalDate nonAttendanceDate = now();
             doReturn(Optional.of(appearance)).when(appearanceRepository)
@@ -2402,6 +2409,174 @@ class JurorAppearanceServiceTest {
             verify(appearanceRepository, times(1)).findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber,
                 poolNumber, nonAttendanceDate);
             verify(appearanceRepository, times(0)).saveAndFlush(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("void realignAttendanceType(Appearance appearance)")
+    class RealignAttendanceType {
+
+        private Appearance mockAppearance(LocalTime timeIn, LocalTime timeOut,
+                                          boolean isFulLDay,
+                                          Boolean noShow, AttendanceType attendanceType,
+                                          boolean isLongTrialDay) {
+
+            Appearance appearance = mock(Appearance.class);
+            when(appearance.getTimeIn()).thenReturn(timeIn);
+            when(appearance.getTimeOut()).thenReturn(timeOut);
+            when(appearance.getNoShow()).thenReturn(noShow);
+            when(appearance.getAttendanceType()).thenReturn(attendanceType);
+
+            LocalDate localDate = LocalDate.now();
+            when(appearance.getJurorNumber()).thenReturn(TestConstants.VALID_JUROR_NUMBER);
+            when(appearance.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
+            when(appearance.getAttendanceDate()).thenReturn(localDate);
+            when(appearance.isFullDay()).thenReturn(isFulLDay);
+
+
+            when(jurorExpenseService.isLongTrialDay(
+                TestConstants.VALID_JUROR_NUMBER,
+                TestConstants.VALID_POOL_NUMBER,
+                localDate
+            )).thenReturn(isLongTrialDay);
+            return appearance;
+        }
+
+        @Test
+        void positiveFulLDay() {
+            Appearance appearance = mockAppearance(
+                LocalTime.of(9, 30),
+                LocalTime.of(17, 30),
+                true,
+                Boolean.FALSE,
+                null,
+                false);
+            jurorAppearanceService.realignAttendanceType(appearance);
+            verify(appearance, times(1))
+                .setAttendanceType(AttendanceType.FULL_DAY);
+        }
+
+        @Test
+        void positiveFullDayLong() {
+            Appearance appearance = mockAppearance(
+                LocalTime.of(9, 30),
+                LocalTime.of(17, 30),
+                true,
+                Boolean.FALSE,
+                null,
+                true);
+            jurorAppearanceService.realignAttendanceType(appearance);
+            verify(appearance, times(1))
+                .setAttendanceType(AttendanceType.FULL_DAY_LONG_TRIAL);
+        }
+
+        @Test
+        void positiveHalfDay() {
+            Appearance appearance = mockAppearance(
+                LocalTime.of(9, 30),
+                LocalTime.of(17, 30),
+                false,
+                Boolean.FALSE,
+                null,
+                false);
+            jurorAppearanceService.realignAttendanceType(appearance);
+            verify(appearance, times(1))
+                .setAttendanceType(AttendanceType.HALF_DAY);
+
+        }
+
+        @Test
+        void positiveHalfDayLong() {
+            Appearance appearance = mockAppearance(
+                LocalTime.of(9, 30),
+                LocalTime.of(17, 30),
+                false,
+                Boolean.FALSE,
+                null,
+                true);
+            jurorAppearanceService.realignAttendanceType(appearance);
+            verify(appearance, times(1))
+                .setAttendanceType(AttendanceType.HALF_DAY_LONG_TRIAL);
+        }
+
+        @Test
+        void positiveNonAttendanceDay() {
+            Appearance appearance = mockAppearance(
+                LocalTime.of(9, 30),
+                LocalTime.of(17, 30),
+                false,
+                Boolean.FALSE,
+                AttendanceType.NON_ATTENDANCE_LONG_TRIAL,
+                false);
+            jurorAppearanceService.realignAttendanceType(appearance);
+            verify(appearance, times(1))
+                .setAttendanceType(AttendanceType.NON_ATTENDANCE);
+        }
+
+        @Test
+        void positiveAbsent() {
+            Appearance appearance = mockAppearance(
+                LocalTime.of(9, 30),
+                LocalTime.of(17, 30),
+                false,
+                Boolean.FALSE,
+                AttendanceType.NON_ATTENDANCE,
+                true);
+            jurorAppearanceService.realignAttendanceType(appearance);
+            verify(appearance, times(1))
+                .setAttendanceType(AttendanceType.NON_ATTENDANCE_LONG_TRIAL);
+        }
+
+        @Test
+        void positiveNoTimeIn() {
+            Appearance appearance = mockAppearance(
+                null,
+                LocalTime.of(17, 30),
+                false,
+                Boolean.FALSE,
+                AttendanceType.NON_ATTENDANCE,
+                true);
+            jurorAppearanceService.realignAttendanceType(appearance);
+            verify(appearance, never()).setAttendanceType(any());
+        }
+
+        @Test
+        void positiveNoTimeOut() {
+            Appearance appearance = mockAppearance(
+                LocalTime.of(9, 30),
+                null,
+                false,
+                Boolean.FALSE,
+                AttendanceType.NON_ATTENDANCE,
+                true);
+            jurorAppearanceService.realignAttendanceType(appearance);
+            verify(appearance, never()).setAttendanceType(any());
+        }
+
+        @Test
+        void positiveIsNoShow() {
+            Appearance appearance = mockAppearance(
+                LocalTime.of(9, 30),
+                LocalTime.of(17, 30),
+                false,
+                Boolean.TRUE,
+                AttendanceType.NON_ATTENDANCE,
+                true);
+            jurorAppearanceService.realignAttendanceType(appearance);
+            verify(appearance, never()).setAttendanceType(any());
+        }
+
+        @Test
+        void positiveIsAbsent() {
+            Appearance appearance = mockAppearance(
+                LocalTime.of(9, 30),
+                LocalTime.of(17, 30),
+                false,
+                Boolean.FALSE,
+                AttendanceType.ABSENT,
+                true);
+            jurorAppearanceService.realignAttendanceType(appearance);
+            verify(appearance, never()).setAttendanceType(any());
         }
     }
 }

@@ -109,7 +109,7 @@ public class LetterBase {
                 cal.add(Calendar.DAY_OF_MONTH, processDaysOverWeekend);
                 break;
             default:
-                throw new MojException.BusinessRuleViolation("Can not generate a letter on a weekend",
+                throw new MojException.BusinessRuleViolation("cannot generate a letter on a weekend",
                     LETTER_CANNOT_GENERATE_ON_WEEKEND);
         }
 

@@ -23,12 +23,12 @@ INSERT INTO juror_mod.appearance
  car_total_due, car_total_paid, pedal_cycle_total_due, pedal_cycle_total_paid,
  parking_total_due, parking_total_paid, childcare_total_due, childcare_total_paid,
  misc_total_due, misc_total_paid, loss_of_earnings_due, loss_of_earnings_paid,
- subsistence_due, subsistence_paid, smart_card_due, smart_card_paid, attendance_type, pay_attendance_type,
+ subsistence_due, subsistence_paid, smart_card_due, smart_card_paid, attendance_type,
  is_draft_expense, f_audit,
  appearance_stage)
 values
     -- expenses for 641500020
     --3 Draft
     ('2023-01-05', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
-     false, 10, 0, 20, 0, 30, 0, 40, 0, 50, 0, 60, 0, 70, 0, 80, 0, 90, 0, 100, 0, 25, 0, 'FULL_DAY', 'FULL_DAY', true,
+     false, 10, 0, 20, 0, 30, 0, 40, 0, 50, 0, 60, 0, 70, 0, 80, 0, 90, 0, 100, 0, 25, 0, 'FULL_DAY', true,
      null, 'EXPENSE_ENTERED');

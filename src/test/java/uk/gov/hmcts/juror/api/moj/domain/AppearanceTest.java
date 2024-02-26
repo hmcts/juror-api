@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
@@ -14,10 +15,9 @@ import java.time.LocalTime;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
+@SuppressWarnings("PMD.TooManyMethods")
 class AppearanceTest {
 
     @Test
@@ -175,27 +175,21 @@ class AppearanceTest {
     @Test
     void isLongTrialDayTrue() {
         Appearance appearance = new Appearance();
-        AttendanceType attendanceType = mock(AttendanceType.class);
-        appearance.setAttendanceType(attendanceType);
-        when(attendanceType.getIsLongTrial()).thenReturn(true);
+        appearance.setAttendanceType(AttendanceType.FULL_DAY_LONG_TRIAL);
         assertThat(appearance.isLongTrialDay()).isEqualTo(true);
     }
 
     @Test
     void isLongTrialDayFalse() {
         Appearance appearance = new Appearance();
-        AttendanceType attendanceType = mock(AttendanceType.class);
-        appearance.setAttendanceType(attendanceType);
-        when(attendanceType.getIsLongTrial()).thenReturn(false);
+        appearance.setAttendanceType(AttendanceType.FULL_DAY);
         assertThat(appearance.isLongTrialDay()).isEqualTo(false);
     }
 
     @Test
     void isLongTrialDayNull() {
         Appearance appearance = new Appearance();
-        AttendanceType attendanceType = mock(AttendanceType.class);
-        appearance.setAttendanceType(attendanceType);
-        when(attendanceType.getIsLongTrial()).thenReturn(null);
+        appearance.setAttendanceType(AttendanceType.ABSENT);
         assertThat(appearance.isLongTrialDay()).isNull();
     }
 
@@ -556,6 +550,66 @@ class AppearanceTest {
             doReturn(new BigDecimal("1.0")).when(appearance).getSmartCardAmountDue();
             doReturn(new BigDecimal("0.0")).when(appearance).getSmartCardAmountPaid();
             assertThat(appearance.isExpenseDetailsValid()).isTrue();
+        }
+    }
+
+    @Nested
+    @DisplayName("public void setPayAttendanceType(PayAttendanceType payAttendanceType)")
+    class SetPayAttendanceType {
+        @Test
+        void positiveTypical() {
+            Appearance appearance = new Appearance();
+            appearance.setAttendanceType(AttendanceType.FULL_DAY);
+
+            appearance.setPayAttendanceType(PayAttendanceType.HALF_DAY);
+            assertThat(appearance.getAttendanceType()).isEqualTo(AttendanceType.HALF_DAY);
+        }
+
+        @Test
+        void positiveTypicalLongTrial() {
+            Appearance appearance = new Appearance();
+            appearance.setAttendanceType(AttendanceType.FULL_DAY_LONG_TRIAL);
+
+            appearance.setPayAttendanceType(PayAttendanceType.HALF_DAY);
+            assertThat(appearance.getAttendanceType()).isEqualTo(AttendanceType.HALF_DAY_LONG_TRIAL);
+        }
+
+        @ParameterizedTest
+        @EnumSource(value = AttendanceType.class, mode = EnumSource.Mode.INCLUDE,
+            names = {"ABSENT", "NON_ATTENDANCE", "NON_ATTENDANCE_LONG_TRIAL"})
+        void positiveAttendanceTypeNoUpdate(AttendanceType attendanceType) {
+            Appearance appearance = new Appearance();
+            appearance.setAttendanceType(attendanceType);
+            appearance.setPayAttendanceType(PayAttendanceType.HALF_DAY);
+            assertThat(appearance.getAttendanceType()).isEqualTo(attendanceType);
+        }
+    }
+
+    @Nested
+    class IsFullDay {
+
+        @Test
+        void positiveHalfDayOnLimit() {
+            Appearance appearance = spy(new Appearance());
+            doReturn(LocalTime.of(4, 0, 0))
+                .when(appearance).getEffectiveTime();
+            assertThat(appearance.isFullDay()).isFalse();
+        }
+
+        @Test
+        void positiveHalfDayBelowLimit() {
+            Appearance appearance = spy(new Appearance());
+            doReturn(LocalTime.of(3, 59, 59))
+                .when(appearance).getEffectiveTime();
+            assertThat(appearance.isFullDay()).isFalse();
+        }
+
+        @Test
+        void positiveFullDay() {
+            Appearance appearance = spy(new Appearance());
+            doReturn(LocalTime.of(4, 0, 1))
+                .when(appearance).getEffectiveTime();
+            assertThat(appearance.isFullDay()).isTrue();
         }
     }
 }

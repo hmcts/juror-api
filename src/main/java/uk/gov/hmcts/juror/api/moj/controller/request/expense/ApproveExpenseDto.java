@@ -5,37 +5,30 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
-import uk.gov.hmcts.juror.api.validation.JurorNumber;
-import uk.gov.hmcts.juror.api.validation.PoolNumber;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Function;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Valid
-@Builder
+@SuperBuilder
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ApproveExpenseDto {
-
-    @JurorNumber
-    @NotBlank
-    private String jurorNumber;
-
-    @PoolNumber
-    @NotBlank
-    private String poolNumber;
+public class ApproveExpenseDto extends JurorNumberAndPoolNumberDto {
 
     @NotNull
     private ApprovalType approvalType;

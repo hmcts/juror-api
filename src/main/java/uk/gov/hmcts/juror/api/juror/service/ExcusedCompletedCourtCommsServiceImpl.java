@@ -69,10 +69,10 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
         final RegionNotifyTemplateRepository regionNotifyTemplateRepository) {
         Assert.notNull(poolCourtRepository, "PoolCourtRepository cannot be null.");
         Assert.notNull(appSetting, "AppSettingService cannot be null.");
-        Assert.notNull(courtRegionRepository, "CourtRegionRepository can not be null.");
-        Assert.notNull(notifyConfigurationProperties, "NotifyConfigurationProperties can not be null.");
-        Assert.notNull(notifyRegionsConfigurationProperties, "NotifyRegionsConfigurationProperties can not be null.");
-        Assert.notNull(regionNotifyTemplateRepository, "RegionNotifyTemplateRepository can not be null.");
+        Assert.notNull(courtRegionRepository, "CourtRegionRepository cannot be null.");
+        Assert.notNull(notifyConfigurationProperties, "NotifyConfigurationProperties cannot be null.");
+        Assert.notNull(notifyRegionsConfigurationProperties, "NotifyRegionsConfigurationProperties cannot be null.");
+        Assert.notNull(regionNotifyTemplateRepository, "RegionNotifyTemplateRepository cannot be null.");
         this.appSetting = appSetting;
         this.poolCourtRepository = poolCourtRepository;
         this.courtRegionRepository = courtRegionRepository;

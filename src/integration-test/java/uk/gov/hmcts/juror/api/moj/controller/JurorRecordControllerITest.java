@@ -3136,26 +3136,30 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         private void validateHappyResponse(ResponseEntity<JurorAttendanceDetailsResponseDto> response) {
             assertThat(response.getBody()).isNotNull();
             JurorAttendanceDetailsResponseDto jurorAttendanceDetailsResponseDto = response.getBody();
-            assertThat(jurorAttendanceDetailsResponseDto.getData().size()).isEqualTo(4);
+            assertThat(jurorAttendanceDetailsResponseDto.getData().size()).isEqualTo(5);
 
             assertThat(jurorAttendanceDetailsResponseDto.getAttendances()).isEqualTo(3);
             assertThat(jurorAttendanceDetailsResponseDto.getAbsences()).isEqualTo(1);
+            assertThat(jurorAttendanceDetailsResponseDto.getNonAttendances()).isEqualTo(1);
             assertThat(jurorAttendanceDetailsResponseDto.getNextDate()).isEqualTo(LocalDate.now().minusDays(4));
             assertThat(jurorAttendanceDetailsResponseDto.isOnCall()).isEqualTo(false);
 
             JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData jurorAttendanceDetailsDto =
                 jurorAttendanceDetailsResponseDto.getData().get(0);
             assertThat(jurorAttendanceDetailsDto.getAttendanceDate())
-                .isEqualTo(LocalDate.now().minusDays(4));
+                .isEqualTo(LocalDate.now().minusDays(5));
             assertThat(jurorAttendanceDetailsDto.getAttendanceType())
-                .isEqualTo(AttendanceType.ABSENT);
-            assertThat(jurorAttendanceDetailsDto.getHours())
-                .isEqualTo("0.0");
-            assertThat(jurorAttendanceDetailsDto.getTravelTime())
-                .isEqualTo(LocalTime.of(1,12));
+                .isEqualTo(AttendanceType.NON_ATTENDANCE);
 
             jurorAttendanceDetailsDto =
                 jurorAttendanceDetailsResponseDto.getData().get(1);
+            assertThat(jurorAttendanceDetailsDto.getAttendanceDate())
+                .isEqualTo(LocalDate.now().minusDays(4));
+            assertThat(jurorAttendanceDetailsDto.getAttendanceType())
+                .isEqualTo(AttendanceType.ABSENT);
+
+            jurorAttendanceDetailsDto =
+                jurorAttendanceDetailsResponseDto.getData().get(2);
             assertThat(jurorAttendanceDetailsDto.getAttendanceDate())
                 .isEqualTo(LocalDate.now().minusDays(3));
             assertThat(jurorAttendanceDetailsDto.getHours())
@@ -3164,7 +3168,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(AttendanceType.HALF_DAY);
 
             jurorAttendanceDetailsDto =
-                jurorAttendanceDetailsResponseDto.getData().get(2);
+                jurorAttendanceDetailsResponseDto.getData().get(3);
             assertThat(jurorAttendanceDetailsDto.getAttendanceDate())
                 .isEqualTo(LocalDate.now().minusDays(2));
             assertThat(jurorAttendanceDetailsDto.getHours())
@@ -3173,7 +3177,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(AttendanceType.FULL_DAY);
 
             jurorAttendanceDetailsDto =
-                jurorAttendanceDetailsResponseDto.getData().get(3);
+                jurorAttendanceDetailsResponseDto.getData().get(4);
             assertThat(jurorAttendanceDetailsDto.getAttendanceDate())
                 .isEqualTo(LocalDate.now().minusDays(1));
             assertThat(jurorAttendanceDetailsDto.getHours())

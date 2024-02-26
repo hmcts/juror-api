@@ -7,10 +7,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @AllArgsConstructor
@@ -32,6 +35,10 @@ public class JurorAttendanceDetailsResponseDto {
     @JsonProperty("attendances")
     @Schema(description = "Number of days juror attended court")
     private int attendances;
+
+    @JsonProperty("non_attendances")
+    @Schema(description = "Number of days juror non attended")
+    private int nonAttendances;
 
     @JsonProperty("absences")
     @Schema(description = "Number of days juror was absent but expected in court")
@@ -69,7 +76,21 @@ public class JurorAttendanceDetailsResponseDto {
         private LocalTime travelTime;
 
         @JsonProperty("attendance_type")
-        @Schema(description = "Full/half day or absent")
+        @Schema(description = "The type of attendance of the juror (includes non-attendance and absence)")
         private AttendanceType attendanceType;
+
+        public JurorAttendanceResponseData(Appearance appearance) {
+            this.attendanceDate = appearance.getAttendanceDate();
+            this.checkInTime = appearance.getTimeIn();
+            this.checkOutTime = appearance.getTimeOut();
+            this.travelTime = appearance.getTravelTime();
+            this.attendanceType = appearance.getAttendanceType();
+
+            double hours = 0.0;
+            if (this.checkOutTime != null && this.checkInTime != null) {
+                hours = (double) Duration.between(this.checkInTime, this.checkOutTime).toMinutes() / 60;
+            }
+            this.hours = String.format("%.1f", hours);
+        }
     }
 }

@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service.jurormanagement;
 import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +25,6 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
-import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -32,7 +32,6 @@ import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
-import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -44,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.APPEARANCE_RECORD_BEFORE_SERVICE_START_DATE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.ATTENDANCE_RECORD_ALREADY_EXISTS;
@@ -58,7 +58,6 @@ import static uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils.unboxOptionalReco
 @Service
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class JurorAppearanceServiceImpl implements JurorAppearanceService {
-    private final PoolRequestRepository poolRequestRepository;
     private final JurorPoolRepository jurorPoolRepository;
     private final AppearanceRepository appearanceRepository;
     private final CourtLocationRepository courtLocationRepository;
@@ -97,6 +96,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 .jurorNumber(jurorNumber)
                 .attendanceDate(appearanceDate)
                 .courtLocation(courtLocation)
+                .poolNumber(jurorPool.getPool().getPoolNumber())
                 .build();
         } else {
             // validate the current record and the new appearance stage
@@ -110,8 +110,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         if (appearanceStage == AppearanceStage.CHECKED_OUT) {
             appearance.setTimeOut(jurorAppearanceDto.getCheckOutTime());
         }
-
         appearance.setAppearanceStage(appearanceStage);
+        realignAttendanceType(appearance);
         appearanceRepository.saveAndFlush(appearance);
 
         // update the juror next date and clear on call flag in case it is set
@@ -345,9 +345,10 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             .courtLocation(courtLocation)
             .poolNumber(request.getPoolNumber())
             .nonAttendanceDay(Boolean.TRUE)
-            .attendanceType(AttendanceType.NON_ATTENDANCE)
+            .attendanceType(
+                jurorExpenseService.isLongTrialDay(request.getJurorNumber(), request.getPoolNumber(), nonAttendanceDate)
+                    ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL : AttendanceType.NON_ATTENDANCE)
             .appearanceStage(AppearanceStage.EXPENSE_ENTERED)
-            .payAttendanceType(PayAttendanceType.FULL_DAY)
             .isDraftExpense(true)
             .createdBy(payload.getLogin())
             .build();
@@ -465,14 +466,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             jurorPoolRepository.findJurorsInAttendanceAtCourtLocation(request.getLocationCode(),
                 request.getPoolNumbers());
 
-        if (request.getIncludeOnCall()) {
+        if (ObjectUtils.defaultIfNull(request.getIncludeOnCall(),false)) {
             List<JurorPool> jurorPoolOnCall =
                 jurorPoolRepository.findJurorsOnCallAtCourtLocation(request.getLocationCode(),
                     request.getPoolNumbers());
             jurorPools.addAll(jurorPoolOnCall);
         }
 
-        if (request.getIncludeNotInAttendance()) {
+        if (ObjectUtils.defaultIfNull(request.getIncludeOnCall(),false)) {
             List<JurorPool> jurorPoolNotInAttendance =
                 jurorPoolRepository.findJurorsNotInAttendanceAtCourtLocation(request.getLocationCode(),
                     request.getPoolNumbers());
@@ -564,7 +565,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         appearanceRepository.saveAllAndFlush(checkedInAttendances);
 
-        // 3. retrieve details of jurors who failed to attend/non-attendance (no show)
+        // 3. retrieve details of jurors who failed to show up on the day (no show)
         List<Tuple> absentTuples = appearanceRepository.retrieveNonAttendanceDetails(retrieveCommonData);
 
         // 4. absent jurors - build new appearance record with minimal data
@@ -575,6 +576,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 .attendanceDate(updateCommonData.getAttendanceDate())
                 .courtLocation(courtLocation)
                 .noShow(Boolean.TRUE)
+                .attendanceType(AttendanceType.ABSENT)
                 .build();
             absentJurors.add(appearance);
         });
@@ -610,7 +612,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             // validate and update the relevant values in the Appearance entity based on the attendance status
             appearance.setTimeIn(commonData.getCheckInTime());
             appearance.setAppearanceStage(AppearanceStage.CHECKED_IN);
-
+            realignAttendanceType(appearance);
             checkedInJurors.add(appearance);
         });
 
@@ -663,6 +665,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 validateCheckOutNotBeforeCheckIn(appearance.getTimeIn(), commonData.getCheckOutTime());
                 appearance.setTimeOut(commonData.getCheckOutTime());
                 appearance.setAppearanceStage(AppearanceStage.CHECKED_OUT);
+                realignAttendanceType(appearance);
                 checkedOutJurors.add(appearance);
             }
         });
@@ -702,7 +705,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             appearance.setTimeIn(commonData.getCheckInTime());
             appearance.setTimeOut(commonData.getCheckOutTime());
             appearance.setAppearanceStage(AppearanceStage.CHECKED_OUT);
-
+            realignAttendanceType(appearance);
             checkInAndOutJurors.add(appearance);
         });
 
@@ -737,6 +740,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             validateCheckOutNotBeforeCheckIn(appearance.getTimeIn(), commonData.getCheckOutTime());
             appearance.setTimeOut(commonData.getCheckOutTime());
             appearance.setAppearanceStage(AppearanceStage.CHECKED_OUT);
+            realignAttendanceType(appearance);
             checkedOutPanelledJurors.add(appearance);
         });
 
@@ -877,5 +881,33 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             case CHECK_IN -> RetrieveAttendanceDetailsTag.NOT_CHECKED_IN;
             default -> null;
         };
+    }
+
+    void realignAttendanceType(Appearance appearance) {
+        if (appearance.getTimeIn() == null
+            || appearance.getTimeOut() == null
+            || Boolean.TRUE.equals(appearance.getNoShow())
+            || AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
+            return;
+        }
+
+        boolean isLongTrailDay =
+            jurorExpenseService.isLongTrialDay(appearance.getJurorNumber(), appearance.getPoolNumber(),
+                appearance.getAttendanceDate());
+
+        if (appearance.getAttendanceType() != null && Set.of(AttendanceType.NON_ATTENDANCE,
+                AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
+            .contains(appearance.getAttendanceType())) {
+            appearance.setAttendanceType(isLongTrailDay
+                ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL : AttendanceType.NON_ATTENDANCE
+            );
+        } else if (appearance.isFullDay()) {
+            appearance.setAttendanceType(isLongTrailDay
+                ? AttendanceType.FULL_DAY_LONG_TRIAL : AttendanceType.FULL_DAY
+            );
+        } else {
+            appearance.setAttendanceType(isLongTrailDay
+                ? AttendanceType.HALF_DAY_LONG_TRIAL : AttendanceType.HALF_DAY);
+        }
     }
 }

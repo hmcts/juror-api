@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.moj.controller;
 
 import com.querydsl.core.Tuple;
 import org.json.JSONObject;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -31,7 +30,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
@@ -44,7 +42,6 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,7 +56,6 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.APPEARANCE_CONFIRMED;
@@ -1368,7 +1364,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getPoolNumber()).isEqualTo(request.getPoolNumber());
             assertThat(appearance.getCourtLocation().getLocCode()).isEqualTo(request.getLocationCode());
             assertThat(appearance.getNonAttendanceDay()).isTrue();
-            assertThat(appearance.getLossOfEarningsDue()).isEqualTo(BigDecimal.valueOf(31.63));
+            assertThat(appearance.getLossOfEarningsDue()).isEqualTo(BigDecimal.valueOf(63.25));
 
         }
 
@@ -1401,7 +1397,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getPoolNumber()).isEqualTo(request.getPoolNumber());
             assertThat(appearance.getCourtLocation().getLocCode()).isEqualTo(request.getLocationCode());
             assertThat(appearance.getNonAttendanceDay()).isTrue();
-            assertThat(appearance.getLossOfEarningsDue()).isEqualTo(BigDecimal.valueOf(32.47));
+            assertThat(appearance.getLossOfEarningsDue()).isEqualTo(BigDecimal.valueOf(64.95));
 
         }
 
@@ -1424,9 +1420,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as("HTTP status unprocessable entity expected")
                 .isEqualTo(UNPROCESSABLE_ENTITY);
 
-            assertBusinessRuleViolation
-                (response, "Juror 222222222 already has an attendance "
-                    + "record for the date " + now().minusDays(1), ATTENDANCE_RECORD_ALREADY_EXISTS);
+            assertBusinessRuleViolation(response, "Juror 222222222 already has an attendance "
+                + "record for the date " + now().minusDays(1), ATTENDANCE_RECORD_ALREADY_EXISTS);
 
         }
 
@@ -1459,7 +1454,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getPoolNumber()).isEqualTo(request.getPoolNumber());
             assertThat(appearance.getCourtLocation().getLocCode()).isEqualTo(request.getLocationCode());
             assertThat(appearance.getNonAttendanceDay()).isTrue();
-            assertThat(appearance.getLossOfEarningsDue()).isEqualTo(BigDecimal.valueOf(30.13));
+            assertThat(appearance.getLossOfEarningsDue()).isEqualTo(BigDecimal.valueOf(60.25));
         }
 
         @Test

@@ -38,7 +38,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REGEX;
 
 /**
- * View of the legacy JUROR.POOL table data where OWNER <> 400 and IS_ACTIVE = 'Y' </>.
+ * View of the legacy JUROR.POOL table data where OWNER <> 400 and IS_ACTIVE = 'Y'.
  * H_EMAIL or M_PHONE exists and H_EMAIL AND M_PHONE exists
  * but not where H_EMAIL AND M_PHONE not exists
  */

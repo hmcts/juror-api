@@ -41,13 +41,6 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
         LetterType letterType = request.getLetterType();
 
-        final List<String> headings = letterType.getReissueDataTypes().stream()
-            .map(DataType::getDisplayText)
-            .toList();
-        final List<String> dataTypes = letterType.getReissueDataTypes().stream()
-            .map(DataType::getDataType)
-            .toList();
-
         List<Tuple> letters = bulkPrintDataRepository.findLetters(request, letterType.getLetterQueryConsumer());
 
         if (letters.isEmpty()) {
@@ -60,7 +53,12 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                 .map(dataType -> dataType.transform(tuple.get(dataType.getExpression())))
                 .toList()
             ).toList();
-
+        final List<String> headings = letterType.getReissueDataTypes().stream()
+            .map(DataType::getDisplayText)
+            .toList();
+        final List<String> dataTypes = letterType.getReissueDataTypes().stream()
+            .map(DataType::getDataType)
+            .toList();
         return new ReissueLetterListResponseDto(headings, dataTypes, data);
     }
 
@@ -75,14 +73,14 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(letter.getJurorNumber(),
                     letter.getFormCode(), letter.getDatePrinted())
                 .orElseThrow(() -> new MojException.NotFound(
-                    "Bulk print data not found for juror %s " + letter.getJurorNumber(),
+                    String.format("Bulk print data not found for juror %s ", letter.getJurorNumber()),
                     null));
 
             // verify the same letter is not already pending a reprint
             bulkPrintDataRepository.findByJurorNumberFormCodeAndPending(letter.getJurorNumber(), letter.getFormCode())
                 .ifPresent(bulkPrintData -> {
-                    throw new MojException.BadRequest("Letter already pending reprint for juror %s "
-                        + letter.getJurorNumber(), null);
+                    throw new MojException.BadRequest(String.format("Letter already pending reprint for juror %s ",
+                        letter.getJurorNumber()), null);
                 });
 
             FormCode formCode = FormCode.getFormCode(letter.getFormCode());

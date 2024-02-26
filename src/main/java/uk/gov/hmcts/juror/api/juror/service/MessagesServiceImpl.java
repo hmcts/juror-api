@@ -70,12 +70,12 @@ public class MessagesServiceImpl implements BureauProcessService {
         final NotifyRegionsConfigurationProperties notifyRegionsConfigurationProperties,
         final RegionNotifyTemplateRepository regionNotifyTemplateRepository) {
         Assert.notNull(appSetting, "AppSettingService cannot be null.");
-        Assert.notNull(messageStagingRepository, "messageStagingRepository can not be null.");
-        Assert.notNull(messagesRepository, "MessagesRepository can not be null.");
-        Assert.notNull(courtRegionRepository, "CourtRegionRepository can not be null.");
-        Assert.notNull(notifyConfigurationProperties, "NotifyConfigurationProperties can not be null.");
-        Assert.notNull(notifyRegionsConfigurationProperties, "NotifyRegionsConfigurationProperties can not be null.");
-        Assert.notNull(regionNotifyTemplateRepository, "RegionNotifyTemplateRepository can not be null.");
+        Assert.notNull(messageStagingRepository, "messageStagingRepository cannot be null.");
+        Assert.notNull(messagesRepository, "MessagesRepository cannot be null.");
+        Assert.notNull(courtRegionRepository, "CourtRegionRepository cannot be null.");
+        Assert.notNull(notifyConfigurationProperties, "NotifyConfigurationProperties cannot be null.");
+        Assert.notNull(notifyRegionsConfigurationProperties, "NotifyRegionsConfigurationProperties cannot be null.");
+        Assert.notNull(regionNotifyTemplateRepository, "RegionNotifyTemplateRepository cannot be null.");
         this.appSetting = appSetting;
         this.messageStagingRepository = messageStagingRepository;
         this.messagesRepository = messagesRepository;

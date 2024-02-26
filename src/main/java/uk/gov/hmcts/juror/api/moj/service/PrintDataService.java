@@ -4,6 +4,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 
 import java.util.List;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public interface PrintDataService {
 
     void bulkPrintSummonsLetter(List<JurorPool> jurorPools);
@@ -11,6 +12,8 @@ public interface PrintDataService {
     default void printSummonsLetter(JurorPool jurorPool) {
         bulkPrintSummonsLetter(List.of(jurorPool));
     }
+
+    void printSummonsReminderLetter(JurorPool jurorPool);
 
     void printDeferralLetter(JurorPool jurorPool);
 

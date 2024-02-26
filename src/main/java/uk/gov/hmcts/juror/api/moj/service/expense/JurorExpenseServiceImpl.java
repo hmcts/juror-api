@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.juror.domain.ApplicationSettings;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApportionSmartCardRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApproveExpenseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CalculateTotalExpenseRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
@@ -210,7 +211,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Override
     public void applyDefaultExpenses(Appearance appearance, Juror juror) {
         appearance.setTravelTime(juror.getTravelTime());
-        appearance.setPayAttendanceType(calculatePayAttendanceType(appearance.getEffectiveTime()));
+        appearance.setPayAttendanceType(calculatePayAttendanceType(appearance));
 
         boolean isLongDay = appearance.getEffectiveTime().isAfter(LocalTime.of(10, 0, 0));
         updateMilesTraveledAndTravelDue(appearance, juror.getMileage());
@@ -231,14 +232,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         validateAndUpdateFinancialLossExpenseLimit(appearance);
     }
 
-    PayAttendanceType calculatePayAttendanceType(LocalTime totalTimeForDay) {
-        PayAttendanceType payAttendanceType;
-        if (totalTimeForDay.isAfter(LocalTime.of(4, 0))) {
-            payAttendanceType = PayAttendanceType.FULL_DAY;
-        } else {
-            payAttendanceType = PayAttendanceType.HALF_DAY;
-        }
-        return payAttendanceType;
+    PayAttendanceType calculatePayAttendanceType(Appearance appearance) {
+        return appearance.isFullDay() ? PayAttendanceType.FULL_DAY : PayAttendanceType.HALF_DAY;
     }
 
     @Override
@@ -259,9 +254,9 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         if (dto.isOverwriteExistingDraftExpenses()) {
             applyDefaultExpenses(appearanceRepository
-                 .findAllByJurorNumberAndAppearanceStageInAndCourtLocationOwnerAndIsDraftExpenseTrueOrderByAttendanceDateDesc(
-                     dto.getJurorNumber(),
-                     Set.of(AppearanceStage.EXPENSE_ENTERED), owner));
+                .findAllByJurorNumberAndAppearanceStageInAndCourtLocationOwnerAndIsDraftExpenseTrueOrderByAttendanceDateDesc(
+                    dto.getJurorNumber(),
+                    Set.of(AppearanceStage.EXPENSE_ENTERED), owner));
         }
     }
 
@@ -280,15 +275,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         // query the database to retrieve appearance records for a given juror number and pool number (from the
         // request body) - then filter the result set down to just those records where the attendance date matches a
         // date in the request dto
-        List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(dto.getJurorNumber(),
-            dto.getPoolNumber()).stream().filter(appearance ->
-            dto.getAttendanceDates().contains(appearance.getAttendanceDate())).toList();
-
-        if (appearances.isEmpty()) {
-            throw new MojException.NotFound(String.format("No appearance records found for Juror Number: %s, "
-                + "Pool Number: %s and Attendance Dates provided", dto.getJurorNumber(), dto.getPoolNumber()), null);
-        }
-
+        List<Appearance> appearances = getAppearances(dto);
 
         // update each expense record to assign the financial audit details object
         // and update the is_draft_expense property to false (marking the batch of expenses as ready for approval)
@@ -366,8 +353,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             && request.getFinancialLoss() == null) {
             validateAndUpdateFinancialLossExpenseLimit(appearance);
         }
-        checkTotalExpensesAreNotLessThan0(appearance);
-        checkDueIsMoreThanPaid(appearance);
+        validateExpense(appearance);
         return dailyExpenseResponse;
     }
 
@@ -545,7 +531,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         }
 
         updateAppearanceConsumer.add(
-            (appearance, dailyExpense) -> checkTotalExpensesAreNotLessThan0(appearance));
+            (appearance, dailyExpense) -> validateExpense(appearance));
 
         appearances.forEach(
             appearance -> updateAppearanceConsumer.forEach(
@@ -572,9 +558,14 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     void checkDueIsMoreThanPaid(Appearance appearance) {
         if (!appearance.isExpenseDetailsValid()) {
             throw new MojException.BusinessRuleViolation(
-                "Updated expense values can not be less than the paid amount",
+                "Updated expense values cannot be less than the paid amount",
                 MojException.BusinessRuleViolation.ErrorCode.EXPENSE_VALUES_REDUCED_LESS_THAN_PAID);
         }
+    }
+
+    void validateExpense(Appearance appearance) {
+        checkTotalExpensesAreNotLessThan0(appearance);
+        checkDueIsMoreThanPaid(appearance);
     }
 
     boolean validateTotalExpense(Appearance appearance) {
@@ -655,14 +646,11 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 .sorted(Comparator.comparing(Appearance::getAttendanceDate))
                 .toList();
         if (appearances.isEmpty()) {
-            throw new MojException.NotFound(
-                "No expenses found for juror: " + request.getJurorNumber() + " in pool " + request.getPoolNumber()
-                    + " of type " + type.name(),
-                null);
+            return new CombinedSimplifiedExpenseDetailDto();
         }
         final String owner = SecurityUtil.getActiveOwner();
         if (appearances.stream().noneMatch(appearance -> owner.equals(appearance.getCourtLocation().getOwner()))) {
-            throw new MojException.Forbidden("Juror can not access this juror pool", null);
+            throw new MojException.Forbidden("User cannot access this juror pool", null);
         }
         CombinedSimplifiedExpenseDetailDto combinedSimplifiedExpenseDetailDto =
             new CombinedSimplifiedExpenseDetailDto();
@@ -697,11 +685,11 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 .sorted(Comparator.comparing(Appearance::getAttendanceDate))
                 .toList();
         if (appearances.isEmpty()) {
-            throw new MojException.NotFound("No draft expenses found for juror: " + jurorNumber, null);
+            return new CombinedExpenseDetailsDto<>();
         }
         final String owner = SecurityUtil.getActiveOwner();
         if (appearances.stream().noneMatch(appearance -> owner.equals(appearance.getCourtLocation().getOwner()))) {
-            throw new MojException.Forbidden("Juror can not access this juror pool", null);
+            throw new MojException.Forbidden("User cannot access this juror pool", null);
         }
         CombinedExpenseDetailsDto<ExpenseDetailsDto> combinedExpenseDetailsDto = new CombinedExpenseDetailsDto<>();
         appearances.forEach(
@@ -726,7 +714,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     //ONLY USE if wrapper in @Transactional(readOnly = true)
     ExpenseDetailsForTotals calculateTotalsFromAppearance(Appearance appearance, DailyExpense dto) {
         DailyExpenseResponse dailyExpenseResponse = updateExpenseInternal(appearance, dto);
-
         ExpenseDetailsForTotals expenseDetailsForTotals = new ExpenseDetailsForTotals();
         expenseDetailsForTotals.setFinancialLossApportionedApplied(
             dailyExpenseResponse.getFinancialLossWarning() != null);
@@ -758,7 +745,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         final String owner = SecurityUtil.getActiveOwner();
         if (!appearances.isEmpty() && appearances.stream()
             .noneMatch(appearance -> owner.equals(appearance.getCourtLocation().getOwner()))) {
-            throw new MojException.Forbidden("Juror can not access this juror pool", null);
+            throw new MojException.Forbidden("User cannot access this juror pool", null);
         }
         return ExpenseCount.builder()
             .totalDraft(appearances.stream().filter(appearance ->
@@ -806,6 +793,45 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         ));
     }
 
+
+    List<Appearance> getAppearances(ExpenseItemsDto dto) {
+        List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(dto.getJurorNumber(),
+            dto.getPoolNumber()).stream().filter(appearance ->
+            dto.getAttendanceDates().contains(appearance.getAttendanceDate())).toList();
+        if (appearances.isEmpty() || appearances.size() != dto.getAttendanceDates().size()) {
+            throw new MojException.NotFound(String.format("One or more appearance records not found for Juror Number: %s, "
+                + "Pool Number: %s and Attendance Dates provided", dto.getJurorNumber(), dto.getPoolNumber()), null);
+        }
+        return appearances;
+    }
+
+    @Override
+    @Transactional
+    public void apportionSmartCard(ApportionSmartCardRequest dto) {
+        List<Appearance> appearances = getAppearances(dto);
+
+        final BigDecimal amountPerAppearance = dto.getSmartCardAmount()
+            .divide(BigDecimal.valueOf(appearances.size()), 2, RoundingMode.HALF_UP);
+        final BigDecimal lastDayOffSet = dto.getSmartCardAmount()
+            .subtract(amountPerAppearance.multiply(BigDecimal.valueOf(appearances.size() - 1)));
+
+        final String owner = SecurityUtil.getActiveOwner();
+        if (appearances.stream().noneMatch(appearance -> owner.equals(appearance.getCourtLocation().getOwner()))) {
+            throw new MojException.Forbidden("User cannot access this juror pool", null);
+        }
+
+        appearances.stream().limit(appearances.size() - 1)
+            .forEach(appearance -> {
+                appearance.setSmartCardAmountDue(amountPerAppearance);
+                validateExpense(appearance);
+            });
+
+        Appearance lastAppearance = appearances.get(appearances.size() - 1);
+        lastAppearance.setSmartCardAmountDue(lastDayOffSet);
+        validateExpense(lastAppearance);
+
+        appearanceRepository.saveAll(appearances);
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -928,7 +954,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     public void approveExpenses(ApproveExpenseDto dto) {
         User user = userService.findByUsername(SecurityUtil.getActiveLogin());
         if (!user.isCanApprove()) {
-            throw new MojException.Forbidden("User can not approve expenses", null);
+            throw new MojException.Forbidden("User cannot approve expenses", null);
         }
 
         ApproveExpenseDto.ApprovalType approvalType = dto.getApprovalType();
@@ -948,7 +974,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 MojException.BusinessRuleViolation.ErrorCode.DATA_OUT_OF_DATE);
         }
         if (!validateUserCanApprove(appearances)) {
-            throw new MojException.BusinessRuleViolation("User can not approve an expense they have edited",
+            throw new MojException.BusinessRuleViolation("User cannot approve an expense they have edited",
                 MojException.BusinessRuleViolation.ErrorCode.CAN_NOT_APPROVE_OWN_EDIT);
         }
         BigDecimal totalToApprove = appearances.stream()
@@ -959,7 +985,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         BigDecimal userLimit = BigDecimalUtils.getOrZero(user.getApprovalLimit());
         if (BigDecimalUtils.isGreaterThan(totalToApprove, userLimit)) {
             throw new MojException.BusinessRuleViolation(
-                "User can not approve expenses over " + BigDecimalUtils.currencyFormat(userLimit),
+                "User cannot approve expenses over " + BigDecimalUtils.currencyFormat(userLimit),
                 CAN_NOT_APPROVE_MORE_THAN_LIMIT);
         }
         Appearance firstAppearance = appearances.get(0);
@@ -1114,5 +1140,21 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .lastName(jurorExpenseTotals.getLastName())
             .totalUnapproved(jurorExpenseTotals.getTotalUnapproved())
             .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isLongTrialDay(String jurorNumber, String poolNumber, LocalDate localDate) {
+        List<LocalDate> localDates = new ArrayList<>();
+        localDates.add(localDate);
+        localDates.addAll(
+            appearanceRepository.findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber)
+                .stream()
+                .map(Appearance::getAttendanceDate)
+                .distinct()
+                .toList());
+        return localDates.stream().distinct().sorted(Comparator.naturalOrder())
+            .toList()
+            .indexOf(localDate) >= 10;//>= as 0 indexed
     }
 }

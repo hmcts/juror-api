@@ -265,4 +265,122 @@ class IReissueLetterRepositoryImplTest {
         verify(jpaQuery, times(1)).where(extractedFlag);
     }
 
+    @Test
+    void positiveSummonsRemindersLetterProcessedJurorNameFilter() {
+        JPAQuery<Tuple> jpaQuery = mock(JPAQuery.class);
+
+        when(queryFactory.selectDistinct(any(Expression[].class))).thenReturn(jpaQuery);
+        when(jpaQuery.from(any(EntityPath.class))).thenReturn(jpaQuery);
+        when(jpaQuery.join(any(EntityPath.class))).thenReturn(jpaQuery);
+        when(jpaQuery.on(any(Predicate.class))).thenReturn(jpaQuery);
+        when(jpaQuery.where(any(Predicate.class))).thenReturn(jpaQuery);
+        when(jpaQuery.limit(anyLong())).thenReturn(jpaQuery);
+        when(jpaQuery.offset(anyLong())).thenReturn(jpaQuery);
+        when(jpaQuery.orderBy(any(OrderSpecifier.class))).thenReturn(jpaQuery);
+
+        Tuple result1 = mock(Tuple.class);
+        Tuple result2 = mock(Tuple.class);
+        Tuple result3 = mock(Tuple.class);
+        when(jpaQuery.fetch()).thenReturn(List.of(result1, result2, result3));
+
+        ReissueLetterListRequestDto request = ReissueLetterListRequestDto.builder()
+            .letterType(LetterType.SUMMONED_REMINDER)
+            .jurorName("John Doe")
+            .build();
+
+        Consumer<JPAQuery<Tuple>> queryConsumer = tupleJPAQuery ->
+            tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)
+                .and(QJuror.juror.responded.eq(false)));
+
+        List<Tuple> tuples = reissueLetterRepositoryImpl.findLetters(request, queryConsumer);
+
+        assertThat(tuples).isNotNull();
+        assertThat(tuples.size()).isEqualTo(3);
+
+        verify(queryFactory, times(1))
+            .selectDistinct(
+                JUROR.jurorNumber.as("juror_number"),
+                JUROR.firstName.as("first_name"),
+                JUROR.lastName.as("last_name"),
+                JUROR.postcode.as("postcode"),
+                BULK_PRINT_DATA.creationDate.as("date_printed"),
+                BULK_PRINT_DATA.extractedFlag.as("extracted_flag"),
+                BULK_PRINT_DATA.formAttribute.formType.as("form_code")
+            );
+        verify(jpaQuery, times(1)).from(JUROR);
+        verify(jpaQuery, times(1)).join(JUROR_POOL);
+        verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
+        verify(jpaQuery, times(1)).join(BULK_PRINT_DATA);
+        verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo));
+        verify(jpaQuery, times(1)).where(BULK_PRINT_DATA.formAttribute.formType.in(List.of("5228", "5228C")));
+        verify(jpaQuery, times(1)).where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)
+            .and(QJuror.juror.responded.eq(false)));
+        verify(jpaQuery, times(1)).where(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName).toLowerCase()
+            .likeIgnoreCase("%john doe%"));
+        verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.eq(true));
+        verify(jpaQuery, times(1)).where(JUROR_POOL.owner.eq(SecurityUtil.BUREAU_OWNER));
+        verify(jpaQuery, times(1)).orderBy(BULK_PRINT_DATA.creationDate.desc());
+        verify(jpaQuery, times(1)).orderBy(JUROR.jurorNumber.asc());
+        verify(jpaQuery, times(1)).fetch();
+    }
+
+    @Test
+    void positiveSummonsRemindersLetterProcessedPostcodeFilter() {
+        JPAQuery<Tuple> jpaQuery = mock(JPAQuery.class);
+
+        when(queryFactory.selectDistinct(any(Expression[].class))).thenReturn(jpaQuery);
+        when(jpaQuery.from(any(EntityPath.class))).thenReturn(jpaQuery);
+        when(jpaQuery.join(any(EntityPath.class))).thenReturn(jpaQuery);
+        when(jpaQuery.on(any(Predicate.class))).thenReturn(jpaQuery);
+        when(jpaQuery.where(any(Predicate.class))).thenReturn(jpaQuery);
+        when(jpaQuery.limit(anyLong())).thenReturn(jpaQuery);
+        when(jpaQuery.offset(anyLong())).thenReturn(jpaQuery);
+        when(jpaQuery.orderBy(any(OrderSpecifier.class))).thenReturn(jpaQuery);
+
+        Tuple result1 = mock(Tuple.class);
+        Tuple result2 = mock(Tuple.class);
+        Tuple result3 = mock(Tuple.class);
+        when(jpaQuery.fetch()).thenReturn(List.of(result1, result2, result3));
+
+        ReissueLetterListRequestDto request = ReissueLetterListRequestDto.builder()
+            .letterType(LetterType.SUMMONED_REMINDER)
+            .jurorPostcode("TS1 1ST")
+            .build();
+
+        Consumer<JPAQuery<Tuple>> queryConsumer =
+            tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)
+                .and(QJuror.juror.responded.eq(false)));
+
+        List<Tuple> tuples = reissueLetterRepositoryImpl.findLetters(request, queryConsumer);
+
+        assertThat(tuples).isNotNull();
+        assertThat(tuples.size()).isEqualTo(3);
+
+        verify(queryFactory, times(1))
+            .selectDistinct(
+                JUROR.jurorNumber.as("juror_number"),
+                JUROR.firstName.as("first_name"),
+                JUROR.lastName.as("last_name"),
+                JUROR.postcode.as("postcode"),
+                BULK_PRINT_DATA.creationDate.as("date_printed"),
+                BULK_PRINT_DATA.extractedFlag.as("extracted_flag"),
+                BULK_PRINT_DATA.formAttribute.formType.as("form_code")
+            );
+        verify(jpaQuery, times(1)).from(JUROR);
+        verify(jpaQuery, times(1)).join(JUROR_POOL);
+        verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
+        verify(jpaQuery, times(1)).join(BULK_PRINT_DATA);
+        verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo));
+        verify(jpaQuery, times(1)).where(BULK_PRINT_DATA.formAttribute.formType.in(List.of("5228", "5228C")));
+        verify(jpaQuery, times(1)).where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)
+            .and(QJuror.juror.responded.eq(false)));
+        verify(jpaQuery, times(1)).where(QJuror.juror.postcode.toLowerCase()
+            .eq("ts1 1st"));
+        verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.eq(true));
+        verify(jpaQuery, times(1)).where(JUROR_POOL.owner.eq(SecurityUtil.BUREAU_OWNER));
+        verify(jpaQuery, times(1)).orderBy(BULK_PRINT_DATA.creationDate.desc());
+        verify(jpaQuery, times(1)).orderBy(JUROR.jurorNumber.asc());
+        verify(jpaQuery, times(1)).fetch();
+    }
+
 }
