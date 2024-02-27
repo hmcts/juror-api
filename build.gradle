@@ -164,7 +164,7 @@ dependencies {
     testImplementation 'org.testcontainers:postgresql:1.19.6'
 
     // Validation
-    testImplementation 'org.wiremock:wiremock:3.2.0'
+    testImplementation 'org.wiremock:wiremock:3.4.2'
 }
 //
 //task deleteQueryDslClasses(type: Delete) {
