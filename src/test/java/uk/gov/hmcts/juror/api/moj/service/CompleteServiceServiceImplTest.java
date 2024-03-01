@@ -338,16 +338,18 @@ class CompleteServiceServiceImplTest {
 
             Juror juror1 = mock(Juror.class);
             JurorPool jurorPool1 = mock(JurorPool.class);
-            Juror juror2 = mock(Juror.class);
-            JurorPool jurorPool2 = mock(JurorPool.class);
-            Juror juror3 = mock(Juror.class);
-            JurorPool jurorPool3 = mock(JurorPool.class);
 
             JurorStatus jurorStatus = new JurorStatus();
             jurorStatus.setStatus(poolStatus);
 
             createMockJurorAndPool(firstName1, lastName1, juror1, jurorPool1, jurorStatus, "123456789");
+
+            Juror juror2 = mock(Juror.class);
+            JurorPool jurorPool2 = mock(JurorPool.class);
             createMockJurorAndPool(firstName2, lastName2, juror2, jurorPool2, jurorStatus, "123456788");
+
+            Juror juror3 = mock(Juror.class);
+            JurorPool jurorPool3 = mock(JurorPool.class);
             createMockJurorAndPool(firstName3, lastName3, juror3, jurorPool3, jurorStatus, "123456787");
 
             LocalDate localDate = LocalDate.now();
@@ -362,7 +364,6 @@ class CompleteServiceServiceImplTest {
 
         @Test
         void negativeNotFound() {
-            LocalDate localDate = LocalDate.of(2023, 11, 22);
             JurorStatus jurorStatus = new JurorStatus();
             jurorStatus.setStatus(IJurorStatus.RESPONDED);
             when(jurorPoolRepository.findByJurorJurorNumberAndStatusAndIsActive(TestConstants.VALID_JUROR_NUMBER,
@@ -371,7 +372,7 @@ class CompleteServiceServiceImplTest {
 
             when(jurorStatusRepository.findById(IJurorStatus.RESPONDED))
                 .thenReturn(Optional.ofNullable(jurorStatus));
-
+            LocalDate localDate = LocalDate.of(2023, 11, 22);
             CompleteServiceJurorNumberListDto completeServiceJurorNumberListDto =
                 createCompleteServiceJurorNumberListDto(localDate, TestConstants.VALID_JUROR_NUMBER);
 
@@ -629,10 +630,6 @@ class CompleteServiceServiceImplTest {
         @Test
         @SuppressWarnings("PMD.NcssCount")
         void positiveTypical() {
-            JurorPoolSearch poolSearch = JurorPoolSearch.builder()
-                .jurorNumber("1234")
-                .build();
-
             CompleteJurorResponse completeJurorResponse1 = mock(CompleteJurorResponse.class);
             when(completeJurorResponse1.getJurorNumber()).thenReturn("111111111");
             when(completeJurorResponse1.getPoolNumber()).thenReturn("2222222222");
@@ -661,6 +658,11 @@ class CompleteServiceServiceImplTest {
                 new BureauJwtAuthentication(List.of(),
                     TestUtils.createJwt("415", "COURT_USER", "0"))
             );
+
+            JurorPoolSearch poolSearch = JurorPoolSearch.builder()
+                .jurorNumber("1234")
+                .build();
+
             PaginatedList<CompleteJurorResponse> result = new PaginatedList<>();
             result.setData(List.of(completeJurorResponse1, completeJurorResponse2, completeJurorResponse3));
             doReturn(result)

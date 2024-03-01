@@ -13,15 +13,8 @@ SELECT setval('juror_mod.appearance_f_audit_seq', 1, true);
 INSERT INTO juror_mod.users (owner, username, name, level, active, team_id, version, password)
 VALUES ('415', 'COURT_USER', 'Court User', 0, true, 1, 1, '5baa61e4c9b93f3f'),
        ('400', 'BUREAU_USER', 'Bureau User', 1, true, 1, 1, '5baa61e4c9b93f3f');
-INSERT INTO juror_mod.court_location_audit (revision, rev_type, loc_code, rate_per_mile_car_0_passengers,
-                                            rate_per_mile_car_1_passengers, rate_per_mile_car_2_or_more_passengers,
-                                            rate_per_mile_motorcycle_0_passengers,
-                                            rate_per_mile_motorcycle_1_or_more_passengers, rate_per_mile_bike,
-                                            limit_financial_loss_half_day, limit_financial_loss_full_day,
-                                            limit_financial_loss_half_day_long_trial,
-                                            limit_financial_loss_full_day_long_trial, public_transport_soft_limit,
-                                            rate_subsistence_standard, rate_subsistence_long_day, rates_effective_from)
-VALUES (0, 2, '415', 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.6, 0.7, 0.8, 0.9, 0.11, 0.12, 0.13, '2023-01-01');
+INSERT INTO juror_mod.court_location_audit (revision, rev_type, loc_code, public_transport_soft_limit, taxi_soft_limit)
+VALUES (0, 2, '415', 0.1, 0.2);
 
 -- create a pool for court location 415
 insert into juror_mod.pool (owner, pool_no, return_date, total_no_required, no_requested, pool_type, loc_code,
@@ -47,23 +40,6 @@ values (1, 2, '641500021', 'Lnametwoone', 'Fnametwoone', current_date - interval
         'Any town', 'CH1 2AN'),
        (2, 2, '641500020', 'Lnametwozero', 'Fnametwozero', current_date - interval '20 years', '520 Street Name',
         'Any town', 'CH1 2AN');
-
-
-update juror_mod.court_location
-SET rate_per_mile_car_0_passengers                = 0.314,
-    rate_per_mile_car_1_passengers                = 0.356,
-    rate_per_mile_car_2_or_more_passengers        = 0.398,
-    rate_per_mile_motorcycle_0_passengers         = 0.314,
-    rate_per_mile_motorcycle_1_or_more_passengers = 0.324,
-    rate_per_mile_bike                            = 0.096,
-    limit_financial_loss_half_day                 = 32.47,
-    limit_financial_loss_full_day                 = 64.95,
-    limit_financial_loss_half_day_long_trial      = 64.95,
-    limit_financial_loss_full_day_long_trial      = 129.91,
-    rate_subsistence_standard                       = 5.71,
-    rate_subsistence_long_day                       = 12.17
-WHERE loc_code = '415';
-
 
 -- create juror_pool associative records
 insert into juror_mod.juror_pool (owner, juror_number, pool_number, status, location, is_active)

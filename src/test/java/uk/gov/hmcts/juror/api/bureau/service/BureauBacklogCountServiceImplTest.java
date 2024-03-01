@@ -52,46 +52,46 @@ public class BureauBacklogCountServiceImplTest {
             response.setSuperUrgent(false);
             backlog.add(response);
         }
-        JurorResponse response_1 = JurorResponse.builder()
+        JurorResponse response1 = JurorResponse.builder()
             .urgent(true)
             .superUrgent(false)
             .processingStatus(ProcessingStatus.TODO)
             .staff(null)
             .build();
-        backlog.add(response_1);
+        backlog.add(response1);
 
-        JurorResponse response_2 = JurorResponse.builder()
+        JurorResponse response2 = JurorResponse.builder()
             .urgent(true)
             .superUrgent(false)
             .processingStatus(ProcessingStatus.TODO)
             .staff(null)
             .build();
-        backlog.add(response_2);
+        backlog.add(response2);
 
-        JurorResponse response_3 = JurorResponse.builder()
+        JurorResponse response3 = JurorResponse.builder()
             .urgent(false)
             .superUrgent(true)
             .processingStatus(ProcessingStatus.TODO)
             .staff(null)
             .build();
 
-        backlog.add(response_3);
+        backlog.add(response3);
 
-        JurorResponse response_4 = JurorResponse.builder()
+        JurorResponse response4 = JurorResponse.builder()
             .urgent(false)
             .superUrgent(true)
             .processingStatus(ProcessingStatus.TODO)
             .staff(null)
             .build();
-        backlog.add(response_4);
+        backlog.add(response4);
 
-        JurorResponse response_5 = JurorResponse.builder()
+        JurorResponse response5 = JurorResponse.builder()
             .urgent(false)
             .superUrgent(true)
             .processingStatus(ProcessingStatus.TODO)
             .staff(new User())
             .build();
-        backlog.add(response_5);
+        backlog.add(response5);
 
     }
 

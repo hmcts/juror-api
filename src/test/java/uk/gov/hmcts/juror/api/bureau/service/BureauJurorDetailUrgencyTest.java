@@ -40,14 +40,14 @@ public class BureauJurorDetailUrgencyTest {
 
     private static final String URGENT_RESPONSE_DESCRIPTION = "Urgent responses are those received after " + URGENT_DAYS
         + " working days before the Friday before the Friday before the court date and are not closed.";
-    private static final String SUPER_URGENT_RESPONSE_DESCRIPTION = "Super urgent responses are not closed and are " +
-        "received later than the Friday before the Friday before the court date.";
-    private static final String SLA_OVERDUE_DESCRIPTION = "SLA overdue responses are not closed and in the last 14 " +
-        "hours of a period of " + SLA_DAYS + " working days of the response received date";
+    private static final String SUPER_URGENT_RESPONSE_DESCRIPTION = "Super urgent responses are not closed and are "
+        + "received later than the Friday before the Friday before the court date.";
+    private static final String SLA_OVERDUE_DESCRIPTION = "SLA overdue responses are not closed and in the last 14 "
+        + "hours of a period of " + SLA_DAYS + " working days of the response received date";
 
-    private LocalDateTime RESPONSE_RECEIVED;
-    private LocalDateTime HEARING_DATE_URGENT;
-    private LocalDateTime HEARING_DATE_SUPER_URGENT;
+    private LocalDateTime responseReceived;
+    private LocalDateTime hearingDateUrgent;
+    private LocalDateTime hearingDateSuperUrgent;
 
     @Mock
     private AppSettingRepository mockAppSettingRepository;
@@ -57,33 +57,33 @@ public class BureauJurorDetailUrgencyTest {
 
     @Before
     public void setUp() throws Exception {
-        RESPONSE_RECEIVED = LocalDateTime.now();
+        responseReceived = LocalDateTime.now();
         //set up some known static dates relative to a start point
-        LocalDateTime HEARING_DATE_VALID = LocalDateTime.now().plus(35, ChronoUnit.DAYS);
+        LocalDateTime hearingDateValid = LocalDateTime.now().plus(35, ChronoUnit.DAYS);
 
-        AppSetting urgency_days = new AppSetting("URGENCY_DAYS", URGENT_DAYS.toString());
-        AppSetting sla_overdue_days = new AppSetting("SLA_OVERDUE_DAYS", SLA_DAYS.toString());
-        given(mockAppSettingRepository.findById("URGENCY_DAYS")).willReturn(Optional.of(urgency_days));
-        given(mockAppSettingRepository.findById("SLA_OVERDUE_DAYS")).willReturn(Optional.of(sla_overdue_days));
+        AppSetting urgencyDays = new AppSetting("URGENCY_DAYS", URGENT_DAYS.toString());
+        AppSetting slaOverdueDays = new AppSetting("SLA_OVERDUE_DAYS", SLA_DAYS.toString());
+        given(mockAppSettingRepository.findById("URGENCY_DAYS")).willReturn(Optional.of(urgencyDays));
+        given(mockAppSettingRepository.findById("SLA_OVERDUE_DAYS")).willReturn(Optional.of(slaOverdueDays));
 
-        HEARING_DATE_URGENT = urgency.fridayCutOff(HEARING_DATE_VALID).minus(10, ChronoUnit.DAYS);
-        HEARING_DATE_SUPER_URGENT = urgency.fridayCutOff(HEARING_DATE_VALID);
+        hearingDateUrgent = urgency.fridayCutOff(hearingDateValid).minus(10, ChronoUnit.DAYS);
+        hearingDateSuperUrgent = urgency.fridayCutOff(hearingDateValid);
 
         testDetail = new BureauJurorDetail();
         testDetail.setProcessingStatus(NON_CLOSED_STATUS);
-        testDetail.setDateReceived(Date.from(RESPONSE_RECEIVED.toInstant(ZoneOffset.UTC)));
-        testDetail.setHearingDate(Date.from(HEARING_DATE_VALID.toInstant(ZoneOffset.UTC)));
+        testDetail.setDateReceived(Date.from(responseReceived.toInstant(ZoneOffset.UTC)));
+        testDetail.setHearingDate(Date.from(hearingDateValid.toInstant(ZoneOffset.UTC)));
 
         jurorResponse = new JurorResponse();
         jurorResponse.setProcessingStatus(uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus.TODO);
-        jurorResponse.setDateReceived(Date.from(RESPONSE_RECEIVED.toInstant(ZoneOffset.UTC)));
+        jurorResponse.setDateReceived(Date.from(responseReceived.toInstant(ZoneOffset.UTC)));
 
         poolDetails = new Pool();
-        poolDetails.setHearingDate(Date.from(HEARING_DATE_VALID.toInstant(ZoneOffset.UTC)));
+        poolDetails.setHearingDate(Date.from(hearingDateValid.toInstant(ZoneOffset.UTC)));
     }
 
     @Test
-    public void testUrgentFlag_withinThreshold_JDB_810() throws Exception {
+    public void testUrgentFlagWithinThresholdJdb810() throws Exception {
         //given (default)
 
         //when
@@ -101,9 +101,9 @@ public class BureauJurorDetailUrgencyTest {
     }
 
     @Test
-    public void testUrgentFlag_urgentThreshold_JDB_810() throws Exception {
+    public void testUrgentFlagUrgentThresholdJdb810() throws Exception {
         //given
-        final Date urgentHearingDate = Date.from(HEARING_DATE_URGENT.toInstant(ZoneOffset.UTC)
+        final Date urgentHearingDate = Date.from(hearingDateUrgent.toInstant(ZoneOffset.UTC)
             .plus(1, ChronoUnit.DAYS).plus(1, ChronoUnit.HOURS));
         testDetail.setHearingDate(urgentHearingDate);
         poolDetails.setHearingDate(urgentHearingDate);
@@ -124,9 +124,9 @@ public class BureauJurorDetailUrgencyTest {
     }
 
     @Test
-    public void testUrgentFlag_superUrgentThreshold_JDB_810() throws Exception {
+    public void testUrgentFlagSuperUrgentThresholdJdb810() throws Exception {
         //given
-        final Date dateReceivedSuperUrgent = Date.from(HEARING_DATE_SUPER_URGENT.toInstant(ZoneOffset.UTC).plus(1,
+        final Date dateReceivedSuperUrgent = Date.from(hearingDateSuperUrgent.toInstant(ZoneOffset.UTC).plus(1,
             ChronoUnit.DAYS));
         testDetail.setDateReceived(
             dateReceivedSuperUrgent
@@ -149,10 +149,10 @@ public class BureauJurorDetailUrgencyTest {
     }
 
     @Test
-    public void testUrgentFlag_slaBreachThreshold_JDB_810() throws Exception {
+    public void testUrgentFlagSlaBreachThresholdJdb810() throws Exception {
         //given
         final Date slaBreachTime = Date.from(
-            urgency.subtractWorkingDays(RESPONSE_RECEIVED, 5)
+            urgency.subtractWorkingDays(responseReceived, 5)
                 .plus(1, ChronoUnit.SECONDS).toInstant(ZoneOffset.UTC)
         );// 4 working days after the response received
         testDetail.setDateReceived(slaBreachTime);
@@ -173,7 +173,7 @@ public class BureauJurorDetailUrgencyTest {
 
 
     @Test
-    public void testAddWorkingDaysIgnoresWeekends_JDB_810() throws Exception {
+    public void testAddWorkingDaysIgnoresWeekendsJdb810() throws Exception {
         final Integer testDays = 9;
         final LocalDateTime fixedDateTime = LocalDateTime.of(2016, Month.DECEMBER, 31, 12, 0, 0);
         LocalDateTime modifiedDateTime = urgency.addWorkingDays(fixedDateTime, testDays);
@@ -188,7 +188,7 @@ public class BureauJurorDetailUrgencyTest {
     public void testSchedulerFlag_urgent() throws Exception {
 
         //given
-        final Date hearingDateUrgent = Date.from(HEARING_DATE_URGENT.toInstant(ZoneOffset.UTC)
+        final Date hearingDateUrgent = Date.from(this.hearingDateUrgent.toInstant(ZoneOffset.UTC)
             .plus(1, ChronoUnit.DAYS).plus(1, ChronoUnit.HOURS));
         poolDetails.setReadOnly(Boolean.FALSE);
 
@@ -202,11 +202,11 @@ public class BureauJurorDetailUrgencyTest {
     @Test
     public void testSchedulerFlag_super_urgent() throws Exception {
         //given
-        LocalDateTime HEARING_DATE_VALID = LocalDateTime.now().plus(10, ChronoUnit.DAYS);
-        HEARING_DATE_SUPER_URGENT = urgency.fridayCutOff(HEARING_DATE_VALID);
+        LocalDateTime hearingDateValid = LocalDateTime.now().plus(10, ChronoUnit.DAYS);
+        hearingDateSuperUrgent = urgency.fridayCutOff(hearingDateValid);
         poolDetails.setReadOnly(Boolean.TRUE);
 
-        final Date dateReceivedSuperUrgent = Date.from(HEARING_DATE_SUPER_URGENT.toInstant(ZoneOffset.UTC).plus(1,
+        final Date dateReceivedSuperUrgent = Date.from(hearingDateSuperUrgent.toInstant(ZoneOffset.UTC).plus(1,
             ChronoUnit.DAYS));
 
         poolDetails.setHearingDate(dateReceivedSuperUrgent);

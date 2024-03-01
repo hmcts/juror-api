@@ -52,7 +52,7 @@ public class ResponseSendToCourtController {
 
 
     @PostMapping("/{jurorId}")
-    @Operation(summary = "/bureau/juror/tocourt/{jurorId} - POST send to court for a specific juror",
+    @Operation(summary = "send to court for a specific juror",
         description = "by juror number")
     public ResponseEntity<Void> responseToCourt(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,

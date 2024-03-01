@@ -6,8 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.security.core.Authentication;
@@ -20,8 +18,8 @@ import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.DeferralLette
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ExcusalLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterResponseData;
-import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.WithdrawalLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.NonDeferralLetterData;
+import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.WithdrawalLetterData;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralDeniedLetterList;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralGrantedLetterList;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.ExcusalGrantedLetterList;
@@ -32,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.repository.letter.court.DeferralDeniedLetterLi
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.DeferralGrantedLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.ExcusalGrantedLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.ExcusalRefusalLetterListRepository;
+import uk.gov.hmcts.juror.api.moj.repository.letter.court.ShowCauseLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.WithdrawalLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtExcusalRefusedLetterServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtLetterServiceImpl;
@@ -56,6 +55,7 @@ public class CourtLetterServiceTest {
     private DeferralDeniedLetterListRepository deferralDeniedLetterListRepository;
     private WithdrawalLetterListRepository withdrawalLetterListRepository;
     private ExcusalCodeRepository excusalCodeRepository;
+    private ShowCauseLetterListRepository showCauseLetterListRepository;
     private CourtLetterServiceImpl courtLetterService;
 
     private CourtExcusalRefusedLetterServiceImpl courtExcusalRefusedLetterService;
@@ -68,6 +68,7 @@ public class CourtLetterServiceTest {
         this.withdrawalLetterListRepository = mock(WithdrawalLetterListRepository.class);
         this.excusalGrantedLetterListRepository = mock(ExcusalGrantedLetterListRepository.class);
         this.deferralDeniedLetterListRepository = mock(DeferralDeniedLetterListRepository.class);
+        this.showCauseLetterListRepository = mock(ShowCauseLetterListRepository.class);
         this.excusalCodeRepository = mock(ExcusalCodeRepository.class);
         this.courtExcusalRefusedLetterService = mock(CourtExcusalRefusedLetterServiceImpl.class);
         this.excusalRefusalLetterListRepository = mock(ExcusalRefusalLetterListRepository.class);
@@ -76,10 +77,11 @@ public class CourtLetterServiceTest {
         CourtPostponementLetterServiceImpl courtPostponementLetterService =
             mock(CourtPostponementLetterServiceImpl.class);
         this.courtLetterService = new CourtLetterServiceImpl(deferralGrantedLetterListRepository,
-            excusalGrantedLetterListRepository, 
-            deferralDeniedLetterListRepository, 
-            withdrawalLetterListRepository, 
+            excusalGrantedLetterListRepository,
+            deferralDeniedLetterListRepository,
+            withdrawalLetterListRepository,
             excusalCodeRepository,
+            showCauseLetterListRepository,
             courtPostponementLetterService,
             courtExcusalRefusedLetterService);
 
@@ -414,7 +416,8 @@ public class CourtLetterServiceTest {
         private DeferralDeniedLetterList createDeferralDeniedLetterList(String jurorNumber, String status,
                                                                         LocalDate dateRefused, String reason,
                                                                         String poolNumber) {
-            return createDeferralDeniedLetterList(jurorNumber, status, dateRefused, reason, poolNumber, null);
+            return createDeferralDeniedLetterList(jurorNumber, status, dateRefused, reason, poolNumber,
+                null);
         }
 
         private DeferralDeniedLetterList createDeferralDeniedLetterList(String jurorNumber, String status,
@@ -763,8 +766,8 @@ public class CourtLetterServiceTest {
 
 
         private ExcusalRefusedLetterList createExcusalRefusedLetterList(String jurorNumber, LocalDate dateExcused,
-                                                                 String reason, String poolNumber,
-                                                                 LocalDateTime datePrinted) {
+                                                                        String reason, String poolNumber,
+                                                                        LocalDateTime datePrinted) {
             return ExcusalRefusedLetterList.builder()
                 .jurorNumber(jurorNumber)
                 .firstName("Test")
@@ -831,7 +834,6 @@ public class CourtLetterServiceTest {
 
             String jurorNumber = "641500001";
             String poolNumber = "415240101";
-            String reason = "Age";
             String code = "A";
             LocalDate dateDisqualified = LocalDate.of(2024, 1, 29);
             boolean includePrinted = false;
@@ -857,7 +859,7 @@ public class CourtLetterServiceTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((WithdrawalLetterData) data.get(0), jurorNumber, dateDisqualified, reason, poolNumber, null);
+            validateData((WithdrawalLetterData) data.get(0), jurorNumber, dateDisqualified, "Age", poolNumber, null);
         }
 
         @Test
@@ -869,7 +871,6 @@ public class CourtLetterServiceTest {
 
             String jurorNumber = "641500001";
             String poolNumber = "415240101";
-            String reason = "Age";
             String code = "A";
             LocalDate dateDisqualified = LocalDate.of(2024, 1, 29);
             LocalDateTime datePrinted = LocalDateTime.of(2024, 1, 22, 12, 35);
@@ -896,7 +897,7 @@ public class CourtLetterServiceTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((WithdrawalLetterData) data.get(0), jurorNumber, dateDisqualified, reason, poolNumber,
+            validateData((WithdrawalLetterData) data.get(0), jurorNumber, dateDisqualified, "Age", poolNumber,
                 datePrinted.toLocalDate());
         }
 
@@ -933,8 +934,8 @@ public class CourtLetterServiceTest {
         }
 
         private WithdrawalLetterList createWithdrawalLetterList(String jurorNumber, LocalDate dateDisqualified,
-                                                                   String code, String poolNumber,
-                                                                   LocalDateTime datePrinted) {
+                                                                String code, String poolNumber,
+                                                                LocalDateTime datePrinted) {
             return WithdrawalLetterList.builder()
                 .jurorNumber(jurorNumber)
                 .firstName("Test")

@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Immutable;
+import uk.gov.hmcts.juror.api.moj.domain.system.HasActive;
+import uk.gov.hmcts.juror.api.moj.domain.system.HasCodeAndDescription;
 
 import java.io.Serializable;
 
@@ -18,7 +20,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 @Immutable
-public class JurorStatus implements Serializable {
+public class JurorStatus implements HasCodeAndDescription<Integer>, HasActive, Serializable {
 
     @Id
     @Column(name = "status")
@@ -31,4 +33,18 @@ public class JurorStatus implements Serializable {
     @Column(name = "active")
     private boolean active;
 
+    @Override
+    public Integer getCode() {
+        return this.status;
+    }
+
+    @Override
+    public String getDescription() {
+        return this.statusDesc;
+    }
+
+    @Override
+    public Boolean getActive() {
+        return this.active;
+    }
 }

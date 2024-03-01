@@ -145,49 +145,49 @@ public class DateUtilsTest {
     }
 
     @Test
-    public void test_convertLocalisedDateToISO_noZeroPadding() {
+    public void testConvertLocalisedDateToIsoNoZeroPadding() {
         String localisedDate = "1/2/2023";
         String isoDate = DateUtils.convertLocalisedDateToISO(localisedDate);
         Assertions.assertThat(isoDate).isEqualTo("2023-02-01");
     }
 
     @Test
-    public void test_convertLocalisedDateToISO_zeroPaddedDay() {
+    public void testConvertLocalisedDateToIsoZeroPaddedDay() {
         String localisedDate = "01/2/2023";
         String isoDate = DateUtils.convertLocalisedDateToISO(localisedDate);
         Assertions.assertThat(isoDate).isEqualTo("2023-02-01");
     }
 
     @Test
-    public void test_convertLocalisedDateToISO_zeroPaddedMonth() {
+    public void testConvertLocalisedDateToIsoZeroPaddedMonth() {
         String localisedDate = "1/02/2023";
         String isoDate = DateUtils.convertLocalisedDateToISO(localisedDate);
         Assertions.assertThat(isoDate).isEqualTo("2023-02-01");
     }
 
     @Test
-    public void test_convertLocalisedDateToISO_zeroPaddedDayAndMonth() {
+    public void testConvertLocalisedDateToIsoZeroPaddedDayAndMonth() {
         String localisedDate = "01/02/2023";
         String isoDate = DateUtils.convertLocalisedDateToISO(localisedDate);
         Assertions.assertThat(isoDate).isEqualTo("2023-02-01");
     }
 
     @Test
-    public void test_convertLocalisedDateToISO_emptyString() {
+    public void testConvertLocalisedDateToIsoEmptyString() {
         String empty = "";
         Assertions.assertThatExceptionOfType(DateTimeParseException.class).isThrownBy(() ->
             DateUtils.convertLocalisedDateToISO(empty));
     }
 
     @Test
-    public void test_convertLocalisedDateToISO_invalidDateFormat() {
+    public void testConvertLocalisedDateToIsoInvalidDateFormat() {
         String invalidDate = "2023-02-01";
         Assertions.assertThatExceptionOfType(DateTimeParseException.class).isThrownBy(() ->
             DateUtils.convertLocalisedDateToISO(invalidDate));
     }
 
     @Test
-    public void test_convertLocalisedDateToISO_nullString() {
+    public void testConvertLocalisedDateToIsoNullString() {
         Assertions.assertThatExceptionOfType(RuntimeException.class).isThrownBy(() ->
             DateUtils.convertLocalisedDateToISO(null));
     }

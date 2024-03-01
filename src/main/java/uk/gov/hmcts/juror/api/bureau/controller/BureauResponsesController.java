@@ -53,7 +53,7 @@ public class BureauResponsesController {
 
 
     @GetMapping
-    @Operation(summary = "/bureau/responses - Retrieve all juror details filtered by status category(todo,pending,"
+    @Operation(summary = "Retrieve all juror details filtered by status category(todo,pending,"
         + "completed)",
         description = "Retrieve all juror details filtered by status category(todo,pending,completed)")
     public ResponseEntity<BureauResponseSummaryWrapper> filterBureauDetailsByStatus(@Parameter(description =
@@ -63,7 +63,7 @@ public class BureauResponsesController {
     }
 
     @GetMapping(path = "/todo")
-    @Operation(summary = "/bureau/responses/todo - Retrieve all todo responses assigned to the current user")
+    @Operation(summary = "Retrieve all todo responses assigned to the current user")
     public ResponseEntity<BureauResponseSummaryWrapper> getCurrentUserTodo(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload) {
         BureauResponseSummaryWrapper wrapper = bureauService.getTodo(payload.getLogin());
@@ -71,7 +71,7 @@ public class BureauResponsesController {
     }
 
     @GetMapping(path = "/pending")
-    @Operation(summary = "/bureau/responses/pending - Retrieve all pending responses assigned to the current user")
+    @Operation(summary = "Retrieve all pending responses assigned to the current user")
     public ResponseEntity<BureauResponseSummaryWrapper> getCurrentUserPending(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload) {
         BureauResponseSummaryWrapper wrapper = bureauService.getPending(payload.getLogin());
@@ -79,7 +79,7 @@ public class BureauResponsesController {
     }
 
     @GetMapping(path = "/completedToday")
-    @Operation(summary = "/bureau/responses/completedToday - Retrieve all responses assigned to the current user "
+    @Operation(summary = "Retrieve all responses assigned to the current user "
         + "which were completed today")
     public ResponseEntity<BureauResponseSummaryWrapper> getCurrentUserCompletedToday(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload) {
@@ -88,7 +88,7 @@ public class BureauResponsesController {
     }
 
     @GetMapping(path = "/overview/{login}")
-    @Operation(summary = "/bureau/responses/overview/{login} - Retrieve overview of responses assigned to a specific "
+    @Operation(summary = "Retrieve overview of responses assigned to a specific "
         + "user")
     public ResponseEntity<BureauResponseOverviewDto> getUserResponseOverview(
         @PathVariable String login,
@@ -98,7 +98,7 @@ public class BureauResponsesController {
     }
 
     @PostMapping(path = "/search")
-    @Operation(summary = "/bureau/responses/search - Retrieve responses based on search criteria")
+    @Operation(summary = "Retrieve responses based on search criteria")
     public ResponseEntity<JurorResponseSearchResults> searchForJurorResponses(
         @Parameter(hidden = true) BureauJwtAuthentication auth,
         @Parameter(description = "Search "
@@ -111,7 +111,7 @@ public class BureauResponsesController {
     }
 
     @GetMapping(path = "/autoassign")
-    @Operation(summary = "/bureau/responses/autoassign - Get auto-assignment capacity data")
+    @Operation(summary = "Get auto-assignment capacity data")
     public ResponseEntity<AutoAssignResponse> getAutoAssignmentData(
         @Parameter(hidden = true) BureauJwtAuthentication auth) {
         if (!authService.userIsTeamLeader(auth)) {
@@ -122,7 +122,7 @@ public class BureauResponsesController {
     }
 
     @PostMapping(path = "/autoassign")
-    @Operation(summary = "/bureau/responses/autoassign - Auto-assign response backlog")
+    @Operation(summary = "Auto-assign response backlog")
     public ResponseEntity<Void> autoAssign(@Parameter(hidden = true) BureauJwtAuthentication auth,
                                            @RequestBody @Validated AutoAssignRequest autoAssignRequest) throws AutoAssignException {
         if (!authService.userIsTeamLeader(auth)) {
@@ -139,7 +139,7 @@ public class BureauResponsesController {
     }
 
     @PostMapping(path = "/reassign")
-    @Operation(summary = "/bureau/responses/reassign - Deactivate officer and reassign any assigned responses")
+    @Operation(summary = "Deactivate officer and reassign any assigned responses")
     public ResponseEntity<Void> reassign(@Parameter(hidden = true) BureauJwtAuthentication auth,
                                          @RequestBody @Validated ReassignResponsesDto reassignResponsesDto) {
         if (!authService.userIsTeamLeader(auth)) {

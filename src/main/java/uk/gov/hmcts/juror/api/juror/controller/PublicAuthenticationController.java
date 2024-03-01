@@ -53,7 +53,7 @@ public class PublicAuthenticationController {
      * @return juror details for minting a JWT
      */
     @PostMapping("/auth/juror")
-    @Operation(summary = "/auth/juror/ - Authenticate Public Login", description = "Authenticate Juror credentials to"
+    @Operation(summary = "Authenticate Public Login", description = "Authenticate Juror credentials to"
         + " allow creation of a JWT")
     public ResponseEntity<PublicAuthenticationResponseDto> authenticationEndpoint(
         @Valid @RequestBody PublicAuthenticationRequestDto requestDto) {

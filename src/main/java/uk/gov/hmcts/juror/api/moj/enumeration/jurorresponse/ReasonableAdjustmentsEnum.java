@@ -1,9 +1,11 @@
 package uk.gov.hmcts.juror.api.moj.enumeration.jurorresponse;
 
 import lombok.Getter;
+import uk.gov.hmcts.juror.api.moj.domain.system.HasCodeAndDescription;
 
 @Getter
-public enum ReasonableAdjustmentsEnum {
+public enum ReasonableAdjustmentsEnum implements HasCodeAndDescription<String> {
+    NONE(" ", "None"),
     
     CARING_RESPONSIBILITIES("C", "Caring responsibilities"),
     ALLERGIES("D", "Allergies"),

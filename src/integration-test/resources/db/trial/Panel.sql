@@ -128,7 +128,7 @@ insert into juror_mod.appearance (attendance_date,juror_number,loc_code, time_in
 insert into juror_mod.judge (owner, code, description) values
 ('415', '0001', 'judge dredd');
 
-insert into juror_mod.courtroom (owner, room_number, description) values
+insert into juror_mod.courtroom (loc_code, room_number, description) values
 ('415', '1', 'big room');
 
 insert into juror_mod.trial (trial_number,loc_code,description,courtroom,judge,trial_type,trial_start_date,anonymous) values

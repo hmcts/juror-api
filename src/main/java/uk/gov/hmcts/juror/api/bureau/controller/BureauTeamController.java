@@ -36,7 +36,7 @@ public class BureauTeamController {
     }
 
     @GetMapping
-    @Operation(summary = "/bureau/team - team list",
+    @Operation(summary = "team list",
         description = "Retrieve a list of all teams")
     public ResponseEntity<List<TeamDto>> getAllTeams(@Parameter(hidden = true) BureauJwtAuthentication principal) {
         if (!bureauAuthService.userIsTeamLeader(principal)) {

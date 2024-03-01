@@ -8,6 +8,8 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseR
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 
 @Slf4j
@@ -84,11 +86,18 @@ public final class DataUtils {
         return jurorPaperResponse;
     }
 
-    public static boolean isEmptyOrNull(Collection <?> collection) {
+    public static boolean isEmptyOrNull(Collection<?> collection) {
         return (collection == null || collection.isEmpty());
     }
 
-    public static boolean isNotEmptyOrNull(Collection <?> collection) {
+    public static boolean isNotEmptyOrNull(Collection<?> collection) {
         return !isEmptyOrNull(collection);
+    }
+
+    public static String asStringHHmm(LocalTime localTime) {
+        if (localTime == null) {
+            return null;
+        }
+        return localTime.format(DateTimeFormatter.ofPattern("HH:mm"));
     }
 }

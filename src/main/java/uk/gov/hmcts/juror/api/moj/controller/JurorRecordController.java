@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -47,6 +48,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.ContactEnquiryTypeListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAttendanceDetailsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorBankDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorNotesDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
@@ -69,7 +71,7 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/moj/juror-record", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Juror Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.LawOfDemeter"})
 public class JurorRecordController {
 
     @NonNull
@@ -78,7 +80,7 @@ public class JurorRecordController {
     private final BulkService bulkService;
 
     @GetMapping("/detail/{jurorNumber}/{locCode}")
-    @Operation(summary = "/detail/{jurorNumber}/{locCode} - Get juror details by juror number and location code",
+    @Operation(summary = "Get juror details by juror number and location code",
         description = "Retrieve details of a single juror by his/her juror number")
     public ResponseEntity<JurorDetailsResponseDto> getJurorDetails(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
@@ -95,7 +97,7 @@ public class JurorRecordController {
     }
 
     @PostMapping("/details")
-    @Operation(summary = "/details - Get juror details for a juror number",
+    @Operation(summary = "Get juror details for a juror number",
         description = "Retrieve details of a single juror by his/her juror number")
     @IsCourtUser
     public ResponseEntity<List<FilterableJurorDetailsResponseDto>> getJurorDetailsBulkFilterable(
@@ -111,7 +113,7 @@ public class JurorRecordController {
 
 
     @GetMapping("/overview/{jurorNumber}/{locCode}")
-    @Operation(summary = "/overview/{jurorNumber}/{locCode} - Get juror overview by juror number and location code",
+    @Operation(summary = "Get juror overview by juror number and location code",
         description = "Retrieve overview of a single juror by his/her juror number")
     public ResponseEntity<JurorOverviewResponseDto> getJurorOverview(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
@@ -148,7 +150,7 @@ public class JurorRecordController {
     }
 
     @GetMapping("/single-search")
-    @Operation(summary = "/single-search - Search for juror record by juror number")
+    @Operation(summary = "Search for juror record by juror number")
     public ResponseEntity<JurorRecordSearchDto> searchJurorRecord(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
         @Parameter(description = "Valid juror number",
@@ -160,7 +162,7 @@ public class JurorRecordController {
     }
 
     @GetMapping("/contact-log/{jurorNumber}")
-    @Operation(summary = "/contact-log/{jurorNumber} - Get all logged contact information relating to a given juror")
+    @Operation(summary = "Get all logged contact information relating to a given juror")
     public ResponseEntity<ContactLogListDto> getJurorContactLogs(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
         @Valid @JurorNumber @Parameter(description = "Valid juror number", required = true)
@@ -209,7 +211,7 @@ public class JurorRecordController {
 
     @PostMapping("/create/contact-log")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "/create/contact-log - Send a payload containing the necessary data items to create and "
+    @Operation(summary = "Send a payload containing the necessary data items to create and "
         + "populate a new log of contact information relating to a given juror")
     public void createJurorContactLog(@Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
                                       @Valid @RequestBody ContactLogRequestDto contactLogRequestDto) {
@@ -438,14 +440,24 @@ public class JurorRecordController {
     @Operation(summary = "Update a jurors next date to be on call",
         description = "set juror to on call")
     public ResponseEntity<Void> updateJurorAttendance(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
         @Valid @RequestBody UpdateAttendanceRequestDto dto) {
         jurorRecordService.updateAttendance(dto);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
+    @GetMapping (path = "/{juror_number}/bank-details")
+    @IsCourtUser
+    @Operation(summary = "get juror bank details",
+        description = "get juror bank details for editing jurors bank details")
+    public ResponseEntity<JurorBankDetailsDto> getJurorBankDetails(
+        @Valid @JurorNumber @P("juror_number") @PathVariable("juror_number")
+        @Parameter(description = "jurorNumber", required = true) String jurorNumber) {
+            return ResponseEntity.ok().body(jurorRecordService.getJurorBankDetails(
+                jurorNumber));
+    }
+
     @PatchMapping("/update-bank-details")
-    @Operation(summary = "/update-bank-details - edit a jurors bank details")
+    @Operation(summary = "edit a jurors bank details")
     @ResponseStatus(HttpStatus.OK)
     @IsCourtUser
     public ResponseEntity<Void> editJurorsBankDetails(@Valid @RequestBody RequestBankDetailsDto dto) {

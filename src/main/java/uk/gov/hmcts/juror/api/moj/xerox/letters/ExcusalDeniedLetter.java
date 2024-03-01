@@ -17,6 +17,7 @@ public class ExcusalDeniedLetter extends LetterBase {
             .build());
     }
 
+
     public ExcusalDeniedLetter(JurorPool jurorPool,
                                CourtLocation courtLocation,
                                CourtLocation bureauLocation,

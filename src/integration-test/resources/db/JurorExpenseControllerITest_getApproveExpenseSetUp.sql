@@ -43,15 +43,8 @@ VALUES (0, EXTRACT(EPOCH FROM current_date)),
 SELECT setval('juror_mod.rev_info_seq', 6, true);
 
 
-INSERT INTO juror_mod.court_location_audit (revision, rev_type, loc_code, rate_per_mile_car_0_passengers,
-                                            rate_per_mile_car_1_passengers, rate_per_mile_car_2_or_more_passengers,
-                                            rate_per_mile_motorcycle_0_passengers,
-                                            rate_per_mile_motorcycle_1_or_more_passengers, rate_per_mile_bike,
-                                            limit_financial_loss_half_day, limit_financial_loss_full_day,
-                                            limit_financial_loss_half_day_long_trial,
-                                            limit_financial_loss_full_day_long_trial, public_transport_soft_limit,
-                                            rate_subsistence_standard, rate_subsistence_long_day, rates_effective_from)
-VALUES (6, 2, '415', 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.6, 0.7, 0.8, 0.9, 0.11, 0.12, 0.13, '2023-01-01');
+INSERT INTO juror_mod.court_location_audit (revision, rev_type, loc_code, public_transport_soft_limit, taxi_soft_limit)
+VALUES (6, 2, '415', 0.1, 0.2);
 insert into juror_mod.juror_audit (revision, rev_type, juror_number, last_name, first_name, dob, address_line_1,
                                    address_line_4,
                                    postcode)
@@ -73,22 +66,6 @@ values (1, 1, '641500020', 'Lnametwozero', 'Fnametwozero', current_date - interv
         'Any ' ||
         'town',
         'CH1 2AN');
-
-
-update juror_mod.court_location
-SET rate_per_mile_car_0_passengers                = 0.314,
-    rate_per_mile_car_1_passengers                = 0.356,
-    rate_per_mile_car_2_or_more_passengers        = 0.398,
-    rate_per_mile_motorcycle_0_passengers         = 0.314,
-    rate_per_mile_motorcycle_1_or_more_passengers = 0.324,
-    rate_per_mile_bike                            = 0.096,
-    limit_financial_loss_half_day                 = 32.47,
-    limit_financial_loss_full_day                 = 64.95,
-    limit_financial_loss_half_day_long_trial      = 64.95,
-    limit_financial_loss_full_day_long_trial      = 129.91,
-    rate_subsistence_standard                       = 5.71,
-    rate_subsistence_long_day                       = 12.17
-WHERE loc_code = '415';
 
 
 -- create juror_pool associative records

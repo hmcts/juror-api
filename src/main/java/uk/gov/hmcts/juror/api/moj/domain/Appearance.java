@@ -28,7 +28,6 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.FoodDrinkClaimType;
 import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
 
 import java.io.Serializable;
@@ -50,7 +49,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 @Getter
 @Setter
 @Audited
-@SuppressWarnings("PMD.TooManyFields")
+@SuppressWarnings({"PMD.TooManyFields","PMD.LawOfDemeter"})
 public class Appearance implements Serializable {
 
     @Version
@@ -232,6 +231,12 @@ public class Appearance implements Serializable {
      */
     @Column(name = "no_show")
     private Boolean noShow;
+
+
+    @ManyToOne
+    @JoinColumn(name = "expense_rates_id", referencedColumnName = "id")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+    private ExpenseRates expenseRates;
 
     public String getIdString() {
         return "JurorNumber: " + this.jurorNumber + ", "

@@ -26,7 +26,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 @AllArgsConstructor
 @SuperBuilder
 @Audited
-public abstract class Address implements Serializable {
+public class Address implements Serializable {
 
     @Column(name = "address_line_1")
     @Length(max = 35)

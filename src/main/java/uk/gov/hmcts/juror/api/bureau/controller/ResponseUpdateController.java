@@ -68,7 +68,7 @@ public class ResponseUpdateController {
     }
 
     @GetMapping("/notes")
-    @Operation(summary = "/bureau/juror/{jurorId}/notes - Get notes for a specific juror response",
+    @Operation(summary = "Get notes for a specific juror response",
         description = "Retrieve notes of a single juror response by their juror number")
     public ResponseEntity<JurorNoteDto> jurorNoteByJurorNumber(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId) {
@@ -79,7 +79,7 @@ public class ResponseUpdateController {
     }
 
     @PutMapping("/notes")
-    @Operation(summary = "/bureau/juror/{jurorId}/notes - PUT notes for a specific juror response",
+    @Operation(summary = "notes for a specific juror response",
         description = "Update notes of a single juror response by their juror number")
     public ResponseEntity<Void> updateNoteByJurorNumber(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
@@ -94,7 +94,7 @@ public class ResponseUpdateController {
     }
 
     @PostMapping("/phone")
-    @Operation(summary = "/bureau/juror/{jurorId}/phone - POST phone log entry for specific juror response",
+    @Operation(summary = "phone log entry for specific juror response",
         description = "Insert new phone log to a single juror response by their juror number")
     public ResponseEntity<Void> updatePhoneLogByJurorNumber(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
@@ -117,7 +117,7 @@ public class ResponseUpdateController {
      * @throws ResponseAlreadyMergedException   Response has been merged to Juror previously - not allowed to edit.
      */
     @PostMapping("/details/first-person")
-    @Operation(summary = "/bureau/juror/{jurorId}/details/first-person - POST changes to juror response - first "
+    @Operation(summary = "changes to juror response - first "
         + "person juror details",
         description = "Juror Details (first person) edit")
     public ResponseEntity<Void> updateJurorDetailsFirstPerson(
@@ -145,7 +145,7 @@ public class ResponseUpdateController {
      * @throws ResponseAlreadyMergedException   Response has been merged to Juror previously - not allowed to edit.
      */
     @PostMapping("/details/third-party")
-    @Operation(summary = "/bureau/juror/{jurorId}/details/third-party - POST changes to juror response - third party "
+    @Operation(summary = "changes to juror response - third party "
         + "juror details",
         description = "Juror Details (third party) edit")
     public ResponseEntity<Void> updateJurorDetailsThirdParty(
@@ -172,7 +172,7 @@ public class ResponseUpdateController {
      * @throws ResponseAlreadyMergedException   Response has been merged to Juror previously - not allowed to edit.
      */
     @PostMapping("/details/eligibility")
-    @Operation(summary = "/bureau/juror/{jurorId}/details/eligibility - POST changes to juror response - juror "
+    @Operation(summary = "changes to juror response - juror "
         + "eligibility",
         description = "Juror Eligibility edit")
     public ResponseEntity<Void> updateJurorEligibility(
@@ -188,7 +188,7 @@ public class ResponseUpdateController {
     }
 
     @PostMapping("/details/excusal")
-    @Operation(summary = "/bureau/juror/{jurorId}/details/excusal - POST changes to juror response - excusal/deferral",
+    @Operation(summary = "changes to juror response - excusal/deferral",
         description = "Excusal/Deferral edit")
     public ResponseEntity<Void> updateDeferralExcusal(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
@@ -204,7 +204,7 @@ public class ResponseUpdateController {
     }
 
     @PostMapping("/details/special-needs")
-    @Operation(summary = "/bureau/juror/{jurorId}/details/special-needs - POST changes to juror response - reasonable"
+    @Operation(summary = "changes to juror response - reasonable"
         + " adjustments (special needs)",
         description = "Reasonable adjustments (special needs) edit")
     public ResponseEntity<Void> updateSpecialNeeds(
@@ -221,7 +221,7 @@ public class ResponseUpdateController {
     }
 
     @PostMapping("/details/cjs")
-    @Operation(summary = "/bureau/juror/{jurorId}/details/cjs - POST changes to juror response - CJS employee details"
+    @Operation(summary = "changes to juror response - CJS employee details"
         + " edit",
         description = "CJS employee details edit")
     public ResponseEntity<Void> updateCjs(
@@ -248,7 +248,7 @@ public class ResponseUpdateController {
      * @throws BureauOptimisticLockingException Response data from the UI is outdated. Version mismatch with DB.
      */
     @PostMapping("/response/status")
-    @Operation(summary = "/bureau/juror/{jurorId}/response/status - Update juror response if legacy status changed",
+    @Operation(summary = "Update juror response if legacy status changed",
         description = "Update and process juror response")
     public ResponseEntity<Object> updateResponseStatus(@Parameter(description = "Valid juror number",
         required = true) @PathVariable String jurorId,
@@ -443,43 +443,6 @@ public class ResponseUpdateController {
     @EqualsAndHashCode(callSuper = true)
     @Schema(description = "Request body for editing the juror details section of a third party juror response")
     public static class ThirdPartyJurorDetailsDto extends AbstractJurorDetailsDto {
-        @Builder
-        private ThirdPartyJurorDetailsDto(Integer version, String notes, String title, String firstName,
-                                          String lastName, String address, String address2, String address3,
-                                          String address4, String address5, String postcode, Date dob,
-                                          String mainPhone, String altPhone, String emailAddress,
-                                          Boolean useJurorPhone, Boolean useJurorEmail, String thirdPartyFirstName,
-                                          String thirdPartyLastName, String relationship, String thirdPartyReason,
-                                          String thirdPartyOtherReason, String thirdPartyMainPhone,
-                                          String thirdPartyAltPhone, String thirdPartyEmail) {
-            super(
-                version,
-                notes,
-                title,
-                firstName,
-                lastName,
-                address,
-                address2,
-                address3,
-                address4,
-                address5,
-                postcode,
-                dob,
-                mainPhone,
-                altPhone,
-                emailAddress
-            );
-            this.useJurorPhone = useJurorPhone;
-            this.useJurorEmail = useJurorEmail;
-            this.thirdPartyFirstName = thirdPartyFirstName;
-            this.thirdPartyLastName = thirdPartyLastName;
-            this.relationship = relationship;
-            this.thirdPartyReason = thirdPartyReason;
-            this.thirdPartyOtherReason = thirdPartyOtherReason;
-            this.thirdPartyMainPhone = thirdPartyMainPhone;
-            this.thirdPartyAltPhone = thirdPartyAltPhone;
-            this.thirdPartyEmail = thirdPartyEmail;
-        }
 
         @Schema(description = "Flag for using Jurors phone as contact")
         @JsonProperty("useJurorPhoneDetails")
@@ -526,6 +489,44 @@ public class ResponseUpdateController {
         @Pattern(regexp = EMAIL_ADDRESS_REGEX)
         @Schema(description = "Third party respondents email address")
         private String thirdPartyEmail;
+
+        @Builder
+        private ThirdPartyJurorDetailsDto(Integer version, String notes, String title, String firstName,
+                                          String lastName, String address, String address2, String address3,
+                                          String address4, String address5, String postcode, Date dob,
+                                          String mainPhone, String altPhone, String emailAddress,
+                                          Boolean useJurorPhone, Boolean useJurorEmail, String thirdPartyFirstName,
+                                          String thirdPartyLastName, String relationship, String thirdPartyReason,
+                                          String thirdPartyOtherReason, String thirdPartyMainPhone,
+                                          String thirdPartyAltPhone, String thirdPartyEmail) {
+            super(
+                version,
+                notes,
+                title,
+                firstName,
+                lastName,
+                address,
+                address2,
+                address3,
+                address4,
+                address5,
+                postcode,
+                dob,
+                mainPhone,
+                altPhone,
+                emailAddress
+            );
+            this.useJurorPhone = useJurorPhone;
+            this.useJurorEmail = useJurorEmail;
+            this.thirdPartyFirstName = thirdPartyFirstName;
+            this.thirdPartyLastName = thirdPartyLastName;
+            this.relationship = relationship;
+            this.thirdPartyReason = thirdPartyReason;
+            this.thirdPartyOtherReason = thirdPartyOtherReason;
+            this.thirdPartyMainPhone = thirdPartyMainPhone;
+            this.thirdPartyAltPhone = thirdPartyAltPhone;
+            this.thirdPartyEmail = thirdPartyEmail;
+        }
     }
 
 

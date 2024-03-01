@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import uk.gov.hmcts.juror.api.moj.domain.messages.DataType;
 import uk.gov.hmcts.juror.api.moj.domain.messages.MessageType;
 
@@ -34,6 +35,7 @@ public class ViewMessageTemplateDto {
     @Builder
     @EqualsAndHashCode
     @Getter
+    @ToString
     public static class Placeholder {
         @JsonProperty("display_name")
         private String displayName;

@@ -150,9 +150,9 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void responseType_firstPerson_acceptance() {
-        final String JUROR_NUMBER = "123555666";
+        final String jurorNumber = "123555666";
         final JurorResponse jurorAcceptance = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .dateOfBirth(Date.from(LocalDate.of(1970, 6, 13).atStartOfDay().toInstant(ZoneOffset.UTC)))
             .residency(Boolean.TRUE)
             .mentalHealthAct(Boolean.FALSE)
@@ -164,9 +164,9 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void responseType_thirdParty_acceptance() {
-        final String JUROR_NUMBER = "555888999";
+        final String jurorNumber = "555888999";
         final JurorResponse thirdPartyAcceptance = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .thirdPartyFName("Bob")
             .dateOfBirth(Date.from(LocalDate.of(1970, 6, 13).atStartOfDay().toInstant(ZoneOffset.UTC)))
             .residency(Boolean.TRUE)
@@ -180,21 +180,21 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void isJurorAgeDisqualified_1day_too_young() {
-        final String YOUNG_JUROR_NUMBER = "123456000";
-        final LocalDate HEARING_DATE = LocalDate.of(2018, 6, 26);
+        final String youngJurorNumber = "123456000";
+        final LocalDate hearingDate = LocalDate.of(2018, 6, 26);
 
         final JurorResponse tooYoungJuror = JurorResponse.builder()
-            .jurorNumber(YOUNG_JUROR_NUMBER)
+            .jurorNumber(youngJurorNumber)
             .dateOfBirth(
                 Date.from(
-                    HEARING_DATE.minusYears(18)
+                    hearingDate.minusYears(18)
                         .plusDays(1)
                         .atStartOfDay().toInstant(ZoneOffset.UTC))
             ).build();
         given(mockPoolRepository.findByJurorNumber(anyString()))
             .willReturn(Pool.builder()
-                .jurorNumber(YOUNG_JUROR_NUMBER)
-                .hearingDate(Date.from(HEARING_DATE.atStartOfDay().toInstant(ZoneOffset.UTC)))
+                .jurorNumber(youngJurorNumber)
+                .hearingDate(Date.from(hearingDate.atStartOfDay().toInstant(ZoneOffset.UTC)))
                 .build());
 
         assertThat(inspector.isJurorAgeDisqualified(tooYoungJuror)).isTrue();
@@ -205,20 +205,20 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void isJurorAgeDisqualified_18_exactly() {
-        final String YOUNG_JUROR_NUMBER = "123456000";
-        final LocalDate HEARING_DATE = LocalDate.of(2018, 6, 26);
+        final String youngJurorNumber = "123456000";
+        final LocalDate hearingDate = LocalDate.of(2018, 6, 26);
 
         final JurorResponse tooYoungJuror = JurorResponse.builder()
-            .jurorNumber(YOUNG_JUROR_NUMBER)
+            .jurorNumber(youngJurorNumber)
             .dateOfBirth(
                 Date.from(
-                    HEARING_DATE.minusYears(18)
+                    hearingDate.minusYears(18)
                         .atStartOfDay().toInstant(ZoneOffset.UTC))
             ).build();
         given(mockPoolRepository.findByJurorNumber(anyString()))
             .willReturn(Pool.builder()
-                .jurorNumber(YOUNG_JUROR_NUMBER)
-                .hearingDate(Date.from(HEARING_DATE.atStartOfDay().toInstant(ZoneOffset.UTC)))
+                .jurorNumber(youngJurorNumber)
+                .hearingDate(Date.from(hearingDate.atStartOfDay().toInstant(ZoneOffset.UTC)))
                 .build());
 
         assertThat(inspector.isJurorAgeDisqualified(tooYoungJuror)).isFalse();
@@ -229,20 +229,20 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void isJurorAgeDisqualified_50_years_old() {
-        final String YOUNG_JUROR_NUMBER = "123456000";
-        final LocalDate HEARING_DATE = LocalDate.of(2018, 6, 26);
+        final String youngJurorNumber = "123456000";
+        final LocalDate hearingDate = LocalDate.of(2018, 6, 26);
 
         final JurorResponse tooYoungJuror = JurorResponse.builder()
-            .jurorNumber(YOUNG_JUROR_NUMBER)
+            .jurorNumber(youngJurorNumber)
             .dateOfBirth(
                 Date.from(
-                    HEARING_DATE.minusYears(50)
+                    hearingDate.minusYears(50)
                         .atStartOfDay().toInstant(ZoneOffset.UTC))
             ).build();
         given(mockPoolRepository.findByJurorNumber(anyString()))
             .willReturn(Pool.builder()
-                .jurorNumber(YOUNG_JUROR_NUMBER)
-                .hearingDate(Date.from(HEARING_DATE.atStartOfDay().toInstant(ZoneOffset.UTC)))
+                .jurorNumber(youngJurorNumber)
+                .hearingDate(Date.from(hearingDate.atStartOfDay().toInstant(ZoneOffset.UTC)))
                 .build());
 
         assertThat(inspector.isJurorAgeDisqualified(tooYoungJuror)).isFalse();
@@ -253,20 +253,20 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void isJurorAgeDisqualified_too_old_exactly_76() {
-        final String YOUNG_JUROR_NUMBER = "123456000";
-        final LocalDate HEARING_DATE = LocalDate.of(2018, 6, 26);
+        final String youngJurorNumber = "123456000";
+        final LocalDate hearingDate = LocalDate.of(2018, 6, 26);
 
         final JurorResponse tooYoungJuror = JurorResponse.builder()
-            .jurorNumber(YOUNG_JUROR_NUMBER)
+            .jurorNumber(youngJurorNumber)
             .dateOfBirth(
                 Date.from(
-                    HEARING_DATE.minusYears(76)
+                    hearingDate.minusYears(76)
                         .atStartOfDay().toInstant(ZoneOffset.UTC))
             ).build();
         given(mockPoolRepository.findByJurorNumber(anyString()))
             .willReturn(Pool.builder()
-                .jurorNumber(YOUNG_JUROR_NUMBER)
-                .hearingDate(Date.from(HEARING_DATE.atStartOfDay().toInstant(ZoneOffset.UTC)))
+                .jurorNumber(youngJurorNumber)
+                .hearingDate(Date.from(hearingDate.atStartOfDay().toInstant(ZoneOffset.UTC)))
                 .build());
 
         assertThat(inspector.isJurorAgeDisqualified(tooYoungJuror)).isTrue();
@@ -277,21 +277,21 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void isJurorAgeDisqualified_1_day_before_76th_birthday() {
-        final String YOUNG_JUROR_NUMBER = "123456000";
-        final LocalDate HEARING_DATE = LocalDate.of(2018, 6, 26);
+        final String youngJurorNumber = "123456000";
+        final LocalDate hearingDate = LocalDate.of(2018, 6, 26);
 
         final JurorResponse tooYoungJuror = JurorResponse.builder()
-            .jurorNumber(YOUNG_JUROR_NUMBER)
+            .jurorNumber(youngJurorNumber)
             .dateOfBirth(
                 Date.from(
-                    HEARING_DATE.minusYears(76)
+                    hearingDate.minusYears(76)
                         .plusDays(1)
                         .atStartOfDay().toInstant(ZoneOffset.UTC))
             ).build();
         given(mockPoolRepository.findByJurorNumber(anyString()))
             .willReturn(Pool.builder()
-                .jurorNumber(YOUNG_JUROR_NUMBER)
-                .hearingDate(Date.from(HEARING_DATE.atStartOfDay().toInstant(ZoneOffset.UTC)))
+                .jurorNumber(youngJurorNumber)
+                .hearingDate(Date.from(hearingDate.atStartOfDay().toInstant(ZoneOffset.UTC)))
                 .build());
 
         assertThat(inspector.isJurorAgeDisqualified(tooYoungJuror)).isFalse();
@@ -302,33 +302,33 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void isIneligible_fp() {
-        final String JUROR_NUMBER = "123555666";
+        final String jurorNumber = "123555666";
         final JurorResponse jurorResponseResidency = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .residency(Boolean.FALSE)
             .build();
         assertThat(inspector.responseType(jurorResponseResidency)).isEqualTo(NotifyTemplateType.STRAIGHT_THROUGH);
 
         final JurorResponse jurorResponseBail = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .bail(Boolean.TRUE)
             .build();
         assertThat(inspector.responseType(jurorResponseBail)).isEqualTo(NotifyTemplateType.STRAIGHT_THROUGH);
 
         final JurorResponse jurorResponseMental = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .mentalHealthAct(Boolean.TRUE)
             .build();
         assertThat(inspector.responseType(jurorResponseMental)).isEqualTo(NotifyTemplateType.STRAIGHT_THROUGH);
 
         final JurorResponse jurorResponseConvictions = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .convictions(Boolean.TRUE)
             .build();
         assertThat(inspector.responseType(jurorResponseConvictions)).isEqualTo(NotifyTemplateType.STRAIGHT_THROUGH);
 
         final JurorResponse jurorResponseCjs = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .cjsEmployments(Lists.newArrayList(BureauJurorCJS.builder()
                 .employer("Police")
                 .build()))
@@ -338,9 +338,9 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void isIneligible_3p() {
-        final String JUROR_NUMBER = "555888999";
+        final String jurorNumber = "555888999";
         final JurorResponse thirdPartyResidency = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .thirdPartyFName("Bob")
             .residency(Boolean.FALSE)
             .build();
@@ -348,7 +348,7 @@ public class ResponseInspectorImplTest {
         assertThat(inspector.isThirdPartyResponse(thirdPartyResidency)).isTrue();
 
         final JurorResponse thirdPartyBail = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .thirdPartyFName("Bob")
             .bail(Boolean.TRUE)
             .build();
@@ -356,7 +356,7 @@ public class ResponseInspectorImplTest {
         assertThat(inspector.isThirdPartyResponse(thirdPartyBail)).isTrue();
 
         final JurorResponse thirdPartyMental = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .thirdPartyFName("Bob")
             .mentalHealthAct(Boolean.TRUE)
             .build();
@@ -364,7 +364,7 @@ public class ResponseInspectorImplTest {
         assertThat(inspector.isThirdPartyResponse(thirdPartyMental)).isTrue();
 
         final JurorResponse thirdPartyConvictions = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .thirdPartyFName("Bob")
             .convictions(Boolean.TRUE)
             .build();
@@ -372,7 +372,7 @@ public class ResponseInspectorImplTest {
         assertThat(inspector.isThirdPartyResponse(thirdPartyConvictions)).isTrue();
 
         final JurorResponse thirdPartyCjs = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .thirdPartyFName("Bob")
             .cjsEmployments(Lists.newArrayList(BureauJurorCJS.builder()
                 .employer("Police")
@@ -384,9 +384,9 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void isDeferral_fp() {
-        final String JUROR_NUMBER = "123555666";
+        final String jurorNumber = "123555666";
         final JurorResponse jurorResponseFirstPersonDeferral = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .deferralReason("Defer me")
             .build();
         assertThat(inspector.responseType(jurorResponseFirstPersonDeferral)).isEqualTo(NotifyTemplateType.DEFERRAL);
@@ -394,9 +394,9 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void isDeferral_3p() {
-        final String JUROR_NUMBER = "555888999";
+        final String jurorNumber = "555888999";
         final JurorResponse thirdPartyDeferral = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .thirdPartyFName("Bob")
             .deferralReason("Defer me")
             .build();
@@ -406,10 +406,10 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void isExcusal_fp() {
-        final String JUROR_NUMBER = "123555666";
+        final String jurorNumber = "123555666";
 
         final JurorResponse jurorResponseFirstPersonExcusal = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .excusalReason("Excuse me")
             .build();
         assertThat(inspector.responseType(jurorResponseFirstPersonExcusal)).isEqualTo(NotifyTemplateType.EXCUSAL);
@@ -417,10 +417,10 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void isExcusal_3p() {
-        final String JUROR_NUMBER = "555888999";
+        final String jurorNumber = "555888999";
 
         final JurorResponse thirdPartyExcusal = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .thirdPartyFName("Bob")
             .excusalReason("Excuse me")
             .build();
@@ -430,9 +430,9 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void isJurorDeceased() {
-        final String JUROR_NUMBER = "555888999";
+        final String jurorNumber = "555888999";
         final JurorResponse thirdPartyDeceased = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .thirdPartyFName("Bob")
             .thirdPartyReason(ResponseInspectorImpl.DECEASED)
             .dateOfBirth(Date.from(LocalDate.of(1970, 6, 13).atStartOfDay().toInstant(ZoneOffset.UTC)))
@@ -448,9 +448,9 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void getYoungestJurorAgeAllowed() {
-//        given(mockSystemParameterRepository.findById(AGE_LOWER_SP_ID)).willReturn(SystemParameter.builder()
-//                .spValue("99")
-//                .build());
+        //given(mockSystemParameterRepository.findById(AGE_LOWER_SP_ID)).willReturn(SystemParameter.builder()
+        //.spValue("99")
+        //.build());
 
         given(mockSystemParameterRepository.findById(AGE_LOWER_SP_ID)).willReturn(Optional.of(SystemParameter.builder()
             .spValue("99")
@@ -473,20 +473,20 @@ public class ResponseInspectorImplTest {
 
     @Test
     public void getJurorAgeAtHearingDate() {
-        final Date HEARING_02_01_2018 = Date.from(LocalDate.of(2018, 1, 2).atStartOfDay().toInstant(ZoneOffset.UTC));
-        final Date ONE_DAY_BEFORE_18 = Date.from(LocalDate.of(2000, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC));
-        final Date EXACTLY_18 = Date.from(LocalDate.of(2000, 1, 2).atStartOfDay().toInstant(ZoneOffset.UTC));
-        final Date ONE_DAY_AFTER_18 = Date.from(LocalDate.of(2000, 1, 3).atStartOfDay().toInstant(ZoneOffset.UTC));
+        final Date hearing02_01_2018 = Date.from(LocalDate.of(2018, 1, 2).atStartOfDay().toInstant(ZoneOffset.UTC));
+        final Date oneDayBefore18 = Date.from(LocalDate.of(2000, 1, 1).atStartOfDay().toInstant(ZoneOffset.UTC));
+        final Date exactly18 = Date.from(LocalDate.of(2000, 1, 2).atStartOfDay().toInstant(ZoneOffset.UTC));
+        final Date oneDayAfter18 = Date.from(LocalDate.of(2000, 1, 3).atStartOfDay().toInstant(ZoneOffset.UTC));
 
-        assertThat(inspector.getJurorAgeAtHearingDate(ONE_DAY_BEFORE_18, HEARING_02_01_2018))
+        assertThat(inspector.getJurorAgeAtHearingDate(oneDayBefore18, hearing02_01_2018))
             .as("Juror is 18 the day before the hearing")
             .isEqualTo(18);
 
-        assertThat(inspector.getJurorAgeAtHearingDate(EXACTLY_18, HEARING_02_01_2018))
+        assertThat(inspector.getJurorAgeAtHearingDate(exactly18, hearing02_01_2018))
             .as("Juror is 18 on the hearing date.")
             .isEqualTo(18);
 
-        assertThat(inspector.getJurorAgeAtHearingDate(ONE_DAY_AFTER_18, HEARING_02_01_2018))
+        assertThat(inspector.getJurorAgeAtHearingDate(oneDayAfter18, hearing02_01_2018))
             .as("Juror is 18 one day after the hearing.")
             .isEqualTo(17);
     }
@@ -494,11 +494,11 @@ public class ResponseInspectorImplTest {
     @Test
     public void isWelshCourtTrue() {
         given(mockAppSettingService.isWelshEnabled()).willReturn(true);
-        final String JUROR_NUMBER = "443355577";
-        final String TITLE = "Mr";
-        final String FIRST_NAME = "Testy";
-        final String LAST_NAME = "Jones";
-        final String EMAIL = "testy.jones@cgi.com";
+        final String jurorNumber = "443355577";
+        final String title = "Mr";
+        final String firstName = "Testy";
+        final String lastName = "Jones";
+        final String email = "testy.jones@cgi.com";
 
         final CourtLocation court = new CourtLocation();
         court.setLocCode("457");
@@ -507,17 +507,17 @@ public class ResponseInspectorImplTest {
         welshCourt.setLocCode("457");
 
         final Pool pool = Pool.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .title(TITLE)
-            .firstName(FIRST_NAME)
-            .lastName(LAST_NAME)
-            .email(EMAIL)
+            .jurorNumber(jurorNumber)
+            .title(title)
+            .firstName(firstName)
+            .lastName(lastName)
+            .email(email)
             .welsh(true)
             .court(court)
             .build();
 
         final JurorResponse jurorResponseEnglishLanguageDefault = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .welsh(true)
             .build();
 
@@ -533,27 +533,27 @@ public class ResponseInspectorImplTest {
     @Test
     public void isWelshCourtFalse() {
         given(mockAppSettingService.isWelshEnabled()).willReturn(true);
-        final String JUROR_NUMBER = "443355578";
-        final String TITLE = "Mr";
-        final String FIRST_NAME = "Jones";
-        final String LAST_NAME = "Testy";
-        final String EMAIL = "testy.jones@cgi.com";
+        final String jurorNumber = "443355578";
+        final String title = "Mr";
+        final String firstName = "Jones";
+        final String lastName = "Testy";
+        final String email = "testy.jones@cgi.com";
 
         final CourtLocation court = new CourtLocation();
         court.setLocCode("417");
 
         final Pool pool = Pool.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .title(TITLE)
-            .firstName(FIRST_NAME)
-            .lastName(LAST_NAME)
-            .email(EMAIL)
+            .jurorNumber(jurorNumber)
+            .title(title)
+            .firstName(firstName)
+            .lastName(lastName)
+            .email(email)
             .welsh(true)
             .court(court)
             .build();
 
         final JurorResponse jurorResponseEnglishLanguageDefault = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .welsh(true)
             .build();
 

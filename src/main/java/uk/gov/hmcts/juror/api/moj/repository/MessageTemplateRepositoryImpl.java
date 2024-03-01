@@ -2,13 +2,15 @@ package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
-import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import lombok.NoArgsConstructor;
-import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessage;
+import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBase;
+import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBureau;
+import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageCourt;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
@@ -20,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,9 +49,9 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
     }
 
     @Override
-    public PaginatedList<JurorToSendMessage> messageSearch(MessageSearch search, String locCode,
-                                                           boolean simpleResponse, Long maxItems) {
-
+    public PaginatedList<? extends JurorToSendMessageBase> messageSearch(MessageSearch search, String locCode,
+                                                                         boolean simpleResponse, Long maxItems) {
+        final boolean isCourt = SecurityUtil.isCourt();
         List<Expression<?>> returnFields = new ArrayList<>();
         returnFields.add(JUROR.jurorNumber);
         returnFields.add(JUROR_POOL.pool.poolNumber);
@@ -60,18 +63,24 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
             returnFields.add(JUROR.firstName);
             returnFields.add(JUROR.lastName);
             returnFields.add(JUROR_POOL.status);
-            returnFields.add(TRIAL.trialNumber);
-            returnFields.add(JUROR_POOL.onCall);
-            returnFields.add(JUROR_POOL.nextDate);
             returnFields.add(JUROR_POOL.deferralDate);
-            returnFields.add(JUROR.completionDate);
+
+            if (isCourt) {
+                returnFields.add(TRIAL.trialNumber);
+                returnFields.add(JUROR.completionDate);
+                returnFields.add(JUROR_POOL.onCall);
+                returnFields.add(JUROR_POOL.nextDate);
+            }
         }
         JPAQueryFactory queryFactory = getQueryFactory();
-        JPQLQuery<Tuple> query = queryFactory.select(returnFields.toArray(new Expression<?>[0]))
+
+        JPAQuery<Tuple> query = queryFactory.select(returnFields.toArray(new Expression<?>[0]))
             .from(JUROR)
             .join(JUROR_POOL)
-            .on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber))
-            .where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));
+            .on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
+        if (isCourt) {
+            query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));
+        }
 
         if (search.getTrialNumber() != null || !simpleResponse) {
             query.leftJoin(JUROR_TRIAL).on(
@@ -87,8 +96,19 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
         return PaginationUtil.toPaginatedList(query, search,
             MessageSearch.SortField.JUROR_NUMBER,
             SortMethod.ASC,
-            tuple ->
-                JurorToSendMessage.builder()
+            tuple -> {
+                JurorToSendMessageBase.JurorToSendMessageBaseBuilder<?, ?> builder;
+
+                if (isCourt) {
+                    builder = JurorToSendMessageCourt.builder()
+                        .trialNumber(tuple.get(TRIAL.trialNumber))
+                        .onCall(tuple.get(JUROR_POOL.onCall))
+                        .nextDueAtCourt(tuple.get(JUROR_POOL.nextDate))
+                        .completionDate(tuple.get(JUROR.completionDate));
+                } else {
+                    builder = JurorToSendMessageBureau.builder();
+                }
+                return builder
                     .jurorNumber(tuple.get(JUROR.jurorNumber))
                     .poolNumber(tuple.get(JUROR_POOL.pool.poolNumber))
                     .welshLanguage(Boolean.TRUE.equals(tuple.get(JUROR.welsh)))
@@ -97,12 +117,9 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
                     .firstName(tuple.get(JUROR.firstName))
                     .lastName(tuple.get(JUROR.lastName))
                     .status(tuple.get(JUROR_POOL.status) == null ? null : tuple.get(JUROR_POOL.status).getStatusDesc())
-                    .trialNumber(tuple.get(TRIAL.trialNumber))
-                    .onCall(tuple.get(JUROR_POOL.onCall))
-                    .nextDueAtCourt(tuple.get(JUROR_POOL.nextDate))
                     .dateDeferredTo(tuple.get(JUROR_POOL.deferralDate))
-                    .completionDate(tuple.get(JUROR.completionDate))
-                    .build(),
+                    .build();
+            },
             maxItems);
     }
 

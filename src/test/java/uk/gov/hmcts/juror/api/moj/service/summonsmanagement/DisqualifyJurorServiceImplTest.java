@@ -142,7 +142,8 @@ public class DisqualifyJurorServiceImplTest {
         assertThat(disqualifyReasonsListActual.get(2).getCode()).isEqualTo("C");
         assertThat(disqualifyReasonsListActual.get(2).getDescription()).isEqualTo("Conviction");
         assertThat(disqualifyReasonsListActual.get(2).getHeritageCode()).isEqualTo("C");
-        assertThat(disqualifyReasonsListActual.get(2).getHeritageDescription()).isEqualTo("Has Been Convicted of an Offence");
+        assertThat(disqualifyReasonsListActual.get(2).getHeritageDescription())
+            .isEqualTo("Has Been Convicted of an Offence");
 
         assertThat(disqualifyReasonsListActual.get(3).getCode()).isEqualTo("N");
         assertThat(disqualifyReasonsListActual.get(3).getDescription()).isEqualTo("Mental Capacity Act");

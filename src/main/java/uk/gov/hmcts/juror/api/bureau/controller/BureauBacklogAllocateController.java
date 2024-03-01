@@ -37,7 +37,7 @@ public class BureauBacklogAllocateController {
     }
 
     @PostMapping(path = "/replies")
-    @Operation(summary = "/backlogAllocate/replies - Allocate Backlog replies to selected staff")
+    @Operation(summary = "Allocate Backlog replies to selected staff")
     public ResponseEntity<Void> allocateBacklogReplies(@Parameter(hidden = true) BureauJwtAuthentication auth,
                                                        @Validated @RequestBody BureauBacklogAllocateRequestDto bureauBacklogAllocateRequestDto) {
         if (!authService.userIsTeamLeader(auth)) {

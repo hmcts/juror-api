@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.moj.controller.request.messages.MessageSendRequest;
-import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessage;
+import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBase;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.ViewMessageTemplateDto;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.messages.MessageSearch;
@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -200,14 +201,13 @@ class MessagingControllerTest {
         @Test
         void positiveTypicalSimpleResponseNull() throws Exception {
             final String locCode = TestConstants.VALID_COURT_LOCATION;
-            PaginatedList<JurorToSendMessage> paginatedList = new PaginatedList<>();
+            PaginatedList<? extends JurorToSendMessageBase> paginatedList = new PaginatedList<>();
             paginatedList.setTotalItems(10L);
             paginatedList.setCurrentPage(1L);
 
             MessageSearch messageSearch = getValidPayload();
 
-            when(messagingService.search(messageSearch, locCode, false))
-                .thenReturn(paginatedList);
+            doReturn(paginatedList).when(messagingService).search(messageSearch, locCode, false);
 
             mockMvc.perform(post(URL, locCode)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -223,14 +223,13 @@ class MessagingControllerTest {
         @Test
         void positiveTypicalSimpleResponseTrue() throws Exception {
             final String locCode = TestConstants.VALID_COURT_LOCATION;
-            PaginatedList<JurorToSendMessage> paginatedList = new PaginatedList<>();
+            PaginatedList<? extends JurorToSendMessageBase> paginatedList = new PaginatedList<>();
             paginatedList.setTotalItems(10L);
             paginatedList.setCurrentPage(1L);
 
             MessageSearch messageSearch = getValidPayload();
 
-            when(messagingService.search(messageSearch, locCode, true))
-                .thenReturn(paginatedList);
+            doReturn(paginatedList).when(messagingService).search(messageSearch, locCode, true);
 
             mockMvc.perform(post(URL, locCode)
                     .queryParam("simple_response", "true")
@@ -247,14 +246,13 @@ class MessagingControllerTest {
         @Test
         void positiveTypicalSimpleResponseFalse() throws Exception {
             final String locCode = TestConstants.VALID_COURT_LOCATION;
-            PaginatedList<JurorToSendMessage> paginatedList = new PaginatedList<>();
+            PaginatedList<? extends JurorToSendMessageBase> paginatedList = new PaginatedList<>();
             paginatedList.setTotalItems(10L);
             paginatedList.setCurrentPage(1L);
 
             MessageSearch messageSearch = getValidPayload();
 
-            when(messagingService.search(messageSearch, locCode, false))
-                .thenReturn(paginatedList);
+            doReturn(paginatedList).when(messagingService).search(messageSearch, locCode, false);
 
             mockMvc.perform(post(URL, locCode)
                     .contentType(MediaType.APPLICATION_JSON)

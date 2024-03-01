@@ -5,22 +5,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.history.RevisionSort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtRates;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtQueriesRepository;
-import uk.gov.hmcts.juror.api.moj.utils.RevisionUtil;
+import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,14 +36,16 @@ public class CourtLocationServiceImpl implements CourtLocationService {
     @NonNull
     private final CourtQueriesRepository courtQueriesRepository;
 
+    private final JurorExpenseService expenseService;
+
 
     /**
-    * Retrieves court location records from the database (using the JWT to filter out court locations the current user
-    * does not own or have access to) and populates a lightweight DTO of selected properties for each record.
-    *
-    * @return a Data Transfer Object containing a list of court locations with a selection of court location properties
-    *       filtered based on the currently logged-in user's access.
-    */
+     * Retrieves court location records from the database (using the JWT to filter out court locations the current user
+     * does not own or have access to) and populates a lightweight DTO of selected properties for each record.
+     *
+     * @return a Data Transfer Object containing a list of court locations with a selection of court location properties
+     * filtered based on the currently logged-in user's access.
+     */
     @Override
     @Transactional(readOnly = true)
     public CourtLocationListDto buildCourtLocationDataResponse(BureauJWTPayload payload) {
@@ -65,7 +66,7 @@ public class CourtLocationServiceImpl implements CourtLocationService {
      * access/permissions.
      *
      * @return a Data Transfer Object containing an unfiltered list of court locations with a selection of court
-     *      location properties.
+     * location properties.
      */
     @Override
     public CourtLocationListDto buildAllCourtLocationDataResponse() {
@@ -88,37 +89,16 @@ public class CourtLocationServiceImpl implements CourtLocationService {
         return courtQueriesRepository.getCourtDetailsFilteredByPostcode(postcode);
     }
 
-    CourtLocation getCourtLocationFromEffectiveFromDate(String locCode, LocalDate date) {
-
-        return RevisionUtil.findRevisionsSorted(courtLocationRepository, locCode, RevisionSort.desc())
-            .filter(courtLocationRevision -> {
-                LocalDate effectiveFrom = courtLocationRevision.getEntity().getRatesEffectiveFrom();
-                return effectiveFrom == null || !date.isBefore(effectiveFrom);
-            })
-            .findFirst().orElseThrow(() -> new MojException.NotFound(
-                "No court location rates are active on date: " + date
-                    + " for court " + locCode, null))
-            .getEntity();
-    }
 
     @Override
-    public CourtRates getCourtRates(String locCode, LocalDate date) {
-        CourtLocation courtLocation = getCourtLocationFromEffectiveFromDate(locCode, date);
-
+    public CourtRates getCourtRates(String locCode) {
+        CourtLocation courtLocation = getCourtLocation(locCode);
+        if (courtLocation == null) {
+            throw new MojException.NotFound("Court location not found", null);
+        }
         return CourtRates.builder()
-            .carRate0Passengers(courtLocation.getCarMileageRatePerMile0Passengers())
-            .carRate1Passenger(courtLocation.getCarMileageRatePerMile1Passengers())
-            .carRate2OrMorePassenger(courtLocation.getCarMileageRatePerMile2OrMorePassengers())
-            .motorcycleRate0Passenger(courtLocation.getMotorcycleMileageRatePerMile0Passengers())
-            .motorcycleRate1OrMorePassenger(courtLocation.getMotorcycleMileageRatePerMile1Passengers())
-            .bicycleRate0OrMorePassenger(courtLocation.getBikeRate())
-            .subsistenceRateStandard(courtLocation.getSubsistenceRateStandard())
-            .subsistenceRateLongDay(courtLocation.getSubsistenceRateLongDay())
-            .financialLossHalfDayLimit(courtLocation.getLimitFinancialLossHalfDay())
-            .financialLossFullDayLimit(courtLocation.getLimitFinancialLossFullDay())
-            .financialLossHalfDayLongTrialLimit(courtLocation.getLimitFinancialLossHalfDayLongTrial())
-            .financialLossFullDayLongTrialLimit(courtLocation.getLimitFinancialLossFullDayLongTrial())
             .publicTransportSoftLimit(courtLocation.getPublicTransportSoftLimit())
+            .taxiSoftLimit(courtLocation.getTaxiSoftLimit())
             .build();
     }
 

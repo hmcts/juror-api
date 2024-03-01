@@ -690,7 +690,8 @@ public class JurorPaperResponseDtoTest {
             .assistanceTypeDetails("Some test details")
             .build();
 
-        Set<ConstraintViolation<JurorPaperResponseDto.ReasonableAdjustment>> violations = validator.validate(specialNeed);
+        Set<ConstraintViolation<JurorPaperResponseDto.ReasonableAdjustment>> violations =
+            validator.validate(specialNeed);
         assertThat(violations).as("No validation violations expected").isEmpty();
     }
 
@@ -700,7 +701,8 @@ public class JurorPaperResponseDtoTest {
             .assistanceTypeDetails("Some test details")
             .build();
 
-        Set<ConstraintViolation<JurorPaperResponseDto.ReasonableAdjustment>> violations = validator.validate(specialNeed);
+        Set<ConstraintViolation<JurorPaperResponseDto.ReasonableAdjustment>> violations =
+            validator.validate(specialNeed);
         assertThat(violations).as("Validation violation expected").isNotEmpty();
 
         ConstraintViolation<JurorPaperResponseDto.ReasonableAdjustment> constraintViolation =

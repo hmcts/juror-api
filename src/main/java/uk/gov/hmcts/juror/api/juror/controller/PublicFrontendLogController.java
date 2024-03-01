@@ -26,7 +26,7 @@ public class PublicFrontendLogController {
      * @return No content 204 response.
      */
     @PostMapping(path = "/log")
-    @Operation(summary = "/auth/public/log - Public Log API", description = "Provide a log sink for the Public "
+    @Operation(summary = "Public Log API", description = "Provide a log sink for the Public "
         + "frontend API to "
         + "send logging messages directly to the backend API logs.")
     public ResponseEntity<Object> log(@Parameter(description = "Log message content") @RequestBody String message) {

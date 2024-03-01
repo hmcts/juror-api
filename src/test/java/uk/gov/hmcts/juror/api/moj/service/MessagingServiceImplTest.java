@@ -13,7 +13,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.messages.MessageSendRequest;
-import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessage;
+import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBase;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.ViewMessageTemplateDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
@@ -491,7 +491,7 @@ class MessagingServiceImplTest {
 
         @Test
         void positiveHasResultsComplexSearch() {
-            PaginatedList<JurorToSendMessage> response = mock(PaginatedList.class);
+            PaginatedList<JurorToSendMessageBase> response = mock(PaginatedList.class);
             doReturn(false).when(response).isEmpty();
             MessageSearch messageSearch = mock(MessageSearch.class);
 
@@ -507,7 +507,7 @@ class MessagingServiceImplTest {
 
         @Test
         void positiveHasResultsSimpleSearch() {
-            PaginatedList<JurorToSendMessage> response = mock(PaginatedList.class);
+            PaginatedList<JurorToSendMessageBase> response = mock(PaginatedList.class);
             doReturn(false).when(response).isEmpty();
             MessageSearch messageSearch = mock(MessageSearch.class);
 
@@ -524,7 +524,7 @@ class MessagingServiceImplTest {
 
         @Test
         void negativeDoesNotHaveResults() {
-            PaginatedList<JurorToSendMessage> response = mock(PaginatedList.class);
+            PaginatedList<JurorToSendMessageBase> response = mock(PaginatedList.class);
             doReturn(true).when(response).isEmpty();
             MessageSearch messageSearch = mock(MessageSearch.class);
             doReturn(response).when(messageTemplateRepository)

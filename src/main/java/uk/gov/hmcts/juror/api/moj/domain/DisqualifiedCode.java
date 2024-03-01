@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.juror.api.moj.domain.system.HasCodeAndDescription;
+import uk.gov.hmcts.juror.api.moj.domain.system.HasEnabled;
 
 import java.io.Serializable;
 
@@ -18,7 +20,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Getter
 @Setter
-public class DisqualifiedCode implements Serializable {
+public class DisqualifiedCode implements HasCodeAndDescription<String>, HasEnabled, Serializable {
 
     @Id
     @NotNull
@@ -31,4 +33,8 @@ public class DisqualifiedCode implements Serializable {
     @Column(name = "enabled")
     private boolean enabled;
 
+    @Override
+    public String getCode() {
+        return this.disqualifiedCode;
+    }
 }

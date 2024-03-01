@@ -68,21 +68,18 @@ public class ResponseStatusUpdateServiceImplTest {
 
     @Test
     public void updateResponse_awaitingContact_happy() throws Exception {
-
-        String jurorNumber = "1";
-        ProcessingStatus currentProcessingStatus = ProcessingStatus.TODO;
-        ProcessingStatus statusToChangeTo = ProcessingStatus.AWAITING_CONTACT;
-        Integer version = 1;
-        String auditorUsername = "testuser";
-
         // Configure mocks
         JurorResponse mockJurorResponse = mock(JurorResponse.class);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(mockJurorResponse);
+        ProcessingStatus currentProcessingStatus = ProcessingStatus.TODO;
         given(mockJurorResponse.getProcessingStatus()).willReturn(currentProcessingStatus);
 
         User mockStaff = mock(User.class);
         given(mockJurorResponse.getStaff()).willReturn(mockStaff);
-
+        String jurorNumber = "1";
+        ProcessingStatus statusToChangeTo = ProcessingStatus.AWAITING_CONTACT;
+        Integer version = 1;
+        String auditorUsername = "testuser";
         // Execute logic
         responseStatusUpdateService.updateJurorResponseStatus(jurorNumber, statusToChangeTo, version, auditorUsername);
 
@@ -101,20 +98,20 @@ public class ResponseStatusUpdateServiceImplTest {
 
     @Test
     public void updateResponse_awaitingCourtReply_happy() throws Exception {
-
-        String jurorNumber = "1";
-        ProcessingStatus currentProcessingStatus = ProcessingStatus.TODO;
-        ProcessingStatus statusToChangeTo = ProcessingStatus.AWAITING_COURT_REPLY;
-        Integer version = 1;
-        String auditorUsername = "testuser";
-
         // Configure mocks
         JurorResponse mockJurorResponse = mock(JurorResponse.class);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(mockJurorResponse);
+        ProcessingStatus currentProcessingStatus = ProcessingStatus.TODO;
         given(mockJurorResponse.getProcessingStatus()).willReturn(currentProcessingStatus);
 
         User mockStaff = mock(User.class);
         given(mockJurorResponse.getStaff()).willReturn(mockStaff);
+
+
+        String jurorNumber = "1";
+        ProcessingStatus statusToChangeTo = ProcessingStatus.AWAITING_COURT_REPLY;
+        Integer version = 1;
+        String auditorUsername = "testuser";
 
         // Execute logic
         responseStatusUpdateService.updateJurorResponseStatus(jurorNumber, statusToChangeTo, version, auditorUsername);
@@ -135,19 +132,19 @@ public class ResponseStatusUpdateServiceImplTest {
     @Test
     public void updateResponse_awaitingTranslation_happy() throws Exception {
 
-        String jurorNumber = "1";
-        ProcessingStatus currentProcessingStatus = ProcessingStatus.TODO;
-        ProcessingStatus statusToChangeTo = ProcessingStatus.AWAITING_TRANSLATION;
-        Integer version = 1;
-        String auditorUsername = "testuser";
-
         // Configure mocks
         JurorResponse mockJurorResponse = mock(JurorResponse.class);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(mockJurorResponse);
+        ProcessingStatus currentProcessingStatus = ProcessingStatus.TODO;
         given(mockJurorResponse.getProcessingStatus()).willReturn(currentProcessingStatus);
 
         User mockStaff = mock(User.class);
         given(mockJurorResponse.getStaff()).willReturn(mockStaff);
+
+        String jurorNumber = "1";
+        ProcessingStatus statusToChangeTo = ProcessingStatus.AWAITING_TRANSLATION;
+        Integer version = 1;
+        String auditorUsername = "testuser";
 
         // Execute logic
         responseStatusUpdateService.updateJurorResponseStatus(jurorNumber, statusToChangeTo, version, auditorUsername);
@@ -200,9 +197,6 @@ public class ResponseStatusUpdateServiceImplTest {
 
         String jurorNumber = "1";
         ProcessingStatus currentProcessingStatus = ProcessingStatus.AWAITING_CONTACT;
-        ProcessingStatus statusToChangeTo = ProcessingStatus.CLOSED;
-        Integer version = 1;
-        String auditorUsername = "testuser";
 
         // Configure mocks
         JurorResponse mockJurorResponse = mock(JurorResponse.class);
@@ -214,6 +208,9 @@ public class ResponseStatusUpdateServiceImplTest {
 
         User mockStaff = mock(User.class);
         given(mockJurorResponse.getStaff()).willReturn(mockStaff);
+        ProcessingStatus statusToChangeTo = ProcessingStatus.CLOSED;
+        Integer version = 1;
+        String auditorUsername = "testuser";
 
         // Execute logic
         responseStatusUpdateService.updateJurorResponseStatus(jurorNumber, statusToChangeTo, version, auditorUsername);
@@ -234,18 +231,18 @@ public class ResponseStatusUpdateServiceImplTest {
 
     @Test
     public void updateResponse_alsoUpdatesStaffAssignment_happy() throws Exception {
-
-        String jurorNumber = "1";
         ProcessingStatus currentProcessingStatus = ProcessingStatus.AWAITING_CONTACT;
-        ProcessingStatus statusToChangeTo = ProcessingStatus.TODO;
-        Integer version = 1;
-        String auditorUsername = "testuser";
 
         // Configure mocks
         JurorResponse mockJurorResponse = mock(JurorResponse.class);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(mockJurorResponse);
         given(mockJurorResponse.getProcessingStatus()).willReturn(currentProcessingStatus);
         given(mockJurorResponse.getStaff()).willReturn(null);
+
+        String jurorNumber = "1";
+        ProcessingStatus statusToChangeTo = ProcessingStatus.TODO;
+        Integer version = 1;
+        String auditorUsername = "testuser";
 
         // Execute logic
         responseStatusUpdateService.updateJurorResponseStatus(jurorNumber, statusToChangeTo, version, auditorUsername);

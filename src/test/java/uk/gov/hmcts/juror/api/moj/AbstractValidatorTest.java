@@ -412,6 +412,13 @@ public abstract class AbstractValidatorTest<T> {
 
     }
 
+    protected abstract class AbstractValidationFieldTestBoolean extends AbstractValidationFieldTestBase<Boolean> {
+
+        protected AbstractValidationFieldTestBoolean(String fieldName, BiConsumer<T, Boolean> setFieldConsumer) {
+            super(fieldName, setFieldConsumer);
+        }
+    }
+
     protected abstract class AbstractValidationFieldTestString extends AbstractValidationFieldTestBase<String> {
 
         protected AbstractValidationFieldTestString(String fieldName, BiConsumer<T, String> setFieldConsumer) {

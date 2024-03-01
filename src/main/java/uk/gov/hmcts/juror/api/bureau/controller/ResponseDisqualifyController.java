@@ -50,7 +50,7 @@ public class ResponseDisqualifyController {
     }
 
     @GetMapping
-    @Operation(summary = "/bureau/juror/disqualify - GET list of potential disqualification reasons",
+    @Operation(summary = "list of potential disqualification reasons",
         description = "Retrieve list of potential disqualification reasons")
     public ResponseEntity<DisqualifyReasonsDto> getDisqualifyReasons() throws DisqualifyException {
         List<DisqualifyCodeDto> disqualifyReasons = responseDisqualifyService.getDisqualifyReasons();
@@ -63,7 +63,7 @@ public class ResponseDisqualifyController {
     }
 
     @PostMapping("/{jurorId}")
-    @Operation(summary = "/bureau/juror/disqualify/{jurorId} - POST disqualification for a specific juror",
+    @Operation(summary = "disqualification for a specific juror",
         description = "Mark a single juror with a certain disqualification code by their juror number")
     public ResponseEntity<Void> disqualifyJuror(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,

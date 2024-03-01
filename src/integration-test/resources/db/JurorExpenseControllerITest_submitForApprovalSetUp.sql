@@ -3,16 +3,8 @@ INSERT INTO juror_mod.rev_info
 VALUES (0, EXTRACT(EPOCH FROM current_date)),
        (1, EXTRACT(EPOCH FROM current_date));
 
-INSERT INTO juror_mod.court_location_audit (revision, rev_type, loc_code, rate_per_mile_car_0_passengers,
-                                            rate_per_mile_car_1_passengers, rate_per_mile_car_2_or_more_passengers,
-                                            rate_per_mile_motorcycle_0_passengers,
-                                            rate_per_mile_motorcycle_1_or_more_passengers, rate_per_mile_bike,
-                                            limit_financial_loss_half_day, limit_financial_loss_full_day,
-                                            limit_financial_loss_half_day_long_trial,
-                                            limit_financial_loss_full_day_long_trial, public_transport_soft_limit,
-                                            rate_subsistence_standard, rate_subsistence_long_day, rates_effective_from)
-VALUES (0, 2, '415', 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.6, 0.7, 0.8, 0.9, 0.11, 0.12, 0.13, '2023-01-01');
-
+INSERT INTO juror_mod.court_location_audit (revision, rev_type, loc_code, public_transport_soft_limit, taxi_soft_limit)
+VALUES (0, 2, '415', 0.1, 0.2);
 
 -- create a pool for court location 415
 insert into juror_mod.pool (owner, pool_no, return_date, total_no_required, no_requested, pool_type, loc_code,

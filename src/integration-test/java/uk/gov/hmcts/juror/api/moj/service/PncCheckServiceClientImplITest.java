@@ -92,7 +92,7 @@ public class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("Happy path for typical check")
-    @Sql({"/db/mod/truncate.sql","/db/PncCheck_CreateJurors.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/PncCheck_CreateJurors.sql"})
     public void pncCheckHappyPath() throws JsonProcessingException {
         stubResponse(PncCheckServiceClient.JurorCheckRequest.builder()
             .name(PncCheckServiceClient.NameDetails.builder()
@@ -179,7 +179,7 @@ public class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
     }
 
     @Override
-    protected String mintBureauJwt(final BureauJWTPayload payload) throws Exception {
+    protected String mintBureauJwt(final BureauJWTPayload payload) {
         return TestUtil.mintBureauJwt(payload, SignatureAlgorithm.HS256, bureauSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }

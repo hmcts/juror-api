@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.controller.JurorRecordController;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
@@ -39,6 +40,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.ContactEnquiryTypeListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAttendanceDetailsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorBankDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsCommonResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorNotesDto;
@@ -99,7 +101,6 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -639,7 +640,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         poolRequest.setNumberRequested(null);
 
         poolRequest.setAttendTime(LocalDateTime.of(jurorCreateRequestDto.getStartDate(),
-            LocalTime.parse(courtLocation.getCourtAttendTime())));
+            courtLocation.getCourtAttendTime()));
 
         poolRequest.setPoolType(
             RepositoryUtils.retrieveFromDatabase(jurorCreateRequestDto.getPoolType(), poolTypeRepository));
@@ -810,6 +811,17 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         log.debug("Finished retrieving optics reference for juror {}", jurorNumber);
         return jurorPool.getJuror().getOpticRef();
+    }
+
+    @Override
+    public JurorBankDetailsDto getJurorBankDetails(String jurorNumber) {
+
+        Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, jurorNumber);
+        String owner = SecurityUtil.getActiveOwner();
+
+        JurorUtils.checkOwnershipForCurrentUser(juror, owner);
+
+        return new JurorBankDetailsDto(juror);
     }
 
     /**

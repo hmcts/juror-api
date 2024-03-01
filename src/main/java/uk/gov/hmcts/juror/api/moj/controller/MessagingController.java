@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.messages.MessageSendRequest;
-import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessage;
+import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBase;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.ViewMessageTemplateDto;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.messages.MessageSearch;
@@ -44,7 +44,7 @@ public class MessagingController {
     private final MessagingService messagingService;
 
     @GetMapping("/view/{message_type}/{loc_code}")
-    @Operation(summary = "/api/v1/moj/messages/view/{message_type}/{loc_code} - returns the message template details"
+    @Operation(summary = "returns the message template details"
         + " for the given template type")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize(SecurityUtil.LOC_CODE_AUTH)
@@ -57,7 +57,7 @@ public class MessagingController {
 
 
     @PostMapping("/view/{message_type}/{loc_code}/populated")
-    @Operation(summary = "/api/v1/moj/messages/view/{message_type}/{loc_code}/populated - returns the "
+    @Operation(summary = "returns the "
         + "populated message template details for the given template type")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize(SecurityUtil.LOC_CODE_AUTH)
@@ -72,10 +72,10 @@ public class MessagingController {
     }
 
     @PostMapping("/search/{loc_code}")
-    @Operation(summary = "/api/v1/moj/messages/search/{loc_code} - Searches for a list of messages that can be sent")
+    @Operation(summary = "Searches for a list of messages that can be sent")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH)
-    public ResponseEntity<PaginatedList<JurorToSendMessage>> postSearch(
+    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH_OR_BUREAU)
+    public ResponseEntity<PaginatedList<? extends JurorToSendMessageBase>> postSearch(
         @RequestBody @Valid @NotNull MessageSearch messageSearch,
         @P("loc_code") @Size(min = 3, max = 3) @PathVariable("loc_code") @Valid String locCode,
         @RequestParam(required = false, defaultValue = "false", value = "simple_response") boolean simpleResponse
@@ -84,7 +84,7 @@ public class MessagingController {
     }
 
     @PostMapping("/send/{message_type}/{loc_code}")
-    @Operation(summary = "/api/v1/moj/messages/send/{message_type}/{loc_code} - Send messages")
+    @Operation(summary = "Send messages")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize(SecurityUtil.LOC_CODE_AUTH)
     public ResponseEntity<Void> sendMessage(

@@ -84,8 +84,7 @@ public class AutoAssignmentServiceImplTest {
         //doReturn(Arrays.asList(user1, user2, user3)).when(userRepo).findAll(StaffQueries.activeBureauOfficers());
         doReturn(Arrays.asList(user1, user2, user3)).when(userRepo)
             .findAllByUsernameIn(
-                Stream.of(user1,user2,user3).map(User::getUsername).toList()
-            );
+                Stream.of(user1, user2, user3).map(User::getUsername).toList());
 
         doReturn(FIRST_STAFF_MEMBER_ASSIGNED_INCOMPLETES).when(responseRepo)
             .count(JurorResponseQueries.assignedIncompletes(user1));
@@ -205,7 +204,7 @@ public class AutoAssignmentServiceImplTest {
     }
 
     /**
-     * Tests that an AutoAssignException is thrown if not all of the logins are valid
+     * Tests that an AutoAssignException is thrown if not all of the logins are valid.
      *
      * @throws Exception if the test falls over
      */
@@ -317,12 +316,12 @@ public class AutoAssignmentServiceImplTest {
                 ?
                 FIRST_STAFF_MEMBER_URGENTS
                 :
-                SECOND_STAFF_MEMBER_URGENTS;
+                    SECOND_STAFF_MEMBER_URGENTS;
             final long expectedIncompletes = isFirstStaffMember
                 ?
                 FIRST_STAFF_MEMBER_ASSIGNED_INCOMPLETES
                 :
-                SECOND_STAFF_MEMBER_ASSIGNED_INCOMPLETES;
+                    SECOND_STAFF_MEMBER_ASSIGNED_INCOMPLETES;
 
             assertThat(staffCapacity.getUrgents())
                 .isEqualTo(expectedUrgents);
@@ -335,7 +334,7 @@ public class AutoAssignmentServiceImplTest {
                     ?
                     user1.getName()
                     :
-                    user2.getName());
+                        user2.getName());
 
             assertThat(staffCapacity.getAllocation())
                 .isEqualTo(expectedUrgents + expectedCapacity);

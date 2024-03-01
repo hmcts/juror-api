@@ -77,7 +77,7 @@ class IReissueLetterRepositoryImplTest {
         when(jpaQuery.fetch()).thenReturn(List.of(result1, result2, result3));
 
         ReissueLetterListRequestDto request = ReissueLetterListRequestDto.builder()
-            .letterType(LetterType.EXCUSAL_DENIED)
+            .letterType(LetterType.EXCUSAL_REFUSED)
             .jurorNumber(JUROR_NUMBER)
             .build();
 
@@ -158,7 +158,7 @@ class IReissueLetterRepositoryImplTest {
                 JUROR.postcode.as("postcode"),
                 JUROR_POOL.status.statusDesc.as("status"),
                 JUROR_HISTORY.dateCreated.as("date_refused"),
-                JUROR.excusalCode.as("deferral_rejected_code"),
+                JUROR_POOL.deferralCode.as("deferral_code"),
                 BULK_PRINT_DATA.creationDate.as("date_printed"),
                 BULK_PRINT_DATA.extractedFlag.as("extracted_flag"),
                 BULK_PRINT_DATA.formAttribute.formType.as("form_code")

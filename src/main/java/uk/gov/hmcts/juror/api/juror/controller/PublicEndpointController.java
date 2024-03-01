@@ -70,7 +70,7 @@ public class PublicEndpointController {
      * @return Juror details
      */
     @GetMapping(path = "/juror/{jurorNumber}")
-    @Operation(summary = "/juror/{jurorNumber} - Find juror details by Juror Number",
+    @Operation(summary = "Find juror details by Juror Number",
         description = "The existing juror summons details for confirmation by the juror")
     public ResponseEntity<JurorDetailDto> retrieveJurorById(
         @Parameter(hidden = true) @AuthenticationPrincipal PublicJWTPayload principal,
@@ -121,7 +121,7 @@ public class PublicEndpointController {
      * @return Success message
      */
     @PostMapping(path = "/juror/respond")
-    @Operation(summary = "/juror/respond - Save a Juror response", description = "Process the Juror Response from the"
+    @Operation(summary = "Save a Juror response", description = "Process the Juror Response from the"
         + " Juror and save")
     public ResponseEntity<String> respondToSummons(
         @Parameter(hidden = true) @AuthenticationPrincipal PublicJWTPayload principal,

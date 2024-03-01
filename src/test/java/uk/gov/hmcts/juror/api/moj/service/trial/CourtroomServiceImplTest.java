@@ -40,14 +40,15 @@ public class CourtroomServiceImplTest {
         assertThat(courtrooms.get(0).getCourtLocation()).isEqualTo("STOKE_ON_TRENT");
         assertThat(courtrooms.get(0).getCourtRooms().get(0).getId()).isEqualTo(Long.valueOf(9002));
         assertThat(courtrooms.get(0).getCourtRooms().get(0).getOwner()).isEqualTo("001");
+        assertThat(courtrooms.get(0).getCourtRooms().get(0).getLocCode()).isEqualTo("002");
         assertThat(courtrooms.get(0).getCourtRooms().get(0).getRoomNumber()).isEqualTo("RM1");
         assertThat(courtrooms.get(0).getCourtRooms().get(0).getDescription()).isEqualTo("JURY ROOM 1");
     }
 
     private List<Tuple> createCourtsList() {
         Tuple mockedTupleResult = mock(Tuple.class);
-        createMockQueryDslResult(mockedTupleResult, 9002, "001", "JURY ROOM 1",
-            "RM1", "STOKE_ON_TRENT");
+        createMockQueryDslResult(mockedTupleResult, 9002, "001", "002",
+            "JURY ROOM 1", "RM1", "STOKE_ON_TRENT");
 
         List<Tuple> firstRoom = new ArrayList<>();
         firstRoom.add(mockedTupleResult);
@@ -57,13 +58,15 @@ public class CourtroomServiceImplTest {
 
     private void createMockQueryDslResult(Tuple mockedTuple, long id,
                                           String owner,
+                                          String locCode,
                                           String description,
                                           String roomNumber,
                                           String courtroom) {
         doReturn(id).when(mockedTuple).get(0, Long.class);
         doReturn(owner).when(mockedTuple).get(1, String.class);
-        doReturn(description).when(mockedTuple).get(2, String.class);
-        doReturn(roomNumber).when(mockedTuple).get(3, String.class);
-        doReturn(courtroom).when(mockedTuple).get(4, String.class);
+        doReturn(locCode).when(mockedTuple).get(2, String.class);
+        doReturn(description).when(mockedTuple).get(3, String.class);
+        doReturn(roomNumber).when(mockedTuple).get(4, String.class);
+        doReturn(courtroom).when(mockedTuple).get(5, String.class);
     }
 }

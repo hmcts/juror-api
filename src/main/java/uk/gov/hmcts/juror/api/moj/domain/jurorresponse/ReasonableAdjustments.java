@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.juror.api.moj.domain.system.HasCodeAndDescription;
 
 @Entity
 @NoArgsConstructor
@@ -15,7 +16,7 @@ import lombok.Setter;
 @Table(name = "t_reasonable_adjustments", schema = "juror_mod")
 @Getter
 @Setter
-public class ReasonableAdjustments {
+public class ReasonableAdjustments implements HasCodeAndDescription<String> {
     @Column(name = "code")
     @Id
     private String code;

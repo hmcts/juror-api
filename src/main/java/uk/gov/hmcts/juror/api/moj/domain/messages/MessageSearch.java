@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.service.IsPageable;
+import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -51,6 +52,9 @@ public class MessageSearch implements IsPageable {
     @JsonProperty("trial_number")
     private String trialNumber;
 
+    @JsonProperty("only_deferrals_in_court")
+    @CourtLocationCode
+    private String onlyDeferralsInCourt;
 
     @Min(1)
     @JsonProperty("page_number")
@@ -68,7 +72,6 @@ public class MessageSearch implements IsPageable {
 
     public void apply(JPQLQuery<Tuple> query) {
         applyJurorSearch(query, this.getJurorSearch());
-        applyMessageFilter(query, this.getFilters());
         if (this.getPoolNumber() != null) {
             query.where(QJurorPool.jurorPool.pool.poolNumber.startsWith(this.getPoolNumber()));
         }
@@ -84,6 +87,18 @@ public class MessageSearch implements IsPageable {
         if (this.getDateDeferredTo() != null) {
             query.where(QJurorPool.jurorPool.deferralDate.eq(this.getDateDeferredTo()));
         }
+        if (this.getOnlyDeferralsInCourt() != null) {
+            query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(this.getOnlyDeferralsInCourt()));
+            addFilter(Filter.SHOW_ONLY_DEFERRED);
+        }
+        applyMessageFilter(query, this.getFilters());
+    }
+
+    public void addFilter(Filter filter) {
+        if (this.getFilters() == null) {
+            this.filters = new ArrayList<>();
+        }
+        this.getFilters().add(filter);
     }
 
     void applyJurorSearch(JPQLQuery<Tuple> query, JurorSearch jurorSearch) {
@@ -111,13 +126,15 @@ public class MessageSearch implements IsPageable {
         List<BooleanExpression> or = new ArrayList<>();
         List<BooleanExpression> and = new ArrayList<>();
 
-        filters.forEach(filter -> {
-            if (filter.isInclude) {
-                or.add(filter.getExpression());
-            } else {
-                and.add(filter.getExpression());
-            }
-        });
+        filters.stream()
+            .distinct()
+            .forEach(filter -> {
+                if (filter.isInclude) {
+                    or.add(filter.getExpression());
+                } else {
+                    and.add(filter.getExpression());
+                }
+            });
 
         if (!or.isEmpty()) {
             query.where(or.stream().reduce(BooleanExpression::or).get());

@@ -13,7 +13,6 @@ import uk.gov.hmcts.juror.api.juror.domain.Holidays;
 import uk.gov.hmcts.juror.api.juror.domain.HolidaysRepository;
 import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
@@ -37,8 +36,7 @@ public class HolidayITest extends ContainerTest {
     public void testCourtHolidayNoPublicHoliday() {
         String locationCode = "415";
         Iterable<Holidays> holidayIterable = holidaysRepository.findAll(isCourtHoliday(locationCode,
-            Date.valueOf(LocalDate.of(2023, 9,
-                20))));
+            LocalDate.of(2023, 9, 20)));
         ArrayList<Holidays> holidays = new ArrayList<>();
         holidayIterable.forEach(holidays::add);
 
@@ -51,8 +49,7 @@ public class HolidayITest extends ContainerTest {
     public void testCourtHolidayWithPublicHoliday() {
         String locationCode = "415";
         Iterable<Holidays> holidayIterable = holidaysRepository.findAll(isCourtHoliday(locationCode,
-            Date.valueOf(LocalDate.of(2023, 9,
-                28))));
+            LocalDate.of(2023, 9, 28)));
         ArrayList<Holidays> holidays = new ArrayList<>();
         holidayIterable.forEach(holidays::add);
         assertThat(holidays.size()).as("Expected two holiday dates").isEqualTo(2);
@@ -62,8 +59,7 @@ public class HolidayITest extends ContainerTest {
     @Sql({"/db/mod/truncate.sql", "/db/Holiday.sql"})
     public void tesPublicHolidayNullOwner() {
         Iterable<Holidays> holidayIterable = holidaysRepository.findAll(isCourtHoliday(null,
-            Date.valueOf(LocalDate.of(2023, 9,
-                29))));
+            LocalDate.of(2023, 9, 29)));
         ArrayList<Holidays> holidays = new ArrayList<>();
         holidayIterable.forEach(holidays::add);
         assertThat(holidays.size()).as("Expected one holiday dates").isEqualTo(1);
@@ -73,8 +69,7 @@ public class HolidayITest extends ContainerTest {
     @Sql({"/db/mod/truncate.sql", "/db/Holiday.sql"})
     public void tesPublicHolidayBlankOwner() {
         Iterable<Holidays> holidayIterable = holidaysRepository.findAll(isCourtHoliday(" ",
-            Date.valueOf(LocalDate.of(2023, 9,
-                29))));
+            LocalDate.of(2023, 9, 29)));
         ArrayList<Holidays> holidays = new ArrayList<>();
         holidayIterable.forEach(holidays::add);
         assertThat(holidays.size()).as("Expected one holiday dates").isEqualTo(1);
@@ -84,8 +79,7 @@ public class HolidayITest extends ContainerTest {
     @Sql({"/db/mod/truncate.sql", "/db/Holiday.sql"})
     public void tesPublicHolidayEmptyOwner() {
         Iterable<Holidays> holidayIterable = holidaysRepository.findAll(isCourtHoliday("",
-            Date.valueOf(LocalDate.of(2023, 9,
-                29))));
+            LocalDate.of(2023, 9, 29)));
         ArrayList<Holidays> holidays = new ArrayList<>();
         holidayIterable.forEach(holidays::add);
         assertThat(holidays.size()).as("Expected one holiday dates").isEqualTo(1);

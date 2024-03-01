@@ -30,8 +30,13 @@ public class JurorCommsSentToCourtServiceImplTest {
 
     private static final String JUROR_TITLE = "JT";
 
-    private NotifyTemplateField templateField1, templateField2, templateField3, templateField4, templateField5;
-    private Pool pool1, pool2;
+    private NotifyTemplateField templateField1;
+    private NotifyTemplateField templateField2;
+    private NotifyTemplateField templateField3;
+    private NotifyTemplateField templateField4;
+    private NotifyTemplateField templateField5;
+    private Pool pool1;
+    private Pool pool2;
     List<NotifyTemplateField> templateFields = new LinkedList<>();
     List<Pool> poolList = new LinkedList<>();
 

@@ -120,16 +120,16 @@ class SecurityConfigTest {
 
     private Stream<Arguments> correctSecretIncorrectClaims() {
         Stream.Builder<Arguments> builder = Stream.builder();
-        for (URLs urls : URLs.values()) {
-            if (urls.jwtType == URLs.JWTType.HMAC) {
+        for (UrLs urls : UrLs.values()) {
+            if (urls.jwtType == UrLs.JwtType.HMAC) {
                 continue;
             }
-            for (URLs.JWTType jwtType : URLs.JWTType.values()) {
+            for (UrLs.JwtType jwtType : UrLs.JwtType.values()) {
                 if (jwtType == urls.jwtType) {
                     continue;
                 }
-                builder.add(Arguments.arguments(urls.jwtType.name(), jwtType.name(), urls.URL,
-                    urls.jwtType.getJWTWithClaimMap(jwtType.getClaimMap())));
+                builder.add(Arguments.arguments(urls.jwtType.name(), jwtType.name(), urls.url,
+                    urls.jwtType.getJwtWithClaimMap(jwtType.getClaimMap())));
             }
         }
         return builder.build();
@@ -138,8 +138,8 @@ class SecurityConfigTest {
     private Stream<Arguments> unauthorisedRequests() {
         Stream.Builder<Arguments> builder = Stream.builder();
 
-        for (URLs urls : URLs.values()) {
-            for (URLs.JWTType jwtType : URLs.JWTType.values()) {
+        for (UrLs urls : UrLs.values()) {
+            for (UrLs.JwtType jwtType : UrLs.JwtType.values()) {
                 final String token;
                 if (jwtType == urls.jwtType) {
                     //If the url expects this token type provide the invalid secret
@@ -148,7 +148,7 @@ class SecurityConfigTest {
                     //If the url does not expect this token type provide a valid secret
                     token = jwtType.getValidToken();
                 }
-                builder.add(Arguments.arguments(urls.jwtType.name(), jwtType.name(), urls.URL, token));
+                builder.add(Arguments.arguments(urls.jwtType.name(), jwtType.name(), urls.url, token));
 
             }
         }
@@ -157,38 +157,38 @@ class SecurityConfigTest {
 
     private Stream<Arguments> authorisedRequests() {
         Stream.Builder<Arguments> builder = Stream.builder();
-        for (URLs urls : URLs.values()) {
-            builder.add(Arguments.arguments(urls.jwtType.name(), urls.URL, urls.jwtType.getValidToken()));
+        for (UrLs urls : UrLs.values()) {
+            builder.add(Arguments.arguments(urls.jwtType.name(), urls.url, urls.jwtType.getValidToken()));
         }
         return builder.build();
     }
 
-    private enum URLs {
-        hmacAuth1(JWTType.HMAC, "/api/v1/auth/juror/test"),
-        hmacAuth2(JWTType.HMAC, "/api/v1/auth/bureau/test"),
-        hmacAuth3(JWTType.HMAC, "/api/v1/auth/public/test"),
-        hmacAuth4(JWTType.HMAC, "/api/v1/auth/settings/test"),
-        publicAuth(JWTType.PUBLIC, "/api/v1/public/test"),
-        bureauAuth(JWTType.BUREAU, "/api/v1/bureau/test"),
-        bureauAuth2(JWTType.BUREAU, "/api/v1/moj/test");
+    private enum UrLs {
+        hmacAuth1(JwtType.HMAC, "/api/v1/auth/juror/test"),
+        hmacAuth2(JwtType.HMAC, "/api/v1/auth/bureau/test"),
+        hmacAuth3(JwtType.HMAC, "/api/v1/auth/public/test"),
+        hmacAuth4(JwtType.HMAC, "/api/v1/auth/settings/test"),
+        publicAuth(JwtType.PUBLIC, "/api/v1/public/test"),
+        bureauAuth(JwtType.BUREAU, "/api/v1/bureau/test"),
+        bureauAuth2(JwtType.BUREAU, "/api/v1/moj/test");
 
-        private final String URL;
-        private final JWTType jwtType;
+        private final String url;
+        private final JwtType jwtType;
 
-        URLs(JWTType jwtType, String url) {
-            this.URL = url;
+        UrLs(JwtType jwtType, String url) {
+            this.url = url;
             this.jwtType = jwtType;
         }
 
-        private enum JWTType {
-            HMAC(SecurityConfigTest.hmacSecret, JWTType::getHmacClaimMap),
-            PUBLIC(SecurityConfigTest.publicSecret, JWTType::getPublicClaimMap),
-            BUREAU(SecurityConfigTest.bureauSecret, JWTType::getBureauClaimMap);
+        private enum JwtType {
+            HMAC(SecurityConfigTest.hmacSecret, JwtType::getHmacClaimMap),
+            PUBLIC(SecurityConfigTest.publicSecret, JwtType::getPublicClaimMap),
+            BUREAU(SecurityConfigTest.bureauSecret, JwtType::getBureauClaimMap);
 
             private final String secret;
             private final Supplier<Map<String, Object>> jwtClaimMapSupplier;
 
-            JWTType(String secret, Supplier<Map<String, Object>> jwtClaimMapSupplier) {
+            JwtType(String secret, Supplier<Map<String, Object>> jwtClaimMapSupplier) {
                 this.secret = secret;
                 this.jwtClaimMapSupplier = jwtClaimMapSupplier;
             }
@@ -198,11 +198,11 @@ class SecurityConfigTest {
             }
 
             public String getValidToken() {
-                return getJWT(secret, getClaimMap());
+                return getJwt(secret, getClaimMap());
             }
 
             public String getInvalidToken() {
-                return getJWT(secret + "Invalid", jwtClaimMapSupplier.get());
+                return getJwt(secret + "Invalid", jwtClaimMapSupplier.get());
             }
 
             private static Map<String, Object> getPublicClaimMap() {
@@ -241,7 +241,7 @@ class SecurityConfigTest {
                 return claimsMap;
             }
 
-            public static String getJWT(String secret, Map<String, Object> claimsMap) {
+            public static String getJwt(String secret, Map<String, Object> claimsMap) {
                 claimsMap.put(Claims.EXPIRATION, Date.from(Instant.now().plus(100L * 365L, ChronoUnit.DAYS)));
                 claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
                 return Jwts.builder()
@@ -250,15 +250,15 @@ class SecurityConfigTest {
                     .compact();
             }
 
-            public Object getJWTWithClaimMap(Map<String, Object> claimMap) {
-                return getJWT(secret, claimMap);
+            public Object getJwtWithClaimMap(Map<String, Object> claimMap) {
+                return getJwt(secret, claimMap);
             }
         }
     }
 
     @RestController
     public static class SecurityConfigControllerTest {
-        @GetMapping( {
+        @GetMapping({
             "/api/v1/public/test",
             "/api/v1/bureau/test",
             "/api/v1/moj/test",

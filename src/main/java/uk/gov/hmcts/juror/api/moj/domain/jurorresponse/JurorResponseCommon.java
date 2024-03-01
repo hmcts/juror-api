@@ -3,9 +3,9 @@ package uk.gov.hmcts.juror.api.moj.domain.jurorresponse;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Immutable;
 
 import java.io.Serializable;
@@ -19,7 +19,7 @@ create/update paper or digital responses, use the entities specific to the reply
 
 @Entity
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @Getter
 @Table(name = "juror_response", schema = "juror_mod")
 @EqualsAndHashCode(callSuper = true)

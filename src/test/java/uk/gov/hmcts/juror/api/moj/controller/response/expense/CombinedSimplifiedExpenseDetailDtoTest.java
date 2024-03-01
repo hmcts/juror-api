@@ -53,7 +53,7 @@ class CombinedSimplifiedExpenseDetailDtoTest {
 
         @Test
         void positiveAdd() {
-            CombinedSimplifiedExpenseDetailDto.Total total = new CombinedSimplifiedExpenseDetailDto.Total();
+            final CombinedSimplifiedExpenseDetailDto.Total total = new CombinedSimplifiedExpenseDetailDto.Total();
             SimplifiedExpenseDetailDto simplifiedExpenseDetailDto = new SimplifiedExpenseDetailDto();
             simplifiedExpenseDetailDto.setFinancialLoss(new BigDecimal("20.01"));
             simplifiedExpenseDetailDto.setTravel(new BigDecimal("20.02"));

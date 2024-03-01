@@ -189,7 +189,6 @@ public class JurorManagementServiceImplTest {
     public void test_reassignJuror_courtUser_validRequest_toCourtOwnedPool() {
 
         String courtOwner = "415";
-        String satelliteCourtCode = "767";
         String sourcePoolNumber = "123456789";
         String targetPoolNumber = "987654321";
 
@@ -208,6 +207,7 @@ public class JurorManagementServiceImplTest {
 
         CourtLocation satelliteCourtLocation = new CourtLocation();
         satelliteCourtLocation.setName("Test Satellite Court");
+        String satelliteCourtCode = "767";
         satelliteCourtLocation.setLocCode(satelliteCourtCode);
         satelliteCourtLocation.setOwner(courtOwner);
 
@@ -281,7 +281,6 @@ public class JurorManagementServiceImplTest {
     @Test
     public void test_reassignJuror_courtUser_validRequest_toBureauOwnedPool() {
 
-        String bureauOwner = "400";
         String courtOwner = "415";
         String sourcePoolNumber = "123456789";
         String targetPoolNumber = "987654321";
@@ -292,6 +291,7 @@ public class JurorManagementServiceImplTest {
 
         PoolRequest targetpoolRequest = new PoolRequest();
         targetpoolRequest.setPoolNumber(targetPoolNumber);
+        String bureauOwner = "400";
         targetpoolRequest.setOwner(bureauOwner);
 
         CourtLocation primaryCourtLocation = new CourtLocation();
@@ -1625,7 +1625,7 @@ public class JurorManagementServiceImplTest {
         LocalDate targetStartDate = LocalDate.of(2023, 7, 17);
         List<String> jurorNumbers = Arrays.asList("111111111", "222222222", "333333333", "444444444", "555555555");
 
-        BureauJWTPayload payload = TestUtils.createJwt(sourceCourtLocCode, "COURT_USER");
+
         final JurorManagementRequestDto requestDto = new JurorManagementRequestDto(sourcePoolNumber,
             sourceCourtLocCode,
             targetCourtLocCode,
@@ -1651,7 +1651,7 @@ public class JurorManagementServiceImplTest {
             .when(jurorPoolRepository)
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(), anyBoolean(),
                 anyString(), any(CourtLocation.class));
-
+        BureauJWTPayload payload = TestUtils.createJwt(sourceCourtLocCode, "COURT_USER");
         JurorManagementResponseDto responseDto = jurorManagementService.validatePoolMembers(payload, requestDto);
 
         verify(courtLocationRepository, times(1))
@@ -1713,7 +1713,6 @@ public class JurorManagementServiceImplTest {
         LocalDate targetStartDate = LocalDate.of(2023, 7, 17);
         List<String> jurorNumbers = Collections.singletonList("111111111");
 
-        BureauJWTPayload payload = TestUtils.createJwt(sourceCourtLocCode, "COURT_USER");
         final JurorManagementRequestDto requestDto = new JurorManagementRequestDto(sourcePoolNumber,
             sourceCourtLocCode,
             targetCourtLocCode,
@@ -1730,7 +1729,7 @@ public class JurorManagementServiceImplTest {
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
                 anyBoolean(), anyString(),
                 any(CourtLocation.class));
-
+        BureauJWTPayload payload = TestUtils.createJwt(sourceCourtLocCode, "COURT_USER");
         JurorManagementResponseDto responseDto = jurorManagementService.validatePoolMembers(payload, requestDto);
 
         verify(courtLocationRepository, times(1))

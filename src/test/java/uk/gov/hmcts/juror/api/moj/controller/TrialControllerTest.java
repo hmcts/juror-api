@@ -338,6 +338,7 @@ class TrialControllerTest {
 
         return trialDto;
     }
+
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private ReturnJuryDto createReturnJuryDto() {
         ReturnJuryDto dto = new ReturnJuryDto();
@@ -368,7 +369,9 @@ class TrialControllerTest {
     private List<JurorDetailRequestDto> createReturnPanelDto() {
         List<JurorDetailRequestDto> jurorDetailRequestDtos = new ArrayList<>();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0;
+             i < 10;
+             i++) {
             JurorDetailRequestDto detailRequestDto = new JurorDetailRequestDto();
             detailRequestDto.setFirstName("FNAME");
             detailRequestDto.setLastName("LNAME");

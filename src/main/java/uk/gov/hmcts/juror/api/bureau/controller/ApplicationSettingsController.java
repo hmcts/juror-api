@@ -35,7 +35,7 @@ public class ApplicationSettingsController {
      * @return Application settings
      */
     @GetMapping(path = "/settings")
-    @Operation(summary = "/auth/settings - Application settings",
+    @Operation(summary = "Application settings",
         description = "Expose the application settings via the API")
     public ResponseEntity<AppSettingsResponseDto> applicationSettings() {
         try {

@@ -18,6 +18,7 @@ INSERT INTO juror_mod.pool (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_R
  ('415', '222222222', CURRENT_DATE + 20, 4, 3, 'CRO', '400', 'N');
 
 -- Create juror records associated with Pool request records
+
 DELETE FROM juror_mod.juror;
 
 INSERT INTO juror_mod.juror (juror_number, last_name, first_name, dob, address_line_1, address_line_4, postcode, responded) VALUES

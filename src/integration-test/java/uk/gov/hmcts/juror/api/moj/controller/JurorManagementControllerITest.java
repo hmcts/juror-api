@@ -69,6 +69,7 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SuppressWarnings("PMD.TooManyMethods")
 class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     private static final String JUROR1 = "111111111";
@@ -694,7 +695,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("PATCH Update attendance - confirm attendance")
-        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql",
+            "/db/JurorExpenseControllerITest_expenseRates.sql"})
         void updateAttendanceNoShow() {
             UpdateAttendanceDto request = buildUpdateAttendanceDto(null);
             request.getCommonData().setCheckInTime(null);
@@ -1337,7 +1339,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Add non attendance - record okay")
-        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql"})
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql",
+            "/db/JurorExpenseControllerITest_expenseRates.sql"})
         void addNonAttendanceHappy() {
 
             JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
@@ -1370,7 +1373,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Add non attendance - loss over limit")
-        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql"})
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql",
+            "/db/JurorExpenseControllerITest_expenseRates.sql"})
         void addNonAttendanceHappyLossOverLimit() {
 
             JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
@@ -1427,7 +1431,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Add non attendance - no show record already present")
-        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql"})
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql",
+            "/db/JurorExpenseControllerITest_expenseRates.sql"})
         void addNonAttendanceUnhappyNoShowAlreadyPresent() {
 
             JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()

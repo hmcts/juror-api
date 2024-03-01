@@ -58,10 +58,6 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.CONFIRMED;
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.NEEDED;
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.SURPLUS;
-import static org.springframework.http.HttpMethod.POST;
-import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.CONFIRMED;
-import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.NEEDED;
-import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.SURPLUS;
 import static uk.gov.hmcts.juror.api.testvalidation.DeferralMaintenanceValidation.validateDeferralMaintenanceOptions;
 
 @SuppressWarnings("PMD.LawOfDemeter")
@@ -163,7 +159,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 .isEqualTo(2);
             // get first deferral option for w/c 2023-05-29, pool number: 415220401
             DeferralOptionsDto.DeferralOptionDto availablePool1 = deferralOptions.stream()
-                .filter(pool -> pool.getPoolNumber().equals("415220401"))
+                .filter(pool -> "415220401".equals(pool.getPoolNumber()))
                 .findFirst()
                 .orElse(null);
             assertThat(availablePool1)
@@ -283,7 +279,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 .isEqualTo(2);
             // get first deferral option for w/c 2023-05-29, pool number: 415220401
             DeferralOptionsDto.DeferralOptionDto availablePool1 = deferralOptions.stream()
-                .filter(pool -> pool.getPoolNumber().equals("415220401"))
+                .filter(pool -> "415220401".equals(pool.getPoolNumber()))
                 .findFirst()
                 .orElse(null);
             assertThat(availablePool1)
@@ -493,7 +489,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 .isEqualTo(2);
             // get first deferral option for w/c 2023-05-29, pool number: 415220401
             DeferralOptionsDto.DeferralOptionDto availablePool1 = deferralOptions.stream()
-                .filter(pool -> pool.getPoolNumber().equals("415220401"))
+                .filter(pool -> "415220401".equals(pool.getPoolNumber()))
                 .findFirst()
                 .orElse(null);
             assertThat(availablePool1)
@@ -612,7 +608,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 .isEqualTo(2);
             // get first deferral option for w/c 2023-05-29, pool number: 415220401
             DeferralOptionsDto.DeferralOptionDto availablePool1 = deferralOptions.stream()
-                .filter(pool -> pool.getPoolNumber().equals("415220401"))
+                .filter(pool -> "415220401".equals(pool.getPoolNumber()))
                 .findFirst()
                 .orElse(null);
             assertThat(availablePool1)
@@ -1304,7 +1300,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
         @Test
         void findActivePoolsForCourtLocationNullMaxDate() throws Exception {
-            final String courtJwt = createBureauJwt(BUREAU_USER,OWNER_400);
+            final String courtJwt = createBureauJwt(BUREAU_USER, OWNER_400);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
 
@@ -1648,7 +1644,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
     }
 
     @Override
-    protected String createBureauJwt(String login, String owner) throws Exception {
+    protected String createBureauJwt(String login, String owner) {
         return mintBureauJwt(BureauJWTPayload.builder()
             .userLevel("1")
             .login(login)

@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.juror.domain.Holidays;
-import uk.gov.hmcts.juror.api.moj.utils.DateRelatedUtils;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -38,7 +37,7 @@ public class HolidayTest {
     @Test
     public void testValidCourtHoliday() {
         Holidays holiday = new Holidays();
-        holiday.setHoliday(DateRelatedUtils.convertToDateViaInstant(LocalDate.now()));
+        holiday.setHoliday(LocalDate.now());
         holiday.setOwner("400");
         holiday.setDescription("TEST");
         holiday.setPublicHoliday(false);
@@ -50,7 +49,7 @@ public class HolidayTest {
     @Test
     public void testValidPublicHoliday() {
         Holidays holiday = new Holidays();
-        holiday.setHoliday(DateRelatedUtils.convertToDateViaInstant(LocalDate.now()));
+        holiday.setHoliday(LocalDate.now());
         holiday.setDescription("TEST");
         holiday.setPublicHoliday(true);
         Set<ConstraintViolation<Holidays>> violations = validator.validate(holiday);
@@ -75,7 +74,7 @@ public class HolidayTest {
     @Test
     public void testInvalidHolidayNoDescription() {
         Holidays holiday = new Holidays();
-        holiday.setHoliday(DateRelatedUtils.convertToDateViaInstant(LocalDate.now()));
+        holiday.setHoliday(LocalDate.now());
         holiday.setPublicHoliday(true);
         Set<ConstraintViolation<Holidays>> violations = validator.validate(holiday);
 
@@ -90,7 +89,7 @@ public class HolidayTest {
     @Test
     public void testInvalidHolidayNoPublicHolidayFlagSet() {
         Holidays holiday = new Holidays();
-        holiday.setHoliday(DateRelatedUtils.convertToDateViaInstant(LocalDate.now()));
+        holiday.setHoliday(LocalDate.now());
         holiday.setDescription("TEST");
         Set<ConstraintViolation<Holidays>> violations = validator.validate(holiday);
 

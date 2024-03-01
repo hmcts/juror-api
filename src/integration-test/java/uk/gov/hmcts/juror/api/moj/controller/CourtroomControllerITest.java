@@ -49,7 +49,7 @@ public class CourtroomControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void getListOfCourtroomsForLocationHappy() {
+    public void listOfCourtroomsForLocationHappy() {
         initHeadersCourt();
         ResponseEntity<CourtroomsListDto[]> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
             URI.create("/api/v1/moj/trial/courtrooms/list")), CourtroomsListDto[].class);
@@ -77,7 +77,7 @@ public class CourtroomControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void getJudgesForCourtLocationsExceptionForBureauUser() {
+    public void judgesForCourtLocationsExceptionForBureauUser() {
         initHeadersBureau();
 
         ResponseEntity<MojException.Forbidden> response = restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,

@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.Month;
 import java.util.Calendar;
 import java.util.Locale;
@@ -152,7 +153,7 @@ public final class LetterTestUtils {
 
     static CourtLocation testCourtLocation() {
         CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setCourtAttendTime("10:00AM");
+        courtLocation.setCourtAttendTime(LocalTime.of(10,0));
         courtLocation.setLocCode("457");
         courtLocation.setInsertIndicators("TWO WEEKS");
         courtLocation.setLocCourtName("SWANSEA CROWN COURT");

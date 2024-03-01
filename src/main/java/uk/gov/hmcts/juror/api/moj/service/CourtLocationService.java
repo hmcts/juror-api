@@ -30,5 +30,5 @@ public interface CourtLocationService {
     List<CourtLocationDataDto> getCourtLocationsByPostcode(
         @Length(max = 4) String postcode);
 
-    CourtRates getCourtRates(String locCode, LocalDate date);
+    CourtRates getCourtRates(String locCode);
 }

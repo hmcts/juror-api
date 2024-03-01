@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
+import uk.gov.hmcts.juror.api.moj.domain.system.HasCodeAndDescription;
+import uk.gov.hmcts.juror.api.moj.domain.system.HasEnabled;
 
 import java.io.Serializable;
 
@@ -17,7 +19,7 @@ import java.io.Serializable;
 @Table(name = "t_exc_code", schema = "juror_mod")
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExcusalCode implements Serializable {
+public class ExcusalCode implements HasCodeAndDescription<String>, HasEnabled, Serializable {
 
     @Id
     @Column(name = "exc_code")

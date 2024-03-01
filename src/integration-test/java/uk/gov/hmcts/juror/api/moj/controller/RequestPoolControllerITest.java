@@ -1301,11 +1301,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         String sortBy = "poolNumber";
         String sortOrder = "asc";
 
-        String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab
+        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab
             + "&offset=" + offset + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolRequestActiveListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -1355,11 +1355,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         String sortBy = "poolNumber";
         String sortOrder = "asc";
 
-        String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset + "&sortBy="
+        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset + "&sortBy="
             + sortBy + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolRequestActiveListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -1409,11 +1409,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         String sortBy = "poolNumber";
         String sortOrder = "desc";
 
-        String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
+        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
             + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolRequestActiveListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -1464,11 +1464,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         String sortOrder = "asc";
         String locCode = "416";
 
-        String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode
+        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode
             + "&offset=" + offset + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolRequestActiveListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -1520,11 +1520,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "462", "774", "767")));
 
-        String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset + "&sortBy="
+        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset + "&sortBy="
             + sortBy + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolRequestActiveListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -1577,11 +1577,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "462", "774", "767")));
 
-        String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode + "&offset="
+        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode + "&offset="
             + offset + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolRequestActiveListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -1631,11 +1631,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         String sortBy = "poolNumber";
         String sortOrder = "asc";
 
-        String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
+        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
             + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolRequestActiveListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -1685,11 +1685,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         String sortBy = "poolNumber";
         String sortOrder = "asc";
 
-        String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
+        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
             + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolRequestActiveListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -1740,11 +1740,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         String sortOrder = "asc";
         String locCode = "415";
 
-        String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode
+        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode
             + "&offset=" + offset + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolRequestActiveListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -1796,11 +1796,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "462", "774", "767")));
 
-        String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
+        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
             + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolRequestActiveListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -1852,11 +1852,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "462", "774", "767")));
 
-        String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
+        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
             + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolRequestActiveListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -1908,11 +1908,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "462", "774", "767")));
 
-        String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
+        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
             + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolRequestActiveListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -1964,11 +1964,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", List.of("416")));
 
-        String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
+        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&offset=" + offset
             + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolRequestActiveListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -2019,11 +2019,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         String sortOrder = "asc";
         String locCode = "415";
 
-        String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode
+        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode
             + "&offset=" + offset + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolRequestActiveListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -2050,11 +2050,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415",
             Arrays.asList("415", "462", "774", "767")));
 
-        String requestURL = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode
+        String requestUrl = "/api/v1/moj/pool-request/pools-active?tab=" + tab + "&locCode=" + locCode
             + "&offset=" + offset + "&sortBy=" + sortBy + "&sortOrder=" + sortOrder;
 
         ResponseEntity<PoolRequestActiveListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-            HttpMethod.GET, URI.create(requestURL)), PoolRequestActiveListDto.class);
+            HttpMethod.GET, URI.create(requestUrl)), PoolRequestActiveListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -2077,11 +2077,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("417", List.of("417")));
 
-        String requestURL = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
+        String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
         ResponseEntity<PoolsAtCourtLocationListDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-                HttpMethod.GET, URI.create(requestURL)), PoolsAtCourtLocationListDto.class);
+                HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -2124,11 +2124,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("418", List.of("418")));
 
-        String requestURL = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
+        String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
         ResponseEntity<PoolsAtCourtLocationListDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-                HttpMethod.GET, URI.create(requestURL)), PoolsAtCourtLocationListDto.class);
+                HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")
@@ -2168,6 +2168,45 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         validatePoolData(poolsAtCourtLocationDataDto, serviceStartDate);
     }
 
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_poolsAtCourtLocation.sql"})
+    public void testGetPoolsAtCourtLocationByCourtOneOnCallOnlyNoneInAttendance() throws Exception {
+
+        String locCode = "419";
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("419", List.of("419")));
+        String requestURL = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
+
+        ResponseEntity<PoolsAtCourtLocationListDto> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create(requestURL)), PoolsAtCourtLocationListDto.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the get request to be successful")
+            .isEqualTo(OK);
+
+        PoolsAtCourtLocationListDto poolsAtCourtLocationListDto = response.getBody();
+        assertThat(poolsAtCourtLocationListDto).isNotNull();
+        List<PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto> poolsAtCourtLocationDataDtosUnsorted
+            = poolsAtCourtLocationListDto.getData();
+        assertThat(poolsAtCourtLocationDataDtosUnsorted.size())
+            .as("Expect the active pools list to have 1 entry")
+            .isEqualTo(1);
+
+        PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto
+            = poolsAtCourtLocationDataDtosUnsorted.get(0);
+        LocalDate serviceStartDate = LocalDate.now().minusDays(10);
+
+        assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 419230101")
+            .isEqualTo("419230101");
+
+        assertThat(poolsAtCourtLocationDataDto.getJurorsInAttendance())
+            .as("Expect there to be 0 juror in attendance")
+            .isEqualTo(0);
+        assertThat(poolsAtCourtLocationDataDto.getJurorsOnCall()).as("Expect there to be 1 juror on call")
+            .isEqualTo(1);
+
+    }
+
     private static void validatePoolData(
         PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto,
         LocalDate serviceStartDate) {
@@ -2191,11 +2230,12 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_poolsAtCourtLocation.sql"})
     public void testGetPoolsAtCourtLocationByCourtUserNone() throws Exception {
 
-        String locCode = "419";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("419", List.of("419")));
+        String locCode = "420";
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("420", List.of("420")));
         String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
-        ResponseEntity<PoolsAtCourtLocationListDto> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<PoolsAtCourtLocationListDto> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
             HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
@@ -2216,10 +2256,10 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         String locCode = "419";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", List.of("419")));
-        String requestURL = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
+        String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
         ResponseEntity<PoolsAtCourtLocationListDto> response = restTemplate.exchange(new RequestEntity<Void>(
-            httpHeaders, HttpMethod.GET, URI.create(requestURL)), PoolsAtCourtLocationListDto.class);
+            httpHeaders, HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be forbidden")

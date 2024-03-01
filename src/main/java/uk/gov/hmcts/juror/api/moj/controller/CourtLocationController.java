@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.jsonwebtoken.lang.Collections;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,7 +29,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.CourtRates;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.time.LocalDate;
 import java.util.List;
 
 
@@ -77,17 +75,14 @@ public class CourtLocationController {
         return ResponseEntity.ok().body(catchmentAreas);
     }
 
-    @GetMapping("/{loc_code}/{date}/rates")
+    @GetMapping("/{loc_code}/rates")
     @Operation(summary = "Retrieve a list of court rates / limits for a given day")
     @PreAuthorize(SecurityUtil.LOC_CODE_AUTH)
     public ResponseEntity<CourtRates> getCourtRates(
         @Parameter(description = "Valid location Code", required = true)
         @P("loc_code")
-        @Size(min = 3, max = 3) @PathVariable("loc_code") @Valid String locCode,
-        @Parameter(description = "Valid date yyyy-MM-dd", required = true)
-        @JsonFormat(pattern = "yyyy-MM-dd")
-        @PathVariable("date") @Valid LocalDate date) {
+        @Size(min = 3, max = 3) @PathVariable("loc_code") @Valid String locCode) {
 
-        return ResponseEntity.ok().body(courtLocationService.getCourtRates(locCode, date));
+        return ResponseEntity.ok().body(courtLocationService.getCourtRates(locCode));
     }
 }

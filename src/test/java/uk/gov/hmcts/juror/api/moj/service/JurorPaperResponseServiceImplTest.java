@@ -38,8 +38,8 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.exception.JurorPaperResponseException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.SummonsSnapshotRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
@@ -70,7 +70,7 @@ public class JurorPaperResponseServiceImplTest {
     @Mock
     private JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     @Mock
-    private JurorResponseCjsEmploymentRepositoryMod jurorResponseCJSRepository;
+    private JurorResponseCjsEmploymentRepositoryMod jurorResponseCjsRepository;
     @Mock
     private JurorReasonableAdjustmentRepository jurorReasonableAdjustmentsRepository;
     @Mock
@@ -113,7 +113,7 @@ public class JurorPaperResponseServiceImplTest {
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc("987654321", true);
 
         Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any());
-        Mockito.doReturn(null).when(jurorResponseCJSRepository).save(any());
+        Mockito.doReturn(null).when(jurorResponseCjsRepository).save(any());
         Mockito.doReturn(null).when(jurorReasonableAdjustmentsRepository).save(any());
         Mockito.doReturn(
                 User.builder().username("SOME_USER").name("Test User").level(99).active(true).build())
@@ -314,7 +314,7 @@ public class JurorPaperResponseServiceImplTest {
         PaperResponse paperResponse = paperResponseArgumentCaptor.getValue();
         verifyJurorPaperResponseDto(paperResponse, responseDto);
 
-        Mockito.verify(jurorResponseCJSRepository, Mockito.never()).save(any());
+        Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
             .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class),
@@ -339,7 +339,7 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActive("987654321", true);
         Mockito.verify(jurorPaperResponseRepository, Mockito.never()).save(any());
-        Mockito.verify(jurorResponseCJSRepository, Mockito.never()).save(any());
+        Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
         Mockito.verify(straightThroughProcessorService, Mockito.never())
             .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class),
@@ -364,7 +364,7 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActive("123456789", true);
         Mockito.verify(jurorPaperResponseRepository, Mockito.never()).save(any());
-        Mockito.verify(jurorResponseCJSRepository, Mockito.never()).save(any());
+        Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
         Mockito.verify(straightThroughProcessorService, Mockito.never())
             .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class),
@@ -395,7 +395,7 @@ public class JurorPaperResponseServiceImplTest {
         PaperResponse paperResponse = paperResponseArgumentCaptor.getValue();
         verifyJurorPaperResponseDto(paperResponse, responseDto);
 
-        Mockito.verify(jurorResponseCJSRepository, Mockito.never()).save(any());
+        Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
             .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
@@ -421,7 +421,7 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActive("987654321", true);
         Mockito.verify(jurorPaperResponseRepository, Mockito.never()).save(any());
-        Mockito.verify(jurorResponseCJSRepository, Mockito.never()).save(any());
+        Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
         Mockito.verify(straightThroughProcessorService, Mockito.never())
             .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
@@ -457,7 +457,7 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActive("123456789", true);
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).save(any());
-        Mockito.verify(jurorResponseCJSRepository, Mockito.times(1)).saveAll(any());
+        Mockito.verify(jurorResponseCjsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
             .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class), any(),
@@ -480,7 +480,7 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActive("123456789", true);
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).save(any());
-        Mockito.verify(jurorResponseCJSRepository, Mockito.times(1)).saveAll(any());
+        Mockito.verify(jurorResponseCjsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
             .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
@@ -506,7 +506,7 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActive("123456789", true);
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).save(any());
-        Mockito.verify(jurorResponseCJSRepository, Mockito.times(1)).saveAll(any());
+        Mockito.verify(jurorResponseCjsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.times(1)).saveAll(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
             .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
@@ -596,7 +596,7 @@ public class JurorPaperResponseServiceImplTest {
         PaperResponse paperResponse = paperResponseArgumentCaptor.getValue();
         verifyJurorPaperResponseDto(paperResponse, responseDto);
 
-        Mockito.verify(jurorResponseCJSRepository, Mockito.never()).save(any());
+        Mockito.verify(jurorResponseCjsRepository, Mockito.never()).save(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.never()).save(any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(1))
             .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
@@ -618,11 +618,11 @@ public class JurorPaperResponseServiceImplTest {
 
 
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).findByJurorNumber(any());
-        Mockito.verify(jurorResponseCJSRepository, Mockito.times(1))
+        Mockito.verify(jurorResponseCjsRepository, Mockito.times(1))
             .findByJurorNumber(any());
-        Mockito.verify(jurorResponseCJSRepository, Mockito.times(2))
+        Mockito.verify(jurorResponseCjsRepository, Mockito.times(2))
             .findByJurorNumberAndCjsEmployer(any(), any());
-        Mockito.verify(jurorResponseCJSRepository, Mockito.times(2)).save(any());
+        Mockito.verify(jurorResponseCjsRepository, Mockito.times(2)).save(any());
 
     }
 
@@ -638,11 +638,11 @@ public class JurorPaperResponseServiceImplTest {
         jurorPaperResponseService.updateCjsDetails(payload, cjsEmploymentDto, VALID_JUROR_NUMBER_COURT);
 
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).findByJurorNumber(any());
-        Mockito.verify(jurorResponseCJSRepository, Mockito.times(1))
+        Mockito.verify(jurorResponseCjsRepository, Mockito.times(1))
             .findByJurorNumber(any());
-        Mockito.verify(jurorResponseCJSRepository, Mockito.times(2))
+        Mockito.verify(jurorResponseCjsRepository, Mockito.times(2))
             .findByJurorNumberAndCjsEmployer(any(), any());
-        Mockito.verify(jurorResponseCJSRepository, Mockito.times(2)).save(any());
+        Mockito.verify(jurorResponseCjsRepository, Mockito.times(2)).save(any());
 
     }
 

@@ -42,12 +42,7 @@ public class ResponseSendToCourtServiceServiceTest {
     @Test
     public void updateResponse_to_court_happy_assignStaff() throws Exception {
 
-        String jurorNumber = "1";
-        Integer version = 1;
-        String currentUser = "testuser";
-
         ProcessingStatus currentProcessingStatus = ProcessingStatus.TODO;
-        ProcessingStatus statusToChangeTo = ProcessingStatus.CLOSED;
 
 
         // Configure mocks
@@ -57,6 +52,8 @@ public class ResponseSendToCourtServiceServiceTest {
         given(mockJurorResponse.getStaff()).willReturn(null);
 
 
+        String jurorNumber = "1";
+        String currentUser = "testuser";
         // Execute logic
         sendToCourtService.sendResponseToCourt(jurorNumber, new ResponseSendToCourtController.SendToCourtDto(1),
             currentUser);
@@ -64,8 +61,8 @@ public class ResponseSendToCourtServiceServiceTest {
         // Verify mock interactions
         verify(entityManager).detach(mockJurorResponse);
         verify(assignOnUpdateService).assignToCurrentLogin(any(JurorResponse.class), eq(currentUser));
-        verify(mockJurorResponse).setVersion(version);
-        verify(mockJurorResponse).setProcessingStatus(statusToChangeTo);
+        verify(mockJurorResponse).setVersion(1);
+        verify(mockJurorResponse).setProcessingStatus(ProcessingStatus.CLOSED);
         verify(mockJurorResponse).setProcessingComplete(Boolean.TRUE);
         verify(jurorResponseRepository).save(mockJurorResponse);
         verify(jurorResponseAuditRepository).save(any(JurorResponseAudit.class));

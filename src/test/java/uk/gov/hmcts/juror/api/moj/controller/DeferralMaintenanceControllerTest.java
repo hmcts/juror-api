@@ -197,7 +197,7 @@ class DeferralMaintenanceControllerTest {
         @Test
         @DisplayName("Invalid Request No Location Code")
         void unHappyPathInvalidJurorNumber() throws Exception {
-            String jurorNumber = "111111111";
+            final String jurorNumber = "111111111";
             String locationCode = " 415";
             BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
 
@@ -245,7 +245,7 @@ class DeferralMaintenanceControllerTest {
         @Test
         @DisplayName("Invalid Request No Location Code")
         void unHappyPathInvalidLocationCode() throws Exception {
-            String jurorNumber = "111111111";
+            final String jurorNumber = "111111111";
             String locationCode = " 415";
             BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
 

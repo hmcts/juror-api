@@ -52,7 +52,7 @@ public final class JurorUtils {
     /**
      * Users are only authorised to edit a record they own.
      * Bureau user's can view any record but can only write to a record they own
-     * Court users can only view a record they own as well as only write to a record they own.
+     * Court users can view as well as write to a record they own.
      *
      * @param juror Juror record object
      * @param owner 3-digit numeric string to uniquely identify a court location
@@ -70,8 +70,8 @@ public final class JurorUtils {
             .toList();
 
         if (!activeJurorPoolOwners.contains(owner)) {
-            throw new MojException.Forbidden("User does not have access to write to the supplied "
-                + "juror records", null);
+            throw new MojException.Forbidden("User does not have ownership of the supplied "
+                + "juror record", null);
         }
 
         log.trace("Exit checkOwnershipForCurrentUser");

@@ -207,7 +207,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         // validate the court location exists
         RepositoryUtils.retrieveFromDatabase(locationCode, courtLocationRepository);
 
-        return holidaysRepository.findOne(isCourtHoliday(locationCode, Date.valueOf(attendanceDate)))
+        return holidaysRepository.findOne(isCourtHoliday(locationCode, attendanceDate))
             .isPresent() ? DayType.HOLIDAY : DayType.BUSINESS_DAY;
     }
 
@@ -532,6 +532,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PoolsAtCourtLocationListDto getActivePoolsAtCourtLocation(String locCode) {
 
         BureauJWTPayload payload = SecurityUtil.getActiveUsersBureauPayload();
@@ -549,7 +550,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
             poolsListing.stream().forEach(pool -> {
                 List<String> poolDetails = Arrays.asList(pool.split(","));
 
-                int jurorsInAttendance = Integer.parseInt(poolDetails.get(2));
+                int jurorsInAttendance = poolDetails.get(2).equals("null") ? 0 : Integer.parseInt(poolDetails.get(2));
                 int jurorsOnCall = Integer.parseInt(poolDetails.get(3));
 
                 // total possible in attendance - in attendance
@@ -562,7 +563,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
                         .jurorsOnCall(jurorsOnCall)
                         .otherJurors(others)
                         .totalJurors(jurorsInAttendance + jurorsOnCall + others)
-                        .jurorsOnTrials(Integer.parseInt(poolDetails.get(5)))
+                        .jurorsOnTrials(poolDetails.get(5).equals("null") ? 0 : Integer.parseInt(poolDetails.get(5)))
                         .poolType(poolDetails.get(6))
                         .serviceStartDate(LocalDate.parse(poolDetails.get(7)))
                         .build();

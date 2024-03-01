@@ -24,7 +24,9 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.controller.request.messages.MessageSendRequest;
-import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessage;
+import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBase;
+import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBureau;
+import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageCourt;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.ViewMessageTemplateDto;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorSearch;
@@ -106,8 +108,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
             SENTENCE_DATE("Sentence date", "<sentence_date>", DataType.DATE, true, null),
 
             ATTEND_DATE("Attendance Date", "<attend_date>", DataType.DATE, true, null),
-            ENGLISH_ATTEND_TIME("Attendance time", "<attend_time>", DataType.TIME, true, "09:30"),
-            WELSH_ATTEND_TIME("Attendance time", "<attend_time>", DataType.TIME, true, "09:15"),
+            ENGLISH_ATTEND_TIME("Attendance time", "<attend_time>", DataType.TIME, true, "09:30:00"),
+            WELSH_ATTEND_TIME("Attendance time", "<attend_time>", DataType.TIME, true, "09:15:00"),
             TRIAL_NUMBER("N/A", "<trial_no>", DataType.STRING, false, null);
 
 
@@ -129,8 +131,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
             }
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000001() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000001() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000001")
                 .firstName("FNAME01")
                 .lastName("LNAME01")
@@ -147,8 +149,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000002() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000002() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000002")
                 .firstName("FNAME02")
                 .lastName("LNAME02")
@@ -165,8 +167,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000003() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000003() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000003")
                 .firstName("FNAME03")
                 .lastName("LNAME03")
@@ -183,8 +185,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000004() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000004() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000004")
                 .firstName("FNAME04")
                 .lastName("LNAME04")
@@ -201,8 +203,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000005() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000005() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000005")
                 .firstName("FNAME05")
                 .lastName("LNAME05")
@@ -219,8 +221,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000006() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000006() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000006")
                 .firstName("FNAME06")
                 .lastName("LNAME06")
@@ -237,8 +239,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000007() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000007() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000007")
                 .firstName("FNAME07")
                 .lastName("LNAME07")
@@ -255,8 +257,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000008() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000008() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000008")
                 .firstName("FNAME08")
                 .lastName("LNAME08")
@@ -273,8 +275,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000009() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000009() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000009")
                 .firstName("FNAME09")
                 .lastName("LNAME09")
@@ -291,8 +293,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000010() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000010() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000010")
                 .firstName("FNAME10")
                 .lastName("LNAME10")
@@ -309,8 +311,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000011() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000011() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000011")
                 .firstName("FNAME11")
                 .lastName("LNAME11")
@@ -327,8 +329,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000012() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000012() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000012")
                 .firstName("FNAME12")
                 .lastName("LNAME12")
@@ -345,8 +347,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000013() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000013() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000013")
                 .firstName("FNAME13")
                 .lastName("LNAME13")
@@ -363,8 +365,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000014() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000014() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000014")
                 .firstName("FNAME14")
                 .lastName("LNAME14")
@@ -381,8 +383,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000015() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000015() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000015")
                 .firstName("FNAME15")
                 .lastName("LNAME15")
@@ -399,8 +401,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000016() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000016() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000016")
                 .firstName("FNAME16")
                 .lastName("LNAME16")
@@ -417,8 +419,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000017() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000017() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000017")
                 .firstName("FNAME17")
                 .lastName("LNAME17")
@@ -435,8 +437,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000018() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000018() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000018")
                 .firstName("FNAME18")
                 .lastName("LNAME18")
@@ -453,8 +455,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000019() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000019() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000019")
                 .firstName("FNAME19")
                 .lastName("LNAME19")
@@ -471,8 +473,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000020() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000020() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000020")
                 .firstName("FNAME20")
                 .lastName("LNAME20")
@@ -489,8 +491,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000021() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000021() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000021")
                 .firstName("FNAME21")
                 .lastName("LNAME21")
@@ -507,8 +509,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000022() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000022() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000022")
                 .firstName("FNAME22")
                 .lastName("LNAME22")
@@ -525,8 +527,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000023() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000023() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000023")
                 .firstName("FNAME23")
                 .lastName("LNAME23")
@@ -543,8 +545,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000024() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000024() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000024")
                 .firstName("FNAME24")
                 .lastName("LNAME24")
@@ -561,8 +563,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000025() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000025() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000025")
                 .firstName("FNAME25")
                 .lastName("LNAME25")
@@ -579,8 +581,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000026() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000026() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000026")
                 .firstName("FNAME26")
                 .lastName("LNAME26")
@@ -597,8 +599,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000027() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000027() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000027")
                 .firstName("FNAME27")
                 .lastName("LNAME27")
@@ -615,8 +617,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000028() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000028() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000028")
                 .firstName("FNAME28")
                 .lastName("LNAME28")
@@ -633,8 +635,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000029() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000029() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000029")
                 .firstName("FNAME29")
                 .lastName("LNAME29")
@@ -651,8 +653,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        protected static JurorToSendMessage getExpectedJurorToSendMessageFor100000030() {
-            return JurorToSendMessage.builder()
+        protected static JurorToSendMessageCourt getExpectedJurorToSendMessageFor100000030() {
+            return JurorToSendMessageCourt.builder()
                 .jurorNumber("100000030")
                 .firstName("FNAME30")
                 .lastName("LNAME30")
@@ -1172,12 +1174,32 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 this.isSimple = isSimple;
             }
 
-            private ResponseEntity<PaginatedList<JurorToSendMessage>> triggerValid(
+
+            private ResponseEntity<PaginatedList<JurorToSendMessageCourt>> triggerValidCourt(
                 String locCode, MessageSearch search) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, "415", locCode);
+                return triggerValidCourt("415", locCode, search);
+            }
+
+            private ResponseEntity<PaginatedList<JurorToSendMessageCourt>> triggerValidCourt(
+                String owner, String locCode, MessageSearch search) throws Exception {
+                final String jwt = createBureauJwt(COURT_USER, owner, locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = template.exchange(
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = template.exchange(
+                    new RequestEntity<>(search, httpHeaders, POST, toUri(locCode, isSimple)),
+                    new ParameterizedTypeReference<>() {
+                    });
+                assertThat(response.getStatusCode())
+                    .as("Expect the HTTP GET request to be successful")
+                    .isEqualTo(HttpStatus.OK);
+                return response;
+            }
+            private ResponseEntity<PaginatedList<JurorToSendMessageBureau>> triggerValidBureau(
+                String owner, String locCode, MessageSearch search) throws Exception {
+                final String jwt = createBureauJwt(COURT_USER, owner, locCode);
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+
+                ResponseEntity<PaginatedList<JurorToSendMessageBureau>> response = template.exchange(
                     new RequestEntity<>(search, httpHeaders, POST, toUri(locCode, isSimple)),
                     new ParameterizedTypeReference<>() {
                     });
@@ -1188,11 +1210,12 @@ class MessagingControllerITest extends AbstractIntegrationTest {
             }
 
 
-            void assertJurorToSendMessage(PaginatedList<JurorToSendMessage> actualResponseBody,
-                                          long expectedTotalItems,
-                                          long expectedCurrentPage,
-                                          long expectedTotalPages,
-                                          JurorToSendMessage... expectedList) {
+            <T extends JurorToSendMessageBase> void assertJurorToSendMessage(PaginatedList<T> actualResponseBody,
+                                                                             long expectedTotalItems,
+                                                                             long expectedCurrentPage,
+                                                                             long expectedTotalPages,
+                                                                             boolean isCourt,
+                                                                             JurorToSendMessageCourt... expectedList) {
                 assertThat(actualResponseBody).isNotNull();
                 assertThat(actualResponseBody.getCurrentPage()).as("Current page")
                     .isEqualTo(expectedCurrentPage);
@@ -1202,12 +1225,12 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     .isEqualTo(expectedTotalPages);
 
 
-                List<JurorToSendMessage> actualDataList = actualResponseBody.getData();
+                List<T> actualDataList = actualResponseBody.getData();
                 assertThat(actualDataList).isNotNull().hasSize(expectedList.length);
 
                 for (int index = 0; index < actualDataList.size(); index++) {
-                    JurorToSendMessage actual = actualDataList.get(index);
-                    JurorToSendMessage expected = expectedList[index];
+                    T actual = actualDataList.get(index);
+                    JurorToSendMessageCourt expected = expectedList[index];
                     assertThat(actual.getJurorNumber()).isEqualTo(expected.getJurorNumber());
                     assertThat(actual.getPoolNumber()).isEqualTo(expected.getPoolNumber());
                     assertThat(actual.isWelshLanguage()).isEqualTo(expected.isWelshLanguage());
@@ -1218,27 +1241,39 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         assertThat(actual.getFirstName()).isNull();
                         assertThat(actual.getLastName()).isNull();
                         assertThat(actual.getStatus()).isNull();
-                        assertThat(actual.getTrialNumber()).isNull();
-                        assertThat(actual.getOnCall()).isNull();
-                        assertThat(actual.getNextDueAtCourt()).isNull();
                         assertThat(actual.getDateDeferredTo()).isNull();
-                        assertThat(actual.getCompletionDate()).isNull();
+                        if (isCourt) {
+                            assertThat(actual).isInstanceOf(JurorToSendMessageCourt.class);
+                            JurorToSendMessageCourt court = (JurorToSendMessageCourt) actual;
+                            assertThat(court.getCompletionDate()).isNull();
+                            assertThat(court.getTrialNumber()).isNull();
+                            assertThat(court.getOnCall()).isNull();
+                            assertThat(court.getNextDueAtCourt()).isNull();
+                        } else {
+                            assertThat(actual).isInstanceOf(JurorToSendMessageBureau.class);
+                        }
                     } else {
                         assertThat(actual.getFirstName()).isEqualTo(expected.getFirstName());
                         assertThat(actual.getLastName()).isEqualTo(expected.getLastName());
                         assertThat(actual.getStatus()).isEqualTo(expected.getStatus());
-                        assertThat(actual.getTrialNumber()).isEqualTo(expected.getTrialNumber());
-                        assertThat(actual.getOnCall()).isEqualTo(expected.getOnCall());
-                        assertThat(actual.getNextDueAtCourt()).isEqualTo(expected.getNextDueAtCourt());
                         assertThat(actual.getDateDeferredTo()).isEqualTo(expected.getDateDeferredTo());
-                        assertThat(actual.getCompletionDate()).isEqualTo(expected.getCompletionDate());
+                        if (isCourt) {
+                            assertThat(actual).isInstanceOf(JurorToSendMessageCourt.class);
+                            JurorToSendMessageCourt court = (JurorToSendMessageCourt) actual;
+                            assertThat(court.getCompletionDate()).isEqualTo(expected.getCompletionDate());
+                            assertThat(court.getTrialNumber()).isEqualTo(expected.getTrialNumber());
+                            assertThat(court.getOnCall()).isEqualTo(expected.getOnCall());
+                            assertThat(court.getNextDueAtCourt()).isEqualTo(expected.getNextDueAtCourt());
+                        } else {
+                            assertThat(actual).isInstanceOf(JurorToSendMessageBureau.class);
+                        }
                     }
                 }
             }
 
             @Test
             void jurorNameSearch() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .jurorSearch(JurorSearch.builder()
                             .jurorName("FNAME0")
@@ -1246,9 +1281,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .pageLimit(5)
                         .pageNumber(1)
                         .build());
-
                 assertJurorToSendMessage(response.getBody(),
-                    9, 1, 2,
+                    9, 1, 2, true,
                     TestData.getExpectedJurorToSendMessageFor100000001(),
                     TestData.getExpectedJurorToSendMessageFor100000002(),
                     TestData.getExpectedJurorToSendMessageFor100000003(),
@@ -1259,7 +1293,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void jurorNumberSearch() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .jurorSearch(JurorSearch.builder()
                             .jurorNumber("10000001")
@@ -1270,7 +1304,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    10, 1, 2,
+                    10, 1, 2, true,
                     TestData.getExpectedJurorToSendMessageFor100000019(),
                     TestData.getExpectedJurorToSendMessageFor100000018(),
                     TestData.getExpectedJurorToSendMessageFor100000017(),
@@ -1281,7 +1315,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void jurorPostcodeSearch() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .jurorSearch(JurorSearch.builder()
                             .postcode("CH02 1AN")
@@ -1292,14 +1326,14 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    1, 1, 1,
+                    1, 1, 1, true,
                     TestData.getExpectedJurorToSendMessageFor100000002()
                 );
             }
 
             @Test
             void poolNumberSearch() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .poolNumber("20000001")
                         .sortField(MessageSearch.SortField.POOL_NUMBER)
@@ -1309,7 +1343,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    19, 2, 7,
+                    19, 2, 7, true,
                     TestData.getExpectedJurorToSendMessageFor100000001(),
                     TestData.getExpectedJurorToSendMessageFor100000005(),
                     TestData.getExpectedJurorToSendMessageFor100000006()
@@ -1318,7 +1352,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void trialNumberSearch() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .trialNumber("T100000000")
                         .pageLimit(5)
@@ -1326,7 +1360,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    2, 1, 1,
+                    2, 1, 1, true,
                     TestData.getExpectedJurorToSendMessageFor100000004(),
                     TestData.getExpectedJurorToSendMessageFor100000022()
                 );
@@ -1334,7 +1368,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void nextDueAtCourtDateSearch() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .nextDueAtCourt(LocalDate.of(2022, 1, 1))
                         .pageLimit(5)
@@ -1342,7 +1376,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    4, 1, 1,
+                    4, 1, 1, true,
                     TestData.getExpectedJurorToSendMessageFor100000001(),
                     TestData.getExpectedJurorToSendMessageFor100000003(),
                     TestData.getExpectedJurorToSendMessageFor100000009(),
@@ -1352,7 +1386,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void dateDeferredToSearch() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .dateDeferredTo(LocalDate.of(2022, 3, 12))
                         .pageLimit(5)
@@ -1360,7 +1394,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    2, 1, 1,
+                    2, 1, 1, true,
                     TestData.getExpectedJurorToSendMessageFor100000012(),
                     TestData.getExpectedJurorToSendMessageFor100000030()
                 );
@@ -1368,7 +1402,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeOnCall() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .filters(List.of(MessageSearch.Filter.INCLUDE_ON_CALL))
                         .jurorSearch(JurorSearch.builder()
@@ -1379,7 +1413,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    2, 1, 1,
+                    2, 1, 1, true,
                     TestData.getExpectedJurorToSendMessageFor100000004(),
                     TestData.getExpectedJurorToSendMessageFor100000008()
                 );
@@ -1387,7 +1421,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeFailedToAttend() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .filters(List.of(MessageSearch.Filter.INCLUDE_FAILED_TO_ATTEND))
                         .jurorSearch(JurorSearch.builder()
@@ -1398,7 +1432,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    4, 1, 1,
+                    4, 1, 1, true,
                     TestData.getExpectedJurorToSendMessageFor100000002(),
                     TestData.getExpectedJurorToSendMessageFor100000011(),
                     TestData.getExpectedJurorToSendMessageFor100000020(),
@@ -1408,7 +1442,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeDeferred() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .filters(List.of(MessageSearch.Filter.INCLUDE_DEFERRED))
                         .jurorSearch(JurorSearch.builder()
@@ -1419,7 +1453,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    4, 1, 1,
+                    4, 1, 1, true,
                     TestData.getExpectedJurorToSendMessageFor100000003(),
                     TestData.getExpectedJurorToSendMessageFor100000012(),
                     TestData.getExpectedJurorToSendMessageFor100000021(),
@@ -1429,7 +1463,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeJurorsAndPanelled() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .filters(List.of(MessageSearch.Filter.INCLUDE_JURORS_AND_PANELLED))
                         .jurorSearch(JurorSearch.builder()
@@ -1440,7 +1474,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    6, 1, 2,
+                    6, 1, 2, true,
                     TestData.getExpectedJurorToSendMessageFor100000004(),
                     TestData.getExpectedJurorToSendMessageFor100000005(),
                     TestData.getExpectedJurorToSendMessageFor100000013(),
@@ -1451,7 +1485,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeCompleted() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .filters(List.of(MessageSearch.Filter.INCLUDE_COMPLETED))
                         .jurorSearch(JurorSearch.builder()
@@ -1462,7 +1496,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    3, 1, 1,
+                    3, 1, 1, true,
                     TestData.getExpectedJurorToSendMessageFor100000006(),
                     TestData.getExpectedJurorToSendMessageFor100000015(),
                     TestData.getExpectedJurorToSendMessageFor100000024()
@@ -1471,7 +1505,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeTransferred() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .filters(List.of(MessageSearch.Filter.INCLUDE_TRANSFERRED))
                         .jurorSearch(JurorSearch.builder()
@@ -1482,7 +1516,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    3, 1, 1,
+                    3, 1, 1, true,
                     TestData.getExpectedJurorToSendMessageFor100000007(),
                     TestData.getExpectedJurorToSendMessageFor100000016(),
                     TestData.getExpectedJurorToSendMessageFor100000025()
@@ -1491,7 +1525,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeDisqualifiedAndExcused() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .filters(List.of(MessageSearch.Filter.INCLUDE_DISQUALIFIED_AND_EXCUSED))
                         .jurorSearch(JurorSearch.builder()
@@ -1502,7 +1536,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    6, 1, 2,
+                    6, 1, 2, true,
                     TestData.getExpectedJurorToSendMessageFor100000008(),
                     TestData.getExpectedJurorToSendMessageFor100000009(),
                     TestData.getExpectedJurorToSendMessageFor100000017(),
@@ -1513,7 +1547,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeMultiple() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .filters(List.of(
                             MessageSearch.Filter.INCLUDE_COMPLETED,
@@ -1528,7 +1562,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    12, 1, 2,
+                    12, 1, 2, true,
                     TestData.getExpectedJurorToSendMessageFor100000006(),
                     TestData.getExpectedJurorToSendMessageFor100000007(),
                     TestData.getExpectedJurorToSendMessageFor100000008(),
@@ -1541,7 +1575,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void showOnlyOnCall() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .filters(List.of(
                             MessageSearch.Filter.SHOW_ONLY_ON_CALL
@@ -1554,7 +1588,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    7, 1, 2,
+                    7, 1, 2, true,
                     TestData.getExpectedJurorToSendMessageFor100000004(),
                     TestData.getExpectedJurorToSendMessageFor100000008(),
                     TestData.getExpectedJurorToSendMessageFor100000012(),
@@ -1565,7 +1599,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void showOnlyFailedToAttend() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .filters(List.of(
                             MessageSearch.Filter.SHOW_ONLY_FAILED_TO_ATTEND
@@ -1578,7 +1612,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    4, 1, 1,
+                    4, 1, 1, true,
                     TestData.getExpectedJurorToSendMessageFor100000002(),
                     TestData.getExpectedJurorToSendMessageFor100000011(),
                     TestData.getExpectedJurorToSendMessageFor100000020(),
@@ -1588,7 +1622,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void showOnlyDeferred() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .filters(List.of(
                             MessageSearch.Filter.SHOW_ONLY_DEFERRED
@@ -1601,7 +1635,30 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    4, 1, 1,
+                    4, 1, 1, true,
+                    TestData.getExpectedJurorToSendMessageFor100000003(),
+                    TestData.getExpectedJurorToSendMessageFor100000012(),
+                    TestData.getExpectedJurorToSendMessageFor100000021(),
+                    TestData.getExpectedJurorToSendMessageFor100000030()
+                );
+            }
+
+            @Test
+            void showOnlyDeferredAsBureau() throws Exception {
+                ResponseEntity<PaginatedList<JurorToSendMessageBureau>> response = triggerValidBureau("400", "415",
+                    MessageSearch.builder()
+                        .filters(List.of(
+                            MessageSearch.Filter.SHOW_ONLY_DEFERRED
+                        ))
+                        .jurorSearch(JurorSearch.builder()
+                            .jurorName("FNAME")
+                            .build())
+                        .pageLimit(5)
+                        .pageNumber(1)
+                        .build());
+
+                assertJurorToSendMessage(response.getBody(),
+                    4, 1, 1, false,
                     TestData.getExpectedJurorToSendMessageFor100000003(),
                     TestData.getExpectedJurorToSendMessageFor100000012(),
                     TestData.getExpectedJurorToSendMessageFor100000021(),
@@ -1611,7 +1668,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void showOnlyResponded() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .filters(List.of(
                             MessageSearch.Filter.SHOW_ONLY_RESPONDED
@@ -1624,7 +1681,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    4, 1, 1,
+                    4, 1, 1, true,
                     TestData.getExpectedJurorToSendMessageFor100000001(),
                     TestData.getExpectedJurorToSendMessageFor100000010(),
                     TestData.getExpectedJurorToSendMessageFor100000019(),
@@ -1634,7 +1691,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void showOnlyMultiple() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessage>> response = triggerValid("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
                     MessageSearch.builder()
                         .filters(List.of(
                             MessageSearch.Filter.SHOW_ONLY_RESPONDED,
@@ -1648,7 +1705,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                         .build());
 
                 assertJurorToSendMessage(response.getBody(),
-                    1, 1, 1,
+                    1, 1, 1, true,
                     TestData.getExpectedJurorToSendMessageFor100000028()
                 );
             }
@@ -2042,7 +2099,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 );
                 this.tests.add(DynamicContainer.dynamicContainer(MessageType.SENTENCING_INVITE_COURT.name(),
                     List.of(
-                        DynamicTest.dynamicTest(MessageType.SENTENCING_INVITE_COURT+" English Court - Email",
+                        DynamicTest.dynamicTest(MessageType.SENTENCING_INVITE_COURT + " English Court - Email",
                             () -> addTest(MessageType.SENTENCING_INVITE_COURT,
                                 TestData.ENGLISH_LOC_CODE,
                                 Map.of(
@@ -2086,7 +2143,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                     .build()
                             )
                         ),
-                        DynamicTest.dynamicTest(MessageType.SENTENCING_INVITE_COURT+" Welsh Court - Email",
+                        DynamicTest.dynamicTest(MessageType.SENTENCING_INVITE_COURT + " Welsh Court - Email",
                             () -> addTest(MessageType.SENTENCING_INVITE_COURT,
                                 TestData.WELSH_LOC_CODE,
                                 Map.of(

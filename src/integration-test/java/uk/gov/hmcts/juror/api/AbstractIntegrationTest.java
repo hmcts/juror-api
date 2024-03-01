@@ -20,6 +20,8 @@ import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
@@ -31,6 +33,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -124,16 +127,21 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
         return httpHeaders;
     }
 
-    protected String mintBureauJwt(final BureauJWTPayload payload) throws Exception {
+    protected String mintBureauJwt(final BureauJWTPayload payload) {
         return TestUtil.mintBureauJwt(payload, SignatureAlgorithm.HS256, bureauSecret, Instant.now().plus(100L * 365L,
             ChronoUnit.DAYS));
     }
 
-    protected String createBureauJwt(String login, String owner) throws Exception {
+
+    protected String createBureauJwt(String login, String owner) {
         return createBureauJwt(login, owner, owner);
     }
 
-    protected String createBureauJwt(String login, String owner, String... courts) throws Exception {
+    protected String createBureauJwt(String login, String owner, String... courts) {
+        return createBureauJwt(login, owner, null, null, courts);
+    }
+
+    protected String createBureauJwt(String login, String owner, UserType userType, Set<Role> roles, String... courts) {
         return mintBureauJwt(BureauJWTPayload.builder()
             .userLevel("1")
             .login(login)
@@ -144,11 +152,13 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
                 .courts(List.of(courts))
                 .build())
             .daysToExpire(89)
+            .userType(userType)
+            .roles(roles)
             .owner(owner)
             .build());
     }
 
-    protected String createBureauJwt(String login, String owner, int rank) throws Exception {
+    protected String createBureauJwt(String login, String owner, int rank) {
         return mintBureauJwt(BureauJWTPayload.builder()
             .userLevel(String.valueOf(rank))
             .login(login)
@@ -233,7 +243,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     }
 
     protected void assertInvalidPathParam(ResponseEntity<String> response,
-                                          String expectedMessage) throws JsonProcessingException {
+                                          String expectedMessage)  {
 
         assertThat(response).isNotNull();
         log.debug("Response: {}", response);

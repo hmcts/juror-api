@@ -9,22 +9,22 @@ import uk.gov.hmcts.juror.api.moj.xerox.LetterBase;
 public class RequestInfoLetter extends LetterBase {
 
     public RequestInfoLetter(JurorPool jurorPool,
-                         String additionalInformation,
-                         CourtLocation courtLocation,
-                         CourtLocation bureauLocation) {
+                             String additionalInformation,
+                             CourtLocation courtLocation,
+                             CourtLocation bureauLocation) {
         super(LetterContext.builder()
-                   .jurorPool(jurorPool)
-                   .courtLocation(courtLocation)
-                   .bureauLocation(bureauLocation)
-                   .additionalInformation(additionalInformation)
-                   .build());
+            .jurorPool(jurorPool)
+            .courtLocation(courtLocation)
+            .bureauLocation(bureauLocation)
+            .additionalInformation(additionalInformation)
+            .build());
     }
 
     public RequestInfoLetter(JurorPool jurorPool,
-                         String additionalInformation,
-                         CourtLocation courtLocation,
-                         CourtLocation bureauLocation,
-                         WelshCourtLocation welshCourtLocation) {
+                             String additionalInformation,
+                             CourtLocation courtLocation,
+                             CourtLocation bureauLocation,
+                             WelshCourtLocation welshCourtLocation) {
         super(LetterContext.builder()
             .jurorPool(jurorPool)
             .courtLocation(courtLocation)

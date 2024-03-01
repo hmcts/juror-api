@@ -27,6 +27,12 @@ public class CourtroomsDto {
     @NotBlank
     private String owner;
 
+    @JsonProperty("loc_code")
+    @Schema(description = "loc code of the court room", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Size(min = 3, max = 3)
+    @NotBlank
+    private String locCode;
+
     @JsonProperty("room_number")
     @Schema(description = "Room number for courtroom", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank

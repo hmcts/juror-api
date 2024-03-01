@@ -667,9 +667,9 @@ public class ExcusalResponseServiceImplTest {
         Mockito.verify(printDataService, Mockito.times(1))
             .printExcusalDeniedLetter(any());
         // Negative check for excusal letter
-//        Mockito.verify(printDataService, Mockito.never())
-//            .getLetterToEnqueue(payload.getOwner(), jurorNumber);
-//        Mockito.verify(excusalLetterService, Mockito.never()).enqueueLetter(any());
+        //Mockito.verify(printDataService, Mockito.never())
+        //.getLetterToEnqueue(payload.getOwner(), jurorNumber);
+        //Mockito.verify(excusalLetterService, Mockito.never()).enqueueLetter(any());
     }
 
     private void verifyHappyExcusalLetter(JurorPool jurorPool,

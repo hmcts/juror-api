@@ -142,12 +142,12 @@ public class ResponseStatusUpdatePhoneNumberRulesTest {
     @Test
     public void mergeResponse_SingleSpecialNeeds() {
 
-        TSpecial tSpecial = new TSpecial("D", "DIET");
+        TSpecial special = new TSpecial("D", "DIET");
 
         //set single special need
         BureauJurorSpecialNeed specialNeed = new BureauJurorSpecialNeed();
         specialNeed.setJurorNumber("209092530");
-        specialNeed.setSpecialNeed(tSpecial);
+        specialNeed.setSpecialNeed(special);
         specialNeed.setDetail("Some Details");
 
         List<BureauJurorSpecialNeed> jurorNeeds = new ArrayList<>();
@@ -169,18 +169,18 @@ public class ResponseStatusUpdatePhoneNumberRulesTest {
     @Test
     public void mergeResponse_MultipleSpecialNeeds() {
 
-        TSpecial tSpecialOne = new TSpecial("D", "DIET");
-        TSpecial tSpecialTwo = new TSpecial("L", "LIMITED MOBILITY");
+        TSpecial specialOne = new TSpecial("D", "DIET");
 
 
         BureauJurorSpecialNeed specialNeedOne = new BureauJurorSpecialNeed();
         specialNeedOne.setJurorNumber("209092530");
-        specialNeedOne.setSpecialNeed(tSpecialOne);
+        specialNeedOne.setSpecialNeed(specialOne);
         specialNeedOne.setDetail("Some Details");
 
+        TSpecial specialTwo = new TSpecial("L", "LIMITED MOBILITY");
         BureauJurorSpecialNeed specialNeedTwo = new BureauJurorSpecialNeed();
         specialNeedTwo.setJurorNumber("209092530");
-        specialNeedTwo.setSpecialNeed(tSpecialTwo);
+        specialNeedTwo.setSpecialNeed(specialTwo);
         specialNeedTwo.setDetail("Some Details");
 
 

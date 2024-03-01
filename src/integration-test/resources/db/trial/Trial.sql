@@ -7,7 +7,7 @@ insert into juror_mod.judge (owner, code, description) values
 ('415', '1234','Test judge'),
 ('462', '4321','Judge Test');
 
-insert into juror_mod.courtroom (owner, room_number, description) values
+insert into juror_mod.courtroom (loc_code, room_number, description) values
 ('415', '1', 'large room fits 100 people'),
 ('462', '2', 'large room fits 100 people');
 

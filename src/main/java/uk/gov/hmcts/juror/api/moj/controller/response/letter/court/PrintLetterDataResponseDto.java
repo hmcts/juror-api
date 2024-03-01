@@ -40,6 +40,8 @@ public class PrintLetterDataResponseDto implements Serializable {
     String postponedToDate;
     String deferredToDate;
     String noShowDate;
+    @JsonFormat(pattern = "HH:mm", shape = JsonFormat.Shape.STRING)
+    LocalTime noShowTime;
     String replyByDate;
     String dateOrderedToAttend;
     @JsonFormat(pattern = "HH:mm", shape = JsonFormat.Shape.STRING)
