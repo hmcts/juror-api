@@ -21,9 +21,10 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseR
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApproval;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
+import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
+import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
-import uk.gov.hmcts.juror.api.moj.enumeration.FoodDrinkClaimType;
 import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
 
 import java.time.LocalDate;
@@ -50,11 +51,6 @@ public interface JurorExpenseService {
 
     GetEnteredExpenseResponse getEnteredExpense(String jurorNumber, String poolNumber, LocalDate dateOfExpense);
 
-    //Must be called after jurors taken by X and juror traveled by X are set
-    void updateMilesTraveledAndTravelDue(Appearance appearance, Integer milesTraveled);
-
-    void updateFoodDrinkClaimType(Appearance appearance, FoodDrinkClaimType claimType);
-
     FinancialLossWarning validateAndUpdateFinancialLossExpenseLimit(Appearance appearance);
 
     CombinedSimplifiedExpenseDetailDto getSimplifiedExpense(JurorNumberAndPoolNumberDto request, ExpenseType type);
@@ -75,4 +71,8 @@ public interface JurorExpenseService {
     boolean isLongTrialDay(String jurorNumber, String poolNumber, LocalDate localDate);
 
     void apportionSmartCard(ApportionSmartCardRequest request);
+
+    ExpenseRates getCurrentExpenseRates();
+
+    void updateExpenseRates(ExpenseRatesDto expenseRatesDto);
 }

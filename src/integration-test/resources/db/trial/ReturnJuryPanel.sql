@@ -82,7 +82,7 @@ insert into juror_mod.judge (owner, code, description) values
 ('415', '0001', 'judge dredd'),
 ('415', '0002', 'judge jose');
 
-insert into juror_mod.courtroom (owner, room_number, description) values
+insert into juror_mod.courtroom (loc_code, room_number, description) values
 ('415', '1', 'big room'),
 ('415', '2', 'small room');
 

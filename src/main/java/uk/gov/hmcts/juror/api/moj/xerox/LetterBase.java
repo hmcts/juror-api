@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
@@ -169,8 +170,9 @@ public class LetterBase {
             new SimpleDateFormat("EEEEEE d MMMM, yyyy").format(Date.valueOf(context.getJurorPool().getDeferralDate())),
                            ContextType.JUROR_POOL),
         WELSH_DEFERRAL_DATE(context -> dateToWelsh(context.getJurorPool().getDeferralDate()), ContextType.JUROR_POOL),
-        TIME_OF_ATTENDANCE(context -> context.getCourtLocation().getCourtAttendTime(), ContextType.COURT_LOCATION),
-        DEFERRAL_TIME(context -> context.getCourtLocation().getCourtAttendTime(), ContextType.COURT_LOCATION),
+        TIME_OF_ATTENDANCE(context -> DataUtils.asStringHHmm(context.getCourtLocation().getCourtAttendTime()),
+            ContextType.COURT_LOCATION),
+        DEFERRAL_TIME(context -> DataUtils.asStringHHmm(context.getCourtLocation().getCourtAttendTime()), ContextType.COURT_LOCATION),
         JUROR_TITLE(context -> context.getJurorPool().getJuror().getTitle(), ContextType.JUROR_POOL),
         JUROR_FIRST_NAME(context -> context.getJurorPool().getJuror().getFirstName(), ContextType.JUROR_POOL),
         JUROR_LAST_NAME(context -> context.getJurorPool().getJuror().getLastName(), ContextType.JUROR_POOL),

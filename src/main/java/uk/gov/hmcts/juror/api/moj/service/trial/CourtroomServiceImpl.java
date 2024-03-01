@@ -25,14 +25,15 @@ public class CourtroomServiceImpl implements CourtroomService {
         List<Tuple> courtRooms = courtroomRepository.getCourtroomsForLocation(courts);
         HashMap<String, List<CourtroomsDto>> courtroomsHashmap = new HashMap<>();
         for (Tuple courtroom : courtRooms) {
-            initialiseHashMap(courtroomsHashmap,courtroom.get(4, String.class));
+            initialiseHashMap(courtroomsHashmap,courtroom.get(5, String.class));
             CourtroomsDto dto = createCourtroomsDto(
                 courtroom.get(0, Long.class),
                 courtroom.get(1, String.class),
                 courtroom.get(2, String.class),
-                courtroom.get(3, String.class)
+                courtroom.get(3, String.class),
+                courtroom.get(4, String.class)
             );
-            courtroomsHashmap.get(courtroom.get(4, String.class)).add(dto);
+            courtroomsHashmap.get(courtroom.get(5, String.class)).add(dto);
         }
 
         courtroomsHashmap.forEach((k, v) -> {
@@ -54,12 +55,14 @@ public class CourtroomServiceImpl implements CourtroomService {
         return dto;
     }
 
-    private static CourtroomsDto createCourtroomsDto(Long id, String owner, String description, String roomNumber) {
+    private static CourtroomsDto createCourtroomsDto(Long id, String owner, String locCode, String description,
+                                                     String roomNumber) {
         CourtroomsDto dto = new CourtroomsDto();
         dto.setId(id);
         dto.setRoomNumber(roomNumber);
         dto.setDescription(description);
         dto.setOwner(owner);
+        dto.setLocCode(locCode);
         return dto;
     }
 }

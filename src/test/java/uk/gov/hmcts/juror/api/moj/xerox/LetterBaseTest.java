@@ -379,7 +379,7 @@ class LetterBaseTest {
                                                    .build());
 
         testLetter.addData(LetterBase.LetterDataType.TIME_OF_ATTENDANCE, 40);
-        assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("10:00AM", 40));
+        assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("10:00", 40));
     }
 
     @Test
@@ -389,7 +389,7 @@ class LetterBaseTest {
                                                    .build());
 
         testLetter.addData(LetterBase.LetterDataType.DEFERRAL_TIME, 40);
-        assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("10:00AM", 40));
+        assertThat(testLetter.getLetterString()).isEqualTo(LetterTestUtils.pad("10:00", 40));
     }
 
     @Test

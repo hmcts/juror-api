@@ -22,11 +22,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
 import uk.gov.hmcts.juror.api.utils.TestConstants;
 
+import java.security.Key;
 import java.time.Clock;
 import java.util.Date;
 import java.util.Map;
 import javax.crypto.SecretKey;
-import java.security.Key;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;

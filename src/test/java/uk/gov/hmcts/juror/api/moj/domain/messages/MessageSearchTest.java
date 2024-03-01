@@ -97,6 +97,22 @@ class MessageSearchTest {
         verifyNoMoreInteractions(query);
     }
 
+    @Test
+    void positiveOnlyDeferralsInCourt() {
+        JPQLQuery<Tuple> query = mock(JPQLQuery.class);
+        MessageSearch messageSearch = MessageSearch.builder()
+            .onlyDeferralsInCourt(TestConstants.VALID_COURT_LOCATION)
+            .build();
+
+        messageSearch.apply(query);
+
+        verify(query, times(1))
+            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
+        verify(query, times(1))
+            .where(MessageSearch.Filter.SHOW_ONLY_DEFERRED.getExpression());
+        verifyNoMoreInteractions(query);
+    }
+
 
     @Test
     void positiveApplyJurorSearchNull() {
@@ -157,6 +173,8 @@ class MessageSearchTest {
                 .eq(TestConstants.VALID_POSTCODE.toLowerCase()));
         verifyNoMoreInteractions(query);
     }
+
+
 
     @Test
     void positiveApplyMessageFilterNull() {

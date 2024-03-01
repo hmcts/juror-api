@@ -42,6 +42,8 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApproval;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.SimplifiedExpenseDetailDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
+import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
+import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesDto;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorExpenseTotals;
@@ -56,6 +58,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.TravelMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
+import uk.gov.hmcts.juror.api.moj.repository.ExpenseRatesRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorExpenseTotalsRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PaymentDataRepository;
@@ -109,6 +112,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     private final PaymentDataRepository paymentDataRepository;
     private final ApplicationSettingService applicationSettingService;
     private final EntityManager entityManager;
+    private final ExpenseRatesRepository expenseRatesRepository;
 
     Integer getJurorDefaultMileage(String jurorNumber) {
         Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
@@ -179,6 +183,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public DefaultExpenseResponseDto getDefaultExpensesForJuror(String jurorNumber) {
 
         Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, jurorNumber);
@@ -204,7 +209,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             return;
         }
         appearances.forEach(appearance -> applyDefaultExpenses(appearance, getJuror(appearance.getJurorNumber())));
-        appearanceRepository.saveAll(appearances);
+        saveAppearancesWithExpenseRateIdUpdate(appearances);
     }
 
     @Transactional
@@ -296,7 +301,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             jurorHistoryService.createExpenseForApprovalHistory(financialAuditDetails,
                 appearance));
 
-        appearanceRepository.saveAll(appearances);
+        saveAppearancesWithExpenseRateIdUpdate(appearances);
         log.trace("Exit submitDraftExpensesForApproval");
     }
 
@@ -432,16 +437,16 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Override
     @Transactional
     public FinancialLossWarning validateAndUpdateFinancialLossExpenseLimit(Appearance appearance) {
-        CourtLocation courtLocation = appearance.getCourtLocation();
+        ExpenseRates expenseRates = getCurrentExpenseRates();
         PayAttendanceType attendanceType = appearance.getPayAttendanceType();
         boolean isLongTrial = Boolean.TRUE.equals(appearance.isLongTrialDay());
         BigDecimal financialLossLimit = switch (attendanceType) {
             case FULL_DAY -> isLongTrial
-                ? courtLocation.getLimitFinancialLossFullDayLongTrial()
-                : courtLocation.getLimitFinancialLossFullDay();
+                ? expenseRates.getLimitFinancialLossFullDayLongTrial()
+                : expenseRates.getLimitFinancialLossFullDay();
             case HALF_DAY -> isLongTrial
-                ? courtLocation.getLimitFinancialLossHalfDayLongTrial()
-                : courtLocation.getLimitFinancialLossHalfDay();
+                ? expenseRates.getLimitFinancialLossHalfDayLongTrial()
+                : expenseRates.getLimitFinancialLossHalfDay();
         };
         BigDecimal effectiveLossOfEarnings = getOrZero(appearance.getLossOfEarningsDue());
         BigDecimal effectiveExtraCareCost = getOrZero(appearance.getChildcareDue());
@@ -537,7 +542,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             appearance -> updateAppearanceConsumer.forEach(
                 appearanceDailyExpenseAttendanceDayBiConsumer -> appearanceDailyExpenseAttendanceDayBiConsumer.accept(
                     appearance, request)));
-        appearanceRepository.saveAll(appearances);
+        saveAppearancesWithExpenseRateIdUpdate(appearances);
     }
 
     void updateDraftTimeExpense(Appearance appearance, DailyExpenseTime time) {
@@ -604,20 +609,19 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         appearance.setHiredVehicleDue(travel.getTaxi());
     }
 
-    @Override
     //Must be called after jurors taken by X and juror traveled by X are set
-    public void updateMilesTraveledAndTravelDue(Appearance appearance, Integer milesTraveled) {
+    void updateMilesTraveledAndTravelDue(Appearance appearance, Integer milesTraveled) {
         appearance.setMilesTraveled(milesTraveled);
         final Integer jurorsByCar = appearance.getJurorsTakenCar();
         final Integer jurorsByMotorcycle = appearance.getJurorsTakenMotorcycle();
-        final CourtLocation courtLocation = appearance.getCourtLocation();
+        final ExpenseRates expenseRates = getCurrentExpenseRates();
 
         BiFunction<TravelMethod, Boolean, BigDecimal> calculateTravelCost = (travelMethod, traveledBy) -> {
             if (traveledBy == null || !traveledBy) {
                 return null;
             }
             BigDecimal travelRate = travelMethod.getRate(
-                courtLocation, jurorsByCar, jurorsByMotorcycle);
+                expenseRates, jurorsByCar, jurorsByMotorcycle);
             return travelRate.multiply(BigDecimal.valueOf(Optional.ofNullable(milesTraveled).orElse(0)));
         };
 
@@ -627,10 +631,9 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         appearance.setBicycleDue(calculateTravelCost.apply(TravelMethod.BICYCLE, appearance.getTraveledByBicycle()));
     }
 
-    @Override
-    public void updateFoodDrinkClaimType(Appearance appearance, FoodDrinkClaimType claimType) {
-        CourtLocation courtLocation = appearance.getCourtLocation();
-        BigDecimal substanceRate = claimType.getRate(courtLocation);
+    void updateFoodDrinkClaimType(Appearance appearance, FoodDrinkClaimType claimType) {
+        final ExpenseRates expenseRates = getCurrentExpenseRates();
+        BigDecimal substanceRate = claimType.getRate(expenseRates);
         appearance.setSubsistenceDue(substanceRate);
         appearance.setFoodAndDrinkClaimType(claimType);
     }
@@ -677,6 +680,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CombinedExpenseDetailsDto<ExpenseDetailsDto> getDraftExpenses(String jurorNumber, String poolNumber) {
         List<Appearance> appearances =
             appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(jurorNumber, poolNumber)
@@ -740,6 +744,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ExpenseCount countExpenseTypes(String jurorNumber, String poolNumber) {
         List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
         final String owner = SecurityUtil.getActiveOwner();
@@ -764,6 +769,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     @Override
+    @Transactional
     public void updateExpense(String jurorNumber, ExpenseType type, List<DailyExpense> request) {
         List<Appearance> appearances = request.stream()
             .map(dailyExpense -> {
@@ -799,8 +805,10 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             dto.getPoolNumber()).stream().filter(appearance ->
             dto.getAttendanceDates().contains(appearance.getAttendanceDate())).toList();
         if (appearances.isEmpty() || appearances.size() != dto.getAttendanceDates().size()) {
-            throw new MojException.NotFound(String.format("One or more appearance records not found for Juror Number: %s, "
-                + "Pool Number: %s and Attendance Dates provided", dto.getJurorNumber(), dto.getPoolNumber()), null);
+            throw new MojException.NotFound(
+                String.format("One or more appearance records not found for Juror Number: %s, "
+                    + "Pool Number: %s and Attendance Dates provided", dto.getJurorNumber(), dto.getPoolNumber()),
+                null);
         }
         return appearances;
     }
@@ -829,8 +837,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         Appearance lastAppearance = appearances.get(appearances.size() - 1);
         lastAppearance.setSmartCardAmountDue(lastDayOffSet);
         validateExpense(lastAppearance);
-
-        appearanceRepository.saveAll(appearances);
+        saveAppearancesWithExpenseRateIdUpdate(appearances);
     }
 
     @Override
@@ -1022,8 +1029,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             );
         }
         appearances.forEach(this::approveAppearance);
-        appearanceRepository.saveAll(appearances);
-
+        saveAppearancesWithExpenseRateIdUpdate(appearances);
     }
 
     void approveAppearance(Appearance appearance) {
@@ -1156,5 +1162,25 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         return localDates.stream().distinct().sorted(Comparator.naturalOrder())
             .toList()
             .indexOf(localDate) >= 10;//>= as 0 indexed
+    }
+
+    void saveAppearancesWithExpenseRateIdUpdate(Collection<Appearance> appearances) {
+        ExpenseRates expenseRates = getCurrentExpenseRates();
+        appearances.forEach(appearance -> appearance.setExpenseRates(expenseRates));
+        appearanceRepository.saveAll(appearances);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ExpenseRates getCurrentExpenseRates() {
+        return expenseRatesRepository.getCurrentRates();
+    }
+
+    @Override
+    @Transactional()
+    public void updateExpenseRates(ExpenseRatesDto expenseRatesDto) {
+        ExpenseRates expenseRates = expenseRatesDto.toEntity();
+        expenseRates.setRatesEffectiveFrom(LocalDate.now());
+        expenseRatesRepository.save(expenseRates);
     }
 }

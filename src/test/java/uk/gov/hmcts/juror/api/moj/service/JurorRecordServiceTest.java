@@ -41,6 +41,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.ContactEnquiryTypeListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAttendanceDetailsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorBankDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
@@ -203,7 +204,7 @@ class JurorRecordServiceTest {
 
     @Nested
     @DisplayName("void editJurorsBankDetails(RequestBankDetailsDto)")
-    class editJurorsBankDetails {
+    class EditJurorsBankDetails {
 
         @Test
         void happyPath() {
@@ -225,13 +226,12 @@ class JurorRecordServiceTest {
             verify(jurorRepository, times(1)).save(juror);
             verify(jurorHistoryService, times(1)).createEditBankSortCodeHistory(jurorNumber);
             verify(jurorHistoryService, times(1)).createEditBankAccountNameHistory(jurorNumber);
-            verify(jurorHistoryService, times(1)).
-                createEditBankAccountNumberHistory(jurorNumber);
+            verify(jurorHistoryService, times(1))
+                .createEditBankAccountNumberHistory(jurorNumber);
 
             assertThat(juror.getBankAccountName()).isEqualTo(dto.getAccountHolderName());
             assertThat(juror.getBankAccountNumber()).isEqualTo(dto.getAccountNumber());
             assertThat(juror.getSortCode()).isEqualTo(dto.getSortCode());
-
 
         }
 
@@ -254,27 +254,25 @@ class JurorRecordServiceTest {
             verify(jurorRepository, never()).save(juror);
             verify(jurorHistoryService, never()).createEditBankSortCodeHistory(jurorNumber);
             verify(jurorHistoryService, never()).createEditBankAccountNameHistory(jurorNumber);
-            verify(jurorHistoryService, never()).
-                createEditBankAccountNumberHistory(jurorNumber);
+            verify(jurorHistoryService, never()).createEditBankAccountNumberHistory(jurorNumber);
         }
     }
 
-
     @Test
     void testEditJurorRecord() {
-        ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
 
-        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
         JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
 
         doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
-        ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
+        final ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
         reasonableAdjustments.setDescription("Vision impairment");
         reasonableAdjustments.setCode("V");
         doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
 
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
         jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
 
+        ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
         verify(jurorRepository, times(1)).save(jurorArgumentCaptor.capture());
         Juror juror = jurorArgumentCaptor.getValue();
         assertThat(juror.getTitle()).isEqualTo(requestDto.getTitle());
@@ -435,8 +433,8 @@ class JurorRecordServiceTest {
         doReturn(jurorPool).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
 
-        JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
-            jurorNumber, LOC_CODE);
+        JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService
+            .getJurorDetails(buildPayload(COURT_OWNER), jurorNumber, LOC_CODE);
 
         assertThat(jurorDetailsResponseDto.getPrimaryPhone())
             .as("Expect the primary phone number to be the mobile number")
@@ -2882,7 +2880,7 @@ class JurorRecordServiceTest {
             when(courtLocationRepository.findById(dto.getLocationCode()))
                 .thenReturn(Optional.ofNullable(courtLocation));
 
-            when(courtLocation.getCourtAttendTime()).thenReturn("09:15");
+            when(courtLocation.getCourtAttendTime()).thenReturn(LocalTime.of(9,15));
 
             PoolType poolType = mock(PoolType.class);
             when(poolTypeRepository.findById(dto.getPoolType()))
@@ -3030,7 +3028,7 @@ class JurorRecordServiceTest {
             assertNull(poolRequest.getNumberRequested(), "Number requested must be null");
 
             assertEquals(LocalDateTime.of(dto.getStartDate(),
-                    LocalTime.parse(courtLocation.getCourtAttendTime())),
+                    courtLocation.getCourtAttendTime()),
                 poolRequest.getAttendTime(), "Attend Time must match");
 
             assertEquals(poolType, poolRequest.getPoolType(), "Pool type must match");
@@ -3448,6 +3446,104 @@ class JurorRecordServiceTest {
                 .decision(approvalDecision)
                 .comments("Some Comments")
                 .build();
+        }
+    }
+
+    @Nested
+    @DisplayName("Juror getJurorBankDetails(String jurorNumber)")
+    class GetJurorBankDetails {
+
+        public static final String JUROR_NUMBER = "123456789";
+
+        @Test
+        void positiveTypical() {
+            String courtOwner = "415";
+            String username = "JURY_USER";
+
+            TestUtils.setUpMockAuthentication(courtOwner, username, "1", List.of(courtOwner));
+
+            Juror juror = new Juror();
+            juror.setJurorNumber(JUROR_NUMBER);
+            juror.setBankAccountNumber("12345678");
+            juror.setSortCode("115578");
+            juror.setAddressLine1("Address Line 1");
+            juror.setAddressLine2("Address Line 1");
+            juror.setAddressLine3("Address Line 1");
+            juror.setAddressLine4("Address Line 1");
+            juror.setAddressLine5("Address Line 1");
+            juror.setPostcode("M24 4BP");
+            juror.setNotes("Some notes");
+
+            JurorPool jurorPool = new JurorPool();
+            jurorPool.setJuror(juror);
+            jurorPool.setOwner("415");
+
+            juror.setAssociatedPools(Set.of(jurorPool));
+
+            when(jurorRepository.findById(JUROR_NUMBER))
+                .thenReturn(Optional.of(juror));
+
+            JurorBankDetailsDto jurorBankDetailsDto = jurorRecordService.getJurorBankDetails(JUROR_NUMBER);
+
+            verifyJurorBankDetails(jurorBankDetailsDto, juror);
+            verify(jurorRepository, times(1)).findById(JUROR_NUMBER);
+
+        }
+
+        void verifyJurorBankDetails(JurorBankDetailsDto jurorBankDetailsDto, Juror juror) {
+            assertThat(jurorBankDetailsDto).isNotNull();
+            assertThat(jurorBankDetailsDto.getBankAccountNumber()).isEqualTo(juror.getBankAccountNumber());
+            assertThat(jurorBankDetailsDto.getSortCode()).isEqualTo(juror.getSortCode());
+            assertThat(jurorBankDetailsDto.getAddressLineOne()).isEqualTo(juror.getAddressLine1());
+            assertThat(jurorBankDetailsDto.getAddressLineTwo()).isEqualTo(juror.getAddressLine2());
+            assertThat(jurorBankDetailsDto.getAddressLineThree()).isEqualTo(juror.getAddressLine3());
+            assertThat(jurorBankDetailsDto.getAddressLineFour()).isEqualTo(juror.getAddressLine4());
+            assertThat(jurorBankDetailsDto.getAddressLineFive()).isEqualTo(juror.getAddressLine5());
+            assertThat(jurorBankDetailsDto.getPostCode()).isEqualTo(juror.getPostcode());
+            assertThat(jurorBankDetailsDto.getNotes()).isEqualTo(juror.getNotes());
+        }
+
+        @Test
+        void negativeUserForbidden() {
+            String courtOwner = "415";
+            String username = "JURY_USER";
+
+            TestUtils.setUpMockAuthentication(courtOwner, username, "1", List.of(courtOwner));
+
+            Juror juror = new Juror();
+            juror.setJurorNumber(JUROR_NUMBER);
+
+            JurorPool jurorPool = new JurorPool();
+            jurorPool.setJuror(juror);
+            jurorPool.setOwner("416"); // different owner to the current user
+
+            juror.setAssociatedPools(Set.of(jurorPool));
+
+            when(jurorRepository.findById(JUROR_NUMBER))
+                .thenReturn(Optional.of(juror));
+
+            MojException.Forbidden exception = assertThrows(MojException.Forbidden.class,
+                () -> jurorRecordService.getJurorBankDetails(JUROR_NUMBER),
+                "When user does not have access to juror record an exception should be thrown");
+
+            assertThat(exception.getMessage()).isNotNull().isEqualTo(
+                "User does not have ownership of the supplied juror record");
+            assertThat(exception.getCause()).isNull();
+        }
+
+
+        @Test
+        void negativeJurorRecordNotFound() {
+            when(jurorRepository.findById(JUROR_NUMBER))
+                .thenReturn(Optional.empty());
+
+            MojException.NotFound exception = assertThrows(MojException.NotFound.class,
+                () -> jurorRecordService.getJurorBankDetails(JUROR_NUMBER),
+                "When juror cannot be found an exception should be thrown");
+
+            assertThat(exception.getMessage()).isNotNull().isEqualTo(
+                "Unable to find valid juror record for Juror Number: " + JUROR_NUMBER);
+            assertThat(exception.getCause()).isNull();
         }
     }
 

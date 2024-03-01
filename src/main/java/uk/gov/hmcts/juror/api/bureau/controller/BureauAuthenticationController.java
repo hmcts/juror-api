@@ -19,10 +19,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.bureau.service.BureauAuthenticationService;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Authentication endpoints for Bureau authentication.
@@ -41,7 +44,7 @@ public class BureauAuthenticationController {
     }
 
     @PostMapping(path = "/auth/bureau")
-    @Operation(summary = "/auth/bureau - Authenticate Bureau Login",
+    @Operation(summary = "Authenticate Bureau Login",
                description = "Authenticate Bureau Officer credentials to allow creation of a JWT")
     public ResponseEntity<BureauAuthenticationResponseDto> authenticationEndpoint(
         @RequestBody BureauAuthenticationRequestDto requestDto) {
@@ -137,6 +140,11 @@ public class BureauAuthenticationController {
         @Schema(description = "Court location codes the staff member administrates.")
         private List<String> courts;
 
+
+        private UserType userType;
+
+        private Set<Role> roles;
+
         /**
          * Convert a {@link User} entity into an instance of {@link UserDto}.
          *
@@ -154,6 +162,8 @@ public class BureauAuthenticationController {
                 .name(user.getUsername())
                 .rank(user.getLevel())
                 .courts(user.getCourts())
+                .userType(user.getUserType())
+                .roles(user.getRoles())
                 .build();
         }
     }

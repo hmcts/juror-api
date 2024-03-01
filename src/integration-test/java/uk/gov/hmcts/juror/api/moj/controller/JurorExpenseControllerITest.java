@@ -182,7 +182,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<CustomPageImpl<Void>> response = template.exchange(new RequestEntity<>(httpHeaders, GET,
                 uri), new ParameterizedTypeReference<>() {
-            });
+                });
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -206,7 +206,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<CustomPageImpl<Void>> response = template.exchange(new RequestEntity<>(httpHeaders, GET,
                 uri), new ParameterizedTypeReference<>() {
-            });
+                });
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
             CustomPageImpl<Void> responseBody = response.getBody();
@@ -232,7 +232,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<CustomPageImpl<Void>> response = template.exchange(new RequestEntity<>(httpHeaders, GET,
                 uri), new ParameterizedTypeReference<>() {
-            });
+                });
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -378,7 +378,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("POST /api/v1/moj/expenses/set-default-expenses/{juror_number}")
-    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp_default_expenses.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp_default_expenses.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class SetDefaultExpenses {
 
         private BigDecimal createBigDecimal(double value) {
@@ -596,7 +597,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("POST " + PostDraftAttendedDayDailyExpense.URL)
-    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class PostDraftAttendedDayDailyExpense extends AbstractDraftDailyExpense {
 
         public static final String URL = BASE_URL + "/{juror_number}/draft/attended_day";
@@ -883,7 +885,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("POST " + PostDraftNonAttendedDayDailyExpense.URL)
-    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class PostDraftNonAttendedDayDailyExpense extends AbstractDraftDailyExpense {
         public static final String URL = BASE_URL + "/{juror_number}/draft/non_attended_day";
 
@@ -1172,7 +1175,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("GET " + GetEnteredExpenseDetails.URL)
-    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_getEnteredExpenseDetails.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_getEnteredExpenseDetails.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class GetEnteredExpenseDetails {
         public static final String URL = BASE_URL + "/entered";
 
@@ -1415,7 +1419,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("POST /api/v1/moj/expenses/submit-for-approval")
-    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_submitForApprovalSetUp.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_submitForApprovalSetUp.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class SubmitForApproval {
 
         final URI uri = URI.create("/api/v1/moj/expenses/submit-for-approval");
@@ -1605,6 +1610,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getIsDraftExpense())
                 .as("Is draft expense flag should be updated to false (expense no longer draft)")
                 .isFalse();
+            assertThat(appearance.getExpenseRates()).isNotNull();
+            assertThat(appearance.getExpenseRates().getId()).isEqualTo(999_999);
         }
 
         private void verifyExpenseStillInDraft(Appearance appearance) {
@@ -1619,12 +1626,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 .as("Is draft expense flag should remain unchanged (expense still in draft)")
                 .isTrue();
         }
-
     }
 
     @Nested
     @DisplayName("GET " + GetEnteredExpenseDetails.URL)
-    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_simplifiedExpenseSetUp.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_simplifiedExpenseSetUp.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class GetSimplifiedExpenseDetails {
         public static final String URL = BASE_URL + "/view/{type}";
 
@@ -1651,8 +1658,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @Nested
         @DisplayName("Positive")
         class Positive {
-            protected ResponseEntity<CombinedSimplifiedExpenseDetailDto> triggerValid(ExpenseType expenseType,
-                                                                                      JurorNumberAndPoolNumberDto request) throws Exception {
+            protected ResponseEntity<CombinedSimplifiedExpenseDetailDto> triggerValid(
+                ExpenseType expenseType,
+                JurorNumberAndPoolNumberDto request) throws Exception {
                 final String jwt = createBureauJwt(COURT_USER, "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<CombinedSimplifiedExpenseDetailDto> response = template.exchange(
@@ -1872,7 +1880,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             @Test
             void appearancesNotFoundApproved() throws Exception {
                 ResponseEntity<CombinedSimplifiedExpenseDetailDto> response = triggerValid(ExpenseType.APPROVED,
-                   new JurorNumberAndPoolNumberDto(JUROR_NUMBER_NO_APPEARANCES, POOL_NUMBER));
+                    new JurorNumberAndPoolNumberDto(JUROR_NUMBER_NO_APPEARANCES, POOL_NUMBER));
 
                 CombinedSimplifiedExpenseDetailDto body = response.getBody();
                 assertThat(body.getExpenseDetails()).hasSize(0);
@@ -1994,7 +2002,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("GET " + GetDraftExpenses.URL)
-    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class GetDraftExpenses {
         public static final String URL = BASE_URL + "/draft/{juror_number}/{pool_number}";
 
@@ -2014,8 +2023,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @Nested
         @DisplayName("Positive")
         class Positive {
-            protected ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> triggerValid(String jurorNumber,
-                                                                                                String poolNumber) throws Exception {
+            protected ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> triggerValid(
+                String jurorNumber, String poolNumber) throws Exception {
                 final String jwt = createBureauJwt(COURT_USER, "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> response = template.exchange(
@@ -2172,11 +2181,16 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("POST " + ApproveExpenses.URL)
-    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_approveExpenseSetUp.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_approveExpenseSetUp.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class ApproveExpenses {
         public static final String URL = BASE_URL + "/approve";
 
         private static final String JUROR_NUMBER = "641500020";
+
+        protected ApproveExpenses() {
+
+        }
 
         @Nested
         class Positive {
@@ -2202,7 +2216,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(financialAuditDetail.getJurorRevision()).isEqualTo(1L);
                 assertThat(financialAuditDetail.getCourtLocationRevision()).isEqualTo(6L);
                 assertThat(financialAuditDetail.getType()).isEqualTo(isCash
-                    ? FinancialAuditDetails.Type.APPROVED_CASH : FinancialAuditDetails.Type.APPROVED_BACS);
+                    ? FinancialAuditDetails.Type.APPROVED_CASH
+                    : FinancialAuditDetails.Type.APPROVED_BACS);
                 assertThat(financialAuditDetail.getCreatedBy().getUsername()).isEqualTo("COURT_USER");
                 assertThat(financialAuditDetail.getCreatedOn()).isEqualToIgnoringHours(createdOn);
                 return financialAuditDetail.getId();
@@ -2582,7 +2597,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("POST " + PostEditAttendedDayDailyExpense.URL)
-    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_editExpenseSetUp.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_editExpenseSetUp.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class PostEditAttendedDayDailyExpense extends AbstractDraftDailyExpense {
 
         public static final String URL = BASE_URL + "/{juror_number}/edit/{type}";
@@ -2924,7 +2940,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 financialAuditDetailsAppearancesRepository.findAll().forEach(financialAuditDetailsAppearances::add);
                 assertThat(financialAuditDetailsAppearances).hasSize(1);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
-                    2, LocalDate.of(2023, 1, 11), 3);
+                    2, LocalDate.of(2023, 1, 11), 2);
                 assertJurorHistory(jurorNumber, HistoryCodeMod.EDIT_PAYMENTS, "COURT_USER", "£62.03",
                     poolNumber, LocalDate.of(2023, 1, 11), "F2", 1, 0);
             }
@@ -2990,7 +3006,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 financialAuditDetailsAppearancesRepository.findAll().forEach(financialAuditDetailsAppearances::add);
                 assertThat(financialAuditDetailsAppearances).hasSize(1);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
-                    2, LocalDate.of(2023, 1, 15), 3);
+                    2, LocalDate.of(2023, 1, 15), 2);
                 assertJurorHistory(jurorNumber, HistoryCodeMod.EDIT_PAYMENTS, "COURT_USER", "£65.54",
                     poolNumber, LocalDate.of(2023, 1, 15), "F2", 1, 0);
             }
@@ -2999,7 +3015,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("POST " + CalculateTotals.URL)
-    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_calculateTotalExpenseSetUp.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_calculateTotalExpenseSetUp.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class CalculateTotals extends AbstractDraftDailyExpense {
         public static final String URL = BASE_URL + "/calculate/totals";
 
@@ -3357,7 +3374,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                     createDailyExpenseTravel(TravelMethod.CAR, null, 5, 2.25, null, null)
                                 )
                                 .foodAndDrink(
-                                    createDailyExpenseFoodAndDrink(FoodDrinkClaimType.LESS_THAN_OR_EQUAL_TO_10_HOURS, 1000.00)
+                                    createDailyExpenseFoodAndDrink(FoodDrinkClaimType.LESS_THAN_OR_EQUAL_TO_10_HOURS,
+                                        1000.00)
                                 )
                                 .build()
                         ))
@@ -3398,7 +3416,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("GET /api/v1/moj/expenses/submit-for-approval")
-    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class GetCounts {
 
         public static final String URL = BASE_URL + "/counts/{juror_number}/{pool_number}";
@@ -3493,14 +3512,19 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("GET " + GetExpensesForApproval.URL)
-    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_getApproveExpenseSetUp.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_getApproveExpenseSetUp.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class GetExpensesForApproval {
         public static final String URL = BASE_URL + "/approval/{loc_code}/{payment_method}";
 
         private String toUrl(String locCode, PaymentMethod paymentMethod, LocalDate from, LocalDate to) {
             return toUrl(locCode, paymentMethod.name(),
-                from == null ? null : from.format(DateTimeFormatter.ISO_DATE),
-                to == null ? null : to.format(DateTimeFormatter.ISO_DATE));
+                from == null
+                    ? null
+                    : from.format(DateTimeFormatter.ISO_DATE),
+                to == null
+                    ? null
+                    : to.format(DateTimeFormatter.ISO_DATE));
         }
 
         private String toUrl(String locCode, String paymentMethod, String from, String to) {
@@ -3510,7 +3534,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 urlTmp += "?from=" + from;
             }
             if (to != null) {
-                urlTmp += (from != null ? "&" : "?") + "to=" + to;
+                urlTmp += (from != null
+                    ? "&"
+                    : "?") + "to=" + to;
             }
             return urlTmp;
         }
@@ -3594,7 +3620,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                     .build()
                             ))
                             .build()
-                    );
+                );
             }
 
             @Test
@@ -3672,7 +3698,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                     .build()
                             ))
                             .build()
-                    );
+                );
             }
 
             @Test
@@ -3941,7 +3967,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("PATCH " + ApportionSmartCard.URL)
-    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class ApportionSmartCard {
         public static final String URL = BASE_URL + "/smartcard";
 

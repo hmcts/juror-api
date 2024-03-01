@@ -2,7 +2,9 @@ package uk.gov.hmcts.juror.api.juror.domain;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.extern.slf4j.Slf4j;
+import uk.gov.hmcts.juror.api.moj.utils.DateRelatedUtils;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -10,7 +12,7 @@ import java.util.Date;
 
 /**
  * QueryDSL queries for {@Link Holidays}.
-*/
+ */
 @Slf4j
 public class HolidaysQueries {
     private static final int BST_ADJUSTMENT = 1;
@@ -37,13 +39,14 @@ public class HolidaysQueries {
         int intBstTimeCondition = Integer.parseInt(strBstTimeValue);
 
         if (intBstTimeCondition == BST_ADJUSTMENT) {
-            return holidaysDetail.holiday.eq(Date.from(holidayDates.toInstant().atZone(ZoneId.systemDefault())
-                .toInstant().truncatedTo(ChronoUnit.DAYS).minus(
-                    1,
-                    ChronoUnit.HOURS
-                )));
+            return holidaysDetail.holiday.eq(
+                DateRelatedUtils.convertToLocalDateViaInstant(Date.from(holidayDates.toInstant().atZone(ZoneId.systemDefault())
+                    .toInstant().truncatedTo(ChronoUnit.DAYS).minus(
+                        1,
+                        ChronoUnit.HOURS
+                    ))));
         } else {
-            return holidaysDetail.holiday.eq(holidayDates);
+            return holidaysDetail.holiday.eq(DateRelatedUtils.convertToLocalDateViaInstant(holidayDates));
         }
     }
 
@@ -55,9 +58,11 @@ public class HolidaysQueries {
      * @param date  the value to check against holidaysDetail.holiday
      * @return Predicate
      */
-    public static BooleanExpression isCourtHoliday(String owner, Date date) {
+    public static BooleanExpression isCourtHoliday(String owner, LocalDate date) {
         return owner == null || owner.isBlank()
             ? holidaysDetail.publicHoliday.isTrue().and(holidaysDetail.holiday.eq(date))
-            : holidaysDetail.holiday.eq(date).and(holidaysDetail.owner.eq(owner).or(holidaysDetail.publicHoliday.isTrue()));
+            : holidaysDetail.holiday.eq(date)
+                .and(holidaysDetail.owner.eq(owner).or(holidaysDetail.publicHoliday.isTrue()));
     }
+    
 }

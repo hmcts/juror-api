@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("PMD.LawOfDemeter")
 class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
 
     private ValidateIfValidator validator;
@@ -249,6 +250,7 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
 
         @Getter
         @Setter
+        @SuppressWarnings("PMD.RedundantFieldInitializer")
         public static class MultipleValidationsTestObject {
             @ValidateIf(condition = ValidateIf.Condition.ANY_PRESENT,
                 type = ValidateIf.Type.REQUIRE,
@@ -271,6 +273,7 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
         class RequiredIf {
             @Getter
             @Setter
+            @SuppressWarnings("PMD.RedundantFieldInitializer")
             public static class RequireTestObject {
                 @ValidateIf(condition = ValidateIf.Condition.ANY_PRESENT,
                     type = ValidateIf.Type.REQUIRE,
@@ -352,6 +355,7 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
         class ExcludeIf {
             @Getter
             @Setter
+            @SuppressWarnings("PMD.RedundantFieldInitializer")
             public static class ExcludeTestObject {
                 @ValidateIf(condition = ValidateIf.Condition.ANY_PRESENT,
                     type = ValidateIf.Type.EXCLUDE,
@@ -440,6 +444,7 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
 
     @Getter
     @Setter
+    @SuppressWarnings("PMD.RedundantFieldInitializer")
     public static class FieldNotFoundObject {
         @ValidateIf(condition = ValidateIf.Condition.ANY_PRESENT,
             type = ValidateIf.Type.REQUIRE,
@@ -451,6 +456,7 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
 
     @Getter
     @Setter
+    @SuppressWarnings("PMD.RedundantFieldInitializer")
     public static class MessageTestObject {
         @ValidateIf(condition = ValidateIf.Condition.ANY_PRESENT,
             type = ValidateIf.Type.REQUIRE,
@@ -463,6 +469,7 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
 
     @Getter
     @Setter
+    @SuppressWarnings("PMD.RedundantFieldInitializer")
     public static class PrivateTestObject {
         @ValidateIf(condition = ValidateIf.Condition.ANY_PRESENT,
             type = ValidateIf.Type.REQUIRE,
@@ -475,6 +482,7 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
 
 
     @Getter
+    @SuppressWarnings("PMD.RedundantFieldInitializer")
     public static class MethodExceptionTestObject {
         @ValidateIf(condition = ValidateIf.Condition.ANY_PRESENT,
             type = ValidateIf.Type.REQUIRE,
@@ -489,6 +497,7 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
         }
     }
 
+    @SuppressWarnings("PMD.RedundantFieldInitializer")
     public static class NotFoundMethodTestObject {
         @ValidateIf(condition = ValidateIf.Condition.ANY_PRESENT,
             type = ValidateIf.Type.REQUIRE,

@@ -337,28 +337,25 @@ sourceSets {
 }
 
 checkstyleMain {
-    maxWarnings = 382
-}
-checkstyleTest {
-    maxWarnings = 261
+    maxWarnings = 377
 }
 checkstyleIntegrationTest {
-    maxWarnings = 1242
+    maxWarnings = 1241
 }
 checkstyle {
     maxWarnings = 0
-    toolVersion = '10.13.0'
+    toolVersion = '10.12.3'
     getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
 pmdIntegrationTest {
-    maxFailures = 801
+    maxFailures = 795
 }
 pmdTest {
-    maxFailures = 639
+    maxFailures = 589
 }
 pmdMain {
-    maxFailures = 1220
+    maxFailures = 1152
 }
 pmd {
     maxFailures = 0

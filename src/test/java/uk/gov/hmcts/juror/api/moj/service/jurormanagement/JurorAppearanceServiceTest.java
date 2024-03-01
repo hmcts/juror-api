@@ -1559,12 +1559,13 @@ class JurorAppearanceServiceTest {
                 .build();
 
             // create juror pools in attendance
-            List<JurorPool> jurorPools = new ArrayList<>();
             JurorPool jurorPool1 = new JurorPool();
             jurorPool1.setJuror(new Juror());
             jurorPool1.setStatus(jurorStatus);
             jurorPool1.setPool(poolRequest);
             jurorPool1.setIsActive(true);
+
+            List<JurorPool> jurorPools = new ArrayList<>();
             jurorPools.add(jurorPool1);
 
             CourtLocation courtLocation = new CourtLocation();

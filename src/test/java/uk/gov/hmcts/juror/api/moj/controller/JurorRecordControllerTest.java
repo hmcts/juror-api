@@ -48,6 +48,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorBankDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsCommonResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -57,6 +58,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
 import uk.gov.hmcts.juror.api.moj.service.BulkServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.JurorRecordService;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -1485,6 +1487,79 @@ class JurorRecordControllerTest {
     }
 
     @Nested
+    @DisplayName("POST" + GetJurorBankDetails.URL)
+    class GetJurorBankDetails extends JurorBankDetailsDto {
+        public static final String JUROR_NUMBER = "123456789";
+        private static final String URL = BASE_URL + "/{juror_number}/bank-details";
+
+        @org.junit.jupiter.api.Test
+        void juryOfficerGetJurorBankDetailsHappyPath() throws Exception {
+            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
+                Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
+            BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+            when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+
+            JurorBankDetailsDto jurorBankDetailsDto = JurorBankDetailsDto.builder()
+                .bankAccountNumber("12345678")
+                .sortCode("115578")
+                .addressLineOne("Address Line 1")
+                .addressLineTwo("Address Line 1")
+                .addressLineThree("Address Line 1")
+                .addressLineFour("Address Line 1")
+                .addressLineFive("Address Line 1")
+                .postCode("M24 4BP")
+                .notes("Some notes")
+                .build();
+
+            doReturn(jurorBankDetailsDto).when(jurorRecordService).getJurorBankDetails(JUROR_NUMBER);
+
+            mockMvc.perform(get(URL.replace("{juror_number}", JUROR_NUMBER))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .principal(mockPrincipal))
+                .andExpect(status().isOk())
+                .andExpect(content().json(TestUtils.asJsonString(jurorBankDetailsDto)));
+
+            verify(jurorRecordService, times(1)).getJurorBankDetails(JUROR_NUMBER);
+        }
+
+        //TODO: Fix path variable validation - JM-5010
+        @Disabled("Need to fix path variable validation")
+        @org.junit.jupiter.api.Test
+        void juryOfficerGetJurorBankDetailsJurorNumberTooLong() throws Exception {
+            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
+                Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
+            BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+            when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+
+            mockMvc.perform(get(URL.replace("{juror_number}", TestConstants.INVALID_JUROR_NUMBER))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .principal(mockPrincipal))
+                .andExpect(status().isBadRequest());
+
+            verifyNoInteractions(jurorRecordService);
+        }
+
+        // TODO: Pending refactoring of the principal validation
+        @Disabled("Need to fix the principle validation")
+        @org.junit.jupiter.api.Test
+        void bureauUserGetJurorBankDetailsDoesNotHaveAccess() throws Exception {
+            BureauJWTPayload jwtPayload = TestUtils.createJwt(SecurityUtil.BUREAU_OWNER, "BUREAU_USER");
+            jwtPayload.setStaff(TestUtils.staffBuilder("Bureau User", 1,
+                Collections.singletonList(SecurityUtil.BUREAU_OWNER)));
+            BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+            when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+
+            mockMvc.perform(get(URL.replace("{juror_number}", JUROR_NUMBER))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .principal(mockPrincipal))
+                .andExpect(status().isForbidden());
+
+            verifyNoInteractions(jurorRecordService);
+        }
+    }
+
     @DisplayName("PATCH editBankDetails(RequestBankDetailsDto)")
     public class EditBankDetails {
         @org.junit.jupiter.api.Test

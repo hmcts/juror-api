@@ -28,8 +28,8 @@ public class BureauJurorDetailQueriesTest {
     @Test
     public void buildPostcodeMatchers_fiveCharacters() {
         // doesNotContain is redundant given the containsOnly, but is included for explanation
-        assertThat(buildPostcodeMatchers("G466U")).isNotNull().hasSize(1).containsOnly("G46 6U").doesNotContain("G466" +
-            " U");
+        assertThat(buildPostcodeMatchers("G466U")).isNotNull().hasSize(1).containsOnly("G46 6U")
+            .doesNotContain("G466 U");
     }
 
     @Test

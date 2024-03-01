@@ -97,10 +97,7 @@ public class ResponseExcusalServiceImplTest {
 
     @Test
     public void excuseJuror_happy() throws Exception {
-        String excusalCode = "B";
         String jurorId = "123456789";
-        String login = "login";
-        ExcusalCodeDto excusalCodeDto = new ExcusalCodeDto(1, excusalCode, "Description");
 
         // configure mocks
         JurorResponse jurorResponse = mock(JurorResponse.class);
@@ -110,11 +107,14 @@ public class ResponseExcusalServiceImplTest {
         Pool poolDetails = mock(Pool.class);
         given(poolRepository.findByJurorNumber(any(String.class))).willReturn(poolDetails);
 
+        String excusalCode = "B";
         List<ExcusalCodeEntity> excusalCodeEntityList = new ArrayList<>();
         excusalCodeEntityList.add(new ExcusalCodeEntity("C", "Description of code"));
         excusalCodeEntityList.add(new ExcusalCodeEntity(excusalCode, "Description of another code"));
         given(excusalCodeRepository.findAll()).willReturn(excusalCodeEntityList);
 
+        String login = "login";
+        ExcusalCodeDto excusalCodeDto = new ExcusalCodeDto(1, excusalCode, "Description");
         // run process
         boolean result = responseExcusalService.excuseJuror(jurorId, excusalCodeDto, login);
 
@@ -226,10 +226,7 @@ public class ResponseExcusalServiceImplTest {
 
     @Test
     public void rejectExcusalRequest_happy() throws Exception {
-        String excusalCode = "B";
         String jurorId = "123456789";
-        String login = "login";
-        ExcusalCodeDto excusalCodeDto = new ExcusalCodeDto(1, excusalCode, "Description");
 
         // configure mocks
         JurorResponse jurorResponse = mock(JurorResponse.class);
@@ -239,10 +236,13 @@ public class ResponseExcusalServiceImplTest {
         Pool poolDetails = mock(Pool.class);
         given(poolRepository.findByJurorNumber(any(String.class))).willReturn(poolDetails);
 
+        String excusalCode = "B";
         List<ExcusalCodeEntity> excusalCodeEntityList = new ArrayList<>();
         excusalCodeEntityList.add(new ExcusalCodeEntity("C", "Description of code"));
         excusalCodeEntityList.add(new ExcusalCodeEntity(excusalCode, "Description of another code"));
         given(excusalCodeRepository.findAll()).willReturn(excusalCodeEntityList);
+        String login = "login";
+        ExcusalCodeDto excusalCodeDto = new ExcusalCodeDto(1, excusalCode, "Description");
 
         // run process
         boolean result = responseExcusalService.rejectExcusalRequest(jurorId, excusalCodeDto, login);

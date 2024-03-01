@@ -215,8 +215,8 @@ public class JurorDashboardServiceImplTest {
         DashboardMandatoryKpiData mandatoryKpiData = jurorDashboardService.getMandatoryKpis(requestDto);
 
         assertThat(mandatoryKpiData).isNotNull();
-        assertThat(mandatoryKpiData.getOnlineResponsesOverTime().getWithin14days() +
-            mandatoryKpiData.getPaperResponsesOverTime().getWithin14days())
+        assertThat(mandatoryKpiData.getOnlineResponsesOverTime().getWithin14days()
+            + mandatoryKpiData.getPaperResponsesOverTime().getWithin14days())
             .isEqualTo(mandatoryKpiData.getAllResponsesOverTime().getWithin14days());
 
         assertThat(mandatoryKpiData.getPercentPaperTakeUp()).isEqualTo(43.8f);

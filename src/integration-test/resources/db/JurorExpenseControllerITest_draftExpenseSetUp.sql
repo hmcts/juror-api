@@ -17,23 +17,6 @@ values ('641500020', 'Lnametwozero', 'Fnametwozero', current_date - interval '20
        ('641500024', 'Lnametwofour', 'Fnametwofour', current_date - interval '24 years', '524 Street Name', 'Any town',
         'CH1 2AN', 'Y');
 
-
-update juror_mod.court_location
-SET rate_per_mile_car_0_passengers                = 0.314,
-    rate_per_mile_car_1_passengers                = 0.356,
-    rate_per_mile_car_2_or_more_passengers        = 0.398,
-    rate_per_mile_motorcycle_0_passengers         = 0.314,
-    rate_per_mile_motorcycle_1_or_more_passengers = 0.324,
-    rate_per_mile_bike                            = 0.096,
-    limit_financial_loss_half_day                 = 32.47,
-    limit_financial_loss_full_day                 = 64.95,
-    limit_financial_loss_half_day_long_trial      = 64.95,
-    limit_financial_loss_full_day_long_trial      = 129.91,
-    rate_subsistence_standard                       = 5.71,
-    rate_subsistence_long_day                       = 12.17
-WHERE loc_code = '415';
-
-
 -- create juror_pool associative records
 insert into juror_mod.juror_pool (owner, juror_number, pool_number, status, location, is_active)
 values ('415', '641500020', '415230101', 2, '415', true),

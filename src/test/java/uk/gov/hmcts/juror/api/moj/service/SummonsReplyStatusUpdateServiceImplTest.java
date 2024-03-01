@@ -36,6 +36,7 @@ import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeServic
 
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -2266,7 +2267,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(locationCode);
         courtLocation.setName(name);
-        courtLocation.setCourtAttendTime(attendanceTime);
+        courtLocation.setCourtAttendTime(LocalTime.parse(attendanceTime));
 
         return courtLocation;
     }

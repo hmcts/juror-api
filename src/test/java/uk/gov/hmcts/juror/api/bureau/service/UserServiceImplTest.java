@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.request.MultipleStaffAssignmentDto;
 import uk.gov.hmcts.juror.api.bureau.controller.request.StaffAssignmentRequestDto;
@@ -78,7 +77,7 @@ public class UserServiceImplTest {
     private UserServiceImpl userService;
 
     private static final String ASSIGNING_LOGIN = "assigner";
-    private final User ASSIGNER_STAFF_ENTITY = User.builder()
+    private static final User ASSIGNER_STAFF_ENTITY = User.builder()
         .username(ASSIGNING_LOGIN)
         .name("Bob")
         .level(1)
@@ -89,28 +88,28 @@ public class UserServiceImplTest {
     private static final String JUROR_NUMBER = "123456789";
     private static final String JUROR_NUMBER_2 = "987654321";
     private static final String JUROR_NUMBER_3 = "123456788";
-    private final JurorResponse JUROR_RESPONSE = JurorResponse.builder()
+    private static final JurorResponse JUROR_RESPONSE = JurorResponse.builder()
         .jurorNumber(JUROR_NUMBER)
         .processingComplete(false)
         .urgent(false)
         .superUrgent(false)
         .processingStatus(ProcessingStatus.TODO)
         .build();
-    private final JurorResponse JUROR_RESPONSE_2 = JurorResponse.builder()
+    private static final JurorResponse JUROR_RESPONSE_2 = JurorResponse.builder()
         .jurorNumber(JUROR_NUMBER_2)
         .processingComplete(false)
         .urgent(false)
         .superUrgent(false)
         .processingStatus(ProcessingStatus.TODO)
         .build();
-    private final JurorResponse JUROR_RESPONSE_INVALID_AWAITING_CONTACT = JurorResponse.builder()
+    private static final JurorResponse JUROR_RESPONSE_INVALID_AWAITING_CONTACT = JurorResponse.builder()
         .jurorNumber(JUROR_NUMBER_3)
         .processingComplete(false)
         .urgent(false)
         .superUrgent(false)
         .processingStatus(ProcessingStatus.AWAITING_CONTACT)
         .build();
-    private final JurorResponse JUROR_RESPONSE_INVALID_CLOSED = JurorResponse.builder()
+    private static final JurorResponse JUROR_RESPONSE_INVALID_CLOSED = JurorResponse.builder()
         .jurorNumber(JUROR_NUMBER)
         .processingComplete(true)
         .urgent(false)
@@ -119,13 +118,13 @@ public class UserServiceImplTest {
         .build();
 
     private static final String TARGET_LOGIN = "assignee";
-    private final User TARGET_LOGIN_ENTITY = User.builder()
+    private static final User TARGET_LOGIN_ENTITY = User.builder()
         .username(TARGET_LOGIN)
         .name("Sally")
         .level(0)
         .active(true)
         .build();
-    private final StaffAssignmentRequestDto DTO = StaffAssignmentRequestDto.builder()
+    private static final StaffAssignmentRequestDto DTO = StaffAssignmentRequestDto.builder()
         .assignTo(TARGET_LOGIN)
         .responseJurorNumber(JUROR_NUMBER)
         .build();

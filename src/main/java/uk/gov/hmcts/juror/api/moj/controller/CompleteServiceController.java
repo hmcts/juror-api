@@ -46,7 +46,7 @@ public class CompleteServiceController {
     private final BulkService bulkService;
 
     @PatchMapping("/{poolNumber}/complete")
-    @Operation(summary = "/api/v1/moj/complete-service/{poolNumber}/complete - Send a payload containing a list of "
+    @Operation(summary = "Send a payload containing a list of "
         + "juror numbers and completion date so that the jurors can complete their service")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void completeService(
@@ -58,7 +58,7 @@ public class CompleteServiceController {
     }
 
     @PatchMapping("/uncomplete")
-    @Operation(summary = "/api/v1/moj/complete-service/uncomplete - Send a payload containing a list of "
+    @Operation(summary = "Send a payload containing a list of "
         + "juror numbers so that the SJO can uncomplete their service")
     @IsSeniorCourtUser
     @ResponseStatus(HttpStatus.ACCEPTED)
@@ -75,7 +75,7 @@ public class CompleteServiceController {
     }
 
     @PostMapping
-    @Operation(summary = "/api/v1/moj/complete-service - Get a list of complete jurors based on search criteria")
+    @Operation(summary = "Get a list of complete jurors based on search criteria")
     @IsSeniorCourtUser
     @ResponseStatus(HttpStatus.OK)
     public PaginatedList<CompleteJurorResponse> getCompleteJurors(
@@ -84,7 +84,7 @@ public class CompleteServiceController {
     }
 
     @PatchMapping("/dismissal")
-    @Operation(summary = "/api/v1/moj/complete-service/dismissal - Send a payload containing a list of "
+    @Operation(summary = "Send a payload containing a list of "
         + "juror numbers and completion date so that dismissed jurors can complete their service")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void completeDismissedJurorsService(
@@ -93,7 +93,7 @@ public class CompleteServiceController {
     }
 
     @PostMapping("/{poolNumber}/validate")
-    @Operation(summary = "/api/v1/moj/complete-service/{poolNumber}/validate - Send a payload containing a list of "
+    @Operation(summary = "Send a payload containing a list of "
         + "juror numbers to validate if they can complete service")
     public ResponseEntity<CompleteServiceValidationResponseDto> validateCompleteService(
         @PathVariable @PoolNumber

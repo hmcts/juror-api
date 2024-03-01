@@ -48,7 +48,7 @@ public class ResponseExcusalController {
     }
 
     @GetMapping
-    @Operation(summary = "/bureau/juror/excuse - GET list of potential excusal reasons",
+    @Operation(summary = "list of potential excusal reasons",
         description = "Retrieve list of potential excusal reasons")
     public ResponseEntity<ExcusalReasonsDto> getExcusalReasons() throws ExcusalException {
         List<ExcusalCodeDto> excusalReasons = responseExcusalService.getExcusalReasons();
@@ -57,7 +57,7 @@ public class ResponseExcusalController {
     }
 
     @PostMapping("/{jurorId}")
-    @Operation(summary = "/bureau/juror/excuse/{jurorId} - POST excusal for a specific juror",
+    @Operation(summary = "excusal for a specific juror",
         description = "Mark a single juror with a certain excusal code by their juror number")
     public ResponseEntity<Void> excuseJuror(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
@@ -80,7 +80,7 @@ public class ResponseExcusalController {
     }
 
     @PostMapping("/reject/{jurorId}")
-    @Operation(summary = "/bureau/juror/excuse/reject/{jurorId} - POST excusal-rejection for a specific juror",
+    @Operation(summary = "excusal-rejection for a specific juror",
         description = "Reject a single jurors excusal request")
     public ResponseEntity<Void> rejectExcusalRequest(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,

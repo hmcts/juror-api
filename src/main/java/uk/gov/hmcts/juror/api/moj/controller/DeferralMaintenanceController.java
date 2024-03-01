@@ -44,7 +44,7 @@ public class DeferralMaintenanceController {
     private final ManageDeferralsService manageDeferralsService;
 
     @PostMapping("/juror/defer/{jurorNumber}")
-    @Operation(summary = "/juror/defer/{jurorNumber} - POST deferral for a specific juror",
+    @Operation(summary = "deferral for a specific juror",
         description = "Mark a single juror response with a deferral decision")
     public ResponseEntity<Void> processJurorDeferral(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,

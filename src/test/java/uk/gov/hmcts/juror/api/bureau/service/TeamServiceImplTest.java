@@ -36,9 +36,8 @@ public class TeamServiceImplTest {
 
         List<TeamDto> teams = teamService.findAllTeams();
 
-        assertThat(teams).hasSize(2).containsExactly
-            (new TeamDto(1L, "London", 1),
-                new TeamDto(2L, "Midlands", 1));
+        assertThat(teams).hasSize(2).containsExactly(new TeamDto(1L, "London", 1),
+            new TeamDto(2L, "Midlands", 1));
 
     }
 

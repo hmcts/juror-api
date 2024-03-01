@@ -93,10 +93,7 @@ public class ResponseDisqualifyServiceImplTest {
 
     @Test
     public void disqualifyJuror_happy() throws Exception {
-        String disqualifyCode = "B";
         String jurorId = "123456789";
-        String login = "login";
-        DisqualifyCodeDto disqualifyCodeDto = new DisqualifyCodeDto(1, disqualifyCode, "A code");
 
         // configure mocks
         JurorResponse jurorResponse = mock(JurorResponse.class);
@@ -107,10 +104,13 @@ public class ResponseDisqualifyServiceImplTest {
         given(poolRepository.findByJurorNumber(any(String.class))).willReturn(poolDetails);
 
         List<DisqualifyCodeEntity> disqualifyCodeEntityList = new ArrayList<>();
+        String disqualifyCode = "B";
         disqualifyCodeEntityList.add(new DisqualifyCodeEntity("B", "Description of code"));
         disqualifyCodeEntityList.add(new DisqualifyCodeEntity(disqualifyCode, "Description of another code"));
         given(disqualifyCodeRepository.findAll()).willReturn(disqualifyCodeEntityList);
 
+        String login = "login";
+        DisqualifyCodeDto disqualifyCodeDto = new DisqualifyCodeDto(1, disqualifyCode, "A code");
         // run process
         boolean result = responseDisqualifyService.disqualifyJuror(jurorId, disqualifyCodeDto, login);
 

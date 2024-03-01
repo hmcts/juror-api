@@ -6,18 +6,24 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
+import uk.gov.hmcts.juror.api.moj.enumeration.CourtType;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 /**
@@ -26,6 +32,9 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Audited
 @EqualsAndHashCode(exclude = {"courtRegion"})
 @ToString
@@ -55,7 +64,7 @@ public class CourtLocation implements Serializable {
 
     @Column(name = "loc_attend_time")
     @NotAudited
-    private String courtAttendTime;
+    private LocalTime courtAttendTime;
 
     /**
      * Court address line 1.
@@ -162,6 +171,11 @@ public class CourtLocation implements Serializable {
     @NotAudited
     private String signatory;
 
+    @OneToOne
+    @JoinColumn(name = "assembly_room", referencedColumnName = "id")
+    @NotAudited
+    private Courtroom assemblyRoom;
+
     @OneToMany(mappedBy = "courtLocation")
     @NotAudited
     private List<PoolRequest> poolRequests;
@@ -175,41 +189,13 @@ public class CourtLocation implements Serializable {
     private String owner;
 
 
-    //Rates
-    @Column(name = "rates_effective_from")
-    private LocalDate ratesEffectiveFrom;
-
-    @Column(name = "rate_per_mile_car_0_passengers")
-    private BigDecimal carMileageRatePerMile0Passengers;
-    @Column(name = "rate_per_mile_car_1_passengers")
-    private BigDecimal carMileageRatePerMile1Passengers;
-    @Column(name = "rate_per_mile_car_2_or_more_passengers")
-    private BigDecimal carMileageRatePerMile2OrMorePassengers;
-
-
-    @Column(name = "rate_per_mile_motorcycle_0_passengers")
-    private BigDecimal motorcycleMileageRatePerMile0Passengers;
-    @Column(name = "rate_per_mile_motorcycle_1_or_more_passengers")
-    private BigDecimal motorcycleMileageRatePerMile1Passengers;
-
-
-    @Column(name = "rate_per_mile_bike")
-    private BigDecimal bikeRate;
-
-    @Column(name = "limit_financial_loss_half_day")
-    private BigDecimal limitFinancialLossHalfDay;
-    @Column(name = "limit_financial_loss_full_day")
-    private BigDecimal limitFinancialLossFullDay;
-    @Column(name = "limit_financial_loss_half_day_long_trial")
-    private BigDecimal limitFinancialLossHalfDayLongTrial;
-    @Column(name = "limit_financial_loss_full_day_long_trial")
-    private BigDecimal limitFinancialLossFullDayLongTrial;
-
-    @Column(name = "rate_subsistence_standard")
-    private BigDecimal subsistenceRateStandard;
-    @Column(name = "rate_subsistence_long_day")
-    private BigDecimal subsistenceRateLongDay;
-
     @Column(name = "public_transport_soft_limit")
     private BigDecimal publicTransportSoftLimit;
+
+    @Column(name = "taxi_soft_limit")
+    private BigDecimal taxiSoftLimit;
+
+    public CourtType getType() {
+        return owner.equals(locCode) ? CourtType.MAIN : CourtType.SATELLITE;
+    }
 }

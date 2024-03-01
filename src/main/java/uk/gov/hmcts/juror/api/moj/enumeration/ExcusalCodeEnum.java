@@ -34,7 +34,7 @@ public enum ExcusalCodeEnum {
     W("W", "Work related"),
     X("X", "Carer"),
     Y("Y", "Holiday"),
-    Z("D", "Bereavement"),
+    Z("Z", "Bereavement"),
     CE("CE", "CJS employee (unable to transfer"),
     DC("DC", "Deferred by court - too many jurors"),
     PE("PE", "Personal engagement");

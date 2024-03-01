@@ -62,7 +62,9 @@ public class MojException extends RuntimeException {
             CAN_NOT_APPROVE_OWN_EDIT,
             EXPENSE_VALUES_REDUCED_LESS_THAN_PAID,
             CAN_NOT_APPROVE_MORE_THAN_LIMIT,
-            WRONG_EXPENSE_TYPE
+            WRONG_EXPENSE_TYPE,
+            CANNOT_DELETE_USED_JUDGE,
+            CODE_ALREADY_IN_USE
         }
     }
 

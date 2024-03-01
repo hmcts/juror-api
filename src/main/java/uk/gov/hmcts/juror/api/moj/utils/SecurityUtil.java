@@ -22,6 +22,15 @@ public final class SecurityUtil {
 
 
     public static final String LOC_CODE_AUTH = "isAuthenticated() && principal.staff.courts.contains(#loc_code)";
+    public static final String LOC_CODE_AUTH_OR_BUREAU = "isAuthenticated() "
+        + "&& (principal.owner == '400' || principal.staff.courts.contains(#loc_code))";
+
+    public static final String IS_MANAGER = "hasRole('ROLE_MANAGER')";
+
+    public static final String USER_TYPE_ADMINISTRATOR = "principal.userType.name() == 'ADMINISTRATOR'";
+    public static final String IS_ADMINISTRATOR =
+        "hasRole('ROLE_ADMINISTRATOR')";
+
 
     private SecurityUtil() {
         throw new IllegalStateException("Utility class");
@@ -62,6 +71,20 @@ public final class SecurityUtil {
         if (!getActiveUsersBureauPayload().getStaff().getCourts().contains(locCode)) {
             throw new MojException.Forbidden(String.format("Current user does not have permissions to Court Location: "
                 + "%s", locCode), null);
+        }
+    }
+
+    public static boolean isBureau() {
+        return BUREAU_OWNER.equals(getActiveOwner());
+    }
+
+    public static boolean isCourt() {
+        return !isBureau();
+    }
+
+    public static void validateCanAccessOwner(String owner) {
+        if (!getActiveOwner().equals(owner)) {
+            throw new MojException.Forbidden("User does not have access", null);
         }
     }
 }

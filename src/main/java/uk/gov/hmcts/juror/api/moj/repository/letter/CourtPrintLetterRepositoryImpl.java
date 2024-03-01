@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.QWelshCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
@@ -34,6 +35,8 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
     private static final QJuror JUROR = QJuror.juror;
+    private static final QAppearance APPEARANCE = QAppearance.appearance;
+
 
     @Override
     public Tuple retrievePrintInformation(String jurorNumber, CourtLetterType courtLetterType, boolean welsh,
@@ -61,6 +64,11 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                 expressions.add(JUROR_POOL.juror.excusalCode);
                 expressions.add(JUROR_POOL.juror.excusalDate);
             }
+            case SHOW_CAUSE -> {
+                expressions.add(APPEARANCE.attendanceDate);
+                expressions.add(APPEARANCE.noShow);
+            }
+
             default -> throw new MojException.NotImplemented("letter type not implemented", null);
         }
 
@@ -94,6 +102,11 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
             case WITHDRAWAL -> query
                 .where(JUROR_POOL.status.status.eq(IJurorStatus.DISQUALIFIED))
                 .orderBy(JUROR_POOL.juror.disqualifyDate.desc());
+            case SHOW_CAUSE ->
+                query.leftJoin(APPEARANCE).on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber)
+                        .and(JUROR_POOL.pool.poolNumber.eq(APPEARANCE.poolNumber)))
+                    .where(APPEARANCE.noShow.isTrue())
+                    .orderBy(JUROR_POOL.juror.jurorNumber.desc());
             default -> throw new MojException.NotImplemented("letter type not implemented", null);
         }
         query.where(JUROR_POOL.juror.jurorNumber.eq(jurorNumber));

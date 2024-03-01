@@ -55,7 +55,7 @@ public class BureauStaffController {
 
 
     @GetMapping
-    @Operation(summary = "/bureau/staff - Staff list",
+    @Operation(summary = "Staff list",
         description = "Retrieve a list of all bureau staff members")
     public ResponseEntity<StaffListDto> getAll(@Parameter(hidden = true) BureauJwtAuthentication principal) {
         if (!bureauAuthService.userIsTeamLeader(principal)) {
@@ -65,7 +65,7 @@ public class BureauStaffController {
     }
 
     @GetMapping("/{login}")
-    @Operation(summary = "/bureau/staff/{login} - Get details for one staff member",
+    @Operation(summary = "Get details for one staff member",
         description = "Get details for one staff member")
     public ResponseEntity<StaffDetailDto> getOne(
         @Parameter(description = "Staff member login") @PathVariable String login,
@@ -92,7 +92,7 @@ public class BureauStaffController {
      * @throws BureauOptimisticLockingException Response data from the UI is outdated. Version mismatch with DB.
      */
     @PostMapping(path = "/assign")
-    @Operation(summary = "/bureau/staff/assign - Update staff assignment to juror response",
+    @Operation(summary = "Update staff assignment to juror response",
         description = "Update staff assignment to juror response")
     public ResponseEntity<StaffAssignmentResponseDto> changeStaffAssignment(
         @RequestBody @Validated StaffAssignmentRequestDto requestDto,
@@ -114,7 +114,7 @@ public class BureauStaffController {
     }
 
     @GetMapping(path = "/roster")
-    @Operation(summary = "/bureau/staff/roster - List active staff members",
+    @Operation(summary = "List active staff members",
         description = "List active staff members")
     public ResponseEntity<StaffRosterResponseDto> activeStaffRoster() {
         return ResponseEntity.ok(userService.activeStaffRoster());
@@ -191,7 +191,7 @@ public class BureauStaffController {
      * @throws StaffMemberCrudException Failed to create the staff member.
      */
     @PostMapping
-    @Operation(summary = "/bureau/staff - Create a staff member profile",
+    @Operation(summary = "Create a staff member profile",
         description = "Create a staff member profile")
     @IsTeamLeader
     public ResponseEntity<StaffMemberCrudResponseDto> createStaffMember(
@@ -223,7 +223,7 @@ public class BureauStaffController {
      * @throws BureauOptimisticLockingException Version field mismatch.
      */
     @PutMapping("/{login}")
-    @Operation(summary = "/bureau/staff/{login} - Update a staff member profile",
+    @Operation(summary = "Update a staff member profile",
         description = "Update a staff member profile")
     @IsTeamLeader
     public ResponseEntity<StaffMemberCrudResponseDto> updateStaffMember(

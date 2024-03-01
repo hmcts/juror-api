@@ -27,6 +27,9 @@ public interface CourtLocationRepository extends CrudRepository<CourtLocation, S
 
     List<CourtLocation> findByOwner(String owner);
 
+    @Override
+    List<CourtLocation> findAll();
+
     default List<String> findLocCodeByOwner(EntityManager entityManager, String owner) {
         QCourtLocation courtLocation = QCourtLocation.courtLocation;
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);

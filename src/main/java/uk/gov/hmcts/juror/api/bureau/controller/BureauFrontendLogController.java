@@ -26,7 +26,7 @@ public class BureauFrontendLogController {
      * @return No content 204 response.
      */
     @PostMapping(path = "/log")
-    @Operation(summary = "/auth/bureau/log - Bureau Log API", description = "Provide a logsink for the Bureau "
+    @Operation(summary = "Bureau Log API", description = "Provide a logsink for the Bureau "
         + "frontend API to "
         + "send logging messages directly to the backend API logs.")
     public ResponseEntity<Object> log(@Parameter(description = "Log message content") @RequestBody String message) {

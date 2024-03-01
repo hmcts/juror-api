@@ -125,15 +125,15 @@ public class PoolHistoryServiceTest {
     private List<PoolHistory> createPoolHistoryList() {
         List<PoolHistory> poolHistoryList = new ArrayList<>();
 
-        PoolHistory poolHistory_PEDT = new PoolHistory("400", LocalDateTime.now(), HistoryCode.PEDT,
+        PoolHistory poolHistoryPedt = new PoolHistory("400", LocalDateTime.now(), HistoryCode.PEDT,
             "BUREAU_USER", "150 (New Pool Request)"
         );
-        PoolHistory poolHistory_PHDI = new PoolHistory("400", LocalDateTime.now(), HistoryCode.PHDI,
+        PoolHistory poolHistoryPhdi = new PoolHistory("400", LocalDateTime.now(), HistoryCode.PHDI,
             "BUREAU_USER", "150 (New Pool Request)"
         );
 
-        poolHistoryList.add(poolHistory_PEDT);
-        poolHistoryList.add(poolHistory_PHDI);
+        poolHistoryList.add(poolHistoryPedt);
+        poolHistoryList.add(poolHistoryPhdi);
 
         return poolHistoryList;
     }

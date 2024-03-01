@@ -63,7 +63,7 @@ public class ResponseUpdateServiceImplTest {
     private BureauJurorSpecialNeedsRepository bureauJurorSpecialNeedsRepository;
 
     @Mock
-    private TSpecialRepository tSpecialRepository;
+    private TSpecialRepository specialRepository;
 
     @Mock
     private BureauJurorCJSRepository cjsRepository;
@@ -122,8 +122,8 @@ public class ResponseUpdateServiceImplTest {
 
         BureauJurorCJS policeEntry = mock(BureauJurorCJS.class);
         given(policeEntry.getDetails()).willReturn("Original police details");
-//        given(cjsRepository.findOne(byJurorNumberAndEmployer(jurorId, "Police Force")))
-//            .willReturn(policeEntry);
+        //given(cjsRepository.findOne(byJurorNumberAndEmployer(jurorId, "Police Force")))
+        //.willReturn(policeEntry);
 
         given(cjsRepository.findByJurorNumberAndEmployer(jurorId, "Police Force")).willReturn(policeEntry);
 
@@ -168,10 +168,10 @@ public class ResponseUpdateServiceImplTest {
 
     @Test
     public void comparisonHash() {
-        final String TEST_NOTE = "I am a test note.";
-        final String comparisonHash = ResponseUpdateServiceImpl.comparisonHash(TEST_NOTE);
+        final String testNote = "I am a test note.";
+        final String comparisonHash = ResponseUpdateServiceImpl.comparisonHash(testNote);
 
-        final HashCode manualHash = Hashing.md5().hashString(ResponseUpdateServiceImpl.HASH_SALT.concat(TEST_NOTE),
+        final HashCode manualHash = Hashing.md5().hashString(ResponseUpdateServiceImpl.HASH_SALT.concat(testNote),
             StandardCharsets.UTF_8);
 
         assertThat(comparisonHash)
@@ -181,10 +181,10 @@ public class ResponseUpdateServiceImplTest {
 
     @Test
     public void comparisonHash_nullNotesString() {
-        final String TEST_NOTE = null;
-        final String comparisonHash = ResponseUpdateServiceImpl.comparisonHash(TEST_NOTE);
+        final String testNote = null;
+        final String comparisonHash = ResponseUpdateServiceImpl.comparisonHash(testNote);
 
-        final HashCode manualHash = Hashing.md5().hashString(ResponseUpdateServiceImpl.HASH_SALT + TEST_NOTE,
+        final HashCode manualHash = Hashing.md5().hashString(ResponseUpdateServiceImpl.HASH_SALT + testNote,
             StandardCharsets.UTF_8);
 
         assertThat(comparisonHash)

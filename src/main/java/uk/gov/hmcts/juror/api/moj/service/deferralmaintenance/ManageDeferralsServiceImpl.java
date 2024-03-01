@@ -88,6 +88,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.NumberUtils.unboxIntegerValues;
  */
 @Slf4j
 @Service
+@SuppressWarnings({"PMD.ExcessiveImports","PMD.PossibleGodClass"})
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 

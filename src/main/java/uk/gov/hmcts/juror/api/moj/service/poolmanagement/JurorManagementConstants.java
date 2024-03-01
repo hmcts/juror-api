@@ -1,9 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service.poolmanagement;
 
 public class JurorManagementConstants {
-    private JurorManagementConstants() {
-        // an empty private constructor
-    }
 
     protected static final String[] POOL_MEMBER_IGNORE_PROPERTIES = new String[]{"owner", "poolNumber", "startDate",
         "userEdtq", "status", "poolSequence", "court", "nextDate", "completionFlag", "completionDate", "welsh",
@@ -20,4 +17,7 @@ public class JurorManagementConstants {
     public static final String NO_ACTIVE_RECORD_MESSAGE = "Unable to find an active record at the source court "
         + "location";
 
+    private JurorManagementConstants() {
+        // an empty private constructor
+    }
 }

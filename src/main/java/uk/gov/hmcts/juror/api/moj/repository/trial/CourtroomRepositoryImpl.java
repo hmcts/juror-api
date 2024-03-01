@@ -23,14 +23,14 @@ public class CourtroomRepositoryImpl implements ICourtroomRepository {
     public List<Tuple> getCourtroomsForLocation(List<String> courts) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         return queryFactory.select(
-            Q_COURTROOM.id,
-            Q_COURTROOM.owner,
-            Q_COURTROOM.description,
-            Q_COURTROOM.roomNumber,
-            Q_COURT_LOCATION.name
-        ).from(Q_COURTROOM)
-            .join(Q_COURT_LOCATION).on(Q_COURT_LOCATION.locCode.eq(Q_COURTROOM.owner))
-            .where(Q_COURT_LOCATION.owner.in(courts))
+                Q_COURTROOM.id,
+                Q_COURTROOM.courtLocation.owner,
+                Q_COURTROOM.courtLocation.locCode,
+                Q_COURTROOM.description,
+                Q_COURTROOM.roomNumber,
+                Q_COURT_LOCATION.name
+            ).from(Q_COURTROOM)
+            .where(Q_COURTROOM.courtLocation.locCode.in(courts))
             .fetch();
     }
 }

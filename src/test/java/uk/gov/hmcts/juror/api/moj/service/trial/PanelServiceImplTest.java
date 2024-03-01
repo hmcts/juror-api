@@ -322,7 +322,7 @@ class PanelServiceImplTest {
     }
 
     @Test
-     void processEmpanelledAsJurorNumberRequestedNotEnough() {
+    void processEmpanelledAsJurorNumberRequestedNotEnough() {
         JurorListRequestDto jurorListRequestDto =
             createEmpanelledListRequestDto(Collections.singletonList(createSinglePanelData()));
         jurorListRequestDto.setNumberRequested(0);
@@ -333,7 +333,7 @@ class PanelServiceImplTest {
     }
 
     @Test
-     void processEmpanelledNoJurorStatusSet() {
+    void processEmpanelledNoJurorStatusSet() {
         Panel panel = createSinglePanelData();
         panel.setResult(null);
         doReturn(panel).when(panelRepository).findByTrialTrialNumberAndJurorPoolJurorJurorNumber(anyString(),
@@ -348,7 +348,7 @@ class PanelServiceImplTest {
     }
 
     @Test
-     void processEmpanelledWrongJurorStatusSet() {
+    void processEmpanelledWrongJurorStatusSet() {
         Panel panel = createSinglePanelData();
         panel.setResult(PanelResult.RETURNED);
         doReturn(panel).when(panelRepository).findByTrialTrialNumberAndJurorPoolJurorJurorNumber(anyString(),
@@ -363,7 +363,7 @@ class PanelServiceImplTest {
     }
 
     @Test
-     void panelSummary() {
+    void panelSummary() {
         doReturn(createPanelMembers(10)).when(panelRepository)
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
 
@@ -372,7 +372,7 @@ class PanelServiceImplTest {
     }
 
     @Test
-     void jurySummary() {
+    void jurySummary() {
         Panel panel = createSinglePanelData();
         panel.getJurorPool().getStatus().setStatusDesc("Juror");
         panel.getJurorPool().getStatus().setStatus(IJurorStatus.JUROR);
@@ -387,7 +387,7 @@ class PanelServiceImplTest {
     }
 
     @Test
-     void jurySummaryNoJury() {
+    void jurySummaryNoJury() {
         Panel panel = createSinglePanelData();
         panel.getJurorPool().getStatus().setStatusDesc("Panelled");
         panel.getJurorPool().getStatus().setStatus(IJurorStatus.PANEL);
@@ -400,7 +400,7 @@ class PanelServiceImplTest {
     }
 
     @Test
-     void processEmpanelledAsJurorNumberRequestedTooMany() {
+    void processEmpanelledAsJurorNumberRequestedTooMany() {
         JurorListRequestDto jurorListRequestDto =
             createEmpanelledListRequestDto(Collections.singletonList(createSinglePanelData()));
         jurorListRequestDto.setNumberRequested(31);
@@ -515,9 +515,13 @@ class PanelServiceImplTest {
     }
 
     private Courtroom createCourtroom() {
+        CourtLocation courtLocation = CourtLocation.builder()
+            .owner("415")
+            .locCode("415")
+            .build();
         Courtroom courtroom = new Courtroom();
         courtroom.setId(1L);
-        courtroom.setOwner("415");
+        courtroom.setCourtLocation(courtLocation);
         courtroom.setRoomNumber("67");
         courtroom.setDescription("Courtroom 1");
 
@@ -566,7 +570,7 @@ class PanelServiceImplTest {
         return panel;
     }
 
-     List<Panel> createPanelMembers(int totalMembers) {
+    List<Panel> createPanelMembers(int totalMembers) {
         Random random = new Random();
         List<Panel> panelList = new ArrayList<>();
         String jurorNumber = "1111111%02d";

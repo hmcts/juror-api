@@ -1,9 +1,10 @@
 package uk.gov.hmcts.juror.api.moj.enumeration.trial;
 
 import lombok.Getter;
+import uk.gov.hmcts.juror.api.moj.domain.system.HasCodeAndDescription;
 
 @Getter
-public enum TrialType {
+public enum TrialType implements HasCodeAndDescription {
 
     CIV("Civil"),
     CRI("Criminal");
@@ -14,4 +15,8 @@ public enum TrialType {
         this.description = description;
     }
 
+    @Override
+    public String getCode() {
+        return this.name();
+    }
 }

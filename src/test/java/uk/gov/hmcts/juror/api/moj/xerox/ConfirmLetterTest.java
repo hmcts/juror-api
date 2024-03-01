@@ -32,7 +32,7 @@ public class ConfirmLetterTest extends AbstractLetterTest {
         addEnglishField("0845 3555567", 12);
         addEnglishField("", 12);
         addEnglishField("MONDAY 6 FEBRUARY, 2017", 32);
-        addEnglishField("10:00AM", 8);
+        addEnglishField("10:00", 8);
         addEnglishField("MR", 10);
         addEnglishField("FNAMEEIGHTTHREEONE", 20);
         addEnglishField("LNAMEEIGHTTHREEONE", 20);
@@ -63,7 +63,7 @@ public class ConfirmLetterTest extends AbstractLetterTest {
         addWelshField("0845 3555567", 12);
         addWelshField("", 12);
         addWelshField("DYDD LLUN 6 CHWEFROR, 2017", 32);
-        addWelshField("10:00AM", 8);
+        addWelshField("10:00", 8);
         addWelshField("MR", 10);
         addWelshField("FNAMEEIGHTTHREEONE", 20);
         addWelshField("LNAMEEIGHTTHREEONE", 20);

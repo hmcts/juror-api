@@ -72,7 +72,7 @@ public class JurorExpenseController {
     private final BulkService bulkService;
 
     @GetMapping("/unpaid-summary/{locCode}")
-    @Operation(summary = "/api/v1/moj/expenses/{locCode} - Retrieve a list of jurors with outstanding unpaid "
+    @Operation(summary = "Retrieve a list of jurors with outstanding unpaid "
         + "expenses. List will always be filtered by court location (using location code) and additionally can be "
         + "filtered by supplying minimum and maximum dates to return only jurors with appearances in the provided "
         + "date range")
@@ -94,8 +94,7 @@ public class JurorExpenseController {
     }
 
     @PostMapping("/{juror_number}/edit/{type}")
-    @Operation(summary = "/{juror_number}/edit/{type} - "
-        + "Updates a jurors expenses for a given day.")
+    @Operation(summary = "Updates a jurors expenses for a given day.")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @IsCourtUser
     public ResponseEntity<Void> postEditDailyExpense(
@@ -111,8 +110,7 @@ public class JurorExpenseController {
     }
 
     @PostMapping("/{juror_number}/draft/attended_day")
-    @Operation(summary = "/api/v1/moj/expenses/{juror_number}/draft/attended_day - "
-        + "Updates a jurors expenses for a given day.")
+    @Operation(summary = "Updates a jurors expenses for a given day.")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @IsCourtUser
     public ResponseEntity<DailyExpenseResponse> postDraftAttendedDayDailyExpense(
@@ -125,8 +123,7 @@ public class JurorExpenseController {
     }
 
     @PostMapping("/{juror_number}/draft/non_attended_day")
-    @Operation(summary = "/api/v1/moj/expenses/{juror_number}/draft/non_attended_day - "
-        + "Updates a jurors expenses for a given day.")
+    @Operation(summary = "Updates a jurors expenses for a given day.")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @IsCourtUser
     public ResponseEntity<DailyExpenseResponse> postDraftNonAttendedDayDailyExpense(
@@ -139,8 +136,7 @@ public class JurorExpenseController {
     }
 
     @PostMapping("/entered")
-    @Operation(summary = "/api/v1/moj/expenses/entered - "
-        + "Get a jurors entered expense details for a given day.")
+    @Operation(summary = "Get a jurors entered expense details for a given day.")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @IsCourtUser
     public ResponseEntity<GetEnteredExpenseResponse> getEnteredExpenseDetails(
@@ -153,8 +149,7 @@ public class JurorExpenseController {
     }
 
     @PatchMapping("/smartcard")
-    @Operation(summary = "/api/v1/moj/expenses/smartcard - "
-        + "Apportion a smartcard value across a number of days.")
+    @Operation(summary = "Apportion a smartcard value across a number of days.")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @IsCourtUser
     public ResponseEntity<Void> apportionSmartCard(
@@ -165,8 +160,7 @@ public class JurorExpenseController {
     }
 
     @GetMapping("/default-summary/{juror_number}")
-    @Operation(summary = "/api/v1/moj/expenses/default-summary - Retrieve default expenses details"
-        + "and persists them to juror and appearance tables ")
+    @Operation(summary = "Retrieve default expenses details and persists them to juror and appearance tables ")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<DefaultExpenseResponseDto> getDefaultExpenses(
         @Valid @JurorNumber @Parameter(description = "Valid juror number", required = true)
@@ -176,8 +170,7 @@ public class JurorExpenseController {
     }
 
     @PostMapping("/set-default-expenses/{juror_number}")
-    @Operation(summary = "/api/v1/moj/expenses/set-default-expenses - Update default expense details for juror and "
-        + "appearance and persists them to database ")
+    @Operation(summary = "Update default expense details for juror and appearance and persists them to database ")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> setDefaultExpenses(
         @Valid @JurorNumber @Parameter(description = "Valid juror number", required = true)
@@ -188,8 +181,7 @@ public class JurorExpenseController {
     }
 
     @PostMapping("/submit-for-approval")
-    @Operation(summary = "/api/v1/moj/expenses/submit-for-approval - "
-        + "submit one or many draft expense records for approval (for a single juror)")
+    @Operation(summary = "submit one or many draft expense records for approval (for a single juror)")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> submitDraftExpensesForApproval(@Valid @RequestBody ExpenseItemsDto dto) {
         jurorExpenseService.submitDraftExpensesForApproval(dto);
@@ -197,8 +189,7 @@ public class JurorExpenseController {
     }
 
     @PostMapping("/approve")
-    @Operation(summary = "/api/v1/moj/expenses/approve - "
-        + "Approve all expense records of a given type (for a single juror)")
+    @Operation(summary = "Approve all expense records of a given type (for a single juror)")
     @IsCourtUser
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> approveExpenses(@Valid @RequestBody List<ApproveExpenseDto> dto) {
@@ -207,8 +198,7 @@ public class JurorExpenseController {
     }
 
     @PostMapping("/view/{type}")
-    @Operation(summary = "/api/v1/moj/expenses/view/{type} - "
-        + "Get a jurors entered simplified expense detail for a given day and type.")
+    @Operation(summary = "Get a jurors entered simplified expense detail for a given day and type.")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @IsCourtUser
     public ResponseEntity<CombinedSimplifiedExpenseDetailDto> getSimplifiedExpenseDetails(
@@ -220,8 +210,7 @@ public class JurorExpenseController {
     }
 
     @GetMapping("/draft/{juror_number}/{pool_number}")
-    @Operation(summary = "/api/v1/moj/expenses/draft/{juror_number}/{pool_number} - "
-        + "Get a list of all of a jurors draft expenses")
+    @Operation(summary = "Get a list of all of a jurors draft expenses")
     @ResponseStatus(HttpStatus.OK)
     @IsCourtUser
     public ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> getDraftExpenses(
@@ -234,8 +223,7 @@ public class JurorExpenseController {
     }
 
     @GetMapping("/counts/{juror_number}/{pool_number}")
-    @Operation(summary = "/api/v1/moj/expenses/count/{juror_number}/{pool_number} - "
-        + "Get the count of each type of expense for a juror and pool number.")
+    @Operation(summary = "Get the count of each type of expense for a juror and pool number.")
     @ResponseStatus(HttpStatus.OK)
     @IsCourtUser
     public ResponseEntity<ExpenseCount> getCounts(
@@ -248,8 +236,7 @@ public class JurorExpenseController {
     }
 
     @PostMapping("/calculate/totals")
-    @Operation(summary = "/api/v1/moj/expenses/calculate/totals - "
-        + "Calculate the total expenses for a juror for the given input")
+    @Operation(summary = "Calculate the total expenses for a juror for the given input")
     @ResponseStatus(HttpStatus.OK)
     @IsCourtUser
     public ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsForTotals>> calculateTotals(
@@ -259,8 +246,7 @@ public class JurorExpenseController {
     }
 
     @GetMapping("/approval/{loc_code}/{payment_method}")
-    @Operation(summary = "/api/v1/moj/expenses/approval/{juror_number}/{payment_method} - "
-        + "Get a list of all of a jurors expenses that are pending approval/re-approval")
+    @Operation(summary = "Get a list of all of a jurors expenses that are pending approval/re-approval")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize(SecurityUtil.LOC_CODE_AUTH)
     public ResponseEntity<List<PendingApproval>> getExpensesForApproval(

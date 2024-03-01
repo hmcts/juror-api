@@ -724,6 +724,10 @@ class JurorExpenseControllerTest {
     class GetEnteredExpenseDetails {
         public static final String URL = BASE_URL + "/entered";
 
+        private GetEnteredExpenseDetails() {
+
+        }
+
         @Nested
         @DisplayName("Negative")
         class Negative {
@@ -783,6 +787,10 @@ class JurorExpenseControllerTest {
     @DisplayName("POST " + ApproveExpenses.URL)
     class ApproveExpenses {
         public static final String URL = BASE_URL + "/approve";
+
+        private ApproveExpenses() {
+
+        }
 
         @Nested
         @DisplayName("Negative")
@@ -1291,6 +1299,9 @@ class JurorExpenseControllerTest {
     class CalculateTotals {
         public static final String URL = BASE_URL + "/calculate/totals";
 
+        private CalculateTotals() {
+
+        }
 
         @Nested
         @DisplayName("Negative")

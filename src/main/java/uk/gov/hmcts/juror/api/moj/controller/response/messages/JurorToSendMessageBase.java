@@ -2,22 +2,27 @@ package uk.gov.hmcts.juror.api.moj.controller.response.messages;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 
-@Builder
+@SuperBuilder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class JurorToSendMessage {
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = JurorToSendMessageBureau.class, name = "Bureau"),
+    @JsonSubTypes.Type(value = JurorToSendMessageCourt.class, name = "Court")
+})
+public abstract class JurorToSendMessageBase {
 
     @JsonProperty("juror_number")
     private String jurorNumber;
@@ -40,23 +45,9 @@ public class JurorToSendMessage {
     @JsonProperty("status")
     private String status;
 
-    @JsonProperty("trial_number")
-    private String trialNumber;
-
-    @JsonProperty("on_call")
-    private Boolean onCall;
-
-    @JsonProperty("next_due_at_court")
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate nextDueAtCourt;
-
     @JsonProperty("date_deferred_to")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateDeferredTo;
-
-    @JsonProperty("completion_date")
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate completionDate;
 
     @JsonProperty("welsh_language")
     private boolean welshLanguage;

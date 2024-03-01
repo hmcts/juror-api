@@ -15,6 +15,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Address;
@@ -34,6 +35,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @MappedSuperclass
 @Table(name = "juror_response", schema = "juror_mod")
 @Getter
+@SuperBuilder
 @Setter
 @ToString(exclude = {"reasonableAdjustments", "cjsEmployments"})// lazy init fields
 @EqualsAndHashCode(callSuper = true, exclude = {"cjsEmployments", "reasonableAdjustments", "staff"})

@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.Pool;
 import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -128,7 +129,7 @@ public class JurorServiceImpl implements JurorService {
             }
             return uniquePoolAttendTime;
         } else {
-            final String courtAttendTime = poolDetails.getCourt().getCourtAttendTime();
+            final String courtAttendTime = DataUtils.asStringHHmm(poolDetails.getCourt().getCourtAttendTime());
             if (log.isTraceEnabled()) {
                 log.trace("Attend time is not set in unique pool, using court attend time of {}", courtAttendTime);
             }

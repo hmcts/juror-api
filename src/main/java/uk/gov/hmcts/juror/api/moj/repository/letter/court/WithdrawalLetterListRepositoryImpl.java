@@ -7,8 +7,8 @@ import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import uk.gov.hmcts.juror.api.moj.domain.letter.CourtLetterSearchCriteria;
-import uk.gov.hmcts.juror.api.moj.domain.letter.court.WithdrawalLetterList;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.QWithdrawalLetterList;
+import uk.gov.hmcts.juror.api.moj.domain.letter.court.WithdrawalLetterList;
 
 import java.util.List;
 
@@ -58,7 +58,7 @@ public class WithdrawalLetterListRepositoryImpl implements IWithdrawalLetterList
 
         if (!courtLetterSearchCriteria.includePrinted()) {
             jpaQuery.where(WITHDRAWAL_LETTER_LIST.datePrinted.isNull());
-       }
+        }
     }
 
     private void orderWithdrawalQueryResults(JPAQuery<WithdrawalLetterList> jpaQuery,

@@ -14,11 +14,13 @@ import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.DeferralLette
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ExcusalLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.NonDeferralLetterData;
+import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ShowCauseLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.WithdrawalLetterData;
 import uk.gov.hmcts.juror.api.moj.domain.letter.CourtLetterSearchCriteria;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralDeniedLetterList;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralGrantedLetterList;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.ExcusalGrantedLetterList;
+import uk.gov.hmcts.juror.api.moj.domain.letter.court.ShowCauseLetterList;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.WithdrawalLetterList;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
@@ -26,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.DeferralDeniedLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.DeferralGrantedLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.ExcusalGrantedLetterListRepository;
+import uk.gov.hmcts.juror.api.moj.repository.letter.court.ShowCauseLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.WithdrawalLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -45,6 +48,7 @@ public class CourtLetterServiceImpl implements CourtLetterService {
     private final DeferralDeniedLetterListRepository deferralDeniedLetterListRepository;
     private final WithdrawalLetterListRepository withdrawalLetterListRepository;
     private final ExcusalCodeRepository excusalCodeRepository;
+    private final ShowCauseLetterListRepository showCauseLetterListRepository;
 
     @Autowired
     private final CourtPostponementLetterServiceImpl courtPostponementLetterService;
@@ -57,6 +61,8 @@ public class CourtLetterServiceImpl implements CourtLetterService {
     private static final String DEFERRED_TO = "Deferred to";
     private static final String DATE_EXCUSED = "Date excused";
     private static final String DATE_DISQUALIFIED = "Date disqualified";
+    private static final String ABSENT_DATE = "Absent date";
+    private static final String RECORDS_FOUND = "{} records found";
 
     @Override
     @Transactional(readOnly = true)
@@ -69,6 +75,7 @@ public class CourtLetterServiceImpl implements CourtLetterService {
             case DEFERRAL_REFUSED -> getEligibleDeferralDeniedList(request);
             case WITHDRAWAL -> getEligibleWithdrawalList(request);
             case POSTPONED -> courtPostponementLetterService.getEligibleList(request);
+            case SHOW_CAUSE -> getEligibleShowCauseList(request);
             case EXCUSAL_GRANTED -> getEligibleExcusalGrantedList(request);
             case EXCUSAL_REFUSED -> courtExcusalRefusedLetterService.getEligibleList(request);
             default -> throw new MojException.InternalServerError("Letter type not yet implemented", null);
@@ -135,6 +142,35 @@ public class CourtLetterServiceImpl implements CourtLetterService {
         return responseDto;
     }
 
+    private LetterListResponseDto getEligibleShowCauseList(CourtLetterListRequestDto request) {
+        log.trace("Enter getEligibleShowCauseList method");
+
+        String owner = SecurityUtil.getActiveOwner();
+
+        CourtLetterSearchCriteria searchCriteria = buildSearchCriteria(request);
+
+        log.debug("Find jurors eligible for a 'show case' letter for the primary court: {}", owner);
+        List<ShowCauseLetterList> eligibleJurorRecords =
+            showCauseLetterListRepository.findJurorsEligibleForShowCauseLetter(searchCriteria, owner);
+        log.debug(RECORDS_FOUND, eligibleJurorRecords.size());
+
+        List<String> headings = List.of(JUROR_NUMBER, FIRST_NAME, LAST_NAME, ABSENT_DATE, DATE_PRINTED);
+
+        List<String> dataTypes = List.of(STRING, STRING, STRING, DATE, DATE);
+
+        List<ShowCauseLetterData> showCauseLetterDataList =
+            serialiseShowCauseLetterData(eligibleJurorRecords, request.isIncludePrinted());
+
+        LetterListResponseDto responseDto = LetterListResponseDto.builder()
+            .headings(headings)
+            .dataTypes(dataTypes)
+            .data(showCauseLetterDataList)
+            .build();
+
+        log.trace("Exit getEligibleShowCauseList method");
+        return responseDto;
+    }
+
     private List<DeferralLetterData> serialiseDeferralLetterData(List<DeferralGrantedLetterList> eligibleJurorRecords,
                                                                  boolean isIncludePrinted) {
         List<DeferralLetterData> deferralLetterDataList = new ArrayList<>();
@@ -190,6 +226,27 @@ public class CourtLetterServiceImpl implements CourtLetterService {
             deferralLetterDataList.add(nonDeferralLetterData.build());
         }
         return deferralLetterDataList;
+    }
+
+    private List<ShowCauseLetterData> serialiseShowCauseLetterData(List<ShowCauseLetterList> eligibleJurorRecords,
+                                                                   boolean isIncludePrinted) {
+        List<ShowCauseLetterData> showCauseLetterDataList = new ArrayList<>();
+        for (ShowCauseLetterList result : eligibleJurorRecords) {
+            ShowCauseLetterData.ShowCauseLetterDataBuilder showCauseLetterData = ShowCauseLetterData.builder()
+                .jurorNumber(result.getJurorNumber())
+                .firstName(result.getFirstName())
+                .lastName(result.getLastName())
+                .absentDate(result.getAbsentDate())
+                .poolNumber(result.getPoolNumber());
+
+            if (isIncludePrinted) {
+                LocalDateTime datePrinted = result.getDatePrinted();
+                showCauseLetterData.datePrinted(datePrinted != null ? datePrinted.toLocalDate() : null);
+            }
+
+            showCauseLetterDataList.add(showCauseLetterData.build());
+        }
+        return showCauseLetterDataList;
     }
 
     private LetterListResponseDto getEligibleWithdrawalList(CourtLetterListRequestDto courtLetterListRequestDto) {
@@ -322,5 +379,4 @@ public class CourtLetterServiceImpl implements CourtLetterService {
         }
         return excusalLetterDataList;
     }
-
 }

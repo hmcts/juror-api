@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
@@ -21,6 +22,8 @@ import java.util.function.UnaryOperator;
 
 @SuppressWarnings("unchecked")
 public interface ReissueLetterService {
+    
+    String REASON = "Reason";
 
     ReissueLetterListResponseDto reissueLetterList(ReissueLetterListRequestDto request);
 
@@ -42,12 +45,12 @@ public interface ReissueLetterService {
             .as("status"), List.of(QJurorPool.class)),
         JUROR_DEFERRED_TO(LocalDate.class, "Deferred to", QJurorPool.jurorPool.deferralDate
             .as("deferral_date"), List.of(QJurorPool.class), Object::toString),
-        JUROR_DEFERRED_TO_REASON(String.class, "Reason", QJurorPool.jurorPool.deferralCode
+        JUROR_DEFERRED_TO_REASON(String.class, REASON, QJurorPool.jurorPool.deferralCode
             .as("deferral_code"),
             List.of(QJurorPool.class), deferralCode -> ExcusalCodeEnum.valueOf((String)deferralCode).getDescription()),
-        JUROR_DEFERRAL_REJECTED_REASON(String.class, "Reason", QJuror.juror.excusalCode.as(
-            "deferral_rejected_code"),
-            List.of(QJuror.class), deferralCode -> ExcusalCodeEnum.valueOf((String)deferralCode).getDescription()),
+        JUROR_DEFERRAL_REJECTED_REASON(String.class, REASON, QJurorPool.jurorPool.deferralCode.as(
+            "deferral_code"),
+            List.of(QJurorPool.class), deferralCode -> ExcusalCodeEnum.valueOf((String)deferralCode).getDescription()),
         JUROR_DEFERRAL_DATE_REFUSED(LocalDateTime.class, "Date refused", QJurorHistory.jurorHistory.dateCreated.as(
             "date_refused"), List.of(QJurorHistory.class), dateTime -> {
             if (dateTime == null) {
@@ -56,13 +59,18 @@ public interface ReissueLetterService {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             return formatter.format((LocalDateTime)dateTime);
         }),
-        JUROR_EXCUSAL_REASON(String.class, "Reason", QJuror.juror.excusalCode
+        JUROR_EXCUSAL_REASON(String.class, REASON, QJuror.juror.excusalCode
             .as("excusal_code"),
             List.of(QJuror.class), excusalCode -> ExcusalCodeEnum.valueOf((String) excusalCode).getDescription()),
         JUROR_EXCUSAL_DATE(LocalDate.class, "Date excused", QJuror.juror.excusalDate
             .as("date_excused"), List.of(QJuror.class), Object::toString),
         JUROR_EXCUSAL_DENIED_DATE(LocalDate.class, "Date refused", QJuror.juror.excusalDate
             .as("date_refused"), List.of(QJuror.class), Object::toString),
+        JUROR_WITHDRAWAL_DATE(LocalDate.class, "Date disqualified", QJuror.juror.disqualifyDate
+            .as("disqualify_date"), List.of(QJurorPool.class), Object::toString),
+        JUROR_WITHDRAWAL_REASON(String.class, "Reason", QJuror.juror.disqualifyCode
+            .as("disqualify_reason"),
+            List.of(QJuror.class), disqualifyCode -> DisqualifyCode.valueOf((String)disqualifyCode).getDescription()),
         DATE_PRINTED(LocalDate.class, "Date printed", QBulkPrintData.bulkPrintData.creationDate
             .as("date_printed"), List.of(QBulkPrintData.class), Object::toString),
         BULK_PRINT_ID(Long.class, "hidden_print_id", QBulkPrintData.bulkPrintData.id

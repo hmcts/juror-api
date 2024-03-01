@@ -11,10 +11,10 @@ public class DeferralDeniedLetter extends LetterBase {
                                 CourtLocation courtLocation,
                                 CourtLocation bureauLocation) {
         super(LetterContext.builder()
-                   .jurorPool(jurorPool)
-                   .courtLocation(courtLocation)
-                   .bureauLocation(bureauLocation)
-                   .build());
+            .jurorPool(jurorPool)
+            .courtLocation(courtLocation)
+            .bureauLocation(bureauLocation)
+            .build());
     }
 
     public DeferralDeniedLetter(JurorPool jurorPool,

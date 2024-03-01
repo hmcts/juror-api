@@ -44,8 +44,8 @@ public class JurorNotificationServiceImplTest {
     private JurorResponse thirdPartyOwnEmail;
     private AppSetting firstPersonDevTemplateSetting;
     private AppSetting thirdPartyDevTemplateSetting;
-    private final UUID FIRST_PERSON_TEMPLATE_UUID = UUID.randomUUID();
-    private final UUID THIRD_PARTY_TEMPLATE_UUID = UUID.randomUUID();
+    private final UUID firstPersonTemplateUuid = UUID.randomUUID();
+    private final UUID thirdPartyTemplateUuid = UUID.randomUUID();
 
     @Mock
     private NotifyAdapter mockNotifyAdapter;
@@ -94,8 +94,8 @@ public class JurorNotificationServiceImplTest {
             .emailAddress(TP_EMAIL)//juror email
             .build();
 
-        firstPersonDevTemplateSetting = AppSetting.builder().value(FIRST_PERSON_TEMPLATE_UUID.toString()).build();
-        thirdPartyDevTemplateSetting = AppSetting.builder().value(THIRD_PARTY_TEMPLATE_UUID.toString()).build();
+        firstPersonDevTemplateSetting = AppSetting.builder().value(firstPersonTemplateUuid.toString()).build();
+        thirdPartyDevTemplateSetting = AppSetting.builder().value(thirdPartyTemplateUuid.toString()).build();
 
     }
 

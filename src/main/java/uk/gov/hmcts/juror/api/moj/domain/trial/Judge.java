@@ -7,12 +7,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * juror_mod.judge table entity.
@@ -21,6 +23,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Builder
 @Setter
 @Table(name = "judge", schema = "juror_mod")
 public class Judge implements Serializable {
@@ -39,8 +42,18 @@ public class Judge implements Serializable {
     @Length(max = 4)
     private String code;
 
+    @Column(name = "name")
+    @Length(max = 30)
+    private String name;
+
+    @Column(name = "is_active")
+    private boolean isActive;
+
     @Column(name = "description")
     @Length(max = 30)
     private String description;
+
+    @Column(name = "last_used")
+    private LocalDateTime lastUsed;
 
 }

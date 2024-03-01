@@ -1,35 +1,35 @@
 package uk.gov.hmcts.juror.api.moj.enumeration;
 
 import org.apache.commons.lang3.function.TriFunction;
-import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
 
 import java.math.BigDecimal;
 
 public enum TravelMethod {
-    CAR((courtLocation, jurorsByCar, jurorsByMotorcycle) -> {
+    CAR((expenseRates, jurorsByCar, jurorsByMotorcycle) -> {
         if (jurorsByCar == null || jurorsByCar <= 0) {
-            return courtLocation.getCarMileageRatePerMile0Passengers();
+            return expenseRates.getCarMileageRatePerMile0Passengers();
         }
         if (jurorsByCar <= 1) {
-            return courtLocation.getCarMileageRatePerMile1Passengers();
+            return expenseRates.getCarMileageRatePerMile1Passengers();
         }
-        return courtLocation.getCarMileageRatePerMile2OrMorePassengers();
+        return expenseRates.getCarMileageRatePerMile2OrMorePassengers();
     }),
-    MOTERCYCLE((courtLocation, jurorsByCar, jurorsByMotorcycle) -> {
+    MOTERCYCLE((expenseRates, jurorsByCar, jurorsByMotorcycle) -> {
         if (jurorsByMotorcycle == null || jurorsByMotorcycle <= 0) {
-            return courtLocation.getMotorcycleMileageRatePerMile0Passengers();
+            return expenseRates.getMotorcycleMileageRatePerMile0Passengers();
         }
-        return courtLocation.getMotorcycleMileageRatePerMile1Passengers();
+        return expenseRates.getMotorcycleMileageRatePerMile1Passengers();
     }),
-    BICYCLE((courtLocation, jurorsByCar, jurorsByMotorcycle) -> courtLocation.getBikeRate());
+    BICYCLE((expenseRates, jurorsByCar, jurorsByMotorcycle) -> expenseRates.getBikeRate());
 
-    private final TriFunction<CourtLocation, Integer, Integer, BigDecimal> getRateFunction;
+    private final TriFunction<ExpenseRates, Integer, Integer, BigDecimal> getRateFunction;
 
-    TravelMethod(TriFunction<CourtLocation, Integer, Integer, BigDecimal> getRateFunction) {
+    TravelMethod(TriFunction<ExpenseRates, Integer, Integer, BigDecimal> getRateFunction) {
         this.getRateFunction = getRateFunction;
     }
 
-    public BigDecimal getRate(CourtLocation courtLocation, Integer jurorsByCar, Integer jurorsByMotorcycle) {
-        return getRateFunction.apply(courtLocation, jurorsByCar, jurorsByMotorcycle);
+    public BigDecimal getRate(ExpenseRates expenseRates, Integer jurorsByCar, Integer jurorsByMotorcycle) {
+        return getRateFunction.apply(expenseRates, jurorsByCar, jurorsByMotorcycle);
     }
 }

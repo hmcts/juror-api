@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,8 +55,12 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
     private static final String Description_3 = "Email address is present in the payLoad Map";
 
 
-    private NotifyTemplateField templateField1, templateField2, templateField3, templateField4,
-        templateField5, templateField6;
+    private NotifyTemplateField templateField1;
+    private NotifyTemplateField templateField2;
+    private NotifyTemplateField templateField3;
+    private NotifyTemplateField templateField4;
+    private NotifyTemplateField templateField5;
+    private NotifyTemplateField templateField6;
     private NotifyTemplateMapping notifyCommsTemplateMapping;
     private Map<String, String> payLoad;
     private List<NotifyTemplateField> templateFields;
@@ -109,13 +114,13 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
 
     @Test
     public void generatePayLoadData_printFiles_HappyPath() throws ParseException {
-        String detail_rec = "    Farah     Lee       YYY   " + JUROR_NUMBER + "XX     ";
+        final String detailRec = "    Farah     Lee       YYY   " + JUROR_NUMBER + "XX     ";
 
         getCourt(false);
         pool.setCourt(court);
 
         given(notifyTemplateFieldRepository.findByTemplateId(TEMPLATE_ID)).willReturn(templateFields);
-        payLoad = service.generatePayLoadData(TEMPLATE_ID, detail_rec, pool);
+        payLoad = service.generatePayLoadData(TEMPLATE_ID, detailRec, pool);
 
         assertThat(payLoad)
             .as("Juror number is present in the payLoad Map")
@@ -243,7 +248,7 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
 
     @Test(expected = StringIndexOutOfBoundsException.class)
     public void generatePayLoadData_Invalid() throws Exception {
-        String detail_rec = "Farah  Lee    YYY   " + JUROR_NUMBER;
+        String detailRec = "Farah  Lee    YYY   " + JUROR_NUMBER;
         pool = Pool.builder()
             .jurorNumber(JUROR_NUMBER)
             .firstName(FIRST_NAME)
@@ -251,7 +256,7 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
             .build();
 
         given(notifyTemplateFieldRepository.findByTemplateId(TEMPLATE_ID)).willReturn(templateFields);
-        payLoad = service.generatePayLoadData(TEMPLATE_ID, detail_rec, pool);
+        payLoad = service.generatePayLoadData(TEMPLATE_ID, detailRec, pool);
     }
 
 
@@ -259,7 +264,7 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
         if (sentToCourt == true) {
             court.setLocCourtName(COURT_NAME);
         }
-        court.setCourtAttendTime(TIME);
+        court.setCourtAttendTime(LocalTime.parse(TIME));
         return court;
     }
 

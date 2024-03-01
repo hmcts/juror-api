@@ -58,6 +58,7 @@ import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
 import uk.gov.hmcts.juror.api.moj.service.letter.PostponementLetterServiceImpl;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -164,7 +165,7 @@ class ManageDeferralsServiceTest {
             LocalDate newAttendanceDate = LocalDate.now();
             LocalDate oldAttendanceDate = LocalDate.of(2023, 6, 6);
 
-            final BureauJWTPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER,  BUREAU_USER);
+            final BureauJWTPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
 
             final PoolRequest oldPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111111, LOC_CODE_415,
                 oldAttendanceDate);
@@ -212,7 +213,7 @@ class ManageDeferralsServiceTest {
             LocalDate newAttendanceDate = LocalDate.now();
             LocalDate oldAttendanceDate = LocalDate.of(2023, 6, 6);
 
-            final BureauJWTPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER,  BUREAU_USER);
+            final BureauJWTPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
 
             final PoolRequest oldPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111111, LOC_CODE_415,
                 oldAttendanceDate);
@@ -299,7 +300,7 @@ class ManageDeferralsServiceTest {
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
 
             assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
-                manageDeferralsService.processJurorPostponement(bureauPayload,createProcessJurorRequestDto()));
+                manageDeferralsService.processJurorPostponement(bureauPayload, createProcessJurorRequestDto()));
 
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
@@ -1637,8 +1638,8 @@ class ManageDeferralsServiceTest {
 
         DeferralDatesRequestDto deferralDatesRequestDto = new DeferralDatesRequestDto();
 
-        DeferralOptionsDto deferralOptionsDto = manageDeferralsService.findActivePoolsForDatesAndLocCode(deferralDatesRequestDto,
-            jurorNumber, currentCourtLocation, payload);
+        DeferralOptionsDto deferralOptionsDto = manageDeferralsService
+            .findActivePoolsForDatesAndLocCode(deferralDatesRequestDto, jurorNumber, currentCourtLocation, payload);
 
         assertThat(deferralOptionsDto.getDeferralPoolsSummary().size())
             .as("No dates provided - expect empty payload")
@@ -1686,6 +1687,7 @@ class ManageDeferralsServiceTest {
         verify(currentlyDeferredRepository, never()).count(any(BooleanExpression.class));
 
     }
+
     @Test
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void test_getPreferredDeferralDates_twoValidDates() {
@@ -2362,7 +2364,6 @@ class ManageDeferralsServiceTest {
     }
 
 
-
     private DeferralReasonRequestDto createDeferralReasonDtoToDeferralMaintenance(ReplyMethod replyMethod) {
         DeferralReasonRequestDto dto = new DeferralReasonRequestDto();
         dto.setReplyMethod(replyMethod);
@@ -2396,7 +2397,7 @@ class ManageDeferralsServiceTest {
         CourtLocation location = new CourtLocation();
         location.setLocCode("415");
         location.setName("Chester");
-        location.setCourtAttendTime("09:00");
+        location.setCourtAttendTime(LocalTime.of(9, 0));
 
         PoolRequest poolRequest = new PoolRequest();
         poolRequest.setPoolNumber("111111111");

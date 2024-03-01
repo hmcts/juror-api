@@ -140,15 +140,20 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
                     jurorHistory.otherInformationRef(data.get(JUROR_POOL.juror.excusalCode));
                     jurorHistory.otherInformationDate(data.get(JUROR_POOL.juror.excusalDate));
                 }
+                case SHOW_CAUSE -> {
+                    jurorHistory.historyCode(HistoryCodeMod.NO_SHOW_LETTER);
+                    jurorHistory.otherInformation("Show Cause Letter");
+                }
                 default -> throw new MojException.NotImplemented("letter type not implemented", null);
             }
+
             JurorHistory history = jurorHistory.build();
 
             jurorHistoryRepository.save(history);
 
             // create the print letter response
-            boolean welshInformation = welshCourtLocationRepository
-                .existsByLocCode(Objects.requireNonNull(data).get(COURT_LOCATION.locCode));
+            boolean welshInformation = welshCourtLocationRepository.existsByLocCode(Objects.requireNonNull(data)
+                .get(COURT_LOCATION.locCode));
 
             letters.add(createPrintLetterDataResponseDto(data, welshInformation, printLettersRequestDto));
         }
@@ -216,10 +221,12 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             case EXCUSAL_GRANTED, WITHDRAWAL -> {
                 // do nothing as no additional fields are required
             }
+            case SHOW_CAUSE -> builder
+                .noShowDate(formatDate(Objects.requireNonNull(dto.getShowCauseDate()), welsh))
+                .noShowTime(Objects.requireNonNull(dto.getShowCauseTime()));
             default -> throw new MojException.NotImplemented("letter type not implemented",
                 null);
         }
-
         return builder.build();
     }
 

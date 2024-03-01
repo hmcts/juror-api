@@ -755,7 +755,9 @@ public class UserServiceImpl implements UserService {
             0,
             true,
             BigDecimal.ZERO,
-            false
+            false,
+            null,
+            null
         );
         if (log.isTraceEnabled()) {
             log.trace("Converted {} and {} into {}", dto, teamEntity, staff);

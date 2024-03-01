@@ -49,7 +49,7 @@ public class ResponseDeferralController {
     }
 
     @PostMapping("/{jurorId}")
-    @Operation(summary = "/bureau/juror/defer/{jurorId} - POST deferral for a specific juror",
+    @Operation(summary = "deferral for a specific juror",
         description = "Mark a single juror respose with a deferral decision")
     public ResponseEntity<Void> processJurorDeferral(
         @Parameter(description = "Valid juror number") @PathVariable String jurorId,

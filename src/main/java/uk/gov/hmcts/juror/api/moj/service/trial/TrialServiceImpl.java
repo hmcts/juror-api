@@ -42,6 +42,7 @@ import uk.gov.hmcts.juror.api.moj.utils.JurorHistoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -92,10 +93,13 @@ public class TrialServiceImpl implements TrialService {
         Judge judge =
             RepositoryUtils.unboxOptionalRecord(judgeRepository.findById(trialDto.getJudgeId()),
                 trialDto.getJudgeId().toString());
-
+        
         Trial trial = convertDtoToTrial(trialDto, courtroom, judge, courtLocation);
         trialRepository.save(trial);
 
+        //TODo confirm
+        judge.setLastUsed(LocalDateTime.now());
+        judgeRepository.save(judge);
         return createTrialSummary(trial, courtroom, judge);
     }
 
@@ -301,7 +305,8 @@ public class TrialServiceImpl implements TrialService {
     private CourtroomsDto convertCourtroomEntityToDto(Courtroom courtroom) {
         CourtroomsDto dto = new CourtroomsDto();
         dto.setDescription(courtroom.getDescription());
-        dto.setOwner(courtroom.getOwner());
+        dto.setOwner(courtroom.getCourtLocation().getOwner());
+        dto.setLocCode(courtroom.getCourtLocation().getLocCode());
         dto.setId(courtroom.getId());
         dto.setRoomNumber(courtroom.getRoomNumber());
         return dto;

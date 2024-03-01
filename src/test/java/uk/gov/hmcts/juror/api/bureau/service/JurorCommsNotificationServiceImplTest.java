@@ -54,7 +54,7 @@ public class JurorCommsNotificationServiceImplTest {
     private Pool pool;
     private BureauJurorDetail bureauJurorDetail;
     private NotifyTemplateMapping notifyCommsTemplateMapping;
-    private final UUID NOTIFY_TEMPLATE_ID = UUID.randomUUID();
+    private final UUID notifyTemplateId = UUID.randomUUID();
     Map<String, String> payLoad;
     private WelshCourtLocation welshCourt;
     private CourtLocation court;
@@ -105,28 +105,30 @@ public class JurorCommsNotificationServiceImplTest {
             .notifications(0)
             .build();
 
-        notifyCommsTemplateMapping = NotifyTemplateMapping.builder().templateId(NOTIFY_TEMPLATE_ID.toString()).build();
+        notifyCommsTemplateMapping = NotifyTemplateMapping.builder().templateId(notifyTemplateId.toString()).build();
 
         LocalDateTime now = LocalDateTime.now();
 
-        payLoad = new HashMap<String, String>() {{
-            put("juror number", JUROR_NUMBER);
-            put("COURT", "PRESTON");
-            put("SERVICESTARTDATE", "value2");
-            put("FIRSTNAME", "value2");
-            put("LASTNAME", "value2");
-            put("email address", JUROR_EMAIL);
-            put("phone number", JUROR_PHONENO);
-        }};
+        payLoad = new HashMap<>() {
+            {
+                put("juror number", JUROR_NUMBER);
+                put("COURT", "PRESTON");
+                put("SERVICESTARTDATE", "value2");
+                put("FIRSTNAME", "value2");
+                put("LASTNAME", "value2");
+                put("email address", JUROR_EMAIL);
+                put("phone number", JUROR_PHONENO);
+            }
+        };
     }
 
     @Test
     public void sendJurorCommsEmail_confirmation_english() {
-        String detail_rec = "    Farah     Lee       YYY   " + JUROR_NUMBER + "XX     ";
+        String detailRec = "    Farah     Lee       YYY   " + JUROR_NUMBER + "XX     ";
         given(jurorCommsNotifyPayLoadService.generatePayLoadData(anyString(), anyString(), any(Pool.class))).willReturn(
             payLoad);
-        service.sendJurorComms(pool, JurorCommsNotifyTemplateType.LETTER_COMMS, NOTIFY_TEMPLATE_ID.toString(),
-            detail_rec, false);
+        service.sendJurorComms(pool, JurorCommsNotifyTemplateType.LETTER_COMMS, notifyTemplateId.toString(),
+            detailRec, false);
         verify(mockNotifyAdapter).sendCommsEmail(any());
     }
 
@@ -181,7 +183,7 @@ public class JurorCommsNotificationServiceImplTest {
 
     @Test(expected = IllegalStateException.class)
     public void sendJurorCommsEmail_letter_comms_no_detail_rec_data() throws Exception {
-        service.sendJurorComms(pool, JurorCommsNotifyTemplateType.LETTER_COMMS, NOTIFY_TEMPLATE_ID.toString(), null,
+        service.sendJurorComms(pool, JurorCommsNotifyTemplateType.LETTER_COMMS, notifyTemplateId.toString(), null,
             false);
     }
 

@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Length;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -44,7 +45,7 @@ public class Holidays implements Serializable {
 
     @Column(name = "holiday")
     @NotNull
-    private Date holiday;
+    private LocalDate holiday;
 
     @Column(name = "description")
     @Length(max = 30)

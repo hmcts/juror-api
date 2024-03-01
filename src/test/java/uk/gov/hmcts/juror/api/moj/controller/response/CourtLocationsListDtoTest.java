@@ -5,6 +5,8 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +19,7 @@ public class CourtLocationsListDtoTest {
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(locationCode);
         courtLocation.setName(name);
-        courtLocation.setCourtAttendTime(attendacneTime);
+        courtLocation.setCourtAttendTime(LocalTime.parse(attendacneTime));
 
         return courtLocation;
     }
@@ -38,7 +40,7 @@ public class CourtLocationsListDtoTest {
             .isEqualTo(courtLocation.getName());
         assertThat(courtLocationDataDto.getAttendanceTime())
             .as("DTO Attendance Time should be mapped from the Court Location object's Attendance Time")
-            .isEqualTo(courtLocation.getCourtAttendTime());
+            .isEqualTo(courtLocation.getCourtAttendTime().format(DateTimeFormatter.ofPattern("HH:mm")));
     }
 
     @Test

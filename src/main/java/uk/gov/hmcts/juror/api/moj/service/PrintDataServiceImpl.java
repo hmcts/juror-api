@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.PostponeLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.RequestInfoLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.SummonsLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.WithdrawalLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.SummonsReminderLetter;
 
 import java.time.LocalDate;
@@ -173,7 +174,7 @@ public class PrintDataServiceImpl implements PrintDataService {
                 "Attempted to print withdrawal letter for null jurorPool", null);
         }
 
-        commitData(new ExcusalLetter(jurorPool, jurorPool.getCourt(),
+        commitData(new WithdrawalLetter(jurorPool, jurorPool.getCourt(),
             courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
             welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
         ));

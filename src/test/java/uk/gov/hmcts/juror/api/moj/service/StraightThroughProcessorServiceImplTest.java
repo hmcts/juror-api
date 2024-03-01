@@ -168,8 +168,8 @@ public class StraightThroughProcessorServiceImplTest {
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
 
         Assertions.assertThat(
-                straightThroughProcessorService.isValidForStraightThroughAgeDisqualification(paperResponse,
-                    serviceStartDate, jurorPool)).isFalse();
+            straightThroughProcessorService.isValidForStraightThroughAgeDisqualification(paperResponse,
+                serviceStartDate, jurorPool)).isFalse();
     }
 
     @Test
@@ -196,8 +196,8 @@ public class StraightThroughProcessorServiceImplTest {
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
 
         Assertions.assertThat(
-                straightThroughProcessorService.isValidForStraightThroughAgeDisqualification(paperResponse,
-                    serviceStartDate, jurorPool)).isFalse();
+            straightThroughProcessorService.isValidForStraightThroughAgeDisqualification(paperResponse,
+                serviceStartDate, jurorPool)).isFalse();
     }
 
     @Test
@@ -226,8 +226,8 @@ public class StraightThroughProcessorServiceImplTest {
         paperResponse.setThirdPartyReason("Example Third Party Reason");
 
         Assertions.assertThat(
-                straightThroughProcessorService.isValidForStraightThroughAgeDisqualification(paperResponse,
-                    serviceStartDate, jurorPool)).isFalse();
+            straightThroughProcessorService.isValidForStraightThroughAgeDisqualification(paperResponse,
+                serviceStartDate, jurorPool)).isFalse();
     }
 
     @Test
@@ -255,8 +255,8 @@ public class StraightThroughProcessorServiceImplTest {
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
 
         Assertions.assertThat(
-                straightThroughProcessorService.isValidForStraightThroughAgeDisqualification(paperResponse,
-                    serviceStartDate, jurorPool)).isFalse();
+            straightThroughProcessorService.isValidForStraightThroughAgeDisqualification(paperResponse,
+                serviceStartDate, jurorPool)).isFalse();
     }
 
     @Test
@@ -324,7 +324,6 @@ public class StraightThroughProcessorServiceImplTest {
     @Test
     public void test_paper_processAgeDisqualification_bureauUser_bureauOwnedJurorRecord() {
         String jurorNumber = "11111111";
-        LocalDate serviceStartDate = LocalDate.now().plusWeeks(8);
         final LocalDate dateOfBirth = LocalDate.now().minusYears(30);
 
         JurorPool jurorPool = createJurorPool(1);
@@ -335,6 +334,7 @@ public class StraightThroughProcessorServiceImplTest {
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
         paperResponse.setJurorNumber(jurorNumber);
 
+        LocalDate serviceStartDate = LocalDate.now().plusWeeks(8);
         straightThroughProcessorService.processAgeDisqualification(paperResponse, serviceStartDate, jurorPool,
             TestUtils.createJwt("400", "Bureau_User"));
 
@@ -371,7 +371,6 @@ public class StraightThroughProcessorServiceImplTest {
     @Test
     public void test_paper_processAgeDisqualification_bureauUser_courtOwnedJurorRecord() {
         String jurorNumber = "11111111";
-        LocalDate serviceStartDate = LocalDate.now().plusWeeks(8);
         final LocalDate dateOfBirth = LocalDate.now().minusYears(30);
 
         JurorPool jurorPool = createJurorPool(1);
@@ -382,6 +381,7 @@ public class StraightThroughProcessorServiceImplTest {
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
         paperResponse.setJurorNumber(jurorNumber);
 
+        LocalDate serviceStartDate = LocalDate.now().plusWeeks(8);
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
             straightThroughProcessorService.processAgeDisqualification(paperResponse, serviceStartDate, jurorPool,
                 TestUtils.createJwt("400", "Bureau_User")));
@@ -419,7 +419,6 @@ public class StraightThroughProcessorServiceImplTest {
     @Test
     public void test_paper_processAgeDisqualification_courtUser_courtOwnedJurorRecord() {
         String jurorNumber = "11111111";
-        LocalDate serviceStartDate = LocalDate.now().plusWeeks(8);
         final LocalDate dateOfBirth = LocalDate.now().minusYears(30);
 
         JurorPool jurorPool = createJurorPool(1);
@@ -430,6 +429,7 @@ public class StraightThroughProcessorServiceImplTest {
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
         paperResponse.setJurorNumber(jurorNumber);
 
+        LocalDate serviceStartDate = LocalDate.now().plusWeeks(8);
         straightThroughProcessorService.processAgeDisqualification(paperResponse, serviceStartDate, jurorPool,
             TestUtils.createJwt("415", "Bureau_User"));
 
@@ -465,7 +465,6 @@ public class StraightThroughProcessorServiceImplTest {
     @Test
     public void test_paper_processAgeDisqualification_courtUser_bureauOwnedJurorRecord() {
         String jurorNumber = "11111111";
-        LocalDate serviceStartDate = LocalDate.now().plusWeeks(8);
         final LocalDate dateOfBirth = LocalDate.now().minusYears(30);
 
         JurorPool jurorPool = createJurorPool(1);
@@ -476,6 +475,7 @@ public class StraightThroughProcessorServiceImplTest {
         PaperResponse paperResponse = createPaperResponse(dateOfBirth);
         paperResponse.setJurorNumber(jurorNumber);
 
+        LocalDate serviceStartDate = LocalDate.now().plusWeeks(8);
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
             straightThroughProcessorService.processAgeDisqualification(paperResponse, serviceStartDate, jurorPool,
                 TestUtils.createJwt("415", "Bureau_User")));
@@ -539,7 +539,6 @@ public class StraightThroughProcessorServiceImplTest {
     public void test_isValidForStraightThroughAcceptance_titleChanged() {
         String bureauOwner = "400";
         String jurorNumber = "11111111";
-        LocalDate serviceStartDate = LocalDate.now().plusWeeks(8);
         final LocalDate dateOfBirth = LocalDate.now().minusYears(30);
 
         JurorPool jurorPool = createJurorPool(1);
@@ -1325,7 +1324,7 @@ public class StraightThroughProcessorServiceImplTest {
         return jurorPool;
     }
 
-    private PoolRequest mockPoolRequest(String poolNumber, String owner){
+    private PoolRequest mockPoolRequest(String poolNumber, String owner) {
         PoolRequest mockPoolRequest = new PoolRequest();
         mockPoolRequest.setPoolNumber(poolNumber);
         mockPoolRequest.setOwner(owner);

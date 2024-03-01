@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.validation.ResponseInspectorImpl;
 
 import java.time.Instant;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Date;
@@ -58,7 +59,7 @@ public class JurorServiceImplTest {
     private BureauJurorSpecialNeedsRepository specialNeedRepository;
 
     @Mock
-    private TSpecialRepository tSpecialRepository;
+    private TSpecialRepository specialRepository;
 
     @Mock
     private BureauJurorCJSRepository cjsEmploymentRepository;
@@ -112,7 +113,7 @@ public class JurorServiceImplTest {
         jurorPoolDetails.setLastName("CASTILLO");
 
         final CourtLocation testCourt = new CourtLocation();
-        testCourt.setCourtAttendTime("9am");
+        testCourt.setCourtAttendTime(LocalTime.of(9,0));
 
         jurorPoolDetails.setCourt(testCourt);
     }
@@ -127,7 +128,7 @@ public class JurorServiceImplTest {
             .extracting("jurorNumber", "title", "firstName", "lastName")
             .contains(jurorPoolDetails.getJurorNumber(), jurorPoolDetails.getTitle(), jurorPoolDetails.getFirstName(),
                 jurorPoolDetails.getLastName());
-        assertThat(jurorDto.getCourtAttendTime()).isEqualTo("9am");
+        assertThat(jurorDto.getCourtAttendTime()).isEqualTo("09:00");
     }
 
     /**
@@ -146,103 +147,103 @@ public class JurorServiceImplTest {
 
     @Test
     public void convertJurorResponseDtoToEntityTest() throws Exception {
-        final String JUROR_NUMBER = "546547731";
-        final Date DOB = Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant());
-        final String TITLE = "Dr";
-        final String FIRST_NAME = "Namey";
-        final String LAST_NAME = "McName";
-        final String PHONE_NUMBER = "01234 123456";
-        final String ALT_PHONE_NUMBER = "0812 345 6789";
-        final String EMAIL = "mctest@test.com";
-        final String ADDRESS_1 = "Flat 8/2";
-        final String ADDRESS_2 = "84";
-        final String ADDRESS_3 = "Test Street";
-        final String ADDRESS_4 = "Testville";
-        final String ADDRESS_5 = "Testshire";
-        final String POSTCODE = "T12 3YZ";
-        final boolean LIVED_CONSECUTIVELY_ANSWER = false;
-        final String LIVED_CONSECUTIVELY_DETAIL = "Just moved to the UK.";
-        final boolean ON_BAIL_ANSWER = true;
-        final String ON_BAIL_DETAIL = "I'm out on bail.";
-        final boolean CONVICTIONS_ANSWER = false;
-        final String CONVICTIONS_DETAIL = "No convictions.";
-        final boolean MENTAL_HEALTH_ACT_ANSWER = true;
-        final String MENTAL_HEALTH_ACT_DETAIL = "I have been sectioned in the past.";
-        final String CJS_EMPLOYER = "Police";
-        final String CJS_EMPLOYER_DETAILS = "I am a policeman";
-        final String SPECIAL_NEED_TYPE = "M";
-        final String SPECIAL_NEED_DETAILS = "I have a broken leg.";
-        final String SPECIAL_ARRANGEMENTS = "I cannot get up stairs easily.";
-        final String DEFERRAL_REASON = "I am in hospital.";
-        final String DEFERRAL_DATES = "I'm in traction for another 6 weeks.";
-        final String EXCUSAL_REASON = "I am needed to solve a big case";
-        final String THIRD_PARTY_FNAME = "Nameina";
-        final String THIRD_PARTY_LNAME = "McName";
-        final String THIRD_PARTY_REASON = "My husband gets no wifi signal in the hospital.";
-        final Integer VERSION = 999;
+        final String jurorNumber = "546547731";
+        final Date dob = Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant());
+        final String title = "Dr";
+        final String firstName = "Namey";
+        final String lastName = "McName";
+        final String phoneNumber = "01234 123456";
+        final String altPhoneNumber = "0812 345 6789";
+        final String email = "mctest@test.com";
+        final String address1 = "Flat 8/2";
+        final String address2 = "84";
+        final String address3 = "Test Street";
+        final String address4 = "Testville";
+        final String address5 = "Testshire";
+        final String postcode = "T12 3YZ";
+        final boolean livedConsecutivelyAnswer = false;
+        final String livedConsecutivelyDetail = "Just moved to the UK.";
+        final boolean onBailAnswer = true;
+        final String onBailDetail = "I'm out on bail.";
+        final boolean convictionsAnswer = false;
+        final String convictionsDetail = "No convictions.";
+        final boolean mentalHealthActAnswer = true;
+        final String mentalHealthActDetail = "I have been sectioned in the past.";
+        final String cjsEmployer = "Police";
+        final String cjsEmployerDetails = "I am a policeman";
+        final String specialNeedType = "M";
+        final String specialNeedDetails = "I have a broken leg.";
+        final String specialArrangements = "I cannot get up stairs easily.";
+        final String deferralReason = "I am in hospital.";
+        final String deferralDates = "I'm in traction for another 6 weeks.";
+        final String excusalReason = "I am needed to solve a big case";
+        final String thirdPartyFname = "Nameina";
+        final String thirdPartyLname = "McName";
+        final String thirdPartyReason = "My husband gets no wifi signal in the hospital.";
+        final Integer version = 999;
 
         final JurorResponseDto dto = JurorResponseDto.realBuilder()
-            .jurorNumber(JUROR_NUMBER)
-            .dateOfBirth(DOB)
-            .title(TITLE)
-            .firstName(FIRST_NAME)
-            .lastName(LAST_NAME)
-            .primaryPhone(PHONE_NUMBER)
-            .secondaryPhone(ALT_PHONE_NUMBER)
-            .emailAddress(EMAIL)
-            .addressLineOne(ADDRESS_1)
-            .addressLineTwo(ADDRESS_2)
-            .addressLineThree(ADDRESS_3)
-            .addressTown(ADDRESS_4)
-            .addressCounty(ADDRESS_5)
-            .addressPostcode(POSTCODE)
+            .jurorNumber(jurorNumber)
+            .dateOfBirth(dob)
+            .title(title)
+            .firstName(firstName)
+            .lastName(lastName)
+            .primaryPhone(phoneNumber)
+            .secondaryPhone(altPhoneNumber)
+            .emailAddress(email)
+            .addressLineOne(address1)
+            .addressLineTwo(address2)
+            .addressLineThree(address3)
+            .addressTown(address4)
+            .addressCounty(address5)
+            .addressPostcode(postcode)
             .qualify(JurorResponseDto.Qualify.builder()
                 .livedConsecutive(JurorResponseDto.Answerable.builder()
-                    .answer(LIVED_CONSECUTIVELY_ANSWER)
-                    .details(LIVED_CONSECUTIVELY_DETAIL)
+                    .answer(livedConsecutivelyAnswer)
+                    .details(livedConsecutivelyDetail)
                     .build())
                 .onBail(JurorResponseDto.Answerable.builder()
-                    .answer(ON_BAIL_ANSWER)
-                    .details(ON_BAIL_DETAIL)
+                    .answer(onBailAnswer)
+                    .details(onBailDetail)
                     .build())
                 .convicted(JurorResponseDto.Answerable.builder()
-                    .answer(CONVICTIONS_ANSWER)
-                    .details(CONVICTIONS_DETAIL)
+                    .answer(convictionsAnswer)
+                    .details(convictionsDetail)
                     .build())
                 .mentalHealthAct(JurorResponseDto.Answerable.builder()
-                    .answer(MENTAL_HEALTH_ACT_ANSWER)
-                    .details(MENTAL_HEALTH_ACT_DETAIL)
+                    .answer(mentalHealthActAnswer)
+                    .details(mentalHealthActDetail)
                     .build())
                 .build()
             )
             .cjsEmployment(Collections.singletonList(JurorResponseDto.CJSEmployment.builder()
-                .cjsEmployer(CJS_EMPLOYER)
-                .cjsEmployerDetails(CJS_EMPLOYER_DETAILS)
+                .cjsEmployer(cjsEmployer)
+                .cjsEmployerDetails(cjsEmployerDetails)
                 .build()))
             .specialNeeds(Collections.singletonList(JurorResponseDto.SpecialNeed.builder()
-                .assistanceType(SPECIAL_NEED_TYPE)
-                .assistanceTypeDetails(SPECIAL_NEED_DETAILS)
+                .assistanceType(specialNeedType)
+                .assistanceTypeDetails(specialNeedDetails)
                 .build()))
-            .assistanceSpecialArrangements(SPECIAL_ARRANGEMENTS)
+            .assistanceSpecialArrangements(specialArrangements)
             .thirdParty(JurorResponseDto.ThirdParty.builder()
-                .thirdPartyFName(THIRD_PARTY_FNAME)
-                .thirdPartyLName(THIRD_PARTY_LNAME)
-                .thirdPartyReason(THIRD_PARTY_REASON).build())
+                .thirdPartyFName(thirdPartyFname)
+                .thirdPartyLName(thirdPartyLname)
+                .thirdPartyReason(thirdPartyReason).build())
             .excusal(JurorResponseDto.Excusal.builder()
-                .reason(EXCUSAL_REASON)
+                .reason(excusalReason)
                 .build())
             .deferral(JurorResponseDto.Deferral.builder()
-                .reason(DEFERRAL_REASON)
-                .dates(DEFERRAL_DATES)
+                .reason(deferralReason)
+                .dates(deferralDates)
                 .build())
-            .version(VERSION)
+            .version(version)
             .build();
 
         // set mocks to return the saved entities when repositories are invoked, simulating receiving back the
         // attached entity.
         //when(tSpecialRepository.findOne(any(Predicate.class))).thenReturn(new TSpecial(SPECIAL_NEED_TYPE, "Spec
         // need description"));
-        when(tSpecialRepository.findByCode(anyString())).thenReturn(new TSpecial(SPECIAL_NEED_TYPE,
+        when(specialRepository.findByCode(anyString())).thenReturn(new TSpecial(specialNeedType,
             "Spec need " + "description"));
         // echo back the input
         when(specialNeedRepository.save(any(BureauJurorSpecialNeed.class))).thenAnswer(
@@ -256,56 +257,56 @@ public class JurorServiceImplTest {
         verify(cjsEmploymentRepository).save(any(BureauJurorCJS.class));
 
         assertThat(entity).isNotNull();
-        assertThat(entity.getJurorNumber()).isEqualTo(JUROR_NUMBER);
-        assertThat(entity.getDateOfBirth()).isEqualTo(DOB);
-        assertThat(entity.getTitle()).isEqualTo(TITLE);
-        assertThat(entity.getFirstName()).isEqualTo(FIRST_NAME);
-        assertThat(entity.getLastName()).isEqualTo(LAST_NAME);
-        assertThat(entity.getPhoneNumber()).isEqualTo(PHONE_NUMBER);
-        assertThat(entity.getAltPhoneNumber()).isEqualTo(ALT_PHONE_NUMBER);
-        assertThat(entity.getEmail()).isEqualTo(EMAIL);
-        assertThat(entity.getAddress()).isEqualTo(ADDRESS_1);
-        assertThat(entity.getAddress2()).isEqualTo(ADDRESS_2);
-        assertThat(entity.getAddress3()).isEqualTo(ADDRESS_3);
-        assertThat(entity.getAddress4()).isEqualTo(ADDRESS_4);
-        assertThat(entity.getAddress5()).isEqualTo(ADDRESS_5);
-        assertThat(entity.getPostcode()).isEqualTo(POSTCODE);
+        assertThat(entity.getJurorNumber()).isEqualTo(jurorNumber);
+        assertThat(entity.getDateOfBirth()).isEqualTo(dob);
+        assertThat(entity.getTitle()).isEqualTo(title);
+        assertThat(entity.getFirstName()).isEqualTo(firstName);
+        assertThat(entity.getLastName()).isEqualTo(lastName);
+        assertThat(entity.getPhoneNumber()).isEqualTo(phoneNumber);
+        assertThat(entity.getAltPhoneNumber()).isEqualTo(altPhoneNumber);
+        assertThat(entity.getEmail()).isEqualTo(email);
+        assertThat(entity.getAddress()).isEqualTo(address1);
+        assertThat(entity.getAddress2()).isEqualTo(address2);
+        assertThat(entity.getAddress3()).isEqualTo(address3);
+        assertThat(entity.getAddress4()).isEqualTo(address4);
+        assertThat(entity.getAddress5()).isEqualTo(address5);
+        assertThat(entity.getPostcode()).isEqualTo(postcode);
 
-        assertThat(entity.getResidency()).isEqualTo(LIVED_CONSECUTIVELY_ANSWER);
-        assertThat(entity.getResidencyDetail()).isEqualTo(LIVED_CONSECUTIVELY_DETAIL);
-        assertThat(entity.getBail()).isEqualTo(ON_BAIL_ANSWER);
-        assertThat(entity.getBailDetails()).isEqualTo(ON_BAIL_DETAIL);
-        assertThat(entity.getConvictions()).isEqualTo(CONVICTIONS_ANSWER);
-        assertThat(entity.getConvictionsDetails()).isEqualTo(CONVICTIONS_DETAIL);
-        assertThat(entity.getMentalHealthAct()).isEqualTo(MENTAL_HEALTH_ACT_ANSWER);
-        assertThat(entity.getMentalHealthActDetails()).isEqualTo(MENTAL_HEALTH_ACT_DETAIL);
+        assertThat(entity.getResidency()).isEqualTo(livedConsecutivelyAnswer);
+        assertThat(entity.getResidencyDetail()).isEqualTo(livedConsecutivelyDetail);
+        assertThat(entity.getBail()).isEqualTo(onBailAnswer);
+        assertThat(entity.getBailDetails()).isEqualTo(onBailDetail);
+        assertThat(entity.getConvictions()).isEqualTo(convictionsAnswer);
+        assertThat(entity.getConvictionsDetails()).isEqualTo(convictionsDetail);
+        assertThat(entity.getMentalHealthAct()).isEqualTo(mentalHealthActAnswer);
+        assertThat(entity.getMentalHealthActDetails()).isEqualTo(mentalHealthActDetail);
 
         assertThat(entity.getCjsEmployments()).hasSize(1);
-        assertThat(entity.getCjsEmployments().get(0).getJurorNumber()).isEqualTo(JUROR_NUMBER);
-        assertThat(entity.getCjsEmployments().get(0).getEmployer()).isEqualTo(CJS_EMPLOYER);
-        assertThat(entity.getCjsEmployments().get(0).getDetails()).isEqualTo(CJS_EMPLOYER_DETAILS);
+        assertThat(entity.getCjsEmployments().get(0).getJurorNumber()).isEqualTo(jurorNumber);
+        assertThat(entity.getCjsEmployments().get(0).getEmployer()).isEqualTo(cjsEmployer);
+        assertThat(entity.getCjsEmployments().get(0).getDetails()).isEqualTo(cjsEmployerDetails);
 
         assertThat(entity.getSpecialNeeds()).hasSize(1);
-        assertThat(entity.getSpecialNeeds().get(0).getJurorNumber()).isEqualTo(JUROR_NUMBER);
-        assertThat(entity.getSpecialNeeds().get(0).getSpecialNeed().getCode()).isEqualTo(SPECIAL_NEED_TYPE);
-        assertThat(entity.getSpecialNeeds().get(0).getDetail()).isEqualTo(SPECIAL_NEED_DETAILS);
-        assertThat(entity.getSpecialNeedsArrangements()).isEqualTo(SPECIAL_ARRANGEMENTS);
+        assertThat(entity.getSpecialNeeds().get(0).getJurorNumber()).isEqualTo(jurorNumber);
+        assertThat(entity.getSpecialNeeds().get(0).getSpecialNeed().getCode()).isEqualTo(specialNeedType);
+        assertThat(entity.getSpecialNeeds().get(0).getDetail()).isEqualTo(specialNeedDetails);
+        assertThat(entity.getSpecialNeedsArrangements()).isEqualTo(specialArrangements);
 
-        assertThat(entity.getDeferralReason()).isEqualTo(DEFERRAL_REASON);
-        assertThat(entity.getDeferralDate()).isEqualTo(DEFERRAL_DATES);
+        assertThat(entity.getDeferralReason()).isEqualTo(deferralReason);
+        assertThat(entity.getDeferralDate()).isEqualTo(deferralDates);
 
-        assertThat(entity.getExcusalReason()).isEqualTo(EXCUSAL_REASON);
+        assertThat(entity.getExcusalReason()).isEqualTo(excusalReason);
 
-        assertThat(entity.getThirdPartyFName()).isEqualTo(THIRD_PARTY_FNAME);
-        assertThat(entity.getThirdPartyLName()).isEqualTo(THIRD_PARTY_LNAME);
-        assertThat(entity.getThirdPartyReason()).isEqualTo(THIRD_PARTY_REASON);
+        assertThat(entity.getThirdPartyFName()).isEqualTo(thirdPartyFname);
+        assertThat(entity.getThirdPartyLName()).isEqualTo(thirdPartyLname);
+        assertThat(entity.getThirdPartyReason()).isEqualTo(thirdPartyReason);
 
         assertThat(entity.getDateReceived()).isBefore(Date.from(Instant.now().plusSeconds(1)));
         assertThat(entity.getProcessingStatus()).isEqualTo(ProcessingStatus.TODO);
 
-        assertThat(entity.getVersion()).isEqualTo(VERSION);
+        assertThat(entity.getVersion()).isEqualTo(version);
 
-        verify(poolDetailsRepository, times(1)).findByJurorNumber(JUROR_NUMBER);
+        verify(poolDetailsRepository, times(1)).findByJurorNumber(jurorNumber);
         verify(urgencyService, times(1)).setUrgencyFlags(eq(entity), Mockito.isNull());
     }
 

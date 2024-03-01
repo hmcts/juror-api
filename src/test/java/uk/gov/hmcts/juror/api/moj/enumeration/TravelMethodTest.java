@@ -2,7 +2,7 @@ package uk.gov.hmcts.juror.api.moj.enumeration;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
 
 import java.math.BigDecimal;
 
@@ -22,121 +22,121 @@ class TravelMethodTest {
     @Test
     void getRateCarNullJurors() {
         BigDecimal rate = new BigDecimal("5.12");
-        CourtLocation courtLocation = mock(CourtLocation.class);
-        when(courtLocation.getCarMileageRatePerMile0Passengers()).thenReturn(rate);
+        ExpenseRates expenseRates = mock(ExpenseRates.class);
+        when(expenseRates.getCarMileageRatePerMile0Passengers()).thenReturn(rate);
 
-        Assertions.assertThat(TravelMethod.CAR.getRate(courtLocation, null, 0))
+        Assertions.assertThat(TravelMethod.CAR.getRate(expenseRates, null, 0))
             .isEqualTo(rate);
-        verify(courtLocation, times(1)).getCarMileageRatePerMile0Passengers();
-        verifyNoMoreInteractions(courtLocation);
+        verify(expenseRates, times(1)).getCarMileageRatePerMile0Passengers();
+        verifyNoMoreInteractions(expenseRates);
     }
 
     @Test
     void getRateCar0Jurors() {
         BigDecimal rate = new BigDecimal("5.12");
-        CourtLocation courtLocation = mock(CourtLocation.class);
-        when(courtLocation.getCarMileageRatePerMile0Passengers()).thenReturn(rate);
+        ExpenseRates expenseRates = mock(ExpenseRates.class);
+        when(expenseRates.getCarMileageRatePerMile0Passengers()).thenReturn(rate);
 
-        assertThat(TravelMethod.CAR.getRate(courtLocation, 0, 0))
+        assertThat(TravelMethod.CAR.getRate(expenseRates, 0, 0))
             .isEqualTo(rate);
-        verify(courtLocation, times(1)).getCarMileageRatePerMile0Passengers();
-        verifyNoMoreInteractions(courtLocation);
+        verify(expenseRates, times(1)).getCarMileageRatePerMile0Passengers();
+        verifyNoMoreInteractions(expenseRates);
     }
 
     @Test
     void getRateCar1Jurors() {
         BigDecimal rate = new BigDecimal("5.12");
-        CourtLocation courtLocation = mock(CourtLocation.class);
-        when(courtLocation.getCarMileageRatePerMile1Passengers()).thenReturn(rate);
+        ExpenseRates expenseRates = mock(ExpenseRates.class);
+        when(expenseRates.getCarMileageRatePerMile1Passengers()).thenReturn(rate);
 
-        assertThat(TravelMethod.CAR.getRate(courtLocation, 1, null))
+        assertThat(TravelMethod.CAR.getRate(expenseRates, 1, null))
             .isEqualTo(rate);
-        verify(courtLocation, times(1)).getCarMileageRatePerMile1Passengers();
-        verifyNoMoreInteractions(courtLocation);
+        verify(expenseRates, times(1)).getCarMileageRatePerMile1Passengers();
+        verifyNoMoreInteractions(expenseRates);
     }
 
     @Test
     void getRateCar2Jurors() {
         BigDecimal rate = new BigDecimal("5.12");
-        CourtLocation courtLocation = mock(CourtLocation.class);
-        when(courtLocation.getCarMileageRatePerMile2OrMorePassengers()).thenReturn(rate);
+        ExpenseRates expenseRates = mock(ExpenseRates.class);
+        when(expenseRates.getCarMileageRatePerMile2OrMorePassengers()).thenReturn(rate);
 
-        assertThat(TravelMethod.CAR.getRate(courtLocation, 2, 0))
+        assertThat(TravelMethod.CAR.getRate(expenseRates, 2, 0))
             .isEqualTo(rate);
-        verify(courtLocation, times(1)).getCarMileageRatePerMile2OrMorePassengers();
-        verifyNoMoreInteractions(courtLocation);
+        verify(expenseRates, times(1)).getCarMileageRatePerMile2OrMorePassengers();
+        verifyNoMoreInteractions(expenseRates);
     }
 
     @Test
     void getRateCarMoreThan2Jurors() {
         BigDecimal rate = new BigDecimal("5.12");
-        CourtLocation courtLocation = mock(CourtLocation.class);
-        when(courtLocation.getCarMileageRatePerMile2OrMorePassengers()).thenReturn(rate);
+        ExpenseRates expenseRates = mock(ExpenseRates.class);
+        when(expenseRates.getCarMileageRatePerMile2OrMorePassengers()).thenReturn(rate);
 
-        assertThat(TravelMethod.CAR.getRate(courtLocation, 5, 0))
+        assertThat(TravelMethod.CAR.getRate(expenseRates, 5, 0))
             .isEqualTo(rate);
-        verify(courtLocation, times(1)).getCarMileageRatePerMile2OrMorePassengers();
-        verifyNoMoreInteractions(courtLocation);
+        verify(expenseRates, times(1)).getCarMileageRatePerMile2OrMorePassengers();
+        verifyNoMoreInteractions(expenseRates);
     }
 
     @Test
     void getRateMotorCycleNullJurors() {
         BigDecimal rate = new BigDecimal("5.12");
-        CourtLocation courtLocation = mock(CourtLocation.class);
-        when(courtLocation.getMotorcycleMileageRatePerMile0Passengers()).thenReturn(rate);
+        ExpenseRates expenseRates = mock(ExpenseRates.class);
+        when(expenseRates.getMotorcycleMileageRatePerMile0Passengers()).thenReturn(rate);
 
-        assertThat(TravelMethod.MOTERCYCLE.getRate(courtLocation, 0, null))
+        assertThat(TravelMethod.MOTERCYCLE.getRate(expenseRates, 0, null))
             .isEqualTo(rate);
-        verify(courtLocation, times(1)).getMotorcycleMileageRatePerMile0Passengers();
-        verifyNoMoreInteractions(courtLocation);
+        verify(expenseRates, times(1)).getMotorcycleMileageRatePerMile0Passengers();
+        verifyNoMoreInteractions(expenseRates);
     }
 
     @Test
     void getRateMotorCycle0Jurors() {
         BigDecimal rate = new BigDecimal("5.12");
-        CourtLocation courtLocation = mock(CourtLocation.class);
-        when(courtLocation.getMotorcycleMileageRatePerMile0Passengers()).thenReturn(rate);
+        ExpenseRates expenseRates = mock(ExpenseRates.class);
+        when(expenseRates.getMotorcycleMileageRatePerMile0Passengers()).thenReturn(rate);
 
-        assertThat(TravelMethod.MOTERCYCLE.getRate(courtLocation, 0, 0))
+        assertThat(TravelMethod.MOTERCYCLE.getRate(expenseRates, 0, 0))
             .isEqualTo(rate);
-        verify(courtLocation, times(1)).getMotorcycleMileageRatePerMile0Passengers();
-        verifyNoMoreInteractions(courtLocation);
+        verify(expenseRates, times(1)).getMotorcycleMileageRatePerMile0Passengers();
+        verifyNoMoreInteractions(expenseRates);
     }
 
     @Test
     void getRateMotorCycle1Jurors() {
         BigDecimal rate = new BigDecimal("5.12");
-        CourtLocation courtLocation = mock(CourtLocation.class);
-        when(courtLocation.getMotorcycleMileageRatePerMile1Passengers()).thenReturn(rate);
+        ExpenseRates expenseRates = mock(ExpenseRates.class);
+        when(expenseRates.getMotorcycleMileageRatePerMile1Passengers()).thenReturn(rate);
 
-        assertThat(TravelMethod.MOTERCYCLE.getRate(courtLocation, 0, 1))
+        assertThat(TravelMethod.MOTERCYCLE.getRate(expenseRates, 0, 1))
             .isEqualTo(rate);
-        verify(courtLocation, times(1)).getMotorcycleMileageRatePerMile1Passengers();
-        verifyNoMoreInteractions(courtLocation);
+        verify(expenseRates, times(1)).getMotorcycleMileageRatePerMile1Passengers();
+        verifyNoMoreInteractions(expenseRates);
     }
 
     @Test
     void getRateMotorCycleMoreThan1Jurors() {
         BigDecimal rate = new BigDecimal("5.12");
-        CourtLocation courtLocation = mock(CourtLocation.class);
-        when(courtLocation.getMotorcycleMileageRatePerMile1Passengers()).thenReturn(rate);
+        ExpenseRates expenseRates = mock(ExpenseRates.class);
+        when(expenseRates.getMotorcycleMileageRatePerMile1Passengers()).thenReturn(rate);
 
-        assertThat(TravelMethod.MOTERCYCLE.getRate(courtLocation, 0, 5))
+        assertThat(TravelMethod.MOTERCYCLE.getRate(expenseRates, 0, 5))
             .isEqualTo(rate);
 
-        verify(courtLocation, times(1)).getMotorcycleMileageRatePerMile1Passengers();
-        verifyNoMoreInteractions(courtLocation);
+        verify(expenseRates, times(1)).getMotorcycleMileageRatePerMile1Passengers();
+        verifyNoMoreInteractions(expenseRates);
     }
 
     @Test
     void getRateBike() {
         BigDecimal rate = new BigDecimal("5.12");
-        CourtLocation courtLocation = mock(CourtLocation.class);
-        when(courtLocation.getBikeRate()).thenReturn(rate);
+        ExpenseRates expenseRates = mock(ExpenseRates.class);
+        when(expenseRates.getBikeRate()).thenReturn(rate);
 
-        assertThat(TravelMethod.BICYCLE.getRate(courtLocation, 0, 0))
+        assertThat(TravelMethod.BICYCLE.getRate(expenseRates, 0, 0))
             .isEqualTo(rate);
-        verify(courtLocation, times(1)).getBikeRate();
-        verifyNoMoreInteractions(courtLocation);
+        verify(expenseRates, times(1)).getBikeRate();
+        verifyNoMoreInteractions(expenseRates);
     }
 }

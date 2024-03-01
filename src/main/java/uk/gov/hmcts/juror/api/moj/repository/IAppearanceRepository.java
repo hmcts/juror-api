@@ -4,7 +4,6 @@ import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorAttendanceDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 
 import java.time.LocalDate;

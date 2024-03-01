@@ -33,7 +33,7 @@ public class CourtCatchmentController {
 
 
     @GetMapping("/{jurorId}")
-    @Operation(summary = "/bureau/juror/court/catchment/{jurorId} - if court catchment changed",
+    @Operation(summary = "if court catchment changed",
         description = "by juror number")
     public ResponseEntity<CourtCatchmentStatusDto> courtCatchment(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId) {

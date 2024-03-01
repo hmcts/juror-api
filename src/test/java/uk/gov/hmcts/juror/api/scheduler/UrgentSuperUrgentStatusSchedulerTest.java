@@ -37,7 +37,7 @@ public class UrgentSuperUrgentStatusSchedulerTest {
     private JurorResponse jurorResponse;
     private Pool poolDetails;
 
-    private LocalDateTime RESPONSE_RECEIVED;
+    private LocalDateTime responseReceived;
 
     @Mock
     private JurorResponseRepository jurorResponseRepo;
@@ -60,22 +60,22 @@ public class UrgentSuperUrgentStatusSchedulerTest {
     @Before
     public void setUp() {
 
-        RESPONSE_RECEIVED = LocalDateTime.now();
+        responseReceived = LocalDateTime.now();
 
         //set up some known static dates relative to a start point
-        LocalDateTime HEARING_DATE_VALID = LocalDateTime.now().plusDays(35);
+        final LocalDateTime hearingDateValid = LocalDateTime.now().plusDays(35);
 
         jurorBureauDetail = new BureauJurorDetail();
         jurorBureauDetail.setProcessingStatus(NON_CLOSED_STATUS);
-        jurorBureauDetail.setDateReceived(Date.from(RESPONSE_RECEIVED.toInstant(ZoneOffset.UTC)));
-        jurorBureauDetail.setHearingDate(Date.from(HEARING_DATE_VALID.toInstant(ZoneOffset.UTC)));
+        jurorBureauDetail.setDateReceived(Date.from(responseReceived.toInstant(ZoneOffset.UTC)));
+        jurorBureauDetail.setHearingDate(Date.from(hearingDateValid.toInstant(ZoneOffset.UTC)));
 
         jurorResponse = new JurorResponse();
         jurorResponse.setProcessingStatus(uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus.TODO);
-        jurorResponse.setDateReceived(Date.from(RESPONSE_RECEIVED.toInstant(ZoneOffset.UTC)));
+        jurorResponse.setDateReceived(Date.from(responseReceived.toInstant(ZoneOffset.UTC)));
 
         poolDetails = new Pool();
-        poolDetails.setHearingDate(Date.from(HEARING_DATE_VALID.toInstant(ZoneOffset.UTC)));
+        poolDetails.setHearingDate(Date.from(hearingDateValid.toInstant(ZoneOffset.UTC)));
 
         responseBacklog = new LinkedList<>();
 

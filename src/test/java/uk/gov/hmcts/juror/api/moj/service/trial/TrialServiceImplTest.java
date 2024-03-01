@@ -42,7 +42,6 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceServiceImpl;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -470,7 +469,7 @@ class TrialServiceImplTest {
 
         Courtroom courtroom = createCourtroom();
         courtroom.setId(2L);
-        courtroom.setOwner("415");
+        courtroom.setCourtLocation(trial1.getCourtLocation());
         courtroom.setRoomNumber("68");
         courtroom.setDescription("Courtroom 2");
 
@@ -532,9 +531,13 @@ class TrialServiceImplTest {
     }
 
     private Courtroom createCourtroom() {
+        CourtLocation courtLocation = CourtLocation.builder()
+            .owner("415")
+            .locCode("415")
+            .build();
         Courtroom courtroom = new Courtroom();
         courtroom.setId(1L);
-        courtroom.setOwner("415");
+        courtroom.setCourtLocation(courtLocation);
         courtroom.setRoomNumber("67");
         courtroom.setDescription("Courtroom 1");
 

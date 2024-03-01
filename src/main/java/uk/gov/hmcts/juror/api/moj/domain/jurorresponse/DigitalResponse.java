@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import uk.gov.hmcts.juror.api.moj.validation.DigitalThirdPartyOtherReason;
 
 import java.time.LocalDate;
@@ -18,7 +19,7 @@ import java.time.LocalDate;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REGEX;
 
 @Entity
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @Getter
 @Setter

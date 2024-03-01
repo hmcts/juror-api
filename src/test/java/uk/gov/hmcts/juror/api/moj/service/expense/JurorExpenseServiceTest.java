@@ -48,6 +48,8 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApproval;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.SimplifiedExpenseDetailDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
+import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
+import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesDto;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorExpenseTotals;
@@ -62,6 +64,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.TravelMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
+import uk.gov.hmcts.juror.api.moj.repository.ExpenseRatesRepository;
 import uk.gov.hmcts.juror.api.moj.repository.FinancialAuditDetailsRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorExpenseTotalsRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
@@ -89,6 +92,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -131,6 +135,8 @@ class JurorExpenseServiceTest {
 
     @Mock
     private ApplicationSettingService applicationSettingService;
+    @Mock
+    private ExpenseRatesRepository expenseRatesRepository;
 
     @Mock
     private EntityManager entityManager;
@@ -575,7 +581,7 @@ class JurorExpenseServiceTest {
 
             doReturn(List.of(appearanceToSubmit, appearanceInDraft)).when(appearanceRepository)
                 .findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
-
+            doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(anyCollection());
 
             CourtLocation courtLocation = mock(CourtLocation.class);
             appearanceToSubmit.setCourtLocation(courtLocation);
@@ -585,7 +591,7 @@ class JurorExpenseServiceTest {
                 any(), any(), any(), any()
             );
 
-             ArgumentCaptor<List<Appearance>> appearanceArgumentCaptor = ArgumentCaptor.forClass(List.class);
+            ArgumentCaptor<List<Appearance>> appearanceArgumentCaptor = ArgumentCaptor.forClass(List.class);
             ExpenseItemsDto expenseItemsDto = ExpenseItemsDto.builder()
                 .jurorNumber(jurorNumber)
                 .poolNumber(poolNumber)
@@ -595,8 +601,9 @@ class JurorExpenseServiceTest {
 
             verify(appearanceRepository, times(1))
                 .findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
-            verify(appearanceRepository, times(1))
-                .saveAll(appearanceArgumentCaptor.capture());
+
+            verify(jurorExpenseService, times(1)).saveAppearancesWithExpenseRateIdUpdate(
+                appearanceArgumentCaptor.capture());
 
             verify(financialAuditService, times(1))
                 .createFinancialAuditDetail(jurorNumber, TestConstants.VALID_COURT_LOCATION,
@@ -627,6 +634,7 @@ class JurorExpenseServiceTest {
             Appearance appearanceInDraft = buildTestAppearance(jurorNumber, poolNumber,
                 LocalDate.of(2024, 1, 3));
 
+            doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(anyCollection());
             doReturn(List.of(appearanceToSubmit1, appearanceToSubmit2, appearanceInDraft))
                 .when(appearanceRepository).findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
             CourtLocation courtLocation = mock(CourtLocation.class);
@@ -650,8 +658,8 @@ class JurorExpenseServiceTest {
 
             verify(appearanceRepository, times(1))
                 .findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
-            verify(appearanceRepository, times(1))
-                .saveAll(appearanceArgumentCaptor.capture());
+            verify(jurorExpenseService, times(1))
+                .saveAppearancesWithExpenseRateIdUpdate(appearanceArgumentCaptor.capture());
             verify(financialAuditService, times(1))
                 .createFinancialAuditDetail(jurorNumber, TestConstants.VALID_COURT_LOCATION,
                     FinancialAuditDetails.Type.FOR_APPROVAL,
@@ -1238,6 +1246,7 @@ class JurorExpenseServiceTest {
     @Nested
     @DisplayName("void applyToAll(List<Appearance> appearances, DailyExpense request)")
     class ApplyToAll {
+
         @Test
         void positiveTravelCost() {
             DailyExpense dailyExpense = mock(DailyExpense.class);
@@ -1255,6 +1264,7 @@ class JurorExpenseServiceTest {
 
             doNothing().when(jurorExpenseService).updateDraftTravelExpense(any(), any());
             doNothing().when(jurorExpenseService).validateExpense(any());
+            doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(anyCollection());
 
             List<Appearance> appearances = List.of(attendedDay1, nonAttendedDay1, attendedDay2);
             jurorExpenseService.applyToAll(appearances, dailyExpense);
@@ -1272,7 +1282,7 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1)).validateExpense(attendedDay2);
             verify(jurorExpenseService, times(1)).validateExpense(nonAttendedDay1);
 
-            verify(appearanceRepository, times(1)).saveAll(appearances);
+            verify(jurorExpenseService, times(1)).saveAppearancesWithExpenseRateIdUpdate(appearances);
 
             verify(dailyExpense, times(2)).getTravel();
             verify(dailyExpense, times(1)).getFinancialLoss();
@@ -1295,6 +1305,7 @@ class JurorExpenseServiceTest {
             Appearance nonAttendedDay1 = mock(Appearance.class);
 
             doNothing().when(jurorExpenseService).validateExpense(any());
+            doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(any());
 
             List<Appearance> appearances = List.of(attendedDay1, nonAttendedDay1, attendedDay2);
             jurorExpenseService.applyToAll(appearances, dailyExpense);
@@ -1311,7 +1322,7 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1)).validateExpense(attendedDay2);
             verify(jurorExpenseService, times(1)).validateExpense(nonAttendedDay1);
 
-            verify(appearanceRepository, times(1)).saveAll(appearances);
+            verify(jurorExpenseService, times(1)).saveAppearancesWithExpenseRateIdUpdate(appearances);
 
             verify(dailyExpense, times(1)).getFinancialLoss();
             verify(dailyExpense, times(3)).getPayCash();
@@ -1335,6 +1346,7 @@ class JurorExpenseServiceTest {
             Appearance nonAttendedDay1 = mock(Appearance.class);
 
             doNothing().when(jurorExpenseService).validateExpense(any());
+            doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(any());
             doReturn(null).when(jurorExpenseService).validateAndUpdateFinancialLossExpenseLimit(any());
 
             List<Appearance> appearances = List.of(attendedDay1, nonAttendedDay1, attendedDay2);
@@ -1352,7 +1364,7 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1)).validateAndUpdateFinancialLossExpenseLimit(attendedDay2);
             verify(jurorExpenseService, times(1)).validateAndUpdateFinancialLossExpenseLimit(nonAttendedDay1);
 
-            verify(appearanceRepository, times(1)).saveAll(appearances);
+            verify(jurorExpenseService, times(1)).saveAppearancesWithExpenseRateIdUpdate(appearances);
 
             verify(dailyExpense, times(1)).getFinancialLoss();
             verify(dailyExpense, times(1)).getApplyToAllDays();
@@ -1379,6 +1391,7 @@ class JurorExpenseServiceTest {
             Appearance nonAttendedDay1 = mock(Appearance.class);
 
             doNothing().when(jurorExpenseService).validateExpense(any());
+            doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(any());
             doReturn(null).when(jurorExpenseService).validateAndUpdateFinancialLossExpenseLimit(any());
 
             List<Appearance> appearances = List.of(attendedDay1, nonAttendedDay1, attendedDay2);
@@ -1396,7 +1409,7 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1)).validateAndUpdateFinancialLossExpenseLimit(attendedDay2);
             verify(jurorExpenseService, times(1)).validateAndUpdateFinancialLossExpenseLimit(nonAttendedDay1);
 
-            verify(appearanceRepository, times(1)).saveAll(appearances);
+            verify(jurorExpenseService, times(1)).saveAppearancesWithExpenseRateIdUpdate(appearances);
 
             verify(dailyExpense, times(1)).getFinancialLoss();
             verify(dailyExpense, times(1)).getApplyToAllDays();
@@ -1425,6 +1438,7 @@ class JurorExpenseServiceTest {
             Appearance nonAttendedDay1 = mock(Appearance.class);
 
             doNothing().when(jurorExpenseService).validateExpense(any());
+            doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(any());
             doReturn(null).when(jurorExpenseService).validateAndUpdateFinancialLossExpenseLimit(any());
 
             List<Appearance> appearances = List.of(attendedDay1, nonAttendedDay1, attendedDay2);
@@ -1442,7 +1456,7 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1)).validateAndUpdateFinancialLossExpenseLimit(attendedDay2);
             verify(jurorExpenseService, times(1)).validateAndUpdateFinancialLossExpenseLimit(nonAttendedDay1);
 
-            verify(appearanceRepository, times(1)).saveAll(appearances);
+            verify(jurorExpenseService, times(1)).saveAppearancesWithExpenseRateIdUpdate(appearances);
 
             verify(dailyExpense, times(1)).getFinancialLoss();
             verify(dailyExpense, times(1)).getApplyToAllDays();
@@ -1496,6 +1510,7 @@ class JurorExpenseServiceTest {
 
             doNothing().when(jurorExpenseService).updateDraftTravelExpense(any(), any());
             doNothing().when(jurorExpenseService).validateExpense(any());
+            doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(any());
             doReturn(null).when(jurorExpenseService).validateAndUpdateFinancialLossExpenseLimit(any());
 
             List<Appearance> appearances = List.of(attendedDay1, nonAttendedDay1, attendedDay2);
@@ -1519,7 +1534,7 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1)).isAttendanceDay(attendedDay2);
             verify(jurorExpenseService, times(1)).isAttendanceDay(nonAttendedDay1);
 
-            verify(appearanceRepository, times(1)).saveAll(appearances);
+            verify(jurorExpenseService, times(1)).saveAppearancesWithExpenseRateIdUpdate(appearances);
 
             verify(dailyExpense, times(5)).getFinancialLoss();
             verify(dailyExpense, times(1)).getApplyToAllDays();
@@ -1668,15 +1683,16 @@ class JurorExpenseServiceTest {
         private final BigDecimal halfDayLongLimit = new BigDecimal("15.00");
         private final BigDecimal fullDayStandardLimit = new BigDecimal("20.00");
         private final BigDecimal fullDayLongLimit = new BigDecimal("25.00");
-        private CourtLocation courtLocation;
+        private ExpenseRates expenseRates;
 
         @BeforeEach
         void beforeEach() {
-            this.courtLocation = mock(CourtLocation.class);
-            doReturn(halfDayStandardLimit).when(courtLocation).getLimitFinancialLossHalfDay();
-            doReturn(halfDayLongLimit).when(courtLocation).getLimitFinancialLossHalfDayLongTrial();
-            doReturn(fullDayStandardLimit).when(courtLocation).getLimitFinancialLossFullDay();
-            doReturn(fullDayLongLimit).when(courtLocation).getLimitFinancialLossFullDayLongTrial();
+            this.expenseRates = mock(ExpenseRates.class);
+            doReturn(halfDayStandardLimit).when(expenseRates).getLimitFinancialLossHalfDay();
+            doReturn(halfDayLongLimit).when(expenseRates).getLimitFinancialLossHalfDayLongTrial();
+            doReturn(fullDayStandardLimit).when(expenseRates).getLimitFinancialLossFullDay();
+            doReturn(fullDayLongLimit).when(expenseRates).getLimitFinancialLossFullDayLongTrial();
+            doReturn(expenseRates).when(jurorExpenseService).getCurrentExpenseRates();
         }
 
         private Appearance createAppearanceMock(Double lossOfEarnings, Double extraCareCost,
@@ -1688,7 +1704,6 @@ class JurorExpenseServiceTest {
             doReturn(doubleToBigDecimal(effectiveOtherCost)).when(appearance).getMiscAmountDue();
             doReturn(payAttendanceType).when(appearance).getPayAttendanceType();
             doReturn(longTrial).when(appearance).isLongTrialDay();
-            doReturn(courtLocation).when(appearance).getCourtLocation();
             doReturn(date).when(appearance).getAttendanceDate();
             return appearance;
         }
@@ -1725,6 +1740,7 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("10.00"));
             verify(appearance, times(1)).setChildcareDue(BigDecimal.ZERO);
             verify(appearance, times(1)).setMiscAmountDue(BigDecimal.ZERO);
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
 
         }
 
@@ -1749,6 +1765,7 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("15.00"));
             verify(appearance, times(1)).setChildcareDue(BigDecimal.ZERO);
             verify(appearance, times(1)).setMiscAmountDue(BigDecimal.ZERO);
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
         }
 
         @Test
@@ -1772,6 +1789,7 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("20.00"));
             verify(appearance, times(1)).setChildcareDue(BigDecimal.ZERO);
             verify(appearance, times(1)).setMiscAmountDue(BigDecimal.ZERO);
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
         }
 
         @Test
@@ -1795,6 +1813,7 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("25.00"));
             verify(appearance, times(1)).setChildcareDue(BigDecimal.ZERO);
             verify(appearance, times(1)).setMiscAmountDue(BigDecimal.ZERO);
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
         }
 
         @Test
@@ -1808,13 +1827,13 @@ class JurorExpenseServiceTest {
                 jurorExpenseService.validateAndUpdateFinancialLossExpenseLimit(appearance);
             assertThat(financialLossWarning).isNull();
 
-            verify(appearance, times(1)).getCourtLocation();
             verify(appearance, times(1)).getPayAttendanceType();
             verify(appearance, times(1)).isLongTrialDay();
             verify(appearance, times(1)).getLossOfEarningsDue();
             verify(appearance, times(1)).getChildcareDue();
             verify(appearance, times(1)).getMiscAmountDue();
             verifyNoMoreInteractions(appearance);
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
         }
 
         @Test
@@ -1838,6 +1857,7 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("14.00"));
             verify(appearance, times(1)).setChildcareDue(new BigDecimal("5.00"));
             verify(appearance, times(1)).setMiscAmountDue(new BigDecimal("6.00"));
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
         }
 
         @Test
@@ -1861,6 +1881,7 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("22.00"));
             verify(appearance, times(1)).setChildcareDue(new BigDecimal("3.00"));
             verify(appearance, times(1)).setMiscAmountDue(BigDecimal.ZERO);
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
         }
 
         @Test
@@ -1884,6 +1905,7 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("25.00"));
             verify(appearance, times(1)).setChildcareDue(BigDecimal.ZERO);
             verify(appearance, times(1)).setMiscAmountDue(BigDecimal.ZERO);
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
         }
     }
 
@@ -1978,13 +2000,13 @@ class JurorExpenseServiceTest {
         private final BigDecimal publicTransport = new BigDecimal("2.1");
         private final BigDecimal hiredVehicle = new BigDecimal("3.1");
         private Appearance appearance;
-        private CourtLocation courtLocation;
+        private ExpenseRates expenseRates;
         private DailyExpenseTravel travel;
 
         void setupStandard(TravelMethod travelMethod) {
             this.appearance = spy(new Appearance());
-            this.courtLocation = mock(CourtLocation.class);
-            when(appearance.getCourtLocation()).thenReturn(courtLocation);
+            this.expenseRates = mock(ExpenseRates.class);
+            doReturn(expenseRates).when(jurorExpenseService).getCurrentExpenseRates();
 
             DailyExpenseTravel.DailyExpenseTravelBuilder builder = DailyExpenseTravel.builder()
                 .milesTraveled(3)
@@ -1995,23 +2017,23 @@ class JurorExpenseServiceTest {
             if (TravelMethod.CAR.equals(travelMethod)) {
                 builder.traveledByCar(true)
                     .jurorsTakenCar(2);
-                when(courtLocation.getCarMileageRatePerMile2OrMorePassengers())
+                when(expenseRates.getCarMileageRatePerMile2OrMorePassengers())
                     .thenReturn(travelCost);
             } else if (TravelMethod.MOTERCYCLE.equals(travelMethod)) {
                 builder.traveledByMotorcycle(true)
                     .jurorsTakenMotorcycle(2);
-                when(courtLocation.getMotorcycleMileageRatePerMile1Passengers())
+                when(expenseRates.getMotorcycleMileageRatePerMile1Passengers())
                     .thenReturn(travelCost);
             } else if (TravelMethod.BICYCLE.equals(travelMethod)) {
                 builder.traveledByBicycle(true);
-                when(courtLocation.getBikeRate())
+                when(expenseRates.getBikeRate())
                     .thenReturn(travelCost);
             }
             this.travel = spy(builder.build());
         }
 
         void verifyStandard(TravelMethod travelMethod) {
-            verify(appearance, times(1)).getCourtLocation();
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
             verify(appearance, times(1)).setMilesTraveled(3);
             verify(appearance, times(1)).setParkingDue(parking);
             verify(appearance, times(1)).setPublicTransportDue(publicTransport);
@@ -2031,14 +2053,14 @@ class JurorExpenseServiceTest {
 
 
             if (TravelMethod.CAR.equals(travelMethod)) {
-                verify(courtLocation, times(1)).getCarMileageRatePerMile2OrMorePassengers();
+                verify(expenseRates, times(1)).getCarMileageRatePerMile2OrMorePassengers();
             } else if (TravelMethod.MOTERCYCLE.equals(travelMethod)) {
-                verify(courtLocation, times(1)).getMotorcycleMileageRatePerMile1Passengers();
+                verify(expenseRates, times(1)).getMotorcycleMileageRatePerMile1Passengers();
             } else if (TravelMethod.BICYCLE.equals(travelMethod)) {
-                verify(courtLocation, times(1)).getBikeRate();
+                verify(expenseRates, times(1)).getBikeRate();
             }
 
-            verifyNoMoreInteractions(appearance, courtLocation, travel);
+            verifyNoMoreInteractions(appearance, expenseRates, travel);
         }
 
         @Test
@@ -2124,9 +2146,9 @@ class JurorExpenseServiceTest {
         @Test
         void positiveNullMilesTraveled() {
             this.appearance = spy(new Appearance());
-            this.courtLocation = mock(CourtLocation.class);
-            when(appearance.getCourtLocation()).thenReturn(courtLocation);
-            when(courtLocation.getCarMileageRatePerMile2OrMorePassengers()).thenReturn(travelCost);
+            this.expenseRates = mock(ExpenseRates.class);
+            doReturn(expenseRates).when(jurorExpenseService).getCurrentExpenseRates();
+            when(expenseRates.getCarMileageRatePerMile2OrMorePassengers()).thenReturn(travelCost);
 
             this.travel = spy(DailyExpenseTravel.builder()
                 .traveledByCar(true)
@@ -2142,7 +2164,6 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).setMotorcycleDue(null);
             verify(appearance, times(1)).setBicycleDue(null);
 
-            verify(appearance, times(1)).getCourtLocation();
             verify(appearance, times(1)).setTraveledByCar(true);
             verify(appearance, times(1)).setJurorsTakenCar(2);
             verify(appearance, times(1)).setTraveledByMotorcycle(null);
@@ -2172,8 +2193,8 @@ class JurorExpenseServiceTest {
             verify(travel, times(1)).getPublicTransport();
             verify(travel, times(1)).getTaxi();
 
-            verify(courtLocation, times(1)).getCarMileageRatePerMile2OrMorePassengers();
-            verifyNoMoreInteractions(appearance, courtLocation, travel);
+            verify(expenseRates, times(1)).getCarMileageRatePerMile2OrMorePassengers();
+            verifyNoMoreInteractions(appearance, expenseRates, travel);
         }
     }
 
@@ -2190,11 +2211,11 @@ class JurorExpenseServiceTest {
         @Test
         void positiveTypical() {
             BigDecimal rate = new BigDecimal("12.22");
-            CourtLocation courtLocation = mock(CourtLocation.class);
+            ExpenseRates expenseRates = mock(ExpenseRates.class);
             Appearance appearance = mock(Appearance.class);
-            when(appearance.getCourtLocation()).thenReturn(courtLocation);
+            doReturn(expenseRates).when(jurorExpenseService).getCurrentExpenseRates();
             FoodDrinkClaimType foodDrinkClaimType = mock(FoodDrinkClaimType.class);
-            when(foodDrinkClaimType.getRate(courtLocation)).thenReturn(rate);
+            when(foodDrinkClaimType.getRate(expenseRates)).thenReturn(rate);
 
 
             BigDecimal smartCardRate = new BigDecimal("3.33");
@@ -2206,7 +2227,6 @@ class JurorExpenseServiceTest {
             jurorExpenseService.updateDraftFoodAndDrinkExpense(appearance, foodAndDrink);
 
 
-            verify(appearance, times(1)).getCourtLocation();
             verify(appearance, times(1)).setSubsistenceDue(rate);
             verify(appearance, times(1)).setSmartCardAmountDue(smartCardRate);
             verify(appearance, times(1)).setFoodAndDrinkClaimType(foodDrinkClaimType);
@@ -2214,9 +2234,9 @@ class JurorExpenseServiceTest {
             verify(foodAndDrink, times(1)).getSmartCardAmount();
             verify(foodAndDrink, times(1)).getFoodAndDrinkClaimType();
 
-            verify(foodDrinkClaimType, times(1)).getRate(courtLocation);
+            verify(foodDrinkClaimType, times(1)).getRate(expenseRates);
 
-            verifyNoMoreInteractions(courtLocation, foodAndDrink, appearance);
+            verifyNoMoreInteractions(expenseRates, foodAndDrink, appearance);
         }
     }
 
@@ -2567,6 +2587,7 @@ class JurorExpenseServiceTest {
             );
 
             doNothing().when(jurorExpenseService).approveAppearance(any());
+            doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(any());
             jurorExpenseService.approveExpenses(approveExpenseDto);
 
 
@@ -2581,8 +2602,8 @@ class JurorExpenseServiceTest {
                     TestConstants.VALID_COURT_LOCATION,
                     FinancialAuditDetails.Type.APPROVED_BACS,
                     List.of(appearance1, appearance3));
-            verify(appearanceRepository, times(1))
-                .saveAll(List.of(appearance1, appearance3));
+            verify(jurorExpenseService, times(1))
+                .saveAppearancesWithExpenseRateIdUpdate(List.of(appearance1, appearance3));
             verify(jurorHistoryService, times(1))
                 .createExpenseApproveBacs(TestConstants.VALID_JUROR_NUMBER,
                     TestConstants.VALID_POOL_NUMBER,
@@ -2661,6 +2682,8 @@ class JurorExpenseServiceTest {
                     FinancialAuditDetails.Type.APPROVED_CASH,
                     List.of(appearance1, appearance3));
             doNothing().when(jurorExpenseService).approveAppearance(any());
+            doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(any());
+
             jurorExpenseService.approveExpenses(approveExpenseDto);
 
 
@@ -2675,8 +2698,8 @@ class JurorExpenseServiceTest {
                     TestConstants.VALID_COURT_LOCATION,
                     FinancialAuditDetails.Type.APPROVED_CASH,
                     List.of(appearance1, appearance3));
-            verify(appearanceRepository, times(1))
-                .saveAll(List.of(appearance1, appearance3));
+            verify(jurorExpenseService, times(1))
+                .saveAppearancesWithExpenseRateIdUpdate(List.of(appearance1, appearance3));
             verify(jurorHistoryService, times(1))
                 .createExpenseApproveCash(TestConstants.VALID_JUROR_NUMBER,
                     TestConstants.VALID_POOL_NUMBER,
@@ -5300,6 +5323,7 @@ class JurorExpenseServiceTest {
             doReturn(TestConstants.VALID_JUROR_NUMBER).when(juror).getJurorNumber();
             doReturn(juror).when(jurorExpenseService).getJuror(TestConstants.VALID_JUROR_NUMBER);
 
+            doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(anyCollection());
             doNothing().when(jurorExpenseService).applyDefaultExpenses(any(), any());
             Appearance appearance1 = mockAppearance();
             Appearance appearance2 = mockAppearance();
@@ -5313,7 +5337,9 @@ class JurorExpenseServiceTest {
                 .applyDefaultExpenses(appearance2, juror);
             verify(jurorExpenseService, times(1))
                 .applyDefaultExpenses(appearance3, juror);
-            verify(appearanceRepository, times(1)).saveAll(List.of(appearance1, appearance2, appearance3));
+            verify(jurorExpenseService, times(1)).saveAppearancesWithExpenseRateIdUpdate(
+                List.of(appearance1, appearance2, appearance3)
+            );
         }
 
         @Test
@@ -5451,7 +5477,7 @@ class JurorExpenseServiceTest {
             );
             doReturn(appearances).when(jurorExpenseService).getAppearances(dto);
             doNothing().when(jurorExpenseService).validateExpense(any());
-
+            doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(anyCollection());
 
             jurorExpenseService.apportionSmartCard(dto);
 
@@ -5464,7 +5490,7 @@ class JurorExpenseServiceTest {
             verify(appearance2, times(1)).setSmartCardAmountDue(new BigDecimal("30.00"));
             verify(appearance3, times(1)).setSmartCardAmountDue(new BigDecimal("30.00"));
 
-            verify(appearanceRepository, times(1)).saveAll(appearances);
+            verify(jurorExpenseService, times(1)).saveAppearancesWithExpenseRateIdUpdate(appearances);
         }
 
         @Test
@@ -5493,7 +5519,7 @@ class JurorExpenseServiceTest {
             );
             doReturn(appearances).when(jurorExpenseService).getAppearances(dto);
             doNothing().when(jurorExpenseService).validateExpense(any());
-
+            doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(anyCollection());
 
             jurorExpenseService.apportionSmartCard(dto);
 
@@ -5506,7 +5532,7 @@ class JurorExpenseServiceTest {
             verify(appearance2, times(1)).setSmartCardAmountDue(new BigDecimal("33.33"));
             verify(appearance3, times(1)).setSmartCardAmountDue(new BigDecimal("33.34"));
 
-            verify(appearanceRepository, times(1)).saveAll(appearances);
+            verify(jurorExpenseService, times(1)).saveAppearancesWithExpenseRateIdUpdate(appearances);
 
         }
 
@@ -5666,6 +5692,45 @@ class JurorExpenseServiceTest {
                     TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER
                 );
         }
+    }
+
+    @Test
+    void positiveUpdateExpenseRates() {
+        ExpenseRatesDto expenseRatesDto = ExpenseRatesDto.builder()
+            .carMileageRatePerMile0Passengers(new BigDecimal("1.01"))
+            .carMileageRatePerMile1Passengers(new BigDecimal("1.02"))
+            .carMileageRatePerMile2OrMorePassengers(new BigDecimal("1.03"))
+            .motorcycleMileageRatePerMile0Passengers(new BigDecimal("1.04"))
+            .motorcycleMileageRatePerMile1Passengers(new BigDecimal("1.05"))
+            .bikeRate(new BigDecimal("1.06"))
+            .limitFinancialLossHalfDay(new BigDecimal("1.07"))
+            .limitFinancialLossFullDay(new BigDecimal("1.08"))
+            .limitFinancialLossHalfDayLongTrial(new BigDecimal("1.09"))
+            .limitFinancialLossFullDayLongTrial(new BigDecimal("1.10"))
+            .subsistenceRateStandard(new BigDecimal("1.11"))
+            .subsistenceRateLongDay(new BigDecimal("1.12"))
+            .build();
+
+        ArgumentCaptor<ExpenseRates> expenseRatesArgumentCaptor = ArgumentCaptor.forClass(ExpenseRates.class);
+        jurorExpenseService.updateExpenseRates(expenseRatesDto);
+
+        verify(expenseRatesRepository, times(1)).save(expenseRatesArgumentCaptor.capture());
+
+        ExpenseRates expenseRates = expenseRatesArgumentCaptor.getValue();
+        assertThat(expenseRates.getCarMileageRatePerMile0Passengers()).isEqualTo(new BigDecimal("1.01"));
+        assertThat(expenseRates.getCarMileageRatePerMile1Passengers()).isEqualTo(new BigDecimal("1.02"));
+        assertThat(expenseRates.getCarMileageRatePerMile2OrMorePassengers()).isEqualTo(new BigDecimal("1.03"));
+        assertThat(expenseRates.getMotorcycleMileageRatePerMile0Passengers()).isEqualTo(new BigDecimal("1.04"));
+        assertThat(expenseRates.getMotorcycleMileageRatePerMile1Passengers()).isEqualTo(new BigDecimal("1.05"));
+        assertThat(expenseRates.getBikeRate()).isEqualTo(new BigDecimal("1.06"));
+        assertThat(expenseRates.getLimitFinancialLossHalfDay()).isEqualTo(new BigDecimal("1.07"));
+        assertThat(expenseRates.getLimitFinancialLossFullDay()).isEqualTo(new BigDecimal("1.08"));
+        assertThat(expenseRates.getLimitFinancialLossHalfDayLongTrial()).isEqualTo(new BigDecimal("1.09"));
+        assertThat(expenseRates.getLimitFinancialLossFullDayLongTrial()).isEqualTo(new BigDecimal("1.10"));
+        assertThat(expenseRates.getSubsistenceRateStandard()).isEqualTo(new BigDecimal("1.11"));
+        assertThat(expenseRates.getSubsistenceRateLongDay()).isEqualTo(new BigDecimal("1.12"));
+        assertThat(expenseRates.getRatesEffectiveFrom()).isNotNull();
+
     }
 }
 

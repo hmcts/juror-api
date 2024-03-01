@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.ContactEnquiryTypeListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAttendanceDetailsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorBankDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorNotesDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
@@ -50,6 +51,8 @@ public interface JurorRecordService {
     void createJurorOpticReference(BureauJWTPayload payload, JurorOpticRefRequestDto opticsRefRequestDto);
 
     String getJurorOpticReference(String jurorNumber, String poolNumber, BureauJWTPayload payload);
+
+    JurorBankDetailsDto getJurorBankDetails(String jurorNumber);
 
     BureauJurorDetailDto getBureauDetailsByJurorNumber(String jurorNumber, String owner);
 

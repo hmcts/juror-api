@@ -23,7 +23,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
- * Tests for third-party rules in {@link ResponseStatusUpdateServiceImpl}
+ * Tests for third-party rules in {@link ResponseStatusUpdateServiceImpl}.
  */
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings({"unused", "ResultOfMethodCallIgnored"})

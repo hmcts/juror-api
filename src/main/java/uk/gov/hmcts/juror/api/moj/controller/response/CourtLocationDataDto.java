@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -35,7 +36,7 @@ public class CourtLocationDataDto {
     public CourtLocationDataDto(CourtLocation courtLocation) {
         this.locationCode = courtLocation.getLocCode();
         this.locationName = courtLocation.getName();
-        this.attendanceTime = courtLocation.getCourtAttendTime();
+        this.attendanceTime = DataUtils.asStringHHmm(courtLocation.getCourtAttendTime());
     }
 
 }

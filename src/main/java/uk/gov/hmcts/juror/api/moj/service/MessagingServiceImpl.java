@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.messages.MessageSendRequest;
-import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessage;
+import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBase;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.ViewMessageTemplateDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
@@ -139,10 +139,10 @@ public class MessagingServiceImpl implements MessagingService {
 
     @Override
     @Transactional(readOnly = true)
-    public PaginatedList<JurorToSendMessage> search(MessageSearch messageSearch, String locCode,
-                                                    boolean simpleResponse) {
-        PaginatedList<JurorToSendMessage> jurorToSendMessages =
-            messageTemplateRepository.messageSearch(messageSearch, locCode, simpleResponse,500L);
+    public PaginatedList<? extends JurorToSendMessageBase> search(MessageSearch messageSearch, String locCode,
+                                                                  boolean simpleResponse) {
+        PaginatedList<? extends JurorToSendMessageBase> jurorToSendMessages =
+            messageTemplateRepository.messageSearch(messageSearch, locCode, simpleResponse, 500L);
         if (jurorToSendMessages.isEmpty()) {
             throw new MojException.NotFound("No jurors found that meet the search criteria", null);
         }
@@ -258,12 +258,12 @@ public class MessagingServiceImpl implements MessagingService {
             message.setSubject("Eich Gwasanaeth Rheithgor");
             message.setMessageText(welshTemplate);
             message.setMessageId(messageType.getWelshMessageId());
-            otherInfo = getMessageTemplate(messageType,false).getTitle();
+            otherInfo = getMessageTemplate(messageType, false).getTitle();
         } else {
             message.setSubject("Your Jury Service");
             message.setMessageText(englishTemplate);
             message.setMessageId(messageType.getEnglishMessageId());
-            otherInfo = getMessageTemplate(messageType,true).getTitle();
+            otherInfo = getMessageTemplate(messageType, true).getTitle();
         }
 
         historyService.createSendMessageHistory(jurorAndSendType.getJurorNumber(),

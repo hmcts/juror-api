@@ -23,7 +23,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationDataDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -244,7 +243,7 @@ class CourtLocationControllerTest {
     @Nested
     class GetCourtRates
         extends AbstractControllerTest<Void, GetCourtRates> {
-        private static final String URL = BASE_URL + "/{loc_code}/{date}/rates";
+        private static final String URL = BASE_URL + "/{loc_code}/rates";
         private static final BureauJwtAuthentication MOCK_PRINCIPAL = mock(BureauJwtAuthentication.class);
 
         protected GetCourtRates() {
@@ -260,20 +259,14 @@ class CourtLocationControllerTest {
 
         @Test
         void positiveTypical() throws Exception {
-            send(null, HttpStatus.OK, "415", "2023-05-04");
+            send(null, HttpStatus.OK, "415");
             verify(courtLocationService, times(1))
-                .getCourtRates("415", LocalDate.of(2023, 5, 4));
+                .getCourtRates("415");
         }
 
         @Test
         void negativeInvalidLocCode() throws Exception {
-            send(null, HttpStatus.BAD_REQUEST, "INVALID", "2023-05-04");
-            verifyNoInteractions(courtLocationService);
-        }
-
-        @Test
-        void negativeInvalidDate() throws Exception {
-            send(null, HttpStatus.BAD_REQUEST, "415", "INVALID");
+            send(null, HttpStatus.BAD_REQUEST, "INVALID");
             verifyNoInteractions(courtLocationService);
         }
     }

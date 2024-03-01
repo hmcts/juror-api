@@ -51,7 +51,7 @@ public class BureauEndpointController {
      * @return Fully populated dto.
      */
     @GetMapping(path = "/juror/{jurorId}")
-    @Operation(summary = "/bureau/juror/{jurorId} - Get juror details by juror number",
+    @Operation(summary = "Get juror details by juror number",
         description = "Retrieve details of a single juror by his/her juror number")
     public ResponseEntity<BureauJurorDetailDto> retrieveBureauJurorDetailsById(@Parameter(description = "Valid juror "
         + "number", required = true) @PathVariable String jurorId) {
@@ -69,7 +69,7 @@ public class BureauEndpointController {
      * @throws BureauOptimisticLockingException Response data from the UI is outdated. Version mismatch with DB.
      */
     @PostMapping(path = "/status/{jurorNumber}")
-    @Operation(summary = "/bureau/status/{jurorNumber} - Update and process juror response",
+    @Operation(summary = "Update and process juror response",
         description = "Update and process juror response")
     public ResponseEntity<Object> updateResponseStatus(
         @Parameter(description = "Juror number") @PathVariable String jurorNumber,

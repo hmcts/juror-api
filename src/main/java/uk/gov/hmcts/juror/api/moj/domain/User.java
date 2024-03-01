@@ -2,11 +2,16 @@ package uk.gov.hmcts.juror.api.moj.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -31,6 +36,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users", schema = "juror_mod")
@@ -113,6 +119,19 @@ public class User implements Serializable {
     private BigDecimal approvalLimit;
     @Column(name = "can_approve")
     private boolean canApprove;
+
+    @Column(name = "user_type")
+    @Enumerated(EnumType.STRING)
+    private UserType userType;
+
+    @ElementCollection
+    @CollectionTable(
+        schema = "juror_mod",
+        name = "user_roles",
+        joinColumns = @JoinColumn(name = "username", referencedColumnName = "username"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private Set<Role> roles;
 
     public Boolean isTeamLeader() {
         return level == SecurityUtil.TEAM_LEADER_LEVEL;

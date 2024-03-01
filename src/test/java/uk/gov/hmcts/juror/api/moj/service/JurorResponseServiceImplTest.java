@@ -361,8 +361,8 @@ public class JurorResponseServiceImplTest extends TestCase {
         jurorPersonalDetailsDto.setFirstName("FName");
         jurorPersonalDetailsDto.setLastName("LName");
         JurorPaperResponseDto.ThirdParty thirdParty = JurorPaperResponseDto.ThirdParty.builder()
-                .relationship("relationship")
-                .thirdPartyReason("The reason text")
+            .relationship("relationship")
+            .thirdPartyReason("The reason text")
             .build();
         jurorPersonalDetailsDto.setThirdParty(thirdParty);
         return jurorPersonalDetailsDto;
@@ -400,7 +400,8 @@ public class JurorResponseServiceImplTest extends TestCase {
             .processAgeDisqualification(Mockito.any(PaperResponse.class), Mockito.any(LocalDate.class),
                 Mockito.any(JurorPool.class), Mockito.any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(straightThroughProcessorProcessAgeDisqDigital))
-            .processAgeDisqualification(Mockito.any(DigitalResponse.class), Mockito.any(JurorPool.class), Mockito.any());
+            .processAgeDisqualification(Mockito.any(DigitalResponse.class),
+                Mockito.any(JurorPool.class), Mockito.any());
 
         Mockito.verify(jurorDigitalResponseRepository, Mockito.times(jurorDigitalResponseRepositoryFind))
             .findByJurorNumber(Mockito.any(String.class));

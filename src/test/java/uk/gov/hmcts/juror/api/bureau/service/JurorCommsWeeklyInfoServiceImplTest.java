@@ -32,7 +32,8 @@ public class JurorCommsWeeklyInfoServiceImplTest {
 
     private static final String JUROR_TITLE = "JT";
 
-    private Pool pool1, pool2;
+    private Pool pool1;
+    private Pool pool2;
     List<Pool> poolList = new LinkedList<>();
 
     @Mock

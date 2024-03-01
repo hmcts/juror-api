@@ -1,7 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 import uk.gov.hmcts.juror.api.moj.controller.request.messages.MessageSendRequest;
-import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessage;
+import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBase;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.ViewMessageTemplateDto;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.messages.MessageSearch;
@@ -15,7 +15,8 @@ public interface MessagingService {
     ViewMessageTemplateDto getViewMessageTemplateDtoPopulated(MessageType messageType, String locCode,
                                                        Map<String, String> placeholders);
 
-    PaginatedList<JurorToSendMessage> search(MessageSearch messageSearch, String locCode, boolean simpleResponse);
+    PaginatedList<? extends JurorToSendMessageBase> search(MessageSearch messageSearch, String locCode,
+                                                    boolean simpleResponse);
 
     void send(MessageType messageType, String locCode, MessageSendRequest messageSendRequest);
 }

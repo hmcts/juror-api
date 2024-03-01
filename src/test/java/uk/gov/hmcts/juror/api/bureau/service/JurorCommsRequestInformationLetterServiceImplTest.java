@@ -84,17 +84,17 @@ public class JurorCommsRequestInformationLetterServiceImplTest {
         jurorCommsPrintFiles1.setTemplateId("abcd1234");
         jurorCommsPrintFiles1.setDetailRec("    Farah     Lee       YYY   " + JUROR_NUMBER + "XX     ");
 
-        JurorCommsPrintFiles JurorCommsPrintFiles2 = new JurorCommsPrintFiles();
-        JurorCommsPrintFiles2.setPrintFileName("File001");
-        JurorCommsPrintFiles2.setCreationDate(currentDate);
-        JurorCommsPrintFiles2.setFormType("5229A");
-        JurorCommsPrintFiles2.setJurorNumber("987654321");
-        JurorCommsPrintFiles2.setDigitalComms("N");
-        JurorCommsPrintFiles2.setTemplateId("dcba4321");
-        JurorCommsPrintFiles2.setDetailRec("    Farah     Lee       YYY   \"+JUROR_NUMBER+\"XX     ");
+        JurorCommsPrintFiles jurorCommsPrintFiles2 = new JurorCommsPrintFiles();
+        jurorCommsPrintFiles2.setPrintFileName("File001");
+        jurorCommsPrintFiles2.setCreationDate(currentDate);
+        jurorCommsPrintFiles2.setFormType("5229A");
+        jurorCommsPrintFiles2.setJurorNumber("987654321");
+        jurorCommsPrintFiles2.setDigitalComms("N");
+        jurorCommsPrintFiles2.setTemplateId("dcba4321");
+        jurorCommsPrintFiles2.setDetailRec("    Farah     Lee       YYY   \"+JUROR_NUMBER+\"XX     ");
 
         jurorCommsPrintFilesList.add(jurorCommsPrintFiles1);
-        jurorCommsPrintFilesList.add(JurorCommsPrintFiles2);
+        jurorCommsPrintFilesList.add(jurorCommsPrintFiles2);
 
         NotifyTemplateField templateField1 = NotifyTemplateField.builder()
             .id(1L)

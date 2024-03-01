@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.SneakyThrows;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
@@ -39,7 +40,8 @@ public class TestUtil {
      * @param object Object to parse to JSON
      * @return JSON String
      */
-    public static String parseToJsonString(final Object object) throws JsonProcessingException {
+    @SneakyThrows(JsonProcessingException.class)
+    public static String parseToJsonString(final Object object)  {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(object);
     }
@@ -90,6 +92,9 @@ public class TestUtil {
         claimsMap.put("passwordWarning", payload.getPasswordWarning());
         claimsMap.put("userLevel", payload.getUserLevel());
         claimsMap.put("staff", payload.getStaff());
+
+        claimsMap.put("roles", payload.getRoles());
+        claimsMap.put("userType", payload.getUserType());
 
         return Jwts.builder()
             .setClaims(claimsMap)

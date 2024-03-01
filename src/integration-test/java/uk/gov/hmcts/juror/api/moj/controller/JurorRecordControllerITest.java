@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
 import lombok.SneakyThrows;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -47,6 +48,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.ContactEnquiryTypeListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAttendanceDetailsResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorBankDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsCommonResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorNotesDto;
@@ -114,6 +116,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus.AWAITING_COURT_REPLY;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_COMPLETION_DATE;
@@ -741,7 +744,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestCourt.sql"})
-    void getJurorDetailsBureauUserActiveRecord()  {
+    void getJurorDetailsBureauUserActiveRecord() {
 
         ResponseEntity<JurorDetailsResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1064,7 +1067,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void getJurorOverviewBureauUserDisqualifiedOnSelectionResponse()  {
+    void getJurorOverviewBureauUserDisqualifiedOnSelectionResponse() {
 
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1090,7 +1093,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void getJurorOverviewBureauUserDisqualifiedNotOnSelectionResponse()  {
+    void getJurorOverviewBureauUserDisqualifiedNotOnSelectionResponse() {
 
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1113,7 +1116,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void getJurorOverviewBureauUserNotAvailableResponse()  {
+    void getJurorOverviewBureauUserNotAvailableResponse() {
 
         ResponseEntity<JurorOverviewResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1189,7 +1192,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void getJurorSummonsReplyBureauUserPaperResponseExcusalRefused()  {
+    void getJurorSummonsReplyBureauUserPaperResponseExcusalRefused() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1233,7 +1236,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void getJurorSummonsReplyBureauUserDigitalResponseExcusalRefused()  {
+    void getJurorSummonsReplyBureauUserDigitalResponseExcusalRefused() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1436,7 +1439,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSearch.sql"})
-    void searchJurorBureauUserActiveBureauRecord()  {
+    void searchJurorBureauUserActiveBureauRecord() {
 
         ResponseEntity<JurorRecordSearchDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -2964,7 +2967,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(dto.getCourtLocName())
             .as("Expect Court Location Name property to be mapped from the expected loc code")
             .isEqualTo(courtLocation.getLocCourtName());
-        assertThat(dto.getHearingTime())
+        assertThat(LocalTime.parse(dto.getHearingTime()))
             .as("Expect Hearing Time property to be mapped from the expected loc code")
             .isEqualTo(courtLocation.getCourtAttendTime());
 
@@ -3221,7 +3224,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(jurorAttendanceDetailsDto.getHours())
                 .isEqualTo("8.0");
             assertThat(jurorAttendanceDetailsDto.getTravelTime())
-                .isEqualTo(LocalTime.of(1,0));
+                .isEqualTo(LocalTime.of(1, 0));
         }
 
     }
@@ -3758,6 +3761,154 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
+    @DisplayName("GET" + GetJurorBankDetails.URL)
+    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordControllerITest_getJurorBankDetails.sql"})
+    class GetJurorBankDetails {
+
+        private static final String URL = BASE_URL + "/{juror_number}/bank-details";
+
+        private String toURL(String jurorNumber) {
+            return URL.replace("{juror_number}", jurorNumber);
+        }
+
+        @Test
+        @DisplayName("GetJurorBankDetailsHappyPath")
+        void getJurorBankDetailsHappyPath() throws Exception {
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+                JURY_OFFICER_LEVEL));
+
+            ResponseEntity<JurorBankDetailsDto> response =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create(toURL("123456789"))),
+                    JurorBankDetailsDto.class);
+
+            assertThat(response.getStatusCode()).as("Expect the HTTP Response Status to be OK")
+                .isEqualTo(HttpStatus.OK);
+
+            JurorBankDetailsDto jurorBankDetailsDto = response.getBody();
+            assertThat(jurorBankDetailsDto).isNotNull();
+
+            //verify address details match
+            assertThat(jurorBankDetailsDto.getAddressLineOne())
+                .as("AddressLineOne - Expect property and dto match")
+                .isEqualTo("Address Line 1");
+            assertThat(jurorBankDetailsDto.getAddressLineTwo())
+                .as("AddressLineTwo - Expect property and dto match")
+                .isEqualTo("Address Line 2");
+            assertThat(jurorBankDetailsDto.getAddressLineThree())
+                .as("AddressLineThree - Expect property and dto match")
+                .isEqualTo("Address Line 3");
+            assertThat(jurorBankDetailsDto.getAddressLineFour())
+                .as("AddressLineFour - Expect property and dto match")
+                .isEqualTo("Address Line 4");
+            assertThat(jurorBankDetailsDto.getAddressLineFive())
+                .as("AddressLineFive - Expect property and dto match")
+                .isEqualTo("Address Line 5");
+
+            //verify bank details and notes match
+            assertThat(jurorBankDetailsDto.getBankAccountNumber())
+                .as("BankAccountNumber - Expect property and dto match")
+                .isEqualTo("12345678");
+            assertThat(jurorBankDetailsDto.getSortCode())
+                .as("SortCode - Expect property and dto match")
+                .isEqualTo("123456");
+            assertThat(jurorBankDetailsDto.getNotes())
+                .as("Notes - Expect property and dto match")
+                .isEqualTo("Notes");
+
+        }
+
+        @Test
+        void getJurorBankDetailsUnhappyPathBureauUserDoesNotHaveAccess() throws Exception {
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
+                JURY_OFFICER_LEVEL));
+
+            ResponseEntity<JurorBankDetailsDto> response =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create(toURL("111111111"))),
+                    JurorBankDetailsDto.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP Response Status to be Forbidden")
+                .isEqualTo(HttpStatus.FORBIDDEN);
+
+        }
+
+        @Test
+        void getJurorBankDetailsUnhappyPathCourtUserDoesNotHaveAccessToJuror() throws Exception {
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
+                JURY_OFFICER_LEVEL));
+
+            ResponseEntity<JurorBankDetailsDto> response =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create(toURL("123456789"))),
+                    JurorBankDetailsDto.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP Response Status to be Forbidden")
+                .isEqualTo(HttpStatus.FORBIDDEN);
+
+        }
+
+        @Test
+        void getJurorBankDetailsUnhappyPathJurorNotFound() throws Exception {
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+                JURY_OFFICER_LEVEL));
+
+            ResponseEntity<JurorBankDetailsDto> response =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create(toURL("000000000"))),
+                    JurorBankDetailsDto.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP Response Status to be Not Found")
+                .isEqualTo(HttpStatus.NOT_FOUND);
+
+            assertThat(response.getBody().getBankAccountNumber())
+                .as("Expect BankAccountNumber to be null").isNull();
+            assertThat(response.getBody().getSortCode())
+                .as("Expect SortCode to be null").isNull();
+            assertThat(response.getBody().getAddressLineOne())
+                .as("Expect AddressLineOne to be null").isNull();
+            assertThat(response.getBody().getAddressLineTwo())
+                .as("Expect AddressLineTwo to be null").isNull();
+            assertThat(response.getBody().getAddressLineThree())
+                .as("Expect AddressLineThree to be null").isNull();
+            assertThat(response.getBody().getAddressLineFour())
+                .as("Expect AddressLineFour to be null").isNull();
+            assertThat(response.getBody().getAddressLineFive())
+                .as("Expect AddressLineFive to be null").isNull();
+            assertThat(response.getBody().getNotes())
+                .as("Expect Notes to be null").isNull();
+        }
+
+        @Test
+        void getJurorBankDetailsUnhappyPathInvalidJurorNumber() throws Exception {
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+                JURY_OFFICER_LEVEL));
+
+            ResponseEntity<String> response =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create(toURL("INVALID"))),
+                    String.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP Response Status to be Bad Request")
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+
+            assertThat(response.getBody())
+                .as("Expect the HTTP Response Body to be a JSON string").isNotNull();
+            assertThat(response.getBody())
+                .as("Expect the HTTP Response Body to contain the expected error message")
+                .contains("getJurorBankDetails.jurorNumber: must match \\\"^\\\\d{9}$\\\"");
+
+        }
+    }
+
+    @Nested
     @DisplayName("POST " + GetJurorDetailsBulkFilterable.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordControllerITest_getJurorDetailsFiltered_typical.sql"})
     class GetJurorDetailsBulkFilterable {
@@ -4098,7 +4249,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             void tooManyItems() throws Exception {
                 List<FilterableJurorDetailsRequestDto> request = new ArrayList<>();
                 final int maxRequests = 20;
-                for (int index = 0; index < maxRequests + 1; index++) {
+                for (int index = 0;
+                     index < maxRequests + 1;
+                     index++) {
                     request.add(FilterableJurorDetailsRequestDto.builder()
                         .jurorNumber(String.valueOf(100_000_000 + index))
                         .include(List.of(FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS))
@@ -4541,7 +4694,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertNull(poolRequest.getNumberRequested(), "Number requested must be null");
 
             assertEquals(LocalDateTime.of(dto.getStartDate(),
-                    LocalTime.parse(courtLocation.getCourtAttendTime())),
+                    courtLocation.getCourtAttendTime()),
                 poolRequest.getAttendTime(), "Attend Time must match");
 
             assertEquals(dto.getPoolType(), poolRequest.getPoolType().getPoolType(),

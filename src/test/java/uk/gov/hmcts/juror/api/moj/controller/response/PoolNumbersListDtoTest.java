@@ -7,6 +7,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ public class PoolNumbersListDtoTest {
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(locationCode);
         courtLocation.setName(name);
-        courtLocation.setCourtAttendTime(attendanceTime);
+        courtLocation.setCourtAttendTime(LocalTime.parse(attendanceTime));
 
         return courtLocation;
     }
@@ -55,7 +56,7 @@ public class PoolNumbersListDtoTest {
         poolRequestOne.setPoolNumber("410230101");
         poolRequestOne.setReturnDate(LocalDate.of(2023, 1, 1));
 
-        PoolNumbersListDto.PoolNumbersDataDto activePoolsDataDtoOne =
+        final PoolNumbersListDto.PoolNumbersDataDto activePoolsDataDtoOne =
             new PoolNumbersListDto.PoolNumbersDataDto(poolRequestOne.getPoolNumber(), poolRequestOne.getReturnDate());
 
         PoolRequest poolRequestTwo = new PoolRequest();

@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.Pool;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -60,7 +61,6 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
     private final WelshDayMonthTranslationConfig welshDayMonthTranslationConfig;
     private final UniquePoolService uniquePoolService;
     private final WelshCourtLocationRepository welshCourtLocationRepository;
-
 
 
     @Autowired
@@ -416,7 +416,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
 
             return uniquePoolAttendTime;
         } else {
-            final String courtAttendTime = poolDetails.getCourt().getCourtAttendTime();
+            final String courtAttendTime = DataUtils.asStringHHmm(poolDetails.getCourt().getCourtAttendTime());
             if (log.isTraceEnabled()) {
                 log.trace("Attend time is not set in unique pool, using court attend time of {}", courtAttendTime);
             }

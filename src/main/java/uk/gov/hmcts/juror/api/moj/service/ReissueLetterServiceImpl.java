@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -48,7 +49,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                 null);
         }
 
-        final List<List<Object>> data = letters.stream()
+        List<List<Object>> data = letters.stream()
             .map(tuple -> letterType.getReissueDataTypes().stream()
                 .map(dataType -> dataType.transform(tuple.get(dataType.getExpression())))
                 .toList()
@@ -59,6 +60,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         final List<String> dataTypes = letterType.getReissueDataTypes().stream()
             .map(DataType::getDataType)
             .toList();
+
+        data = setStatusDesc(data, headings);
         return new ReissueLetterListResponseDto(headings, dataTypes, data);
     }
 
@@ -130,5 +133,40 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             letter.getFormCode());
 
         bulkPrintDataRepository.delete(bulkPrintData);
+    }
+
+    /**
+     * Set status description to be in line with certain statuses combined with status code.
+     * @param data - Letter list data.
+     * @param headings - Letter list headings
+     * @return data with status updated to correspond to code.
+     */
+    private List<List<Object>> setStatusDesc(List<List<Object>> data, List<String> headings) {
+        int statusIndex = headings.indexOf("Status");
+        int reasonIndex = headings.indexOf("Reason");
+
+        if (statusIndex < 0 || reasonIndex < 0) {
+            return data;
+        }
+
+        List<List<Object>> newLetterData = new ArrayList<>();
+
+        for (List<Object> datum : data) {
+            ArrayList<Object> newData = new ArrayList<>();
+            for (Object object : datum) {
+                newData.add(object);
+            }
+
+            if (newData.get(statusIndex).equals("Deferred")
+                && newData.get(reasonIndex).equals(
+                "Postponement"
+                    + " of "
+                    + "service")) {
+                newData.remove(statusIndex);
+                newData.add(statusIndex, "Postponed");
+            }
+            newLetterData.add(newData);
+        }
+        return newLetterData;
     }
 }
