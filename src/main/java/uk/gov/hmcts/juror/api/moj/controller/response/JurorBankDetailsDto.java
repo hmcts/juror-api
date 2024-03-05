@@ -26,6 +26,10 @@ public class JurorBankDetailsDto {
     @Length(max = 8)
     private String bankAccountNumber;
 
+    @JsonProperty("account_holder_name")
+    @Length(max = 18)
+    private String accountHolderName;
+
     @JsonProperty("address_line_1")
     @Length(max = 35)
     private String addressLineOne;
@@ -68,6 +72,7 @@ public class JurorBankDetailsDto {
         this.addressLineFour = juror.getAddressLine4();
         this.addressLineFive = juror.getAddressLine5();
         this.postCode = juror.getPostcode();
+        this.accountHolderName = juror.getBankAccountName();
         this.bankAccountNumber = juror.getBankAccountNumber();
         this.sortCode = juror.getSortCode();
         this.notes = juror.getNotes();

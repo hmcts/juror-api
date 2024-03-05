@@ -44,12 +44,16 @@ import java.util.Random;
 import static java.time.LocalDate.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_AVAILABLE;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_LIMITS;
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({
@@ -244,12 +248,18 @@ class PanelServiceImplTest {
     void createPanelTrialNotEnoughRequested() {
         doReturn(true).when(trialRepository)
             .existsByTrialNumberAndCourtLocationLocCode(anyString(), anyString());
-        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(
+        MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
             () -> panelService.createPanel(0,
                 "T100000025",
                 Optional.of(new ArrayList<>()),
                 anyString(),
-                any()));
+                any()),
+            "Expected exception to be thrown when not enough jurors");
+
+        assertEquals("Cannot create panel - Number requested must be between 1 and 1000",
+            exception.getMessage(),
+            "Expected exception message to be: Cannot create panel - Number requested must be between 1 and 1000");
+        assertEquals(NUMBER_OF_JURORS_EXCEEDS_LIMITS, exception.getErrorCode());
 
         verify(trialRepository, times(1))
             .existsByTrialNumberAndCourtLocationLocCode("T100000025", "");
@@ -259,15 +269,56 @@ class PanelServiceImplTest {
     void createPanelTrialTooManyRequested() {
         doReturn(true).when(trialRepository)
             .existsByTrialNumberAndCourtLocationLocCode(anyString(), anyString());
-        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(
+
+        MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
             () -> panelService.createPanel(1001,
                 "T100000025",
                 Optional.of(new ArrayList<>()),
                 anyString(),
-                any()));
+                any()),
+            "Expected exception to be thrown when not enough jurors");
+
+        assertEquals("Cannot create panel - Number requested must be between 1 and 1000",
+            exception.getMessage(),
+            "Expected exception message to be: Cannot create panel - Number requested must be between 1 and 1000");
+        assertEquals(NUMBER_OF_JURORS_EXCEEDS_LIMITS, exception.getErrorCode());
 
         verify(trialRepository, times(1))
             .existsByTrialNumberAndCourtLocationLocCode("T100000025", "");
+    }
+
+    @Test
+    void createPanelTrialNotEnoughJurors() {
+
+        List<JurorPool> appearanceList;
+        appearanceList = new ArrayList<>();
+        appearanceList.add(createJurorPool().get(0));
+        appearanceList.add(createJurorPool().get(1));
+        doReturn(appearanceList).when(appearanceRepository)
+            .retrieveAllJurors();
+        doReturn(true).when(trialRepository)
+            .existsByTrialNumberAndCourtLocationLocCode(anyString(), anyString());
+        doReturn(false).when(panelRepository)
+            .existsByTrialTrialNumber("T100000025");
+
+        MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
+            () -> panelService.createPanel(50,
+                "T100000025",
+                Optional.of(new ArrayList<>()),
+                anyString(),
+                any()),
+            "Expected exception to be thrown when not enough jurors");
+
+        assertEquals("Cannot create panel - Not enough jurors available",
+            exception.getMessage(),
+            "Expected exception message to be: Cannot create panel - Not enough jurors available");
+        assertEquals(NUMBER_OF_JURORS_EXCEEDS_AVAILABLE, exception.getErrorCode());
+        verify(trialRepository, times(1))
+            .existsByTrialNumberAndCourtLocationLocCode("T100000025", "");
+        verify(panelRepository, times(1))
+            .existsByTrialTrialNumber("T100000025");
+        verify(appearanceRepository, times(1))
+            .retrieveAllJurors();
     }
 
     @Test

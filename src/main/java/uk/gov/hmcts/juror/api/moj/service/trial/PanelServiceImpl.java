@@ -35,6 +35,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_AVAILABLE;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_LIMITS;
+
 @Slf4j
 @Service
 @SuppressWarnings("PMD.TooManyMethods")
@@ -89,14 +92,14 @@ public class PanelServiceImpl implements PanelService {
         }
 
         if (numberRequested <= 0 || numberRequested > MAX_PANEL_MEMBERS) {
-            throw new MojException.BadRequest(
-                "Cannot create panel - Number requested must be between 1 and 1000", null);
+            throw new MojException.BusinessRuleViolation(
+                "Cannot create panel - Number requested must be between 1 and 1000",
+                NUMBER_OF_JURORS_EXCEEDS_LIMITS);
         }
 
         if (panelRepository.existsByTrialTrialNumber(trialNumber)) {
             throw new MojException.BadRequest(
-                "Cannot create panel - Trial already has a panel", null
-            );
+                "Cannot create panel - Trial already has a panel", null);
         }
     }
 
@@ -104,10 +107,14 @@ public class PanelServiceImpl implements PanelService {
                                BureauJWTPayload payload,
                            List<JurorPool> appearanceList, Trial trial) {
 
+        if (numberRequested > appearanceList.size()) {
+            throw new MojException.BusinessRuleViolation(
+                "Cannot create panel - Not enough jurors available",
+                NUMBER_OF_JURORS_EXCEEDS_AVAILABLE);
+        }
+
         List<PanelListDto> panelListDtosList = new ArrayList<>();
-        for (int i = 0;
-             i < numberRequested;
-             i++) {
+        for (int i = 0; i < numberRequested; i++) {
             Panel panel = createPanelEntity(appearanceList.get(i), trialNumber, courtLocationCode);
             panel.getJurorPool().setLocation(trial.getCourtroom().getRoomNumber());
             if (panel.getJurorPool().getTimesSelected() == null) {

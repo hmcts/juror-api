@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -213,14 +212,6 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
 
     protected void assertBusinessRuleViolation(ResponseEntity<String> response, String message,
                                                MojException.BusinessRuleViolation.ErrorCode code) {
-        assertBusinessRuleViolation(response, null, message, code);
-    }
-
-    @SneakyThrows
-    @Deprecated
-    //Use one without url
-    protected void assertBusinessRuleViolation(ResponseEntity<String> response, String url, String message,
-                                               MojException.BusinessRuleViolation.ErrorCode code) {
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
@@ -243,7 +234,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     }
 
     protected void assertInvalidPathParam(ResponseEntity<String> response,
-                                          String expectedMessage)  {
+                                          String expectedMessage) {
 
         assertThat(response).isNotNull();
         log.debug("Response: {}", response);

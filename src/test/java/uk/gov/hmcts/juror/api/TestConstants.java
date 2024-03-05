@@ -19,6 +19,8 @@ public final class TestConstants {
     public static final String VALID_POSTCODE = "TE1 4ST";
     public static final String VALID_PHONE_NUMBER = "01792 637000";
     public static final String VALID_EMAIL = "some.one@some.email.com";
+    public static final String VALID_COURT_ROOM_NAME = "TSTRM";
+    public static final String VALID_COURT_ROOM_DESC = "Some court room description";
 
     private TestConstants() {
 

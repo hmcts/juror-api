@@ -9,6 +9,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.Holidays;
 
 import java.time.LocalDate;
@@ -36,9 +37,13 @@ public class HolidayTest {
 
     @Test
     public void testValidCourtHoliday() {
+        CourtLocation courtLocation = CourtLocation.builder()
+            .owner("400")
+            .locCode("400")
+            .build();
         Holidays holiday = new Holidays();
         holiday.setHoliday(LocalDate.now());
-        holiday.setOwner("400");
+        holiday.setCourtLocation(courtLocation);
         holiday.setDescription("TEST");
         holiday.setPublicHoliday(false);
         Set<ConstraintViolation<Holidays>> violations = validator.validate(holiday);

@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -19,15 +21,14 @@ import org.hibernate.validator.constraints.Length;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Date;
 
 /**
  * JUROR_DIGITAL_USER.HOLIDAYS
  */
 
 @Entity
-@Table(name = "holiday", schema = "juror_mod", uniqueConstraints = {@UniqueConstraint(columnNames = {"owner",
-    "holiday"})})
+@Table(name = "holiday", schema = "juror_mod", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"loc_code", "holiday"})})
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -52,9 +53,9 @@ public class Holidays implements Serializable {
     @NotEmpty
     private String description;
 
-    @Column(name = "owner")
-    @Length(max = 3)
-    private String owner;
+    @ManyToOne
+    @JoinColumn(name = "loc_code", updatable = false)
+    private CourtLocation courtLocation;
 
     @Column(name = "public")
     @NotNull

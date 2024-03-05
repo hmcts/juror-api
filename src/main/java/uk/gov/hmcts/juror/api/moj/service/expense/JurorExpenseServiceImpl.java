@@ -39,6 +39,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.ExpenseDetailsForT
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.FinancialLossWarning;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApproval;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.SimplifiedExpenseDetailDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -842,8 +843,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PendingApproval> getExpensesForApproval(String locCode, PaymentMethod paymentMethod,
-                                                        LocalDate fromInclusive, LocalDate toInclusive) {
+    public PendingApprovalList getExpensesForApproval(String locCode, PaymentMethod paymentMethod,
+                                                      LocalDate fromInclusive, LocalDate toInclusive) {
 
         List<PendingApproval> pendingApprovals = new ArrayList<>();
         //For approval
@@ -866,10 +867,24 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             true,
             fromInclusive, toInclusive
         ));
-        return pendingApprovals.stream()
+
+        PendingApprovalList pendingApprovalList = new PendingApprovalList();
+        pendingApprovalList.setPendingApproval(pendingApprovals.stream()
             .sorted(Comparator.comparing(JurorNumberAndPoolNumberDto::getJurorNumber)
                 .thenComparing(JurorNumberAndPoolNumberDto::getPoolNumber))
-            .toList();
+            .toList());
+
+        pendingApprovalList.setTotalPendingBacs(appearanceRepository
+            .countPendingApproval(
+                locCode,
+                false));
+
+        pendingApprovalList.setTotalPendingCash(appearanceRepository
+            .countPendingApproval(
+                locCode,
+                true));
+
+        return pendingApprovalList;
     }
 
     List<PendingApproval> mapAppearancesToPendingApproval(List<Appearance> appearances,

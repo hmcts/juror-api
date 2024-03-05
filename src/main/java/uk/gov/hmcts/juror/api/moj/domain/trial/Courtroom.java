@@ -10,9 +10,8 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 
@@ -24,9 +23,8 @@ import java.io.Serializable;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
+@Data
 @Builder
-@Setter
 @Table(name = "courtroom", schema = "juror_mod")
 public class Courtroom implements Serializable {
 

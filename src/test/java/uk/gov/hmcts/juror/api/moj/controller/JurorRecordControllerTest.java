@@ -1503,6 +1503,7 @@ class JurorRecordControllerTest {
             JurorBankDetailsDto jurorBankDetailsDto = JurorBankDetailsDto.builder()
                 .bankAccountNumber("12345678")
                 .sortCode("115578")
+                .accountHolderName("Mr Fname Lname")
                 .addressLineOne("Address Line 1")
                 .addressLineTwo("Address Line 1")
                 .addressLineThree("Address Line 1")

@@ -1,4 +1,4 @@
-INSERT INTO juror_mod.holiday(id, owner, holiday, description, public)
+INSERT INTO juror_mod.holiday(id, loc_code, holiday, description, public)
 VALUES (10000, null, to_date(extract(year from current_date) - 1 || '-01-01', 'YYYY-MM-DD'), 'Public holiday 1 -1',
         true),
        (10001, null, to_date(extract(year from current_date) || '-01-01', 'YYYY-MM-DD'), 'Public holiday 1', true),

@@ -10,16 +10,15 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.juror.domain.Holidays;
-import uk.gov.hmcts.juror.api.juror.domain.HolidaysRepository;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
-import uk.gov.hmcts.juror.api.moj.controller.response.administration.BankHolidayDate;
+import uk.gov.hmcts.juror.api.moj.controller.response.CourtRates;
 import uk.gov.hmcts.juror.api.moj.controller.response.administration.CodeDescriptionResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.administration.CourtDetailsReduced;
 import uk.gov.hmcts.juror.api.moj.domain.Address;
 import uk.gov.hmcts.juror.api.moj.domain.CodeType;
 import uk.gov.hmcts.juror.api.moj.domain.CourtDetailsDto;
+import uk.gov.hmcts.juror.api.moj.domain.UpdateCourtDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.system.HasCodeAndDescription;
 import uk.gov.hmcts.juror.api.moj.domain.system.HasEnabled;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
@@ -28,17 +27,13 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.CourtroomRepository;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.time.LocalTime;
-import java.time.temporal.TemporalAdjusters;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -57,21 +52,17 @@ class AdministrationServiceImplTest {
 
     private CourtLocationRepository courtLocationRepository;
     private WelshCourtLocationRepository welshCourtLocationRepository;
-
     private CourtroomRepository courtroomRepository;
-
-    private HolidaysRepository holidaysRepository;
 
     @BeforeEach
     void beforeEach() {
         courtLocationRepository = mock(CourtLocationRepository.class);
         welshCourtLocationRepository = mock(WelshCourtLocationRepository.class);
         courtroomRepository = mock(CourtroomRepository.class);
-        holidaysRepository = mock(HolidaysRepository.class);
         EntityManager entityManager = mock(EntityManager.class);
         this.administrationService =
-            spy(new AdministrationServiceImpl(entityManager, courtLocationRepository, welshCourtLocationRepository,
-                courtroomRepository, holidaysRepository));
+            spy(new AdministrationServiceImpl(entityManager, courtLocationRepository,
+                welshCourtLocationRepository, courtroomRepository));
     }
 
     @Nested
@@ -212,33 +203,60 @@ class AdministrationServiceImplTest {
     }
 
     @Nested
+    @DisplayName("CourtLocation getCourtLocation(String locCode)")
+    class GetCourtLocation {
+
+        @Test
+        void positiveFound() {
+            CourtLocation courtLocation = mock(CourtLocation.class);
+            when(courtLocationRepository.findById(TestConstants.VALID_COURT_LOCATION))
+                .thenReturn(Optional.of(courtLocation));
+            assertThat(administrationService.getCourtLocation(TestConstants.VALID_COURT_LOCATION))
+                .isEqualTo(courtLocation);
+
+            verify(courtLocationRepository, times(1)).findById(TestConstants.VALID_COURT_LOCATION);
+        }
+
+        @Test
+        void negativeNotFound() {
+            when(courtLocationRepository.findById(TestConstants.VALID_COURT_LOCATION))
+                .thenReturn(Optional.empty());
+            MojException.NotFound exception =
+                assertThrows(MojException.NotFound.class,
+                    () -> administrationService.viewCourt(TestConstants.VALID_COURT_LOCATION),
+                    "Expected exception to be thrown when a court is not found");
+            assertThat(exception.getMessage()).isEqualTo("Court not found");
+            assertThat(exception.getCause()).isNull();
+            verify(courtLocationRepository, times(1)).findById(TestConstants.VALID_COURT_LOCATION);
+        }
+    }
+
+    @Nested
     @DisplayName("public CourtDetailsDto viewCourt(String locCode)")
     class ViewCourt {
 
         @Test
         void positiveEnglish() {
-            when(courtLocationRepository.findById(TestConstants.VALID_COURT_LOCATION))
-                .thenReturn(Optional.of(
-                    CourtLocation.builder()
-                        .locCode(TestConstants.VALID_COURT_LOCATION)
-                        .name("COURT1")
-                        .address1("COURT1 ADDRESS1")
-                        .address2("COURT1 ADDRESS2")
-                        .address3("COURT1 ADDRESS3")
-                        .address4("COURT1 ADDRESS4")
-                        .address5("COURT1 ADDRESS5")
-                        .postcode("AB1 2CD")
-                        .locPhone("0123456789")
-                        .courtAttendTime(LocalTime.of(9, 0))
-                        .costCentre("CSTCNR1")
-                        .signatory("COURT1 SIGNATURE")
-                        .assemblyRoom(
-                            Courtroom.builder()
-                                .roomNumber("ROOM1")
-                                .build()
-                        )
+            doReturn(CourtLocation.builder()
+                .locCode(TestConstants.VALID_COURT_LOCATION)
+                .name("COURT1")
+                .address1("COURT1 ADDRESS1")
+                .address2("COURT1 ADDRESS2")
+                .address3("COURT1 ADDRESS3")
+                .address4("COURT1 ADDRESS4")
+                .address5("COURT1 ADDRESS5")
+                .postcode("AB1 2CD")
+                .locPhone("0123456789")
+                .courtAttendTime(LocalTime.of(9, 0))
+                .costCentre("CSTCNR1")
+                .signatory("COURT1 SIGNATURE")
+                .assemblyRoom(
+                    Courtroom.builder()
+                        .roomNumber("ROOM1")
                         .build()
-                ));
+                )
+                .build()).when(administrationService)
+                .getCourtLocation(TestConstants.VALID_COURT_LOCATION);
             when(welshCourtLocationRepository.findById(TestConstants.VALID_COURT_LOCATION))
                 .thenReturn(Optional.empty());
 
@@ -264,36 +282,32 @@ class AdministrationServiceImplTest {
                     .signature("COURT1 SIGNATURE")
                     .assemblyRoom("ROOM1")
                     .build());
-            verify(courtLocationRepository, times(1)).findById(TestConstants.VALID_COURT_LOCATION);
-            verifyNoMoreInteractions(courtLocationRepository);
+            verify(administrationService, times(1)).getCourtLocation(TestConstants.VALID_COURT_LOCATION);
             verify(welshCourtLocationRepository, times(1)).findById(TestConstants.VALID_COURT_LOCATION);
             verifyNoMoreInteractions(welshCourtLocationRepository);
         }
 
         @Test
         void positiveWelsh() {
-            when(courtLocationRepository.findById(TestConstants.VALID_COURT_LOCATION))
-                .thenReturn(Optional.of(
-                    CourtLocation.builder()
-                        .locCode(TestConstants.VALID_COURT_LOCATION)
-                        .name("COURT1")
-                        .address1("COURT1 ADDRESS1")
-                        .address2("COURT1 ADDRESS2")
-                        .address3("COURT1 ADDRESS3")
-                        .address4("COURT1 ADDRESS4")
-                        .address5("COURT1 ADDRESS5")
-                        .postcode("AB1 2CD")
-                        .locPhone("0123456789")
-                        .courtAttendTime(LocalTime.of(9, 0))
-                        .costCentre("CSTCNR1")
-                        .signatory("COURT1 SIGNATURE")
-                        .assemblyRoom(
-                            Courtroom.builder()
-                                .roomNumber("ROOM1")
-                                .build()
-                        )
+            doReturn(CourtLocation.builder()
+                .locCode(TestConstants.VALID_COURT_LOCATION)
+                .name("COURT1")
+                .address1("COURT1 ADDRESS1")
+                .address2("COURT1 ADDRESS2")
+                .address3("COURT1 ADDRESS3")
+                .address4("COURT1 ADDRESS4")
+                .address5("COURT1 ADDRESS5")
+                .postcode("AB1 2CD")
+                .locPhone("0123456789")
+                .courtAttendTime(LocalTime.of(9, 0))
+                .costCentre("CSTCNR1")
+                .signatory("COURT1 SIGNATURE")
+                .assemblyRoom(
+                    Courtroom.builder()
+                        .roomNumber("ROOM1")
                         .build()
-                ));
+                )
+                .build()).when(administrationService).getCourtLocation(TestConstants.VALID_COURT_LOCATION);
             when(welshCourtLocationRepository.findById(TestConstants.VALID_COURT_LOCATION))
                 .thenReturn(Optional.of(
                     WelshCourtLocation.builder()
@@ -336,97 +350,72 @@ class AdministrationServiceImplTest {
                     .signature("COURT1 SIGNATURE")
                     .assemblyRoom("ROOM1")
                     .build());
-            verify(courtLocationRepository, times(1)).findById(TestConstants.VALID_COURT_LOCATION);
-            verifyNoMoreInteractions(courtLocationRepository);
+            verify(administrationService, times(1)).getCourtLocation(TestConstants.VALID_COURT_LOCATION);
             verify(welshCourtLocationRepository, times(1)).findById(TestConstants.VALID_COURT_LOCATION);
             verifyNoMoreInteractions(welshCourtLocationRepository);
 
         }
+    }
+
+    @Nested
+    @DisplayName("public void updateCourt(String locCode, UpdateCourtDetailsDto updateCourtDetailsDto)")
+    class UpdateCourt {
+        @Test
+        void positiveTypical() {
+            CourtLocation courtLocation = mock(CourtLocation.class);
+            doReturn(courtLocation).when(administrationService).getCourtLocation(TestConstants.VALID_COURT_LOCATION);
+
+            Courtroom courtroom = mock(Courtroom.class);
+            when(courtroomRepository.findById(3L)).thenReturn(Optional.of(courtroom));
+
+            administrationService.updateCourt(TestConstants.VALID_COURT_LOCATION,
+                UpdateCourtDetailsDto.builder()
+                    .mainPhoneNumber("0123456789")
+                    .defaultAttendanceTime(LocalTime.of(9, 0))
+                    .assemblyRoomId(3L)
+                    .costCentre("CSTCNR1")
+                    .signature("COURT1 SIGNATURE")
+                    .build());
+
+
+            verify(courtLocation, times(1)).setLocPhone("0123456789");
+            verify(courtLocation, times(1)).setCourtAttendTime(LocalTime.of(9, 0));
+            verify(courtLocation, times(1)).setCostCentre("CSTCNR1");
+            verify(courtLocation, times(1)).setSignatory("COURT1 SIGNATURE");
+            verify(courtLocation, times(1)).setAssemblyRoom(courtroom);
+            verify(courtLocationRepository, times(1)).save(courtLocation);
+            verifyNoMoreInteractions(courtLocation, courtLocationRepository);
+        }
+    }
+
+    @Nested
+    @DisplayName("Courtroom getCourtRoom(Long assemblyRoomId)")
+    class GetCourtRoom {
 
         @Test
-        void negativeCourtNotFound() {
+        void positiveFound() {
+            final Long id = 133L;
+            Courtroom courtRoom = mock(Courtroom.class);
+            when(courtroomRepository.findById(id))
+                .thenReturn(Optional.of(courtRoom));
+            assertThat(administrationService.getCourtRoom(id))
+                .isEqualTo(courtRoom);
 
-            when(courtLocationRepository.findById(TestConstants.VALID_COURT_LOCATION))
+            verify(courtroomRepository, times(1)).findById(id);
+        }
+
+        @Test
+        void negativeNotFound() {
+            final Long id = 133L;
+            when(courtroomRepository.findById(id))
                 .thenReturn(Optional.empty());
             MojException.NotFound exception =
                 assertThrows(MojException.NotFound.class,
-                    () -> administrationService.viewCourt(TestConstants.VALID_COURT_LOCATION),
-                    "Expected exception to be thrown when a court is not found");
-            assertThat(exception.getMessage()).isEqualTo("Court not found");
+                    () -> administrationService.getCourtRoom(id),
+                    "Expected exception to be thrown when a courtRoom is not found");
+            assertThat(exception.getMessage()).isEqualTo("Courtroom not found");
             assertThat(exception.getCause()).isNull();
-            verify(courtLocationRepository, times(1)).findById(TestConstants.VALID_COURT_LOCATION);
-        }
-    }
-
-    @Nested
-    @DisplayName("List<Holidays> findAllPublicHolidays()")
-    class FindAllPublicHolidays {
-
-        @Test
-        void positiveTypical() {
-            List<Holidays> holidays = List.of(
-                mock(Holidays.class),
-                mock(Holidays.class),
-                mock(Holidays.class)
-            );
-            when(holidaysRepository.findAllByPublicHolidayAndHolidayIsGreaterThanEqual(anyBoolean(), any()))
-                .thenReturn(holidays);
-
-            assertThat(administrationService.findAllPublicHolidays()).isEqualTo(holidays);
-            LocalDate startOfYear = LocalDate.now().with(TemporalAdjusters.firstDayOfYear());
-            verify(holidaysRepository, times(1))
-                .findAllByPublicHolidayAndHolidayIsGreaterThanEqual(true, startOfYear);
-            verifyNoMoreInteractions(holidaysRepository);
-        }
-    }
-
-    @Nested
-    @DisplayName("public Map<Integer, List<BankHolidayDate>> viewBankHolidays()")
-    class ViewBankHolidays {
-
-        private Holidays mockHoliday(LocalDate date, String description) {
-            return Holidays.builder()
-                .holiday(date)
-                .description(description)
-                .build();
-        }
-
-        @Test
-        void positiveTypical() {
-            List<Holidays> holidays = List.of(
-                mockHoliday(LocalDate.of(2021, 1, 1), "desc1"),
-                mockHoliday(LocalDate.of(2021, 2, 1), "desc2"),
-                mockHoliday(LocalDate.of(2022, 1, 1), "desc3"),
-                mockHoliday(LocalDate.of(2021, 3, 1), "desc4"),
-                mockHoliday(LocalDate.of(2023, 1, 4), "desc5")
-            );
-            doReturn(holidays).when(administrationService).findAllPublicHolidays();
-
-            assertThat(administrationService.viewBankHolidays()).isEqualTo(
-                Map.of(
-                    2021, List.of(
-                        new BankHolidayDate(LocalDate.of(2021, 1, 1), "desc1"),
-                        new BankHolidayDate(LocalDate.of(2021, 2, 1), "desc2"),
-                        new BankHolidayDate(LocalDate.of(2021, 3, 1), "desc4")
-                    ),
-                    2022, List.of(
-                        new BankHolidayDate(LocalDate.of(2022, 1, 1), "desc3")
-                    ),
-                    2023, List.of(
-                        new BankHolidayDate(LocalDate.of(2023, 1, 4), "desc5")
-                    )
-                )
-            );
-            verify(administrationService, times(1))
-                .findAllPublicHolidays();
-        }
-
-        @Test
-        void positiveNoneFound() {
-            doReturn(List.of()).when(administrationService).findAllPublicHolidays();
-            assertThat(administrationService.viewBankHolidays()).isEmpty();
-            verify(administrationService, times(1))
-                .findAllPublicHolidays();
+            verify(courtroomRepository, times(1)).findById(id);
         }
     }
 
@@ -476,4 +465,25 @@ class AdministrationServiceImplTest {
         }
     }
 
+    @Nested
+    @DisplayName("public void updateCourtRates(String courtCode, CourtRates courtRates)")
+    class UpdateCourtRates {
+
+        @Test
+        void positiveTypical() {
+            CourtLocation courtLocation = mock(CourtLocation.class);
+            doReturn(courtLocation).when(administrationService).getCourtLocation(TestConstants.VALID_COURT_LOCATION);
+            administrationService.updateCourtRates(TestConstants.VALID_COURT_LOCATION,
+                CourtRates.builder()
+                    .taxiSoftLimit(new BigDecimal("1.23"))
+                    .publicTransportSoftLimit(new BigDecimal("4.56"))
+                    .build());
+
+            verify(courtLocation, times(1)).setPublicTransportSoftLimit(new BigDecimal("4.56"));
+            verify(courtLocation, times(1)).setTaxiSoftLimit(new BigDecimal("1.23"));
+            verify(administrationService, times(1)).getCourtLocation(TestConstants.VALID_COURT_LOCATION);
+            verify(courtLocationRepository, times(1)).save(courtLocation);
+            verifyNoMoreInteractions(courtLocation, courtLocationRepository);
+        }
+    }
 }

@@ -54,15 +54,16 @@ public class HolidaysQueries {
      * Query to match HOLIDAYS records to a given date and filter by owner (court location code).
      * Also returns matching public holiday
      *
-     * @param owner 3-digit numeric string, unique identifier for court locations
+     * @param locCode 3-digit numeric string, unique identifier for court locations
      * @param date  the value to check against holidaysDetail.holiday
      * @return Predicate
      */
-    public static BooleanExpression isCourtHoliday(String owner, LocalDate date) {
-        return owner == null || owner.isBlank()
+    public static BooleanExpression isCourtHoliday(String locCode, LocalDate date) {
+        return locCode == null || locCode.isBlank()
             ? holidaysDetail.publicHoliday.isTrue().and(holidaysDetail.holiday.eq(date))
             : holidaysDetail.holiday.eq(date)
-                .and(holidaysDetail.owner.eq(owner).or(holidaysDetail.publicHoliday.isTrue()));
+                .and(holidaysDetail.publicHoliday.isTrue()
+                    .or(holidaysDetail.courtLocation.locCode.eq(locCode)));
     }
-    
+
 }

@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
 import lombok.SneakyThrows;
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -3511,7 +3510,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<String> response =
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            assertBusinessRuleViolation(response, URL,
+            assertBusinessRuleViolation(response,
                 "Juror status must be responded in order to undo the failed to attend status.",
                 JUROR_STATUS_MUST_BE_RESPONDED
             );
@@ -3534,7 +3533,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<String> response =
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            assertBusinessRuleViolation(response, URL,
+            assertBusinessRuleViolation(response,
                 "This juror cannot be given a Failed To Attend status because they have been given a completion date. "
                     + "Only a Senior Jury Officer can be remove the completion date",
                 FAILED_TO_ATTEND_HAS_COMPLETION_DATE
@@ -3558,7 +3557,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<String> response =
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            assertBusinessRuleViolation(response, URL,
+            assertBusinessRuleViolation(response,
                 "This juror cannot be given a Failed To Attend status because they have had attendances recorded."
                     + " The Failed To Attend status is only for jurors who have not attended at all",
                 FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD
@@ -3683,7 +3682,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<String> response =
                 restTemplate.exchange(
                     new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            assertBusinessRuleViolation(response, URL,
+            assertBusinessRuleViolation(response,
                 "Juror status must be failed to attend in order to undo the failed to attend status.",
                 JUROR_STATUS_MUST_BE_FAILED_TO_ATTEND
             );
@@ -3812,6 +3811,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(jurorBankDetailsDto.getSortCode())
                 .as("SortCode - Expect property and dto match")
                 .isEqualTo("123456");
+            assertThat(jurorBankDetailsDto.getAccountHolderName())
+                .as("AccountHolderName - Expect property and dto match")
+                .isEqualTo("Account Name");
             assertThat(jurorBankDetailsDto.getNotes())
                 .as("Notes - Expect property and dto match")
                 .isEqualTo("Notes");
@@ -3904,7 +3906,6 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody())
                 .as("Expect the HTTP Response Body to contain the expected error message")
                 .contains("getJurorBankDetails.jurorNumber: must match \\\"^\\\\d{9}$\\\"");
-
         }
     }
 
@@ -3913,7 +3914,6 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordControllerITest_getJurorDetailsFiltered_typical.sql"})
     class GetJurorDetailsBulkFilterable {
         private static final String URL = BASE_URL + "/details";
-
 
         private FilterableJurorDetailsRequestDto createDto(String jurorNumber, Long version,
                                                            FilterableJurorDetailsRequestDto.IncludeType... include) {

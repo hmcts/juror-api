@@ -44,7 +44,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.DailyExpenseRespon
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.ExpenseCount;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.FinancialLossWarningTest;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseResponse;
-import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApproval;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.SimplifiedExpenseDetailDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -1105,20 +1105,16 @@ class JurorExpenseControllerTest {
         class Positive {
             @Test
             void typicalWithoutDates() throws Exception {
-                List<PendingApproval> pendingApprovals = List.of(
-                    PendingApproval.builder()
-                        .jurorNumber("111111111")
-                        .poolNumber("415230101")
-                        .build()
-                );
+                PendingApprovalList pendingApprovalList = new PendingApprovalList();
+                pendingApprovalList.setTotalPendingBacs(2L);
                 when(jurorExpenseService.getExpensesForApproval(TestConstants.VALID_COURT_LOCATION,
-                    PaymentMethod.BACS, null, null)).thenReturn(pendingApprovals);
+                    PaymentMethod.BACS, null, null)).thenReturn(pendingApprovalList);
 
                 mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION, PaymentMethod.BACS.name(),
                         null, null)))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.[0].juror_number", CoreMatchers.is("111111111")));
+                    .andExpect(jsonPath("$.total_pending_bacs", CoreMatchers.is(2)));
 
                 verify(jurorExpenseService, times(1))
                     .getExpensesForApproval(TestConstants.VALID_COURT_LOCATION,
@@ -1127,21 +1123,17 @@ class JurorExpenseControllerTest {
 
             @Test
             void typicalWithDates() throws Exception {
-                List<PendingApproval> pendingApprovals = List.of(
-                    PendingApproval.builder()
-                        .jurorNumber("111111111")
-                        .poolNumber("415230101")
-                        .build()
-                );
+                PendingApprovalList pendingApprovalList = new PendingApprovalList();
+                pendingApprovalList.setTotalPendingBacs(3L);
                 when(jurorExpenseService.getExpensesForApproval(TestConstants.VALID_COURT_LOCATION,
                     PaymentMethod.BACS, LocalDate.of(2023, 1, 1), LocalDate.of(2023, 2, 1))).thenReturn(
-                    pendingApprovals);
+                    pendingApprovalList);
 
                 mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION, PaymentMethod.BACS,
                         LocalDate.of(2023, 1, 1), LocalDate.of(2023, 2, 1))))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.[0].juror_number", CoreMatchers.is("111111111")));
+                    .andExpect(jsonPath("$.total_pending_bacs", CoreMatchers.is(3)));
 
                 verify(jurorExpenseService, times(1))
                     .getExpensesForApproval(TestConstants.VALID_COURT_LOCATION,

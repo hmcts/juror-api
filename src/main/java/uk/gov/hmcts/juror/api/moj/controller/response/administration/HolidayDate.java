@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class BankHolidayDate {
+public class HolidayDate {
 
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -24,7 +24,7 @@ public class BankHolidayDate {
     @NotBlank
     private String description;
 
-    public BankHolidayDate(Holidays holidays) {
+    public HolidayDate(Holidays holidays) {
         this(holidays.getHoliday(), holidays.getDescription());
     }
 }

@@ -20,19 +20,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.moj.controller.response.administration.BankHolidayDate;
+import uk.gov.hmcts.juror.api.moj.controller.response.CourtRates;
 import uk.gov.hmcts.juror.api.moj.controller.response.administration.CodeDescriptionResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.administration.CourtDetailsReduced;
 import uk.gov.hmcts.juror.api.moj.domain.CodeType;
 import uk.gov.hmcts.juror.api.moj.domain.CourtDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesDto;
+import uk.gov.hmcts.juror.api.moj.domain.UpdateCourtDetailsDto;
 import uk.gov.hmcts.juror.api.moj.service.AdministrationService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @Validated
@@ -58,15 +58,49 @@ public class AdministrationController {
     @GetMapping("/courts/{loc_code}")
     @Operation(summary = "View court details")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH + " && " + SecurityUtil.IS_MANAGER)
+    @PreAuthorize("(" + SecurityUtil.COURT_AUTH + " and " + SecurityUtil.LOC_CODE_AUTH + ") or ("
+        + SecurityUtil.IS_ADMINISTRATOR + " and " + SecurityUtil.USER_TYPE_ADMINISTRATOR + ")")
     public ResponseEntity<CourtDetailsDto> viewCourtDetails(
         @P("loc_code")
         @PathVariable("loc_code")
         @CourtLocationCode
-        @Parameter(description = "CourtCode", required = true)
-        @Valid String courtCode
+        @Parameter(description = "locCode", required = true)
+        @Valid String locCode
     ) {
-        return ResponseEntity.ok(administrationService.viewCourt(courtCode));
+        return ResponseEntity.ok(administrationService.viewCourt(locCode));
+    }
+
+    @PutMapping("/courts/{loc_code}")
+    @Operation(summary = "Update court details")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @PreAuthorize("(" + SecurityUtil.COURT_AUTH + " and " + SecurityUtil.LOC_CODE_AUTH + ") or ("
+        + SecurityUtil.IS_ADMINISTRATOR + " and " + SecurityUtil.USER_TYPE_ADMINISTRATOR + ")")
+    public ResponseEntity<Void> updateCourtDetails(
+        @P("loc_code")
+        @PathVariable("loc_code")
+        @CourtLocationCode
+        @Parameter(description = "loc_code", required = true)
+        @Valid String locCode,
+        @Valid @RequestBody UpdateCourtDetailsDto updateCourtDetailsDto
+    ) {
+        administrationService.updateCourt(locCode, updateCourtDetailsDto);
+        return ResponseEntity.accepted().build();
+    }
+
+    @PutMapping("/courts/{loc_code}/rates")
+    @Operation(summary = "Update court details")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH + " && " + SecurityUtil.IS_MANAGER)
+    public ResponseEntity<Void> updateCourtRates(
+        @P("loc_code")
+        @PathVariable("loc_code")
+        @CourtLocationCode
+        @Parameter(description = "CourtCode", required = true)
+        @Valid String courtCode,
+        @RequestBody @Valid CourtRates courtRates
+    ) {
+        administrationService.updateCourtRates(courtCode, courtRates);
+        return ResponseEntity.accepted().build();
     }
 
     @GetMapping("/courts")
@@ -94,13 +128,5 @@ public class AdministrationController {
     ) {
         jurorExpenseService.updateExpenseRates(expenseRatesDto);
         return ResponseEntity.accepted().build();
-    }
-
-    @GetMapping("/bank-holidays")
-    @Operation(summary = "View bank holidays")
-    @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(SecurityUtil.IS_ADMINISTRATOR + " or " + SecurityUtil.IS_MANAGER)
-    public ResponseEntity<Map<Integer, List<BankHolidayDate>>> viewBankHolidays() {
-        return ResponseEntity.ok(administrationService.viewBankHolidays());
     }
 }

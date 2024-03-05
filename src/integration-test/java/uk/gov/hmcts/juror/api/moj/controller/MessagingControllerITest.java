@@ -2707,7 +2707,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                 "<trial_no>", "T100000004"
                             ))
                             .build()),
-                    toUrl(MessageType.SENTENCING_DATE_COURT.name(), "462"),
                     "Juror is not apart of trial",
                     JUROR_NOT_APART_OF_TRIAL
                 );
