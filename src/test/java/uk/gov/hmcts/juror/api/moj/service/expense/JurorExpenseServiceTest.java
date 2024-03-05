@@ -45,6 +45,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.ExpenseDetailsForT
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.FinancialLossWarning;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApproval;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.SimplifiedExpenseDetailDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -4468,6 +4469,18 @@ class JurorExpenseServiceTest {
                 AppearanceStage.EXPENSE_EDITED,
                 true);
 
+
+            doReturn(5L).when(
+                appearanceRepository).countPendingApproval(
+                TestConstants.VALID_COURT_LOCATION,
+                true);
+
+
+            doReturn(2L).when(
+                appearanceRepository).countPendingApproval(
+                TestConstants.VALID_COURT_LOCATION,
+                false);
+
             LocalDate from = LocalDate.of(2023, 1, 1);
             LocalDate to = LocalDate.of(2023, 1, 5);
 
@@ -4489,12 +4502,18 @@ class JurorExpenseServiceTest {
             doReturn(List.of(pendingApproval4, pendingApproval5)).when(jurorExpenseService)
                 .mapAppearancesToPendingApproval(
                     forReApprovedAppearances, true, from, to);
-            assertThat(jurorExpenseService.getExpensesForApproval(
+
+            PendingApprovalList pendingApprovalList = jurorExpenseService.getExpensesForApproval(
                 TestConstants.VALID_COURT_LOCATION, paymentMethod,
                 from, to
-            )).containsExactly(
+            );
+            assertThat(pendingApprovalList.getPendingApproval()).containsExactly(
                 pendingApproval5, pendingApproval3, pendingApproval2, pendingApproval1, pendingApproval4
             );
+            assertThat(pendingApprovalList.getTotalPendingCash())
+                .isEqualTo(5L);
+            assertThat(pendingApprovalList.getTotalPendingBacs())
+                .isEqualTo(2L);
 
             verify(appearanceRepository,
                 times(1)).findAllByCourtLocationLocCodeAndAppearanceStageAndPayCashAndIsDraftExpenseFalse(

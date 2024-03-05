@@ -46,6 +46,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.ExpenseDetailsForT
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.FinancialLossWarning;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApproval;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.SimplifiedExpenseDetailDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.AppearanceId;
@@ -2711,7 +2712,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 ResponseEntity<String> response = triggerInvalid(jurorNumber, ExpenseType.APPROVED.name(),
                     request);
-                assertBusinessRuleViolation(response, toUrl(jurorNumber, ExpenseType.APPROVED),
+                assertBusinessRuleViolation(response,
                     "Expense for this day is not of type: APPROVED",
                     MojException.BusinessRuleViolation.ErrorCode.WRONG_EXPENSE_TYPE);
             }
@@ -3544,25 +3545,24 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @Nested
         @DisplayName("Positive")
         class Positive {
-            protected List<PendingApproval> triggerValid(String locCode,
-                                                         LocalDate from,
-                                                         LocalDate to,
-                                                         PaymentMethod paymentMethod) throws Exception {
+            protected PendingApprovalList triggerValid(String locCode,
+                                                       LocalDate from,
+                                                       LocalDate to,
+                                                       PaymentMethod paymentMethod) throws Exception {
                 return triggerValid(COURT_USER, locCode, from, to, paymentMethod);
             }
 
-            protected List<PendingApproval> triggerValid(String username,
-                                                         String locCode,
-                                                         LocalDate from,
-                                                         LocalDate to,
-                                                         PaymentMethod paymentMethod) throws Exception {
+            protected PendingApprovalList triggerValid(String username,
+                                                       String locCode,
+                                                       LocalDate from,
+                                                       LocalDate to,
+                                                       PaymentMethod paymentMethod) throws Exception {
                 final String jwt = createBureauJwt(username, locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-                ResponseEntity<List<PendingApproval>> response = template.exchange(
+                ResponseEntity<PendingApprovalList> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
                         URI.create(toUrl(locCode, paymentMethod, from, to))),
-                    new ParameterizedTypeReference<>() {
-                    });
+                    PendingApprovalList.class);
                 assertThat(response.getStatusCode())
                     .as("Expect the HTTP GET request to be successful")
                     .isEqualTo(HttpStatus.OK);
@@ -3574,9 +3574,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             @Test
             void typicalCash() throws Exception {
-                List<PendingApproval> pendingApprovals = triggerValid("415", null, null, PaymentMethod.CASH);
+                PendingApprovalList pendingApprovals = triggerValid("415", null, null, PaymentMethod.CASH);
+                assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
+                assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
 
-                assertThat(pendingApprovals).as("Verify pendingApprovals")
+                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals")
                     .containsExactly(
                         PendingApproval.builder()
                             .jurorNumber("641500020")
@@ -3625,9 +3627,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             @Test
             void typicalBacs() throws Exception {
-                List<PendingApproval> pendingApprovals = triggerValid("415", null, null, PaymentMethod.BACS);
+                PendingApprovalList pendingApprovals = triggerValid("415", null, null, PaymentMethod.BACS);
+                assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
+                assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
 
-                assertThat(pendingApprovals).as("Verify pendingApprovals")
+                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals")
                     .containsExactly(
                         PendingApproval.builder()
                             .jurorNumber("641500020")
@@ -3703,10 +3707,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             @Test
             void typicalFromDateFilter() throws Exception {
-                List<PendingApproval> pendingApprovals =
+                PendingApprovalList pendingApprovals =
                     triggerValid("415", LocalDate.of(2023, 1, 14), null, PaymentMethod.BACS);
+                assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
+                assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
 
-                assertThat(pendingApprovals).as("Verify pendingApprovals")
+                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals")
                     .containsExactly(
                         PendingApproval.builder()
                             .jurorNumber("641500020")
@@ -3735,10 +3741,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             @Test
             void typicalToDateFilter() throws Exception {
-                List<PendingApproval> pendingApprovals =
+                PendingApprovalList pendingApprovals =
                     triggerValid("415", null, LocalDate.of(2023, 1, 9), PaymentMethod.BACS);
+                assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
+                assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
 
-                assertThat(pendingApprovals).as("Verify pendingApprovals")
+                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals")
                     .containsExactly(PendingApproval.builder()
                             .jurorNumber("641500020")
                             .poolNumber("415230101")
@@ -3789,10 +3797,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             @Test
             void typicalBothFromAndToFilter() throws Exception {
-                List<PendingApproval> pendingApprovals =
+                PendingApprovalList pendingApprovals =
                     triggerValid("415", LocalDate.of(2023, 1, 9), LocalDate.of(2023, 1, 10), PaymentMethod.BACS);
+                assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
+                assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
 
-                assertThat(pendingApprovals).as("Verify pendingApprovals")
+                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals")
                     .containsExactly(PendingApproval.builder()
                             .jurorNumber("641500020")
                             .poolNumber("415230101")
@@ -3844,10 +3854,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             @Test
             void canNotApprove() throws Exception {
-                List<PendingApproval> pendingApprovals =
+                PendingApprovalList pendingApprovals =
                     triggerValid("COURT_USER2", "415", LocalDate.of(2023, 1, 9), LocalDate.of(2023, 1, 10),
                         PaymentMethod.BACS);
-                assertThat(pendingApprovals)
+                assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
+                assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
+
+                assertThat(pendingApprovals.getPendingApproval())
                     .containsExactly(
                         PendingApproval.builder()
                             .jurorNumber("641500020")
@@ -3901,8 +3914,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             @Test
             void notFound() throws Exception {
-                assertThat(triggerValid("414", null, null, PaymentMethod.BACS))
-                    .isEmpty();
+                assertThat(triggerValid("414", null, null, PaymentMethod.BACS)).isEqualTo(
+                    PendingApprovalList.builder()
+                        .totalPendingBacs(0L)
+                        .totalPendingCash(0L)
+                        .pendingApproval(Collections.emptyList())
+                        .build());
             }
         }
 

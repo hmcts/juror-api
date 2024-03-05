@@ -16,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -44,7 +45,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.DailyExpenseRespon
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.ExpenseCount;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.ExpenseDetailsForTotals;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseResponse;
-import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApproval;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
 import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
@@ -192,6 +193,7 @@ public class JurorExpenseController {
     @Operation(summary = "Approve all expense records of a given type (for a single juror)")
     @IsCourtUser
     @ResponseStatus(HttpStatus.OK)
+    @Transactional
     public ResponseEntity<Void> approveExpenses(@Valid @RequestBody List<ApproveExpenseDto> dto) {
         bulkService.processVoid(dto, jurorExpenseService::approveExpenses);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -249,7 +251,7 @@ public class JurorExpenseController {
     @Operation(summary = "Get a list of all of a jurors expenses that are pending approval/re-approval")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize(SecurityUtil.LOC_CODE_AUTH)
-    public ResponseEntity<List<PendingApproval>> getExpensesForApproval(
+    public ResponseEntity<PendingApprovalList> getExpensesForApproval(
         @P("loc_code") @PathVariable("loc_code") @Valid @NotBlank
         @Pattern(regexp = ValidationConstants.LOCATION_CODE) String locCode,
         @PathVariable("payment_method") @Valid @NotNull PaymentMethod paymentMethod,

@@ -17,21 +17,21 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.moj.controller.response.administration.BankHolidayDate;
+import uk.gov.hmcts.juror.api.moj.controller.response.CourtRates;
 import uk.gov.hmcts.juror.api.moj.controller.response.administration.CodeDescriptionResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.administration.CourtDetailsReduced;
 import uk.gov.hmcts.juror.api.moj.domain.CodeType;
 import uk.gov.hmcts.juror.api.moj.domain.CourtDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesDto;
+import uk.gov.hmcts.juror.api.moj.domain.UpdateCourtDetailsDto;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.AdministrationService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
-import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -156,6 +156,118 @@ public class AdministrationControllerTest {
     }
 
     @Nested
+    @DisplayName("PUT " + UpdateCourtRates.URL)
+    class UpdateCourtRates {
+        public static final String URL = BASE_URL + "/courts/{loc_code}/rates";
+
+
+        private String toUrl(String codeType) {
+            return URL.replace("{loc_code}", codeType);
+        }
+
+        private CourtRates getValidPayload() {
+            return CourtRates.builder()
+                .publicTransportSoftLimit(new BigDecimal("1.01"))
+                .taxiSoftLimit(new BigDecimal("1.02"))
+                .build();
+        }
+
+        @Test
+        void positiveTypical() throws Exception {
+            CourtRates payload = getValidPayload();
+            mockMvc.perform(put(toUrl(TestConstants.VALID_COURT_LOCATION))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(payload)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isAccepted());
+
+            verify(administrationService, times(1))
+                .updateCourtRates(TestConstants.VALID_COURT_LOCATION, payload);
+            verifyNoMoreInteractions(administrationService);
+        }
+
+        @Test
+        void negativeInvalidLocCode() throws Exception {
+            mockMvc.perform(put(toUrl(TestConstants.INVALID_COURT_LOCATION))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(getValidPayload())))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+            verifyNoMoreInteractions(administrationService);
+        }
+
+
+        @Test
+        void negativeInvalidPayload() throws Exception {
+            CourtRates payload = getValidPayload();
+            payload.setTaxiSoftLimit(new BigDecimal("-1"));
+            mockMvc.perform(put(toUrl(TestConstants.VALID_COURT_LOCATION))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(payload)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+            verifyNoMoreInteractions(administrationService);
+        }
+    }
+
+    @Nested
+    @DisplayName("PUT " + UpdateCourtDetails.URL)
+    class UpdateCourtDetails {
+        public static final String URL = BASE_URL + "/courts/{loc_code}";
+
+        private String toUrl(String codeType) {
+            return URL.replace("{loc_code}", codeType);
+        }
+
+        private UpdateCourtDetailsDto getValidPayload() {
+            return UpdateCourtDetailsDto.builder()
+                .mainPhoneNumber("0123456789")
+                .defaultAttendanceTime(LocalTime.of(9, 0))
+                .assemblyRoomId(3L)
+                .costCentre("CSTCNR1")
+                .signature("COURT1 SIGNATURE")
+                .build();
+        }
+
+        @Test
+        void positiveTypical() throws Exception {
+            UpdateCourtDetailsDto updateCourtDetailsDto = getValidPayload();
+            mockMvc.perform(put(toUrl(TestConstants.VALID_COURT_LOCATION))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(updateCourtDetailsDto)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isAccepted());
+
+            verify(administrationService, times(1))
+                .updateCourt(TestConstants.VALID_COURT_LOCATION, updateCourtDetailsDto);
+            verifyNoMoreInteractions(administrationService);
+        }
+
+        @Test
+        void negativeInvalidLocCodeType() throws Exception {
+            mockMvc.perform(put(toUrl(TestConstants.INVALID_COURT_LOCATION))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(getValidPayload())))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+            verifyNoMoreInteractions(administrationService);
+        }
+
+
+        @Test
+        void negativeInvalidPayload() throws Exception {
+            UpdateCourtDetailsDto updateCourtDetailsDto = getValidPayload();
+            updateCourtDetailsDto.setCostCentre(null);
+            mockMvc.perform(put(toUrl(TestConstants.VALID_COURT_LOCATION))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(updateCourtDetailsDto)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest());
+            verifyNoMoreInteractions(administrationService);
+        }
+    }
+
+    @Nested
     @DisplayName("GET " + ViewAllCourtsDetails.URL)
     class ViewAllCourtsDetails {
         public static final String URL = BASE_URL + "/courts";
@@ -173,30 +285,6 @@ public class AdministrationControllerTest {
 
             verify(administrationService, times(1))
                 .viewCourts();
-            verifyNoMoreInteractions(administrationService);
-        }
-    }
-
-    @Nested
-    @DisplayName("GET " + ViewBankHolidays.URL)
-    class ViewBankHolidays {
-        public static final String URL = BASE_URL + "/bank-holidays";
-
-
-        @Test
-        void positiveTypical() throws Exception {
-            Map<Integer, List<BankHolidayDate>> response = Map.of(
-                2024, List.of(new BankHolidayDate(LocalDate.now(), "Some bank holiday"))
-            );
-
-            doReturn(response).when(administrationService).viewBankHolidays();
-            mockMvc.perform(get(URL))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.2024.[0].description", CoreMatchers.is("Some bank holiday")));
-
-            verify(administrationService, times(1))
-                .viewBankHolidays();
             verifyNoMoreInteractions(administrationService);
         }
     }

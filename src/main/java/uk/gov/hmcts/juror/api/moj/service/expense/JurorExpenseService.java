@@ -18,7 +18,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.ExpenseCount;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.ExpenseDetailsForTotals;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.FinancialLossWarning;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseResponse;
-import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApproval;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
@@ -63,8 +63,8 @@ public interface JurorExpenseService {
 
     ExpenseCount countExpenseTypes(String jurorNumber, String poolNumber);
 
-    List<PendingApproval> getExpensesForApproval(String locCode, PaymentMethod paymentMethod,
-                                                 LocalDate fromInclusive, LocalDate toInclusive);
+    PendingApprovalList getExpensesForApproval(String locCode, PaymentMethod paymentMethod,
+                                               LocalDate fromInclusive, LocalDate toInclusive);
 
     void updateExpense(String jurorNumber, ExpenseType type, List<DailyExpense> request);
 

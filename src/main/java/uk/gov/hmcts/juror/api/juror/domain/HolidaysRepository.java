@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface HolidaysRepository extends CrudRepository<Holidays, LocalDate>, QuerydslPredicateExecutor<Holidays> {
@@ -13,4 +14,11 @@ public interface HolidaysRepository extends CrudRepository<Holidays, LocalDate>,
 
 
     List<Holidays> findAllByPublicHolidayAndHolidayIsGreaterThanEqual(boolean publicHoliday, LocalDate isAfter);
+
+
+    List<Holidays> findAllByPublicHolidayAndHolidayIsGreaterThanEqualAndCourtLocationLocCode(boolean publicHoliday,
+                                                                                             LocalDate isAfter,
+                                                                                             String locCode);
+
+    Optional<Holidays> findByCourtLocationLocCodeAndHolidayAndPublicHolidayIsFalse(String locCode, LocalDate date);
 }

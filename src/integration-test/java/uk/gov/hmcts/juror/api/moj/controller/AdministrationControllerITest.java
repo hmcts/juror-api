@@ -23,7 +23,8 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestConstants;
-import uk.gov.hmcts.juror.api.moj.controller.response.administration.BankHolidayDate;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.response.CourtRates;
 import uk.gov.hmcts.juror.api.moj.controller.response.administration.CodeDescriptionResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.administration.CourtDetailsReduced;
 import uk.gov.hmcts.juror.api.moj.domain.Address;
@@ -32,9 +33,11 @@ import uk.gov.hmcts.juror.api.moj.domain.CourtDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesDto;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UpdateCourtDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.enumeration.CourtType;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
+import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ExpenseRatesRepository;
 
 import java.math.BigDecimal;
@@ -43,7 +46,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,6 +63,8 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
     private final TestRestTemplate template;
+
+    private final CourtLocationRepository courtLocationRepository;
 
     private final ExpenseRatesRepository expenseRatesRepository;
 
@@ -404,15 +408,9 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void invalidCodeType() throws JsonProcessingException {
+            void invalidCodeType() {
                 assertInvalidPathParam(triggerInvalid("INVALID", "INVALID"),
-                    "viewCourtDetails.courtCode: must match \"^\\d{3}$\"");
-            }
-
-            @Test
-            void unauthorisedNotManagerUser() {
-                assertForbiddenResponse(triggerInvalid("415", "415", Set.of(Role.COURT_OFFICER)),
-                    toUrl("415"));
+                    "viewCourtDetails.locCode: must match \"^\\d{3}$\"");
             }
 
             @Test
@@ -425,6 +423,245 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             void courtNotFound() {
                 assertNotFound(triggerInvalid("901", "901"),
                     toUrl("901"), "Court not found");
+            }
+        }
+    }
+
+
+    @Nested
+    @DisplayName("PUT  " + UpdateCourtRates.URL)
+    @Sql(value = {"/db/administration/tearDownCourts.sql",
+        "/db/administration/createCourts.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/db/administration/tearDownCourts.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    class UpdateCourtRates {
+        public static final String URL = BASE_URL + "/courts/{loc_code}/rates";
+
+
+        private String toUrl(String locCode) {
+            return URL.replace("{loc_code}", locCode);
+        }
+
+        static CourtRates getValidPayload() {
+            return CourtRates.builder()
+                .taxiSoftLimit(new BigDecimal("10.00000"))
+                .publicTransportSoftLimit(new BigDecimal("5.00000"))
+                .build();
+        }
+
+        @Nested
+        @DisplayName("Positive")
+        class Positive {
+
+            void assertValid(String locCode, CourtRates courtRates) {
+                final String jwt = createBureauJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+                ResponseEntity<Void> response = template.exchange(
+                    new RequestEntity<>(courtRates, httpHeaders, PUT,
+                        URI.create(toUrl(locCode))),
+                    Void.class);
+                assertThat(response.getStatusCode())
+                    .as("Expect the HTTP GET request to be accepted")
+                    .isEqualTo(HttpStatus.ACCEPTED);
+                assertThat(response.getBody()).isNull();
+
+                CourtLocation courtLocation =
+                    courtLocationRepository.findById(locCode).orElseThrow(() -> new AssertionError("Court not found"));
+                assertThat(courtLocation.getTaxiSoftLimit()).isEqualTo(courtRates.getTaxiSoftLimit());
+                assertThat(courtLocation.getPublicTransportSoftLimit()).isEqualTo(
+                    courtRates.getPublicTransportSoftLimit());
+            }
+
+            @Test
+            void typical() {
+                assertValid("001", CourtRates.builder()
+                    .taxiSoftLimit(new BigDecimal("10.00000"))
+                    .publicTransportSoftLimit(new BigDecimal("5.00000"))
+                    .build());
+            }
+
+            @Test
+            void nullTaxiLimit() {
+                assertValid("002", CourtRates.builder()
+                    .taxiSoftLimit(null)
+                    .publicTransportSoftLimit(new BigDecimal("5.00000"))
+                    .build());
+            }
+
+            @Test
+            void nullPublicTransportLimit() {
+                assertValid("001", CourtRates.builder()
+                    .taxiSoftLimit(new BigDecimal("10.00000"))
+                    .publicTransportSoftLimit(null)
+                    .build());
+            }
+        }
+
+        @Nested
+        @DisplayName("Negative")
+        class Negative {
+
+            private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode, CourtRates courtRates) {
+                return triggerInvalid(owner, urlLocCode, courtRates, UserType.COURT, Set.of(Role.MANAGER));
+            }
+
+            private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode, CourtRates courtRates,
+                                                          UserType userType, Set<Role> roles) {
+                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+                return template.exchange(
+                    new RequestEntity<>(courtRates, httpHeaders, PUT,
+                        URI.create(toUrl(urlLocCode))),
+                    String.class);
+            }
+
+            @Test
+            void invalidLocCode() {
+                assertInvalidPathParam(triggerInvalid("INVALID", "INVALID", getValidPayload()),
+                    "updateCourtRates.courtCode: must match \"^\\d{3}$\"");
+            }
+
+            @Test
+            void unauthorisedNotManagerUser() {
+                assertForbiddenResponse(triggerInvalid("415", "415", getValidPayload(),
+                        UserType.COURT, Set.of(Role.COURT_OFFICER)),
+                    toUrl("415"));
+            }
+
+            @Test
+            void unauthorisedNotPartOfCourt() {
+                assertForbiddenResponse(triggerInvalid("415", "416", getValidPayload()),
+                    toUrl("416"));
+            }
+
+            @Test
+            void unauthorisedIsBureau() {
+                assertForbiddenResponse(triggerInvalid("400", "416", getValidPayload(),
+                        UserType.BUREAU, Set.of(Role.BUREAU_OFFICER)),
+                    toUrl("416"));
+            }
+
+            @Test
+            void courtNotFound() {
+                assertNotFound(triggerInvalid("901", "901", getValidPayload()),
+                    toUrl("901"), "Court not found");
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("PUT  " + UpdateCourtDetails.URL)
+    @Sql(value = {"/db/administration/tearDownCourts.sql",
+        "/db/administration/createCourts.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(value = "/db/administration/tearDownCourts.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    class UpdateCourtDetails {
+        public static final String URL = BASE_URL + "/courts/{loc_code}";
+
+        private String toUrl(String locCode) {
+            return URL.replace("{loc_code}", locCode);
+        }
+
+        private UpdateCourtDetailsDto getValidPayload() {
+            return UpdateCourtDetailsDto.builder()
+                .mainPhoneNumber("0123456789")
+                .defaultAttendanceTime(LocalTime.of(9, 0))
+                .assemblyRoomId(999_992L)
+                .costCentre("NWCSTCNR1")
+                .signature("New COURT1 SIGNATURE")
+                .build();
+        }
+
+        @Nested
+        @DisplayName("Positive")
+        class Positive {
+
+            void assertValid(String locCode, UpdateCourtDetailsDto request, UserType userType, Set<Role> roles) {
+                final String jwt = createBureauJwt(COURT_USER, locCode, userType, roles, locCode);
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+                ResponseEntity<CourtDetailsDto> response = template.exchange(
+                    new RequestEntity<>(request, httpHeaders, PUT,
+                        URI.create(toUrl(locCode))),
+                    CourtDetailsDto.class);
+                assertThat(response.getStatusCode())
+                    .as("Expect the HTTP GET request to be successful")
+                    .isEqualTo(HttpStatus.ACCEPTED);
+                assertThat(response.getBody()).isNull();
+            }
+
+            @Test
+            void typicalCourt() {
+                assertValid("001", getValidPayload(), UserType.COURT, Set.of(Role.MANAGER));
+                CourtLocation courtLocation = courtLocationRepository.findByLocCode("001")
+                    .orElseThrow(() -> new AssertionError("Court not found"));
+                assertThat(courtLocation.getLocPhone()).isEqualTo("0123456789");
+                assertThat(courtLocation.getCourtAttendTime()).isEqualTo(LocalTime.of(9, 0));
+                assertThat(courtLocation.getAssemblyRoom().getId()).isEqualTo(999_992L);
+                assertThat(courtLocation.getCostCentre()).isEqualTo("NWCSTCNR1");
+                assertThat(courtLocation.getSignatory()).isEqualTo("New COURT1 SIGNATURE");
+            }
+
+            @Test
+            void typicalAdministrator() {
+                assertValid("001", getValidPayload(), UserType.ADMINISTRATOR, Set.of(Role.ADMINISTRATOR));
+                CourtLocation courtLocation = courtLocationRepository.findByLocCode("001")
+                    .orElseThrow(() -> new AssertionError("Court not found"));
+                assertThat(courtLocation.getLocPhone()).isEqualTo("0123456789");
+                assertThat(courtLocation.getCourtAttendTime()).isEqualTo(LocalTime.of(9, 0));
+                assertThat(courtLocation.getAssemblyRoom().getId()).isEqualTo(999_992L);
+                assertThat(courtLocation.getCostCentre()).isEqualTo("NWCSTCNR1");
+                assertThat(courtLocation.getSignatory()).isEqualTo("New COURT1 SIGNATURE");
+            }
+        }
+
+        @Nested
+        @DisplayName("Negative")
+        class Negative {
+
+            private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode,
+                                                          UpdateCourtDetailsDto request) {
+                return triggerInvalid(owner, urlLocCode, request, UserType.COURT, Set.of(Role.COURT_OFFICER));
+            }
+
+            private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode,
+                                                          UpdateCourtDetailsDto request,
+                                                          UserType userType, Set<Role> roles) {
+                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+                return template.exchange(
+                    new RequestEntity<>(request, httpHeaders, PUT,
+                        URI.create(toUrl(urlLocCode))),
+                    String.class);
+            }
+
+            @Test
+            void invalidCodeType() {
+                assertInvalidPathParam(triggerInvalid("INVALID", "INVALID", getValidPayload()),
+                    "updateCourtDetails.locCode: must match \"^\\d{3}$\"");
+            }
+
+            @Test
+            void unauthorisedNotPartOfCourt() {
+                assertForbiddenResponse(triggerInvalid("001", "004", getValidPayload()),
+                    toUrl("004"));
+            }
+
+            @Test
+            void unauthorisedBureauOfficer() {
+                assertForbiddenResponse(triggerInvalid("400", "400", getValidPayload()),
+                    toUrl("400"));
+            }
+
+            @Test
+            void courtNotFound() {
+                assertNotFound(triggerInvalid("901", "901", getValidPayload()),
+                    toUrl("901"), "Court not found");
+            }
+
+            @Test
+            void invalidPayload() {
+                UpdateCourtDetailsDto invalidPayload = getValidPayload();
+                invalidPayload.setCostCentre(null);
+                assertInvalidPayload(triggerInvalid("001", "001", invalidPayload),
+                    new RestResponseEntityExceptionHandler.FieldError("costCentre", "must not be blank"));
             }
         }
     }
@@ -552,84 +789,6 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
         }
     }
 
-
-    @Nested
-    @DisplayName("GET  " + ViewBankHolidays.URL)
-    @Sql(value = {"/db/administration/tearDownHolidays.sql",
-        "/db/administration/createHolidays.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(value = "/db/administration/tearDownHolidays.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    class ViewBankHolidays {
-        public static final String URL = BASE_URL + "/bank-holidays";
-
-
-        @Nested
-        @DisplayName("Positive")
-        class Positive {
-
-            Map<Integer, List<BankHolidayDate>> assertValid(Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, "415", UserType.COURT, roles, "415");
-                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-                ResponseEntity<Map<Integer, List<BankHolidayDate>>> response = template.exchange(
-                    new RequestEntity<>(httpHeaders, GET,
-                        URI.create(URL)),
-                    new ParameterizedTypeReference<>() {
-                    });
-                assertThat(response.getStatusCode())
-                    .as("Expect the HTTP GET request to be successful")
-                    .isEqualTo(HttpStatus.OK);
-                int year = LocalDate.now().getYear();
-                assertThat(response.getBody()).isEqualTo(
-                    Map.of(
-                        year, List.of(
-                            new BankHolidayDate(LocalDate.of(year, 1, 1), "Public holiday 1"),
-                            new BankHolidayDate(LocalDate.of(year, 2, 1), "Public holiday 2")
-                        ),
-                        year + 1, List.of(
-                            new BankHolidayDate(LocalDate.of(year + 1, 1, 1), "Public holiday 1 + 1"),
-                            new BankHolidayDate(LocalDate.of(year + 1, 2, 1), "Public holiday 2 + 1")
-                        ),
-                        year + 2, List.of(
-                            new BankHolidayDate(LocalDate.of(year + 2, 1, 1), "Public holiday 1 + 2"),
-                            new BankHolidayDate(LocalDate.of(year + 2, 2, 1), "Public holiday 2 + 2")
-                        )
-                    )
-                );
-                return response.getBody();
-            }
-
-            @Test
-            void typicalCourtUser() {
-                assertValid(Set.of(Role.MANAGER));
-            }
-
-            @Test
-            void typicalAdministrator() {
-                assertValid(Set.of(Role.ADMINISTRATOR));
-            }
-
-        }
-
-        @Nested
-        @DisplayName("Negative")
-        class Negative {
-
-
-            private ResponseEntity<String> triggerInvalid(String owner, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, UserType.COURT, roles, owner);
-                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-                return template.exchange(
-                    new RequestEntity<>(httpHeaders, GET,
-                        URI.create(URL)),
-                    String.class);
-            }
-
-            @Test
-            void unauthorisedNotManagerOrAdminUser() {
-                assertForbiddenResponse(triggerInvalid("415", Set.of(Role.COURT_OFFICER)),
-                    URL);
-            }
-        }
-    }
 
     @Nested
     @DisplayName("GET  " + ViewExpenseDetails.URL)

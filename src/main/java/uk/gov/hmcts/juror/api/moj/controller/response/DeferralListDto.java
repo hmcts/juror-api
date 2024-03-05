@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -47,6 +48,7 @@ public class DeferralListDto {
 
         @JsonProperty("deferredTo")
         @Schema(description = "Date deferred to")
+        @JsonFormat(pattern = "yyyy-MM-dd")
         private LocalDate deferredTo;
     }
 }

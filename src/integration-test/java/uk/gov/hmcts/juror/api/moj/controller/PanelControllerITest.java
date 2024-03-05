@@ -36,8 +36,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_AVAILABLE;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_LIMITS;
+
 
 @RunWith(SpringRunner.class)
+@SuppressWarnings({
+    "PMD.TooManyMethods",
+    "PMD.ExcessiveImports"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class PanelControllerITest extends AbstractIntegrationTest {
 
@@ -74,29 +81,58 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         ResponseEntity<PanelListDto[]> responseEntity =
             restTemplate.exchange(requestEntity, PanelListDto[].class);
 
-        Assertions.assertThat(responseEntity.getStatusCode())
+        assertThat(responseEntity.getStatusCode())
             .as("Expected status code to be ok")
             .isEqualTo(HttpStatus.OK);
 
-        assert responseEntity.getBody() != null;
+        assertThat(responseEntity.getBody()).isNotNull();
 
-        Assertions.assertThat(responseEntity.getBody().length)
+        assertThat(responseEntity.getBody().length)
             .as("Expected Length to be 13")
             .isEqualTo(13);
 
         for (PanelListDto dto : responseEntity.getBody()) {
-            Assertions
-                .assertThat(dto.getJurorStatus())
+            assertThat(dto.getJurorStatus())
                 .as("Expect the status to be panelled")
                 .isEqualTo("Panelled");
-            Assertions
-                .assertThat(dto.getFirstName())
+            assertThat(dto.getFirstName())
                 .as("Expect first name to be FNAME")
                 .isEqualTo("FNAME");
-            Assertions.assertThat(dto.getLastName())
+            assertThat(dto.getLastName())
                 .as("Expect last name to be LNAME")
                 .isEqualTo("LNAME");
         }
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql"})
+    public void createPanelCourtUserJurorsExceedLimit() {
+        CreatePanelDto createPanelDto = makeCreatePanelDto(null);
+        createPanelDto.setNumberRequested(1001);
+        RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(createPanelDto, httpHeaders,
+            HttpMethod.POST, URI.create("/api/v1/moj/trial/panel/create-panel"));
+
+        ResponseEntity<String> response =
+            restTemplate.exchange(requestEntity, String.class);
+
+        assertBusinessRuleViolation(response, "Cannot create panel - "
+                + "Number requested must be between 1 and 1000",
+            NUMBER_OF_JURORS_EXCEEDS_LIMITS);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql"})
+    public void createPanelCourtUserNotEnoughJurors() {
+        CreatePanelDto createPanelDto = makeCreatePanelDto(null);
+        createPanelDto.setNumberRequested(45);
+        RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(createPanelDto, httpHeaders,
+            HttpMethod.POST, URI.create("/api/v1/moj/trial/panel/create-panel"));
+
+        ResponseEntity<String> response =
+            restTemplate.exchange(requestEntity, String.class);
+
+        assertBusinessRuleViolation(response, "Cannot create panel - Not enough jurors available",
+            NUMBER_OF_JURORS_EXCEEDS_AVAILABLE);
     }
 
     @Test
@@ -110,7 +146,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         ResponseEntity<Void> responseEntity =
             restTemplate.exchange(requestEntity, Void.class);
 
-        Assertions.assertThat(responseEntity.getStatusCode())
+        assertThat(responseEntity.getStatusCode())
             .as("Expected status code to be not found")
             .isEqualTo(HttpStatus.NOT_FOUND);
     }
@@ -127,26 +163,24 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         ResponseEntity<PanelListDto[]> responseEntity =
             restTemplate.exchange(requestEntity, PanelListDto[].class);
 
-        Assertions.assertThat(responseEntity.getStatusCode())
+        assertThat(responseEntity.getStatusCode())
             .as("Expected status code to be ok")
             .isEqualTo(HttpStatus.OK);
 
         assert responseEntity.getBody() != null;
 
-        Assertions.assertThat(responseEntity.getBody().length)
+        assertThat(responseEntity.getBody().length)
             .as("Expected Length to be 13")
             .isEqualTo(13);
 
         for (PanelListDto dto : responseEntity.getBody()) {
-            Assertions
-                .assertThat(dto.getJurorStatus())
+            assertThat(dto.getJurorStatus())
                 .as("Expect the status to be panelled")
                 .isEqualTo("Panelled");
-            Assertions
-                .assertThat(dto.getFirstName())
+            assertThat(dto.getFirstName())
                 .as("Expect first name to be FNAME")
                 .isEqualTo("FNAME");
-            Assertions.assertThat(dto.getLastName())
+            assertThat(dto.getLastName())
                 .as("Expect last name to be LNAME")
                 .isEqualTo("LNAME");
         }
@@ -162,7 +196,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         ResponseEntity<Void> responseEntity =
             restTemplate.exchange(requestEntity, Void.class);
 
-        Assertions.assertThat(responseEntity.getStatusCode())
+        assertThat(responseEntity.getStatusCode())
             .as("Expected status code to be forbidden")
             .isEqualTo(HttpStatus.FORBIDDEN);
 
@@ -182,27 +216,27 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         ResponseEntity<EmpanelListDto> responseEntity =
             restTemplate.exchange(requestEntity, EmpanelListDto.class);
 
-        Assertions.assertThat(responseEntity.getStatusCode())
+        assertThat(responseEntity.getStatusCode())
             .as("Expected status code to be ok")
             .isEqualTo(HttpStatus.OK);
 
         assert responseEntity.getBody() != null;
 
-        Assertions.assertThat(
+        assertThat(
                 responseEntity.getBody().getTotalJurorsForEmpanel()).as("Expected total jurors to be 3")
             .isEqualTo(3);
-        Assertions.assertThat(
+        assertThat(
             responseEntity.getBody().getEmpanelList().size()
         ).as("Expected size to be five").isEqualTo(5);
 
         for (EmpanelDetailsDto dto : responseEntity.getBody().getEmpanelList()) {
-            Assertions.assertThat(dto.getFirstName())
+            assertThat(dto.getFirstName())
                 .as("Expect first name to be FNAME")
                 .isEqualTo("FNAME");
-            Assertions.assertThat(dto.getLastName())
+            assertThat(dto.getLastName())
                 .as("Expect last name to be LNAME")
                 .isEqualTo("LNAME");
-            Assertions.assertThat(dto.getStatus())
+            assertThat(dto.getStatus())
                 .as("Expect status to be Panelled")
                 .isEqualTo("Panel");
         }
@@ -222,7 +256,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         ResponseEntity<Void> responseEntity =
             restTemplate.exchange(requestEntity, Void.class);
 
-        Assertions.assertThat(responseEntity.getStatusCode())
+        assertThat(responseEntity.getStatusCode())
             .as("Expected status code to be forbidden")
             .isEqualTo(HttpStatus.FORBIDDEN);
     }
@@ -239,7 +273,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         ResponseEntity<PanelListDto[]> responseEntity =
             restTemplate.exchange(requestEntity, PanelListDto[].class);
 
-        Assertions.assertThat(responseEntity.getStatusCode())
+        assertThat(responseEntity.getStatusCode())
             .as("Expected status code to be ok")
             .isEqualTo(HttpStatus.OK);
 
@@ -264,14 +298,14 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         ResponseEntity<PanelListDto[]> responseEntity =
             restTemplate.exchange(requestEntity, PanelListDto[].class);
 
-        Assertions.assertThat(responseEntity.getStatusCode())
+        assertThat(responseEntity.getStatusCode())
             .as("Expected status code to be ok")
             .isEqualTo(HttpStatus.OK);
 
         assert responseEntity.getBody() != null;
-        Assertions.assertThat(responseEntity.getBody().length).as("Expected length to be 4").isEqualTo(4);
+        assertThat(responseEntity.getBody().length).as("Expected length to be 4").isEqualTo(4);
         for (PanelListDto panelListDto : responseEntity.getBody()) {
-            Assertions.assertThat(panelListDto.getJurorStatus())
+            assertThat(panelListDto.getJurorStatus())
                 .as("Expect the status to be Juror")
                 .isEqualTo("Juror");
         }
@@ -286,7 +320,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         int challengedCount = 0;
 
         for (Panel panelMember : panel) {
-            Assertions.assertThat(panelMember.getResult()).as("Result should not be null").isNotNull();
+            assertThat(panelMember.getResult()).as("Result should not be null").isNotNull();
             switch (panelMember.getResult()) {
                 case NOT_USED -> {
                     validateNotUsedChallengedHistory(panelMember);
@@ -299,8 +333,8 @@ public class PanelControllerITest extends AbstractIntegrationTest {
                 case JUROR -> {
                     List<JurorHistory> jurorHistories =
                         jurorHistoryRepository.findByJurorNumber(panelMember.getJurorPool().getJurorNumber());
-                    Assertions.assertThat(jurorHistories.size()).as("Expected history items to be one").isEqualTo(1);
-                    Assertions.assertThat(jurorHistories.get(0).getHistoryCode().getCode()).as(
+                    assertThat(jurorHistories.size()).as("Expected history items to be one").isEqualTo(1);
+                    assertThat(jurorHistories.get(0).getHistoryCode().getCode()).as(
                             "Expected history code to be TADD")
                         .isEqualTo("TADD");
                     jurorCount++;
@@ -309,25 +343,25 @@ public class PanelControllerITest extends AbstractIntegrationTest {
             }
         }
 
-        Assertions.assertThat(jurorCount).as("Expected total jurors on a jury to be 4").isEqualTo(4);
-        Assertions.assertThat(notUsedCount).as("Expected total not used jurors to be 4").isEqualTo(4);
-        Assertions.assertThat(challengedCount).as("Expected total challenged jurors to be 4").isEqualTo(4);
+        assertThat(jurorCount).as("Expected total jurors on a jury to be 4").isEqualTo(4);
+        assertThat(notUsedCount).as("Expected total not used jurors to be 4").isEqualTo(4);
+        assertThat(challengedCount).as("Expected total challenged jurors to be 4").isEqualTo(4);
 
     }
 
     private void validateNotUsedChallengedHistory(Panel panelMember) {
         List<JurorHistory> jurorHistories =
             jurorHistoryRepository.findByJurorNumber(panelMember.getJurorPool().getJurorNumber());
-        Assertions.assertThat(jurorHistories.size()).as("Expected history items to be one").isEqualTo(1);
-        Assertions.assertThat(jurorHistories.get(0).getHistoryCode().getCode()).as(
+        assertThat(jurorHistories.size()).as("Expected history items to be one").isEqualTo(1);
+        assertThat(jurorHistories.get(0).getHistoryCode().getCode()).as(
                 "Expected history code to be VRET")
             .isEqualTo("VRET");
         Appearance appearance =
             appearanceRepository.findByJurorNumber(panelMember.getJurorPool().getJurorNumber());
-        Assertions.assertThat(appearance.getPoolNumber())
+        assertThat(appearance.getPoolNumber())
             .as("Expected value to be the current juror's pool number")
             .isEqualTo(panelMember.getJurorPool().getPoolNumber());
-        Assertions.assertThat(appearance.getTrialNumber())
+        assertThat(appearance.getTrialNumber())
             .as("Expected trial number value to be null")
             .isNull();
     }
@@ -346,7 +380,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         ResponseEntity<Void> responseEntity =
             restTemplate.exchange(requestEntity, Void.class);
 
-        Assertions.assertThat(responseEntity.getStatusCode())
+        assertThat(responseEntity.getStatusCode())
             .as("Expected status code to be forbidden")
             .isEqualTo(HttpStatus.FORBIDDEN);
     }
@@ -368,7 +402,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         ResponseEntity<Void> responseEntity =
             restTemplate.exchange(requestEntity, Void.class);
 
-        Assertions.assertThat(responseEntity.getStatusCode())
+        assertThat(responseEntity.getStatusCode())
             .as("Expected status code to be bad request")
             .isEqualTo(HttpStatus.BAD_REQUEST);
     }
@@ -386,7 +420,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         ResponseEntity<PanelListDto[]> responseEntity =
             restTemplate.exchange(requestEntity, PanelListDto[].class);
 
-        Assertions.assertThat(responseEntity.getStatusCode())
+        assertThat(responseEntity.getStatusCode())
             .as("Expected status code to be ok")
             .isEqualTo(HttpStatus.OK);
     }
@@ -404,7 +438,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         ResponseEntity<Void> responseEntity =
             restTemplate.exchange(requestEntity, Void.class);
 
-        Assertions.assertThat(responseEntity.getStatusCode())
+        assertThat(responseEntity.getStatusCode())
             .as("Expected status code to be forbidden")
             .isEqualTo(HttpStatus.FORBIDDEN);
     }
