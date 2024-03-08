@@ -317,8 +317,11 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 sourcePoolNumber, targetPoolNumber);
             try {
                 LocalDate dateOfBirth = sourceJuror.getDateOfBirth();
-                validateJurorAge(jurorNumber, dateOfBirth, requestDto.getServiceStartDate());
-
+                if (dateOfBirth == null) {
+                    log.info("Juror {} has no date of birth on record so cannot validate", jurorNumber);
+                } else {
+                    validateJurorAge(jurorNumber, dateOfBirth, requestDto.getServiceStartDate());
+                }
                 // handle the scenario where a pool member is being transferred back to their original court location
                 logicallyDeleteExistingJurorPool(jurorNumber, receivingCourtLocation);
 

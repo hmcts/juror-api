@@ -60,6 +60,7 @@ public class PoolRequestListDtoTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     public void test_PoolRequestListDto() {
         CourtLocation courtLocationOne = createCourtLocation("401",
             "AYLESBURY", "09:15");

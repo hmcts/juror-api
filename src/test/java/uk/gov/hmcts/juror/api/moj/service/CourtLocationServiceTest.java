@@ -39,7 +39,11 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.juror.api.moj.domain.CourtLocationQueries.filterByLocCodes;
 
 @ExtendWith(SpringExtension.class)
-public class CourtLocationServiceTest {
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.TooManyMethods"
+})
+class CourtLocationServiceTest {
 
     @Mock
     private CourtLocationRepository courtLocationRepository;
@@ -68,11 +72,11 @@ public class CourtLocationServiceTest {
     }
 
     @Test
-    public void test_buildCourtLocationDataResponse_bureauUser() {
+    void testBuildCourtLocationDataResponseBureauUser() {
         BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         CourtLocationListDto dto = courtLocationService.buildCourtLocationDataResponse(payload);
 
-        verify(courtLocationRepository, Mockito.times(1)).findAll();
+        verify(courtLocationRepository, times(1)).findAll();
         List<CourtLocationDataDto> courtLocationDataList = dto.getData();
         assertThat(courtLocationDataList.size()).isEqualTo(4);
 
@@ -80,7 +84,7 @@ public class CourtLocationServiceTest {
     }
 
     @Test
-    public void test_buildCourtLocationDataResponse_courtUser_noSatellites() {
+    void testBuildCourtLocationDataResponseCourtUserNoSatellites() {
         BureauJWTPayload payload = TestUtils.createJwt("435", "COURT_USER");
         List<String> staffCourts = Collections.singletonList("435");
         payload.setStaff(TestUtils.staffBuilder("Test Staff", 1, staffCourts));
@@ -90,7 +94,7 @@ public class CourtLocationServiceTest {
 
         CourtLocationListDto dto = courtLocationService.buildCourtLocationDataResponse(payload);
 
-        verify(courtLocationRepository, Mockito.times(1)).findAll(Mockito.any(Predicate.class));
+        verify(courtLocationRepository, times(1)).findAll(Mockito.any(Predicate.class));
 
         List<CourtLocationDataDto> courtLocationDataList = dto.getData();
         assertThat(courtLocationDataList.size()).isEqualTo(1);
@@ -105,7 +109,7 @@ public class CourtLocationServiceTest {
     }
 
     @Test
-    public void test_buildCourtLocationDataResponse_courtUser_withSatellites() {
+    void testBuildCourtLocationDataResponseCourtUserWithSatellites() {
         BureauJWTPayload payload = TestUtils.createJwt("415", "COURT_USER");
         List<String> staffCourts = Arrays.asList("415", "462");
         payload.setStaff(TestUtils.staffBuilder("Test Staff", 1, staffCourts));
@@ -116,7 +120,7 @@ public class CourtLocationServiceTest {
 
         CourtLocationListDto dto = courtLocationService.buildCourtLocationDataResponse(payload);
 
-        verify(courtLocationRepository, Mockito.times(1)).findAll(Mockito.any(Predicate.class));
+        verify(courtLocationRepository, times(1)).findAll(Mockito.any(Predicate.class));
 
         List<CourtLocationDataDto> courtLocationDataList = dto.getData();
         assertThat(courtLocationDataList.size()).isEqualTo(2);
@@ -126,10 +130,10 @@ public class CourtLocationServiceTest {
 
 
     @Test
-    public void test_buildAllCourtLocationDataResponse() {
+    void testBuildAllCourtLocationDataResponse() {
         CourtLocationListDto dto = courtLocationService.buildAllCourtLocationDataResponse();
 
-        verify(courtLocationRepository, Mockito.times(1)).findAll();
+        verify(courtLocationRepository, times(1)).findAll();
         List<CourtLocationDataDto> courtLocationDataList = dto.getData();
         assertThat(courtLocationDataList.size()).isEqualTo(4);
 
@@ -166,7 +170,7 @@ public class CourtLocationServiceTest {
 
     //Tests related to service method: getCourtLocationsByPostcode()
     @Test
-    public void getCourtLocationsByPostcode_happy_postcodeLength7() {
+    void positiveGetCourtLocationsByPostcodeHappyPostcodeLength7() {
         final ArgumentCaptor<String> firstHalfOfPostcodeCaptor = ArgumentCaptor.forClass(String.class);
 
         doReturn(getCourtDetailsFilteredByPostcode()).when(courtQueriesRepository)
@@ -185,7 +189,7 @@ public class CourtLocationServiceTest {
     }
 
     @Test
-    public void getDisqualifyReasons_noMatchInDatabase() {
+    void positiveGetDisqualifyReasonsNoMatchInDatabase() {
         final ArgumentCaptor<String> firstHalfOfPostcodeCaptor = ArgumentCaptor.forClass(String.class);
 
 
@@ -207,7 +211,7 @@ public class CourtLocationServiceTest {
 
 
     @Test
-    void getCourtRatesTypical() {
+    void positiveGetCourtRatesTypical() {
         final String locCode = "123";
         courtLocationService = spy(courtLocationService);
 

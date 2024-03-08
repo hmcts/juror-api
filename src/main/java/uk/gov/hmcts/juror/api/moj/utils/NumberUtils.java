@@ -1,11 +1,10 @@
 package uk.gov.hmcts.juror.api.moj.utils;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class NumberUtils {
 
+    private NumberUtils() {
+
+    }
 
     /**
      * Safely unbox an Integer object to a primitive int data type, defaulting to 0 where the Integer value is null.

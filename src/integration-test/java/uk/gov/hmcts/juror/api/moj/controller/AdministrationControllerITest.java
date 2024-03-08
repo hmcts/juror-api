@@ -57,7 +57,7 @@ import static org.springframework.test.util.AssertionErrors.fail;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AdministrationControllerITest.BASE_URL)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings("PMD.excessiveImports")
+@SuppressWarnings("PMD.ExcessiveImports")
 public class AdministrationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/moj/administration";
 
@@ -692,6 +692,10 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     class ViewAllCourtsDetails {
         public static final String URL = BASE_URL + "/courts";
 
+        private ViewAllCourtsDetails() {
+
+        }
+
         @Nested
         @DisplayName("Positive")
         class Positive {
@@ -796,6 +800,10 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class ViewExpenseDetails {
         public static final String URL = BASE_URL + "/expenses/rates";
+
+        private ViewExpenseDetails() {
+
+        }
 
         @Nested
         @DisplayName("Positive")

@@ -19,6 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.juror.api.TestUtils.buildStringToLength;
 
 @RunWith(SpringRunner.class)
+@SuppressWarnings({
+    "PMD.ExcessivePublicCount",
+    "PMD.TooManyMethods"
+})
 public class JurorPaperResponseTest {
 
     private static ValidatorFactory validatorFactory;

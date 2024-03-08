@@ -87,7 +87,8 @@ class DeferralMaintenanceControllerTest {
             BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
 
             jwtPayload.setStaff(
-                TestUtils.staffBuilder("Court User", 1, Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
+                TestUtils.staffBuilder("Court User", 1,
+                    Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
             when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 

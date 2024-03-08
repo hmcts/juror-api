@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class LetterIdTest {
 
     @Test
-    public void getJurorNumber() {
+    public void positivegetJurorNumber() {
         String jurorNumber = "123456789";
         String owner = "415";
 
@@ -22,7 +22,7 @@ public class LetterIdTest {
     }
 
     @Test
-    public void getOwner() {
+    public void positiveGetOwner() {
         String jurorNumber = "123456789";
         String owner = "415";
 

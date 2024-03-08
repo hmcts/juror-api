@@ -84,7 +84,7 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             // check the response for answers making it ineligible for straight through processing.
             // JDB-126 a. the title, first name and last name must be the same in the Juror response as they are on
             // the Juror application
-            if (poolDetails.getTitle() != null) {// title is nullable!!!
+            if (poolDetails.getTitle() != null) { // title is nullable!!!
                 //pool details title has value
                 if (!poolDetails.getTitle().equalsIgnoreCase(savedResponse.getTitle())) {
                     log.debug("Title does not match: {} - {}", poolDetails.getTitle(), savedResponse.getTitle());

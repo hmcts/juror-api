@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class HolidayDateTest {
+class HolidayDateTest {
 
     @Test
     void positiveConstructorTest() {

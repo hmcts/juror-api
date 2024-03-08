@@ -1,7 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.utils;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -10,8 +8,11 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import java.util.Optional;
 
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PoolRequestUtils {
+
+    private PoolRequestUtils() {
+
+    }
 
     /**
      * Retrieve the active copy of a pool record (where read_only = false) from a database query.

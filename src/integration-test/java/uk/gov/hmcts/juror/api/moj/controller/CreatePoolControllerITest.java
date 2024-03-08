@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -22,16 +23,18 @@ import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.NilPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolAdditionalSummonsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoolMemberFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.SummonsFormRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CoronerPoolItemDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.NilPoolResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.PoolCreatedMembersListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestItemDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PostcodesListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummonsFormResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.CoronerPool;
 import uk.gov.hmcts.juror.api.moj.domain.CoronerPoolDetail;
+import uk.gov.hmcts.juror.api.moj.domain.FilterPoolMember;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.VotersLocPostcodeTotals;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
@@ -44,6 +47,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -258,21 +262,25 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         // returned
         // two of the jurors will be disqualified on selection
 
-        final URI uri2 = URI.create("/api/v1/moj/pool-create/members?poolNumber=415221201");
+        final URI uri2 = URI.create("/api/v1/moj/pool-create/members");
+        final PoolMemberFilterRequestQuery body = PoolMemberFilterRequestQuery.builder()
+            .poolNumber("415221201").pageLimit(25).pageNumber(1).build();
 
-        RequestEntity<Void> requestEntity2 = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri2);
-        ResponseEntity<PoolCreatedMembersListDto> response2 = template.exchange(requestEntity2,
-            PoolCreatedMembersListDto.class);
+        RequestEntity<PoolMemberFilterRequestQuery> requestEntity2 = new RequestEntity<>(
+            body, httpHeaders, HttpMethod.POST, uri2);
+        ResponseEntity<PaginatedList<FilterPoolMember>> response2 = template.exchange(requestEntity2,
+            new ParameterizedTypeReference<PaginatedList<FilterPoolMember>>() {
+            });
         assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         assertThat(response2.getBody()).isNotNull();
-        List<PoolCreatedMembersListDto.JurorPoolDataDto> jurorPoolDataDto = response2.getBody().getData();
+        List<FilterPoolMember> jurorPoolDataDto = response2.getBody().getData();
         assertThat(jurorPoolDataDto.size())
             .as("Expect there to be 10 jurors returned")
             .isEqualTo(10);
 
         int disqCount = jurorPoolDataDto.stream().mapToInt(juror ->
-            juror.getStatus().equals("Disqualified") ? 1 : 0).sum();
+            "Disqualified".equals(juror.getStatus()) ? 1 : 0).sum();
 
         assertThat(disqCount).as("Expect there to be 2 disqualified jurors").isEqualTo(2);
 
@@ -542,24 +550,33 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .owner("400")
             .build());
 
-        final URI uri = URI.create("/api/v1/moj/pool-create/members?poolNumber=415230101");
+        final URI uri = URI.create("/api/v1/moj/pool-create/members");
+        final PoolMemberFilterRequestQuery body = PoolMemberFilterRequestQuery.builder()
+            .poolNumber("415230101").pageNumber(1).pageLimit(25).build();
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri);
-        ResponseEntity<PoolCreatedMembersListDto> response = template.exchange(requestEntity,
-            PoolCreatedMembersListDto.class);
+        RequestEntity<PoolMemberFilterRequestQuery> requestEntity = new RequestEntity<>(body, httpHeaders,
+            HttpMethod.POST, uri);
+        ResponseEntity<PaginatedList<FilterPoolMember>> response = template
+            .exchange(requestEntity, new ParameterizedTypeReference<>() {
+            });
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         assertThat(response.getBody()).isNotNull();
-        List<PoolCreatedMembersListDto.JurorPoolDataDto> jurorPoolDataDto = response.getBody().getData();
-        assertThat(jurorPoolDataDto.size()).isEqualTo(1);
+        List<FilterPoolMember> poolMembers = response.getBody().getData();
+        assertThat(poolMembers.size()).isEqualTo(1);
 
-        PoolCreatedMembersListDto.JurorPoolDataDto responseData = jurorPoolDataDto.get(0);
+        FilterPoolMember responseData = poolMembers.get(0);
         assertThat(responseData.getJurorNumber()).isEqualToIgnoringCase("111111111");
         assertThat(responseData.getFirstName()).isEqualToIgnoringCase("TEST");
         assertThat(responseData.getLastName()).isEqualToIgnoringCase("ONE");
         assertThat(responseData.getPostcode()).isEqualToIgnoringCase("CH1 2AN");
-        assertThat(responseData.getStatus()).isEqualTo("Summoned");
+        assertThat(responseData.getStatus()).isEqualToIgnoringCase("Summoned");
+        assertThat(responseData.getAttendance()).isNull();
+        assertThat(responseData.getCheckedInToday()).isNull();
+        assertThat(responseData.getCheckedIn()).isNull();
+        assertThat(responseData.getNextDate()).isNull();
+
     }
 
     @Test
@@ -573,17 +590,33 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .owner("400")
             .build());
 
-        final URI uri = URI.create("/api/v1/moj/pool-create/members?poolNumber=415230102");
+        final URI uri = URI.create("/api/v1/moj/pool-create/members");
+        final PoolMemberFilterRequestQuery body = PoolMemberFilterRequestQuery.builder()
+            .poolNumber("415230102").pageNumber(1).pageLimit(25).build();
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri);
-        ResponseEntity<PoolCreatedMembersListDto> response = template.exchange(requestEntity,
-            PoolCreatedMembersListDto.class);
+        RequestEntity<PoolMemberFilterRequestQuery> requestEntity = new RequestEntity<>(body, httpHeaders,
+            HttpMethod.POST, uri);
+        ResponseEntity<PaginatedList<FilterPoolMember>> response = template
+            .exchange(requestEntity, new ParameterizedTypeReference<>() {
+            });
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         assertThat(response.getBody()).isNotNull();
-        List<PoolCreatedMembersListDto.JurorPoolDataDto> jurorPoolDataDto = response.getBody().getData();
-        assertThat(jurorPoolDataDto.isEmpty()).isTrue();
+        List<FilterPoolMember> poolMembers = response.getBody().getData();
+        assertThat(poolMembers.size()).isEqualTo(1);
+
+        FilterPoolMember responseData = poolMembers.get(0);
+        assertThat(responseData.getJurorNumber()).isEqualToIgnoringCase("666666666");
+        assertThat(responseData.getFirstName()).isEqualToIgnoringCase("TEST");
+        assertThat(responseData.getLastName()).isEqualToIgnoringCase("SIX");
+        assertThat(responseData.getPostcode()).isEqualToIgnoringCase("CH1 2AN");
+        assertThat(responseData.getStatus()).isEqualToIgnoringCase("Summoned");
+        assertThat(responseData.getAttendance()).isNull();
+        assertThat(responseData.getCheckedInToday()).isNull();
+        assertThat(responseData.getCheckedIn()).isNull();
+        assertThat(responseData.getNextDate()).isNull();
+
     }
 
     @Test
@@ -597,24 +630,31 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .owner("415")
             .build());
 
-        final URI uri = URI.create("/api/v1/moj/pool-create/members?poolNumber=415230101");
+        final URI uri = URI.create("/api/v1/moj/pool-create/members");
+        final PoolMemberFilterRequestQuery body = PoolMemberFilterRequestQuery.builder()
+            .poolNumber("415230101").pageNumber(1).pageLimit(25).build();
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri);
-        ResponseEntity<PoolCreatedMembersListDto> response = template.exchange(requestEntity,
-            PoolCreatedMembersListDto.class);
+        RequestEntity<PoolMemberFilterRequestQuery> requestEntity = new RequestEntity<>(body, httpHeaders,
+            HttpMethod.POST, uri);
+        ResponseEntity<PaginatedList<FilterPoolMember>> response = template
+            .exchange(requestEntity, new ParameterizedTypeReference<>() {
+            });
+
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-
         assertThat(response.getBody()).isNotNull();
-        List<PoolCreatedMembersListDto.JurorPoolDataDto> jurorPoolDataDto = response.getBody().getData();
-        assertThat(jurorPoolDataDto.size()).isEqualTo(1);
+        List<FilterPoolMember> poolMembers = response.getBody().getData();
+        assertThat(poolMembers.size()).isEqualTo(1);
 
-        PoolCreatedMembersListDto.JurorPoolDataDto responseData = jurorPoolDataDto.get(0);
+        FilterPoolMember responseData = poolMembers.get(0);
         assertThat(responseData.getJurorNumber()).isEqualToIgnoringCase("333333333");
         assertThat(responseData.getFirstName()).isEqualToIgnoringCase("TEST");
         assertThat(responseData.getLastName()).isEqualToIgnoringCase("THREE");
-        assertThat(responseData.getPostcode()).isEqualToIgnoringCase("CH1 2AN");
+        assertThat(responseData.getPostcode()).isNull();
         assertThat(responseData.getStatus()).isEqualTo("Summoned");
+        assertThat(responseData.getAttendance()).isEqualToIgnoringCase("");
+        assertThat(responseData.getCheckedInToday()).isNull();
+        assertThat(responseData.getNextDate()).isEqualTo(LocalDate.parse("2023-01-01"));
     }
 
     @Test
@@ -628,14 +668,181 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .owner("415")
             .build());
 
-        final URI uri = URI.create("/api/v1/moj/pool-create/members?poolNumber=415230102");
+        final URI uri = URI.create("/api/v1/moj/pool-create/members");
+        final PoolMemberFilterRequestQuery body = PoolMemberFilterRequestQuery.builder()
+            .poolNumber("415230102").pageNumber(1).pageLimit(25).build();
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri);
-        ResponseEntity<PoolCreatedMembersListDto> response = template.exchange(requestEntity,
-            PoolCreatedMembersListDto.class);
+        RequestEntity<PoolMemberFilterRequestQuery> requestEntity = new RequestEntity<>(body, httpHeaders,
+            HttpMethod.POST, uri);
+        ResponseEntity<PaginatedList<FilterPoolMember>> response = template
+            .exchange(requestEntity, new ParameterizedTypeReference<>() {
+            });
+
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNull();
+        assertThat(response.getBody()).isNotNull();
+        List<FilterPoolMember> poolMembers = response.getBody().getData();
+        assertThat(poolMembers.isEmpty()).isTrue();
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
+    public void getPoolMembers_noFilters() throws Exception {
+        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+            .userLevel("1")
+            .login("COURT_USER")
+            .staff(BureauJWTPayload.Staff.builder().name("Court User")
+                .active(1).rank(1).build())
+            .daysToExpire(89)
+            .owner("415")
+            .build());
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/members");
+        final PoolMemberFilterRequestQuery body = PoolMemberFilterRequestQuery.builder()
+            .poolNumber("415230103").pageNumber(1).pageLimit(25).build();
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolMemberFilterRequestQuery> requestEntity = new RequestEntity<>(body, httpHeaders,
+            HttpMethod.POST, uri
+        );
+        ResponseEntity<PaginatedList<FilterPoolMember>> response = template
+            .exchange(requestEntity, new ParameterizedTypeReference<>() {
+            });
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        List<FilterPoolMember> poolMembers = response.getBody().getData();
+        assertThat(poolMembers.size()).isEqualTo(2);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
+    public void getPoolMembers_filterByAttendance() throws Exception {
+        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+            .userLevel("1")
+            .login("COURT_USER")
+            .staff(BureauJWTPayload.Staff.builder().name("Court User")
+                .active(1).rank(1).build())
+            .daysToExpire(89)
+            .owner("415")
+            .build());
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/members");
+
+        final PoolMemberFilterRequestQuery filteredBody = PoolMemberFilterRequestQuery.builder()
+            .poolNumber("415230103").attendance(Arrays.asList(
+                PoolMemberFilterRequestQuery.AttendanceEnum.IN_ATTENDANCE)).pageNumber(1).pageLimit(25).build();
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolMemberFilterRequestQuery> filteredEntity = new RequestEntity<>(filteredBody, httpHeaders,
+            HttpMethod.POST, uri);
+        ResponseEntity<PaginatedList<FilterPoolMember>> filteredResponse = template
+            .exchange(filteredEntity, new ParameterizedTypeReference<>() {
+            });
+
+        assertThat(filteredResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(filteredResponse.getBody()).isNotNull();
+        List<FilterPoolMember> filteredPoolMembers = filteredResponse.getBody().getData();
+        assertThat(filteredPoolMembers.size()).isEqualTo(1);
+        assertThat(filteredPoolMembers.get(0).getLastName()).isEqualToIgnoringCase("SEVEN");
+        assertThat(filteredPoolMembers.get(0).getStatus()).isEqualTo("Responded");
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
+    public void getPoolMembers_filterByCheckedIn() throws Exception {
+        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+            .userLevel("1")
+            .login("COURT_USER")
+            .staff(BureauJWTPayload.Staff.builder().name("Court User")
+                .active(1).rank(1).build())
+            .daysToExpire(89)
+            .owner("415")
+            .build());
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/members");
+
+        final PoolMemberFilterRequestQuery filteredBody2 = PoolMemberFilterRequestQuery.builder()
+            .poolNumber("415230103").checkedIn(true).pageNumber(1).pageLimit(25).build();
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolMemberFilterRequestQuery> filteredEntity2 = new RequestEntity<>(filteredBody2, httpHeaders,
+            HttpMethod.POST, uri);
+        ResponseEntity<PaginatedList<FilterPoolMember>> filteredResponse2 = template
+            .exchange(filteredEntity2, new ParameterizedTypeReference<>() {
+            });
+
+        assertThat(filteredResponse2.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(filteredResponse2.getBody()).isNotNull();
+        List<FilterPoolMember> filteredPoolMembers2 = filteredResponse2.getBody().getData();
+        assertThat(filteredPoolMembers2.size()).isEqualTo(1);
+        assertThat(filteredPoolMembers2.get(0).getLastName()).isEqualToIgnoringCase("SEVEN");
+        assertThat(filteredPoolMembers2.get(0).getCheckedIn()).isEqualTo("09:00:00");
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
+    public void getPoolMembers_filterByNextDueTrue() throws Exception {
+        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+            .userLevel("1")
+            .login("COURT_USER")
+            .staff(BureauJWTPayload.Staff.builder().name("Court User")
+                .active(1).rank(1).build())
+            .daysToExpire(89)
+            .owner("415")
+            .build());
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/members");
+
+        final PoolMemberFilterRequestQuery filteredBody3 = PoolMemberFilterRequestQuery.builder()
+            .poolNumber("415230103").nextDue(true).pageNumber(1).pageLimit(25).build();
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolMemberFilterRequestQuery> filteredEntity3 = new RequestEntity<>(filteredBody3, httpHeaders,
+            HttpMethod.POST, uri);
+        ResponseEntity<PaginatedList<FilterPoolMember>> filteredResponse3 = template
+            .exchange(filteredEntity3, new ParameterizedTypeReference<>() {
+            });
+
+        assertThat(filteredResponse3.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(filteredResponse3.getBody()).isNotNull();
+        List<FilterPoolMember> filteredPoolMembers3 = filteredResponse3.getBody().getData();
+        assertThat(filteredPoolMembers3.size()).isEqualTo(1);
+        assertThat(filteredPoolMembers3.get(0).getLastName()).isEqualToIgnoringCase("seven");
+        assertThat(filteredPoolMembers3.get(0).getNextDate()).isEqualTo(LocalDate.parse("2023-01-01"));
+
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
+    public void getPoolMembers_filterByNextDueFalse() throws Exception {
+        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+            .userLevel("1")
+            .login("COURT_USER")
+            .staff(BureauJWTPayload.Staff.builder().name("Court User")
+                .active(1).rank(1).build())
+            .daysToExpire(89)
+            .owner("415")
+            .build());
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/members");
+
+        final PoolMemberFilterRequestQuery filteredBody3 = PoolMemberFilterRequestQuery.builder()
+            .poolNumber("415230103").nextDue(false).pageNumber(1).pageLimit(25).build();
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolMemberFilterRequestQuery> filteredEntity3 = new RequestEntity<>(filteredBody3, httpHeaders,
+            HttpMethod.POST, uri);
+        ResponseEntity<PaginatedList<FilterPoolMember>> filteredResponse3 = template
+            .exchange(filteredEntity3, new ParameterizedTypeReference<>() {
+            });
+
+        assertThat(filteredResponse3.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(filteredResponse3.getBody()).isNotNull();
+        List<FilterPoolMember> filteredPoolMembers3 = filteredResponse3.getBody().getData();
+        assertThat(filteredPoolMembers3.size()).isEqualTo(1);
+        assertThat(filteredPoolMembers3.get(0).getLastName()).isEqualToIgnoringCase("eight");
+        assertThat(filteredPoolMembers3.get(0).getNextDate()).isNull();
     }
 
     @Test
@@ -859,6 +1066,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql(statements = "delete from juror_mod.pool_comments")
     @Sql(statements = "delete from juror_mod.pool_history")
+    @Sql(statements = "delete from juror_mod.appearance")
     @Sql(statements = "delete from juror_mod.juror_pool")
     @Sql(statements = "delete from juror_mod.pool")
     public void test_createNilPool_CourtUser() throws Exception {
@@ -1189,7 +1397,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         CoronerPoolItemDto.CoronerDetails coronerDetails =
             coronerPoolItemDto.getCoronerDetailsList().stream().filter(coroner ->
-                coroner.getFirstName().equals("FNAMEEIGHT")
+                "FNAMEEIGHT".equals(coroner.getFirstName())
             ).findAny().get();
         assertThat(coronerDetails.getTitle()).as("The juror's title")
             .isNull();

@@ -21,8 +21,8 @@ import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.PostponeLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.RequestInfoLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.SummonsLetter;
-import uk.gov.hmcts.juror.api.moj.xerox.letters.WithdrawalLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.SummonsReminderLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.WithdrawalLetter;
 
 import java.time.LocalDate;
 import java.util.List;

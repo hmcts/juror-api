@@ -67,6 +67,9 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
     class ViewBankHolidays {
         public static final String URL = BASE_URL + "/bank-holidays";
 
+        private ViewBankHolidays() {
+    
+        }
 
         @Nested
         @DisplayName("Positive")

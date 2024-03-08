@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.enumeration;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
 
@@ -25,7 +24,7 @@ class TravelMethodTest {
         ExpenseRates expenseRates = mock(ExpenseRates.class);
         when(expenseRates.getCarMileageRatePerMile0Passengers()).thenReturn(rate);
 
-        Assertions.assertThat(TravelMethod.CAR.getRate(expenseRates, null, 0))
+        assertThat(TravelMethod.CAR.getRate(expenseRates, null, 0))
             .isEqualTo(rate);
         verify(expenseRates, times(1)).getCarMileageRatePerMile0Passengers();
         verifyNoMoreInteractions(expenseRates);

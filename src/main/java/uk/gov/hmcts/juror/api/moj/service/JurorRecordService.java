@@ -79,7 +79,7 @@ public interface JurorRecordService {
     JurorAttendanceDetailsResponseDto getJurorAttendanceDetails(String jurorNumber,
                                                                 String poolNumber, BureauJWTPayload payload);
 
-    PendingJurorsResponseDto getPendingJurors(String locCode, PendingJurorStatus Status);
+    PendingJurorsResponseDto getPendingJurors(String locCode, PendingJurorStatus status);
 
     void processPendingJuror(ProcessPendingJurorRequestDto processPendingJurorRequestDto);
 

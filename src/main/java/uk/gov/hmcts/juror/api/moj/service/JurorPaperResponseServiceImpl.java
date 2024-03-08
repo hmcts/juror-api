@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
-import uk.gov.hmcts.juror.api.moj.controller.request.CJSEmploymentDetailsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.CjsEmploymentDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EligibilityDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPaperResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReasonableAdjustmentDetailsDto;
@@ -246,8 +246,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
             return;
         }
 
-        List<JurorPaperResponseDetailDto.CJSEmployment> cjsEmploymentList = new ArrayList<>();
-        jurorPaperResponseCjsList.forEach(cjs -> cjsEmploymentList.add(new JurorPaperResponseDetailDto.CJSEmployment(
+        List<JurorPaperResponseDetailDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
+        jurorPaperResponseCjsList.forEach(cjs -> cjsEmploymentList.add(new JurorPaperResponseDetailDto.CjsEmployment(
             cjs.getCjsEmployer(), cjs.getCjsEmployerDetails())));
         jurorPaperResponseDetailDto.setCjsEmployment(cjsEmploymentList);
     }
@@ -504,7 +504,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
                 if (types.contains(type) && !addedReasonableAdjustment.contains(type)) {
                     jurorPaperResponseReasonableAdjustment.setReasonableAdjustment(
-                       new ReasonableAdjustments(type, message));
+                        new ReasonableAdjustments(type, message));
                     jurorPaperResponseReasonableAdjustment.setReasonableAdjustmentDetail(
                         reasonableAdjustment.getAssistanceTypeDetails());
                     addedReasonableAdjustment.add(type);
@@ -540,7 +540,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
     @Override
     @Transactional
-    public void updateCjsDetails(BureauJWTPayload payload, CJSEmploymentDetailsDto cjsEmploymentDetailsDto,
+    public void updateCjsDetails(BureauJWTPayload payload, CjsEmploymentDetailsDto cjsEmploymentDetailsDto,
                                  final String jurorNumber) {
         log.info(String.format("Updating paper response CJS Employment for Juror %s, by user %s",
             jurorNumber, payload.getLogin()

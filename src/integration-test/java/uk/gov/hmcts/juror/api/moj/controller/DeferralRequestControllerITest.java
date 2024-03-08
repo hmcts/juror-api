@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
@@ -172,12 +173,77 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
             .isEqualTo(HttpStatus.NOT_FOUND);
     }
 
+    @Test
+    @Sql({"/db/mod/truncate.sql","/db/DeferralRequestController_createInitialPoolRecords.sql"})
+    public void grant_Deferral_happyPath_bureauUser() {
+        String jurorNumber = "987654321";
+        String deferralReason = "B";
+
+        DeferralRequestDto requestDto = createGrantDeferralDecisionDto(jurorNumber, deferralReason);
+
+        ResponseEntity<DeferralRequestDto> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
+                URI.create("/api/v1/moj/deferral-response/juror/" + jurorNumber)), DeferralRequestDto.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP PUT request to be OK")
+            .isEqualTo(HttpStatus.OK);
+
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql","/db/DeferralRequestController_createInitialPoolRecords.sql"})
+    public void grant_Deferral_happyPath_courtUser() throws Exception {
+        String jurorNumber = "123456789";
+        String deferralReason = "B";
+
+        DeferralRequestDto requestDto = createDeferralDecisionDto(jurorNumber, deferralReason);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415")));
+
+        ResponseEntity<DeferralRequestDto> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
+                URI.create("/api/v1/moj/deferral-response/juror/" + jurorNumber)), DeferralRequestDto.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP PUT request to be OK")
+            .isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql","/db/DeferralRequestController_createInitialPoolRecords.sql"})
+    public void grant_Deferral_Unhappy_MissingDate() {
+        String jurorNumber = "987654321";
+        String deferralReason = "B";
+
+        DeferralRequestDto requestDto = createGrantDeferralDecisionDto(jurorNumber, deferralReason);
+        requestDto.setDeferralDate(null);
+
+        ResponseEntity<DeferralRequestDto> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
+                URI.create("/api/v1/moj/deferral-response/juror/" + jurorNumber)), DeferralRequestDto.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP PUT request to be BAD_REQUEST")
+            .isEqualTo(HttpStatus.BAD_REQUEST);
+
+    }
+
     private DeferralRequestDto createDeferralDecisionDto(String jurorNumber,
                                                          String deferralReason) {
         DeferralRequestDto deferralRequestDto = new DeferralRequestDto();
         deferralRequestDto.setJurorNumber(jurorNumber);
         deferralRequestDto.setDeferralReason(deferralReason);
         deferralRequestDto.setDeferralDecision(DeferralDecision.REFUSE);
+        return deferralRequestDto;
+    }
+
+    private DeferralRequestDto createGrantDeferralDecisionDto(String jurorNumber, String deferralReason) {
+        DeferralRequestDto deferralRequestDto = new DeferralRequestDto();
+        deferralRequestDto.setJurorNumber(jurorNumber);
+        deferralRequestDto.setDeferralReason(deferralReason);
+        deferralRequestDto.setDeferralDecision(DeferralDecision.GRANT);
+        LocalDate deferralDate = LocalDate.now().plusDays(10);
+        deferralRequestDto.setDeferralDate(deferralDate);
         return deferralRequestDto;
     }
 }

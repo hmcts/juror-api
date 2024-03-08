@@ -37,7 +37,7 @@ public final class BigDecimalUtils {
 
 
     /**
-     * Compares two big decimals
+     * Compares two big decimals.
      *
      * @return 1 if a is greater than b
      *      -1 if a is less than b

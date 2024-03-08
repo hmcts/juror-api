@@ -1319,7 +1319,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     /**
-     * The endpoint should reject a response with no phone numbers populated
+     * The endpoint should reject a response with no phone numbers populated.
      *
      * @throws Exception if the test falls over
      * @since JDB-1968
@@ -1361,7 +1361,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     /**
-     * Should reject response if 'use juror phone' is false but no third party phone is provided
+     * Should reject response if 'use juror phone' is false but no third party phone is provided.
      *
      * @throws Exception if the test falls over
      * @since JDB-2165
@@ -1406,7 +1406,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     /**
-     * Should accept response if 'use juror phone' is set and no third party phone is provided
+     * Should accept response if 'use juror phone' is set and no third party phone is provided.
      *
      * @throws Exception if the test falls over
      * @since JDB-2165
@@ -1453,7 +1453,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     /**
-     * Should not accept response if 'use juror phone' is set and no juror number is provided
+     * Should not accept response if 'use juror phone' is set and no juror number is provided.
      *
      * @throws Exception if the test falls over
      * @since JDB-2165
@@ -1501,7 +1501,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     /**
-     * The endpoint should reject a third-party response containing an invalid phone number
+     * The endpoint should reject a third-party response containing an invalid phone number.
      *
      * @throws Exception if the test falls over
      * @since JDB-2137
@@ -1548,7 +1548,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     /**
-     * The endpoint should reject a response with no emails populated
+     * The endpoint should reject a response with no emails populated.
      *
      * @throws Exception if the test falls over
      */
@@ -1589,7 +1589,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     /**
-     * Should reject response if 'use juror email' is false but no third party email is provided
+     * Should reject response if 'use juror email' is false but no third party email is provided.
      *
      * @throws Exception if the test falls over
      */
@@ -1678,7 +1678,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     /**
-     * Should not accept response if 'use juror email' is set and no juror email is provided
+     * Should not accept response if 'use juror email' is set and no juror email is provided.
      *
      * @throws Exception if the test falls over
      */
@@ -1725,7 +1725,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     /**
-     * The endpoint should reject a third-party response containing an invalid email
+     * The endpoint should reject a third-party response containing an invalid email.
      *
      * @throws Exception if the test falls over
      */
@@ -1771,7 +1771,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     private String mintPublicJwt(final PublicJWTPayload payload) throws Exception {
-        return TestUtil.mintPublicJwt(payload, SignatureAlgorithm.HS256, publicSecret, Instant.now().plus(100L * 365L
-            , ChronoUnit.DAYS));
+        return TestUtil.mintPublicJwt(payload, SignatureAlgorithm.HS256, publicSecret,
+            Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }
 }

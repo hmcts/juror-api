@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtRates;
@@ -44,7 +43,7 @@ public class CourtLocationServiceImpl implements CourtLocationService {
      * does not own or have access to) and populates a lightweight DTO of selected properties for each record.
      *
      * @return a Data Transfer Object containing a list of court locations with a selection of court location properties
-     * filtered based on the currently logged-in user's access.
+     *         filtered based on the currently logged-in user's access.
      */
     @Override
     @Transactional(readOnly = true)
@@ -66,7 +65,7 @@ public class CourtLocationServiceImpl implements CourtLocationService {
      * access/permissions.
      *
      * @return a Data Transfer Object containing an unfiltered list of court locations with a selection of court
-     * location properties.
+     *         location properties.
      */
     @Override
     public CourtLocationListDto buildAllCourtLocationDataResponse() {

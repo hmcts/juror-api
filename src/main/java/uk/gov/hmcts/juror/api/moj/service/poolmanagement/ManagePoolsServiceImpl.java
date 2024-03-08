@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDTO;
+import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
 import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -75,7 +75,7 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
     }
 
     @Override
-    public SummoningProgressResponseDTO getPoolMonitoringStats(BureauJWTPayload payload, String courtLocationCode,
+    public SummoningProgressResponseDto getPoolMonitoringStats(BureauJWTPayload payload, String courtLocationCode,
                                                                String poolType) {
         final int numberOfWeeks = 8;
 
@@ -103,14 +103,14 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
         return getPoolMonitoringStatsForPeriod(poolStatistics, nilPools, eightWeeks);
     }
 
-    private SummoningProgressResponseDTO getPoolMonitoringStatsForPeriod(final List<Tuple> poolStatistics,
+    private SummoningProgressResponseDto getPoolMonitoringStatsForPeriod(final List<Tuple> poolStatistics,
                                                                          final List<Tuple> nilPools,
                                                                          List<LocalDate> datePeriod) {
-        SummoningProgressResponseDTO dto = new SummoningProgressResponseDTO();
-        List<SummoningProgressResponseDTO.WeekFilter> weekStatistics = new ArrayList<>();
+        SummoningProgressResponseDto dto = new SummoningProgressResponseDto();
+        List<SummoningProgressResponseDto.WeekFilter> weekStatistics = new ArrayList<>();
 
         datePeriod.forEach(startOfWeek -> {
-            List<SummoningProgressResponseDTO.SummoningProgressStats> listStats = new ArrayList<>();
+            List<SummoningProgressResponseDto.SummoningProgressStats> listStats = new ArrayList<>();
             List<Tuple> poolStats = new ArrayList<>();
             List<Tuple> nilPool = new ArrayList<>();
 
@@ -133,7 +133,7 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
             populateStatisticsFromPoolStats(poolStats, listStats);
             populateStatisticsFromNilPools(nilPool, listStats);
 
-            SummoningProgressResponseDTO.WeekFilter week = new SummoningProgressResponseDTO.WeekFilter();
+            SummoningProgressResponseDto.WeekFilter week = new SummoningProgressResponseDto.WeekFilter();
             week.setStartOfWeek(startOfWeek);
             week.setStats(listStats);
             weekStatistics.add(week);
@@ -144,7 +144,7 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
     }
 
     private void populateStatisticsFromPoolStats(List<Tuple> pool,
-                                                 List<SummoningProgressResponseDTO.SummoningProgressStats> listStats) {
+                                                 List<SummoningProgressResponseDto.SummoningProgressStats> listStats) {
         for (Tuple t : pool) {
             listStats.add(createSummoningProgressStat(
                 t.get(0, LocalDate.class),
@@ -157,9 +157,9 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
     }
 
     private void populateStatisticsFromNilPools(List<Tuple> nilPool,
-                                                List<SummoningProgressResponseDTO.SummoningProgressStats> listStats) {
+                                                List<SummoningProgressResponseDto.SummoningProgressStats> listStats) {
         for (Tuple t : nilPool) {
-            List<SummoningProgressResponseDTO.SummoningProgressStats> results =
+            List<SummoningProgressResponseDto.SummoningProgressStats> results =
                 listStats.stream().filter(p -> p.getPoolNumber().equals(t.get(0, String.class))).toList();
             // checking to see if a nil pool has been picked up from the POOL_STATS view - to remove duplication
             if (!results.isEmpty()) {
@@ -230,11 +230,11 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
         return numberRequested - poolMemberCount;
     }
 
-    private SummoningProgressResponseDTO.SummoningProgressStats createSummoningProgressStat(
+    private SummoningProgressResponseDto.SummoningProgressStats createSummoningProgressStat(
         LocalDate serviceStartDate, String poolNumber, int numberOfRequested,
         int summoned, int confirmed, int unavailable) {
-        SummoningProgressResponseDTO.SummoningProgressStats stats
-            = new SummoningProgressResponseDTO.SummoningProgressStats();
+        SummoningProgressResponseDto.SummoningProgressStats stats
+            = new SummoningProgressResponseDto.SummoningProgressStats();
 
         stats.setServiceStartDate(serviceStartDate);
         stats.setPoolNumber(poolNumber);

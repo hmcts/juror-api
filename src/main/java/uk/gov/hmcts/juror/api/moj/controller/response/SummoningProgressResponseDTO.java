@@ -14,7 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @Schema(description = "Response DTO when requesting pool summoning data for court location & pool type")
-public class SummoningProgressResponseDTO {
+public class SummoningProgressResponseDto {
     @JsonProperty("statsByWeek")
     @Schema(description = "A list of pool monitoring stats by week up to 8 weeks")
     List<WeekFilter> statsByWeek;

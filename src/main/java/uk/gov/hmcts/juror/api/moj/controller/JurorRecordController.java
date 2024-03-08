@@ -277,7 +277,6 @@ public class JurorRecordController {
      * including digital summons reply data.
      *
      * @param jurorId Juror number of the response to view
-     *
      * @return Fully populated DTO for juror records with a digital summons reply
      */
     @GetMapping(path = "/digital-detail/{jurorId}")
@@ -418,7 +417,6 @@ public class JurorRecordController {
      *
      * @param jurorNumber Unique Juror number of the juror
      * @param poolNumber  a complete (min 9 digit) pool number that identifies a unique pool entry
-     *
      * @return Fully populated DTO of a juror's attendance details in a pool
      */
     @GetMapping(path = "/attendance-detail/{jurorNumber}/{poolNumber}")
@@ -445,15 +443,15 @@ public class JurorRecordController {
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
-    @GetMapping (path = "/{juror_number}/bank-details")
+    @GetMapping(path = "/{juror_number}/bank-details")
     @IsCourtUser
     @Operation(summary = "get juror bank details",
         description = "get juror bank details for editing jurors bank details")
     public ResponseEntity<JurorBankDetailsDto> getJurorBankDetails(
         @Valid @JurorNumber @P("juror_number") @PathVariable("juror_number")
         @Parameter(description = "jurorNumber", required = true) String jurorNumber) {
-            return ResponseEntity.ok().body(jurorRecordService.getJurorBankDetails(
-                jurorNumber));
+        return ResponseEntity.ok().body(jurorRecordService.getJurorBankDetails(
+            jurorNumber));
     }
 
     @PatchMapping("/update-bank-details")

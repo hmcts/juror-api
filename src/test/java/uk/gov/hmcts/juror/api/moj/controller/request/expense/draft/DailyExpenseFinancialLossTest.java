@@ -21,6 +21,7 @@ public class DailyExpenseFinancialLossTest extends AbstractValidatorTest<DailyEx
             super("lossOfEarningsOrBenefits", DailyExpenseFinancialLoss::setLossOfEarningsOrBenefits);
             addNotRequiredTest(BigDecimal.ONE);
             addMin(BigDecimal.ZERO, null);
+            addMax(new BigDecimal("1000000"),null);
         }
     }
 
@@ -30,6 +31,7 @@ public class DailyExpenseFinancialLossTest extends AbstractValidatorTest<DailyEx
             super("extraCareCost", DailyExpenseFinancialLoss::setExtraCareCost);
             addNotRequiredTest(BigDecimal.ONE);
             addMin(BigDecimal.ZERO, null);
+            addMax(new BigDecimal("1000000"),null);
         }
     }
 
@@ -39,6 +41,7 @@ public class DailyExpenseFinancialLossTest extends AbstractValidatorTest<DailyEx
             super("otherCosts", DailyExpenseFinancialLoss::setOtherCosts);
             addNotRequiredTest(BigDecimal.ONE);
             addMin(BigDecimal.ZERO, null);
+            addMax(new BigDecimal("1000000"),null);
         }
     }
 

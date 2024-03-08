@@ -11,27 +11,34 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolAddCitizenRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
 import uk.gov.hmcts.juror.api.moj.controller.request.NilPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolAdditionalSummonsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoolMemberFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.SummonsFormRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CoronerPoolItemDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.NilPoolResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.PoolCreatedMembersListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestItemDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummonsFormResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.CoronerPool;
 import uk.gov.hmcts.juror.api.moj.domain.CoronerPoolDetail;
+import uk.gov.hmcts.juror.api.moj.domain.FilterPoolMember;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolType;
+import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.Voters;
 import uk.gov.hmcts.juror.api.moj.domain.VotersLocPostcodeTotals;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
@@ -48,8 +55,9 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.VotersRepository;
 import uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsService;
-import uk.gov.hmcts.juror.api.moj.utils.PoolRequestUtils;
+import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -68,7 +76,6 @@ import java.util.Optional;
 public class PoolCreateServiceImpl implements PoolCreateService {
 
     private static final String AGE_DISQ_CODE = "A";
-    private static final String BUREAU_OWNER_CODE = "400";
 
     private static final int LOWER_REQUEST_LIMIT = 30;
 
@@ -128,14 +135,13 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
         // find the number of court deferrals used at this stage by querying the Pool members table for members that
         // were deferred
-        List<JurorPool> deferredJurors =
-            jurorPoolRepository.findByPoolPoolNumberAndWasDeferredAndIsActive(poolRequest.getPoolNumber(),
-                true, true);
+        List<JurorPool> deferredJurors = jurorPoolRepository.findByPoolPoolNumberAndWasDeferredAndIsActive(
+            poolRequest.getPoolNumber(), true, true);
 
         // The court deferrals will have owner not equal to 400
         int deferralsUsed = 0;
         for (JurorPool jurorPool : deferredJurors) {
-            if (!jurorPool.getOwner().equals("400")) {
+            if (!SecurityUtil.BUREAU_OWNER.equals(jurorPool.getOwner())) {
                 deferralsUsed++;
             }
         }
@@ -151,20 +157,16 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     public SummonsFormResponseDto summonsForm(SummonsFormRequestDto summonsFormRequestDto) {
 
         // the number of bureau deferrals from the currently deferred view
-        int bureauDeferrals = getBureauDeferrals(
-            summonsFormRequestDto.getCatchmentArea(),
-            summonsFormRequestDto.getNextDate()
-        );
+        int bureauDeferrals = getBureauDeferrals(summonsFormRequestDto.getCatchmentArea(),
+            summonsFormRequestDto.getNextDate());
 
         // calculate the number required = number requested - number of bureau deferrals
         int noRequired = summonsFormRequestDto.getNoRequested() - bureauDeferrals;
 
         //retrieve the summary of postcodes and totals within, for non coroners pools
         List<VotersLocPostcodeTotals.CourtCatchmentSummaryItem> courtCatchmentSummaryItems =
-            votersLocPostcodeTotalsService.getCourtCatchmentSummaryItems(
-                summonsFormRequestDto.getCatchmentArea(),
-                false
-            );
+            votersLocPostcodeTotalsService
+                .getCourtCatchmentSummaryItems(summonsFormRequestDto.getCatchmentArea(), false);
 
         return new SummonsFormResponseDto(bureauDeferrals, noRequired, courtCatchmentSummaryItems);
     }
@@ -179,7 +181,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
      */
     @Override
     public int getBureauDeferrals(String locationCode, LocalDate deferredTo) {
-        return (int) manageDeferralsService.getDeferralsCount(BUREAU_OWNER_CODE, locationCode, deferredTo);
+        return (int) manageDeferralsService.getDeferralsCount(SecurityUtil.BUREAU_OWNER, locationCode, deferredTo);
     }
 
     /**
@@ -257,9 +259,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         String locCode = poolAdditionalSummonsDto.getCatchmentArea();
 
         //validate the yield calculation
-        checkYield(locCode, poolAdditionalSummonsDto.getNoRequested(),
-            poolAdditionalSummonsDto.getCitizensToSummon(), poolAdditionalSummonsDto.getCitizensSummoned()
-        );
+        checkYield(locCode, poolAdditionalSummonsDto.getNoRequested(), poolAdditionalSummonsDto.getCitizensToSummon(),
+            poolAdditionalSummonsDto.getCitizensSummoned());
 
         lockVoters(locCode);
 
@@ -278,8 +279,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         List<JurorPool> jurorPools = getJurorPools(payload.getLogin(), payload.getOwner(), poolCreateRequestDto);
 
         // find the actual number of jurors added and pass to pool history (minus the disq. on selection)
-        int numSelected = jurorPools.stream().mapToInt(jurorPool ->
-            Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED) ? 0 : 1).sum();
+        int numSelected = jurorPools.stream().mapToInt(jurorPool -> Objects.equals(jurorPool.getStatus().getStatus(),
+                IJurorStatus.DISQUALIFIED) ? 0 : 1)
+            .sum();
 
         printDataService.bulkPrintSummonsLetter(jurorPools);
 
@@ -301,15 +303,15 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         // Get a list of Pool members from voters table
         List<JurorPool> jurorPools = getJurorPools(payload.getLogin(), payload.getOwner(), poolCreateRequestDto);
         // find the actual number of jurors added and pass to pool history (minus the disq. on selection)
-        int numSelected = jurorPools.stream().mapToInt(member ->
-            Objects.equals(member.getStatus().getStatus(), IJurorStatus.DISQUALIFIED) ? 0 : 1).sum();
+        int numSelected = jurorPools.stream().mapToInt(member -> Objects.equals(member.getStatus().getStatus(),
+            IJurorStatus.DISQUALIFIED
+        ) ? 0 : 1).sum();
 
         String owner = payload.getOwner();
         String userId = payload.getLogin();
 
         updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, numSelected,
-            PoolHistory.ADD_POOL_MEMBERS_SUFFIX, HistoryCode.PHSI
-        );
+            PoolHistory.ADD_POOL_MEMBERS_SUFFIX, HistoryCode.PHSI);
         updateJurorHistory(owner, userId, jurorPools);
         processBureauDeferrals(poolCreateRequestDto, userId, false);
     }
@@ -336,12 +338,11 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         return poolCreateRequestDto;
     }
 
-    private void updatePoolHistory(String poolNumber, String userId, int numSelected, String suffix,
-                                   HistoryCode historyCode) {
+    private void updatePoolHistory(String poolNumber, String userId, int numSelected,
+                                   String suffix, HistoryCode historyCode) {
         log.debug(String.format("Update Pool History table for Pool : %s", poolNumber));
         poolHistoryRepository.save(new PoolHistory(poolNumber, LocalDateTime.now(), historyCode, userId,
-            numSelected + suffix
-        ));
+            numSelected + suffix));
     }
 
     private void updatePoolHistory(String poolNumber, String login, String otherInformation) {
@@ -364,13 +365,13 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 .createdBy(userId);
 
             // check if pool member is disqualified on selection
-            if (!Objects.equals(jurorPool.getStatus(), IJurorStatus.DISQUALIFIED)) {
+            if (Objects.equals(jurorPool.getStatus(), IJurorStatus.DISQUALIFIED)) {
+                jurorHistBuilder.historyCode(HistoryCodeMod.DISQUALIFY_POOL_MEMBER);
+                jurorHistBuilder.otherInformation(HistoryCodeMod.DISQUALIFY_POOL_MEMBER.getDescription());
+            } else {
                 jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
                 //Todo need to see what would go into the history info for bulk print data (used to be print files name)
                 //jurorHistBuilder.info("File -" + printFileName);
-            } else {
-                jurorHistBuilder.historyCode(HistoryCodeMod.DISQUALIFY_POOL_MEMBER);
-                jurorHistBuilder.otherInformation(HistoryCodeMod.DISQUALIFY_POOL_MEMBER.getDescription());
             }
             jurorHistoryRepository.save(jurorHistBuilder.build());
         });
@@ -408,7 +409,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 votersService.markVoterAsSelected(voter, attendanceDate);
                 String paddedSequenceNumber = poolMemberSequenceService.leftPadInteger(sequenceNumber);
                 JurorPool jurorPool = createJurorPool(login, owner, voter, poolCreateRequestDto,
-                    paddedSequenceNumber, poolRequest);
+                    paddedSequenceNumber, poolRequest
+                );
                 jurorPools.add(jurorPool);
 
                 // Increment the previous sequence number by one to get the new sequence number
@@ -449,8 +451,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                                       String sequenceNumber, PoolRequest poolRequest) {
 
         if (poolRequest == null) {
-            log.error("Could not find a matching Pool request for pool number {}",
-                poolCreateRequestDto.getPoolNumber());
+            log.error(
+                "Could not find a matching Pool request for pool number {}",
+                poolCreateRequestDto.getPoolNumber()
+            );
             throw new PoolCreateException.UnableToCreatePool();
         }
 
@@ -519,7 +523,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         }
 
         // validate the Yield
-        checkYield(poolCreateRequestDto.getCatchmentArea(), poolCreateRequestDto.getNoRequested(),
+        checkYield(
+            poolCreateRequestDto.getCatchmentArea(),
+            poolCreateRequestDto.getNoRequested(),
             poolCreateRequestDto.getCitizensToSummon()
         );
     }
@@ -540,37 +546,33 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     }
 
     @Override
-    public PoolCreatedMembersListDto getJurorPoolsList(BureauJWTPayload payload, String poolNumber) {
-        String owner = payload.getOwner();
-        PoolRequest poolRequest = PoolRequestUtils.getActivePoolRecord(poolRequestRepository, poolNumber);
+    public PaginatedList<FilterPoolMember> getJurorPoolsList(BureauJWTPayload payload,
+                                                             PoolMemberFilterRequestQuery search) {
+        return PaginationUtil.toPaginatedList(
+            jurorPoolRepository.fetchFilteredPoolMembers(search, payload.getOwner()),
+            search,
+            JurorPoolSearch.SortField.JUROR_NUMBER,
+            SortMethod.ASC,
+            tuple -> {
+                FilterPoolMember.FilterPoolMemberBuilder builder = FilterPoolMember.builder()
+                    .jurorNumber(tuple.get(QJurorPool.jurorPool.juror.jurorNumber))
+                    .firstName(tuple.get(QJurorPool.jurorPool.juror.firstName))
+                    .lastName(tuple.get(QJurorPool.jurorPool.juror.lastName))
+                    .status(tuple.get(QJurorStatus.jurorStatus.statusDesc));
 
-        // Bureau users can only see pool member records while they own the pool record.
-        // After the pool is transferred to the court, the Bureau user should not see anyone from within the pool record
-        if (owner.equals(JurorDigitalApplication.JUROR_OWNER) && !poolRequest.getOwner().equals(owner)) {
-            return new PoolCreatedMembersListDto();
-        }
+                if (SecurityUtil.BUREAU_OWNER.equals(payload.getOwner())) {
+                    builder.postcode(tuple.get(QJurorPool.jurorPool.juror.postcode));
+                } else {
+                    builder.attendance(tuple.get(jurorPoolRepository.ATTENDANCE))
+                        .checkedInToday(tuple.get(jurorPoolRepository.CHECKED_IN_TODAY))
+                        .checkedIn(tuple.get(QAppearance.appearance.timeIn))
+                        .nextDate(tuple.get(QJurorPool.jurorPool.nextDate));
+                }
 
-        List<JurorPool> jurorPools = jurorPoolRepository.findByPoolPoolNumberAndOwnerAndIsActive(poolNumber,
-            payload.getOwner(), true);
-
-        if (jurorPools.isEmpty()) {
-            //no pool members found
-            return null;
-        }
-
-        List<PoolCreatedMembersListDto.JurorPoolDataDto> poolMemberDtoList = new ArrayList<>();
-
-        jurorPools.forEach(jurorPool -> {
-            log.debug(String.format("Mapping pool member: %s to DTO", jurorPool.getPoolNumber()));
-            PoolCreatedMembersListDto.JurorPoolDataDto poolMemberData =
-                new PoolCreatedMembersListDto.JurorPoolDataDto(jurorPool);
-
-            poolMemberDtoList.add(poolMemberData);
-            log.trace(String.format("Juror data added: %s", poolMemberData));
-        });
-
-        log.debug(String.format("%d jurors retrieved", jurorPools.size()));
-        return new PoolCreatedMembersListDto(poolMemberDtoList);
+                return builder.build();
+            },
+            500L
+        );
     }
 
     @Override
@@ -594,8 +596,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             if (deferralsUsed > 0) {
                 updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, deferralsUsed,
                     isNewPool ? PoolHistory.NEW_POOL_REQUEST_SUFFIX : PoolHistory.ADD_POOL_MEMBERS_SUFFIX,
-                    HistoryCode.PHSI
-                );
+                    HistoryCode.PHSI);
             }
         }
     }
@@ -605,9 +606,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             int deferralsUsed = manageDeferralsService.useCourtDeferrals(poolRequest, courtDeferrals, userId);
             if (deferralsUsed > 0) {
                 updatePoolHistory(poolRequest.getPoolNumber(), userId, deferralsUsed,
-                    PoolHistory.ADD_POOL_MEMBERS_SUFFIX,
-                    HistoryCode.PHSI
-                );
+                    PoolHistory.ADD_POOL_MEMBERS_SUFFIX, HistoryCode.PHSI);
             }
         }
     }
@@ -628,8 +627,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         nilPoolResponseDto.setLocationName(location.getName());
         LocalDate attendanceDate = nilPoolRequestDto.getAttendanceDate();
 
-        long deferralsCount = manageDeferralsService.getDeferralsCount(owner, locationCode,
-            attendanceDate);
+        long deferralsCount = manageDeferralsService.getDeferralsCount(owner, locationCode, attendanceDate);
 
         nilPoolResponseDto.setDeferrals((int) deferralsCount);
 
@@ -655,10 +653,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             if (locName == null || locName.isEmpty()) {
                 //we have a problem, can't determine deferrals with neither court location nor name
                 //send back an error response
-                log.error(
-                    "Location code and name are both blank for Nil Pool check for date {}",
-                    nilPoolRequestDto.getAttendanceDate()
-                );
+                log.error("Location code and name are both blank for Nil Pool check for date {}",
+                    nilPoolRequestDto.getAttendanceDate());
                 return null;
             }
             return courtLocationService.getCourtLocationByName(locName);
@@ -803,8 +799,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         return coronerPoolOpt.get();
     }
 
-    private void setUpCoronerPoolItemDto(CoronerPoolItemDto coronerPoolItemDto,
-                                         CoronerPool coronerPool) {
+    private void setUpCoronerPoolItemDto(CoronerPoolItemDto coronerPoolItemDto, CoronerPool coronerPool) {
 
         coronerPoolItemDto.setPoolNumber(coronerPool.getPoolNumber());
         coronerPoolItemDto.setLocCode(coronerPool.getCourtLocation().getLocCode());
@@ -848,10 +843,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         final int noRequested = coronerPoolRequestDto.getNoRequested();
 
         if ((noRequested < LOWER_REQUEST_LIMIT) || (noRequested > UPPER_REQUEST_LIMIT)) {
-            throw new PoolCreateException.InvalidNoOfJurorsRequested(
-                LOWER_REQUEST_LIMIT,
-                UPPER_REQUEST_LIMIT
-            );
+            throw new PoolCreateException.InvalidNoOfJurorsRequested(LOWER_REQUEST_LIMIT, UPPER_REQUEST_LIMIT);
         }
     }
 
@@ -863,10 +855,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
         final String poolNumber = coronerPoolAddCitizenRequestDto.getPoolNumber();
 
-        final CoronerPool coronerPool = getCoronerPoolRecord(poolNumber);
-
-        List<CoronerPoolAddCitizenRequestDto.PostCodeAndNumbers> postCodesAndNumbers =
-            getPostCodesAndNumbers(coronerPoolAddCitizenRequestDto, poolNumber);
+        List<CoronerPoolAddCitizenRequestDto.PostCodeAndNumbers> postCodesAndNumbers = getPostCodesAndNumbers(
+            coronerPoolAddCitizenRequestDto, poolNumber);
 
         validateNumberOfCitizensToAdd(poolNumber, postCodesAndNumbers);
 
@@ -906,12 +896,12 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         log.debug("Completed add citizens to coroner pool function");
     }
 
-    private void validateNumberOfCitizensToAdd(String poolNumber,
-                                               List<CoronerPoolAddCitizenRequestDto.PostCodeAndNumbers>
-                                                   postCodesAndNumbers) {
+    private void validateNumberOfCitizensToAdd(
+        String poolNumber,
+        List<CoronerPoolAddCitizenRequestDto.PostCodeAndNumbers> postCodesAndNumbers) {
         // determine if adding all the values will go over the limit of total allowed
-        int sum = postCodesAndNumbers.stream().mapToInt(
-            CoronerPoolAddCitizenRequestDto.PostCodeAndNumbers::getNumberToAdd).sum();
+        int sum = postCodesAndNumbers.stream()
+            .mapToInt(CoronerPoolAddCitizenRequestDto.PostCodeAndNumbers::getNumberToAdd).sum();
         int currentTotal = coronerPoolDetailRepository.countByPoolNumber(poolNumber);
 
         if ((sum + currentTotal) > UPPER_REQUEST_LIMIT) {

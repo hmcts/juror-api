@@ -66,8 +66,8 @@ public class MojException extends RuntimeException {
             CANNOT_DELETE_USED_JUDGE,
             DAY_ALREADY_EXISTS, CODE_ALREADY_IN_USE,
             NUMBER_OF_JURORS_EXCEEDS_AVAILABLE,
-            NUMBER_OF_JURORS_EXCEEDS_LIMITS
-
+            NUMBER_OF_JURORS_EXCEEDS_LIMITS,
+            CANNOT_REFUSE_FIRST_DEFERRAL
         }
     }
 

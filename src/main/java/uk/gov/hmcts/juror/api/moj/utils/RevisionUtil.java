@@ -37,11 +37,11 @@ public final class RevisionUtil {
 
     @RequiredArgsConstructor
     @SuppressWarnings("checkstyle:MethodTypeParameterName")
-    public static class RevisionIterable<N extends Number & Comparable<N>, T, ID>
+    public static class RevisionIterable<N extends Number & Comparable<N>, T, I>
         implements Iterable<Revision<N, T>> {
 
-        private final RevisionRepository<T, ID, N> revisionRepository;
-        private final ID id;
+        private final RevisionRepository<T, I, N> revisionRepository;
+        private final I id;
         private final RevisionSort revisionSort;
         private final int pageSize;
 
@@ -51,16 +51,16 @@ public final class RevisionUtil {
         }
 
 
-        public static class RevisionIterator<N extends Number & Comparable<N>, T, ID>
+        public static class RevisionIterator<N extends Number & Comparable<N>, T, I>
             implements Iterator<Revision<N, T>> {
-            private final ID id;
-            private final RevisionRepository<T, ID, N> revisionRepository;
+            private final I id;
+            private final RevisionRepository<T, I, N> revisionRepository;
             private Page<Revision<N, T>> page;
 
             private int index;
 
-            public RevisionIterator(RevisionRepository<T, ID, N> revisionRepository,
-                                    ID id,
+            public RevisionIterator(RevisionRepository<T, I, N> revisionRepository,
+                                    I id,
                                     RevisionSort revisionSort,
                                     int pageSize) {
                 this.revisionRepository = revisionRepository;

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 @NoArgsConstructor
 @Builder
 @Getter
+@Data
 @Schema(description = "Disqualify juror payload")
 public class DisqualifyJurorDto {
     @JsonProperty("replyMethod")

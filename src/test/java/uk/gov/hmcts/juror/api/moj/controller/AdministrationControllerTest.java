@@ -57,6 +57,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     }
 )
 @DisplayName("Controller: " + AdministrationControllerTest.BASE_URL)
+@SuppressWarnings("PMD.ExcessiveImports")
 public class AdministrationControllerTest {
 
     public static final String BASE_URL = "/api/v1/moj/administration";

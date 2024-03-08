@@ -20,7 +20,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
-import uk.gov.hmcts.juror.api.moj.controller.request.CJSEmploymentDetailsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.CjsEmploymentDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EligibilityDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPaperResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReasonableAdjustmentDetailsDto;
@@ -1319,11 +1319,11 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .cjsEmployer("National Crime Agency")
             .cjsEmployerDetails("Details of employment at NCA")
             .build();
-        CJSEmploymentDetailsDto cjsEmploymentDetailsDto = new CJSEmploymentDetailsDto();
+        CjsEmploymentDetailsDto cjsEmploymentDetailsDto = new CjsEmploymentDetailsDto();
         cjsEmploymentList.add(cjsEmployment);
         cjsEmploymentDetailsDto.setCjsEmployment(cjsEmploymentList);
 
-        RequestEntity<CJSEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
+        RequestEntity<CjsEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
             HttpMethod.PATCH, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
@@ -1352,11 +1352,11 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .cjsEmployer("National Crime Agency")
             .cjsEmployerDetails("Details of employment at NCA")
             .build();
-        CJSEmploymentDetailsDto cjsEmploymentDetailsDto = new CJSEmploymentDetailsDto();
+        CjsEmploymentDetailsDto cjsEmploymentDetailsDto = new CjsEmploymentDetailsDto();
         cjsEmploymentList.add(cjsEmployment);
         cjsEmploymentDetailsDto.setCjsEmployment(cjsEmploymentList);
 
-        RequestEntity<CJSEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
+        RequestEntity<CjsEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
             HttpMethod.PATCH, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
@@ -1385,11 +1385,11 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .cjsEmployer("National Crime Agency")
             .cjsEmployerDetails("Details of employment at NCA")
             .build();
-        CJSEmploymentDetailsDto cjsEmploymentDetailsDto = new CJSEmploymentDetailsDto();
+        CjsEmploymentDetailsDto cjsEmploymentDetailsDto = new CjsEmploymentDetailsDto();
         cjsEmploymentList.add(cjsEmployment);
         cjsEmploymentDetailsDto.setCjsEmployment(cjsEmploymentList);
 
-        RequestEntity<CJSEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
+        RequestEntity<CjsEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
             HttpMethod.PATCH, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -1410,11 +1410,11 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .cjsEmployer("National Crime Agency")
             .cjsEmployerDetails("Details of employment at NCA")
             .build();
-        CJSEmploymentDetailsDto cjsEmploymentDetailsDto = new CJSEmploymentDetailsDto();
+        CjsEmploymentDetailsDto cjsEmploymentDetailsDto = new CjsEmploymentDetailsDto();
         cjsEmploymentList.add(cjsEmployment);
         cjsEmploymentDetailsDto.setCjsEmployment(cjsEmploymentList);
 
-        RequestEntity<CJSEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
+        RequestEntity<CjsEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
             HttpMethod.PATCH, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -1435,11 +1435,11 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .cjsEmployer("National Crime Agency")
             .cjsEmployerDetails("Details of employment at NCA")
             .build();
-        CJSEmploymentDetailsDto cjsEmploymentDetailsDto = new CJSEmploymentDetailsDto();
+        CjsEmploymentDetailsDto cjsEmploymentDetailsDto = new CjsEmploymentDetailsDto();
         cjsEmploymentList.add(cjsEmployment);
         cjsEmploymentDetailsDto.setCjsEmployment(cjsEmploymentList);
 
-        RequestEntity<CJSEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
+        RequestEntity<CjsEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
             HttpMethod.PATCH, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -1459,11 +1459,11 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .cjsEmployer("!£$%^&*()_+")
             .cjsEmployerDetails("Details of an invalid CJS employment.")
             .build();
-        CJSEmploymentDetailsDto cjsEmploymentDetailsDto = new CJSEmploymentDetailsDto();
+        CjsEmploymentDetailsDto cjsEmploymentDetailsDto = new CjsEmploymentDetailsDto();
         cjsEmploymentList.add(cjsEmployment);
         cjsEmploymentDetailsDto.setCjsEmployment(cjsEmploymentList);
 
-        RequestEntity<CJSEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
+        RequestEntity<CjsEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
             HttpMethod.PATCH, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -1490,10 +1490,10 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .cjsEmployerDetails("Some test details")
             .build();
         cjsEmploymentList.add(cjsEmployment);
-        CJSEmploymentDetailsDto cjsEmploymentDetailsDto = new CJSEmploymentDetailsDto();
+        CjsEmploymentDetailsDto cjsEmploymentDetailsDto = new CjsEmploymentDetailsDto();
         cjsEmploymentDetailsDto.setCjsEmployment(cjsEmploymentList);
 
-        RequestEntity<CJSEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
+        RequestEntity<CjsEmploymentDetailsDto> requestEntity = new RequestEntity<>(cjsEmploymentDetailsDto, httpHeaders,
             HttpMethod.PATCH, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -1870,7 +1870,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             jurorPaperResponseCjsRepository.findByJurorNumber(responseDetailDto.getJurorNumber());
         if (cjsEmployments != null && !cjsEmployments.isEmpty()) {
             JurorResponseCjsEmployment actualCjs = cjsEmployments.get(0);
-            JurorPaperResponseDetailDto.CJSEmployment expectedCjs = responseDetailDto.getCjsEmployment().get(0);
+            JurorPaperResponseDetailDto.CjsEmployment expectedCjs = responseDetailDto.getCjsEmployment().get(0);
             assertThat(expectedCjs.getCjsEmployer()).isEqualTo(actualCjs.getCjsEmployer());
             assertThat(expectedCjs.getCjsEmployerDetails()).isEqualTo(actualCjs.getCjsEmployerDetails());
         }

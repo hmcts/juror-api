@@ -115,7 +115,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus.AWAITING_COURT_REPLY;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_COMPLETION_DATE;
@@ -3766,7 +3765,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         private static final String URL = BASE_URL + "/{juror_number}/bank-details";
 
-        private String toURL(String jurorNumber) {
+        private String toUrl(String jurorNumber) {
             return URL.replace("{juror_number}", jurorNumber);
         }
 
@@ -3778,7 +3777,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<JurorBankDetailsDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(toURL("123456789"))),
+                        URI.create(toUrl("123456789"))),
                     JurorBankDetailsDto.class);
 
             assertThat(response.getStatusCode()).as("Expect the HTTP Response Status to be OK")
@@ -3828,7 +3827,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<JurorBankDetailsDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(toURL("111111111"))),
+                        URI.create(toUrl("111111111"))),
                     JurorBankDetailsDto.class);
 
             assertThat(response.getStatusCode())
@@ -3845,7 +3844,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<JurorBankDetailsDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(toURL("123456789"))),
+                        URI.create(toUrl("123456789"))),
                     JurorBankDetailsDto.class);
 
             assertThat(response.getStatusCode())
@@ -3862,7 +3861,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<JurorBankDetailsDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(toURL("000000000"))),
+                        URI.create(toUrl("000000000"))),
                     JurorBankDetailsDto.class);
 
             assertThat(response.getStatusCode())
@@ -3894,7 +3893,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<String> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(toURL("INVALID"))),
+                        URI.create(toUrl("INVALID"))),
                     String.class);
 
             assertThat(response.getStatusCode())

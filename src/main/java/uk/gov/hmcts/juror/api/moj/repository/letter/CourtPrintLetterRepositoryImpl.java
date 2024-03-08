@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -39,38 +40,13 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
 
 
     @Override
+    @SuppressWarnings("PMD.CyclomaticComplexity")
     public Tuple retrievePrintInformation(String jurorNumber, CourtLetterType courtLetterType, boolean welsh,
                                           String owner) {
         List<Expression<?>> expressions = fetchCommonPrintData(welsh);
 
-        // Add switch/if statements for separate letter types e.g. certificate of attendance
-        switch (courtLetterType) {
-            case DEFERRAL_GRANTED, POSTPONED -> {
-                expressions.add(JUROR_POOL.deferralDate);
-                expressions.add(JUROR_POOL.deferralCode);
-            }
-            case EXCUSAL_GRANTED -> {
-                expressions.add(JUROR.excusalCode);
-                expressions.add(JUROR.excusalDate);
-            }
-            case WITHDRAWAL -> {
-                expressions.add(JUROR.disqualifyDate);
-                expressions.add(JUROR.disqualifyCode);
-            }
-            case DEFERRAL_REFUSED -> {
-                // no additional database properties to add to the to query expressions
-            }
-            case EXCUSAL_REFUSED -> {
-                expressions.add(JUROR_POOL.juror.excusalCode);
-                expressions.add(JUROR_POOL.juror.excusalDate);
-            }
-            case SHOW_CAUSE -> {
-                expressions.add(APPEARANCE.attendanceDate);
-                expressions.add(APPEARANCE.noShow);
-            }
-
-            default -> throw new MojException.NotImplemented("letter type not implemented", null);
-        }
+        // start building the sql expressions based on the letter type
+        buildExpresionsBasedOnLetterType(courtLetterType, expressions);
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         JPAQuery<Tuple> query =
@@ -102,24 +78,69 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
             case WITHDRAWAL -> query
                 .where(JUROR_POOL.status.status.eq(IJurorStatus.DISQUALIFIED))
                 .orderBy(JUROR_POOL.juror.disqualifyDate.desc());
-            case SHOW_CAUSE ->
+            case SHOW_CAUSE, FAILED_TO_ATTEND ->
                 query.leftJoin(APPEARANCE).on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber)
                         .and(JUROR_POOL.pool.poolNumber.eq(APPEARANCE.poolNumber)))
                     .where(APPEARANCE.noShow.isTrue())
-                    .orderBy(JUROR_POOL.juror.jurorNumber.desc());
+                    .where(APPEARANCE.attendanceType.eq(AttendanceType.ABSENT))
+                    .orderBy(APPEARANCE.attendanceDate.desc());
             default -> throw new MojException.NotImplemented("letter type not implemented", null);
         }
+
         query.where(JUROR_POOL.juror.jurorNumber.eq(jurorNumber));
         query.where(JUROR_POOL.owner.eq(owner));
 
         return query.fetchOne();
     }
 
+    @SuppressWarnings("PMD.CyclomaticComplexity")
+    private static void buildExpresionsBasedOnLetterType(CourtLetterType courtLetterType,
+                                                         List<Expression<?>> expressions) {
+        // Add switch/if statements for separate letter types e.g. certificate of attendance
+        switch (courtLetterType) {
+            case DEFERRAL_GRANTED, POSTPONED -> {
+                expressions.add(JUROR_POOL.deferralDate);
+                expressions.add(JUROR_POOL.deferralCode);
+            }
+            case EXCUSAL_GRANTED -> {
+                expressions.add(JUROR.excusalCode);
+                expressions.add(JUROR.excusalDate);
+            }
+            case WITHDRAWAL -> {
+                expressions.add(JUROR.disqualifyDate);
+                expressions.add(JUROR.disqualifyCode);
+            }
+            case DEFERRAL_REFUSED -> {
+                // no additional database properties to add to the to query expressions
+            }
+            case EXCUSAL_REFUSED -> {
+                expressions.add(JUROR_POOL.juror.excusalCode);
+                expressions.add(JUROR_POOL.juror.excusalDate);
+            }
+            case SHOW_CAUSE -> {
+                expressions.add(APPEARANCE.attendanceDate);
+                expressions.add(APPEARANCE.noShow);
+            }
+            case FAILED_TO_ATTEND -> expressions.add(APPEARANCE.attendanceDate);
+
+            default -> throw new MojException.NotImplemented("letter type not implemented", null);
+        }
+    }
+
     private List<Expression<?>> fetchCommonPrintData(boolean welsh) {
         List<Expression<?>> expressions = new ArrayList<>();
 
         // Court information
-        if (!welsh) {
+        if (welsh) {
+            expressions.add(WELSH_COURT_LOCATION.locCourtName);
+            expressions.add(WELSH_COURT_LOCATION.address1);
+            expressions.add(WELSH_COURT_LOCATION.address2);
+            expressions.add(WELSH_COURT_LOCATION.address3);
+            expressions.add(WELSH_COURT_LOCATION.address4);
+            expressions.add(WELSH_COURT_LOCATION.address5);
+            expressions.add(WELSH_COURT_LOCATION.address6);
+
+        } else {
             expressions.add(COURT_LOCATION.locCode);
             expressions.add(COURT_LOCATION.name);
             expressions.add(COURT_LOCATION.address1);
@@ -128,15 +149,8 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
             expressions.add(COURT_LOCATION.address4);
             expressions.add(COURT_LOCATION.address5);
             expressions.add(COURT_LOCATION.address6);
-        } else {
-            expressions.add(WELSH_COURT_LOCATION.locCourtName);
-            expressions.add(WELSH_COURT_LOCATION.address1);
-            expressions.add(WELSH_COURT_LOCATION.address2);
-            expressions.add(WELSH_COURT_LOCATION.address3);
-            expressions.add(WELSH_COURT_LOCATION.address4);
-            expressions.add(WELSH_COURT_LOCATION.address5);
-            expressions.add(WELSH_COURT_LOCATION.address6);
         }
+
         expressions.add(COURT_LOCATION.locPhone);
         expressions.add(POOL_REQUEST.attendTime);
         expressions.add(COURT_LOCATION.signatory);

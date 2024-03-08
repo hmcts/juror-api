@@ -39,6 +39,7 @@ import java.util.Set;
 import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(SpringRunner.class)
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.LawOfDemeter"})
 public class JurorResponseServiceImplTest extends TestCase {
 
     @Mock
@@ -106,7 +107,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "123456789");
 
-        paperResponsePersonalDetailsMockitoVerification(0, 1,
+        assertPaperResponsePersonalDetailsMockitoVerification(0, 1,
             1, 1, 0,
             0, 0,
             0, 0, 0);
@@ -120,7 +121,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "123456789");
 
-        paperResponsePersonalDetailsMockitoVerification(0, 1,
+        assertPaperResponsePersonalDetailsMockitoVerification(0, 1,
             0, 0, 0,
             0, 0,
             0, 1, 0);
@@ -133,7 +134,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "987654321");
 
-        paperResponsePersonalDetailsMockitoVerification(1, 0,
+        assertPaperResponsePersonalDetailsMockitoVerification(1, 0,
             1, 1, 0,
             0, 0,
             0, 0, 0);
@@ -146,7 +147,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "987654321");
 
-        paperResponsePersonalDetailsMockitoVerification(1, 0,
+        assertPaperResponsePersonalDetailsMockitoVerification(1, 0,
             0, 0, 0,
             0, 0,
             0, 1, 0);
@@ -160,7 +161,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
             jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "987654321"));
 
-        paperResponsePersonalDetailsMockitoVerification(0, 1,
+        assertPaperResponsePersonalDetailsMockitoVerification(0, 1,
             0, 0, 0,
             0, 0,
             0, 0, 0);
@@ -174,7 +175,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
             jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "987654321"));
 
-        paperResponsePersonalDetailsMockitoVerification(0, 1,
+        assertPaperResponsePersonalDetailsMockitoVerification(0, 1,
             0, 0, 0,
             0, 0,
             0, 0, 0);
@@ -188,7 +189,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
             jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "987654321"));
 
-        paperResponsePersonalDetailsMockitoVerification(1, 0,
+        assertPaperResponsePersonalDetailsMockitoVerification(1, 0,
             0, 0, 0,
             0, 0,
             0, 0, 0);
@@ -203,7 +204,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
             jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "987654321"));
 
-        paperResponsePersonalDetailsMockitoVerification(1, 0,
+        assertPaperResponsePersonalDetailsMockitoVerification(1, 0,
             0, 0, 0,
             0, 0,
             0, 0, 0);
@@ -217,7 +218,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "123456789");
 
-        paperResponsePersonalDetailsMockitoVerification(0, 1,
+        assertPaperResponsePersonalDetailsMockitoVerification(0, 1,
             1, 1, 1,
             0, 0,
             0, 0, 0);
@@ -231,7 +232,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "987654321");
 
-        paperResponsePersonalDetailsMockitoVerification(1, 0,
+        assertPaperResponsePersonalDetailsMockitoVerification(1, 0,
             0, 0, 0,
             1, 0,
             0, 1, 1);
@@ -249,7 +250,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "123456789");
 
-        paperResponsePersonalDetailsMockitoVerification(0, 1,
+        assertPaperResponsePersonalDetailsMockitoVerification(0, 1,
             1, 1, 1,
             0, 1,
             0, 0, 0);
@@ -267,7 +268,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "123456789");
 
-        paperResponsePersonalDetailsMockitoVerification(0, 1,
+        assertPaperResponsePersonalDetailsMockitoVerification(0, 1,
             0, 0, 0,
             1, 0,
             1, 1, 1);
@@ -285,7 +286,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "123456789");
 
-        paperResponsePersonalDetailsMockitoVerification(0, 1,
+        assertPaperResponsePersonalDetailsMockitoVerification(0, 1,
             1, 1, 1,
             0, 1,
             0, 0, 0);
@@ -304,7 +305,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "123456789");
 
-        paperResponsePersonalDetailsMockitoVerification(0, 1,
+        assertPaperResponsePersonalDetailsMockitoVerification(0, 1,
             0, 0, 0,
             1, 0,
             1, 1, 1);
@@ -368,16 +369,17 @@ public class JurorResponseServiceImplTest extends TestCase {
         return jurorPersonalDetailsDto;
     }
 
-    private void paperResponsePersonalDetailsMockitoVerification(int jurorPoolRepoFind,
-                                                                 int jurorPoolRepoFindOrdered,
-                                                                 int jurorPaperResponseRepoFind,
-                                                                 int jurorPaperResponseRepoSave,
-                                                                 int straightThroughProcessorServiceIsValidPaper,
-                                                                 int straightThroughProcessorServiceIsValidDigital,
-                                                                 int straightThroughProcessorProcessAgeDisqPaper,
-                                                                 int straightThroughProcessorProcessAgeDisqDigital,
-                                                                 int jurorDigitalResponseRepositoryFind,
-                                                                 int jurorDigitalResponseRepositorySave) {
+    private void assertPaperResponsePersonalDetailsMockitoVerification(
+        int jurorPoolRepoFind,
+        int jurorPoolRepoFindOrdered,
+        int jurorPaperResponseRepoFind,
+        int jurorPaperResponseRepoSave,
+        int straightThroughProcessorServiceIsValidPaper,
+        int straightThroughProcessorServiceIsValidDigital,
+        int straightThroughProcessorProcessAgeDisqPaper,
+        int straightThroughProcessorProcessAgeDisqDigital,
+        int jurorDigitalResponseRepositoryFind,
+        int jurorDigitalResponseRepositorySave) {
         Mockito.verify(jurorPoolRepository, Mockito.times(jurorPoolRepoFind))
             .findByJurorJurorNumberAndIsActive(Mockito.any(), Mockito.anyBoolean());
         Mockito.verify(jurorPoolRepository, Mockito.times(jurorPoolRepoFindOrdered))
@@ -393,7 +395,7 @@ public class JurorResponseServiceImplTest extends TestCase {
                 Mockito.any(JurorPool.class));
         Mockito.verify(straightThroughProcessorService, Mockito.times(straightThroughProcessorServiceIsValidDigital))
             .isValidForStraightThroughAgeDisqualification(Mockito.any(DigitalResponse.class),
-                (Mockito.any(LocalDate.class)),
+                Mockito.any(LocalDate.class),
                 Mockito.any(JurorPool.class));
 
         Mockito.verify(straightThroughProcessorService, Mockito.times(straightThroughProcessorProcessAgeDisqPaper))

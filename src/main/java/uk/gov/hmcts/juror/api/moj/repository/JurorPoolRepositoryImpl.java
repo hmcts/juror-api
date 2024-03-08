@@ -1,26 +1,34 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Ops;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoolMemberFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -213,6 +221,81 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             dataMapper, maxItems);
     }
 
+    @Transactional(readOnly = true)
+    public JPAQuery<Tuple> fetchFilteredPoolMembers(PoolMemberFilterRequestQuery search, String owner) {
+        JPAQueryFactory queryFactory = getQueryFactory();
+
+        JPAQuery<?> partialQuery = queryFactory.from(QJurorPool.jurorPool)
+            .join(QJuror.juror).on(QJurorPool.jurorPool.juror.jurorNumber.eq(QJuror.juror.jurorNumber))
+            .leftJoin(QAppearance.appearance)
+            .on(QJurorPool.jurorPool.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber))
+            .leftJoin(QJurorStatus.jurorStatus)
+            .on(QJurorPool.jurorPool.status.status.eq(QJurorStatus.jurorStatus.status))
+            .leftJoin(QJurorTrial.jurorTrial)
+            .on(QJurorPool.jurorPool.juror.jurorNumber.eq(QJurorTrial.jurorTrial.juror.jurorNumber))
+            .where(QJurorPool.jurorPool.isActive.isTrue())
+            .where(QJurorPool.jurorPool.pool.poolNumber.eq(search.getPoolNumber()))
+            .where(QJurorPool.jurorPool.owner.eq(owner));
+
+        if (null != search.getJurorNumber()) {
+            partialQuery.where(QJuror.juror.jurorNumber.like(search.getJurorNumber() + "%"));
+        }
+        if (null != search.getFirstName()) {
+            partialQuery.where(QJuror.juror.firstName.like(search.getFirstName().toUpperCase() + "%"));
+        }
+        if (null != search.getLastName()) {
+            partialQuery.where(QJuror.juror.lastName.like(search.getLastName().toUpperCase() + "%"));
+        }
+        if (null != search.getCheckedIn() && search.getCheckedIn()) {
+            partialQuery.where(getCheckedInBoolean());
+        }
+        if (null != search.getNextDue()) {
+            if (search.getNextDue()) {
+                partialQuery.where(QJurorPool.jurorPool.nextDate.isNotNull());
+            } else {
+                partialQuery.where(QJurorPool.jurorPool.nextDate.isNull());
+            }
+        }
+        if (null != search.getStatuses()) {
+            partialQuery.where(QJurorStatus.jurorStatus.statusDesc.in(search.getStatuses()));
+        }
+        if (null != search.getAttendance()) {
+            partialQuery.where(
+                (search.getAttendance().contains(PoolMemberFilterRequestQuery.AttendanceEnum.ON_CALL)
+                    ? QJurorPool.jurorPool.onCall.eq(true)
+                    : Expressions.FALSE)
+                    .or(
+                        search.getAttendance().contains(PoolMemberFilterRequestQuery.AttendanceEnum.ON_A_TRIAL)
+                            ? QJurorTrial.jurorTrial.result.eq("J")
+                            : Expressions.FALSE)
+                        .or(search.getAttendance().contains(PoolMemberFilterRequestQuery.AttendanceEnum.IN_ATTENDANCE)
+                                ? Expressions.booleanOperation(
+                                    Ops.AND,
+                                    QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+                                    QAppearance.appearance.attendanceDate.eq(LocalDate.now()))
+                                : Expressions.FALSE)
+                    .or(search.getAttendance().contains(PoolMemberFilterRequestQuery.AttendanceEnum.OTHER)
+                            ? QJurorPool.jurorPool.nextDate.eq(LocalDate.now())
+                                .and(QJurorPool.jurorPool.onCall.ne(true))
+                                .and(QJurorTrial.jurorTrial.result.ne("J"))
+                                .and(QAppearance.appearance.appearanceStage.ne(AppearanceStage.CHECKED_IN))
+                            : Expressions.FALSE
+            ));
+        }
+
+        return partialQuery.select(
+            QJurorPool.jurorPool.juror.jurorNumber,
+            QJurorPool.jurorPool.juror.firstName,
+            QJurorPool.jurorPool.juror.lastName,
+            QJurorPool.jurorPool.juror.postcode,
+            getAttendanceCase(),
+            getCheckedInBoolean().as(CHECKED_IN_TODAY),
+            QAppearance.appearance.timeIn,
+            QJurorPool.jurorPool.nextDate,
+            QJurorStatus.jurorStatus.statusDesc
+        );
+    }
+
     private static StringExpression getJurorAttendance() {
         return new CaseBuilder()
             .when(Expressions.asBoolean(JUROR_POOL.onCall.eq(true)))
@@ -227,5 +310,31 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             .when(Expressions.asBoolean(JUROR_POOL.onCall.eq(true)))
             .then("On call")
             .otherwise(JUROR_POOL.nextDate.stringValue());
+    }
+
+    JPAQueryFactory getQueryFactory() {
+        return new JPAQueryFactory(entityManager);
+    }
+
+    StringExpression getAttendanceCase() {
+        return new CaseBuilder()
+            .when(Expressions.asBoolean(QJurorPool.jurorPool.onCall.eq(true)))
+            .then(PoolMemberFilterRequestQuery.AttendanceEnum.ON_CALL.getKeyString())
+            .when(QJurorTrial.jurorTrial.result.eq("J"))
+            .then(PoolMemberFilterRequestQuery.AttendanceEnum.ON_A_TRIAL.getKeyString())
+            .when(getCheckedInBoolean())
+            .then(PoolMemberFilterRequestQuery.AttendanceEnum.IN_ATTENDANCE.getKeyString())
+            .when(QJurorPool.jurorPool.nextDate.eq(LocalDate.now()))
+            .then(PoolMemberFilterRequestQuery.AttendanceEnum.OTHER.getKeyString())
+            .otherwise("")
+            .as(ATTENDANCE);
+    }
+
+    BooleanExpression getCheckedInBoolean() {
+        return Expressions.booleanOperation(
+            Ops.AND,
+            QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+            QAppearance.appearance.attendanceDate.eq(LocalDate.now())
+        );
     }
 }

@@ -1,23 +1,29 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import com.querydsl.core.Tuple;
+import com.querydsl.jpa.impl.JPAQuery;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
 import uk.gov.hmcts.juror.api.moj.controller.request.NilPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoolMemberFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CoronerPoolItemDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.PoolCreatedMembersListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestItemDto;
 import uk.gov.hmcts.juror.api.moj.domain.CoronerPool;
+import uk.gov.hmcts.juror.api.moj.domain.FilterPoolMember;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -27,13 +33,16 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolType;
+import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.Voters;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.PoolCreateException;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolDetailRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
-import uk.gov.hmcts.juror.api.moj.repository.FormAttributeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
@@ -43,22 +52,25 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.VotersRepository;
 import uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsService;
+import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PoolCreateServiceTest {
 
     @Mock
@@ -101,10 +113,16 @@ public class PoolCreateServiceTest {
     private CoronerPoolDetailRepository coronerPoolDetailRepository;
     @Mock
     private CoronerPoolRepository coronerPoolRepository;
-    @Mock
-    private FormAttributeRepository formAttributeRepository;
+    private MockedStatic<PaginationUtil> mockStaticPaginationUtil;
     @InjectMocks
     PoolCreateServiceImpl poolCreateService;
+
+    @AfterEach
+    public void afterEach() {
+        if (mockStaticPaginationUtil != null) {
+            mockStaticPaginationUtil.close();
+        }
+    }
 
     @Test
     public void test_getPoolRequest_recordFound() {
@@ -144,8 +162,6 @@ public class PoolCreateServiceTest {
         String owner = "415";
 
         Mockito.when(poolRequestRepository.findById(Mockito.any())).thenReturn(Optional.empty());
-        Mockito.when(jurorPoolRepository.findByPoolPoolNumberAndWasDeferredAndIsActive(
-            Mockito.any(), Mockito.anyBoolean(), Mockito.anyBoolean())).thenReturn(new ArrayList<>());
 
         PoolRequestItemDto poolRequestItemDto = poolCreateService.getPoolRequest(poolNumber, owner);
 
@@ -175,7 +191,6 @@ public class PoolCreateServiceTest {
         poolCreateRequestDto.setNoRequested(noRequested);
         poolCreateRequestDto.setCitizensToSummon(citizensToSummon);
 
-        Mockito.when(courtLocationService.getCourtLocation(Mockito.any())).thenReturn(poolrequest.getCourtLocation());
         Mockito.when(courtLocationService.getYieldForCourtLocation(Mockito.any()))
             .thenReturn(poolrequest.getCourtLocation().getYield());
         Mockito.when(courtLocationService.getVotersLock(Mockito.any())).thenReturn(false);
@@ -197,10 +212,6 @@ public class PoolCreateServiceTest {
         PoolCreateRequestDto poolCreateRequestDto = createValidPoolCreateRequestDto();
         poolCreateRequestDto.setNoRequested(noRequested);
         poolCreateRequestDto.setCitizensToSummon(citizensToSummon);
-
-        Mockito.when(courtLocationService.getCourtLocation(Mockito.any())).thenReturn(courtLocation);
-        Mockito.when(courtLocationService.getYieldForCourtLocation(Mockito.any())).thenReturn(courtLocation.getYield());
-        Mockito.when(courtLocationService.getVotersLock(Mockito.any())).thenReturn(true);
 
         //GET POOL MEMBER
         Mockito.when(votersServiceImpl.getVoters(Mockito.any(), Mockito.any())).thenReturn(jurorNumber);
@@ -258,7 +269,6 @@ public class PoolCreateServiceTest {
         poolCreateRequestDto.setNoRequested(noRequested);
         poolCreateRequestDto.setCitizensToSummon(citizensToSummon);
 
-        Mockito.when(courtLocationService.getCourtLocation(Mockito.any())).thenReturn(courtLocation);
         Mockito.when(courtLocationService.getYieldForCourtLocation(Mockito.any())).thenReturn(courtLocation.getYield());
 
         //summoned too many citizens, raise an exception
@@ -510,7 +520,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_getPoolMembersList_bureauUser_activeBureauOwnedRecord() {
+    public void test_getPoolMembersList_bureauUser_mapsFieldsProperly() {
         String bureauOwner = "400";
         final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
 
@@ -518,126 +528,80 @@ public class PoolCreateServiceTest {
         poolRequest.setOwner(bureauOwner);
         String poolNumber = poolRequest.getPoolNumber();
 
-        JurorPool bureauOwnedActiveRecord = createJurorPool(bureauOwner, "111111111", poolNumber);
+        JPAQuery<Tuple> mockData = Mockito.mock();
+        Mockito.when(jurorPoolRepository.fetchFilteredPoolMembers(Mockito.any(), Mockito.any()))
+            .thenReturn(mockData);
 
-        Mockito.doReturn(Optional.of(poolRequest)).when(poolRequestRepository)
-            .findByPoolNumber(poolNumber);
-        Mockito.doReturn(Collections.singletonList(bureauOwnedActiveRecord)).when(jurorPoolRepository)
-            .findByPoolPoolNumberAndOwnerAndIsActive(poolNumber, bureauOwner, true);
+        mockStaticPaginationUtil = Mockito.mockStatic(PaginationUtil.class);
 
-        PoolCreatedMembersListDto response = poolCreateService.getJurorPoolsList(payload, poolNumber);
-        List<PoolCreatedMembersListDto.JurorPoolDataDto> responseData = response.getData();
+        ArgumentCaptor<Function<Tuple, FilterPoolMember>> dataMapperCaptor = ArgumentCaptor.forClass(Function.class);
 
-        assertThat(responseData.isEmpty())
-            .as("Expect the response to contain data items")
-            .isFalse();
-        assertThat(responseData.size())
-            .as("Expect a single data item to be returned in the mapped response")
-            .isEqualTo(1);
+        poolCreateService.getJurorPoolsList(payload, createPoolFilterQuery(poolNumber));
 
-        PoolCreatedMembersListDto.JurorPoolDataDto dto = responseData.get(0);
+        mockStaticPaginationUtil.verify(() -> {
+            PaginationUtil.toPaginatedList(Mockito.eq(mockData), Mockito.eq(createPoolFilterQuery(poolNumber)),
+                                           Mockito.eq(JurorPoolSearch.SortField.JUROR_NUMBER),
+                                           Mockito.eq(SortMethod.ASC), dataMapperCaptor.capture(),
+                                           Mockito.eq(500L));
+        });
 
-        assertThat(dto.getOwner()).isEqualTo("Bureau");
-        assertThat(dto.getJurorNumber()).isEqualTo("111111111");
-        assertThat(dto.getFirstName()).isEqualTo("Test");
-        assertThat(dto.getLastName()).isEqualTo("Person");
-        assertThat(dto.getPostcode()).isEqualTo("CH1 2AN");
-        // TODO - re-instate when juror state is migrated
-        //assertThat(dto.getStatus()).isEqualTo("Responded");
+        Function<Tuple, FilterPoolMember> dataMapper = dataMapperCaptor.getValue();
+
+        String jurorNumber = "123456789";
+        FilterPoolMember data = dataMapper.apply(createQueryResult(jurorNumber));
+
+        assertThat(data.getJurorNumber()).isEqualTo(jurorNumber);
+        assertThat(data.getFirstName()).isEqualTo("Test");
+        assertThat(data.getLastName()).isEqualTo("Person");
+        assertThat(data.getStatus()).isEqualTo("Responded");
+        assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
+        assertThat(data.getAttendance()).isNull();
+        assertThat(data.getCheckedInToday()).isNull();
+        assertThat(data.getCheckedIn()).isNull();
+        assertThat(data.getNextDate()).isNull();
     }
 
     @Test
-    public void test_getPoolMembersList_bureauUser_noActiveBureauOwnedRecords() {
-        String bureauOwner = "400";
-        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
+    public void test_getPoolMembersList_courtUser_mapsFieldsProperly() {
+        String bureauOwner = "415";
+        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "COURT_USER");
 
         PoolRequest poolRequest = createValidPoolRequest("415220110");
         poolRequest.setOwner(bureauOwner);
         String poolNumber = poolRequest.getPoolNumber();
 
-        Mockito.doReturn(Optional.of(poolRequest)).when(poolRequestRepository).findByPoolNumber(poolNumber);
-        Mockito.doReturn(new ArrayList<>()).when(jurorPoolRepository)
-            .findByPoolPoolNumberAndOwnerAndIsActive(poolNumber, bureauOwner, true);
+        JPAQuery<Tuple> mockData = Mockito.mock();
+        Mockito.when(jurorPoolRepository.fetchFilteredPoolMembers(Mockito.any(), Mockito.any()))
+            .thenReturn(mockData);
 
-        PoolCreatedMembersListDto response = poolCreateService.getJurorPoolsList(payload, poolNumber);
+        mockStaticPaginationUtil = Mockito.mockStatic(PaginationUtil.class);
 
-        assertThat(response)
-            .as("Expect the response to contain no data items")
-            .isNull();
-    }
+        ArgumentCaptor<Function<Tuple, FilterPoolMember>> dataMapperCaptor = ArgumentCaptor.forClass(Function.class);
 
-    @Test
-    public void test_getPoolMembersList_bureauUser_poolTransferred() {
-        String bureauOwner = "400";
-        BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
+        poolCreateService.getJurorPoolsList(payload, createPoolFilterQuery(poolNumber));
 
-        PoolRequest poolRequest = createValidPoolRequest("415220110");
-        String poolNumber = poolRequest.getPoolNumber();
+        mockStaticPaginationUtil.verify(() -> {
+            PaginationUtil.toPaginatedList(Mockito.eq(mockData), Mockito.eq(createPoolFilterQuery(poolNumber)),
+                                           Mockito.eq(JurorPoolSearch.SortField.JUROR_NUMBER),
+                                           Mockito.eq(SortMethod.ASC), dataMapperCaptor.capture(),
+                                           Mockito.eq(500L));
+        });
 
-        Mockito.doReturn(Optional.of(poolRequest)).when(poolRequestRepository).findByPoolNumber(poolNumber);
+        Function<Tuple, FilterPoolMember> dataMapper = dataMapperCaptor.getValue();
 
-        PoolCreatedMembersListDto response = poolCreateService.getJurorPoolsList(payload, poolNumber);
-        List<PoolCreatedMembersListDto.JurorPoolDataDto> responseData = response.getData();
+        String jurorNumber = "123456789";
+        FilterPoolMember data = dataMapper.apply(createQueryResult(jurorNumber));
 
-        assertThat(responseData.isEmpty())
-            .as("Expect the response to contain no data items")
-            .isTrue();
-    }
-
-    @Test
-    public void test_getPoolMembersList_courtUser_activeCourtOwned() {
-        String courtOwner = "415";
-        final BureauJWTPayload payload = TestUtils.createJwt(courtOwner, "COURT_USER");
-
-        PoolRequest poolRequest = createValidPoolRequest("415220110");
-        String poolNumber = poolRequest.getPoolNumber();
-
-        JurorPool courtOwnedActiveRecord = createJurorPool(courtOwner, "444444444", poolNumber);
-
-        Mockito.doReturn(Optional.of(poolRequest)).when(poolRequestRepository).findByPoolNumber(poolNumber);
-        Mockito.doReturn(Collections.singletonList(courtOwnedActiveRecord)).when(jurorPoolRepository)
-            .findByPoolPoolNumberAndOwnerAndIsActive(poolNumber, courtOwner, true);
-
-        PoolCreatedMembersListDto response = poolCreateService.getJurorPoolsList(payload, poolNumber);
-        List<PoolCreatedMembersListDto.JurorPoolDataDto> responseData = response.getData();
-
-        assertThat(responseData.isEmpty())
-            .as("Expect the response to contain data items")
-            .isFalse();
-        assertThat(responseData.size())
-            .as("Expect a single data item to be returned in the mapped response")
-            .isEqualTo(1);
-
-        PoolCreatedMembersListDto.JurorPoolDataDto dto = responseData.get(0);
-
-        assertThat(dto.getOwner()).isEqualTo("Court");
-        assertThat(dto.getJurorNumber()).isEqualTo("444444444");
-        assertThat(dto.getFirstName()).isEqualTo("Test");
-        assertThat(dto.getLastName()).isEqualTo("Person");
-        assertThat(dto.getPostcode()).isEqualTo("CH1 2AN");
-        // TODO - re-instate when juror state is migrated
-        //assertThat(dto.getStatus()).isEqualTo("Responded");
-    }
-
-    @Test
-    public void test_getPoolMembersList_courtUser_noActiveCourtOwned() {
-        String bureauOwner = "400";
-        String courtOwner = "415";
-        final BureauJWTPayload payload = TestUtils.createJwt(courtOwner, "COURT_USER");
-
-        PoolRequest poolRequest = createValidPoolRequest("415220110");
-        poolRequest.setOwner(bureauOwner);
-        String poolNumber = poolRequest.getPoolNumber();
-
-        Mockito.doReturn(Optional.of(poolRequest)).when(poolRequestRepository).findByPoolNumber(poolNumber);
-        Mockito.doReturn(new ArrayList<>()).when(jurorPoolRepository)
-            .findByPoolPoolNumberAndOwnerAndIsActive(poolNumber, courtOwner, true);
-
-        PoolCreatedMembersListDto response = poolCreateService.getJurorPoolsList(payload, poolNumber);
-
-        assertThat(response)
-            .as("Expect the response to contain no data items")
-            .isNull();
+        assertThat(data.getJurorNumber()).isEqualTo(jurorNumber);
+        assertThat(data.getFirstName()).isEqualTo("Test");
+        assertThat(data.getLastName()).isEqualTo("Person");
+        assertThat(data.getStatus()).isEqualTo("Responded");
+        assertThat(data.getPostcode()).isNull();
+        assertThat(data.getAttendance()).isEqualTo("");
+        assertThat(data.getCheckedInToday()).isEqualTo(false);
+        assertThat(data.getCheckedIn().truncatedTo(ChronoUnit.SECONDS))
+            .isEqualTo(LocalTime.now().truncatedTo(ChronoUnit.SECONDS));
+        assertThat(data.getNextDate()).isEqualTo(LocalDate.now());
     }
 
     private static NilPoolRequestDto createValidNilPoolRequestDto() {
@@ -853,4 +817,28 @@ public class PoolCreateServiceTest {
         return jurorPool;
     }
 
+    private PoolMemberFilterRequestQuery createPoolFilterQuery(String poolNumber) {
+        return PoolMemberFilterRequestQuery.builder()
+            .poolNumber(poolNumber)
+            .pageLimit(1)
+            .pageNumber(1)
+            .build();
+    }
+
+    private Tuple createQueryResult(String jurorNumber) {
+        Tuple data = Mockito.mock(Tuple.class);
+        Mockito.when(data.get(QJurorPool.jurorPool.juror.jurorNumber)).thenReturn(jurorNumber);
+        Mockito.when(data.get(QJurorPool.jurorPool.juror.firstName)).thenReturn("Test");
+        Mockito.when(data.get(QJurorPool.jurorPool.juror.lastName)).thenReturn("Person");
+        Mockito.when(data.get(QJurorStatus.jurorStatus.statusDesc)).thenReturn("Responded");
+
+        // Lenient because sometimes we don't use these mock fields and the test runner complains
+        Mockito.lenient().when(data.get(QJurorPool.jurorPool.juror.postcode)).thenReturn("CH1 2AN");
+        Mockito.lenient().when(data.get(JurorPoolRepository.ATTENDANCE)).thenReturn("");
+        Mockito.lenient().when(data.get(JurorPoolRepository.CHECKED_IN_TODAY)).thenReturn(false);
+        Mockito.lenient().when(data.get(QAppearance.appearance.timeIn)).thenReturn(LocalTime.now());
+        Mockito.lenient().when(data.get(QJurorPool.jurorPool.nextDate)).thenReturn(LocalDate.now());
+
+        return data;
+    }
 }

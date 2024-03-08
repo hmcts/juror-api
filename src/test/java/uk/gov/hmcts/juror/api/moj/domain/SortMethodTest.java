@@ -6,6 +6,7 @@ import uk.gov.hmcts.juror.api.TestConstants;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings("PMD.LawOfDemeter")
 class SortMethodTest {
 
 

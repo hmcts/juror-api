@@ -22,7 +22,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolEditRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolSummaryResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDTO;
+import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -1662,16 +1662,16 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     public void test_getPoolMonitoringStats_bureauUser_happyPath() throws Exception {
         RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/moj/manage-pool/summoning-progress/415/CRO"));
-        ResponseEntity<SummoningProgressResponseDTO> response = restTemplate.exchange(requestEntity,
-            SummoningProgressResponseDTO.class);
+        ResponseEntity<SummoningProgressResponseDto> response = restTemplate.exchange(requestEntity,
+            SummoningProgressResponseDto.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        SummoningProgressResponseDTO responseDto = response.getBody();
+        SummoningProgressResponseDto responseDto = response.getBody();
         assertThat(responseDto).isNotNull();
         assertThat(responseDto.getStatsByWeek().size()).isEqualTo(8);
         LocalDate weekCommencingDate = DateUtils.getStartOfWeekFromDate(LocalDate.now());
         LocalDate eightWeeksCommencingDate = weekCommencingDate.plusWeeks(7);
-        for (SummoningProgressResponseDTO.WeekFilter week : responseDto.getStatsByWeek()) {
+        for (SummoningProgressResponseDto.WeekFilter week : responseDto.getStatsByWeek()) {
             assertThat(week.getStartOfWeek()).isBeforeOrEqualTo(eightWeeksCommencingDate)
                 .isAfterOrEqualTo(weekCommencingDate);
             assertThat(week.getStats().size()).isLessThanOrEqualTo(5);
@@ -1685,8 +1685,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/moj/manage-pool/summoning-progress/415/CRO"));
-        ResponseEntity<SummoningProgressResponseDTO> response = restTemplate.exchange(requestEntity,
-            SummoningProgressResponseDTO.class);
+        ResponseEntity<SummoningProgressResponseDto> response = restTemplate.exchange(requestEntity,
+            SummoningProgressResponseDto.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
@@ -1695,8 +1695,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     public void test_getPoolMonitoringStats_wrongPoolTypeForCourtLocation() throws Exception {
         RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/moj/manage-pool/summoning-progress/415/CIV"));
-        ResponseEntity<SummoningProgressResponseDTO> response = restTemplate.exchange(requestEntity,
-            SummoningProgressResponseDTO.class);
+        ResponseEntity<SummoningProgressResponseDto> response = restTemplate.exchange(requestEntity,
+            SummoningProgressResponseDto.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 

@@ -46,7 +46,7 @@ import static org.mockito.Mockito.when;
     }
 )
 @DisplayName("JwtServiceImpl")
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "PMD.ExcessiveImports"})
 class JwtServiceImplTest {
 
     @Autowired
@@ -106,26 +106,28 @@ class JwtServiceImplTest {
     class ExtractSubject {
 
         @Test
-        void positive_username_found() {
+        void positiveUsernameFound() {
             String subject = "schedular@cgi.com";
             Claims claims = setupValidJwtMock();
             when(claims.getSubject()).thenReturn(subject);
-            assertEquals(subject, jwtService.extractSubject(TestConstants.JWT, TestConstants.JWT_SECRET));
+            assertEquals(subject, jwtService.extractSubject(TestConstants.JWT, TestConstants.JWT_SECRET),
+                "Subject should be match");
             verify(claims, times(1)).getSubject();
             verifyNoMoreInteractions(claims);
         }
 
         @Test
-        void negative_username_not_found() {
+        void negativeUsernameNotFound() {
             Claims claims = setupValidJwtMock();
             when(claims.getSubject()).thenReturn(null);
-            assertNull(jwtService.extractSubject(TestConstants.JWT, TestConstants.JWT_SECRET));
+            assertNull(jwtService.extractSubject(TestConstants.JWT, TestConstants.JWT_SECRET),
+                "Subject should be null");
             verify(claims, times(1)).getSubject();
             verifyNoMoreInteractions(claims);
         }
 
         @Test
-        void negative_invalid_jwt() {
+        void negativeInvalidJwt() {
             MalformedJwtException exception = new MalformedJwtException("Example exception");
             jwtsMockedStatic.when(Jwts::parser).thenThrow(exception);
 
@@ -133,8 +135,10 @@ class JwtServiceImplTest {
                 InvalidJwtAuthenticationException.class,
                 () -> jwtService.extractSubject(TestConstants.JWT, TestConstants.JWT_SECRET)
             );
-            assertEquals("Failed to parse JWT", unauthorisedException.getMessage());
-            assertEquals(exception, unauthorisedException.getCause());
+            assertEquals("Failed to parse JWT", unauthorisedException.getMessage(),
+                "Exception message should be match");
+            assertEquals(exception, unauthorisedException.getCause(),
+                "Exception cause should be match");
         }
     }
 
@@ -143,26 +147,28 @@ class JwtServiceImplTest {
     class ExtractExpiration {
 
         @Test
-        void positive_expiration_date_found() {
+        void positiveExpirationDateFound() {
             Date expirationDate = new Date();
             Claims claims = setupValidJwtMock();
             when(claims.getExpiration()).thenReturn(expirationDate);
-            assertEquals(expirationDate, jwtService.extractExpiration(TestConstants.JWT, TestConstants.JWT_SECRET));
+            assertEquals(expirationDate, jwtService.extractExpiration(TestConstants.JWT, TestConstants.JWT_SECRET),
+                "Expiration date should be match");
             verify(claims, times(1)).getExpiration();
             verifyNoMoreInteractions(claims);
         }
 
         @Test
-        void negative_expiration_date_not_found() {
+        void negativeExpirationDateNotFound() {
             Claims claims = setupValidJwtMock();
             when(claims.getSubject()).thenReturn(null);
-            assertNull(jwtService.extractExpiration(TestConstants.JWT, TestConstants.JWT_SECRET));
+            assertNull(jwtService.extractExpiration(TestConstants.JWT, TestConstants.JWT_SECRET),
+                "Expiration date should be null");
             verify(claims, times(1)).getExpiration();
             verifyNoMoreInteractions(claims);
         }
 
         @Test
-        void negative_invalid_jwt() {
+        void negativeInvalidJwt() {
             MalformedJwtException exception = new MalformedJwtException("Example exception");
             jwtsMockedStatic.when(Jwts::parser).thenThrow(exception);
 
@@ -170,8 +176,10 @@ class JwtServiceImplTest {
                 InvalidJwtAuthenticationException.class,
                 () -> jwtService.extractExpiration(TestConstants.JWT, TestConstants.JWT_SECRET)
             );
-            assertEquals("Failed to parse JWT", unauthorisedException.getMessage());
-            assertEquals(exception, unauthorisedException.getCause());
+            assertEquals("Failed to parse JWT", unauthorisedException.getMessage(),
+                "Exception message should be match");
+            assertEquals(exception, unauthorisedException.getCause(),
+                "Exception cause should be match");
         }
     }
 
@@ -188,7 +196,7 @@ class JwtServiceImplTest {
         }
 
         @Test
-        void positive_token_generated() {
+        void positiveTokenGenerated() {
             String id = "MyId";
             String issuer = "MyIssuer";
             String subject = "MySubject";
@@ -199,7 +207,8 @@ class JwtServiceImplTest {
             JwtBuilder jwtBuilder = setupJwtTokenGenerator();
 
             assertEquals(TestConstants.JWT,
-                jwtService.generateJwtToken(id, issuer, subject, tokenValidity, secretKey, claims));
+                jwtService.generateJwtToken(id, issuer, subject, tokenValidity, secretKey, claims),
+                "Generated token should be match");
 
             verify(jwtBuilder, times(1)).id(id);
             verify(jwtBuilder, times(1)).issuer(issuer);
@@ -212,7 +221,7 @@ class JwtServiceImplTest {
         }
 
         @Test
-        void negative_exception_raised() {
+        void negativeExceptionRaised() {
             String id = "MyId";
             String issuer = "MyIssuer";
             String subject = "MySubject";
@@ -225,9 +234,12 @@ class JwtServiceImplTest {
 
             InvalidJwtAuthenticationException unauthorisedException = assertThrows(
                 InvalidJwtAuthenticationException.class,
-                () -> jwtService.generateJwtToken(id, issuer, subject, tokenValidity, secretKey, claims));
-            assertEquals("Failed to parse JWT", unauthorisedException.getMessage());
-            assertEquals(exception, unauthorisedException.getCause());
+                () -> jwtService.generateJwtToken(id, issuer, subject, tokenValidity, secretKey, claims),
+                "Exception should be raised");
+            assertEquals("Failed to parse JWT", unauthorisedException.getMessage(),
+                "Exception message should be match");
+            assertEquals(exception, unauthorisedException.getCause(),
+                "Exception cause should be match");
         }
     }
 }

@@ -104,8 +104,8 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
         Map<String, Boolean> changedPropertiesMap = new HashMap<>();
 
         // new title value CAN be null
-        changedPropertiesMap.put(TITLE, hasTitleChanged(juror.getTitle(), jurorResponse.getTitle()) &&
-            !hasNameChanged(jurorResponse.getFirstName(), juror.getFirstName(),
+        changedPropertiesMap.put(TITLE, hasTitleChanged(juror.getTitle(), jurorResponse.getTitle())
+            && !hasNameChanged(jurorResponse.getFirstName(), juror.getFirstName(),
                 jurorResponse.getLastName(), juror.getLastName()));
 
         LocalDate originalDate = setOriginalDateOfBirth(juror.getDateOfBirth());

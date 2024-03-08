@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JurorBankDetailsDtoTest {
 
     @Test
-    public void positiveConstructorTest() {
+    void positiveConstructorTest() {
         Juror juror = new Juror();
         juror.setJurorNumber(TestConstants.VALID_JUROR_NUMBER);
         juror.setBankAccountNumber("12345678");

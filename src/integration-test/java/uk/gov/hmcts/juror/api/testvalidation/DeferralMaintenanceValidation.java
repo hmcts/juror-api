@@ -83,7 +83,7 @@ public final class DeferralMaintenanceValidation {
             .isEqualTo(1);
         // get first deferral option for w/c 2023-06-12, pool number: 415220503
         DeferralOptionsDto.DeferralOptionDto availablePool3 = deferralOptions2.stream()
-            .filter(pool -> pool.getPoolNumber().equals("415220503"))
+            .filter(pool -> "415220503".equals(pool.getPoolNumber()))
             .findFirst()
             .orElse(null);
         Assertions.assertThat(availablePool3)

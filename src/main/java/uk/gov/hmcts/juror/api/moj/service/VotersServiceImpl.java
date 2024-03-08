@@ -39,12 +39,12 @@ public class VotersServiceImpl implements VotersService {
         String postcodeString = createPostCodeString(poolCreateRequestDto.getPostcodes());
 
         //Determine Max and Min DOB allowed based on attendance date
-        LocalDate maxDOB = calculateDateLimit(attendanceDate, AGE_LOWER_SP_ID, 18);
-        LocalDate minDOB = calculateDateLimit(attendanceDate, AGE_UPPER_SP_ID, 76);
+        LocalDate maxDob = calculateDateLimit(attendanceDate, AGE_LOWER_SP_ID, 18);
+        LocalDate minDob = calculateDateLimit(attendanceDate, AGE_UPPER_SP_ID, 76);
 
         List<String> voters = votersRepository.callGetVoters(poolCreateRequestDto.getCitizensToSummon(),
-                minDOB.toString(),
-                maxDOB.toString(),
+                minDob.toString(),
+                maxDob.toString(),
                 poolCreateRequestDto.getCatchmentArea(),
                 postcodeString,
                 "N");
@@ -67,10 +67,10 @@ public class VotersServiceImpl implements VotersService {
         LocalDate currentDate = LocalDate.now();
 
         //Determine Max and Min DOB allowed based on attendance date
-        LocalDate maxDOB = calculateDateLimit(currentDate, AGE_LOWER_SP_ID, 18);
-        LocalDate minDOB = calculateDateLimit(currentDate, AGE_UPPER_SP_ID, 76);
+        LocalDate maxDob = calculateDateLimit(currentDate, AGE_LOWER_SP_ID, 18);
+        LocalDate minDob = calculateDateLimit(currentDate, AGE_UPPER_SP_ID, 76);
 
-        List<String> voters = votersRepository.callGetVoters(number, minDOB.toString(), maxDOB.toString(),
+        List<String> voters = votersRepository.callGetVoters(number, minDob.toString(), maxDob.toString(),
                                                                    locCode, postcode, "C");
 
         log.info("Obtained {} records from voters table for coroner pool ", voters.size());

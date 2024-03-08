@@ -9,17 +9,13 @@ import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateMappingMod;
  * Repository for {@link NotifyTemplateMappingMod}.
  */
 @Repository
-
 public interface NotifyTemplateMappingRepositoryMod extends CrudRepository<NotifyTemplateMappingMod, Integer>,
     QuerydslPredicateExecutor<NotifyTemplateMappingMod> {
 
     /**
      * Find template by templateName.
      *
-     * @param templateName
      * @return NotifyTemplateMapping for the given template name.
      */
-    //List<NotifyTemplateMapping> findByTemplateName(String templateName);
-
     NotifyTemplateMappingMod findByTemplateName(String templateName);
 }

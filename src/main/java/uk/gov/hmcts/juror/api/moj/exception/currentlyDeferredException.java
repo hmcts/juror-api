@@ -8,9 +8,9 @@ import uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsSer
  * Exception type thrown when managing deferrals.
  * {@link ManageDeferralsServiceImpl}
  */
-public class currentlyDeferredException extends RuntimeException {
+public class CurrentlyDeferredException extends RuntimeException {
 
-    private currentlyDeferredException(String message) {
+    private CurrentlyDeferredException(String message) {
         super(message);
     }
 
@@ -18,7 +18,7 @@ public class currentlyDeferredException extends RuntimeException {
      * Exception type thrown when a lookup in the POOL table from a DEFER_DBF record fails.
      */
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public static class DeferredMemberNotFound extends currentlyDeferredException {
+    public static class DeferredMemberNotFound extends CurrentlyDeferredException {
 
         public DeferredMemberNotFound(String jurorNumber) {
             super(String.format("Unable to find an associated Pool Member for the deferred juror: %s", jurorNumber));

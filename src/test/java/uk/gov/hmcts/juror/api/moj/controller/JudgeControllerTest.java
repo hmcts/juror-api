@@ -51,6 +51,9 @@ import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = JudgeController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ContextConfiguration(classes = {JudgeController.class})
+@SuppressWarnings({
+    "PMD.ExcessiveImports"
+})
 class JudgeControllerTest {
     private static final String BASE_URL = "/api/v1/moj/trial/judge";
 
@@ -73,7 +76,7 @@ class JudgeControllerTest {
     }
 
     @Test
-    void getJudgesForCourtLocationsHappy() throws Exception {
+    void positiveGetJudgesForCourtLocations() throws Exception {
         final ArgumentCaptor<String> ownerArg = ArgumentCaptor.forClass(String.class);
 
         jwtPayload = createJwt("415", "COURT_USER");
@@ -96,7 +99,7 @@ class JudgeControllerTest {
     }
 
     @Test
-    void getJudgesForCourtLocationsForbiddenBureauUser() throws Exception {
+    void negativeGetJudgesForCourtLocationsForbiddenBureauUser() throws Exception {
         final ArgumentCaptor<String> ownerArg = ArgumentCaptor.forClass(String.class);
 
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -116,7 +119,7 @@ class JudgeControllerTest {
     }
 
     @Test
-    public void getJudgesForCourtLocationsIncorrectUrl() throws Exception {
+    void negativeGetJudgesForCourtLocationsIncorrectUrl() throws Exception {
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         jwtPayload = createJwt("415", "COURT_USER");
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -130,7 +133,7 @@ class JudgeControllerTest {
     }
 
     @Test
-    public void getJudgesForCourtLocationsIncorrectHttpMethod() throws Exception {
+    void negativeGetJudgesForCourtLocationsIncorrectHttpMethod() throws Exception {
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         jwtPayload = createJwt("415", "COURT_USER");
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);

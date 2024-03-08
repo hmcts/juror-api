@@ -20,7 +20,7 @@ public class PoolStatisticsRepositoryImpl implements IPoolStatisticsRepository {
 
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
 
-    /***
+    /**
      * Gets a list of tuples, providing statistics about active pools within a court location for a pool type over a
      * span of a number of weeks.
      * <p/>

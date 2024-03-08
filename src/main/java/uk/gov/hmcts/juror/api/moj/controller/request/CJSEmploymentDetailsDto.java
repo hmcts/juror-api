@@ -17,7 +17,7 @@ import java.util.List;
 @Getter
 @Setter
 @Schema(description = "CJS Employment details of Juror paper response.")
-public class CJSEmploymentDetailsDto {
+public class CjsEmploymentDetailsDto {
 
     @JsonProperty("cjsEmployment")
     @Schema(description = "Array of any Criminal Justice System employment of the Juror")

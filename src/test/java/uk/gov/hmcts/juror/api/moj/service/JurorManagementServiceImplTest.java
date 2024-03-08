@@ -55,7 +55,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.TooManyMethods"
+})
 @RunWith(SpringRunner.class)
 public class JurorManagementServiceImplTest {
 
@@ -1678,7 +1681,7 @@ public class JurorManagementServiceImplTest {
             .isEqualTo(3);
 
         JurorManagementResponseDto.ValidationFailure validationFailure1 = validationFailures.stream()
-            .filter(unavailable -> unavailable.getJurorNumber().equalsIgnoreCase("222222222"))
+            .filter(unavailable -> "222222222".equalsIgnoreCase(unavailable.getJurorNumber()))
             .findFirst().orElse(null);
         Assertions.assertThat(validationFailure1)
             .as("Expect juror 222222222 to be unavailable for transfer")
@@ -1687,7 +1690,7 @@ public class JurorManagementServiceImplTest {
             .isEqualTo(validationFailure1.getFailureReason());
 
         JurorManagementResponseDto.ValidationFailure validationFailure2 = validationFailures.stream()
-            .filter(unavailable -> unavailable.getJurorNumber().equalsIgnoreCase("333333333"))
+            .filter(unavailable -> "333333333".equalsIgnoreCase(unavailable.getJurorNumber()))
             .findFirst().orElse(null);
         Assertions.assertThat(validationFailure2)
             .as("Expect juror 333333333 to be unavailable for transfer")
@@ -1696,7 +1699,7 @@ public class JurorManagementServiceImplTest {
             .isEqualTo(String.format(JurorManagementConstants.INVALID_STATUS_MESSAGE, "Transferred"));
 
         JurorManagementResponseDto.ValidationFailure validationFailure3 = validationFailures.stream()
-            .filter(unavailable -> unavailable.getJurorNumber().equalsIgnoreCase("555555555"))
+            .filter(unavailable -> "555555555".equalsIgnoreCase(unavailable.getJurorNumber()))
             .findFirst().orElse(null);
         Assertions.assertThat(validationFailure3)
             .as("Expect juror 555555555 to be unavailable for transfer")
@@ -1754,7 +1757,7 @@ public class JurorManagementServiceImplTest {
             .isEqualTo(1);
 
         JurorManagementResponseDto.ValidationFailure validationFailure = validationFailures.stream()
-            .filter(unavailable -> unavailable.getJurorNumber().equalsIgnoreCase("111111111"))
+            .filter(unavailable -> "111111111".equalsIgnoreCase(unavailable.getJurorNumber()))
             .findFirst().orElse(null);
         Assertions.assertThat(validationFailure)
             .as("Expect juror 111111111 to be unavailable for transfer")

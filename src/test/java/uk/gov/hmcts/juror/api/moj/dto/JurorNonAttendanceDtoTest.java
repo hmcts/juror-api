@@ -4,9 +4,9 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -19,7 +19,8 @@ import static java.time.LocalDate.now;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
-public class JurorNonAttendanceDtoTest {
+@SuppressWarnings("PMD.TooManyMethods")
+class JurorNonAttendanceDtoTest {
 
     private static ValidatorFactory validatorFactory;
     private static Validator validator;
@@ -36,14 +37,14 @@ public class JurorNonAttendanceDtoTest {
     }
 
     @Test
-    public void happyPathNoViolations() {
+    void happyPathNoViolations() {
         JurorNonAttendanceDto jurorNonAttendanceDto = buildJurorNonAttendanceDto();
         Set<ConstraintViolation<JurorNonAttendanceDto>> violations = validator.validate(jurorNonAttendanceDto);
         assertThat(violations.size()).isEqualTo(0);
     }
 
     @Test
-    public void attendanceDateCannotBeNull() {
+    void attendanceDateCannotBeNull() {
         JurorNonAttendanceDto jurorNonAttendanceDto = buildJurorNonAttendanceDto();
         jurorNonAttendanceDto.setNonAttendanceDate(null);
         ConstraintViolation<JurorNonAttendanceDto> violation = getFirstConstraintViolation(jurorNonAttendanceDto);
@@ -52,7 +53,7 @@ public class JurorNonAttendanceDtoTest {
     }
 
     @Test
-    public void jurorNumberCannotBeBlank() {
+    void jurorNumberCannotBeBlank() {
         JurorNonAttendanceDto jurorNonAttendanceDto = buildJurorNonAttendanceDto();
         jurorNonAttendanceDto.setJurorNumber(null);
         ConstraintViolation<JurorNonAttendanceDto> violation = getFirstConstraintViolation(jurorNonAttendanceDto);
@@ -61,7 +62,7 @@ public class JurorNonAttendanceDtoTest {
     }
 
     @Test
-    public void poolNumberCannotBeBlank() {
+    void poolNumberCannotBeBlank() {
         JurorNonAttendanceDto jurorNonAttendanceDto = buildJurorNonAttendanceDto();
         jurorNonAttendanceDto.setPoolNumber(null);
         ConstraintViolation<JurorNonAttendanceDto> violation = getFirstConstraintViolation(jurorNonAttendanceDto);
@@ -70,7 +71,7 @@ public class JurorNonAttendanceDtoTest {
     }
 
     @Test
-    public void locationCodeCannotBeBlank() {
+    void locationCodeCannotBeBlank() {
         JurorNonAttendanceDto jurorNonAttendanceDto = buildJurorNonAttendanceDto();
         jurorNonAttendanceDto.setLocationCode(null);
         ConstraintViolation<JurorNonAttendanceDto> violation = getFirstConstraintViolation(jurorNonAttendanceDto);
@@ -84,7 +85,7 @@ public class JurorNonAttendanceDtoTest {
         "2",
         "1234",
     })
-    public void locationCodeMustBe3NumericalChars(String string) {
+    void locationCodeMustBe3NumericalChars(String string) {
         JurorNonAttendanceDto jurorNonAttendanceDto = buildJurorNonAttendanceDto();
         jurorNonAttendanceDto.setLocationCode(string);
         ConstraintViolation<JurorNonAttendanceDto> violation = getFirstConstraintViolation(jurorNonAttendanceDto);
@@ -93,7 +94,7 @@ public class JurorNonAttendanceDtoTest {
     }
 
     @Test
-    public void locationCodeMustBeNumericalChars() {
+    void locationCodeMustBeNumericalChars() {
         JurorNonAttendanceDto jurorNonAttendanceDto = buildJurorNonAttendanceDto();
         jurorNonAttendanceDto.setLocationCode("ABC");
         ConstraintViolation<JurorNonAttendanceDto> violation = getFirstConstraintViolation(jurorNonAttendanceDto);
@@ -105,7 +106,7 @@ public class JurorNonAttendanceDtoTest {
     @ValueSource(strings = {
         "AAA",
     })
-    public void locationCodeMustBeNumericString(String string) {
+    void locationCodeMustBeNumericString(String string) {
         JurorNonAttendanceDto jurorNonAttendanceDto = buildJurorNonAttendanceDto();
         jurorNonAttendanceDto.setLocationCode(string);
         ConstraintViolation<JurorNonAttendanceDto> violation = getFirstConstraintViolation(jurorNonAttendanceDto);
@@ -118,7 +119,7 @@ public class JurorNonAttendanceDtoTest {
         "AAA23er123124",
         "2344",
     })
-    public void poolNumberMustBeValid(String string) {
+    void poolNumberMustBeValid(String string) {
         JurorNonAttendanceDto jurorNonAttendanceDto = buildJurorNonAttendanceDto();
         jurorNonAttendanceDto.setPoolNumber(string);
         ConstraintViolation<JurorNonAttendanceDto> violation = getFirstConstraintViolation(jurorNonAttendanceDto);
@@ -131,7 +132,7 @@ public class JurorNonAttendanceDtoTest {
         "AAA23er123124",
         "2312",
     })
-    public void jurorNumberMustBeValid(String string) {
+    void jurorNumberMustBeValid(String string) {
         JurorNonAttendanceDto jurorNonAttendanceDto = buildJurorNonAttendanceDto();
         jurorNonAttendanceDto.setJurorNumber(string);
         ConstraintViolation<JurorNonAttendanceDto> violation = getFirstConstraintViolation(jurorNonAttendanceDto);

@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
-import uk.gov.hmcts.juror.api.moj.controller.request.CJSEmploymentDetailsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.CjsEmploymentDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EligibilityDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPaperResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReasonableAdjustmentDetailsDto;
@@ -118,7 +118,7 @@ public class JurorPaperResponseController {
     @Operation(summary = "Update an existing Juror paper response CJS employment details")
     public void updatePaperSummonsCjsDetails(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
-        @RequestBody @Valid CJSEmploymentDetailsDto cjsEmploymentDetailsDto,
+        @RequestBody @Valid CjsEmploymentDetailsDto cjsEmploymentDetailsDto,
         @Parameter(description = "Valid juror number", required = true)
         @Size(min = 9, max = 9) @PathVariable("jurorNumber")
         @Valid String jurorNumber) {

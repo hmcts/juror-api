@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @ExtendWith(SpringExtension.class)
+@SuppressWarnings("PMD.LawOfDemeter")
 public class RequestInfoLetterTest extends AbstractLetterTest {
     private final String additionalInformation =
         "This is additional information required for the additional information letter";

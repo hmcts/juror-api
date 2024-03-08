@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
+import uk.gov.hmcts.juror.api.validation.ExpenseNumericLimit;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
 
 import java.math.BigDecimal;
@@ -23,8 +25,8 @@ public class RequestDefaultExpensesDto {
     @JurorNumber
     private String jurorNumber;
 
-    //TODO check if can be null or not
     @JsonProperty("financial_loss")
+    @ExpenseNumericLimit
     private BigDecimal financialLoss;
 
     @JsonProperty("travel_time")
@@ -32,9 +34,11 @@ public class RequestDefaultExpensesDto {
     private LocalTime travelTime;
 
     @JsonProperty("mileage")
+    @ExpenseNumericLimit
     private int distanceTraveledMiles;
 
     @JsonProperty("smart_card")
+    @Length(max = 20)
     private String smartCardNumber;
 
     @JsonProperty("apply_to_all_draft")

@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.juror.domain.Holidays;
 import uk.gov.hmcts.juror.api.moj.controller.response.administration.HolidayDate;
 import uk.gov.hmcts.juror.api.moj.service.administration.AdministrationHolidaysService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;

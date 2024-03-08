@@ -1,7 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
-import uk.gov.hmcts.juror.api.moj.controller.request.CJSEmploymentDetailsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.CjsEmploymentDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EligibilityDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPaperResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReasonableAdjustmentDetailsDto;
@@ -31,10 +31,11 @@ public interface JurorPaperResponseService {
 
     JurorPaperResponseDetailDto getJurorPaperResponse(String jurorNumber, BureauJWTPayload payload);
 
-    void updateCjsDetails(BureauJWTPayload payload, CJSEmploymentDetailsDto cjsEmploymentDetailsDto,
+    void updateCjsDetails(BureauJWTPayload payload, CjsEmploymentDetailsDto cjsEmploymentDetailsDto,
                           String jurorNumber);
 
-    void updateReasonableAdjustmentsDetails(BureauJWTPayload payload, ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto,
+    void updateReasonableAdjustmentsDetails(BureauJWTPayload payload,
+                                            ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto,
                                             String jurorNumber);
 
     void updateJurorEligibilityDetails(BureauJWTPayload payload, EligibilityDetailsDto eligibilityDetailsDto,

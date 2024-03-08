@@ -38,7 +38,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.TooManyMethods"
+})
 class JurorHistoryServiceImplTest {
     private final JurorHistoryService jurorHistoryService;
     private final Clock clock;

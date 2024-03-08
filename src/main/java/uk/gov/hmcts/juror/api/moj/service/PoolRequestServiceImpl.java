@@ -35,9 +35,9 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequestListAndCount;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.exception.CurrentlyDeferredException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.PoolRequestException;
-import uk.gov.hmcts.juror.api.moj.exception.currentlyDeferredException;
 import uk.gov.hmcts.juror.api.moj.repository.ActivePoolsBureauRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.IActivePoolsCourtRepository;
@@ -49,7 +49,6 @@ import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.sql.Date;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -147,7 +146,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
      */
     @Override
     @Transactional(noRollbackFor = {PoolRequestException.PoolRequestNotFound.class,
-        currentlyDeferredException.DeferredMemberNotFound.class})
+        CurrentlyDeferredException.DeferredMemberNotFound.class})
     public void savePoolRequest(PoolRequestDto poolRequestDto, BureauJWTPayload payload) {
         log.trace("Enter savePoolRequest");
 

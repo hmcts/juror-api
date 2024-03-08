@@ -40,9 +40,9 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
+import uk.gov.hmcts.juror.api.moj.exception.CurrentlyDeferredException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.PoolRequestException;
-import uk.gov.hmcts.juror.api.moj.exception.currentlyDeferredException;
 import uk.gov.hmcts.juror.api.moj.repository.CurrentlyDeferredRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -73,7 +73,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static uk.gov.hmcts.juror.api.moj.domain.currentlyDeferredQueries.filterByCourtAndDate;
+import static uk.gov.hmcts.juror.api.moj.domain.CurrentlyDeferredQueries.filterByCourtAndDate;
 import static uk.gov.hmcts.juror.api.moj.utils.NumberUtils.unboxIntegerValues;
 
 /**
@@ -529,7 +529,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             for (String date : splitDatesString) {
                 log.debug("Juror {}: Parsing date {} to ISO format", jurorNumber, date);
                 try {
-                    preferredDates.add(DateUtils.convertLocalisedDateToISO(date));
+                    preferredDates.add(DateUtils.convertLocalisedDateToIso(date));
                 } catch (DateTimeParseException ex) {
                     log.error(
                         "Juror {}: Unable to parse preferred deferral date {} to ISO format",
@@ -624,9 +624,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     public void setDeferralPoolMember(JurorPool jurorPool, DeferralReasonRequestDto dto, String auditorUsername,
                                       Boolean incrementNoDefPos) {
-
-        JurorStatus jurorStatus = new JurorStatus();
-        jurorStatus.setStatus(IJurorStatus.DEFERRED);
 
         jurorPool.setDeferralDate(dto.getDeferralDate());
         jurorPool.setNextDate(null);
@@ -774,7 +771,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 log.trace(String.format("Deferred juror %s has been added to Pool: %s", deferralRecord.getJurorNumber(),
                     newPool.getPoolNumber()
                 ));
-            } catch (PoolRequestException.PoolRequestNotFound | currentlyDeferredException.DeferredMemberNotFound ex) {
+            } catch (PoolRequestException.PoolRequestNotFound | CurrentlyDeferredException.DeferredMemberNotFound ex) {
                 log.error(String.format("An error occurred trying to add a deferred juror to the new Pool: %s - %s",
                     newPool.getPoolNumber(), ex.getMessage()
                 ));
@@ -795,7 +792,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             jurorPoolRepository.findByJurorJurorNumberAndOwnerAndDeferralDate(courtDeferral.getJurorNumber(),
                 courtDeferral.getOwner(), attendanceDate);
 
-        return jurorPool.orElseThrow(() -> new currentlyDeferredException.DeferredMemberNotFound(
+        return jurorPool.orElseThrow(() -> new CurrentlyDeferredException.DeferredMemberNotFound(
             courtDeferral.getJurorNumber()));
     }
 

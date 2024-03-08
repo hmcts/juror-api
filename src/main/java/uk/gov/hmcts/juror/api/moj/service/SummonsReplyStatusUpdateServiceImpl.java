@@ -145,7 +145,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     }
 
     /**
-     * Update the processing status of a Juror digital response
+     * Update the processing status of a Juror digital response.
      *
      * @param jurorNumber 9-digit numeric string to identify the juror associated with this response
      * @param status      The processing status this response should be updated to

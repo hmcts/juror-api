@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +14,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
-import uk.gov.hmcts.juror.api.moj.controller.request.CJSEmploymentDetailsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.CjsEmploymentDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EligibilityDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPaperResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReasonableAdjustmentDetailsDto;
@@ -55,10 +54,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings({
+    "PMD.LawOfDemeter",
+    "PMD.ExcessiveImports",
+    "PMD.CouplingBetweenObjects",
+    "PMD.ExcessivePublicCount",
+    "PMD.TooManyMethods"
+})
 @RunWith(SpringRunner.class)
 public class JurorPaperResponseServiceImplTest {
 
@@ -609,7 +615,7 @@ public class JurorPaperResponseServiceImplTest {
     @Test
     public void test_updatePaperResponse_CjsEmployment_Happy_bureauUser_bureauOwner() {
         BureauJWTPayload payload = buildPayload();
-        CJSEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
+        CjsEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
 
         Mockito.doReturn(new PaperResponse()).when(jurorPaperResponseRepository)
             .findByJurorNumber(any());
@@ -630,7 +636,7 @@ public class JurorPaperResponseServiceImplTest {
     public void test_updatePaperResponse_CjsEmployment_Happy_courtUser_courtOwner() {
         BureauJWTPayload payload = buildPayload();
         payload.setOwner("415");
-        CJSEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
+        CjsEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
 
         Mockito.doReturn(new PaperResponse()).when(jurorPaperResponseRepository)
             .findByJurorNumber(any());
@@ -649,7 +655,7 @@ public class JurorPaperResponseServiceImplTest {
     @Test
     public void test_updatePaperResponse_CjsEmployment_bureauUser_courtOwner() {
         BureauJWTPayload payload = buildPayload();
-        CJSEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
+        CjsEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
 
         Mockito.doReturn(new PaperResponse()).when(jurorPaperResponseRepository)
             .findByJurorNumber(any());
@@ -664,7 +670,7 @@ public class JurorPaperResponseServiceImplTest {
     public void test_updatePaperResponse_CjsEmployment_courtUser_bureauOwner() {
         BureauJWTPayload payload = buildPayload();
         payload.setOwner("415");
-        CJSEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
+        CjsEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
 
         Mockito.doReturn(new PaperResponse()).when(jurorPaperResponseRepository)
             .findByJurorNumber(any());
@@ -678,7 +684,7 @@ public class JurorPaperResponseServiceImplTest {
     public void test_updatePaperResponse_CjsEmployment_courtUser_noAccess_courtOwner() {
         BureauJWTPayload payload = buildPayload();
         payload.setOwner("416");
-        CJSEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
+        CjsEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
 
         Mockito.doReturn(new PaperResponse()).when(jurorPaperResponseRepository)
             .findByJurorNumber(any());
@@ -692,7 +698,7 @@ public class JurorPaperResponseServiceImplTest {
     @Test
     public void test_updatePaperResponse_CjsEmployment_DuplicateEmployer() {
         BureauJWTPayload payload = buildPayload();
-        CJSEmploymentDetailsDto cjsEmploymentDto = buildDuplicateCjsEmploymentDetailsDto();
+        CjsEmploymentDetailsDto cjsEmploymentDto = buildDuplicateCjsEmploymentDetailsDto();
 
         Mockito.doReturn(new PaperResponse()).when(jurorPaperResponseRepository)
             .findByJurorNumber(any());
@@ -705,7 +711,7 @@ public class JurorPaperResponseServiceImplTest {
     @Test
     public void test_updatePaperResponse_CjsEmployment_InvalidEmployer() {
         final BureauJWTPayload payload = buildPayload();
-        CJSEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
+        CjsEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
         List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
         JurorPaperResponseDto.CjsEmployment cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
             .cjsEmployer("Air Force")
@@ -772,10 +778,10 @@ public class JurorPaperResponseServiceImplTest {
             .findByJurorNumber(any());
         Mockito.verify(jurorReasonableAdjustmentsRepository, Mockito.times(1))
             .findByJurorNumber(any());
-        assertNull(mockJuror.getReasonableAdjustmentCode());
-        assertNull(mockJuror.getReasonableAdjustmentMessage());
-        Assert.assertEquals(Collections.EMPTY_LIST, jurorReasonableAdjustmentsRepository
-            .findByJurorNumber(mockJuror.getJurorNumber()));
+        assertNull(mockJuror.getReasonableAdjustmentCode(), "Expected reasonable adjustment code to be null");
+        assertNull(mockJuror.getReasonableAdjustmentMessage(), "Expected reasonable adjustment message to be null");
+        assertEquals(Collections.EMPTY_LIST, jurorReasonableAdjustmentsRepository
+            .findByJurorNumber(mockJuror.getJurorNumber()), "Expected no reasonable adjustments to be present");
     }
 
 
@@ -1189,8 +1195,8 @@ public class JurorPaperResponseServiceImplTest {
         return eligibilityDetailsDto;
     }
 
-    private CJSEmploymentDetailsDto buildCjsEmploymentDetailsDto() {
-        final CJSEmploymentDetailsDto cjsEmploymentDetailsDto = new CJSEmploymentDetailsDto();
+    private CjsEmploymentDetailsDto buildCjsEmploymentDetailsDto() {
+        final CjsEmploymentDetailsDto cjsEmploymentDetailsDto = new CjsEmploymentDetailsDto();
 
         List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
 
@@ -1206,8 +1212,8 @@ public class JurorPaperResponseServiceImplTest {
         return cjsEmploymentDetailsDto;
     }
 
-    private CJSEmploymentDetailsDto buildDuplicateCjsEmploymentDetailsDto() {
-        final CJSEmploymentDetailsDto cjsEmploymentDetailsDto = new CJSEmploymentDetailsDto();
+    private CjsEmploymentDetailsDto buildDuplicateCjsEmploymentDetailsDto() {
+        final CjsEmploymentDetailsDto cjsEmploymentDetailsDto = new CjsEmploymentDetailsDto();
 
         List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
 
@@ -1531,7 +1537,7 @@ public class JurorPaperResponseServiceImplTest {
         Assertions.assertThat(eligibility.getOnBail()).isEqualTo(jurorPaperResponse.getBail());
         Assertions.assertThat(eligibility.getConvicted()).isEqualTo(jurorPaperResponse.getConvictions());
 
-        JurorPaperResponseDetailDto.CJSEmployment actualCjsEmployment = responseDto.getCjsEmployment().get(0);
+        JurorPaperResponseDetailDto.CjsEmployment actualCjsEmployment = responseDto.getCjsEmployment().get(0);
         JurorResponseCjsEmployment expectedCjsEmployment = jurorPaperResponse.getCjsEmployments().get(0);
         Assertions.assertThat(actualCjsEmployment.getCjsEmployer()).isEqualTo(expectedCjsEmployment.getCjsEmployer());
         Assertions.assertThat(actualCjsEmployment.getCjsEmployerDetails())

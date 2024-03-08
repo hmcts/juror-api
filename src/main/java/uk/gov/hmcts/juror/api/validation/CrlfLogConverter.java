@@ -5,9 +5,11 @@ import ch.qos.logback.core.pattern.CompositeConverter;
 
 /**
  * This class is attached to logback and used to sanitize messages where desired.
- * <p> Currently this converter is used to encode any carriage returns and line feeds to
+ *
+ * <p>Currently this converter is used to encode any carriage returns and line feeds to
  * prevent log injection attacks
- * <p> It is not possible to replace the actual formatted message, instead this
+ *
+ * <p>It is not possible to replace the actual formatted message, instead this
  * converter returns a masked version of the message that can be accessed using
  * the conversionWord specified in the conversionRule definition in logback.xml.
  */

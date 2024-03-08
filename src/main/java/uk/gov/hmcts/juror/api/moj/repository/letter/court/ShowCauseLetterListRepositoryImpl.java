@@ -48,6 +48,7 @@ public class ShowCauseLetterListRepositoryImpl implements ShowCauseLetterListRep
         }
 
         jpaQuery
+            .orderBy(SHOW_CAUSE_LETTER_LIST.absentDate.desc())
             .orderBy(SHOW_CAUSE_LETTER_LIST.jurorNumber.asc());
     }
 

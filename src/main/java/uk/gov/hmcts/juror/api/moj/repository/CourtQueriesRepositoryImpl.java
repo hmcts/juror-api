@@ -13,7 +13,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QCourtCatchmentArea;
 import java.util.List;
 
 /**
- * Custom Repository implementation for extracting data related to courts
+ * Custom Repository implementation for extracting data related to courts.
  */
 @Slf4j
 @Component

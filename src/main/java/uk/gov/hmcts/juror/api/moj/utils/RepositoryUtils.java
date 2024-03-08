@@ -1,7 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.utils;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,8 +12,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RepositoryUtils {
+    private RepositoryUtils() {
+
+    }
 
     @Transactional(readOnly = true)
     public static <T, I extends Serializable> T retrieveFromDatabase(I id, ReadOnlyRepository<T, I> repository)

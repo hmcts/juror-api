@@ -24,9 +24,10 @@ public interface VotersRepository extends JpaRepository<Voters, Voters.VotersId>
     List<String> callGetVoters(@Param("required") Integer required,
                                @Param("minDate") String minDate,
                                @Param("maxDate") String maxDate,
-                               @Param("LocCode") String LocCode,
+                               @Param("LocCode") String locCode,
                                @Param("areaCodeList") String areaCodeList,
                                @Param("poolType") String poolType) throws SQLException;
+
     Voters findByJurorNumber(String jurorNumber);
 
 }

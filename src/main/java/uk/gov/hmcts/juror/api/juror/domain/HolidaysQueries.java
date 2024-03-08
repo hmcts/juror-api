@@ -34,7 +34,8 @@ public class HolidaysQueries {
     public static BooleanExpression HolidayDatesMatched(Date holidayDates) {
 
         String strUserSelectedDate = holidayDates.toString();
-        String strBstTime = strUserSelectedDate.substring(strUserSelectedDate.length() - STRING_POSITION_BST_TIME);
+        String strBstTime = strUserSelectedDate.substring(strUserSelectedDate.length()
+                                                              - STRING_POSITION_BST_TIME);
         String strBstTimeValue = strBstTime.substring(0, 1);
         int intBstTimeCondition = Integer.parseInt(strBstTimeValue);
 
