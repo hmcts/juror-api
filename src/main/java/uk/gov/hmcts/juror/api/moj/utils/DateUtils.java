@@ -27,7 +27,7 @@ public class DateUtils {
 
     public static Date convertToDateViaInstant(LocalDate dateToConvert) {
         return dateToConvert == null ? null :
-                Date.from(dateToConvert.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            Date.from(dateToConvert.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
     /**
@@ -56,16 +56,17 @@ public class DateUtils {
      *                      (caters for both zero-padded and non-padded days/months)
      * @return a String representation of the date in Local ISO format (yyyy-MM-dd)
      */
-    public static String convertLocalisedDateToISO(String localisedDate) {
+    public static String convertLocalisedDateToIso(String localisedDate) {
         return LocalDate
             .from(DateTimeFormatter.ofPattern("d/M/yyyy").parse(localisedDate))
             .format(DateTimeFormatter.ISO_LOCAL_DATE);
     }
 
-    /***
+    /**
      * Get a quantity of starting week (Monday) dates.
      * Use case for this is for getting eight weeks of start dates to create min/max bounds for returned DTO data e.g
      * . SummoningProgressResponseDTO
+     *
      * @param numberOfWeeks total number of weeks wanted
      * @param startDate the start date for calculating the number of weeks needed
      * @return A List of starting dates

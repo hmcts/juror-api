@@ -25,7 +25,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.PHONE_NO_REG
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REGEX;
 
 /**
- * Request DTO for Juror Paper Response personal details
+ * Request DTO for Juror Paper Response personal details.
  */
 @NoArgsConstructor
 @AllArgsConstructor

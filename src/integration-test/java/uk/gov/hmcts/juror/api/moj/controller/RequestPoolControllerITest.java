@@ -2174,11 +2174,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         String locCode = "419";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("419", List.of("419")));
-        String requestURL = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
+        String requestUrl = "/api/v1/moj/pool-request/pools-at-court?locCode=" + locCode;
 
         ResponseEntity<PoolsAtCourtLocationListDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
-                HttpMethod.GET, URI.create(requestURL)), PoolsAtCourtLocationListDto.class);
+                HttpMethod.GET, URI.create(requestUrl)), PoolsAtCourtLocationListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the get request to be successful")

@@ -11,8 +11,6 @@ import org.mockito.Mockito;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeEntity;
-import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CourtLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.DeferralLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ExcusalLetterData;
@@ -20,19 +18,23 @@ import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListRes
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterResponseData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.NonDeferralLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.WithdrawalLetterData;
+import uk.gov.hmcts.juror.api.moj.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralDeniedLetterList;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralGrantedLetterList;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.ExcusalGrantedLetterList;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.ExcusalRefusedLetterList;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.WithdrawalLetterList;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
+import uk.gov.hmcts.juror.api.moj.repository.MojExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.DeferralDeniedLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.DeferralGrantedLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.ExcusalGrantedLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.ExcusalRefusalLetterListRepository;
+import uk.gov.hmcts.juror.api.moj.repository.letter.court.FailedToAttendLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.ShowCauseLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.WithdrawalLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtExcusalRefusedLetterServiceImpl;
+import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtFailedToAttendLetterServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtLetterServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtPostponementLetterServiceImpl;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -54,11 +56,13 @@ public class CourtLetterServiceTest {
     private ExcusalRefusalLetterListRepository excusalRefusalLetterListRepository;
     private DeferralDeniedLetterListRepository deferralDeniedLetterListRepository;
     private WithdrawalLetterListRepository withdrawalLetterListRepository;
-    private ExcusalCodeRepository excusalCodeRepository;
+    private MojExcusalCodeRepository excusalCodeRepository;
     private ShowCauseLetterListRepository showCauseLetterListRepository;
-    private CourtLetterServiceImpl courtLetterService;
+    private FailedToAttendLetterListRepository failedToAttendLetterListRepository;
 
+    private CourtLetterServiceImpl courtLetterService;
     private CourtExcusalRefusedLetterServiceImpl courtExcusalRefusedLetterService;
+    private CourtFailedToAttendLetterServiceImpl courtFailedToAttendLetterService;
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
@@ -69,13 +73,16 @@ public class CourtLetterServiceTest {
         this.excusalGrantedLetterListRepository = mock(ExcusalGrantedLetterListRepository.class);
         this.deferralDeniedLetterListRepository = mock(DeferralDeniedLetterListRepository.class);
         this.showCauseLetterListRepository = mock(ShowCauseLetterListRepository.class);
-        this.excusalCodeRepository = mock(ExcusalCodeRepository.class);
+        this.excusalCodeRepository = mock(MojExcusalCodeRepository.class);
         this.courtExcusalRefusedLetterService = mock(CourtExcusalRefusedLetterServiceImpl.class);
         this.excusalRefusalLetterListRepository = mock(ExcusalRefusalLetterListRepository.class);
+        this.failedToAttendLetterListRepository = mock(FailedToAttendLetterListRepository.class);
         this.courtExcusalRefusedLetterService =
             new CourtExcusalRefusedLetterServiceImpl(excusalRefusalLetterListRepository);
+
         CourtPostponementLetterServiceImpl courtPostponementLetterService =
             mock(CourtPostponementLetterServiceImpl.class);
+
         this.courtLetterService = new CourtLetterServiceImpl(deferralGrantedLetterListRepository,
             excusalGrantedLetterListRepository,
             deferralDeniedLetterListRepository,
@@ -83,7 +90,8 @@ public class CourtLetterServiceTest {
             excusalCodeRepository,
             showCauseLetterListRepository,
             courtPostponementLetterService,
-            courtExcusalRefusedLetterService);
+            courtExcusalRefusedLetterService,
+            courtFailedToAttendLetterService);
 
         Authentication auth = mock(Authentication.class);
         SecurityContext securityContext = mock(SecurityContext.class);
@@ -278,10 +286,7 @@ public class CourtLetterServiceTest {
             Assertions.assertThat(data.getDatePrinted()).isEqualTo(datePrinted);
             Assertions.assertThat(data.getPoolNumber()).isEqualToIgnoringCase(poolNumber);
         }
-
-
     }
-
 
     @Nested
     @DisplayName("getEligibleList - Deferral Refused")
@@ -302,9 +307,9 @@ public class CourtLetterServiceTest {
 
             String reasonCode = "A";
             String reasonDesc = "Moved from area";
-            ExcusalCodeEntity excusalCode = new ExcusalCodeEntity();
+            ExcusalCode excusalCode = new ExcusalCode();
             excusalCode.setDescription(reasonDesc);
-            excusalCode.setExcusalCode(reasonCode);
+            excusalCode.setCode(reasonCode);
 
             List<DeferralDeniedLetterList> results =
                 List.of(
@@ -349,9 +354,9 @@ public class CourtLetterServiceTest {
 
             String reasonCode = "I";
             String reasonDesc = "Ill";
-            ExcusalCodeEntity excusalCode = new ExcusalCodeEntity();
+            ExcusalCode excusalCode = new ExcusalCode();
             excusalCode.setDescription(reasonDesc);
-            excusalCode.setExcusalCode(reasonCode);
+            excusalCode.setCode(reasonCode);
 
             List<DeferralDeniedLetterList> results =
                 List.of(createDeferralDeniedLetterList(jurorNumber, statusDesc, dateRefused, otherInfo, poolNumber,

@@ -87,7 +87,7 @@ public final class DataUtils {
     }
 
     public static boolean isEmptyOrNull(Collection<?> collection) {
-        return (collection == null || collection.isEmpty());
+        return collection == null || collection.isEmpty();
     }
 
     public static boolean isNotEmptyOrNull(Collection<?> collection) {

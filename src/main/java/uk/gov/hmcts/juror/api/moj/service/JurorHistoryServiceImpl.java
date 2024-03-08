@@ -102,11 +102,13 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
         registerHistory(jurorNumber, null, HistoryCodeMod.CHANGE_PERSONAL_DETAILS, "Bank Sort Code Changed",
             SecurityUtil.getActiveLogin());
     }
+
     @Override
     public void createEditBankAccountNameHistory(String jurorNumber) {
         registerHistory(jurorNumber, null, HistoryCodeMod.CHANGE_PERSONAL_DETAILS, "Bank Account Name Changed",
             SecurityUtil.getActiveLogin());
     }
+
     @Override
     public void createEditBankAccountNumberHistory(String jurorNumber) {
         registerHistory(jurorNumber, null, HistoryCodeMod.CHANGE_PERSONAL_DETAILS, "Bank Acct No Changed",

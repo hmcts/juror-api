@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service.letter.court;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.WordUtils;
@@ -26,6 +27,7 @@ public class CourtPostponementLetterServiceImpl implements CourtLetterService {
     private static final String POSTPONED_TO = "Postponed to";
     private static final String POSTPONED_STATUS = "Postponed";
 
+    @NotNull
     private final PostponementLetterListRepository postponementLetterListRepository;
 
     @Override
@@ -56,7 +58,7 @@ public class CourtPostponementLetterServiceImpl implements CourtLetterService {
             .data(postponeLetterDataList)
             .build();
 
-        log.trace("Exit getEligiblePostponedList");
+        log.trace("Exit getEligibleList (Postponement letter");
         return responseDto;
     }
 

@@ -7,15 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeEntity;
-import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CourtLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.DeferralLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ExcusalLetterData;
+import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.FailedToAttendLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.NonDeferralLetterData;
-import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ShowCauseLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.WithdrawalLetterData;
+import uk.gov.hmcts.juror.api.moj.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.moj.domain.letter.CourtLetterSearchCriteria;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralDeniedLetterList;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralGrantedLetterList;
@@ -25,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.court.WithdrawalLetterList;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.repository.MojExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.DeferralDeniedLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.DeferralGrantedLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.ExcusalGrantedLetterListRepository;
@@ -47,7 +47,7 @@ public class CourtLetterServiceImpl implements CourtLetterService {
     private final ExcusalGrantedLetterListRepository excusalGrantedLetterListRepository;
     private final DeferralDeniedLetterListRepository deferralDeniedLetterListRepository;
     private final WithdrawalLetterListRepository withdrawalLetterListRepository;
-    private final ExcusalCodeRepository excusalCodeRepository;
+    private final MojExcusalCodeRepository excusalCodeRepository;
     private final ShowCauseLetterListRepository showCauseLetterListRepository;
 
     @Autowired
@@ -55,6 +55,9 @@ public class CourtLetterServiceImpl implements CourtLetterService {
 
     @Autowired
     private final CourtExcusalRefusedLetterServiceImpl courtExcusalRefusedLetterService;
+
+    @Autowired
+    private final CourtFailedToAttendLetterServiceImpl courtFailedToAttendLetterService;
 
     // String constants for response headings
     private static final String DATE_REFUSED = "Date refused";
@@ -78,6 +81,7 @@ public class CourtLetterServiceImpl implements CourtLetterService {
             case SHOW_CAUSE -> getEligibleShowCauseList(request);
             case EXCUSAL_GRANTED -> getEligibleExcusalGrantedList(request);
             case EXCUSAL_REFUSED -> courtExcusalRefusedLetterService.getEligibleList(request);
+            case FAILED_TO_ATTEND -> courtFailedToAttendLetterService.getEligibleList(request);
             default -> throw new MojException.InternalServerError("Letter type not yet implemented", null);
         };
     }
@@ -158,7 +162,7 @@ public class CourtLetterServiceImpl implements CourtLetterService {
 
         List<String> dataTypes = List.of(STRING, STRING, STRING, DATE, DATE);
 
-        List<ShowCauseLetterData> showCauseLetterDataList =
+        List<FailedToAttendLetterData> showCauseLetterDataList =
             serialiseShowCauseLetterData(eligibleJurorRecords, request.isIncludePrinted());
 
         LetterListResponseDto responseDto = LetterListResponseDto.builder()
@@ -228,16 +232,17 @@ public class CourtLetterServiceImpl implements CourtLetterService {
         return deferralLetterDataList;
     }
 
-    private List<ShowCauseLetterData> serialiseShowCauseLetterData(List<ShowCauseLetterList> eligibleJurorRecords,
-                                                                   boolean isIncludePrinted) {
-        List<ShowCauseLetterData> showCauseLetterDataList = new ArrayList<>();
+    private List<FailedToAttendLetterData> serialiseShowCauseLetterData(List<ShowCauseLetterList> eligibleJurorRecords,
+                                                                        boolean isIncludePrinted) {
+        List<FailedToAttendLetterData> showCauseLetterDataList = new ArrayList<>();
         for (ShowCauseLetterList result : eligibleJurorRecords) {
-            ShowCauseLetterData.ShowCauseLetterDataBuilder showCauseLetterData = ShowCauseLetterData.builder()
-                .jurorNumber(result.getJurorNumber())
-                .firstName(result.getFirstName())
-                .lastName(result.getLastName())
-                .absentDate(result.getAbsentDate())
-                .poolNumber(result.getPoolNumber());
+            FailedToAttendLetterData.FailedToAttendLetterDataBuilder showCauseLetterData =
+                FailedToAttendLetterData.builder()
+                    .jurorNumber(result.getJurorNumber())
+                    .firstName(result.getFirstName())
+                    .lastName(result.getLastName())
+                    .absentDate(result.getAbsentDate())
+                    .poolNumber(result.getPoolNumber());
 
             if (isIncludePrinted) {
                 LocalDateTime datePrinted = result.getDatePrinted();
@@ -317,9 +322,9 @@ public class CourtLetterServiceImpl implements CourtLetterService {
         log.debug("Extracted deferral reason code: {} from other information text: {}", deferralReasonCode,
             otherInfoText);
 
-        Optional<ExcusalCodeEntity> excusalCodeOpt = excusalCodeRepository.findById(deferralReasonCode);
+        Optional<ExcusalCode> excusalCodeOpt = excusalCodeRepository.findById(deferralReasonCode);
 
-        return excusalCodeOpt.map(excusalCodeEntity -> WordUtils.capitalizeFully(excusalCodeEntity.getDescription()))
+        return excusalCodeOpt.map(excusalCode -> WordUtils.capitalizeFully(excusalCode.getDescription()))
             .orElse(null);
     }
 

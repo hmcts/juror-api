@@ -766,7 +766,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        void negativeUnauthorisedNotSJO() throws Exception {
+        void negativeUnauthorisedNotSjo() throws Exception {
             String jurorNumber = "641500005";
             String poolNumber = "415220901";
             final String bureauJwt = createBureauJwt("COURT_USER", "415", 1);
@@ -1036,7 +1036,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        void negativeUnauthorisedNotSJO() throws Exception {
+        void negativeUnauthorisedNotSjo() throws Exception {
             final String bureauJwt = createBureauJwt("COURT_USER", "415", 1);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);

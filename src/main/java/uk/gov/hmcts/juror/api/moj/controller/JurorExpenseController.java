@@ -170,12 +170,10 @@ public class JurorExpenseController {
         return ResponseEntity.ok().body(responseDto);
     }
 
-    @PostMapping("/set-default-expenses/{juror_number}")
+    @PostMapping("/set-default-expenses")
     @Operation(summary = "Update default expense details for juror and appearance and persists them to database ")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> setDefaultExpenses(
-        @Valid @JurorNumber @Parameter(description = "Valid juror number", required = true)
-        @PathVariable("juror_number") String jurorNumber,
         @Valid @RequestBody RequestDefaultExpensesDto dto) {
         jurorExpenseService.setDefaultExpensesForJuror(dto);
         return new ResponseEntity<>(HttpStatus.OK);

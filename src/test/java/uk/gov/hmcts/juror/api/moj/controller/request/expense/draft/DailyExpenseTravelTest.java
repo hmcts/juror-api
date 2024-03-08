@@ -33,6 +33,7 @@ public class DailyExpenseTravelTest extends AbstractValidatorTest<DailyExpenseTr
             super("jurorsTakenCar", DailyExpenseTravel::setJurorsTakenCar);
             addNotRequiredTest(1);
             addMin(0, null);
+            addMax(1_000_000,null);
         }
     }
 
@@ -50,6 +51,7 @@ public class DailyExpenseTravelTest extends AbstractValidatorTest<DailyExpenseTr
             super("jurorsTakenMotorcycle", DailyExpenseTravel::setJurorsTakenMotorcycle);
             addNotRequiredTest(1);
             addMin(0, null);
+            addMax(1_000_000,null);
         }
     }
 
@@ -67,6 +69,7 @@ public class DailyExpenseTravelTest extends AbstractValidatorTest<DailyExpenseTr
             super("milesTraveled", DailyExpenseTravel::setMilesTraveled);
             addNotRequiredTest(1);
             addMin(0, null);
+            addMax(1_000_000,null);
         }
     }
 
@@ -76,6 +79,7 @@ public class DailyExpenseTravelTest extends AbstractValidatorTest<DailyExpenseTr
             super("parking", DailyExpenseTravel::setParking);
             addNotRequiredTest(BigDecimal.ONE);
             addMin(BigDecimal.ZERO, null);
+            addMax(new BigDecimal("1000000"),null);
         }
     }
 
@@ -85,6 +89,7 @@ public class DailyExpenseTravelTest extends AbstractValidatorTest<DailyExpenseTr
             super("publicTransport", DailyExpenseTravel::setPublicTransport);
             addNotRequiredTest(BigDecimal.ONE);
             addMin(BigDecimal.ZERO, null);
+            addMax(new BigDecimal("1000000"),null);
         }
     }
 
@@ -94,6 +99,7 @@ public class DailyExpenseTravelTest extends AbstractValidatorTest<DailyExpenseTr
             super("taxi", DailyExpenseTravel::setTaxi);
             addNotRequiredTest(BigDecimal.ONE);
             addMin(BigDecimal.ZERO, null);
+            addMax(new BigDecimal("1000000"),null);
         }
     }
 }

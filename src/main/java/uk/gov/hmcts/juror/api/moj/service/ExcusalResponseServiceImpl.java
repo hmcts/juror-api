@@ -97,8 +97,8 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         if (excusalDecisionDto.getExcusalDecision().equals(ExcusalDecision.GRANT)) {
             grantExcusalForJuror(payload, excusalDecisionDto, jurorPool);
-            if (!excusalDecisionDto.getExcusalReasonCode().equals(ExcusalCode.DECEASED)
-                && owner.equals(SecurityUtil.BUREAU_OWNER)) {
+            if (!ExcusalCode.DECEASED.equals(excusalDecisionDto.getExcusalReasonCode())
+                && SecurityUtil.BUREAU_OWNER.equals(owner)) {
                 // Only generate letter for non-deceased jurors and Bureau users
                 sendExcusalLetter(jurorPool, jurorNumber, excusalDecisionDto.getExcusalReasonCode(), login);
             }
@@ -246,17 +246,18 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         // bureau only - queue letter for xerox
         if (payload.getOwner().equals("400")) {
             printDataService.printExcusalDeniedLetter(jurorPool);
+
+            jurorHistoryRepository.save(JurorHistory.builder()
+                .jurorNumber(jurorPool.getJurorNumber())
+                .dateCreated(LocalDateTime.now())
+                .historyCode(HistoryCodeMod.NON_EXCUSED_LETTER)
+                .createdBy(payload.getLogin())
+                .poolNumber(jurorPool.getPoolNumber())
+                .otherInformation("Refused Excusal")
+                .otherInformationRef(juror.getExcusalCode())
+                .build());
         }
 
-        jurorHistoryRepository.save(JurorHistory.builder()
-                                            .jurorNumber(jurorPool.getJurorNumber())
-                                            .dateCreated(LocalDateTime.now())
-                                            .historyCode(HistoryCodeMod.NON_EXCUSED_LETTER)
-                                            .createdBy(payload.getLogin())
-                                            .poolNumber(jurorPool.getPoolNumber())
-                                            .otherInformation("Refused Excusal")
-                                            .otherInformationRef(juror.getExcusalCode())
-                                            .build());
     }
 
     private void sendExcusalLetter(JurorPool jurorPool, String jurorNumber, String excusalCode, String login) {

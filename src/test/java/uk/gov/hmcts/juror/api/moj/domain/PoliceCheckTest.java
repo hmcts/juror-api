@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @DisplayName("PoliceCheck")
+@SuppressWarnings("PMD.LawOfDemeter")
 class PoliceCheckTest {
 
 
@@ -103,7 +104,7 @@ class PoliceCheckTest {
         @ParameterizedTest(name = "Expect expected date to be {2} when old value is {0} and new value is {1}")
         @DisplayName("getEffectiveValue(oldValue, newValue)")
         @MethodSource("getEffectiveValueSource")
-        void getEffectiveValue(PoliceCheck oldValue, PoliceCheck newValue, PoliceCheck expectedValue) {
+        void positiveGetEffectiveValue(PoliceCheck oldValue, PoliceCheck newValue, PoliceCheck expectedValue) {
             assertEquals(expectedValue,
                 PoliceCheck.getEffectiveValue(oldValue, newValue),
                 "Effected value should return '" + expectedValue

@@ -14,6 +14,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +33,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.PrintLettersRe
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDataResponseDto;
+import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
 import uk.gov.hmcts.juror.api.moj.service.letter.RequestInformationLetterService;
@@ -131,6 +134,29 @@ public class LetterController {
             courtLetterService.getEligibleList(courtLetterListRequestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(courtLetterListResponseDto);
+    }
+
+    @GetMapping(path = "/court-letter-list/{letter_type}/{include_printed}")
+    @Operation(summary = "GET - Court letter list", description = "Request a list of "
+        + "jurors eligible for absent letters to be issued/re-issued.")
+    @IsCourtUser
+    public ResponseEntity<LetterListResponseDto> courtLetterListAbsentJurors(
+        @PathVariable(name = "letter_type") CourtLetterType letterType,
+        @PathVariable(name = "include_printed") Boolean includePrinted) {
+
+        if (CourtLetterType.FAILED_TO_ATTEND.equals(letterType) || CourtLetterType.SHOW_CAUSE.equals(letterType)) {
+            CourtLetterListRequestDto courtLetterListRequestDto = CourtLetterListRequestDto.builder()
+                .letterType(letterType)
+                .includePrinted(includePrinted)
+                .build();
+
+            LetterListResponseDto courtLetterListResponseDto =
+                courtLetterService.getEligibleList(courtLetterListRequestDto);
+
+            return ResponseEntity.status(HttpStatus.OK).body(courtLetterListResponseDto);
+        } else {
+            throw new MojException.Forbidden("Letter type not valid for url", null);
+        }
     }
 
     @PostMapping(path = "/print-court-letter")

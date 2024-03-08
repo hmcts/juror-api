@@ -45,7 +45,7 @@ import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.LawOfDemeter"})
 @RunWith(SpringRunner.class)
 public class ExcusalResponseServiceImplTest {
 
@@ -126,7 +126,7 @@ public class ExcusalResponseServiceImplTest {
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
         verifyHappyPaperPath(payload, jurorNumber);
-        verifyHappyRefuseJurorPoolPath();
+        verifyHappyRefuseJurorPoolPath(3);
         verifyHappyExcusalDeniedLetter();
     }
 
@@ -147,7 +147,7 @@ public class ExcusalResponseServiceImplTest {
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
         verifyHappyPaperPath(courtPayload, jurorNumber);
-        verifyHappyRefuseJurorPoolPath();
+        verifyHappyRefuseJurorPoolPath(2);
 
         Mockito.verify(printDataService, Mockito.times(0))
             .printExcusalDeniedLetter(any());
@@ -220,7 +220,7 @@ public class ExcusalResponseServiceImplTest {
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
         verifyHappyDigitalPath(payload, JUROR_NUMBER);
-        verifyHappyRefuseJurorPoolPath();
+        verifyHappyRefuseJurorPoolPath(3);
         verifyHappyExcusalDeniedLetter();
     }
 
@@ -240,7 +240,7 @@ public class ExcusalResponseServiceImplTest {
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
         verifyHappyDigitalPath(courtPayload, JUROR_NUMBER2);
-        verifyHappyRefuseJurorPoolPath();
+        verifyHappyRefuseJurorPoolPath(2);
         Mockito.verify(printDataService, Mockito.times(0))
             .printExcusalDeniedLetter(any());
     }
@@ -550,7 +550,7 @@ public class ExcusalResponseServiceImplTest {
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyHappyRefuseJurorPoolPath();
+        verifyHappyRefuseJurorPoolPath(3);
         verifyHappyExcusalDeniedLetter();
     }
 
@@ -591,7 +591,7 @@ public class ExcusalResponseServiceImplTest {
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
 
-        verifyHappyRefuseJurorPoolPath();
+        verifyHappyRefuseJurorPoolPath(2);
         Mockito.verify(printDataService, Mockito.times(0))
             .printExcusalDeniedLetter(any());
     }
@@ -630,9 +630,9 @@ public class ExcusalResponseServiceImplTest {
         verifyFailedInitialChecksPath(payload, JUROR_NUMBER);
     }
 
-    private void verifyHappyRefuseJurorPoolPath() {
+    private void verifyHappyRefuseJurorPoolPath(int jurorHistoryRepositoryTimes) {
         Mockito.verify(jurorPoolRepository, Mockito.times(1)).save(any());
-        Mockito.verify(jurorHistoryRepository, Mockito.times(3)).save(any());
+        Mockito.verify(jurorHistoryRepository, Mockito.times(jurorHistoryRepositoryTimes)).save(any());
     }
 
     private void verifyHappyGrantJurorPoolPath() {

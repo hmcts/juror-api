@@ -11,7 +11,7 @@ import java.util.List;
  */
 public interface IActivePoolsCourtRepository {
 
-     List<ActivePoolsCourt> findActivePools(List<String> courts, LocalDate returnDate, String sortBy,
+    List<ActivePoolsCourt> findActivePools(List<String> courts, LocalDate returnDate, String sortBy,
                                                   String order,
                                                   List<String> poolTypes);
 

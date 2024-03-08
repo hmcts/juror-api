@@ -1,10 +1,15 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.BooleanPath;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import jakarta.validation.constraints.NotNull;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoolMemberFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 
@@ -17,6 +22,8 @@ import java.util.function.Function;
  * Allowing for additional query functions to be explicitly declared
  */
 public interface IJurorPoolRepository {
+    StringPath ATTENDANCE = Expressions.stringPath("attendance");
+    BooleanPath CHECKED_IN_TODAY = Expressions.booleanPath("checked_in_today");
 
     String findLatestPoolSequence(@NotNull String poolNumber);
 
@@ -43,4 +50,6 @@ public interface IJurorPoolRepository {
                                                 Consumer<JPQLQuery<JurorPool>> queryModifiers,
                                                 Function<JurorPool, T> dataMapper,
                                                 Long maxItems);
+
+    JPAQuery<Tuple> fetchFilteredPoolMembers(PoolMemberFilterRequestQuery search, String owner);
 }

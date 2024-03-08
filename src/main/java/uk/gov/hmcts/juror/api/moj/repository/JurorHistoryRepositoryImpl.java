@@ -30,7 +30,8 @@ public class JurorHistoryRepositoryImpl implements IJurorHistoryRepository {
      *     part defaulted to midnight/start of day).
      */
     @Override
-    public List<JurorHistory> findByJurorNumberAndDateCreatedGreaterThanEqual(String jurorNumber, LocalDate dateCreated) {
+    public List<JurorHistory> findByJurorNumberAndDateCreatedGreaterThanEqual(String jurorNumber,
+                                                                              LocalDate dateCreated) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         return queryFactory.selectFrom(JUROR_HISTORY)
             .where(JUROR_HISTORY.jurorNumber.eq(jurorNumber))

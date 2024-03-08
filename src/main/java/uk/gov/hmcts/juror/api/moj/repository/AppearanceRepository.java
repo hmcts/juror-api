@@ -26,6 +26,7 @@ public interface AppearanceRepository extends
 
     List<Appearance> findAllByJurorNumberAndPoolNumber(String jurorNumber, String poolNumber);
 
+    @SuppressWarnings("checkstyle:LineLength")
     List<Appearance> findAllByJurorNumberAndAppearanceStageInAndCourtLocationOwnerAndIsDraftExpenseTrueOrderByAttendanceDateDesc(
         String jurorNumber,
         Set<AppearanceStage> stages,
@@ -41,7 +42,8 @@ public interface AppearanceRepository extends
     List<Appearance> findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(String jurorNumber, String poolNumber);
 
 
-    List<Appearance> findAllByCourtLocationLocCodeAndAppearanceStageAndPayCashAndIsDraftExpenseFalse(String locCode,
-                                                                                                      AppearanceStage appearanceStage,
-                                                                                                     boolean payCash);
+    List<Appearance> findAllByCourtLocationLocCodeAndAppearanceStageAndPayCashAndIsDraftExpenseFalse(
+        String locCode,
+        AppearanceStage appearanceStage,
+        boolean payCash);
 }

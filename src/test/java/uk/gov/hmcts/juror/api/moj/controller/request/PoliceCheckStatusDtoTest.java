@@ -17,7 +17,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-public class PoliceCheckStatusDtoTest {
+class PoliceCheckStatusDtoTest {
 
     private static ValidatorFactory validatorFactory;
     private static Validator validator;
@@ -49,8 +49,8 @@ public class PoliceCheckStatusDtoTest {
             .hasSize(1)
             .allMatch(
                 policeCheckStatusDtoConstraintViolation -> Objects.nonNull(policeCheckStatusDtoConstraintViolation)
-                    && policeCheckStatusDtoConstraintViolation.getMessage().equals("must not be null")
-                    && policeCheckStatusDtoConstraintViolation.getPropertyPath().toString().equals("status"));
+                    && "must not be null".equals(policeCheckStatusDtoConstraintViolation.getMessage())
+                    && "status".equals(policeCheckStatusDtoConstraintViolation.getPropertyPath().toString()));
 
     }
 }

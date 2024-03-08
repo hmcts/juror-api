@@ -108,7 +108,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     private static final String URL_UNPAID_SUMMARY = "/api/v1/moj/expenses/unpaid-summary/";
     private static final String URL_DEFAULT_SUMMARY = "/api/v1/moj/expenses/default-summary/";
 
-    private static final String URL_SET_DEFAULT_EXPENSES = "/api/v1/moj/expenses/set-default-expenses/";
+    private static final String URL_SET_DEFAULT_EXPENSES = "/api/v1/moj/expenses/set-default-expenses";
     public static final String BASE_URL = "/api/v1/moj/expenses";
 
     private final TestRestTemplate template;
@@ -378,7 +378,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST /api/v1/moj/expenses/set-default-expenses/{juror_number}")
+    @DisplayName("POST /api/v1/moj/expenses/set-default-expenses")
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp_default_expenses.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class SetDefaultExpenses {
@@ -405,7 +405,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             payload.setOverwriteExistingDraftExpenses(false);
 
             RequestEntity<RequestDefaultExpensesDto> request = new RequestEntity<>(payload, httpHeaders, POST,
-                URI.create(URL_SET_DEFAULT_EXPENSES + jurorNumber));
+                URI.create(URL_SET_DEFAULT_EXPENSES));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -429,7 +429,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             payload.setOverwriteExistingDraftExpenses(true);
 
             RequestEntity<RequestDefaultExpensesDto> request = new RequestEntity<>(payload, httpHeaders, POST,
-                URI.create(URL_SET_DEFAULT_EXPENSES + jurorNumber));
+                URI.create(URL_SET_DEFAULT_EXPENSES));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

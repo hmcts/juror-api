@@ -53,12 +53,6 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
                     .toArray(Expression[]::new))
             .from(JUROR);  // must query Juror table for every letter type
 
-        Set<Class<? extends EntityPathBase<?>>> entityPathBaseSet = request.getLetterType()
-            .getReissueDataTypes().stream()
-            .map(ReissueLetterService.DataType::getEntityPaths)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toSet());
-
         query.join(JUROR_POOL).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
 
         // must have this join for every letter type except for Summons letters - tbc later
@@ -67,6 +61,12 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
         if (queryConsumer != null) {
             queryConsumer.accept(query);
         }
+
+        final Set<Class<? extends EntityPathBase<?>>> entityPathBaseSet = request.getLetterType()
+            .getReissueDataTypes().stream()
+            .map(ReissueLetterService.DataType::getEntityPaths)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toSet());
 
         if (entityPathBaseSet.contains(QJurorHistory.class)) {
             query.join(QJurorHistory.jurorHistory)

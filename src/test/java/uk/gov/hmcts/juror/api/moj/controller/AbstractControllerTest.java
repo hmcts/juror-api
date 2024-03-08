@@ -1,5 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
+import lombok.Setter;
+import lombok.SneakyThrows;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,9 +15,11 @@ import uk.gov.hmcts.juror.api.TestUtils;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
 public abstract class AbstractControllerTest<P, R> {
 
 
+    @Setter
     private MockMvc mockMvc;
     private final HttpMethod method;
     private final String url;
@@ -29,17 +33,14 @@ public abstract class AbstractControllerTest<P, R> {
         this.authentication = authentication;
     }
 
-    public void setMockMvc(MockMvc mockMvc) {
-        this.mockMvc = mockMvc;
-    }
-
     protected ResultActions send(P payload, HttpStatus expectedStatus,
-                                 String... pathParams) throws Exception {
+                                 String... pathParams) {
         return send(payload, expectedStatus, authentication, pathParams);
     }
 
+    @SneakyThrows
     protected ResultActions send(P payload, HttpStatus expectedStatus, Authentication authentication,
-                                 String... pathParams) throws Exception {
+                                 String... pathParams) {
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
             .request(this.method, this.url, (Object[]) pathParams)
             .principal(authentication);

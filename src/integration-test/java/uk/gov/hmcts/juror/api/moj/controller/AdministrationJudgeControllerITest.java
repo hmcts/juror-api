@@ -279,6 +279,10 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     class ViewAllJudgeDetails {
         public static final String URL = BASE_URL;
 
+        private ViewAllJudgeDetails() {
+
+        }
+
         @Nested
         @DisplayName("Positive")
         class Positive {
@@ -417,6 +421,10 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     @Sql(value = "/db/administration/tearDownJudges.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class CreateJudgeDetails {
         public static final String URL = BASE_URL;
+
+        private CreateJudgeDetails() {
+
+        }
 
         @Nested
         @DisplayName("Positive")

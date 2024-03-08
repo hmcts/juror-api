@@ -45,6 +45,7 @@ import static org.mockito.Mockito.verify;
  * Unit test for {@link uk.gov.hmcts.juror.api.bureau.service.ResponseStatusUpdateServiceImpl}.
  */
 @RunWith(SpringRunner.class)
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class JurorResponseStatusUpdateServiceImplTest {
 
     @Mock
@@ -100,7 +101,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
         mockInteractionsVerification(mockJurorResponse);
 
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
-        noMergeVerification();
+        assertNoMergeVerification();
     }
 
     @Test
@@ -123,7 +124,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
         mockInteractionsVerification(mockJurorResponse);
 
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
-        noMergeVerification();
+        assertNoMergeVerification();
     }
 
     @Test
@@ -143,7 +144,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
             ProcessingStatus.AWAITING_TRANSLATION, payload);
 
         mockInteractionsVerification(mockJurorResponse);
-        noMergeVerification();
+        assertNoMergeVerification();
     }
 
     @Test
@@ -160,7 +161,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
 
         // Verify mock interactions
         mockInteractionsVerification(mockJurorResponse);
-        noMergeVerification();
+        assertNoMergeVerification();
     }
 
     @Test
@@ -182,7 +183,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
 
         // verifications
         mockInteractionsVerification(mockJurorResponse);
-        noMergeVerification();
+        assertNoMergeVerification();
     }
 
     @Test
@@ -199,7 +200,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
             ProcessingStatus.AWAITING_TRANSLATION, bureauPayload);
 
         mockInteractionsVerification(mockJurorResponse);
-        noMergeVerification();
+        assertNoMergeVerification();
     }
 
     @Test
@@ -252,7 +253,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
             ProcessingStatus.AWAITING_TRANSLATION, courtPayload);
 
         mockInteractionsVerification(mockJurorResponse);
-        noMergeVerification();
+        assertNoMergeVerification();
     }
 
 
@@ -294,7 +295,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
     }
 
 
-    private void noMergeVerification() {
+    private void assertNoMergeVerification() {
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActive(any(String.class), eq(true));

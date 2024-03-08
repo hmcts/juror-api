@@ -2,15 +2,16 @@ package uk.gov.hmcts.juror.api.moj.utils;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+
 public final class CourtLocationUtils {
+    private CourtLocationUtils() {
+
+    }
 
     /**
      * Lookup function to check whether a location code exists as a key in the Welsh Court Location table.

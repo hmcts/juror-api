@@ -1,11 +1,10 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -28,7 +27,6 @@ import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.DisqualifyJurorServi
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -53,6 +51,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     DisqualifyJurorController.class,
     RestResponseEntityExceptionHandler.class
 })
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.TooManyMethods",
+    "PMD.LawOfDemeter"
+})
 class DisqualifyJurorControllerTest {
 
     @Autowired
@@ -65,8 +68,7 @@ class DisqualifyJurorControllerTest {
     private RestfulAuthenticationEntryPoint restfulAuthenticationEntryPoint;
 
     @Test
-    public void getDisqualifyReasonsBureauHappy() throws Exception {
-        final ArgumentCaptor<BureauJWTPayload> bureauJwtPayloadCaptor = ArgumentCaptor.forClass(BureauJWTPayload.class);
+    void positiveGetDisqualifyReasonsBureau() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
 
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -89,18 +91,11 @@ class DisqualifyJurorControllerTest {
                 "Mental Health Act",
                 "Residency")));
 
-        verify(disqualifyJurorService, times(1)).getDisqualifyReasons(bureauJwtPayloadCaptor.capture());
-        assertThat(bureauJwtPayloadCaptor.getValue().getLogin()).isEqualTo("BUREAU_USER");
-        assertThat(bureauJwtPayloadCaptor.getValue().getStaff()).isNull();
-        assertThat(bureauJwtPayloadCaptor.getValue().getDaysToExpire()).isEqualTo(89);
-        assertThat(bureauJwtPayloadCaptor.getValue().getOwner()).isEqualTo("400");
-        assertThat(bureauJwtPayloadCaptor.getValue().getPasswordWarning()).isEqualTo(Boolean.FALSE);
-        assertThat(bureauJwtPayloadCaptor.getValue().getUserLevel()).isEqualTo("99");
+        verify(disqualifyJurorService, times(1)).getDisqualifyReasons(jwtPayload);
     }
 
     @Test
-    public void getDisqualifyReasonsCourtHappy() throws Exception {
-        final ArgumentCaptor<BureauJWTPayload> bureauJwtPayloadCaptor = ArgumentCaptor.forClass(BureauJWTPayload.class);
+    void positiveGetDisqualifyReasonsCourt() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
 
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -123,17 +118,12 @@ class DisqualifyJurorControllerTest {
                 "Mental Health Act",
                 "Residency")));
 
-        verify(disqualifyJurorService, times(1)).getDisqualifyReasons(bureauJwtPayloadCaptor.capture());
-        assertThat(bureauJwtPayloadCaptor.getValue().getLogin()).isEqualTo("COURT_USER");
-        assertThat(bureauJwtPayloadCaptor.getValue().getStaff()).isNull();
-        assertThat(bureauJwtPayloadCaptor.getValue().getDaysToExpire()).isEqualTo(89);
-        assertThat(bureauJwtPayloadCaptor.getValue().getOwner()).isEqualTo("415");
-        assertThat(bureauJwtPayloadCaptor.getValue().getPasswordWarning()).isEqualTo(Boolean.FALSE);
-        assertThat(bureauJwtPayloadCaptor.getValue().getUserLevel()).isEqualTo("99");
+        verify(disqualifyJurorService, times(1))
+            .getDisqualifyReasons(jwtPayload);
     }
 
     @Test
-    public void getDisqualifyReasonsInvalidPath() throws Exception {
+    void negativeGetDisqualifyReasonsInvalidPath() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -151,7 +141,7 @@ class DisqualifyJurorControllerTest {
     }
 
     @Test
-    public void getDisqualifyReasonsIncorrectHttpOperation() throws Exception {
+    void negativeGetDisqualifyReasonsIncorrectHttpOperation() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -169,12 +159,7 @@ class DisqualifyJurorControllerTest {
     }
 
     @Test
-    public void disqualifyJurorBureauHappy() throws Exception {
-        final ArgumentCaptor<String> jurorNumberCaptor = ArgumentCaptor.forClass(String.class);
-        final ArgumentCaptor<DisqualifyJurorDto> disqualifyJurorServiceCaptor =
-            ArgumentCaptor.forClass(DisqualifyJurorDto.class);
-        final ArgumentCaptor<BureauJWTPayload> bureauJwtPayloadCaptor = ArgumentCaptor.forClass(BureauJWTPayload.class);
-
+    void positiveDisqualifyJurorBureauHappy() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -192,30 +177,11 @@ class DisqualifyJurorControllerTest {
             .andExpect(jsonPath("$", CoreMatchers.is("Juror 923456789 disqualified with code C")));
 
         verify(disqualifyJurorService, times(1)).disqualifyJuror(
-            jurorNumberCaptor.capture(),
-            disqualifyJurorServiceCaptor.capture(),
-            bureauJwtPayloadCaptor.capture());
-
-        assertThat(jurorNumberCaptor.getValue()).isEqualTo("923456789");
-
-        assertThat(disqualifyJurorServiceCaptor.getValue().getCode()).isEqualTo(DisqualifyCodeEnum.C);
-        assertThat(disqualifyJurorServiceCaptor.getValue().getReplyMethod()).isEqualTo(ReplyMethod.PAPER);
-
-        assertThat(bureauJwtPayloadCaptor.getValue().getLogin()).isEqualTo("BUREAU_USER");
-        assertThat(bureauJwtPayloadCaptor.getValue().getStaff()).isNull();
-        assertThat(bureauJwtPayloadCaptor.getValue().getDaysToExpire()).isEqualTo(89);
-        assertThat(bureauJwtPayloadCaptor.getValue().getOwner()).isEqualTo("400");
-        assertThat(bureauJwtPayloadCaptor.getValue().getPasswordWarning()).isEqualTo(Boolean.FALSE);
-        assertThat(bureauJwtPayloadCaptor.getValue().getUserLevel()).isEqualTo("99");
+            "923456789",disqualifyJurorDto, jwtPayload);
     }
 
     @Test
-    public void disqualifyJurorCourtHappy() throws Exception {
-        final ArgumentCaptor<String> jurorNumberCaptor = ArgumentCaptor.forClass(String.class);
-        final ArgumentCaptor<DisqualifyJurorDto> disqualifyJurorServiceCaptor =
-            ArgumentCaptor.forClass(DisqualifyJurorDto.class);
-        final ArgumentCaptor<BureauJWTPayload> bureauJwtPayloadCaptor = ArgumentCaptor.forClass(BureauJWTPayload.class);
-
+    void positiveDisqualifyJurorCourt() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -233,21 +199,7 @@ class DisqualifyJurorControllerTest {
             .andExpect(jsonPath("$", CoreMatchers.is("Juror 923456789 disqualified with code C")));
 
         verify(disqualifyJurorService, times(1)).disqualifyJuror(
-            jurorNumberCaptor.capture(),
-            disqualifyJurorServiceCaptor.capture(),
-            bureauJwtPayloadCaptor.capture());
-
-        assertThat(jurorNumberCaptor.getValue()).isEqualTo("923456789");
-
-        assertThat(disqualifyJurorServiceCaptor.getValue().getCode()).isEqualTo(DisqualifyCodeEnum.C);
-        assertThat(disqualifyJurorServiceCaptor.getValue().getReplyMethod()).isEqualTo(ReplyMethod.PAPER);
-
-        assertThat(bureauJwtPayloadCaptor.getValue().getLogin()).isEqualTo("COURT_USER");
-        assertThat(bureauJwtPayloadCaptor.getValue().getStaff()).isNull();
-        assertThat(bureauJwtPayloadCaptor.getValue().getDaysToExpire()).isEqualTo(89);
-        assertThat(bureauJwtPayloadCaptor.getValue().getOwner()).isEqualTo("415");
-        assertThat(bureauJwtPayloadCaptor.getValue().getPasswordWarning()).isEqualTo(Boolean.FALSE);
-        assertThat(bureauJwtPayloadCaptor.getValue().getUserLevel()).isEqualTo("99");
+            "923456789",disqualifyJurorDto, jwtPayload);
     }
 
 
@@ -271,7 +223,7 @@ class DisqualifyJurorControllerTest {
     }
 
     @Test
-    public void disqualifyJurorAbsentJurorNumber() throws Exception {
+    void disqualifyJurorAbsentJurorNumber() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -290,7 +242,7 @@ class DisqualifyJurorControllerTest {
 
 
     @Test
-    public void disqualifyJurorInvalidPath() throws Exception {
+    void disqualifyJurorInvalidPath() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -308,7 +260,7 @@ class DisqualifyJurorControllerTest {
     }
 
     @Test
-    public void disqualifyJurorMissingReplyMethod() throws Exception {
+    void disqualifyJurorMissingReplyMethod() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -324,13 +276,14 @@ class DisqualifyJurorControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestUtils.asJsonString(disqualifyJurorDto)))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.errors[0]", is("Reply method is missing")));
+            .andExpect(jsonPath("$.errors[0].field", is("replyMethod")))
+            .andExpect(jsonPath("$.errors[0].message", is("Reply method is missing")));
 
         verify(disqualifyJurorService, never()).disqualifyJuror(any(), any(), any());
     }
 
     @Test
-    public void disqualifyJurorMissingDisqualifyCode() throws Exception {
+    void disqualifyJurorMissingDisqualifyCode() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -346,13 +299,14 @@ class DisqualifyJurorControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(TestUtils.asJsonString(disqualifyJurorDto)))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.errors[0]", is("Disqualify code is missing")));
+            .andExpect(jsonPath("$.errors[0].field", is("code")))
+            .andExpect(jsonPath("$.errors[0].message", is("Disqualify code is missing")));
 
         verify(disqualifyJurorService, never()).disqualifyJuror(any(), any(), any());
     }
 
     @Test
-    public void disqualifyJurorNoDisqualifyJurorDto() throws Exception {
+    void disqualifyJurorNoDisqualifyJurorDto() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -370,10 +324,7 @@ class DisqualifyJurorControllerTest {
 
 
     @Test
-    public void disqualifyJurorDueToAgeBureauHappyPath() throws Exception {
-        final ArgumentCaptor<String> jurorNumberCaptor = ArgumentCaptor.forClass(String.class);
-        final ArgumentCaptor<BureauJWTPayload> bureauJwtPayloadCaptor = ArgumentCaptor.forClass(BureauJWTPayload.class);
-
+    void disqualifyJurorDueToAgeBureauHappyPath() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -389,24 +340,12 @@ class DisqualifyJurorControllerTest {
             .andExpect(jsonPath("$", CoreMatchers.is("Juror 923456789 disqualified with code A")));
 
         verify(disqualifyJurorService, times(1)).disqualifyJurorDueToAgeOutOfRange(
-            jurorNumberCaptor.capture(),
-            bureauJwtPayloadCaptor.capture());
-
-        assertThat(jurorNumberCaptor.getValue()).isEqualTo("923456789");
-        assertThat(bureauJwtPayloadCaptor.getValue().getLogin()).isEqualTo("BUREAU_USER");
-        assertThat(bureauJwtPayloadCaptor.getValue().getStaff()).isNull();
-        assertThat(bureauJwtPayloadCaptor.getValue().getDaysToExpire()).isEqualTo(89);
-        assertThat(bureauJwtPayloadCaptor.getValue().getOwner()).isEqualTo("400");
-        assertThat(bureauJwtPayloadCaptor.getValue().getPasswordWarning()).isEqualTo(Boolean.FALSE);
-        assertThat(bureauJwtPayloadCaptor.getValue().getUserLevel()).isEqualTo("99");
+            "923456789", jwtPayload);
     }
 
 
     @Test
-    public void disqualifyJurorDueToAgeCourtsHappyPath() throws Exception {
-        final ArgumentCaptor<String> jurorNumberCaptor = ArgumentCaptor.forClass(String.class);
-        final ArgumentCaptor<BureauJWTPayload> bureauJwtPayloadCaptor = ArgumentCaptor.forClass(BureauJWTPayload.class);
-
+    void disqualifyJurorDueToAgeCourtsHappyPath() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -422,16 +361,7 @@ class DisqualifyJurorControllerTest {
             .andExpect(jsonPath("$", CoreMatchers.is("Juror 923456789 disqualified with code A")));
 
         verify(disqualifyJurorService, times(1)).disqualifyJurorDueToAgeOutOfRange(
-            jurorNumberCaptor.capture(),
-            bureauJwtPayloadCaptor.capture());
-
-        assertThat(jurorNumberCaptor.getValue()).isEqualTo("923456789");
-        assertThat(bureauJwtPayloadCaptor.getValue().getLogin()).isEqualTo("COURT_USER");
-        assertThat(bureauJwtPayloadCaptor.getValue().getStaff()).isNull();
-        assertThat(bureauJwtPayloadCaptor.getValue().getDaysToExpire()).isEqualTo(89);
-        assertThat(bureauJwtPayloadCaptor.getValue().getOwner()).isEqualTo("415");
-        assertThat(bureauJwtPayloadCaptor.getValue().getPasswordWarning()).isEqualTo(Boolean.FALSE);
-        assertThat(bureauJwtPayloadCaptor.getValue().getUserLevel()).isEqualTo("99");
+            "923456789",jwtPayload);
     }
 
 
@@ -454,7 +384,7 @@ class DisqualifyJurorControllerTest {
 
 
     @Test
-    public void disqualifyJurorDueToAgeInvalidPath() throws Exception {
+    void disqualifyJurorDueToAgeInvalidPath() throws Exception {
         BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);

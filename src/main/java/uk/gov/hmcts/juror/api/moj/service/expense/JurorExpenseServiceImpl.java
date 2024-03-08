@@ -244,6 +244,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     @Override
     @Transactional
+    @SuppressWarnings("checkstyle:LineLength")
     public void setDefaultExpensesForJuror(RequestDefaultExpensesDto dto) {
 
         String owner = SecurityUtil.getActiveOwner();
@@ -755,17 +756,17 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         }
         return ExpenseCount.builder()
             .totalDraft(appearances.stream().filter(appearance ->
-                appearance.getIsDraftExpense() && AppearanceStage.EXPENSE_ENTERED.equals(
-                    appearance.getAppearanceStage())).count())
+                AppearanceStage.EXPENSE_ENTERED.equals(
+                    appearance.getAppearanceStage()) && appearance.getIsDraftExpense()).count())
             .totalForApproval(appearances.stream().filter(appearance ->
-                !appearance.getIsDraftExpense() && AppearanceStage.EXPENSE_ENTERED.equals(
-                    appearance.getAppearanceStage())).count())
+                AppearanceStage.EXPENSE_ENTERED.equals(
+                    appearance.getAppearanceStage()) && !appearance.getIsDraftExpense()).count())
             .totalForReapproval(appearances.stream().filter(appearance ->
-                !appearance.getIsDraftExpense() && AppearanceStage.EXPENSE_EDITED.equals(
-                    appearance.getAppearanceStage())).count())
+                AppearanceStage.EXPENSE_EDITED.equals(
+                    appearance.getAppearanceStage()) && !appearance.getIsDraftExpense()).count())
             .totalApproved(appearances.stream().filter(appearance ->
-                !appearance.getIsDraftExpense() && AppearanceStage.EXPENSE_AUTHORISED.equals(
-                    appearance.getAppearanceStage())).count())
+                AppearanceStage.EXPENSE_AUTHORISED.equals(
+                    appearance.getAppearanceStage()) && !appearance.getIsDraftExpense()).count())
             .build();
     }
 

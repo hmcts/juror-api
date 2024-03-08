@@ -1,10 +1,10 @@
 package uk.gov.hmcts.juror.api.moj.controller.request.expense.draft;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import uk.gov.hmcts.juror.api.validation.ExpenseNumericLimit;
 
 import java.math.BigDecimal;
 
@@ -14,15 +14,15 @@ import java.math.BigDecimal;
 public class DailyExpenseFinancialLoss {
 
     @JsonProperty("loss_of_earnings")
-    @Min(0)
+    @ExpenseNumericLimit
     private BigDecimal lossOfEarningsOrBenefits;
 
     @JsonProperty("extra_care_cost")
-    @Min(0)
+    @ExpenseNumericLimit
     private BigDecimal extraCareCost;
 
     @JsonProperty("other_cost")
-    @Min(0)
+    @ExpenseNumericLimit
     private BigDecimal otherCosts;
 
     @JsonProperty("other_cost_description")

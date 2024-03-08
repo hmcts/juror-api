@@ -45,7 +45,10 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 @DisplayName("AdministrationServiceImpl")
-@SuppressWarnings("unchecked")
+@SuppressWarnings({
+    "unchecked",
+    "PMD.ExcessiveImports"
+})
 class AdministrationServiceImplTest {
 
     private AdministrationServiceImpl administrationService;

@@ -6,7 +6,6 @@ import lombok.Getter;
 
 /**
  * Excusal codes (reasons), mapped to the database table t_exc_code.
- * (removed deceased as that is a separate flow)
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
@@ -14,6 +13,7 @@ public enum ExcusalCodeEnum {
     A("A", "Moved from area"),
     B("B", "Student"),
     C("C", "Childcare"),
+    D("D", "Deceased"),
     E("E", "Parliament/European assembly"),
     F("F", "The Forces"),
     G("G", "Financial hardship"),

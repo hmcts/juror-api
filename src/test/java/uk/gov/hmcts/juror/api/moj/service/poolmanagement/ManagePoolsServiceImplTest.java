@@ -12,7 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDTO;
+import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
 import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -230,7 +230,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
     @Test
     public void test_getPoolMonitoringStats_happyPath() {
         BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
-        SummoningProgressResponseDTO dto = managePoolsService
+        SummoningProgressResponseDto dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
 
         verify(poolStatisticsRepository, times(1))
@@ -278,7 +278,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
                 bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
         doReturn(null).when(poolStatisticsRepository).getNilPools(
             bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
-        SummoningProgressResponseDTO dto = managePoolsService
+        SummoningProgressResponseDto dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
         assertThat(dto.getStatsByWeek().size()).isEqualTo(8);
         assertThat(dto.getStatsByWeek().get(0).getStats().size()).isEqualTo(0);
@@ -292,7 +292,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
                 bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
         doReturn(null).when(poolStatisticsRepository).getNilPools(
             bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
-        SummoningProgressResponseDTO dto = managePoolsService
+        SummoningProgressResponseDto dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
         assertThat(dto.getStatsByWeek().size()).isEqualTo(8);
         assertThat(dto.getStatsByWeek().get(0).getStats().size()).isEqualTo(0);
@@ -306,7 +306,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
             bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
         doReturn(getNilPoolAfterCurrentWeek()).when(poolStatisticsRepository).getNilPools(
             bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
-        SummoningProgressResponseDTO dto = managePoolsService
+        SummoningProgressResponseDto dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
         assertThat(dto.getStatsByWeek().size()).isEqualTo(8);
         assertThat(dto.getStatsByWeek().get(0).getStats().size()).isEqualTo(0);
@@ -319,7 +319,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
         BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         doReturn(null).when(poolStatisticsRepository).getStatisticsByCourtLocationAndPoolType(
             bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
-        SummoningProgressResponseDTO dto = managePoolsService
+        SummoningProgressResponseDto dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
         assertThat(dto.getStatsByWeek().size()).isEqualTo(8);
         assertThat(dto.getStatsByWeek().get(0).getStats().size()).isEqualTo(2);

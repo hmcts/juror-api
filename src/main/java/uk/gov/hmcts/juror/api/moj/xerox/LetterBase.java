@@ -123,7 +123,7 @@ public class LetterBase {
         private final LetterDataType type;
 
         public String getFormattedString() {
-            return StringUtils.rightPad(Optional.ofNullable(type.getValue(letterContext)).orElse(""), length," ");
+            return StringUtils.rightPad(Optional.ofNullable(type.getValue(letterContext)).orElse(""), length, " ");
         }
     }
 
@@ -141,9 +141,9 @@ public class LetterBase {
         COURT_POSTCODE(context -> context.getCourtLocation().getPostcode(), ContextType.COURT_LOCATION),
         COURT_PHONE(context -> context.getCourtLocation().getLocPhone(), ContextType.COURT_LOCATION),
         COURT_FAX(context ->
-                      // Fax appears to be deprecated
-                      // context.getCourtLocation().getCourtFaxNo()
-                      ""
+            // Fax appears to be deprecated
+            // context.getCourtLocation().getCourtFaxNo()
+            ""
         ),
         INSERT_INDICATORS(context -> context.getCourtLocation().getInsertIndicators(), ContextType.COURT_LOCATION),
         COURT_SIGNATORY(context -> context.getCourtLocation().getSignatory(), ContextType.COURT_LOCATION),
@@ -157,22 +157,23 @@ public class LetterBase {
         BUREAU_POSTCODE(context -> context.getBureauLocation().getPostcode(), ContextType.BUREAU_LOCATION),
         BUREAU_PHONE(context -> context.getBureauLocation().getLocPhone(), ContextType.BUREAU_LOCATION),
         BUREAU_FAX(context ->
-                       // Fax appears to be deprecated
-                       // context.getBureauLocation().getCourtFaxNo()
-                       ""
+            // Fax appears to be deprecated
+            // context.getBureauLocation().getCourtFaxNo()
+            ""
         ),
         BUREAU_SIGNATORY(context -> context.getBureauLocation().getSignatory(), ContextType.BUREAU_LOCATION),
         DATE_OF_ATTENDANCE(context ->
             new SimpleDateFormat("EEEEEE d MMMM, yyyy").format(Date.valueOf(context.getJurorPool().getNextDate())),
-                           ContextType.JUROR_POOL),
+            ContextType.JUROR_POOL),
         WELSH_DATE_OF_ATTENDANCE(context -> dateToWelsh(context.getJurorPool().getNextDate()), ContextType.JUROR_POOL),
         DEFERRAL_DATE(context ->
             new SimpleDateFormat("EEEEEE d MMMM, yyyy").format(Date.valueOf(context.getJurorPool().getDeferralDate())),
-                           ContextType.JUROR_POOL),
+            ContextType.JUROR_POOL),
         WELSH_DEFERRAL_DATE(context -> dateToWelsh(context.getJurorPool().getDeferralDate()), ContextType.JUROR_POOL),
         TIME_OF_ATTENDANCE(context -> DataUtils.asStringHHmm(context.getCourtLocation().getCourtAttendTime()),
             ContextType.COURT_LOCATION),
-        DEFERRAL_TIME(context -> DataUtils.asStringHHmm(context.getCourtLocation().getCourtAttendTime()), ContextType.COURT_LOCATION),
+        DEFERRAL_TIME(context -> DataUtils.asStringHHmm(context.getCourtLocation().getCourtAttendTime()),
+            ContextType.COURT_LOCATION),
         JUROR_TITLE(context -> context.getJurorPool().getJuror().getTitle(), ContextType.JUROR_POOL),
         JUROR_FIRST_NAME(context -> context.getJurorPool().getJuror().getFirstName(), ContextType.JUROR_POOL),
         JUROR_LAST_NAME(context -> context.getJurorPool().getJuror().getLastName(), ContextType.JUROR_POOL),
@@ -187,19 +188,19 @@ public class LetterBase {
         POOL_NUMBER(context -> context.getJurorPool().getPoolNumber(), ContextType.JUROR_POOL),
         ADDITIONAL_INFORMATION(LetterContext::getAdditionalInformation, ContextType.ADDITIONAL_INFORMATION),
         WELSH_COURT_NAME(context -> context.getWelshCourtLocation().getLocCourtName(),
-                         ContextType.WELSH_COURT_LOCATION),
+            ContextType.WELSH_COURT_LOCATION),
         WELSH_COURT_ADDRESS1(context -> context.getWelshCourtLocation().getAddress1(),
-                             ContextType.WELSH_COURT_LOCATION),
+            ContextType.WELSH_COURT_LOCATION),
         WELSH_COURT_ADDRESS2(context -> context.getWelshCourtLocation().getAddress2(),
-                             ContextType.WELSH_COURT_LOCATION),
+            ContextType.WELSH_COURT_LOCATION),
         WELSH_COURT_ADDRESS3(context -> context.getWelshCourtLocation().getAddress3(),
-                             ContextType.WELSH_COURT_LOCATION),
+            ContextType.WELSH_COURT_LOCATION),
         WELSH_COURT_ADDRESS4(context -> context.getWelshCourtLocation().getAddress4(),
-                             ContextType.WELSH_COURT_LOCATION),
+            ContextType.WELSH_COURT_LOCATION),
         WELSH_COURT_ADDRESS5(context -> context.getWelshCourtLocation().getAddress5(),
-                             ContextType.WELSH_COURT_LOCATION),
+            ContextType.WELSH_COURT_LOCATION),
         WELSH_COURT_ADDRESS6(context -> context.getWelshCourtLocation().getAddress6(),
-                             ContextType.WELSH_COURT_LOCATION);
+            ContextType.WELSH_COURT_LOCATION);
 
 
         private final Function<LetterContext, String> valueFunction;

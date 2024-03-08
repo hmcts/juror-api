@@ -24,7 +24,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolEditRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolSummaryResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDTO;
+import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.DeletePoolService;
@@ -156,7 +156,7 @@ public class ManagePoolController {
 
     @GetMapping(path = "/summoning-progress/{courtLocCode}/{poolType}")
     @Operation(summary = "Get pool monitoring stats")
-    public ResponseEntity<SummoningProgressResponseDTO> getPoolMonitoringStats(
+    public ResponseEntity<SummoningProgressResponseDto> getPoolMonitoringStats(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
         @Parameter @PathVariable("courtLocCode") String courtLocationCode,
         @Parameter @PathVariable("poolType") String poolType) {

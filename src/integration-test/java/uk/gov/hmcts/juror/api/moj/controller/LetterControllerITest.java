@@ -33,11 +33,11 @@ import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.PrintLettersRe
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.DeferralLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ExcusalLetterData;
+import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.FailedToAttendLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.NonDeferralLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PostponeLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDataResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ShowCauseLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.WithdrawalLetterData;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
@@ -81,7 +81,9 @@ import static java.util.Calendar.THURSDAY;
 import static java.util.Calendar.TUESDAY;
 import static java.util.Calendar.WEDNESDAY;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -117,7 +119,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
     private PostponementLetterListRepository postponementLetterListRepository;
     @Autowired
     private ShowCauseLetterListRepository showCauseLetterListRepository;
-
 
     private HttpHeaders httpHeaders;
 
@@ -1909,15 +1910,21 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertThat(response.getBody().getData()).isNotNull();
             assertThat(response.getBody().getHeadings()).isNotNull();
-
             for (int i = 0; i < response.getBody().getHeadings().size(); i++) {
+                Object value = response.getBody().getData().get(0).get(i);
                 switch (response.getBody().getHeadings().get(i)) {
-                    case "Juror Number" -> assertThat(jurorNumber)
-                        .as("Expect juror number to be " + jurorNumber)
-                        .isEqualTo(response.getBody().getData().get(0).get(i));
-                    case "Status" -> assertThat(response.getBody().getData().get(0).get(i))
-                        .as("Expect status description to be Postponed")
-                        .isEqualTo("Postponed");
+                    case "Juror number" -> assertThat(value).isEqualTo("555555551");
+                    case "First name" -> assertThat(value).isEqualTo("FNAMEFIVEFOURZERO");
+                    case "Last name" -> assertThat(value).isEqualTo("LNAMEFIVEFOURZERO");
+                    case "Postcode" -> assertThat(value).isEqualTo("CH1 2AN");
+                    case "Status" -> assertThat(value).isEqualTo("Postponed");
+                    case "Deferred to" -> assertThat(value).isEqualTo("2024-01-01");
+                    case "Reason" -> assertThat(value).isEqualTo("Postponement of service");
+                    case "Date printed" -> assertThat(value).isEqualTo(
+                        LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+                    case "hidden_extracted_flag" -> assertThat(value).isEqualTo(true);
+                    case "hidden_form_code" -> assertThat(value).isEqualTo("5229");
+                    default -> fail("Unexpected heading: " + response.getBody().getHeadings().get(i));
                 }
             }
         }
@@ -2730,6 +2737,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .now()
                         .plusDays(4)
                         .format(DateTimeFormatter.ofPattern("dd MMMM yyyy")).toUpperCase());
+                default -> fail("Unexpected day of the week");
             }
         }
 
@@ -3258,7 +3266,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
             verifyTypes(reissueLetterListResponseDto);
         }
     }
-
 
     @Nested
     @DisplayName("POST /api/v1/moj/letter/print-court-letter")
@@ -4047,7 +4054,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST /api/v1/moj/letter/print-court-letter (postponement)")
+    @DisplayName("POST /api/v1/moj/letter/print-court-letter (Postponement)")
     @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_Postponement.sql"})
     class PrintCourtLettersPostponement {
         static final String JUROR_NUMBER = "5555555";
@@ -4186,7 +4193,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .builder()
                 .jurorNumber(JUROR_555555562)
                 .letterType(CourtLetterType.POSTPONED)
-                .includePrinted(true)
+                .includePrinted(TRUE)
                 .build();
 
             RequestEntity<CourtLetterListRequestDto> request =
@@ -4296,6 +4303,15 @@ class LetterControllerITest extends AbstractIntegrationTest {
         static final String RESPONSE_DATA_SIZE_MESSAGE = "Response data contains %s record(s)";
         static final String DATE_PRINTED_IS_NULL_MESSAGE = "Date letter was printed should be null";
 
+        static final String STATUS = "status";
+        static final String MESSAGE = "message";
+        static final String FIELD = "field";
+
+        private static final String VALIDATION_MESSAGE_IS = "Validation message is: ";
+        private static final String HTTP_STATUS_BAD_REQUEST_MESSAGE = "Expect the HTTP status to be BAD_REQUEST";
+        static final String FIELDS_REQUIRED = "Field jurorNumber is required if none of the following fields are "
+            + "present: [poolNumber, jurorName, jurorPostcode]";
+
         @Test
         @SneakyThrows
         @DisplayName("Show Cause letter - juror number and include printed letters")
@@ -4320,8 +4336,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<?> responseBody = response.getBody().getData();
             assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 1)).isEqualTo(1);
 
-            ShowCauseLetterData data = (ShowCauseLetterData) responseBody.get(0);
-            verifyResponse("61", data);
+            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.get(0);
+            verifyResponse("61", data, LocalDate.now().minusDays(10));
 
             assertThat(data.getDatePrinted())
                 .as("Date letter was printed should be " + LocalDate.now().minusDays(1))
@@ -4351,9 +4367,38 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<?> responseBody = response.getBody().getData();
             assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 1)).isEqualTo(1);
 
-            ShowCauseLetterData data = (ShowCauseLetterData) responseBody.get(0);
-            verifyResponse("63", data);
+            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.get(0);
+            verifyResponse("63", data, LocalDate.now().minusDays(10));
             assertThat(data.getDatePrinted()).as(DATE_PRINTED_IS_NULL_MESSAGE).isNull();
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Show Cause letter - fails dto validation (mandatory fields missing)")
+        void courtLetterListShowCauseIncludePrinted() {
+            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .letterType(CourtLetterType.SHOW_CAUSE)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request = new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<String> response = template.exchange(request, String.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_BAD_REQUEST_MESSAGE).isEqualTo(BAD_REQUEST);
+
+            JSONObject exceptionDetails = getExceptionDetails(response);
+            assertThat(exceptionDetails.get(STATUS)).isEqualTo(400);
+
+            List<String> messageValues = getValuesInJsonObject(exceptionDetails, MESSAGE);
+            List<String> fieldValues = getValuesInJsonObject(exceptionDetails, FIELD);
+            assertThat(messageValues.get(0)).as(VALIDATION_MESSAGE_IS + FIELDS_REQUIRED)
+                .isEqualTo(FIELDS_REQUIRED);
+            assertThat(fieldValues.get(0)).as("Validated fields are jurorNumber")
+                .isEqualTo("jurorNumber");
         }
 
         @Test
@@ -4377,15 +4422,19 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 2)).isEqualTo(2);
-            
-            ShowCauseLetterData dataIndex0 = (ShowCauseLetterData) responseBody.get(0);
-            verifyResponse("63", dataIndex0); // no juror_history record exists
+            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 3)).isEqualTo(3);
+
+            FailedToAttendLetterData dataIndex0 = (FailedToAttendLetterData) responseBody.get(0);
+            verifyResponse("63", dataIndex0, LocalDate.now().minusDays(10));
             assertThat(dataIndex0.getDatePrinted()).as(DATE_PRINTED_IS_NULL_MESSAGE).isNull();
 
-            ShowCauseLetterData dataIndex1 = (ShowCauseLetterData) responseBody.get(1);
-            verifyResponse("67", dataIndex1); // juror_history record exists but for a different letter
+            FailedToAttendLetterData dataIndex1 = (FailedToAttendLetterData) responseBody.get(1);
+            verifyResponse("69", dataIndex1, LocalDate.now().minusDays(10));
             assertThat(dataIndex1.getDatePrinted()).as(DATE_PRINTED_IS_NULL_MESSAGE).isNull();
+
+            FailedToAttendLetterData dataIndex2 = (FailedToAttendLetterData) responseBody.get(2);
+            verifyResponse("70", dataIndex2, LocalDate.now().minusDays(10));
+            assertThat(dataIndex2.getDatePrinted()).as(DATE_PRINTED_IS_NULL_MESSAGE).isNull();
         }
 
         @Test
@@ -4414,8 +4463,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<?> responseBody = response.getBody().getData();
             assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 1)).isEqualTo(1);
 
-            ShowCauseLetterData data = (ShowCauseLetterData) responseBody.get(0);
-            verifyResponse("65", data);
+            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.get(0);
+            verifyResponse("65", data, LocalDate.now().minusDays(3));
         }
 
         @Test
@@ -4469,7 +4518,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 0)).isEqualTo(0);
         }
 
-        void verifyResponse(String jurorPostfix, ShowCauseLetterData data) {
+        void verifyResponse(String jurorPostfix, FailedToAttendLetterData data, LocalDate absentDate) {
             assertThat(data.getJurorNumber()).isEqualTo(JUROR_5555555 + jurorPostfix);
             assertThat(data.getFirstName()).as("First name is JurorForename" + jurorPostfix)
                 .isEqualTo("JurorForename" + jurorPostfix);
@@ -4477,9 +4526,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo("JurorSurname" + jurorPostfix);
 
             // date should have appeared in court (appearance.attendance_date) but was no show
-            assertThat(data.getAbsentDate()).as("Absent date is "
-                    + LocalDate.now().minusDays(10))
-                .isEqualTo(LocalDate.now().minusDays(10));
+            assertThat(data.getAbsentDate()).as("Absent date is " + absentDate).isEqualTo(absentDate);
 
             assertThat(data.getPostcode()).as("Postcode is null").isNull();
             assertThat(data.getStatus()).as("Status is null").isNull();
@@ -4487,9 +4534,192 @@ class LetterControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
+    @DisplayName("GET /api/v1/moj/letter/court-letter-list/{letter_type}/{include_printed}")
+    class CourtLetterListAbsentJurors {
+
+        static final String JUROR_5555555 = "5555555";
+        static final String COURT_USER = "COURT_USER";
+        static final String OWNER_415 = "415";
+        static final String RESPONSE_OK_MESSAGE = "Expect HTTP Response to be OK";
+        static final String RESPONSE_ENTITY_NOT_NULL_MESSAGE = "Response entity is not null";
+        static final String RESPONSE_BODY_NOT_NULL_MESSAGE = "Response body is not null";
+        static final String RESPONSE_DATA_SIZE_MESSAGE = "Response data contains %s record(s)";
+
+        static final LocalDate LOCAL_DATE_NOW = LocalDate.now();
+
+        @Nested
+        @DisplayName("Failed To Attend List")
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_FailedToAttend.sql"})
+        class CourtLetterListFailedToAttend {
+
+            static final URI URL = URI.create(GET_LETTER_LIST_URI + "/" + CourtLetterType.FAILED_TO_ATTEND);
+
+            @Test
+            @SneakyThrows
+            @DisplayName("Failed To Attend letter - include printed letters")
+            void includePrinted() {
+                List<?> responseBody = invokeApiHappy(TRUE, OWNER_415, URL);
+                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 6)).isEqualTo(6);
+
+                verifyResponse("67", (FailedToAttendLetterData) responseBody.get(0), null,
+                    LOCAL_DATE_NOW.minusDays(5));
+                verifyResponse("63", (FailedToAttendLetterData) responseBody.get(1), null,
+                    LOCAL_DATE_NOW.minusDays(10));
+                verifyResponse("69", (FailedToAttendLetterData) responseBody.get(2), null,
+                    LOCAL_DATE_NOW.minusDays(10));
+                verifyResponse("62", (FailedToAttendLetterData) responseBody.get(3),
+                    LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW);
+                verifyResponse("65", (FailedToAttendLetterData) responseBody.get(4),
+                    LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW.minusDays(3));
+                verifyResponse("61", (FailedToAttendLetterData) responseBody.get(5),
+                    LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW.minusDays(10));
+            }
+
+            @Test
+            @SneakyThrows
+            @DisplayName("Failed To Attend letter - exclude printed letters")
+            void excludePrinted() {
+                List<?> responseBody = invokeApiHappy(FALSE, OWNER_415, URL);
+                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 3)).isEqualTo(3);
+
+                verifyResponse("67", (FailedToAttendLetterData) responseBody.get(0), null,
+                    LOCAL_DATE_NOW.minusDays(5));
+                verifyResponse("63", (FailedToAttendLetterData) responseBody.get(1), null,
+                    LOCAL_DATE_NOW.minusDays(10));
+                verifyResponse("69", (FailedToAttendLetterData) responseBody.get(2), null,
+                    LOCAL_DATE_NOW.minusDays(10));
+            }
+
+            @Test
+            @SneakyThrows
+            @DisplayName("Failed To Attend letter - court owner 457")
+            void courtOwner457() {
+                List<?> responseBody = invokeApiHappy(TRUE, "457", URL);
+                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 1)).isEqualTo(1);
+
+                verifyResponse("68", (FailedToAttendLetterData) responseBody.get(0),
+                    LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW);
+            }
+        }
+
+        @Nested
+        @DisplayName("Show Cause List")
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_ShowCause.sql"})
+        class CourtLetterListShowCause {
+
+            static final URI URL = URI.create(GET_LETTER_LIST_URI + "/" + CourtLetterType.SHOW_CAUSE);
+
+            @Test
+            @SneakyThrows
+            @DisplayName("Show Cause letter - include printed letters")
+            void includePrinted() {
+                List<?> responseBody = invokeApiHappy(TRUE, OWNER_415, URL);
+                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 6)).isEqualTo(6);
+
+                verifyResponse("63", (FailedToAttendLetterData) responseBody.get(0), null,
+                    LOCAL_DATE_NOW.minusDays(10));
+                verifyResponse("69", (FailedToAttendLetterData) responseBody.get(1), null,
+                    LOCAL_DATE_NOW.minusDays(10));
+                verifyResponse("70", (FailedToAttendLetterData) responseBody.get(2), null,
+                    LOCAL_DATE_NOW.minusDays(10));
+                verifyResponse("62", (FailedToAttendLetterData) responseBody.get(3),
+                    LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW);
+                verifyResponse("65", (FailedToAttendLetterData) responseBody.get(4),
+                    LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW.minusDays(3));
+                verifyResponse("61", (FailedToAttendLetterData) responseBody.get(5),
+                    LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW.minusDays(10));
+            }
+
+            @Test
+            @SneakyThrows
+            @DisplayName("Show Cause letter - exclude printed letters")
+            void excludePrinted() {
+                List<?> responseBody = invokeApiHappy(FALSE, OWNER_415, URL);
+                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 3)).isEqualTo(3);
+
+                verifyResponse("63", (FailedToAttendLetterData) responseBody.get(0), null,
+                    LOCAL_DATE_NOW.minusDays(10));
+                verifyResponse("69", (FailedToAttendLetterData) responseBody.get(1), null,
+                    LOCAL_DATE_NOW.minusDays(10));
+                verifyResponse("70", (FailedToAttendLetterData) responseBody.get(2), null,
+                    LOCAL_DATE_NOW.minusDays(10));
+            }
+
+            @Test
+            @SneakyThrows
+            @DisplayName("Show Cause letter - court owner 457")
+            void courtOwner457() {
+                List<?> responseBody = invokeApiHappy(TRUE, "457", URL);
+                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 2)).isEqualTo(2);
+
+                verifyResponse("68", (FailedToAttendLetterData) responseBody.get(0),
+                    LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW);
+                verifyResponse("71", (FailedToAttendLetterData) responseBody.get(1),
+                    LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW.minusDays(10));
+            }
+        }
+
+        @Nested
+        @DisplayName("Common Test Scenarios")
+        @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_ShowCause.sql"})
+        class CourtLetterListCommonTests {
+            static final URI URL = URI.create(GET_LETTER_LIST_URI + "/" + CourtLetterType.SHOW_CAUSE);
+
+            @Test
+            @SneakyThrows
+            @DisplayName("Missing url path variable - includePrinted")
+            void defaultIncludePrintedFlag() {
+                final String payload = createBureauJwt(COURT_USER, OWNER_415);
+
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+                ResponseEntity<String> response =
+                    template.exchange(new RequestEntity<Void>(httpHeaders, GET, URL), String.class);
+
+                assertThat(response.getStatusCode()).as("Status code should be NOT_FOUND")
+                    .isEqualTo(NOT_FOUND);
+            }
+        }
+
+        List<?> invokeApiHappy(boolean includePrinted, String owner, URI url) {
+            final String payload = createBureauJwt(COURT_USER, owner);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            ResponseEntity<LetterListResponseDto> response =
+                template.exchange(new RequestEntity<Void>(httpHeaders, GET, URI.create(url + "/" + includePrinted)),
+                    LetterListResponseDto.class);
+
+            assertThat(response).as(RESPONSE_ENTITY_NOT_NULL_MESSAGE).isNotNull();
+            assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
+            assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
+
+            return response.getBody().getData();
+        }
+
+        void verifyResponse(String jurorPostfix, FailedToAttendLetterData data, LocalDate datePrinted,
+                            LocalDate absentDate) {
+            assertThat(data.getJurorNumber()).isEqualTo(JUROR_5555555 + jurorPostfix);
+            assertThat(data.getFirstName()).as("First name is JurorForename" + jurorPostfix)
+                .isEqualTo("JurorForename" + jurorPostfix);
+            assertThat(data.getLastName()).as("Surname is JurorSurname" + jurorPostfix)
+                .isEqualTo("JurorSurname" + jurorPostfix);
+
+            // date juror should have attended for jury service (appearance.attendance_date) but was absent
+            assertThat(data.getAbsentDate()).as("Absent date is " + absentDate).isEqualTo(absentDate);
+
+            assertThat(data.getPostcode()).as("Postcode is null").isNull();
+            assertThat(data.getStatus()).as("Status is null").isNull();
+
+            assertThat(data.getDatePrinted()).as("Date letter was printed should be " + datePrinted)
+                .isEqualTo(datePrinted);
+        }
+    }
+
+    @Nested
     @DisplayName("POST /api/v1/moj/letter/print-court-letter (Show Cause)")
     @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_ShowCause.sql"})
-    class PrintCourtLettersShowCause {
+    class PrintCourtLettersShowCauseSimpleDto {
         private static final String HTTP_STATUS_BAD_REQUEST_MESSAGE = "Expect the HTTP status to be BAD_REQUEST";
         static final URI URL = URI.create("/api/v1/moj/letter/print-court-letter");
 
@@ -4512,7 +4742,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - Happy path - English")
-        void reissueShowCauseLetterHappyEnglish() {
+        void printCourtLettersShowCauseHappyEnglish() {
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "61");
             jurorNumbers.add(JUROR_NUMBER + "62");
@@ -4540,14 +4770,14 @@ class LetterControllerITest extends AbstractIntegrationTest {
             PrintLetterDataResponseDto[] data = response.getBody();
             assertThat(data.length).as(String.format(NUMBER_OF_LETTERS_MESSAGE, 2)).isEqualTo(2);
 
-            verifyDataEnglish(data[0], request, "61");
-            verifyDataEnglish(data[1], request, "62");
+            verifyDataEnglish(data[0], request, LocalDate.now().minusDays(10), "61");
+            verifyDataEnglish(data[1], request, LocalDate.now(), "62");
         }
 
         @Test
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - Happy path - Welsh")
-        void reissueDeferralLetterHappyWelsh() {
+        void printCourtLettersShowCauseHappyWelsh() {
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "68");
             final String payload = createBureauJwt(COURT_USER, "457");
@@ -4580,7 +4810,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - invalid request - missing showCauseDate and showCauseTime")
-        void reissueShowCauseLetterInvalidRequestMissingShowCauseDateAndTime() {
+        void printCourtLettersShowCauseInvalidRequestMissingShowCauseDateAndTime() {
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "61");
 
@@ -4612,7 +4842,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - invalid request - missing showCauseDate")
-        void reissueShowCauseLetterInvalidRequestMissingShowCauseDate() {
+        void printCourtLettersShowCauseInvalidRequestMissingShowCauseDate() {
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "61");
 
@@ -4645,7 +4875,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - invalid request - missing showCauseTime")
-        void reissueShowCauseLetterInvalidRequestMissingShowCauseTime() {
+        void printCourtLettersShowCauseInvalidRequestMissingShowCauseTime() {
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "61");
 
@@ -4677,6 +4907,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         private void verifyDataEnglish(PrintLetterDataResponseDto response,
                                        PrintLettersRequestDto request,
+                                       LocalDate attendanceDate,
                                        String jurorPostfix) {
             assertThat(response.getCourtName())
                 .as("Expect court name to be " + "The Crown Court\nat CHESTER")
@@ -4698,7 +4929,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getSignature()).as("Expect signatory to be Jury Manager")
                 .isEqualTo("Jury Manager\n\nAn Officer of the Crown Court");
             assertThat(response.getJurorFirstName()).as("Expect first name to be Juror " + jurorPostfix)
-                .isEqualTo("JurorForename"  + jurorPostfix);
+                .isEqualTo("JurorForename" + jurorPostfix);
             assertThat(response.getJurorLastName()).as("Expect last name to be JurorSurname" + jurorPostfix)
                 .isEqualTo("JurorSurname" + jurorPostfix);
             assertThat(response.getJurorAddressLine1()).as("Expect address line 1 to be Address Line 1")
@@ -4716,6 +4947,10 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo("CH1 2AN");
             assertThat(response.getJurorNumber()).as("Expect juror number to be 5555555" + jurorPostfix)
                 .isEqualTo(JUROR_NUMBER + jurorPostfix);
+
+            assertThat(response.getAttendanceDate())
+                .as("Expect the attendance date the juror was no show for to be " + attendanceDate)
+                .isEqualTo(attendanceDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
             assertThat(response.getNoShowDate())
                 .as("Expect show cause date to be " + request.getShowCauseDate())
                 .isEqualTo(request.getShowCauseDate().format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
@@ -4732,7 +4967,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getCourtAddressLine1()).as("Expect address line 1 to be 'Y LLYSOEDD BARN'")
                 .isEqualTo("Y LLYSOEDD BARN");
             assertThat(response.getCourtAddressLine2()).as("Expect address line 2 to be 'LON SAN HELEN'")
-                    .isEqualTo("LON SAN HELEN");
+                .isEqualTo("LON SAN HELEN");
             assertThat(response.getCourtAddressLine3()).as("Expect address line 3 to be ABERTAWE")
                 .isEqualTo("ABERTAWE");
             assertThat(response.getCourtAddressLine4()).as("Expect address line 4 to be null").isNull();
@@ -4855,7 +5090,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(JUROR_NUMBER + jurorPostfix);
         }
     }
-
 
     @Nested
     @DisplayName("POST /api/v1/moj/letter/print-court-letter (Withdrawal)")
@@ -5119,6 +5353,398 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(dto.getCourtManager())
                 .as("Expect court manager to be Y Rheolwr Llys")
                 .isEqualTo("Y Rheolwr Llys");
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /api/v1/moj/letter/court-letter-list (Failed To Attend, aka No Show)")
+    @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_FailedToAttend.sql"})
+    class CourtLetterListFailedToAttend {
+        static final URI URL = URI.create(GET_LETTER_LIST_URI);
+        static final String JUROR_5555555 = "5555555";
+        static final String COURT_USER = "COURT_USER";
+        static final String OWNER_415 = "415";
+        static final String RESPONSE_OK_MESSAGE = "Expect HTTP Response to be OK";
+        static final String RESPONSE_ENTITY_NOT_NULL_MESSAGE = "Response entity is not null";
+        static final String RESPONSE_BODY_NOT_NULL_MESSAGE = "Response body is not null";
+        static final String RESPONSE_DATA_SIZE_MESSAGE = "Response data contains %s record(s)";
+        static final String DATE_PRINTED_IS_NULL_MESSAGE = "Date letter was printed should be null";
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Failed To Attend letter - juror number and include printed letters")
+        void courtLetterListFailedToAttendJurorNumberSearchIncludePrinted() {
+            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorNumber(JUROR_5555555 + "61")
+                .letterType(CourtLetterType.FAILED_TO_ATTEND)
+                .includePrinted(TRUE)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as(RESPONSE_OK_MESSAGE)
+                .isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).isEqualTo(1);
+
+            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.get(0);
+            verifyResponse("61", data,
+                LocalDate.now().minusDays(1), LocalDate.now().minusDays(10));
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Failed To Attend letter - juror number and exclude printed letters")
+        void courtLetterListFailedToAttendJurorNumberSearchExcludePrinted() {
+            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorNumber(JUROR_5555555 + "63")
+                .letterType(CourtLetterType.FAILED_TO_ATTEND)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request = new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).as(RESPONSE_ENTITY_NOT_NULL_MESSAGE).isNotNull();
+            assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
+            assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 1)).isEqualTo(1);
+
+            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.get(0);
+            verifyResponse("63", data, null, LocalDate.now().minusDays(10));
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Failed To Attend letter - pool number and exclude printed letters")
+        void courtLetterListFailedToAttendPoolNumberSearchExcludePrinted() {
+            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .poolNumber("415220401")
+                .letterType(CourtLetterType.FAILED_TO_ATTEND)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request = new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).as(RESPONSE_ENTITY_NOT_NULL_MESSAGE).isNotNull();
+            assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
+            assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 3)).isEqualTo(3);
+
+            FailedToAttendLetterData dataIndex0 = (FailedToAttendLetterData) responseBody.get(0);
+            verifyResponse("67", dataIndex0, null, LocalDate.now().minusDays(5));
+            assertThat(dataIndex0.getDatePrinted()).as(DATE_PRINTED_IS_NULL_MESSAGE).isNull();
+
+            FailedToAttendLetterData dataIndex1 = (FailedToAttendLetterData) responseBody.get(1);
+            verifyResponse("63", dataIndex1, null,
+                LocalDate.now().minusDays(10));
+
+            FailedToAttendLetterData dataIndex2 = (FailedToAttendLetterData) responseBody.get(2);
+            verifyResponse("69", dataIndex2, null,
+                LocalDate.now().minusDays(10));
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Failed To Attend letter - pool number and include printed letters")
+        void courtLetterListFailedToAttendPoolNumber() {
+            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .poolNumber("415220402")
+                .includePrinted(TRUE)
+                .letterType(CourtLetterType.FAILED_TO_ATTEND)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).as(RESPONSE_ENTITY_NOT_NULL_MESSAGE).isNotNull();
+            assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
+
+            assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 1)).isEqualTo(1);
+
+            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.get(0);
+            verifyResponse("65", data,
+                LocalDate.now().minusDays(1), LocalDate.now().minusDays(3));
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Failed To Attend letter - no_show is null (turned up for jury service")
+        void courtLetterListFailedToAttendJurorNumberSearchAndNoShowIsNull() {
+            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorNumber(JUROR_5555555 + "64")
+                .letterType(CourtLetterType.FAILED_TO_ATTEND)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).as(RESPONSE_ENTITY_NOT_NULL_MESSAGE).isNotNull();
+            assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
+            assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 0)).isEqualTo(0);
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Failed To Attend letter criteria not met - bureau owner")
+        void courtLetterListFailedToAttendBureauOwner() {
+            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorNumber(JUROR_5555555 + "66")
+                .letterType(CourtLetterType.FAILED_TO_ATTEND)
+                .includePrinted(TRUE)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).as(RESPONSE_ENTITY_NOT_NULL_MESSAGE).isNotNull();
+            assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
+            assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 0)).isEqualTo(0);
+        }
+
+        void verifyResponse(String jurorPostfix, FailedToAttendLetterData data, LocalDate dateLetterPrinted,
+                            LocalDate absentDate) {
+            assertThat(data.getJurorNumber()).isEqualTo(JUROR_5555555 + jurorPostfix);
+            assertThat(data.getFirstName()).as("First name is JurorForename" + jurorPostfix)
+                .isEqualTo("JurorForename" + jurorPostfix);
+            assertThat(data.getLastName()).as("Surname is JurorSurname" + jurorPostfix)
+                .isEqualTo("JurorSurname" + jurorPostfix);
+
+            assertThat(data.getPostcode()).as("Postcode is null").isNull();
+            assertThat(data.getStatus()).as("Status is null").isNull();
+
+            assertThat(data.getDatePrinted())
+                .as("Date letter was printed should be " + dateLetterPrinted).isEqualTo(dateLetterPrinted);
+
+            // date juror should have attended for jury service (appearance.attendance_date) but was no show
+            assertThat(data.getAbsentDate()).as("Absent date is " + absentDate).isEqualTo(absentDate);
+        }
+    }
+
+    @Nested
+    @DisplayName("POST - /api/v1/moj/letter/print-court-letter (Failed To Attend)")
+    @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_FailedToAttend.sql"})
+    class PrintCourtLetterFailedToAttend {
+        private static final String HTTP_STATUS_BAD_REQUEST_MESSAGE = "Expect the HTTP status to be BAD_REQUEST";
+        static final URI URL = URI.create("/api/v1/moj/letter/print-court-letter");
+
+        static final String JUROR_NUMBER = "5555555";
+        static final String COURT_USER = "COURT_USER";
+        static final String OWNER_415 = "415";
+
+        static final String RESPONSE_OK_MESSAGE = "Expect HTTP Response to be OK";
+        static final String RESPONSE_ENTITY_NOT_NULL_MESSAGE = "Response entity is not null";
+        static final String RESPONSE_BODY_NOT_NULL_MESSAGE = "Response body is not null";
+        static final String NUMBER_OF_LETTERS_MESSAGE = "Expect %s letters";
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Failed To Attend letter - Happy path - English")
+        void failedToAttendLetterHappyEnglish() {
+            List<String> jurorNumbers = new ArrayList<>();
+            jurorNumbers.add(JUROR_NUMBER + "61");
+            jurorNumbers.add(JUROR_NUMBER + "62");
+            jurorNumbers.add(JUROR_NUMBER + "68"); // welsh - should be ignored by service
+
+            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            PrintLettersRequestDto request = PrintLettersRequestDto.builder()
+                .jurorNumbers(jurorNumbers)
+                .letterType(CourtLetterType.FAILED_TO_ATTEND)
+                .build();
+
+            RequestEntity<PrintLettersRequestDto> requestEntity = new RequestEntity<>(request, httpHeaders, POST, URL);
+            ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(requestEntity,
+                PrintLetterDataResponseDto[].class);
+
+            assertThat(response).as(RESPONSE_ENTITY_NOT_NULL_MESSAGE).isNotNull();
+            assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
+            assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
+
+            PrintLetterDataResponseDto[] data = response.getBody();
+            assertThat(data.length).as(String.format(NUMBER_OF_LETTERS_MESSAGE, 2)).isEqualTo(2);
+
+            verifyDataEnglish(data[0], LocalDate.now().minusDays(10), "61");
+            verifyDataEnglish(data[1], LocalDate.now(), "62");
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Failed To Attend letter - Happy path - Welsh")
+        void failedToAttendLetterHappyWelsh() {
+            List<String> jurorNumbers = new ArrayList<>();
+            jurorNumbers.add(JUROR_NUMBER + "68");
+            final String payload = createBureauJwt(COURT_USER, "457");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            PrintLettersRequestDto request = PrintLettersRequestDto.builder()
+                .jurorNumbers(jurorNumbers)
+                .letterType(CourtLetterType.FAILED_TO_ATTEND)
+                .build();
+
+            RequestEntity<PrintLettersRequestDto> requestEntity = new RequestEntity<>(request, httpHeaders, POST, URL);
+            ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(requestEntity,
+                PrintLetterDataResponseDto[].class);
+
+            assertThat(response).as(RESPONSE_ENTITY_NOT_NULL_MESSAGE).isNotNull();
+            assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
+            assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
+
+            PrintLetterDataResponseDto[] data = response.getBody();
+            assertThat(data.length).as(String.format(NUMBER_OF_LETTERS_MESSAGE, 1)).isEqualTo(1);
+
+            assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
+
+            verifyDataWelsh(data[0], "68");
+        }
+
+        private void verifyDataEnglish(PrintLetterDataResponseDto response,
+                                       LocalDate attendanceDate,
+                                       String jurorPostfix) {
+            assertThat(response.getCourtName())
+                .as("Expect court name to be " + "The Crown Court\nat CHESTER")
+                .isEqualTo("The Crown Court\nat CHESTER");
+            assertThat(response.getCourtAddressLine1()).as("Expect address line 1 to be 'THE CASTLE'")
+                .isEqualTo("THE CASTLE");
+            assertThat(response.getCourtAddressLine2()).as("Expect address line 2 to be 'CHESTER'")
+                .isEqualTo("CHESTER");
+            assertThat(response.getCourtAddressLine3()).as("Expect address line 3 to be null").isNull();
+            assertThat(response.getCourtAddressLine4()).as("Expect address line 4 to be null").isNull();
+            assertThat(response.getCourtAddressLine5()).as("Expect address line 5 to be null").isNull();
+            assertThat(response.getCourtAddressLine6()).as("Expect address line 6 to be null").isNull();
+            assertThat(response.getCourtPostCode()).as("Expect post code to be 'CH1 2AN'")
+                .isEqualTo("CH1 2AN");
+            assertThat(response.getCourtPhoneNumber()).as("Expect court number to be 01244 356726")
+                .isEqualTo("01244 356726");
+            assertThat(response.getUrl()).as("Expect URL to be www.gov.uk/jury-service")
+                .isEqualTo("www.gov.uk/jury-service");
+            assertThat(response.getSignature()).as("Expect signatory to be Jury Manager")
+                .isEqualTo("Jury Manager\n\nAn Officer of the Crown Court");
+            assertThat(response.getJurorFirstName()).as("Expect first name to be Juror " + jurorPostfix)
+                .isEqualTo("JurorForename" + jurorPostfix);
+            assertThat(response.getJurorLastName()).as("Expect last name to be JurorSurname" + jurorPostfix)
+                .isEqualTo("JurorSurname" + jurorPostfix);
+            assertThat(response.getJurorAddressLine1()).as("Expect address line 1 to be Address Line 1")
+                .isEqualTo("Address Line 1");
+            assertThat(response.getJurorAddressLine2()).as("Expect address line 2 to be Address  Line 2")
+                .isEqualTo("Address Line 2");
+            assertThat(response.getJurorAddressLine3()).as("Expect address line 3 to be Address Line 3")
+                .isEqualTo("Address Line 3");
+            assertThat(response.getJurorAddressLine4()).as("Expect address line 4 to be CARDIFF")
+                .isEqualTo("CARDIFF");
+            assertThat(response.getJurorAddressLine5())
+                .as("Expect address line 5 to be Some County")
+                .isEqualTo("Some County");
+            assertThat(response.getJurorPostcode()).as("Expect post code to be CH1 2AN")
+                .isEqualTo("CH1 2AN");
+            assertThat(response.getJurorNumber()).as("Expect juror number to be 5555555" + jurorPostfix)
+                .isEqualTo(JUROR_NUMBER + jurorPostfix);
+
+            assertThat(response.getAttendanceDate())
+                .as("Expect the attendance date the juror was no show for to be " + attendanceDate)
+                .isEqualTo(attendanceDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
+            assertThat(response.getReplyByDate())
+                .as("Expect reply by date to be " + LocalDate.now()
+                    .plusDays(7)
+                    .format(DateTimeFormatter.ofPattern("dd MMMM yyyy")))
+                .isEqualTo(LocalDate.now().plusDays(7).format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
+        }
+
+        private void verifyDataWelsh(PrintLetterDataResponseDto response,
+                                     String jurorPostfix) {
+            assertThat(response.getCourtName()).as("Expect court name to be " + "Llys y Goron\nynAbertawe")
+                .isEqualTo("Llys y Goron\nynAbertawe");
+            assertThat(response.getCourtAddressLine1()).as("Expect address line 1 to be 'Y LLYSOEDD BARN'")
+                .isEqualTo("Y LLYSOEDD BARN");
+            assertThat(response.getCourtAddressLine2()).as("Expect address line 2 to be 'LON SAN HELEN'")
+                .isEqualTo("LON SAN HELEN");
+            assertThat(response.getCourtAddressLine3()).as("Expect address line 3 to be ABERTAWE")
+                .isEqualTo("ABERTAWE");
+            assertThat(response.getCourtAddressLine4()).as("Expect address line 4 to be null").isNull();
+            assertThat(response.getCourtAddressLine5()).as("Expect address line 5 to be null").isNull();
+            assertThat(response.getCourtAddressLine6()).as("Expect address line 6 to be null").isNull();
+            assertThat(response.getCourtPostCode()).as("Expect post code to be 'SA1 4PF'").isEqualTo("SA1 4PF");
+            assertThat(response.getCourtPhoneNumber()).as("Expect court number to be 01792 637067")
+                .isEqualTo("01792 637067");
+
+            assertThat(response.getUrl()).as("Expect URL to be www.gov.uk/jury-service")
+                .isEqualTo("www.gov.uk/jury-service");
+            assertThat(response.getSignature()).as("Expect signatory to be Jury Manager")
+                .isEqualTo("Jury Manager\n\nSwyddog Llys");
+
+            assertThat(response.getJurorFirstName())
+                .as("Expect first name to be JurorForename" + jurorPostfix)
+                .isEqualTo("JurorForename" + jurorPostfix);
+            assertThat(response.getJurorLastName())
+                .as("Expect last name to be JurorSurname" + jurorPostfix)
+                .isEqualTo("JurorSurname" + jurorPostfix);
+            assertThat(response.getJurorAddressLine1()).as("Expect address line 1 to be Address Line 1")
+                .isEqualTo("Address Line 1");
+            assertThat(response.getJurorAddressLine2()).as("Expect address line 2 to be Address Line 2")
+                .isEqualTo("Address Line 2");
+            assertThat(response.getJurorAddressLine3()).as("Expect address line 3 to be Address Line 3")
+                .isEqualTo("Address Line 3");
+            assertThat(response.getJurorAddressLine4()).as("Expect address line 4 to be CARDIFF")
+                .isEqualTo("CARDIFF");
+            assertThat(response.getJurorAddressLine5()).as("Expect address line 5 to be Some County")
+                .isEqualTo("Some County");
+            assertThat(response.getJurorPostcode()).as("Expect post code to be CH1 2AN")
+                .isEqualTo("CH1 2AN");
+            assertThat(response.getJurorNumber())
+                .as("Expect juror number to be " + JUROR_NUMBER + jurorPostfix)
+                .isEqualTo(JUROR_NUMBER + jurorPostfix);
+
+            assertThat(response.getWelsh()).as("Expect welsh to be true").isTrue();
         }
     }
 }

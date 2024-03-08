@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.enumeration;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
 
@@ -14,18 +13,19 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("PMD.LawOfDemeter")
 class FoodDrinkClaimTypeTest {
 
     @Test
-    void getRateNone() {
+    void positiveGetRateNone() {
         ExpenseRates expenseRates = mock(ExpenseRates.class);
-        Assertions.assertThat(FoodDrinkClaimType.NONE.getRate(expenseRates))
+        assertThat(FoodDrinkClaimType.NONE.getRate(expenseRates))
             .isEqualTo(BigDecimal.ZERO);
         verifyNoInteractions(expenseRates);
     }
 
     @Test
-    void getRateMoreThan10Hours() {
+    void positiveGetRateMoreThan10Hours() {
         ExpenseRates expenseRates = mock(ExpenseRates.class);
         BigDecimal rate = new BigDecimal("5.12");
         when(expenseRates.getSubsistenceRateLongDay()).thenReturn(rate);

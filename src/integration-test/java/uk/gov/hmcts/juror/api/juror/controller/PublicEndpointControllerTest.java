@@ -115,8 +115,8 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
         verify(mockJurorPersistenceService).persistJurorResponse(any(JurorResponseDto.class));
     }
 
-    public String mintPublicJwt(final PublicJWTPayload payload) throws Exception {
-        return TestUtil.mintPublicJwt(payload, SignatureAlgorithm.HS256, publicSecret, Instant.now().plus(100L * 365L
-            , ChronoUnit.DAYS));
+    public String mintPublicJwt(final PublicJWTPayload payload) {
+        return TestUtil.mintPublicJwt(payload, SignatureAlgorithm.HS256, publicSecret,
+            Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }
 }

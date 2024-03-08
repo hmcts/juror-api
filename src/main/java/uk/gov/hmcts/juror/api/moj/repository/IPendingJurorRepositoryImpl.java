@@ -27,8 +27,9 @@ public class IPendingJurorRepositoryImpl implements IPendingJurorRepository {
 
     @SuppressWarnings("PMD.LawOfDemeter")
     @Override
-    public List<PendingJurorsResponseDto.PendingJurorsResponseData> findPendingJurorsForCourt(String locCode,
-                                                                                              PendingJurorStatus status) {
+    public List<PendingJurorsResponseDto.PendingJurorsResponseData> findPendingJurorsForCourt(
+        String locCode,
+        PendingJurorStatus status) {
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 

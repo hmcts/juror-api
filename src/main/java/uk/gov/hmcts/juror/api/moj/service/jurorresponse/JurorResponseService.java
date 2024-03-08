@@ -7,7 +7,7 @@ public interface JurorResponseService<J extends AbstractJurorResponse, D> {
 
     void updatePersonalDetails(D responseDto);
 
-    void updateCJSEmployment(D cjsDto);
+    void updateCjsEmployment(D cjsDto);
 
     void updateResponseStatus();
 }

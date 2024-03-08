@@ -45,7 +45,7 @@ public class DeferralDeniedLetterListRepositoryImpl implements IDeferralDeniedLe
         }
 
         if (!StringUtils.isEmpty(courtLetterSearchCriteria.jurorName())) {
-            jpaQuery.where(NON_DEFERRAL_LETTER_LIST.firstName.concat(NON_DEFERRAL_LETTER_LIST.lastName)
+            jpaQuery.where(NON_DEFERRAL_LETTER_LIST.firstName.concat(" " + NON_DEFERRAL_LETTER_LIST.lastName)
                 .containsIgnoreCase(courtLetterSearchCriteria.jurorName()));
         }
 

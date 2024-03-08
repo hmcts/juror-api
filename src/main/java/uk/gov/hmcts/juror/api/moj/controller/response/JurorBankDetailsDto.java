@@ -60,12 +60,10 @@ public class JurorBankDetailsDto {
 
 
     /**
-     * Initialise instance of this DTO using Juror object to populate properties
-     * @param juror
+     * Initialise instance of this DTO using Juror object to populate properties.
+     *
      */
-
-    public JurorBankDetailsDto (Juror juror)
-    {
+    public JurorBankDetailsDto(Juror juror) {
         this.addressLineOne = juror.getAddressLine1();
         this.addressLineTwo = juror.getAddressLine2();
         this.addressLineThree = juror.getAddressLine3();

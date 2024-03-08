@@ -6,13 +6,15 @@ import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.NilPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolAdditionalSummonsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoolMemberFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.SummonsFormRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CoronerPoolItemDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.NilPoolResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.PoolCreatedMembersListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestItemDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummonsFormResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.FilterPoolMember;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.VotersLocPostcodeTotals;
 
 import java.time.LocalDate;
@@ -30,7 +32,7 @@ public interface PoolCreateService {
 
     void createPool(BureauJWTPayload payload, PoolCreateRequestDto poolCreateRequestDto) throws Exception;
 
-    PoolCreatedMembersListDto getJurorPoolsList(BureauJWTPayload payload, String poolNumber);
+    PaginatedList<FilterPoolMember> getJurorPoolsList(BureauJWTPayload payload, PoolMemberFilterRequestQuery search);
 
     List<VotersLocPostcodeTotals.CourtCatchmentSummaryItem> getAvailableVotersByLocation(String areaCode,
                                                                                          boolean isCoronersPool);

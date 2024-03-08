@@ -29,14 +29,16 @@ import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.NilPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolAdditionalSummonsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoolMemberFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.SummonsFormRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CoronerPoolItemDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.NilPoolResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.PoolCreatedMembersListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestItemDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PostcodesListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummonsFormResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.FilterPoolMember;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.VotersLocPostcodeTotals;
 import uk.gov.hmcts.juror.api.moj.service.PoolCreateService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -69,12 +71,26 @@ public class CreatePoolController {
         return ResponseEntity.ok().body(poolRequest);
     }
 
-    @GetMapping("/members")
-    @Operation(summary = "Retrieve a list of all pool members by pool number")
-    public ResponseEntity<PoolCreatedMembersListDto> getPoolMembers(
+    /**
+     * Post request operation for returning values required in the summons form.
+     * Including the Bureau deferrals available, total citizens in each postcode area etc.
+     *
+     * @param summonsFormRequestDto JSON payload of Summons form data
+     */
+    @PostMapping("/summons-form")
+    @Operation(summary = "Retrieve details for Summons form for a particular Pool")
+    public ResponseEntity<SummonsFormResponseDto> getPoolRequest(
+        @Validated @RequestBody SummonsFormRequestDto summonsFormRequestDto) {
+        SummonsFormResponseDto summonsForms = poolCreateService.summonsForm(summonsFormRequestDto);
+        return ResponseEntity.ok().body(summonsForms);
+    }
+
+    @PostMapping("/members")
+    @Operation(summary = "Retrieve a list of all pool members by pool number. Post to effect a GET with body")
+    public ResponseEntity<PaginatedList<FilterPoolMember>> getPoolMembers(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
-        @RequestParam(name = "poolNumber") String poolNumber) {
-        PoolCreatedMembersListDto poolMembers = poolCreateService.getJurorPoolsList(payload, poolNumber);
+        @Validated @RequestBody PoolMemberFilterRequestQuery query) {
+        PaginatedList<FilterPoolMember> poolMembers = poolCreateService.getJurorPoolsList(payload, query);
         if (poolMembers == null) {
             return ResponseEntity.ok().build();
         }
@@ -111,20 +127,6 @@ public class CreatePoolController {
                                                    LocalDate deferredTo) {
         long bureauDeferrals = poolCreateService.getBureauDeferrals(locationCode, deferredTo);
         return ResponseEntity.ok().body(bureauDeferrals);
-    }
-
-    /**
-     * Post request operation for returning values required in the summons form.
-     * Including the Bureau deferrals available, total citizens in each postcode area etc.
-     *
-     * @param summonsFormRequestDto JSON payload of Summons form data
-     */
-    @PostMapping("/summons-form")
-    @Operation(summary = "Retrieve details for Summons form for a particular Pool")
-    public ResponseEntity<SummonsFormResponseDto> getPoolRequest(
-        @Validated @RequestBody SummonsFormRequestDto summonsFormRequestDto) {
-        SummonsFormResponseDto summonsForms = poolCreateService.summonsForm(summonsFormRequestDto);
-        return ResponseEntity.ok().body(summonsForms);
     }
 
     /**
@@ -219,7 +221,6 @@ public class CreatePoolController {
      * Post request operation for creating a Coroner pool.
      *
      * @param coronerPoolRequestDto JSON payload of Coroner Pool data to check
-     *
      * @return created response with a part of the URL for the newly created resource
      */
     @PostMapping("/create-coroner-pool")

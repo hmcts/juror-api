@@ -1194,6 +1194,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     .isEqualTo(HttpStatus.OK);
                 return response;
             }
+
             private ResponseEntity<PaginatedList<JurorToSendMessageBureau>> triggerValidBureau(
                 String owner, String locCode, MessageSearch search) throws Exception {
                 final String jwt = createBureauJwt(COURT_USER, owner, locCode);
@@ -2650,7 +2651,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void messageDoesNotSupportSMS() throws Exception {
+            void messageDoesNotSupportSms() throws Exception {
                 assertBusinessRuleViolation(
                     triggerInvalid(MessageType.SENTENCING_DATE_COURT.name(), "462", "462",
                         MessageSendRequest.builder()

@@ -17,8 +17,9 @@ public final class JurorResponseUtils {
         // an empty private constructor
     }
 
-    public static JurorResponse getDigitalResponseForJurorDisqualification(String jurorNumber,
-                                                                           JurorResponseRepository jurorResponseRepository) {
+    public static JurorResponse getDigitalResponseForJurorDisqualification(
+        String jurorNumber,
+        JurorResponseRepository jurorResponseRepository) {
         log.trace("Juror {}: Enter getDigitalResponseForJuror", jurorNumber);
         Optional<JurorResponse> jurorResponse = jurorResponseRepository.findById(jurorNumber);
 
@@ -34,7 +35,8 @@ public final class JurorResponseUtils {
     /**
      * Creates a minimal paper response for age disqualification in cases where no response has
      * been commenced.
-     * @param juror A juror object
+     *
+     * @param juror               A juror object
      * @param disqualifiedComment Disqualified comment
      * @return Return a paper response object
      */

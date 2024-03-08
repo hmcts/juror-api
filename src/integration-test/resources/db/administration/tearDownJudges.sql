@@ -1,3 +1,3 @@
 DELETE
 FROM juror_mod.judge
-WHERE id in (999991, 999992, 999993);
+WHERE id >= 999991;

@@ -164,9 +164,6 @@ public class JurorDetailsResponseDto {
      * if we have two numbers, home and work, use home as primary and work as secondary
      * otherwise we have just one number and use that as primary.
      *
-     * @param homePhone
-     * @param mobilePhone
-     * @param workPhone
      */
     private void setPhoneNumbers(String homePhone, String mobilePhone, String workPhone) {
 

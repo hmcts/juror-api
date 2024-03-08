@@ -136,7 +136,8 @@ import static org.mockito.Mockito.when;
 
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LawOfDemeter"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LawOfDemeter", "PMD.CouplingBetweenObjects",
+    "PMD.TooManyMethods", "PMD.TooManyFields"})
 class JurorRecordServiceTest {
 
     private static final String BUREAU_OWNER = "400";
@@ -630,7 +631,8 @@ class JurorRecordServiceTest {
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
         verify(jurorHistoryRepository, times(1))
             .findByJurorNumberAndDateCreatedGreaterThanEqual(anyString(), any(LocalDate.class));
-        assertEquals(expectedResponse.getWelshLanguageRequired(), actualResponse.getWelshLanguageRequired());
+        assertEquals(expectedResponse.getWelshLanguageRequired(), actualResponse.getWelshLanguageRequired(),
+            "Welsh flag should be set to " + expectedResponse.getWelshLanguageRequired());
     }
 
 
@@ -2880,7 +2882,7 @@ class JurorRecordServiceTest {
             when(courtLocationRepository.findById(dto.getLocationCode()))
                 .thenReturn(Optional.ofNullable(courtLocation));
 
-            when(courtLocation.getCourtAttendTime()).thenReturn(LocalTime.of(9,15));
+            when(courtLocation.getCourtAttendTime()).thenReturn(LocalTime.of(9, 15));
 
             PoolType poolType = mock(PoolType.class);
             when(poolTypeRepository.findById(dto.getPoolType()))
@@ -3098,8 +3100,6 @@ class JurorRecordServiceTest {
                 .findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
                     TestConstants.VALID_POOL_NUMBER);
 
-            List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> data = new ArrayList<>();
-
             MojException.Forbidden exception =
                 assertThrows(MojException.Forbidden.class,
                     () -> jurorRecordService.getJurorAttendanceDetails(TestConstants.VALID_JUROR_NUMBER,
@@ -3275,7 +3275,7 @@ class JurorRecordServiceTest {
 
             @Test
             void typicalWithJurorVersion() {
-                triggerAndValidate(FilterableJurorDetailsRequestDto.builder()
+                assertAndTrigger(FilterableJurorDetailsRequestDto.builder()
                     .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
                     .jurorVersion(1L)
                     .include(List.of(FilterableJurorDetailsRequestDto.IncludeType.values()))
@@ -3284,14 +3284,14 @@ class JurorRecordServiceTest {
 
             @Test
             void typicalWithOutJurorVersion() {
-                triggerAndValidate(FilterableJurorDetailsRequestDto.builder()
+                assertAndTrigger(FilterableJurorDetailsRequestDto.builder()
                     .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
                     .jurorVersion(null)
                     .include(List.of(FilterableJurorDetailsRequestDto.IncludeType.values()))
                     .build());
             }
 
-            private void triggerAndValidate(FilterableJurorDetailsRequestDto request) {
+            private void assertAndTrigger(FilterableJurorDetailsRequestDto request) {
                 Juror juror = mock(Juror.class);
 
                 PaymentDetails paymentDetails = mock(PaymentDetails.class);

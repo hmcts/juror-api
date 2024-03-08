@@ -17,6 +17,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
+@SuppressWarnings("PMD.TooManyMethods")
 public class JurorPersonalDetailsDtoTest {
 
     private static ValidatorFactory validatorFactory;

@@ -62,6 +62,8 @@ public class RequestPoolController {
     }
 
     /**
+     * Retrieve a list of all pools filtered by status, pool type and court location.
+     * 
      * @param payload   Decoded JWT principal data from the user
      * @param locCode   Single location code to filter pools by
      * @param offset    The page number for result table

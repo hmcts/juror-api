@@ -424,7 +424,7 @@ class JurorExpenseControllerTest {
 
 
     @Nested
-    @DisplayName("SET " + BASE_URL)
+    @DisplayName("POST " + BASE_URL + "/set-default-expenses")
     class SetDefaultExpenses {
 
         @Test
@@ -441,7 +441,7 @@ class JurorExpenseControllerTest {
 
             Mockito.doNothing().when(jurorExpenseService).setDefaultExpensesForJuror(Mockito.any());
 
-            mockMvc.perform(post(BASE_URL + "/set-default-expenses/123456789")
+            mockMvc.perform(post(BASE_URL + "/set-default-expenses")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(TestUtils.asJsonString(payload)))
                 .andDo(MockMvcResultHandlers.print())
@@ -466,7 +466,7 @@ class JurorExpenseControllerTest {
 
             Mockito.doNothing().when(jurorExpenseService).setDefaultExpensesForJuror(Mockito.any());
 
-            mockMvc.perform(post(BASE_URL + "/set-default-expenses/123456789")
+            mockMvc.perform(post(BASE_URL + "/set-default-expenses")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(TestUtils.asJsonString(payload)))
                 .andDo(MockMvcResultHandlers.print())

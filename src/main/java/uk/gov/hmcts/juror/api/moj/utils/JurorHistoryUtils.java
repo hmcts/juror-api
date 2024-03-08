@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 
 public class JurorHistoryUtils {
 
-    private JurorHistoryUtils() {}
+    private JurorHistoryUtils() {
+    }
 
     public static void saveJurorHistory(HistoryCodeMod code, String jurorNumber, String poolNumber,
                                          BureauJWTPayload payload, JurorHistoryRepository jurorHistoryRepository) {

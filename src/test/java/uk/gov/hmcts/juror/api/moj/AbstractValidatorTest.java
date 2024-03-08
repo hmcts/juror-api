@@ -408,6 +408,15 @@ public abstract class AbstractValidatorTest<T> {
                 }));
         }
 
+        protected void addMax(V maximum, FieldTestSupport fieldTestSupport) {
+            tests.add(
+                DynamicTest.dynamicTest(fieldName + " be a most " + maximum + getTestSuffix(fieldTestSupport), () -> {
+                    T dto = createValidObject();
+                    setField(dto, add(maximum, +1));
+                    expectViolations(dto, fieldName, "must be less than or equal to " + maximum, fieldTestSupport);
+                }));
+        }
+
         protected abstract V add(V minimum, int value);
 
     }

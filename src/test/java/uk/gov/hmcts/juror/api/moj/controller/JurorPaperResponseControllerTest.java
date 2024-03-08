@@ -40,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = JurorPaperResponseController.class, excludeAutoConfiguration =
     {SecurityAutoConfiguration.class})
 @ContextConfiguration(classes = { JurorPaperResponseController.class, RestResponseEntityExceptionHandler.class})
+@SuppressWarnings("PMD.LawOfDemeter")
 class JurorPaperResponseControllerTest {
 
     private static final String OWNER_BUREAU = "400";

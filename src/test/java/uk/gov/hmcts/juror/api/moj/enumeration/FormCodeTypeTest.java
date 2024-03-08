@@ -6,7 +6,10 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
+@SuppressWarnings({
+    "PMD.TooManyMethods",
+    "PMD.JUnitAssertionsShouldIncludeMessage"
+})
 class FormCodeTypeTest {
 
     @Test
