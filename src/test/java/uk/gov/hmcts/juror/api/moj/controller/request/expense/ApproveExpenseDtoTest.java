@@ -116,7 +116,7 @@ public class ApproveExpenseDtoTest extends AbstractValidatorTest<ApproveExpenseD
         void positiveForApprovalIsApplicableTrue() {
             Appearance appearance = new Appearance();
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
-            appearance.setIsDraftExpense(false);
+            appearance.setDraftExpense(false);
             assertThat(ApproveExpenseDto.ApprovalType.FOR_APPROVAL.isApplicable(appearance)).isTrue();
         }
 
@@ -124,7 +124,7 @@ public class ApproveExpenseDtoTest extends AbstractValidatorTest<ApproveExpenseD
         void positiveForApprovalIsApplicableFalseIsDraft() {
             Appearance appearance = new Appearance();
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
-            appearance.setIsDraftExpense(true);
+            appearance.setDraftExpense(true);
             assertThat(ApproveExpenseDto.ApprovalType.FOR_APPROVAL.isApplicable(appearance)).isFalse();
         }
 
@@ -134,7 +134,7 @@ public class ApproveExpenseDtoTest extends AbstractValidatorTest<ApproveExpenseD
         void positiveForApprovalIsApplicableFalseWrongStage(AppearanceStage stage) {
             Appearance appearance = new Appearance();
             appearance.setAppearanceStage(stage);
-            appearance.setIsDraftExpense(false);
+            appearance.setDraftExpense(false);
             assertThat(ApproveExpenseDto.ApprovalType.FOR_APPROVAL.isApplicable(appearance)).isFalse();
         }
 
@@ -142,7 +142,7 @@ public class ApproveExpenseDtoTest extends AbstractValidatorTest<ApproveExpenseD
         void positiveForReApprovalIsApplicableTrue() {
             Appearance appearance = new Appearance();
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_EDITED);
-            appearance.setIsDraftExpense(false);
+            appearance.setDraftExpense(false);
             assertThat(ApproveExpenseDto.ApprovalType.FOR_REAPPROVAL.isApplicable(appearance)).isTrue();
         }
 
@@ -150,7 +150,7 @@ public class ApproveExpenseDtoTest extends AbstractValidatorTest<ApproveExpenseD
         void positiveForReApprovalIsApplicableFalseIsDraft() {
             Appearance appearance = new Appearance();
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_EDITED);
-            appearance.setIsDraftExpense(true);
+            appearance.setDraftExpense(true);
             assertThat(ApproveExpenseDto.ApprovalType.FOR_REAPPROVAL.isApplicable(appearance)).isFalse();
         }
 
@@ -160,7 +160,7 @@ public class ApproveExpenseDtoTest extends AbstractValidatorTest<ApproveExpenseD
         void positiveForReApprovalIsApplicableFalseWrongStage(AppearanceStage stage) {
             Appearance appearance = new Appearance();
             appearance.setAppearanceStage(stage);
-            appearance.setIsDraftExpense(false);
+            appearance.setDraftExpense(false);
             assertThat(ApproveExpenseDto.ApprovalType.FOR_REAPPROVAL.isApplicable(appearance)).isFalse();
         }
     }

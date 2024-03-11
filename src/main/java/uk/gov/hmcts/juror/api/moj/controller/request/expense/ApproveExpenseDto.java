@@ -54,9 +54,9 @@ public class ApproveExpenseDto extends JurorNumberAndPoolNumberDto {
     }
 
     public enum ApprovalType {
-        FOR_APPROVAL(appearance -> !appearance.getIsDraftExpense()
+        FOR_APPROVAL(appearance -> !appearance.isDraftExpense()
             && AppearanceStage.EXPENSE_ENTERED.equals(appearance.getAppearanceStage())),
-        FOR_REAPPROVAL(appearance -> !appearance.getIsDraftExpense()
+        FOR_REAPPROVAL(appearance -> !appearance.isDraftExpense()
             && AppearanceStage.EXPENSE_EDITED.equals(appearance.getAppearanceStage()));
         @SuppressWarnings("PMD.LinguisticNaming")
         private final Function<Appearance, Boolean> isApplicableFunction;

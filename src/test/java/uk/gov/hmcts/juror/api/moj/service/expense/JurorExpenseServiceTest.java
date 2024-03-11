@@ -615,7 +615,7 @@ class JurorExpenseServiceTest {
             List<Appearance> updatedAppearances = appearanceArgumentCaptor.getValue();
             assertThat(updatedAppearances).hasSize(1);
             Appearance updatedAppearance = updatedAppearances.get(0);
-            assertThat(updatedAppearance.getIsDraftExpense())
+            assertThat(updatedAppearance.isDraftExpense())
                 .as("Expect the is_draft_expense flag to be updated to false")
                 .isFalse();
             verify(jurorHistoryService, times(1))
@@ -669,7 +669,7 @@ class JurorExpenseServiceTest {
 
             List<Appearance> updatedAppearances = appearanceArgumentCaptor.getValue();
             for (Appearance updatedAppearance : updatedAppearances) {
-                assertThat(updatedAppearance.getIsDraftExpense())
+                assertThat(updatedAppearance.isDraftExpense())
                     .as("Expect the is_draft_expense flag to be updated to false")
                     .isFalse();
                 verify(jurorHistoryService, times(1))
@@ -2383,7 +2383,7 @@ class JurorExpenseServiceTest {
         BigDecimal totalPaid = new BigDecimal("12.2");
         when(appearance.getTotalPaid()).thenReturn(totalPaid);
         Boolean payCash = true;
-        when(appearance.getPayCash()).thenReturn(payCash);
+        when(appearance.isPayCash()).thenReturn(payCash);
         when(appearance.getNonAttendanceDay()).thenReturn(true);
 
         GetEnteredExpenseResponse.DailyExpenseTimeEntered time =
@@ -2429,7 +2429,7 @@ class JurorExpenseServiceTest {
         verify(appearance, times(1)).getAppearanceStage();
         verify(appearance, times(1)).getTotalDue();
         verify(appearance, times(1)).getTotalPaid();
-        verify(appearance, times(1)).getPayCash();
+        verify(appearance, times(1)).isPayCash();
         verify(appearance, times(1)).getNonAttendanceDay();
         verify(jurorExpenseService, times(1)).getTimeFromAppearance(appearance);
         verify(jurorExpenseService, times(1)).getFinancialLossFromAppearance(appearance);
@@ -2518,7 +2518,7 @@ class JurorExpenseServiceTest {
         private Appearance mockAppearance(CourtLocation courtLocation, boolean isCash) {
             Appearance appearance = mock(Appearance.class);
             doReturn(courtLocation).when(appearance).getCourtLocation();
-            doReturn(isCash).when(appearance).getPayCash();
+            doReturn(isCash).when(appearance).isPayCash();
             return appearance;
         }
 
@@ -3467,7 +3467,7 @@ class JurorExpenseServiceTest {
 
             Appearance appearance2 = mock(Appearance.class);
             when(appearance2.getCourtLocation()).thenReturn(courtLocation);
-            when(appearance2.getAppearanceStage()).thenReturn(AppearanceStage.APPEARANCE_CONFIRMED);
+            when(appearance2.getAppearanceStage()).thenReturn(AppearanceStage.EXPENSE_ENTERED);
             when(appearance2.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 2));
             SimplifiedExpenseDetailDto simplifiedExpenseDetailDto2 =
                 createSimplifiedExpenseDetailDto(LocalDate.of(2023, 1, 1));
@@ -3541,7 +3541,7 @@ class JurorExpenseServiceTest {
 
             Appearance appearance2 = mock(Appearance.class);
             when(appearance2.getCourtLocation()).thenReturn(courtLocation);
-            when(appearance2.getAppearanceStage()).thenReturn(AppearanceStage.APPEARANCE_CONFIRMED);
+            when(appearance2.getAppearanceStage()).thenReturn(AppearanceStage.EXPENSE_ENTERED);
             when(appearance2.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 1));
             SimplifiedExpenseDetailDto simplifiedExpenseDetailDto2 =
                 createSimplifiedExpenseDetailDto(LocalDate.of(2023, 1, 1));
@@ -3596,7 +3596,7 @@ class JurorExpenseServiceTest {
 
             Appearance appearance2 = mock(Appearance.class);
             when(appearance2.getCourtLocation()).thenReturn(courtLocation);
-            when(appearance2.getAppearanceStage()).thenReturn(AppearanceStage.APPEARANCE_CONFIRMED);
+            when(appearance2.getAppearanceStage()).thenReturn(AppearanceStage.EXPENSE_ENTERED);
             when(appearance2.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 1));
             SimplifiedExpenseDetailDto simplifiedExpenseDetailDto2 =
                 createSimplifiedExpenseDetailDto(LocalDate.of(2023, 1, 1));
@@ -3816,7 +3816,7 @@ class JurorExpenseServiceTest {
 
             Appearance appearance2 = mock(Appearance.class);
             when(appearance2.getCourtLocation()).thenReturn(courtLocation);
-            when(appearance2.getAppearanceStage()).thenReturn(AppearanceStage.APPEARANCE_CONFIRMED);
+            when(appearance2.getAppearanceStage()).thenReturn(AppearanceStage.EXPENSE_ENTERED);
             when(appearance2.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 1));
             ExpenseDetailsDto expenseDetailDto2 = createExpenseDetailsDto(LocalDate.of(2023, 1, 1));
             doReturn(expenseDetailDto2).when(jurorExpenseService).mapAppearanceToExpenseDetailsDto(appearance2);
@@ -4356,7 +4356,7 @@ class JurorExpenseServiceTest {
         private Appearance mockAppearance(boolean isDraft, AppearanceStage stage) {
             Appearance appearance = mock(Appearance.class);
             when(appearance.getAppearanceStage()).thenReturn(stage);
-            when(appearance.getIsDraftExpense()).thenReturn(isDraft);
+            when(appearance.isDraftExpense()).thenReturn(isDraft);
             when(appearance.getCourtLocation()).thenReturn(COURT_LOCATION);
             return appearance;
         }
@@ -4377,10 +4377,8 @@ class JurorExpenseServiceTest {
 
                 mockAppearance(false, AppearanceStage.CHECKED_IN),
                 mockAppearance(false, AppearanceStage.CHECKED_OUT),
-                mockAppearance(false, AppearanceStage.APPEARANCE_CONFIRMED),
                 mockAppearance(true, AppearanceStage.CHECKED_IN),
-                mockAppearance(true, AppearanceStage.CHECKED_OUT),
-                mockAppearance(true, AppearanceStage.APPEARANCE_CONFIRMED)
+                mockAppearance(true, AppearanceStage.CHECKED_OUT)
             );
             when(appearanceRepository.findAllByJurorNumberAndPoolNumber(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER
@@ -5382,7 +5380,7 @@ class JurorExpenseServiceTest {
             Appearance appearance = mock(Appearance.class);
             doReturn(TestConstants.VALID_JUROR_NUMBER).when(appearance).getJurorNumber();
             doReturn(AppearanceStage.EXPENSE_ENTERED).when(appearance).getAppearanceStage();
-            doReturn(true).when(appearance).getIsDraftExpense();
+            doReturn(true).when(appearance).isDraftExpense();
             return appearance;
         }
     }
@@ -5464,9 +5462,10 @@ class JurorExpenseServiceTest {
         }
 
 
-        private Appearance mockAppearance(CourtLocation courtLocation) {
+        private Appearance mockAppearance(CourtLocation courtLocation, boolean isDraft) {
             Appearance appearance = mock(Appearance.class);
             doReturn(courtLocation).when(appearance).getCourtLocation();
+            doReturn(isDraft).when(appearance).isDraftExpense();
             return appearance;
         }
 
@@ -5488,9 +5487,9 @@ class JurorExpenseServiceTest {
             CourtLocation courtLocation = mock(CourtLocation.class);
             doReturn(TestConstants.VALID_COURT_LOCATION).when(courtLocation).getOwner();
 
-            Appearance appearance1 = mockAppearance(courtLocation);
-            Appearance appearance2 = mockAppearance(courtLocation);
-            Appearance appearance3 = mockAppearance(courtLocation);
+            Appearance appearance1 = mockAppearance(courtLocation, true);
+            Appearance appearance2 = mockAppearance(courtLocation, true);
+            Appearance appearance3 = mockAppearance(courtLocation, true);
             List<Appearance> appearances = List.of(
                 appearance1, appearance2, appearance3
             );
@@ -5530,9 +5529,9 @@ class JurorExpenseServiceTest {
             CourtLocation courtLocation = mock(CourtLocation.class);
             doReturn(TestConstants.VALID_COURT_LOCATION).when(courtLocation).getOwner();
 
-            Appearance appearance1 = mockAppearance(courtLocation);
-            Appearance appearance2 = mockAppearance(courtLocation);
-            Appearance appearance3 = mockAppearance(courtLocation);
+            Appearance appearance1 = mockAppearance(courtLocation, true);
+            Appearance appearance2 = mockAppearance(courtLocation, true);
+            Appearance appearance3 = mockAppearance(courtLocation, true);
             List<Appearance> appearances = List.of(
                 appearance1, appearance2, appearance3
             );
@@ -5573,9 +5572,9 @@ class JurorExpenseServiceTest {
             CourtLocation courtLocation = mock(CourtLocation.class);
             doReturn(TestConstants.VALID_COURT_LOCATION).when(courtLocation).getOwner();
 
-            Appearance appearance1 = mockAppearance(courtLocation);
-            Appearance appearance2 = mockAppearance(courtLocation);
-            Appearance appearance3 = mockAppearance(courtLocation);
+            Appearance appearance1 = mockAppearance(courtLocation, true);
+            Appearance appearance2 = mockAppearance(courtLocation, true);
+            Appearance appearance3 = mockAppearance(courtLocation, true);
             List<Appearance> appearances = List.of(
                 appearance1, appearance2, appearance3
             );
@@ -5592,6 +5591,43 @@ class JurorExpenseServiceTest {
             assertThat(exception.getMessage())
                 .isEqualTo("User cannot access this juror pool");
 
+        }
+
+        @Test
+        void negativeEditingNonDraftDays() {
+            List<LocalDate> attendanceDates = List.of(
+                LocalDate.of(2023, 1, 1),
+                LocalDate.of(2023, 1, 2),
+                LocalDate.of(2023, 1, 3)
+            );
+            ApportionSmartCardRequest dto = ApportionSmartCardRequest.builder()
+                .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                .smartCardAmount(new BigDecimal("100.00"))
+                .attendanceDates(
+                    attendanceDates
+                )
+                .build();
+            CourtLocation courtLocation = mock(CourtLocation.class);
+            doReturn(TestConstants.VALID_COURT_LOCATION).when(courtLocation).getOwner();
+
+            Appearance appearance1 = mockAppearance(courtLocation, true);
+            Appearance appearance2 = mockAppearance(courtLocation, false);
+            Appearance appearance3 = mockAppearance(courtLocation, true);
+            List<Appearance> appearances = List.of(
+                appearance1, appearance2, appearance3
+            );
+            doReturn(appearances).when(jurorExpenseService).getAppearances(dto);
+
+            MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
+                () -> jurorExpenseService.apportionSmartCard(dto),
+                "Should throw exception when juror tries apportion non draft expenses");
+            assertThat(exception).isNotNull();
+            assertThat(exception.getCause()).isNull();
+            assertThat(exception.getErrorCode()).isEqualTo(
+                MojException.BusinessRuleViolation.ErrorCode.APPORTION_SMART_CARD_NON_DRAFT_DAYS);
+            assertThat(exception.getMessage())
+                .isEqualTo("Can not apportion smart card for non-draft days");
         }
     }
 

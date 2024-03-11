@@ -24,12 +24,12 @@ class FormCodeTypeTest {
 
     @Test
     void englishExcusalDenied() {
-        assertEquals(FormCode.ENG_EXCUSALDENIED, "5226", IJurorStatus.SUMMONED);
+        assertEquals(FormCode.ENG_EXCUSALDENIED, "5226", IJurorStatus.RESPONDED);
     }
 
     @Test
     void welshExcusalDenied() {
-        assertEquals(FormCode.BI_EXCUSALDENIED, "5226C", IJurorStatus.SUMMONED);
+        assertEquals(FormCode.BI_EXCUSALDENIED, "5226C", IJurorStatus.RESPONDED);
     }
 
     @Test

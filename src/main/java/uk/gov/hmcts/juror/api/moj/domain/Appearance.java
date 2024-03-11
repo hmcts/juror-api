@@ -49,7 +49,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 @Getter
 @Setter
 @Audited
-@SuppressWarnings({"PMD.TooManyFields","PMD.LawOfDemeter"})
+@SuppressWarnings({"PMD.TooManyFields", "PMD.LawOfDemeter"})
 public class Appearance implements Serializable {
 
     @Version
@@ -114,7 +114,8 @@ public class Appearance implements Serializable {
     private String miscDescription;
 
     @Column(name = "pay_cash")
-    private Boolean payCash;
+    @Builder.Default
+    private boolean payCash = false;
 
     @Column(name = "last_updated_by")
     private String lastUpdatedBy;
@@ -223,7 +224,8 @@ public class Appearance implements Serializable {
      * authorised (false).
      */
     @Column(name = "is_draft_expense")
-    private Boolean isDraftExpense;
+    @Builder.Default
+    private boolean isDraftExpense = true;
 
     /**
      * flag indicating whether the juror has not attended court on a day they were due to be present (unauthorised

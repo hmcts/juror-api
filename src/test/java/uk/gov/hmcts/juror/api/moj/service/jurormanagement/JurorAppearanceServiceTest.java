@@ -41,7 +41,6 @@ import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
-import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceServiceImpl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -71,9 +70,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.APPEARANCE_CONFIRMED;
 import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.CHECKED_IN;
 import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.CHECKED_OUT;
+import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.EXPENSE_ENTERED;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.ATTENDANCE_RECORD_ALREADY_EXISTS;
 
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.LawOfDemeter",
@@ -390,7 +389,7 @@ class JurorAppearanceServiceTest {
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
         Appearance appearance = new Appearance();
         appearance.setJurorNumber(JUROR_123456789);
-        appearance.setAppearanceStage(APPEARANCE_CONFIRMED);
+        appearance.setAppearanceStage(EXPENSE_ENTERED);
         doReturn(appearance).when(appearanceRepository).findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
@@ -460,7 +459,7 @@ class JurorAppearanceServiceTest {
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
         Appearance appearance = new Appearance();
         appearance.setJurorNumber(JUROR_123456789);
-        appearance.setAppearanceStage(APPEARANCE_CONFIRMED);
+        appearance.setAppearanceStage(EXPENSE_ENTERED);
         doReturn(appearance).when(appearanceRepository).findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
@@ -2068,9 +2067,9 @@ class JurorAppearanceServiceTest {
             .thenReturn(checkedInJurorsTuples);
 
         List<Appearance> checkedInAttendances = new ArrayList<>();
-        Appearance appearance1 = buildAppearance(JUROR1, checkInTime, null, APPEARANCE_CONFIRMED);
-        Appearance appearance6 = buildAppearance(JUROR6, checkInTime, null, APPEARANCE_CONFIRMED);
-        Appearance appearance7 = buildAppearance(JUROR7, checkInTime, null, APPEARANCE_CONFIRMED);
+        Appearance appearance1 = buildAppearance(JUROR1, checkInTime, null, EXPENSE_ENTERED);
+        Appearance appearance6 = buildAppearance(JUROR6, checkInTime, null, EXPENSE_ENTERED);
+        Appearance appearance7 = buildAppearance(JUROR7, checkInTime, null, EXPENSE_ENTERED);
         checkedInAttendances.add(appearance1);
         checkedInAttendances.add(appearance6);
         checkedInAttendances.add(appearance7);

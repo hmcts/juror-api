@@ -687,7 +687,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 assertThat(appearance).isNotNull();
                 assertThat(appearance.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
-                assertThat(appearance.getPayCash()).isEqualTo(false);
+                assertThat(appearance.isPayCash()).isEqualTo(false);
                 assertThat(appearance.getTravelTime()).isEqualTo(LocalTime.of(1, 2));
 
                 //Financial Loss
@@ -759,7 +759,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 assertThat(appearance).isNotNull();
                 assertThat(appearance.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
-                assertThat(appearance.getPayCash()).isEqualTo(true);
+                assertThat(appearance.isPayCash()).isEqualTo(true);
                 assertThat(appearance.getTravelTime()).isEqualTo(LocalTime.of(2, 2));
 
                 //Financial Loss
@@ -1021,7 +1021,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(appearance.getChildcareDue()).isEqualTo(doubleToBigDecimal(10.00));
                 assertThat(appearance.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(5.00));
                 assertThat(appearance.getMiscDescription()).isEqualTo("Desc");
-                assertThat(appearance.getPayCash()).isEqualTo(false);
+                assertThat(appearance.isPayCash()).isEqualTo(false);
 
                 assertThat(appearance.getTotalDue()).isEqualTo(doubleToBigDecimal(40.01));
             }
@@ -1064,7 +1064,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(appearance.getChildcareDue()).isEqualTo(doubleToBigDecimal(7.47));
                 assertThat(appearance.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(0.00));
                 assertThat(appearance.getMiscDescription()).isEqualTo("Desc 2");
-                assertThat(appearance.getPayCash()).isEqualTo(false);
+                assertThat(appearance.isPayCash()).isEqualTo(false);
 
                 assertThat(appearance.getTotalDue()).isEqualTo(doubleToBigDecimal(32.47));
 
@@ -1098,7 +1098,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(appearance.getChildcareDue()).isEqualTo(doubleToBigDecimal(0.00));
                 assertThat(appearance.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(0.00));
                 assertThat(appearance.getMiscDescription()).isNull();
-                assertThat(appearance.getPayCash()).isEqualTo(false);
+                assertThat(appearance.isPayCash()).isEqualTo(false);
 
                 assertThat(appearance.getTotalDue()).isEqualTo(doubleToBigDecimal(0.00));
             }
@@ -1167,7 +1167,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(10.00));
                     assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 2");
                     assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(15.00));
-                    assertThat(appearance1.getPayCash()).isEqualTo(true);
+                    assertThat(appearance1.isPayCash()).isEqualTo(true);
                 });
             }
         }
@@ -1608,7 +1608,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getAppearanceStage())
                 .as("Appearance stage should remain unchanged (still entered)")
                 .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
-            assertThat(appearance.getIsDraftExpense())
+            assertThat(appearance.isDraftExpense())
                 .as("Is draft expense flag should be updated to false (expense no longer draft)")
                 .isFalse();
             assertThat(appearance.getExpenseRates()).isNotNull();
@@ -1623,7 +1623,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getAppearanceStage())
                 .as("Appearance stage should remain unchanged (still entered)")
                 .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
-            assertThat(appearance.getIsDraftExpense())
+            assertThat(appearance.isDraftExpense())
                 .as("Is draft expense flag should remain unchanged (expense still in draft)")
                 .isTrue();
         }
@@ -2804,7 +2804,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 Appearance appearance = getAppearance(jurorNumber, request.getDateOfExpense(), "415");
                 assertThat(appearance).isNotNull();
                 assertThat(appearance.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
-                assertThat(appearance.getPayCash()).isEqualTo(false);
+                assertThat(appearance.isPayCash()).isEqualTo(false);
                 assertThat(appearance.getTravelTime()).isEqualTo(LocalTime.of(1, 2));
 
                 //Financial Loss
@@ -2836,7 +2836,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 assertThat(appearance2).isNotNull();
                 assertThat(appearance2.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
-                assertThat(appearance2.getPayCash()).isEqualTo(false);
+                assertThat(appearance2.isPayCash()).isEqualTo(false);
                 assertThat(appearance2.getTravelTime()).isEqualTo(LocalTime.of(1, 2));
 
                 //Financial Loss
@@ -2908,7 +2908,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 Appearance appearance = getAppearance(jurorNumber, request.getDateOfExpense(), "415");
                 assertThat(appearance).isNotNull();
                 assertThat(appearance.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
-                assertThat(appearance.getPayCash()).isEqualTo(false);
+                assertThat(appearance.isPayCash()).isEqualTo(false);
                 assertThat(appearance.getTravelTime()).isEqualTo(LocalTime.of(1, 2));
 
                 //Financial Loss
@@ -2974,7 +2974,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 Appearance appearance = getAppearance(jurorNumber, request.getDateOfExpense(), "415");
                 assertThat(appearance).isNotNull();
                 assertThat(appearance.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
-                assertThat(appearance.getPayCash()).isEqualTo(false);
+                assertThat(appearance.isPayCash()).isEqualTo(false);
                 assertThat(appearance.getTravelTime()).isEqualTo(LocalTime.of(2, 2));
 
                 //Financial Loss
@@ -4105,12 +4105,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void newValueMoreThenPaid() throws Exception {
+            void negativeNonDraftDays() throws Exception {
                 ApportionSmartCardRequest payload = getValidPayload(new BigDecimal("90.00"));
                 payload.setAttendanceDates(List.of(LocalDate.of(2023, 1, 11)));
                 assertBusinessRuleViolation(triggerInvalid(payload, "415"),
-                    "Updated expense values cannot be less than the paid amount",
-                    MojException.BusinessRuleViolation.ErrorCode.EXPENSE_VALUES_REDUCED_LESS_THAN_PAID);
+                    "Can not apportion smart card for non-draft days",
+                    MojException.BusinessRuleViolation.ErrorCode.APPORTION_SMART_CARD_NON_DRAFT_DAYS);
             }
         }
     }

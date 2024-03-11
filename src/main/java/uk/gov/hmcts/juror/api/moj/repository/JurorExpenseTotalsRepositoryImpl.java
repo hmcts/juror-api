@@ -37,7 +37,8 @@ public class JurorExpenseTotalsRepositoryImpl implements IJurorExpenseTotalsRepo
         query.select(JUROR_EXPENSE_TOTALS)
             .from(JUROR_EXPENSE_TOTALS)
             .where(JUROR_EXPENSE_TOTALS.courtLocationCode.eq(locCode))
-            .where(JUROR_EXPENSE_TOTALS.totalUnapproved.gt(0));
+            .where(JUROR_EXPENSE_TOTALS.totalUnapproved.gt(0)
+                .or(JUROR_EXPENSE_TOTALS.pendingApprovalCount.gt(0)));
 
         return querydsl.applyPagination(pageable, query).fetch();
     }

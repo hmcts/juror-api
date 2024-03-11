@@ -10,8 +10,8 @@ public enum FormCode {
 
     ENG_EXCUSAL("5225", PrintDataService::printExcusalLetter, IJurorStatus.EXCUSED),
     BI_EXCUSAL("5225C", PrintDataService::printExcusalLetter, IJurorStatus.EXCUSED),
-    ENG_EXCUSALDENIED("5226", PrintDataService::printExcusalDeniedLetter, IJurorStatus.SUMMONED),
-    BI_EXCUSALDENIED("5226C", PrintDataService::printExcusalDeniedLetter, IJurorStatus.SUMMONED),
+    ENG_EXCUSALDENIED("5226", PrintDataService::printExcusalDeniedLetter, IJurorStatus.RESPONDED),
+    BI_EXCUSALDENIED("5226C", PrintDataService::printExcusalDeniedLetter, IJurorStatus.RESPONDED),
     ENG_SUMMONS("5221", PrintDataService::printSummonsLetter, IJurorStatus.SUMMONED),
     BI_SUMMONS("5221C", PrintDataService::printSummonsLetter, IJurorStatus.SUMMONED),
     ENG_SUMMONS_REMINDER("5228", PrintDataService::printSummonsReminderLetter, IJurorStatus.SUMMONED),
