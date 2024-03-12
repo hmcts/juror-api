@@ -84,15 +84,15 @@ AS SELECT juror_expense_subtotals.juror_number,
 
 
 
-SELECT setval('public.rev_info_seq', 100, true);
+SELECT setval('juror_mod.rev_info_seq', 100, true);
 
 
 INSERT INTO juror_mod.rev_info (revision_number, revision_timestamp)
-VALUES (nextval('public.rev_info_seq'), EXTRACT(EPOCH FROM current_date));
+VALUES (nextval('juror_mod.rev_info_seq'), EXTRACT(EPOCH FROM current_date));
 
 
 INSERT INTO juror_mod.court_location_audit (revision, rev_type, loc_code, public_transport_soft_limit, taxi_soft_limit)
-SELECT currval('public.rev_info_seq'),
+SELECT currval('juror_mod.rev_info_seq'),
        0,
        loc_code,
        public_transport_soft_limit,
