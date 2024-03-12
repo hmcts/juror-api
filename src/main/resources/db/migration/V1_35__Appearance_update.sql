@@ -84,7 +84,7 @@ AS SELECT juror_expense_subtotals.juror_number,
 
 
 
-SELECT setval('juror_mod.rev_info_seq', 100, true);
+SELECT setval('juror_mod.rev_info_seq', (SELECT max(revision_number) FROM juror_mod.rev_info), true);
 
 
 INSERT INTO juror_mod.rev_info (revision_number, revision_timestamp)
