@@ -403,7 +403,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             throw new MojException.BadRequest("Juror " + jurorNumber + " has already checked in", null);
         } else if (appearance.getAppearanceStage().equals(AppearanceStage.CHECKED_OUT)) {
             throw new MojException.BadRequest("Juror " + jurorNumber + " has already checked out", null);
-        } else if (appearance.getAppearanceStage().equals(AppearanceStage.APPEARANCE_CONFIRMED)) {
+        } else if (Set.of(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED,
+                AppearanceStage.EXPENSE_AUTHORISED)
+            .contains(appearance.getAppearanceStage())) {
             throw new MojException.BadRequest("Juror " + jurorNumber + " has already confirmed their attendance", null);
         }
     }
@@ -466,14 +468,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             jurorPoolRepository.findJurorsInAttendanceAtCourtLocation(request.getLocationCode(),
                 request.getPoolNumbers());
 
-        if (ObjectUtils.defaultIfNull(request.getIncludeOnCall(),false)) {
+        if (ObjectUtils.defaultIfNull(request.getIncludeOnCall(), false)) {
             List<JurorPool> jurorPoolOnCall =
                 jurorPoolRepository.findJurorsOnCallAtCourtLocation(request.getLocationCode(),
                     request.getPoolNumbers());
             jurorPools.addAll(jurorPoolOnCall);
         }
 
-        if (ObjectUtils.defaultIfNull(request.getIncludeOnCall(),false)) {
+        if (ObjectUtils.defaultIfNull(request.getIncludeOnCall(), false)) {
             List<JurorPool> jurorPoolNotInAttendance =
                 jurorPoolRepository.findJurorsNotInAttendanceAtCourtLocation(request.getLocationCode(),
                     request.getPoolNumbers());
@@ -559,7 +561,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         });
 
         List<Appearance> checkedInAttendances = appearanceRepository.findAllById(appearanceIds);
-        checkedInAttendances.forEach(appearance -> appearance.setAppearanceStage(AppearanceStage.APPEARANCE_CONFIRMED));
+        checkedInAttendances.forEach(appearance -> appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED));
 
         jurorExpenseService.applyDefaultExpenses(checkedInAttendances);
 

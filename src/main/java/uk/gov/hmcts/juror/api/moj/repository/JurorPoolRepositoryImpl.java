@@ -224,11 +224,12 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
     @Transactional(readOnly = true)
     public JPAQuery<Tuple> fetchFilteredPoolMembers(PoolMemberFilterRequestQuery search, String owner) {
         JPAQueryFactory queryFactory = getQueryFactory();
-
+        LocalDate today = LocalDate.now();
         JPAQuery<?> partialQuery = queryFactory.from(QJurorPool.jurorPool)
             .join(QJuror.juror).on(QJurorPool.jurorPool.juror.jurorNumber.eq(QJuror.juror.jurorNumber))
             .leftJoin(QAppearance.appearance)
-            .on(QJurorPool.jurorPool.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber))
+            .on(QJurorPool.jurorPool.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber)
+                .and(QAppearance.appearance.attendanceDate.eq(today)))
             .leftJoin(QJurorStatus.jurorStatus)
             .on(QJurorPool.jurorPool.status.status.eq(QJurorStatus.jurorStatus.status))
             .leftJoin(QJurorTrial.jurorTrial)
@@ -268,19 +269,19 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
                         search.getAttendance().contains(PoolMemberFilterRequestQuery.AttendanceEnum.ON_A_TRIAL)
                             ? QJurorTrial.jurorTrial.result.eq("J")
                             : Expressions.FALSE)
-                        .or(search.getAttendance().contains(PoolMemberFilterRequestQuery.AttendanceEnum.IN_ATTENDANCE)
-                                ? Expressions.booleanOperation(
-                                    Ops.AND,
-                                    QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
-                                    QAppearance.appearance.attendanceDate.eq(LocalDate.now()))
-                                : Expressions.FALSE)
+                    .or(search.getAttendance().contains(PoolMemberFilterRequestQuery.AttendanceEnum.IN_ATTENDANCE)
+                        ? Expressions.booleanOperation(
+                        Ops.AND,
+                        QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+                        QAppearance.appearance.attendanceDate.eq(LocalDate.now()))
+                        : Expressions.FALSE)
                     .or(search.getAttendance().contains(PoolMemberFilterRequestQuery.AttendanceEnum.OTHER)
-                            ? QJurorPool.jurorPool.nextDate.eq(LocalDate.now())
-                                .and(QJurorPool.jurorPool.onCall.ne(true))
-                                .and(QJurorTrial.jurorTrial.result.ne("J"))
-                                .and(QAppearance.appearance.appearanceStage.ne(AppearanceStage.CHECKED_IN))
-                            : Expressions.FALSE
-            ));
+                        ? QJurorPool.jurorPool.nextDate.eq(LocalDate.now())
+                        .and(QJurorPool.jurorPool.onCall.ne(true))
+                        .and(QJurorTrial.jurorTrial.result.ne("J"))
+                        .and(QAppearance.appearance.appearanceStage.ne(AppearanceStage.CHECKED_IN))
+                        : Expressions.FALSE
+                    ));
         }
 
         return partialQuery.select(

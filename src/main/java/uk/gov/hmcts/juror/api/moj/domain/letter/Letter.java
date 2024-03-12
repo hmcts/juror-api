@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @IdClass(LetterId.class)
 @Getter
 @Setter
-public abstract class Letter {
+public class Letter {
 
     @Id
     @NotNull

@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Data
 @Builder
@@ -47,4 +48,31 @@ public class SimplifiedExpenseDetailDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime auditCreatedOn;
 
+    public BigDecimal getFinancialLoss() {
+        return Optional.ofNullable(financialLoss).orElse(BigDecimal.ZERO);
+    }
+
+    public BigDecimal getTravel() {
+        return Optional.ofNullable(travel).orElse(BigDecimal.ZERO);
+    }
+
+    public BigDecimal getFoodAndDrink() {
+        return Optional.ofNullable(foodAndDrink).orElse(BigDecimal.ZERO);
+    }
+
+    public BigDecimal getSmartcard() {
+        return Optional.ofNullable(smartcard).orElse(BigDecimal.ZERO);
+    }
+
+    public BigDecimal getTotalDue() {
+        return Optional.ofNullable(totalDue).orElse(BigDecimal.ZERO);
+    }
+
+    public BigDecimal getTotalPaid() {
+        return Optional.ofNullable(totalPaid).orElse(BigDecimal.ZERO);
+    }
+
+    public BigDecimal getBalanceToPay() {
+        return Optional.ofNullable(balanceToPay).orElse(BigDecimal.ZERO);
+    }
 }

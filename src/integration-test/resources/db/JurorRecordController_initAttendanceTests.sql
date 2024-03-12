@@ -33,33 +33,33 @@ INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_c
 travel_time,
 appearance_stage,non_attendance,attendance_type) VALUES
 	(current_date - interval '1 day','111111111','415230101','415',123456789,'09:30:00','17:30:00','01:12',
-	'APPEARANCE_CONFIRMED',
+	'EXPENSE_ENTERED',
 	false,'FULL_DAY');
 	 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,
 travel_time,appearance_stage,non_attendance,attendance_type) VALUES
     (current_date - interval '2 days','111111111','415230101','415',123456789,'09:30:00','13:30:00','01:12',
-    'APPEARANCE_CONFIRMED',false,'FULL_DAY');
+    'EXPENSE_ENTERED',false,'FULL_DAY');
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,
 travel_time,appearance_stage,non_attendance,attendance_type) VALUES
     (current_date - interval '3 days','111111111','415230101','415',123456799,'09:30:00','13:25:00','01:12',
-    'APPEARANCE_CONFIRMED',false,'HALF_DAY');
+    'EXPENSE_ENTERED',false,'HALF_DAY');
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,
 travel_time,appearance_stage,non_attendance,no_show,attendance_type) VALUES
-    (current_date - interval '4 days','111111111','415230101','415',123456989,NULL,NULL,'01:12','APPEARANCE_CONFIRMED',
+    (current_date - interval '4 days','111111111','415230101','415',123456989,NULL,NULL,'01:12','EXPENSE_ENTERED',
     false,true,'ABSENT');
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,
 travel_time,appearance_stage,non_attendance,attendance_type) VALUES
-    (current_date - interval '5 days','111111111','415230101','415',123456989,NULL,NULL,'01:12','APPEARANCE_CONFIRMED',
+    (current_date - interval '5 days','111111111','415230101','415',123456989,NULL,NULL,'01:12','EXPENSE_ENTERED',
     true,'NON_ATTENDANCE');
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,
 travel_time,appearance_stage,non_attendance,attendance_type) VALUES
     (current_date - interval '2 days','222222222','415230101','415',123459789,'09:30:00','17:30:00','01:00',
-    'APPEARANCE_CONFIRMED',false,'FULL_DAY');
+    'EXPENSE_ENTERED',false,'FULL_DAY');
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,
 appearance_stage,non_attendance,attendance_type) VALUES

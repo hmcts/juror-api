@@ -38,7 +38,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     @Transactional(readOnly = true)
     public ReissueLetterListResponseDto reissueLetterList(ReissueLetterListRequestDto request) {
         String login = SecurityUtil.getActiveUsersBureauPayload().getLogin();
-        log.debug("Reissue letter list request received from bureau user %s", login);
+        log.debug("Reissue letter list request received from bureau user {}", login);
 
         LetterType letterType = request.getLetterType();
 
@@ -69,7 +69,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     @Transactional
     public void reissueLetter(ReissueLetterRequestDto request) {
         String login = SecurityUtil.getActiveUsersBureauPayload().getLogin();
-        log.debug("Reissue letters request received from Bureau user %s", login);
+        log.debug("Reissue letters request received from Bureau user {}", login);
 
         request.getLetters().stream().forEach(letter -> {
             // verify the user is reprinting the same letter type with bulk print data table
@@ -89,7 +89,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             FormCode formCode = FormCode.getFormCode(letter.getFormCode());
 
             // TODO: history to show letter requested by bureau user
-            log.debug("Printing letter for juror number %s with form code %s", letter.getJurorNumber(),
+            log.debug("Printing letter for juror number {} with form code {}", letter.getJurorNumber(),
                 letter.getFormCode());
 
             JurorStatus jurorStatus = RepositoryUtils.retrieveFromDatabase(
@@ -100,7 +100,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                     jurorStatus);
 
             if (jurorPools.isEmpty()) {
-                throw new MojException.NotFound("Juror not found for juror number %s "
+                throw new MojException.NotFound("Juror not found for juror number "
                     + letter.getJurorNumber(), null);
             }
 
@@ -118,7 +118,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     @Transactional
     public void deletePendingLetter(ReissueLetterRequestDto request) {
         String login = SecurityUtil.getActiveUsersBureauPayload().getLogin();
-        log.debug("Delete pending letter request received from Bureau user %s", login);
+        log.debug("Delete pending letter request received from Bureau user {}", login);
 
         ReissueLetterRequestDto.ReissueLetterRequestData letter = request.getLetters().get(0);
 
@@ -129,7 +129,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                     "Bulk print data not found for juror %s " + letter.getJurorNumber(),
                     null));
         // TODO: history to show letter pending deleted by bureau user
-        log.debug("Deleting pending letter for juror number %s with form code %s", letter.getJurorNumber(),
+        log.debug("Deleting pending letter for juror number {} with form code {}", letter.getJurorNumber(),
             letter.getFormCode());
 
         bulkPrintDataRepository.delete(bulkPrintData);
@@ -158,10 +158,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             }
 
             if (newData.get(statusIndex).equals("Deferred")
-                && newData.get(reasonIndex).equals(
-                "Postponement"
-                    + " of "
-                    + "service")) {
+                && newData.get(reasonIndex).equals("Postponement of service")) {
                 newData.remove(statusIndex);
                 newData.add(statusIndex, "Postponed");
             }

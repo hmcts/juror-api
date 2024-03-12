@@ -68,4 +68,7 @@ public class JurorExpenseTotals implements Serializable {
     @Column(name = "total_approved")
     private BigDecimal totalApproved;
 
+    @Column(name = "pending_approval_count")
+    private long pendingApprovalCount;
+
 }

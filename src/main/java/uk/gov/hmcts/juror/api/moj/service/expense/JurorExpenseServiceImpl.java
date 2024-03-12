@@ -289,7 +289,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         for (Appearance appearance : appearances) {
             log.debug("Submitting appearance with attendance date: ${} for approval",
                 appearance.getAttendanceDate().toString());
-            appearance.setIsDraftExpense(false);
+            appearance.setDraftExpense(false);
         }
 
         Appearance firstAppearance = appearances.get(0);
@@ -376,7 +376,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .stage(appearance.getAppearanceStage())
             .totalDue(appearance.getTotalDue())
             .totalPaid(appearance.getTotalPaid())
-            .payCash(appearance.getPayCash())
+            .payCash(appearance.isPayCash())
             .time(getTimeFromAppearance(appearance))
             .financialLoss(getFinancialLossFromAppearance(appearance))
             .travel(getTravelFromAppearance(appearance))
@@ -728,7 +728,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         expenseDetailsForTotals.setAttendanceDate(appearance.getAttendanceDate());
         expenseDetailsForTotals.setAttendanceType(appearance.getAttendanceType());
         expenseDetailsForTotals.setPayAttendance(appearance.getPayAttendanceType());
-        expenseDetailsForTotals.setPaymentMethod(Boolean.TRUE.equals(appearance.getPayCash())
+        expenseDetailsForTotals.setPaymentMethod(Boolean.TRUE.equals(appearance.isPayCash())
             ? PaymentMethod.CASH : PaymentMethod.BACS);
 
         expenseDetailsForTotals.setLossOfEarnings(appearance.getLossOfEarningsDue());
@@ -756,17 +756,17 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         }
         return ExpenseCount.builder()
             .totalDraft(appearances.stream().filter(appearance ->
-                AppearanceStage.EXPENSE_ENTERED.equals(
-                    appearance.getAppearanceStage()) && appearance.getIsDraftExpense()).count())
+                appearance.isDraftExpense() && AppearanceStage.EXPENSE_ENTERED.equals(
+                    appearance.getAppearanceStage())).count())
             .totalForApproval(appearances.stream().filter(appearance ->
-                AppearanceStage.EXPENSE_ENTERED.equals(
-                    appearance.getAppearanceStage()) && !appearance.getIsDraftExpense()).count())
+                !appearance.isDraftExpense() && AppearanceStage.EXPENSE_ENTERED.equals(
+                    appearance.getAppearanceStage())).count())
             .totalForReapproval(appearances.stream().filter(appearance ->
-                AppearanceStage.EXPENSE_EDITED.equals(
-                    appearance.getAppearanceStage()) && !appearance.getIsDraftExpense()).count())
+                !appearance.isDraftExpense() && AppearanceStage.EXPENSE_EDITED.equals(
+                    appearance.getAppearanceStage())).count())
             .totalApproved(appearances.stream().filter(appearance ->
-                AppearanceStage.EXPENSE_AUTHORISED.equals(
-                    appearance.getAppearanceStage()) && !appearance.getIsDraftExpense()).count())
+                !appearance.isDraftExpense() && AppearanceStage.EXPENSE_AUTHORISED.equals(
+                    appearance.getAppearanceStage())).count())
             .build();
     }
 
@@ -828,6 +828,10 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         final String owner = SecurityUtil.getActiveOwner();
         if (appearances.stream().noneMatch(appearance -> owner.equals(appearance.getCourtLocation().getOwner()))) {
             throw new MojException.Forbidden("User cannot access this juror pool", null);
+        }
+        if (appearances.stream().anyMatch(appearance -> !appearance.isDraftExpense())) {
+            throw new MojException.BusinessRuleViolation("Can not apportion smart card for non-draft days",
+                MojException.BusinessRuleViolation.ErrorCode.APPORTION_SMART_CARD_NON_DRAFT_DAYS);
         }
 
         appearances.stream().limit(appearances.size() - 1)
@@ -968,7 +972,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .parking(appearance.getParkingDue())
             .foodAndDrink(appearance.getSubsistenceDue())
             .smartCard(appearance.getSmartCardAmountDue())
-            .paymentMethod(Boolean.TRUE.equals(appearance.getPayCash()) ? PaymentMethod.CASH : PaymentMethod.BACS)
+            .paymentMethod(Boolean.TRUE.equals(appearance.isPayCash()) ? PaymentMethod.CASH : PaymentMethod.BACS)
             .build();
     }
 
@@ -984,7 +988,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(dto.getJurorNumber(),
                 dto.getPoolNumber()).stream()
             .filter(appearance -> appearance.getCourtLocation().getOwner().equals(user.getOwner()))
-            .filter(appearance -> dto.getCashPayment().equals(appearance.getPayCash()))
+            .filter(appearance -> dto.getCashPayment().equals(appearance.isPayCash()))
             .filter(approvalType::isApplicable).toList();
 
         if (appearances.isEmpty()) {

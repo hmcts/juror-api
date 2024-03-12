@@ -16,7 +16,7 @@ class ExpenseTypeTest {
 
     private Appearance mockAppearance(boolean isDraft, AppearanceStage stage) {
         Appearance appearance = mock(Appearance.class);
-        when(appearance.getIsDraftExpense()).thenReturn(isDraft);
+        when(appearance.isDraftExpense()).thenReturn(isDraft);
         when(appearance.getAppearanceStage()).thenReturn(stage);
         return appearance;
     }

@@ -106,6 +106,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.springframework.transaction.annotation.Propagation.REQUIRED;
@@ -121,7 +122,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkReadAccessForCurr
  */
 @Slf4j
 @Service
-@SuppressWarnings({"PMD.TooManyMethods","PMD.LawOfDemeter","PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.LawOfDemeter", "PMD.ExcessiveImports"})
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorRecordServiceImpl implements JurorRecordService {
     private static final Character NEW_REQUEST_STATE = 'N';
@@ -1226,11 +1227,11 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
 
         return appearances.stream()
-            .filter(appearance -> AppearanceStage.APPEARANCE_CONFIRMED.equals(appearance.getAppearanceStage())
-                || AppearanceStage.EXPENSE_ENTERED.equals(appearance.getAppearanceStage())
-                || AppearanceStage.EXPENSE_AUTHORISED.equals(appearance.getAppearanceStage())
-                || AppearanceStage.EXPENSE_EDITED.equals(appearance.getAppearanceStage()))
-            .map(appearance -> new JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData(appearance))
+            .filter(appearance ->
+                Set.of(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_AUTHORISED,
+                        AppearanceStage.EXPENSE_EDITED)
+                    .contains(appearance.getAppearanceStage()))
+            .map(JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData::new)
             .collect(Collectors.toList());
     }
 

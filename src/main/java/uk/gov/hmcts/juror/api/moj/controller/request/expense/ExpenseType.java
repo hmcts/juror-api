@@ -6,11 +6,11 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import java.util.function.Function;
 
 public enum ExpenseType {
-    FOR_APPROVAL(appearance -> !appearance.getIsDraftExpense()
+    FOR_APPROVAL(appearance -> !appearance.isDraftExpense()
         && AppearanceStage.EXPENSE_ENTERED.equals(appearance.getAppearanceStage())),
-    FOR_REAPPROVAL(appearance -> !appearance.getIsDraftExpense()
+    FOR_REAPPROVAL(appearance -> !appearance.isDraftExpense()
         && AppearanceStage.EXPENSE_EDITED.equals(appearance.getAppearanceStage())),
-    APPROVED(appearance -> !appearance.getIsDraftExpense()
+    APPROVED(appearance -> !appearance.isDraftExpense()
         && AppearanceStage.EXPENSE_AUTHORISED.equals(appearance.getAppearanceStage()));
 
     @SuppressWarnings("PMD.LinguisticNaming")

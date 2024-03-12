@@ -16,6 +16,7 @@ import java.util.Optional;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@SuppressWarnings("PMD.LawOfDemeter")
 public class ExpenseValuesDto {
 
     protected BigDecimal lossOfEarnings;

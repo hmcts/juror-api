@@ -58,9 +58,9 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
-import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.APPEARANCE_CONFIRMED;
 import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.CHECKED_IN;
 import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.CHECKED_OUT;
+import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.EXPENSE_ENTERED;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.ATTENDANCE_RECORD_ALREADY_EXISTS;
 import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetails;
 
@@ -731,7 +731,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             assertThat(details)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
-                .containsExactlyInAnyOrder(APPEARANCE_CONFIRMED, APPEARANCE_CONFIRMED, APPEARANCE_CONFIRMED);
+                .containsExactlyInAnyOrder(EXPENSE_ENTERED, EXPENSE_ENTERED, EXPENSE_ENTERED);
 
             assertThat(details)
                 .extracting(AttendanceDetailsResponse.Details::getIsNoShow)

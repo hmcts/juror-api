@@ -3066,7 +3066,7 @@ class JurorRecordServiceTest {
                     .timeOut(LocalTime.of(17, 0))
                     .attendanceType(AttendanceType.FULL_DAY)
                     .travelTime(LocalTime.of(1, 30))
-                    .appearanceStage(AppearanceStage.APPEARANCE_CONFIRMED)
+                    .appearanceStage(AppearanceStage.EXPENSE_ENTERED)
                     .build();
             appearances.add(appearance);
 
