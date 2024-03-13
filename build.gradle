@@ -349,6 +349,12 @@ checkstyle {
     getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
+pmdSmokeTest {
+    maxFailures = 2
+}
+pmdFunctionalTest {
+    maxFailures = 2
+}
 pmdIntegrationTest {
     maxFailures = 785
 }
