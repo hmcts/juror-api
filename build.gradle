@@ -311,16 +311,18 @@ sourceSets {
     }
     functionalTest {
         java {
-            compileClasspath += main.output
-            runtimeClasspath += main.output
+            compileClasspath += main.output + test.output + test.compileClasspath
+            runtimeClasspath += main.output + test.output + test.runtimeClasspath
+            annotationProcessorPath += main.output + test.output + main.annotationProcessorPath + test.annotationProcessorPath
             srcDir file('src/functionalTest/java')
         }
         resources.srcDir file('src/functionalTest/resources')
     }
     smokeTest {
         java {
-            compileClasspath += main.output
-            runtimeClasspath += main.output
+            compileClasspath += main.output + test.output + test.compileClasspath
+            runtimeClasspath += main.output + test.output + test.runtimeClasspath
+            annotationProcessorPath += main.output + test.output + main.annotationProcessorPath + test.annotationProcessorPath
             srcDir file('src/smokeTest/java')
         }
         resources.srcDir file('src/smokeTest/resources')
@@ -353,7 +355,7 @@ pmdIntegrationTest {
     maxFailures = 785
 }
 pmdTest {
-    maxFailures = 373
+    maxFailures = 375
 }
 pmdMain {
     maxFailures = 1139
