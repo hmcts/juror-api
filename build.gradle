@@ -309,32 +309,26 @@ sourceSets {
             //srcDirs 'src/querydsl/java'
         }
     }
-    testSupport {
-        java {
-            srcDir file('src/testSupport/java')
-        }
-        resources.srcDir file('src/testSupport/resources')
-    }
     functionalTest {
         java {
-            compileClasspath += main.output + testSupport.output
-            runtimeClasspath += main.output + testSupport.output
+            compileClasspath += main.output
+            runtimeClasspath += main.output
             srcDir file('src/functionalTest/java')
         }
         resources.srcDir file('src/functionalTest/resources')
     }
     smokeTest {
         java {
-            compileClasspath += main.output + testSupport.output
-            runtimeClasspath += main.output + testSupport.output
+            compileClasspath += main.output
+            runtimeClasspath += main.output
             srcDir file('src/smokeTest/java')
         }
         resources.srcDir file('src/smokeTest/resources')
     }
     integrationTest {
         java {
-            compileClasspath += main.output + test.output + test.compileClasspath + testSupport.output
-            runtimeClasspath += main.output + test.output + test.runtimeClasspath + testSupport.output
+            compileClasspath += main.output + test.output + test.compileClasspath
+            runtimeClasspath += main.output + test.output + test.runtimeClasspath
             annotationProcessorPath += main.output + test.output + main.annotationProcessorPath + test.annotationProcessorPath
             srcDir file('src/integration-test/java')
         }
