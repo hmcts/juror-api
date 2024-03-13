@@ -8,11 +8,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
 import static io.restassured.RestAssured.given;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-class SampleFunctionalTest {
+class SampleFunctionalTest extends ContainerTest {
     protected static final String CONTENT_TYPE_VALUE = "application/json";
 
     @Value("${TEST_URL:http://localhost:8080}")

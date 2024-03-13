@@ -14,9 +14,6 @@ def secrets = [
   'juror-${env}': [
     secret('app-insights-connection-string', 'app-insights-connection-string'),
     secret('AppInsightsInstrumentationKey', 'azure.application-insights.instrumentation-key'),
-    secret('api-POSTGRES-CONNECTION-STRING', 'DB_URL'),
-    secret('api-POSTGRES-USER', 'DB_USERNAME'),
-    secret('api-POSTGRES-PASS', 'DB_PASSWORD'),
     secret('api-JWT-SECRET-BUREAU', 'JWT_SECRET_BUREAU'),
     secret('api-JWT-SECRET-PUBLIC', 'JWT-SECRET_PUBLIC'),
     secret('api-JWT-SECRET-HMAC', 'JWT_SECRET_HMAC'),
