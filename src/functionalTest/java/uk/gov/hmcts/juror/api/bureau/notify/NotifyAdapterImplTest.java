@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.juror.notify.NotifyAdapter;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
 import uk.gov.hmcts.juror.api.juror.service.JurorNotificationServiceImpl;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
+import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -33,7 +34,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "notify.disabled=false")
-class NotifyAdapterImplTest {
+class NotifyAdapterImplTest extends ContainerTest {
     private static final String DEV_FIRST_PERSON_TEMPLATE_ID = "ec33ab68-b917-4f25-918e-50d3291edef6"; // new
     // 1st_straight_through
     private static final String DEV_FIRST_PERSON_CY_TEMPLATE_ID = "aea4140b-2e2f-423b-8146-cd9615bfbc9e"; //

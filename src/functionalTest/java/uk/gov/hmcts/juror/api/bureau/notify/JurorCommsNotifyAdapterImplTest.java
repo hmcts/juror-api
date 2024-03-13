@@ -23,6 +23,7 @@ import uk.gov.hmcts.juror.api.juror.notify.NotifyAdapter;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotification;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotificationReceipt;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
+import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
 import java.util.Map;
 import java.util.UUID;
@@ -34,7 +35,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "notify.disabled=false")
-class JurorCommsNotifyAdapterImplTest {
+class JurorCommsNotifyAdapterImplTest extends ContainerTest {
 
     private static final String JUROR_NUM = "juror number";
     private static final String COURT_NAME = "PRESTON";
