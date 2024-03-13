@@ -311,6 +311,8 @@ sourceSets {
     }
     testSupport {
         java {
+            compileClasspath += main.output
+            runtimeClasspath += main.output
             srcDir file('src/testSupport/java')
         }
         resources.srcDir file('src/testSupport/resources')
