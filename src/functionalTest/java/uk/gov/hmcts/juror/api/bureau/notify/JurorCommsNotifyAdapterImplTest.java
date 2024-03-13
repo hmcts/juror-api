@@ -22,8 +22,8 @@ import uk.gov.hmcts.juror.api.juror.notify.EmailNotificationReceipt;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyAdapter;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotification;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotificationReceipt;
-import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
+import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.util.Map;
 import java.util.UUID;
