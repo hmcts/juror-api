@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSettingRepository;
+import uk.gov.hmcts.juror.api.bureau.domain.AppSettingsRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetailRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateMapping;
 import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateMappingRepository;
@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.juror.notify.EmailNotificationReceipt;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyAdapter;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotification;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotificationReceipt;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
@@ -77,7 +78,7 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
      * mock provided to JurorCommsNotificationServiceImpl constructor only.
      */
     @Mock
-    private AppSettingRepository appSettingRepository;
+    private AppSettingsRepository appSettingRepository;
 
     @Mock
     private BureauJurorDetailRepository bureauJurorDetailRepository;
@@ -127,7 +128,7 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
         final String lastName = "Test";
         final String email = "confirmed.test@cgi.com";
 
-        final Pool pool = Pool.builder()
+        final JurorPool pool = Pool.builder()
             .jurorNumber(jurorNUmber)
             .title(title)
             .firstName(firstName)

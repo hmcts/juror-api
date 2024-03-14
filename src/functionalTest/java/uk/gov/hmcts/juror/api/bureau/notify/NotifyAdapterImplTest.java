@@ -10,9 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSetting;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSettingRepository;
-import uk.gov.hmcts.juror.api.bureau.service.AppSettingService;
+import uk.gov.hmcts.juror.api.bureau.domain.AppSettings;
+import uk.gov.hmcts.juror.api.bureau.domain.AppSettingsRepository;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotificationReceipt;
@@ -69,7 +69,7 @@ class NotifyAdapterImplTest extends ContainerTest {
      * mock provided to JurorNotificationServiceImpl constructor only.
      */
     @Mock
-    private AppSettingRepository appSettingRepository;
+    private AppSettingsRepository appSettingRepository;
 
     /**
      * Used to access utility method.
@@ -105,7 +105,7 @@ class NotifyAdapterImplTest extends ContainerTest {
             .lastName(lastName)
             .email(email)
             .build();
-        final AppSetting testTemplateSetting = new AppSetting();
+        final AppSettings testTemplateSetting = new AppSettings();
         testTemplateSetting.setValue(DEV_FIRST_PERSON_TEMPLATE_ID);
 
         given(appSettingRepository.findById(anyString())).willReturn(Optional.of(testTemplateSetting));
@@ -153,7 +153,7 @@ class NotifyAdapterImplTest extends ContainerTest {
             .welsh(true)
             .build();
 
-        final AppSetting testTemplateSetting = new AppSetting();
+        final AppSettings testTemplateSetting = new AppSettings();
         testTemplateSetting.setValue(DEV_FIRST_PERSON_CY_TEMPLATE_ID);
 
         given(appSettingRepository.findById(anyString())).willReturn(Optional.of(testTemplateSetting));
@@ -210,7 +210,7 @@ class NotifyAdapterImplTest extends ContainerTest {
             .thirdPartyLName(tpLname)
             .emailAddress(tpEmail)
             .build();
-        final AppSetting testTemplateSetting = new AppSetting();
+        final AppSettings testTemplateSetting = new AppSettings();
         testTemplateSetting.setValue(DEV_THIRD_PARTY_TEMPLATE_ID);
 
         given(appSettingRepository.findById(anyString())).willReturn(Optional.of(testTemplateSetting));
@@ -262,7 +262,7 @@ class NotifyAdapterImplTest extends ContainerTest {
             .emailAddress(tpEmail)
             .welsh(true)
             .build();
-        final AppSetting testTemplateSetting = new AppSetting();
+        final AppSettings testTemplateSetting = new AppSettings();
         testTemplateSetting.setValue(DEV_THIRD_PARTY_CY_TEMPLATE_ID);
 
         given(appSettingRepository.findById(anyString())).willReturn(Optional.of(testTemplateSetting));
@@ -318,7 +318,7 @@ class NotifyAdapterImplTest extends ContainerTest {
             .thirdPartyLName(tpLname)
             .emailAddress(tpEmail)
             .build();
-        final AppSetting testTemplateSetting = new AppSetting();
+        final AppSettings testTemplateSetting = new AppSettings();
         testTemplateSetting.setValue(DEV_THIRD_PARTY_TEMPLATE_ID);
 
         given(appSettingRepository.findById(anyString())).willReturn(Optional.of(testTemplateSetting));
