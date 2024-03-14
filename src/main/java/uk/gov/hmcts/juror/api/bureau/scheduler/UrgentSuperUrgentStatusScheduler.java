@@ -9,12 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.bureau.service.ScheduledService;
 import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,8 +26,12 @@ import java.util.List;
 public class UrgentSuperUrgentStatusScheduler implements ScheduledService {
 
     private final UrgencyService urgencyService;
-    private final JurorResponseRepository jurorResponseRepository;
-    private final PoolRepository poolRepository;
+
+    private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepositoryMod;
+
+
+    private final JurorPoolRepository jurorRepository;
+
 
 
     @Override
@@ -40,24 +44,24 @@ public class UrgentSuperUrgentStatusScheduler implements ScheduledService {
 
         BooleanExpression pendingFilter = JurorResponseQueries.byStatusNotClosed(pendingStatuses);
 
-        Iterable<JurorResponse> jurorResponseList = jurorResponseRepository.findAll(pendingFilter);
+        Iterable<DigitalResponse> digitalResponseList = jurorDigitalResponseRepositoryMod.findAll(pendingFilter);
 
-        final List<JurorResponse> jurorResponsesNotClosed = Lists.newLinkedList(jurorResponseList);
+        final List<DigitalResponse> jurorResponsesNotClosed = Lists.newLinkedList(digitalResponseList);
 
         log.trace("jurorResponsesNotClosed {}", jurorResponsesNotClosed.size());
 
 
         if (!jurorResponsesNotClosed.isEmpty()) {
 
-            for (JurorResponse backlogItem : jurorResponsesNotClosed) {
-                Pool poolDetails = poolRepository.findByJurorNumber(backlogItem.getJurorNumber());
-                log.trace("processing  pool number {} ", poolDetails.getJurorNumber());
+            for (DigitalResponse backlogItem : jurorResponsesNotClosed) {
+                JurorPool jurorDetails = jurorRepository.findByJurorJurorNumber(backlogItem.getJurorNumber());
+                log.trace("processing  pool number {} ", jurorDetails.getJurorNumber());
 
-                if (urgencyService.isUrgent(backlogItem, poolDetails)
-                    || urgencyService.isSuperUrgent(backlogItem, poolDetails)) {
-                    urgencyService.setUrgencyFlags(backlogItem, poolDetails);
+                if (urgencyService.isUrgent(backlogItem, jurorDetails)
+                    || urgencyService.isSuperUrgent(backlogItem, jurorDetails)) {
+                    urgencyService.setUrgencyFlags(backlogItem, jurorDetails);
                     log.trace("saving response back");
-                    jurorResponseRepository.save(backlogItem);
+                    jurorDigitalResponseRepositoryMod.save(backlogItem);
                     log.trace("responses saved juror {}", backlogItem.getJurorNumber());
                 }
 

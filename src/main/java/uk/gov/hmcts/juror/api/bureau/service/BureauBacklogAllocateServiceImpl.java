@@ -21,9 +21,15 @@ import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.Iterator;
@@ -42,9 +48,9 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateService {
 
-    private final JurorResponseRepository jurorResponseRepository;
+    private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
     private final UserRepository userRepository;
-    private final StaffJurorResponseAuditRepository auditRepository;
+    private final StaffJurorResponseAuditRepositoryMod auditRepository;
 
     @Override
     @Transactional
@@ -84,8 +90,8 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
 
         for (User staffMember : staff) {
 
-            List<JurorResponse> toBeAllocated = new LinkedList<>();
-            List<StaffJurorResponseAudit> auditEntries = new LinkedList<>();
+            List<DigitalResponse> toBeAllocated = new LinkedList<>();
+            List<StaffJurorResponseAuditMod> auditEntries = new LinkedList<>();
 
             log.trace("Allocating backlog responses to bureau officer : {} ", staffMember.getUsername());
 
@@ -172,11 +178,11 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
      * @param urgencyAllocateCount Requested Allocate count for Staff (ie nonUrgentCount)
      * @return List Allocated Responses for staff member.
      */
-    private List<JurorResponse> allocateResponses(BooleanExpression condition, User staffMember,
+    private List<DigitalResponse> allocateResponses(BooleanExpression condition, User staffMember,
                                                   Integer urgencyAllocateCount) {
 
         //Fetch the responses to allocate to the staffMember. Only fetches requested amount (urgencyAllocateCount)
-        final List<JurorResponse> urgencybacklog = getBacklogData(condition, urgencyAllocateCount);
+        final List<DigitalResponse> urgencybacklog = getBacklogData(condition, urgencyAllocateCount);
 
         //Perform Allocations to the staffMember
         return allocate(urgencybacklog, staffMember, urgencyAllocateCount);
@@ -190,12 +196,12 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
      * @param urgencyAllocateCount Requested Allocate count for Staff (ie nonUrgentCount)
      * @return List Allocated Responses for saff member.
      */
-    private List<JurorResponse> allocate(List<JurorResponse> backlogData, User staff, Integer urgencyAllocateCount) {
+    private List<DigitalResponse> allocate(List<DigitalResponse> backlogData, User staff, Integer urgencyAllocateCount) {
 
-        final List<JurorResponse> allocation = new LinkedList<>();
+        final List<DigitalResponse> allocation = new LinkedList<>();
 
-        final Iterator<JurorResponse> backlogItems = backlogData.iterator();
-        final Date now = Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant());
+        final Iterator<DigitalResponse> backlogItems = backlogData.iterator();
+    final LocalDate now = LocalDateTime.now().toLocalDate();
 
         for (int j = 0;
              j < urgencyAllocateCount && backlogItems.hasNext();
@@ -224,13 +230,13 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
      * @param requestingUser logged in user
      * @return List StaffJurorResponseAudit
      */
-    private List<StaffJurorResponseAudit> auditAllocatedEntries(List<JurorResponse> allocation, User staff,
+    private List<StaffJurorResponseAuditMod> auditAllocatedEntries(List<DigitalResponse> allocation, User staff,
                                                                 String requestingUser) {
 
-        final List<StaffJurorResponseAudit> auditEntries = new LinkedList<>();
+        final List<StaffJurorResponseAuditMod> auditEntries = new LinkedList<>();
 
         allocation.forEach(r -> {
-            auditEntries.add(StaffJurorResponseAudit.realBuilder()
+            auditEntries.add(StaffJurorResponseAuditMod.realBuilder()
                 .teamLeaderLogin(requestingUser)
                 .staffLogin(staff.getUsername())
                 .jurorNumber(r.getJurorNumber())
@@ -249,8 +255,8 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
      * @param resultsLimit Requested no of responses to retrieve.
      * @return List JurorResponse
      */
-    private List<JurorResponse> getBacklogData(BooleanExpression condition, int resultsLimit) {
-        Page<JurorResponse> responses = jurorResponseRepository.findAll(condition, PageRequest.of(
+    private List<DigitalResponse> getBacklogData(BooleanExpression condition, int resultsLimit) {
+        Page<DigitalResponse> responses = jurorResponseRepository.findAll(condition, PageRequest.of(
             0, resultsLimit, Sort.Direction.ASC, "dateReceived"));
         return responses.getContent();
     }

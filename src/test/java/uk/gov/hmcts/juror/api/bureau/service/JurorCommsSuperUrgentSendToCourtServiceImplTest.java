@@ -7,13 +7,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -35,16 +36,18 @@ public class JurorCommsSuperUrgentSendToCourtServiceImplTest {
     private static final String FIRST_NAME = "Watts";
     private static final String LAST_NAME = "John";
 
-    private Pool poolDetails1;
-    private JurorResponse jurorResponse1;
-    private Date birthDate;
-    private Date hearingDate;
+    private JurorPool poolDetails1;
+    private DigitalResponse jurorResponse1;
+    private LocalDate birthDate;
+    private LocalDate hearingDate;
+
+    private Juror juror;
 
     @Mock
-    private PoolRepository poolRepository;
+    private JurorPoolRepository poolRepository;
 
     @Mock
-    private JurorResponseRepository jurorResponseRepository;
+    private JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
     @Mock
     private JurorCommsNotificationService jurorCommsNotificationService;
@@ -58,8 +61,10 @@ public class JurorCommsSuperUrgentSendToCourtServiceImplTest {
     @Before
     public void setUp() {
 
-        poolDetails1 = new Pool();
-        jurorResponse1 = new JurorResponse();
+        poolDetails1 = new JurorPool();
+        juror = new Juror();
+        poolDetails1.setJuror(juror);
+        jurorResponse1 = new DigitalResponse();
 
         given(responseInspector.getYoungestJurorAgeAllowed()).willReturn(18);
         given(responseInspector.getTooOldJurorAge()).willReturn(76);
@@ -68,27 +73,29 @@ public class JurorCommsSuperUrgentSendToCourtServiceImplTest {
     @Test
     public void process_HappyPath() {
 
-        Pool poolDetails = Pool.builder()
-            .jurorNumber(JUROR_ID)
-            .firstName(FIRST_NAME)
-            .lastName(LAST_NAME)
-            .hearingDate(hearingDate)
-            .welsh(false)
-            .notifications(0)
-            .build();
+        JurorPool poolDetails = new JurorPool();
+        juror = new Juror();
+        poolDetails.setJuror(juror);
+        juror.setJurorNumber(JUROR_ID);
+        juror.setFirstName(FIRST_NAME);
+        juror.setLastName(LAST_NAME);
+        poolDetails.setNextDate(hearingDate);
+        juror.setWelsh(false);
+        juror.setNotifications(0);
 
-        JurorResponse jurorResponse = JurorResponse.builder()
-            .jurorNumber(JUROR_ID)
-            .firstName(FIRST_NAME)
-            .lastName(LAST_NAME)
-            .dateOfBirth(birthDate)
-            .email("abcd@yahoo.com")
-            .phoneNumber("07442231123")
-            .welsh(false)
-            .build();
+
+        DigitalResponse jurorResponse = new DigitalResponse();
+        jurorResponse.setJurorNumber(JUROR_ID);
+        jurorResponse.setFirstName(FIRST_NAME);
+        jurorResponse.setLastName(LAST_NAME);
+        jurorResponse.setDateOfBirth(birthDate);
+        jurorResponse.setEmail("abcd@yahoo.com");
+        jurorResponse.setPhoneNumber("07442231123");
+        jurorResponse.setWelsh(false);
+
 
         //given(poolRepository.findOne(any(String.class))).willReturn(poolDetails);
-        given(poolRepository.findByJurorNumber(any(String.class))).willReturn(poolDetails);
+        given(poolRepository.findByJurorJurorNumber(any(String.class))).willReturn(poolDetails);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(jurorResponse);
         given(responseInspector.getJurorAgeAtHearingDate(birthDate,
             hearingDate)).willReturn(18);
@@ -96,15 +103,15 @@ public class JurorCommsSuperUrgentSendToCourtServiceImplTest {
         service.processSuperUrgent(JUROR_ID);
         verify(responseInspector, times(1)).getJurorAgeAtHearingDate(birthDate,
             hearingDate);
-        verify(jurorCommsNotificationService, times(1)).sendJurorComms(any(Pool.class),
+        verify(jurorCommsNotificationService, times(1)).sendJurorComms(any(JurorPool.class),
             any(JurorCommsNotifyTemplateType.class),
             eq(null), eq(null), anyBoolean());
-        verify(poolRepository, times(1)).save(any(Pool.class));
+        verify(poolRepository, times(1)).save(any(JurorPool.class));
     }
 
     @Test
     public void process_UnHappyPath_Too_Young() {
-        given(poolRepository.findByJurorNumber(any(String.class))).willReturn(poolDetails1);
+        given(poolRepository.findByJurorJurorNumber(any(String.class))).willReturn(poolDetails1);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(jurorResponse1);
         given(responseInspector.getJurorAgeAtHearingDate(birthDate,
             hearingDate)).willReturn(10);
@@ -116,7 +123,7 @@ public class JurorCommsSuperUrgentSendToCourtServiceImplTest {
 
     @Test
     public void process_UnHappyPath_Too_Old() {
-        given(poolRepository.findByJurorNumber(any(String.class))).willReturn(poolDetails1);
+        given(poolRepository.findByJurorJurorNumber(any(String.class))).willReturn(poolDetails1);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(jurorResponse1);
         given(responseInspector.getJurorAgeAtHearingDate(birthDate,
             hearingDate)).willReturn(77);

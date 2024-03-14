@@ -1,1 +1,2 @@
-INSERT INTO JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT (ID,JUROR_NUMBER,CJS_EMPLOYER,CJS_EMPLOYER_DETAILS) VALUES (1, '209092530','HMP','Prison guard');
+INSERT INTO juror_mod.juror_response_cjs_employment (ID,JUROR_NUMBER,CJS_EMPLOYER,CJS_EMPLOYER_DETAILS) VALUES (1,
+                                                                                                        '209092530','HMP','Prison guard');

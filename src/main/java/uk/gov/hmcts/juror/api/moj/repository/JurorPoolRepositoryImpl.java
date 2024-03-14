@@ -221,6 +221,22 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             dataMapper, maxItems);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> fetchThinPoolMembers(String poolNumber, String owner) {
+        JPAQueryFactory queryFactory = getQueryFactory();
+
+        return queryFactory.select(QJurorPool.jurorPool.juror.jurorNumber)
+            .from(QJurorPool.jurorPool)
+            .where(QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber)
+                       .and(QJurorPool.jurorPool.owner.eq(owner))
+                       .and(QJurorPool.jurorPool.isActive.isTrue()))
+            .fetch()
+            .stream()
+            .toList();
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public JPAQuery<Tuple> fetchFilteredPoolMembers(PoolMemberFilterRequestQuery search, String owner) {
         JPAQueryFactory queryFactory = getQueryFactory();
@@ -251,9 +267,9 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             partialQuery.where(getCheckedInBoolean());
         }
         if (null != search.getNextDue()) {
-            if (search.getNextDue()) {
+            if (search.getNextDue().size() != 2 && "set".equals(search.getNextDue().get(0))) {
                 partialQuery.where(QJurorPool.jurorPool.nextDate.isNotNull());
-            } else {
+            } else if (search.getNextDue().size() != 2 && "notSet".equals(search.getNextDue().get(0))) {
                 partialQuery.where(QJurorPool.jurorPool.nextDate.isNull());
             }
         }

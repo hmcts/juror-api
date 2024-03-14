@@ -9,5 +9,7 @@ public interface ITrialRepository {
     List<Trial> getListOfTrialsForCourtLocations(List<String> locCode, boolean isActiveFilter,
                                                  String trialNumber, Pageable pageable);
 
+    List<Trial> getListOfActiveTrials(String locCode);
+
     Long getTotalTrialsForCourtLocations(List<String> locCode, boolean isActiveFilter);
 }

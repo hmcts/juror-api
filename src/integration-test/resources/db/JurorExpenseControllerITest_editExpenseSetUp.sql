@@ -10,9 +10,9 @@ SELECT setval('juror_mod.rev_info_seq', 5, true);
 
 SELECT setval('juror_mod.appearance_f_audit_seq', 1, true);
 
-INSERT INTO juror_mod.users (owner, username, name, level, active, team_id, version, password)
-VALUES ('415', 'COURT_USER', 'Court User', 0, true, 1, 1, '5baa61e4c9b93f3f'),
-       ('400', 'BUREAU_USER', 'Bureau User', 1, true, 1, 1, '5baa61e4c9b93f3f');
+INSERT INTO juror_mod.users (owner, username,email, name, active, team_id, version)
+VALUES ('415', 'COURT_USER','COURT_USER@email.gov.uk', 'Court User', true, 1, 1),
+       ('400', 'BUREAU_USER','BUREAU_USER@email.gov.uk', 'Bureau User', true, 1, 1);
 INSERT INTO juror_mod.court_location_audit (revision, rev_type, loc_code, public_transport_soft_limit, taxi_soft_limit)
 VALUES (0, 2, '415', 0.1, 0.2);
 
@@ -51,13 +51,13 @@ values ('415', '641500020', '415230101', 2, '415', true),
 
 
 
-INSERT INTO juror_mod.users (owner, username, name, level, active, team_id, version, password)
-VALUES ('415', 'smcintyre', 'Stephanie Mcintyre', 0, true, 1, 1, '5baa61e4c9b93f3f'),
-       ('415', 'sbell', 'Sandra Bell', 0, true, 2, 1, '5baa61e4c9b93f3f'),
-       ('415', 'alineweaver', 'Albert Lineweaver', 0, true, 3, 1, '5baa61e4c9b93f3f'),
-       ('416', 'jbrown1', 'Jared Brown', 1, true, 1, 1, '5baa61e4c9b93f3f'),
-       ('417', 'jwilliams', 'Jeremy Williams', 1, true, 2, 1, '5baa61e4c9b93f3f'),
-       ('418', 'jbrown', 'John Brown', 1, true, 3, 1, '5baa61e4c9b93f3f');
+INSERT INTO juror_mod.users (owner, username,email, name, active, team_id, version)
+VALUES ('415', 'smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre', true, 1, 1),
+       ('415', 'sbell','sbell@email.gov.uk', 'Sandra Bell', true, 2, 1),
+       ('415', 'alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3, 1),
+       ('416', 'jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1, 1),
+       ('417', 'jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2, 1),
+       ('418', 'jbrown','jbrown@email.gov.uk', 'John Brown', true, 3, 1);
 
 --Approved edited
 

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
 import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,30 +9,32 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalCodeDto;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeEntity;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHist;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHistRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.THistoryCode;
 import uk.gov.hmcts.juror.api.bureau.exception.ExcusalException;
 import uk.gov.hmcts.juror.api.juror.domain.ExcusalDeniedLetter;
 import uk.gov.hmcts.juror.api.juror.domain.ExcusalDeniedLetterRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ExcusalLetter;
 import uk.gov.hmcts.juror.api.juror.domain.ExcusalLetterRepository;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,12 +43,15 @@ import java.util.List;
 @SuppressWarnings("Duplicates")
 @Slf4j
 @Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ResponseExcusalServiceImpl implements ResponseExcusalService {
 
-    private final JurorResponseRepository responseRepository;
-    private final JurorResponseAuditRepository jurorResponseAuditRepository;
-    private final PoolRepository detailsRepository;
-    private final PartHistRepository historyRepository;
+    private final JurorDigitalResponseRepositoryMod responseRepository;
+
+    private final JurorStatusRepository jurorStatusRepository;
+    private final JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
+    private final JurorPoolRepository detailsRepository;
+    private final JurorHistoryRepository historyRepository;
     private final ExcusalCodeRepository excusalCodeRepository;
     private final ExcusalLetterRepository excusalLetterRepository;
     private final ExcusalDeniedLetterRepository excusalDeniedLetterRepository;
@@ -53,38 +59,6 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
     private final EntityManager entityManager;
     private final AssignOnUpdateService assignOnUpdateService;
 
-    @Autowired
-    public ResponseExcusalServiceImpl(final JurorResponseRepository responseRepository,
-                                      final JurorResponseAuditRepository jurorResponseAuditRepository,
-                                      final PoolRepository detailsRepository,
-                                      final PartHistRepository historyRepository,
-                                      final ExcusalCodeRepository excusalCodeRepository,
-                                      final ExcusalLetterRepository excusalLetterRepository,
-                                      final ExcusalDeniedLetterRepository excusalDeniedLetterRepository,
-                                      final ResponseMergeService mergeService,
-                                      final EntityManager entityManager,
-                                      final AssignOnUpdateService assignOnUpdateService) {
-        Assert.notNull(responseRepository, "JurorResponseRepository cannot be null");
-        Assert.notNull(jurorResponseAuditRepository, "JurorResponseAuditRepository cannot be null");
-        Assert.notNull(detailsRepository, "PoolDetailsRepository cannot be null");
-        Assert.notNull(historyRepository, "RetrieveHistoryRepository cannot be null");
-        Assert.notNull(excusalCodeRepository, "ExcusalCodeRepository cannot be null");
-        Assert.notNull(excusalLetterRepository, "ExcusalLetterRepository cannot be null");
-        Assert.notNull(excusalDeniedLetterRepository, "ExcusalDeniedLetterRepository cannot be null");
-        Assert.notNull(mergeService, "ResponseMergeService cannot be null");
-        Assert.notNull(entityManager, "EntityManager cannot be null");
-        Assert.notNull(assignOnUpdateService, "AssignOnUpdateService cannot be null");
-        this.responseRepository = responseRepository;
-        this.jurorResponseAuditRepository = jurorResponseAuditRepository;
-        this.detailsRepository = detailsRepository;
-        this.historyRepository = historyRepository;
-        this.excusalCodeRepository = excusalCodeRepository;
-        this.excusalLetterRepository = excusalLetterRepository;
-        this.excusalDeniedLetterRepository = excusalDeniedLetterRepository;
-        this.mergeService = mergeService;
-        this.entityManager = entityManager;
-        this.assignOnUpdateService = assignOnUpdateService;
-    }
 
     @Override
     public List<ExcusalCodeDto> getExcusalReasons() throws ExcusalException.UnableToRetrieveExcusalCodeList {
@@ -109,7 +83,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
 
         log.debug("Begin processing manual excusal of juror.");
         try {
-            final JurorResponse savedResponse = responseRepository.findByJurorNumber(jurorId);
+            final DigitalResponse savedResponse = responseRepository.findByJurorNumber(jurorId);
             if (savedResponse == null) {
                 throw new ExcusalException.JurorNotFound(jurorId);
             }
@@ -151,7 +125,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
             }
 
             //audit response status change
-            jurorResponseAuditRepository.save(JurorResponseAudit.builder()
+            jurorResponseAuditRepository.save(JurorResponseAuditMod.builder()
                 .jurorNumber(jurorId)
                 .login(login)
                 .oldProcessingStatus(oldProcessingStatus)
@@ -159,24 +133,25 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
                 .build());
 
             // update juror pool entry
-            Pool poolDetails = detailsRepository.findByJurorNumber(savedResponse.getJurorNumber());
-            poolDetails.setResponded(Pool.RESPONDED);
-            poolDetails.setExcusalDate(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
-            poolDetails.setExcusalCode(excusalCodeDto.getExcusalCode());
+            JurorPool poolDetails = detailsRepository.findByJurorJurorNumber(savedResponse.getJurorNumber());
+            poolDetails.getJuror().setResponded(true);
+            poolDetails.getJuror().setExcusalDate(LocalDate.now());
+            poolDetails.getJuror().setExcusalCode(excusalCodeDto.getExcusalCode());
             poolDetails.setUserEdtq(login);
-            poolDetails.setStatus(IPoolStatus.EXCUSED);
-            poolDetails.setHearingDate(null);
+            poolDetails.setStatus(
+                RepositoryUtils.retrieveFromDatabase(IJurorStatus.EXCUSED, jurorStatusRepository));
+            poolDetails.setNextDate(null);
             detailsRepository.save(poolDetails);
 
             // audit pool
-            PartHist history = new PartHist();
-            history.setOwner("400");
+            JurorHistory history = new JurorHistory();
+            //  history.setOwner("400");
             history.setJurorNumber(jurorId);
-            history.setDatePart(Date.from(Instant.now()));
-            history.setHistoryCode(THistoryCode.EXCUSE_POOL_MEMBER);
-            history.setUserId(login);
+            history.setOtherInformationDate(LocalDate.now());
+            history.setHistoryCode(HistoryCodeMod.EXCUSE_POOL_MEMBER);
+            history.setCreatedBy(login);
             history.setPoolNumber(poolDetails.getPoolNumber());
-            history.setInfo("Add Excuse - " + excusalCodeDto.getExcusalCode());
+            history.setOtherInformation("Add Excuse - " + excusalCodeDto.getExcusalCode());
             historyRepository.save(history);
 
             if (!ExcusalCode.DECEASED.equalsIgnoreCase(excusalCodeDto.getExcusalCode())) {
@@ -213,7 +188,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
             jurorId, excusalCodeDto.getExcusalCode(), login
         );
         try {
-            final JurorResponse savedResponse = responseRepository.findByJurorNumber(jurorId);
+            final DigitalResponse savedResponse = responseRepository.findByJurorNumber(jurorId);
             if (savedResponse == null) {
                 throw new ExcusalException.JurorNotFound(jurorId);
             }
@@ -255,7 +230,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
             }
 
             //audit response status change
-            jurorResponseAuditRepository.save(JurorResponseAudit.builder()
+            jurorResponseAuditRepository.save(JurorResponseAuditMod.builder()
                 .jurorNumber(jurorId)
                 .login(login)
                 .oldProcessingStatus(oldProcessingStatus)
@@ -263,29 +238,34 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
                 .build());
 
             // update juror pool entry
-            Pool poolDetails = detailsRepository.findByJurorNumber(savedResponse.getJurorNumber());
-            poolDetails.setResponded(Pool.RESPONDED);
-            poolDetails.setExcusalDate(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
-            poolDetails.setExcusalCode(excusalCodeDto.getExcusalCode());
+            JurorPool poolDetails = detailsRepository.findByJurorJurorNumber(savedResponse.getJurorNumber());
+            poolDetails.getJuror().setResponded(true);
+            poolDetails.getJuror().setExcusalDate(LocalDate.now());
+            poolDetails.getJuror().setExcusalCode(excusalCodeDto.getExcusalCode());
             poolDetails.setUserEdtq(login);
-            poolDetails.setExcusalRejected("Y");
-            poolDetails.setStatus(IPoolStatus.RESPONDED);
+            poolDetails.getJuror().setExcusalRejected("Y");
+            poolDetails.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));
             detailsRepository.save(poolDetails);
 
             // audit pool
-            PartHist history = new PartHist();
-            history.setOwner("400");
+            JurorHistory history = new JurorHistory();
+            //  history.setOwner("400");
             history.setJurorNumber(jurorId);
-            history.setDatePart(Date.from(Instant.now()));
-            history.setHistoryCode(THistoryCode.EXCUSE_POOL_MEMBER);
-            history.setUserId(login);
+            history.setOtherInformationDate(LocalDate.now());
+            history.setHistoryCode(HistoryCodeMod.EXCUSE_POOL_MEMBER);
+            history.setCreatedBy(login);
             history.setPoolNumber(poolDetails.getPoolNumber());
-            history.setInfo("Refuse Excuse");
+            history.setOtherInformation("Refuse Excuse");
             historyRepository.save(history);
-
+            history = new JurorHistory();
+            //  history.setOwner("400");
+            history.setJurorNumber(jurorId);
+            history.setOtherInformationDate(LocalDate.now());
+            history.setCreatedBy(login);
+            history.setPoolNumber(poolDetails.getPoolNumber());
             // denied excusals require a second entry into the audit table
-            history.setHistoryCode(THistoryCode.RESPONDED);
-            history.setInfo(PartHist.RESPONDED);
+            history.setHistoryCode(HistoryCodeMod.RESPONDED_POSITIVELY);
+            history.setOtherInformation(JurorHistory.RESPONDED);
             historyRepository.save(history);
 
             ExcusalDeniedLetter excusalDeniedLetter = new ExcusalDeniedLetter();

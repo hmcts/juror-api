@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.domain.jurorresponse;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -11,6 +12,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import uk.gov.hmcts.juror.api.moj.validation.DigitalThirdPartyOtherReason;
 
@@ -26,6 +28,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @DigitalThirdPartyOtherReason
 @Table(name = "juror_response", schema = "juror_mod")
 @EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 public class DigitalResponse extends AbstractJurorResponse {
 
     @Column(name = "residency")
@@ -103,6 +106,13 @@ public class DigitalResponse extends AbstractJurorResponse {
 
     @Column(name = "staff_assignment_date")
     private LocalDate staffAssignmentDate;
+
+
+    /**
+     * @implNote Holder for switching fields during a merge operation.
+     */
+    @Transient
+    private String workPhone;
 
     public DigitalResponse() {
         super();

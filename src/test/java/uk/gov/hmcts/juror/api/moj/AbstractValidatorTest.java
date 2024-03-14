@@ -220,17 +220,13 @@ public abstract class AbstractValidatorTest<T> {
                     }));
         }
 
-        protected void addNotRequiredTest(V validValue, FieldTestSupport fieldTestSupport) {
+        protected void addNotRequiredTest(FieldTestSupport fieldTestSupport) {
             tests.add(
-                DynamicTest.dynamicTest(fieldName + " should be required" + getTestSuffix(fieldTestSupport), () -> {
+                DynamicTest.dynamicTest(fieldName + " should be optional" + getTestSuffix(fieldTestSupport), () -> {
                     T dto = createValidObject();
-                    setField(dto, validValue);
+                    setField(dto, null);
                     assertExpectNoViolations(dto, getGroups(fieldTestSupport));
                 }));
-        }
-
-        protected void addNotRequiredTest(V validValue) {
-            addNotRequiredTest(validValue, null);
         }
 
         protected void addAllowNotNullTest(V validValue, FieldTestSupport fieldTestSupport) {
@@ -481,7 +477,7 @@ public abstract class AbstractValidatorTest<T> {
                 }));
         }
 
-        protected void addAllowBlankTest(String validValue) {
+        protected void addAllowBlankTest() {
             tests.add(
                 DynamicTest.dynamicTest(fieldName + " should allow blank values",
                     () -> {
@@ -489,7 +485,7 @@ public abstract class AbstractValidatorTest<T> {
                         setField(dto, "");
                         assertExpectNoViolations(dto);
                     }));
-            addNotRequiredTest(validValue);
+            addNotRequiredTest(null);
         }
 
         protected void addNotBlankTest(FieldTestSupport fieldTestSupport) {

@@ -7,17 +7,18 @@ import org.springframework.util.Assert;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauBacklogCountData;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
 @Slf4j
 @Service
 public class BureauBacklogCountServiceImpl implements BureauBacklogCountService {
 
-    private final JurorResponseRepository jurorResponseRepository;
+    private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
 
     @Autowired
     public BureauBacklogCountServiceImpl(
-        final JurorResponseRepository jurorResponseRepository) {
+        final JurorDigitalResponseRepositoryMod jurorResponseRepository) {
         Assert.notNull(jurorResponseRepository, "JurorResponseRepository cannot be null");
         this.jurorResponseRepository = jurorResponseRepository;
     }

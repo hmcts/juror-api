@@ -12,9 +12,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
+import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
+import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -23,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactEnquiryTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -37,10 +40,13 @@ import java.util.Optional;
 import java.util.Set;
 
 @RunWith(SpringRunner.class)
+@SuppressWarnings("PMD.LawOfDemeter")
 public class JurorAuditChangeServiceTest {
 
     @Mock
     JurorHistoryRepository jurorHistoryRepository;
+    @Mock
+    ContactCodeRepository contactCodeRepository;
     @Mock
     ContactLogRepository contactLogRepository;
     @Mock
@@ -654,6 +660,11 @@ public class JurorAuditChangeServiceTest {
         Mockito.doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(juror.getJurorNumber(), true);
 
+        ContactCode contactCode = new ContactCode(
+            IContactCode.CHANGE_OF_NAME.getCode(),
+            IContactCode.CHANGE_OF_NAME.getDescription());
+        Mockito.when(contactCodeRepository.findById(
+            IContactCode.CHANGE_OF_NAME.getCode())).thenReturn(Optional.of(contactCode));
 
         jurorAuditChangeService.recordContactLog(juror, username, enquiryCode, notes);
 
@@ -662,7 +673,7 @@ public class JurorAuditChangeServiceTest {
         ContactLog contactLog = contactLogArgumentCaptor.getValue();
 
         Assertions.assertThat(contactLog.getJurorNumber()).isEqualTo(jurorPool.getJurorNumber());
-        Assertions.assertThat(contactLog.getEnquiryType()).isEqualTo(contactEnquiryType);
+        Assertions.assertThat(contactLog.getEnquiryType()).isEqualTo(contactCode);
         Assertions.assertThat(contactLog.getNotes()).isEqualTo(notes);
         Assertions.assertThat(contactLog.getUsername()).isEqualTo(username);
     }

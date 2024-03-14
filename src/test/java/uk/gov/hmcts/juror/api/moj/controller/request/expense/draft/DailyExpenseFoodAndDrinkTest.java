@@ -35,7 +35,7 @@ public class DailyExpenseFoodAndDrinkTest extends AbstractValidatorTest<DailyExp
     class SmartCardAmountTest extends AbstractValidationFieldTestBigDecimal {
         protected SmartCardAmountTest() {
             super("smartCardAmount", DailyExpenseFoodAndDrink::setSmartCardAmount);
-            addNotRequiredTest(BigDecimal.ONE);
+            addNotRequiredTest(null);
             addMin(BigDecimal.ZERO, null);
         }
     }

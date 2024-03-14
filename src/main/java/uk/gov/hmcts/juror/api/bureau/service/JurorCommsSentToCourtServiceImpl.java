@@ -11,9 +11,10 @@ import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolQueries;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolQueries;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -31,25 +32,25 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
     private static final Integer EMAIL_NOTIFICATION_SENT = 8;
     private static final Integer SEND_EMAIL_OR_SMS = 1;
     private final JurorCommsNotificationService jurorCommsNotificationService;
-    private final PoolRepository poolRepository;
+    private final JurorPoolRepository jurorRepository;
     private final AppSettingService appSetting;
 
     @Autowired
     public JurorCommsSentToCourtServiceImpl(
         final JurorCommsNotificationService jurorCommsNotificationService,
         final AppSettingService appSetting,
-        final PoolRepository poolRepository) {
+        final JurorPoolRepository jurorRepository) {
         Assert.notNull(jurorCommsNotificationService, "JurorCommsNotificationService cannot be null.");
-        Assert.notNull(poolRepository, "PoolRepository cannot be null.");
+        Assert.notNull(jurorRepository, "JurorRepository cannot be null.");
         Assert.notNull(appSetting, "AppSettingService cannot be null.");
         this.jurorCommsNotificationService = jurorCommsNotificationService;
         this.appSetting = appSetting;
-        this.poolRepository = poolRepository;
+        this.jurorRepository = jurorRepository;
     }
 
     /**
      * Implements a specific job execution.
-     * Processes entries in the Juror.pool table and sends the appropriate email notifications to
+     * Processes entries in the Juror table and sends the appropriate email notifications to
      * the juror for juror where they have been transferred to court.
      */
     @Override
@@ -59,33 +60,33 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
         SimpleDateFormat dateFormat = new SimpleDateFormat();
         log.info("Sent To Court Comms Processing : Started - {}", dateFormat.format(new Date()));
 
-        BooleanExpression sentToCourtFilter = PoolQueries.awaitingSentToCourtComms();
+        BooleanExpression sentToCourtFilter = JurorPoolQueries.awaitingSentToCourtComms();
 
-        final List<Pool> pooldetailList = Lists.newLinkedList(poolRepository.findAll(sentToCourtFilter));
+        final List<JurorPool> jurordetailList = Lists.newLinkedList(jurorRepository.findAll(sentToCourtFilter));
 
-        log.debug("pooldetailList {}", pooldetailList.size());
+        log.debug("pooldetailList {}", jurordetailList.size());
 
         Integer notificationsSent;
-        for (Pool poolDetail : pooldetailList) {
+        for (JurorPool jurorDetail : jurordetailList) {
 
-            notificationsSent = poolDetail.getNotifications();
-            log.trace("Sent To Court Comms Service :  jurorNumber {}", poolDetail.getJurorNumber());
+            notificationsSent = jurorDetail.getJuror().getNotifications();
+            log.trace("Sent To Court Comms Service :  jurorNumber {}", jurorDetail.getJurorNumber());
             try {
                 //Email
-                if (poolDetail.getEmail() != null && !notificationsSent.equals(EMAIL_NOTIFICATION_SENT)) {
-                    jurorCommsNotificationService.sendJurorComms(poolDetail, JurorCommsNotifyTemplateType.SENT_TO_COURT,
+                if (jurorDetail.getJuror().getEmail() != null && !notificationsSent.equals(EMAIL_NOTIFICATION_SENT)) {
+                    jurorCommsNotificationService.sendJurorComms(jurorDetail, JurorCommsNotifyTemplateType.SENT_TO_COURT,
                         null, null, false
                     );
                     notificationsSent = EMAIL_NOTIFICATION_SENT;
                 }
 
                 //Send SMS only if there has not been an email sent
-                if (poolDetail.getAltPhoneNumber() != null && !notificationsSent.equals(EMAIL_NOTIFICATION_SENT)
+                if (jurorDetail.getJuror().getAltPhoneNumber() != null && !notificationsSent.equals(EMAIL_NOTIFICATION_SENT)
                     && appSetting.getSendEmailOrSms() == SEND_EMAIL_OR_SMS) {
 
 
                     jurorCommsNotificationService.sendJurorCommsSms(
-                        poolDetail,
+                        jurorDetail,
                         JurorCommsNotifyTemplateType.SENT_TO_COURT,
                         null,
                         null,
@@ -94,11 +95,11 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                 }
 
                 // Send SMS
-                if (poolDetail.getAltPhoneNumber() != null && appSetting.getSendEmailOrSms() != SEND_EMAIL_OR_SMS) {
+                if (jurorDetail.getJuror().getAltPhoneNumber() != null && appSetting.getSendEmailOrSms() != SEND_EMAIL_OR_SMS) {
 
 
                     jurorCommsNotificationService.sendJurorCommsSms(
-                        poolDetail,
+                        jurorDetail,
                         JurorCommsNotifyTemplateType.SENT_TO_COURT,
                         null,
                         null,
@@ -108,20 +109,20 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                 }
 
                 //update regardless - stop processing next time.
-                poolDetail.setNotifications(ALL_NOTIFICATION_SENT);
+                jurorDetail.getJuror().setNotifications(ALL_NOTIFICATION_SENT);
                 notificationsSent = ALL_NOTIFICATION_SENT;
-                update(poolDetail);
+                update(jurorDetail);
 
             } catch (JurorCommsNotificationServiceException e) {
                 log.error(
                     "Unable to send sent to court comms for {} : {} {}",
-                    poolDetail.getJurorNumber(),
+                    jurorDetail.getJurorNumber(),
                     e.getMessage(),
                     e.getCause().toString()
                 );
                 if (notificationsSent.equals(EMAIL_NOTIFICATION_SENT)) {
-                    poolDetail.setNotifications(notificationsSent);
-                    update(poolDetail);
+                    jurorDetail.getJuror().setNotifications(notificationsSent);
+                    update(jurorDetail);
                 }
             } catch (Exception e) {
                 log.error("Sent To Court Comms Processing : Juror Comms failed : {}", e.getMessage());
@@ -131,26 +132,27 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
     }
 
     /***
-     * Updates pool notification.
-     * @param poolDetails
+     * Updates juror notification.
+     * @param jurorDetails
      */
-    private void update(Pool poolDetails) {
+    private void update(JurorPool jurorDetails) {
         try {
             log.trace("Inside update .....");
-            poolRepository.save(poolDetails);
-            log.trace("Updating pool notification as sent ({})... ", poolDetails.getNotifications());
+            jurorRepository.save(jurorDetails);
+            log.trace("Updating Juror notification as sent ({})... ", jurorDetails.getJuror().getNotifications());
         } catch (TransactionSystemException e) {
             Throwable cause = e.getRootCause();
-            if (poolDetails.getNotifications().equals(EMAIL_NOTIFICATION_SENT)) {
-                log.trace("notifications is : {} - logging error", poolDetails.getNotifications());
-                log.error("Failed to update db to {}. Manual update required. {}", poolDetails.getNotifications(),
+          // if (poolDetails.getNotifications().equals(EMAIL_NOTIFICATION_SENT)) {
+            if (jurorDetails.getJuror().getNotifications()==(EMAIL_NOTIFICATION_SENT)) {
+                log.trace("notifications is : {} - logging error", jurorDetails.getJuror().getNotifications());
+                log.error("Failed to update db to {}. Manual update required. {}", jurorDetails.getJuror().getNotifications(),
                     cause.toString()
                 );
             } else {
-                log.trace("notifications is : {} - throwing excep", poolDetails.getNotifications());
+                log.trace("notifications is : {} - throwing excep", jurorDetails.getJuror().getNotifications());
                 throw new JurorCommsNotificationServiceException(
                     "Failed to update db to "
-                        + poolDetails.getNotifications() + ". Manual update required. ",
+                        + jurorDetails.getJuror().getNotifications() + ". Manual update required. ",
                     cause
                 );
             }

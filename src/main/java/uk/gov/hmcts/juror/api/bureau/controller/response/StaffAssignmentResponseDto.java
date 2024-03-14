@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -29,5 +30,5 @@ public class StaffAssignmentResponseDto implements Serializable {
     private String assignedTo;
 
     @Schema(description = "Assignment date")
-    private Date assignmentDate;
+    private LocalDate assignmentDate;
 }

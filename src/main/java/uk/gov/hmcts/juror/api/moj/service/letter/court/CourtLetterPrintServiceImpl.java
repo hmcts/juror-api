@@ -10,19 +10,24 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.QWelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CertificateOfExemptionRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.PrintLettersRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDataResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.SystemParameterRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.letter.CourtPrintLetterRepository;
+import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -33,8 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.CERTIFICATE_OF_EXEMPTION;
 import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.DEFERRAL_GRANTED;
-import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.SHOW_CAUSE;
 
 @Service
 @Slf4j
@@ -56,12 +61,15 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
     @NonNull
     private final CourtPrintLetterRepository courtPrintLetterRepository;
 
+
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
     private static final QWelshCourtLocation WELSH_COURT_LOCATION = QWelshCourtLocation.welshCourtLocation;
     private static final QCourtLocation COURT_LOCATION = QCourtLocation.courtLocation;
     private static final QJuror JUROR = QJuror.juror;
     private static final QAppearance APPEARANCE = QAppearance.appearance;
+
+    private static final QTrial TRIAL = QTrial.trial;
 
     //System parameter setting for english and welsh url's
     private static final int ENGLISH_URL_PARAM = 102;
@@ -71,13 +79,10 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
     private static final String NEW_LINE = "\n";
 
 
-    // todo- remove suppression once more letter types are implemented
-    @SuppressWarnings("PMD.TooFewBranchesForASwitchStatement")
     @Override
     public List<PrintLetterDataResponseDto> getPrintLettersData(PrintLettersRequestDto printLettersRequestDto,
                                                                 String login) {
 
-        //TODO need to look at fta and no show dates at a later point.
         List<PrintLetterDataResponseDto> letters = new ArrayList<>();
 
         // de-duplicate list of juror numbers, so we only print one letter per juror
@@ -88,13 +93,29 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
                 .toList();
 
         String owner = SecurityUtil.getActiveOwner();
-
         for (String jurorNumber : jurorNumbers) {
 
+            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+            if (juror == null) {
+                log.error("Cannot find juror number " + jurorNumber);
+                throw new MojException.NotFound("Cannot find juror number: " + jurorNumber, null);
+            }
+
+            JurorUtils.checkOwnershipForCurrentUser(juror, owner);
+
             // retrieve print information
-            boolean welsh = BooleanUtils.toBoolean(jurorRepository.findByJurorNumber(jurorNumber).getWelsh());
-            Tuple data = courtPrintLetterRepository.retrievePrintInformation(jurorNumber,
-                printLettersRequestDto.getLetterType(), welsh, owner);
+            boolean welsh = BooleanUtils.toBoolean(juror.getWelsh());
+            Tuple data;
+            if (printLettersRequestDto.getLetterType().equals(CERTIFICATE_OF_EXEMPTION)) {
+                CertificateOfExemptionRequestDto exemptionRequestDto =
+                    (CertificateOfExemptionRequestDto) printLettersRequestDto;
+                data = courtPrintLetterRepository.retrievePrintInformation(jurorNumber,
+                    printLettersRequestDto.getLetterType(), welsh, owner,
+                    exemptionRequestDto.getTrialNumber());
+            } else {
+                data = courtPrintLetterRepository.retrievePrintInformation(jurorNumber,
+                    printLettersRequestDto.getLetterType(), welsh, owner);
+            }
 
             if (data == null) {
                 continue;
@@ -104,17 +125,25 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             addHistoryItem(printLettersRequestDto, login, jurorNumber, data);
 
             // create the print letter response
-            boolean welshInformation = welshCourtLocationRepository.existsByLocCode(Objects.requireNonNull(data)
-                .get(COURT_LOCATION.locCode));
+            boolean welshInformation = CourtLocationUtils
+                .isWelshCourtLocation(welshCourtLocationRepository,
+                    Objects.requireNonNull(data).get(COURT_LOCATION.locCode));
 
-            letters.add(createPrintLetterDataResponseDto(data, welshInformation, printLettersRequestDto));
+            PrintLetterDataResponseDto dto;
+            if (!printLettersRequestDto.getLetterType().equals(CERTIFICATE_OF_EXEMPTION)) {
+                dto = createPrintLetterDataResponseDto(data, welshInformation, printLettersRequestDto);
+            } else {
+                CertificateOfExemptionRequestDto exemptionRequestDto =
+                    (CertificateOfExemptionRequestDto) printLettersRequestDto;
+                dto = createPrintLetterDataResponseDto(data, welshInformation, exemptionRequestDto);
+            }
+            letters.add(dto);
         }
-
         return letters;
     }
 
     private void addHistoryItem(PrintLettersRequestDto printLettersRequestDto, String login, String jurorNumber,
-                           Tuple data) {
+                                Tuple data) {
         JurorHistory.JurorHistoryBuilder jurorHistory = JurorHistory.builder()
             .jurorNumber(jurorNumber)
             .dateCreated(LocalDateTime.now())
@@ -165,14 +194,26 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
                 jurorHistory.historyCode(HistoryCodeMod.FAILED_TO_ATTEND_LETTER);
                 jurorHistory.otherInformation(HistoryCodeMod.FAILED_TO_ATTEND_LETTER.getDescription());
             }
+            case CERTIFICATE_OF_EXEMPTION -> {
+                CertificateOfExemptionRequestDto exemptionRequestDto =
+                    (CertificateOfExemptionRequestDto) printLettersRequestDto;
+                jurorHistory.historyCode(HistoryCodeMod.CERTIFICATE_OF_EXEMPTION);
+                jurorHistory.otherInformation("Print Certificate of Exemption");
+                jurorHistory.otherInformationRef(exemptionRequestDto.getExemptionPeriod());
+                jurorHistory.otherInformationDate(LocalDate.now());
+            }
+            case CERTIFICATE_OF_ATTENDANCE -> {
+                jurorHistory.historyCode(HistoryCodeMod.CERTIFICATE_OF_RECOGNITION);
+                jurorHistory.otherInformation("Certificate of Attendance");
+            }
             default -> throw new MojException.NotImplemented("letter type not implemented", null);
         }
 
         JurorHistory history = jurorHistory.build();
-
         jurorHistoryRepository.save(history);
     }
 
+    @SuppressWarnings("checkstyle:WhitespaceAround")
     private PrintLetterDataResponseDto createPrintLetterDataResponseDto(Tuple data, boolean welsh,
                                                                         PrintLettersRequestDto dto) {
         PrintLetterDataResponseDto.PrintLetterDataResponseDtoBuilder builder = PrintLetterDataResponseDto.builder();
@@ -231,7 +272,25 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
                 .postponedToDate(formatDate(Objects.requireNonNull(data.get(JUROR_POOL.deferralDate)), welsh));
             case DEFERRAL_REFUSED, EXCUSAL_REFUSED -> builder.courtManager(formatCourtManager(welsh));
             case EXCUSAL_GRANTED, WITHDRAWAL -> {
-                // do nothing as no additional fields are required
+            } // do nothing as no additional fields are required }
+            case CERTIFICATE_OF_ATTENDANCE -> {
+                builder.lossOfEarnings(data.get(APPEARANCE.lossOfEarningsDue))
+                    .childCare(data.get(APPEARANCE.childcareDue))
+                    .misc(data.get(APPEARANCE.miscAmountDue));
+                Boolean nonAttendance = data.get(APPEARANCE.nonAttendanceDay);
+                if (nonAttendance == null || nonAttendance.equals(false)) {
+                    builder.nonAttendance("Non Attendance");
+                }
+            }
+            case CERTIFICATE_OF_EXEMPTION -> {
+                CertificateOfExemptionRequestDto exemptionRequestDto = (CertificateOfExemptionRequestDto) dto;
+                if (exemptionRequestDto.getJudge() != null) {
+                    builder.judgeName(exemptionRequestDto.getJudge());
+                } else {
+                    builder.judgeName(data.get(TRIAL.judge.description));
+                }
+                builder.periodOfExemption(exemptionRequestDto.getExemptionPeriod());
+                builder.defendant(data.get(TRIAL.description));
             }
             case SHOW_CAUSE -> builder
                 .attendanceDate(formatDate(Objects.requireNonNull(data.get(APPEARANCE.attendanceDate)), welsh))
@@ -243,6 +302,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             default -> throw new MojException.NotImplemented("letter type not implemented",
                 null);
         }
+
         return builder.build();
     }
 

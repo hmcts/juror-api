@@ -43,7 +43,7 @@ public class AdministrationHolidaysController {
     @GetMapping("/bank-holidays")
     @Operation(summary = "View bank holidays")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(SecurityUtil.IS_ADMINISTRATOR + " or " + SecurityUtil.IS_MANAGER)
+    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR + " or " + SecurityUtil.IS_MANAGER)
     public ResponseEntity<Map<Integer, List<HolidayDate>>> viewBankHolidays() {
         return ResponseEntity.ok(administrationHolidaysService.viewBankHolidays());
     }

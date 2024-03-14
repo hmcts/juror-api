@@ -26,9 +26,9 @@ insert into juror_mod.juror_pool (owner, juror_number, pool_number, status, is_a
 values ('415', '641500020', '415230101', 2, true);
 
 
-INSERT INTO juror_mod.users (owner, username, name, level, active, team_id, version, password)
-VALUES ('415', 'COURT_USER', 'Court User', 0, true, 1, 1, '5baa61e4c9b93f3f'),
-       ('400', 'BUREAU_USER', 'Bureau User', 1, true, 1, 1, '5baa61e4c9b93f3f');
+INSERT INTO juror_mod.users (owner, username, email, name, active, team_id, version)
+VALUES ('415', 'COURT_USER', 'COURT_USER@email.gov.uk', 'Court User', true, 1, 1),
+       ('400', 'BUREAU_USER', 'BUREAU_USER@email.gov.uk', 'Bureau User', true, 1, 1);
 
 INSERT INTO juror_mod.appearance
 (version, attendance_date, juror_number, loc_code, time_in, time_out, non_attendance,
@@ -41,12 +41,12 @@ INSERT INTO juror_mod.appearance
 values
 -- expenses for 641500020
 -- 3 Draft
-(1, '2024-01-02', '641500020', '415', '09:30', '16:00', false, '00:40',  true, '415230101',
+(1, '2024-01-02', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
  false, 10, 0, 20, 0, 30, 0, 40, 0, 50, 0, 60, 0, 70, 0, 80, 0, 90, 0, 100, 0, 25, 0, 'FULL_DAY', true,
  null, 'EXPENSE_ENTERED'),
-(1, '2024-01-03', '641500020', '415', '09:30', '16:00', false,  '00:40',  true, '415230101',
+(1, '2024-01-03', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
  true, 11, 0, 21, 0, 31, 0, 41, 0, 51, 0, 61, 0, 71, 0, 81, 0, 91, 0, 101, 0, 26, 0, 'FULL_DAY', true,
  null, 'EXPENSE_ENTERED'),
-(1, '2024-01-04', '641500020', '415', '09:30', '16:00', false, '00:40',  true, '415230101',
+(1, '2024-01-04', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
  false, 12, 0, 22, 0, 32, 0, 42, 0, 52, 0, 62, 0, 72, 0, 82, 0, 92, 0, 102, 0, 27, 0, 'HALF_DAY', true,
  null, 'EXPENSE_ENTERED');

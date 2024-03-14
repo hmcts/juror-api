@@ -1,1 +1,2 @@
-INSERT INTO JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS (ID, JUROR_NUMBER,SPEC_NEED,SPEC_NEED_DETAIL) VALUES (1, '209092530','D','Some Details');
+INSERT INTO juror_mod.juror_reasonable_adjustment (ID, JUROR_NUMBER, reasonable_adjustment, reasonable_adjustment_detail)
+VALUES (1, '209092530', 'D', 'Some Details');

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service.letter;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -41,6 +40,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.juror.api.moj.enumeration.letter.MissingInformation.buildMissingInformationString;
 
+@SuppressWarnings("PMD.ExcessiveImports")
 @RunWith(SpringRunner.class)
 public class RequestInformationLetterServiceTest {
 
@@ -111,7 +111,7 @@ public class RequestInformationLetterServiceTest {
         doReturn(Collections.singletonList(createJurorPool(jurorNumber, owner))).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
 
-        Assertions.assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() -> {
+        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() -> {
             requestInformationLetterService.requestInformation(payload, additionalInformationDto);
         });
 
@@ -221,7 +221,7 @@ public class RequestInformationLetterServiceTest {
         doNothing().when(summonsReplyStatusUpdateService)
             .updateJurorResponseStatus(jurorNumber, ProcessingStatus.AWAITING_CONTACT, payload);
 
-        Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+        assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
             requestInformationLetterService.requestInformation(payload, additionalInformationDto));
 
         verify(summonsReplyStatusUpdateService, never())

@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,7 @@ import static uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries.byAssigne
 public class BureauOfficerAllocatedRepliesServiceImpl implements BureauOfficerAllocatedRepliesService {
 
 
-    private final JurorResponseRepository jurorResponseRepository;
+    private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
     private final BureauBacklogCountService bureauBacklogCountService;
     private final UserRepository userRepository;

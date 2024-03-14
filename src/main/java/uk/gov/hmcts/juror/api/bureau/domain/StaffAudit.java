@@ -82,66 +82,6 @@ public class StaffAudit implements Serializable {
     private Integer active;
 
     /**
-     * Court location staff member covers.
-     */
-    @Column(name = "COURT_1")
-    private String court1;
-
-    /**
-     * Court location staff member covers.
-     */
-    @Column(name = "COURT_2")
-    private String court2;
-
-    /**
-     * Court location staff member covers.
-     */
-    @Column(name = "COURT_3")
-    private String court3;
-
-    /**
-     * Court location staff member covers.
-     */
-    @Column(name = "COURT_4")
-    private String court4;
-
-    /**
-     * Court location staff member covers.
-     */
-    @Column(name = "COURT_5")
-    private String court5;
-
-    /**
-     * Court location staff member covers.
-     */
-    @Column(name = "COURT_6")
-    private String court6;
-
-    /**
-     * Court location staff member covers.
-     */
-    @Column(name = "COURT_7")
-    private String court7;
-
-    /**
-     * Court location staff member covers.
-     */
-    @Column(name = "COURT_8")
-    private String court8;
-
-    /**
-     * Court location staff member covers.
-     */
-    @Column(name = "COURT_9")
-    private String court9;
-
-    /**
-     * Court location staff member covers.
-     */
-    @Column(name = "COURT_10")
-    private String court10;
-
-    /**
      * Team id the staff member belonged to.
      */
     @Column(name = "TEAM_ID")
@@ -181,16 +121,6 @@ public class StaffAudit implements Serializable {
                     .name(audit.getName())
                     .rank(audit.getLevel())
                     .active(audit.isActive() ? 1 : 0)
-                    .court1(audit.getCourtAtIndex(0,null))
-                    .court2(audit.getCourtAtIndex(1,null))
-                    .court3(audit.getCourtAtIndex(2,null))
-                    .court4(audit.getCourtAtIndex(3,null))
-                    .court5(audit.getCourtAtIndex(4,null))
-                    .court6(audit.getCourtAtIndex(5,null))
-                    .court7(audit.getCourtAtIndex(6,null))
-                    .court8(audit.getCourtAtIndex(7,null))
-                    .court9(audit.getCourtAtIndex(8,null))
-                    .court10(audit.getCourtAtIndex(9,null))
                     .team(audit.getTeam() != null
                         ?
                         audit.getTeam().getId()

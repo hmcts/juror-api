@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.validation.ThirdPartyOtherReason;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -41,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static java.time.ZoneId.systemDefault;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REGEX;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REGEX;
@@ -202,7 +204,7 @@ public class JurorResponse implements Serializable {
 
     @DateOfBirth
     @Column(name = "DATE_OF_BIRTH")
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
 
     /**
      * Juror phone number.
@@ -435,32 +437,5 @@ public class JurorResponse implements Serializable {
             throw new IllegalStateException("Juror can only have one special need of type");
         }
 
-    }
-
-    public Date getDateOfBirth() {
-        if (null != this.dateOfBirth && ZonedDateTime.ofInstant(
-            this.dateOfBirth.toInstant(),
-            ZoneId.systemDefault()
-        ).getHour() == 0) {
-            return adjustTimeOnDate(this.dateOfBirth);
-        }
-        return dateOfBirth;
-    }
-
-    @PrePersist
-    @PreUpdate
-    private void prePersist() {
-        // Process new Date of Birth to avoid what looks like a jackson bug, see JDB-2791
-        this.dateOfBirth = adjustTimeOnDate(this.dateOfBirth);
-    }
-
-    public static Date adjustTimeOnDate(Date date) {
-        if (null == date) {
-            return null;
-        }
-        return Date.from(ZonedDateTime.ofInstant(
-            date.toInstant().plus(6, ChronoUnit.HOURS),
-            ZoneId.systemDefault()
-        ).with(LocalTime.of(6, 0)).toInstant());
     }
 }

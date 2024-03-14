@@ -122,7 +122,7 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.doReturn(null).when(jurorResponseCjsRepository).save(any());
         Mockito.doReturn(null).when(jurorReasonableAdjustmentsRepository).save(any());
         Mockito.doReturn(
-                User.builder().username("SOME_USER").name("Test User").level(99).active(true).build())
+                User.builder().username("SOME_USER").name("Test User").active(true).build())
             .when(userRepository).save(any());
 
         Mockito.when(poolRequestRepository.findByPoolNumber(any()))
@@ -1463,7 +1463,7 @@ public class JurorPaperResponseServiceImplTest {
     private PaperResponse createTestJurorResponse(String jurorNumber) {
         PaperResponse response = Mockito.spy(new PaperResponse());
         response.setJurorNumber(jurorNumber);
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
 
         response.setFirstName("FName");
         response.setLastName("LName");
@@ -1512,7 +1512,8 @@ public class JurorPaperResponseServiceImplTest {
     private void verifyPaperResponseIsCopiedToDto(PaperResponse jurorPaperResponse,
                                                   JurorPaperResponseDetailDto responseDto) {
         Assertions.assertThat(responseDto.getJurorNumber()).isEqualTo(jurorPaperResponse.getJurorNumber());
-        Assertions.assertThat(responseDto.getDateReceived()).isEqualTo(jurorPaperResponse.getDateReceived());
+        Assertions.assertThat(responseDto.getDateReceived())
+            .isEqualTo(jurorPaperResponse.getDateReceived().toLocalDate());
 
         Assertions.assertThat(responseDto.getFirstName()).isEqualTo(jurorPaperResponse.getFirstName());
         Assertions.assertThat(responseDto.getLastName()).isEqualTo(jurorPaperResponse.getLastName());

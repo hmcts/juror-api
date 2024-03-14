@@ -65,6 +65,7 @@ class IReissueLetterRepositoryImplTest {
         when(queryFactory.selectDistinct(any(Expression[].class))).thenReturn(jpaQuery);
         when(jpaQuery.from(any(EntityPath.class))).thenReturn(jpaQuery);
         when(jpaQuery.join(any(EntityPath.class))).thenReturn(jpaQuery);
+        when(jpaQuery.leftJoin(any(EntityPath.class))).thenReturn(jpaQuery);
         when(jpaQuery.on(any(Predicate.class))).thenReturn(jpaQuery);
         when(jpaQuery.where(any(Predicate.class))).thenReturn(jpaQuery);
         when(jpaQuery.limit(anyLong())).thenReturn(jpaQuery);
@@ -103,13 +104,17 @@ class IReissueLetterRepositoryImplTest {
                 BULK_PRINT_DATA.extractedFlag.as("extracted_flag"),
                 BULK_PRINT_DATA.formAttribute.formType.as("form_code")
             );
+
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
         verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
-        verify(jpaQuery, times(1)).join(BULK_PRINT_DATA);
+        verify(jpaQuery, times(0)).join(BULK_PRINT_DATA);
+        verify(jpaQuery, times(1)).leftJoin(BULK_PRINT_DATA);
         verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo));
-        verify(jpaQuery, times(1)).where(BULK_PRINT_DATA.formAttribute.formType.in(List.of("5226", "5226C")));
-        verify(jpaQuery, times(1)).where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED));
+        verify(jpaQuery, times(1))
+            .where(BULK_PRINT_DATA.formAttribute.formType.in(List.of("5226", "5226C")));
+        verify(jpaQuery, times(1))
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED));
         verify(jpaQuery, times(1)).where(QJuror.juror.excusalRejected.eq("Y"));
         verify(jpaQuery, times(1)).where(JUROR.jurorNumber.eq(JUROR_NUMBER));
         verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.eq(true));
@@ -117,7 +122,6 @@ class IReissueLetterRepositoryImplTest {
         verify(jpaQuery, times(1)).orderBy(BULK_PRINT_DATA.creationDate.desc());
         verify(jpaQuery, times(1)).orderBy(JUROR.jurorNumber.asc());
         verify(jpaQuery, times(1)).fetch();
-
     }
 
     @Test
@@ -127,6 +131,7 @@ class IReissueLetterRepositoryImplTest {
         when(queryFactory.selectDistinct(any(Expression[].class))).thenReturn(jpaQuery);
         when(jpaQuery.from(any(EntityPath.class))).thenReturn(jpaQuery);
         when(jpaQuery.join(any(EntityPath.class))).thenReturn(jpaQuery);
+        when(jpaQuery.leftJoin(any(EntityPath.class))).thenReturn(jpaQuery);
         when(jpaQuery.on(any(Predicate.class))).thenReturn(jpaQuery);
         when(jpaQuery.where(any(Predicate.class))).thenReturn(jpaQuery);
         when(jpaQuery.limit(anyLong())).thenReturn(jpaQuery);
@@ -166,14 +171,20 @@ class IReissueLetterRepositoryImplTest {
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
         verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
-        verify(jpaQuery, times(1)).join(BULK_PRINT_DATA);
+        verify(jpaQuery, times(0)).join(BULK_PRINT_DATA);
+        verify(jpaQuery, times(1)).leftJoin(BULK_PRINT_DATA);
         verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo));
         verify(jpaQuery, times(1)).join(QJurorHistory.jurorHistory);
-        verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(QJurorHistory.jurorHistory.jurorNumber));
-        verify(jpaQuery, times(1)).where(QJurorHistory.jurorHistory.poolNumber.eq(JUROR_POOL.pool.poolNumber));
-        verify(jpaQuery, times(1)).where(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.NON_DEFERRED_LETTER));
-        verify(jpaQuery, times(1)).where(BULK_PRINT_DATA.formAttribute.formType.in(List.of("5226A", "5226AC")));
-        verify(jpaQuery, times(1)).where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED));
+        verify(jpaQuery, times(1))
+            .on(JUROR.jurorNumber.eq(QJurorHistory.jurorHistory.jurorNumber));
+        verify(jpaQuery, times(1))
+            .where(QJurorHistory.jurorHistory.poolNumber.eq(JUROR_POOL.pool.poolNumber));
+        verify(jpaQuery, times(1))
+            .where(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.NON_DEFERRED_LETTER));
+        verify(jpaQuery, times(1))
+            .where(BULK_PRINT_DATA.formAttribute.formType.in(List.of("5226A", "5226AC")));
+        verify(jpaQuery, times(1))
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED));
         verify(jpaQuery, times(1)).where(JUROR_POOL.pool.poolNumber.eq(request.getPoolNumber()));
         verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.eq(true));
         verify(jpaQuery, times(1)).where(JUROR_POOL.owner.eq(SecurityUtil.BUREAU_OWNER));
@@ -272,6 +283,7 @@ class IReissueLetterRepositoryImplTest {
         when(queryFactory.selectDistinct(any(Expression[].class))).thenReturn(jpaQuery);
         when(jpaQuery.from(any(EntityPath.class))).thenReturn(jpaQuery);
         when(jpaQuery.join(any(EntityPath.class))).thenReturn(jpaQuery);
+        when(jpaQuery.leftJoin(any(EntityPath.class))).thenReturn(jpaQuery);
         when(jpaQuery.on(any(Predicate.class))).thenReturn(jpaQuery);
         when(jpaQuery.where(any(Predicate.class))).thenReturn(jpaQuery);
         when(jpaQuery.limit(anyLong())).thenReturn(jpaQuery);
@@ -310,12 +322,16 @@ class IReissueLetterRepositoryImplTest {
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
         verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
-        verify(jpaQuery, times(1)).join(BULK_PRINT_DATA);
-        verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo));
-        verify(jpaQuery, times(1)).where(BULK_PRINT_DATA.formAttribute.formType.in(List.of("5228", "5228C")));
-        verify(jpaQuery, times(1)).where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)
+        verify(jpaQuery, times(0)).join(BULK_PRINT_DATA);
+        verify(jpaQuery, times(1)).leftJoin(BULK_PRINT_DATA);
+        verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo)
+            .and(BULK_PRINT_DATA.formAttribute.formType
+                .in(List.of("5228", "5228C"))));
+        verify(jpaQuery, times(1))
+            .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)
             .and(QJuror.juror.responded.eq(false)));
-        verify(jpaQuery, times(1)).where(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName).toLowerCase()
+        verify(jpaQuery, times(1))
+            .where(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName).toLowerCase()
             .likeIgnoreCase("%john doe%"));
         verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.eq(true));
         verify(jpaQuery, times(1)).where(JUROR_POOL.owner.eq(SecurityUtil.BUREAU_OWNER));
@@ -331,6 +347,7 @@ class IReissueLetterRepositoryImplTest {
         when(queryFactory.selectDistinct(any(Expression[].class))).thenReturn(jpaQuery);
         when(jpaQuery.from(any(EntityPath.class))).thenReturn(jpaQuery);
         when(jpaQuery.join(any(EntityPath.class))).thenReturn(jpaQuery);
+        when(jpaQuery.leftJoin(any(EntityPath.class))).thenReturn(jpaQuery);
         when(jpaQuery.on(any(Predicate.class))).thenReturn(jpaQuery);
         when(jpaQuery.where(any(Predicate.class))).thenReturn(jpaQuery);
         when(jpaQuery.limit(anyLong())).thenReturn(jpaQuery);
@@ -369,10 +386,13 @@ class IReissueLetterRepositoryImplTest {
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
         verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
-        verify(jpaQuery, times(1)).join(BULK_PRINT_DATA);
-        verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo));
-        verify(jpaQuery, times(1)).where(BULK_PRINT_DATA.formAttribute.formType.in(List.of("5228", "5228C")));
-        verify(jpaQuery, times(1)).where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)
+        verify(jpaQuery, times(0)).join(BULK_PRINT_DATA);
+        verify(jpaQuery, times(1)).leftJoin(BULK_PRINT_DATA);
+        verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo)
+            .and(BULK_PRINT_DATA.formAttribute.formType
+                .in(List.of("5228", "5228C"))));
+        verify(jpaQuery, times(1)).where(QJurorPool.jurorPool.status.status
+            .eq(IJurorStatus.SUMMONED)
             .and(QJuror.juror.responded.eq(false)));
         verify(jpaQuery, times(1)).where(QJuror.juror.postcode.toLowerCase()
             .eq("ts1 1st"));

@@ -10,10 +10,10 @@ INSERT INTO JUROR_DIGITAL.JUROR_RESPONSE (JUROR_NUMBER,DATE_RECEIVED,TITLE,FIRST
 INSERT INTO JUROR_DIGITAL.JUROR_RESPONSE (JUROR_NUMBER,DATE_RECEIVED,TITLE,FIRST_NAME,LAST_NAME,ADDRESS,ADDRESS2,ADDRESS3,ADDRESS4,ADDRESS5,ADDRESS6,ZIP,PROCESSING_STATUS,DATE_OF_BIRTH,PHONE_NUMBER,ALT_PHONE_NUMBER,EMAIL,THIRDPARTY_REASON,RESIDENCY,RESIDENCY_DETAIL,MENTAL_HEALTH_ACT,MENTAL_HEALTH_ACT_DETAILS,BAIL,BAIL_DETAILS,CONVICTIONS,CONVICTIONS_DETAILS,DEFERRAL_REASON,DEFERRAL_DATE,SPECIAL_NEEDS_ARRANGEMENTS,EXCUSAL_REASON, JUROR_PHONE_DETAILS, JUROR_EMAIL_DETAILS, STAFF_LOGIN, STAFF_ASSIGNMENT_DATE) VALUES (472008411,(SELECT CURRENT_DATE-10),null,null,null,'address',null,null,null,null,null,null,'AWAITING_CONTACT',null,null,null,null,null,'0',null,'0',null,'0',null,'0',null,null,null, null,null,'Y', 'Y', 'ncrawford', CURRENT_DATE);--juror 4
 
 
-INSERT INTO juror_mod.users (owner, username, name, level, active,password)
-VALUES ('400','ncrawford','Natasha Crawford',0,true,'5baa61e4c9b93f3f'),
-       ('400','lrees','Lewis Rees',0,true,'5baa61e4c9b93f3f'),
-       ('400','kfry','Katherine Fry',0,true,'5baa61e4c9b93f3f');
+INSERT INTO juror_mod.users (owner, username,email, name, active)
+VALUES ('400','ncrawford','ncrawford@email.gov.uk','Natasha Crawford',true),
+       ('400','lrees','lrees@email.gov.uk','Lewis Rees',true),
+       ('400','kfry','kfry@email.gov.uk','Katherine Fry',true);
 
 Insert into JUROR.COURT_CATCHMENT_AREA (POSTCODE,LOC_CODE) values ('AL1','450');
 Insert into JUROR.COURT_CATCHMENT_AREA (POSTCODE,LOC_CODE) values ('B4','127');

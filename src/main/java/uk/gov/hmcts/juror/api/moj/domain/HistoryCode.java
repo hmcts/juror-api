@@ -13,7 +13,9 @@ public enum HistoryCode {
     PDIS("Disqualify Pool Member"),
     PTRA("Transfer Pool Member"),
     RESP("Responded"),
-    PREA("Reassign Pool Member");
+    PREA("Reassign Pool Member"),
+    PEXC("Excuse Pool Member");
+
 
     private final String description;
 

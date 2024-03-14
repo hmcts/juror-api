@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,7 +44,7 @@ public class JurorPaperResponseTest {
     public void test_setJurorNumber_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
 
@@ -54,7 +55,7 @@ public class JurorPaperResponseTest {
     public void test_setJurorNumber_tooShort() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("12345678");
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
 
@@ -70,7 +71,7 @@ public class JurorPaperResponseTest {
     public void test_setJurorNumber_tooLong() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("1234567890");
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
 
@@ -86,7 +87,7 @@ public class JurorPaperResponseTest {
     public void test_setJurorNumber_containsNonNumericChar() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("1234|6789");
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
 
@@ -102,7 +103,7 @@ public class JurorPaperResponseTest {
     public void test_setJurorNumber_notPresent() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
 
         assertThat(violations).as("Validation violation expected (juror number not present)").isNotEmpty();
@@ -117,7 +118,7 @@ public class JurorPaperResponseTest {
     public void test_setDateReceived_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -143,7 +144,7 @@ public class JurorPaperResponseTest {
     public void test_setTitle_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setTitle("Mr");
 
@@ -155,7 +156,7 @@ public class JurorPaperResponseTest {
     public void test_setTitle_tooLong() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setTitle("MrMrsDrMiss");
 
@@ -172,7 +173,7 @@ public class JurorPaperResponseTest {
     public void test_setTitle_containsPipe() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setTitle("Mr|Mrs");
 
@@ -189,7 +190,7 @@ public class JurorPaperResponseTest {
     public void test_setFirstName_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setFirstName("FName");
 
@@ -201,7 +202,7 @@ public class JurorPaperResponseTest {
     public void test_setFirstName_tooLong() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setFirstName(buildStringToLength(21));
 
@@ -218,7 +219,7 @@ public class JurorPaperResponseTest {
     public void test_setFirstName_containsPipe() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setFirstName("First|Name");
 
@@ -235,7 +236,7 @@ public class JurorPaperResponseTest {
     public void test_setLastName_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setLastName("LName");
 
@@ -247,7 +248,7 @@ public class JurorPaperResponseTest {
     public void test_setLastName_tooLong() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setLastName(buildStringToLength(21));
 
@@ -264,7 +265,7 @@ public class JurorPaperResponseTest {
     public void test_setLastName_containsPipe() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setLastName("Last|Name");
 
@@ -281,7 +282,7 @@ public class JurorPaperResponseTest {
     public void test_setAddress_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -292,7 +293,7 @@ public class JurorPaperResponseTest {
     public void test_setAddress_tooLong() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1(buildStringToLength(36));
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -308,7 +309,7 @@ public class JurorPaperResponseTest {
     public void test_setAddress_containsPipe() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test|addressLine1");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -323,7 +324,7 @@ public class JurorPaperResponseTest {
     @Test
     public void test_setAddress_notPresent() {
         PaperResponse response = new PaperResponse();
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -340,7 +341,7 @@ public class JurorPaperResponseTest {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
         response.setAddressLine2("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -352,7 +353,7 @@ public class JurorPaperResponseTest {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
         response.setAddressLine2(buildStringToLength(36));
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -369,7 +370,7 @@ public class JurorPaperResponseTest {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
         response.setAddressLine2("Test|addressLine2");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -386,7 +387,7 @@ public class JurorPaperResponseTest {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
         response.setAddressLine3("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -398,7 +399,7 @@ public class JurorPaperResponseTest {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
         response.setAddressLine3(buildStringToLength(36));
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -415,7 +416,7 @@ public class JurorPaperResponseTest {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
         response.setAddressLine3("Test|addressLine3");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -432,7 +433,7 @@ public class JurorPaperResponseTest {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
         response.setAddressLine4("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -444,7 +445,7 @@ public class JurorPaperResponseTest {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
         response.setAddressLine4(buildStringToLength(36));
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -461,7 +462,7 @@ public class JurorPaperResponseTest {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
         response.setAddressLine4("Test|addressLine4");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -478,7 +479,7 @@ public class JurorPaperResponseTest {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
         response.setAddressLine5("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -490,7 +491,7 @@ public class JurorPaperResponseTest {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
         response.setAddressLine5(buildStringToLength(36));
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -507,7 +508,7 @@ public class JurorPaperResponseTest {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
         response.setAddressLine5("Test|addressLine5");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -523,7 +524,7 @@ public class JurorPaperResponseTest {
     public void test_setPostCode_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setPostcode("CH1 2AN");
 
@@ -535,7 +536,7 @@ public class JurorPaperResponseTest {
     public void test_setPostCode_invalid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setPostcode("ABC 123");
 
@@ -552,7 +553,7 @@ public class JurorPaperResponseTest {
     public void test_setPostCode_pipeCharacter() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setPostcode("CH1|2AN");
 
@@ -569,7 +570,7 @@ public class JurorPaperResponseTest {
     public void test_setProcessingStatus_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setProcessingStatus(ProcessingStatus.AWAITING_CONTACT);
 
@@ -583,7 +584,7 @@ public class JurorPaperResponseTest {
     public void test_setProcessingStatus_default() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setPostcode("CH1 2AN");
 
@@ -594,7 +595,7 @@ public class JurorPaperResponseTest {
     public void test_setPhoneNumber_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setPhoneNumber("+44(123)-45678");
 
@@ -606,7 +607,7 @@ public class JurorPaperResponseTest {
     public void test_setDateOfBirth_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setDateOfBirth(LocalDate.now().minusYears(25));
 
@@ -618,7 +619,7 @@ public class JurorPaperResponseTest {
     public void test_setDateOfBirth_tooSoon() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setDateOfBirth(LocalDate.now());
 
@@ -635,7 +636,7 @@ public class JurorPaperResponseTest {
     public void test_setDateOfBirth_tooLongAgo() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setDateOfBirth(LocalDate.now().minusYears(125));
 
@@ -652,7 +653,7 @@ public class JurorPaperResponseTest {
     public void test_setPhoneNumber_validNoSpecials() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setPhoneNumber("01234 567890");
 
@@ -664,7 +665,7 @@ public class JurorPaperResponseTest {
     public void test_setPhoneNumber_tooLong() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setPhoneNumber("+44 1234 - 56789");
 
@@ -681,7 +682,7 @@ public class JurorPaperResponseTest {
     public void test_setPhoneNumber_invalidSpecialChar() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setPhoneNumber("01234|567890");
 
@@ -698,7 +699,7 @@ public class JurorPaperResponseTest {
     public void test_setAltPhoneNumber_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setAltPhoneNumber("+44(123)-45678");
 
@@ -710,7 +711,7 @@ public class JurorPaperResponseTest {
     public void test_setAltPhoneNumber_validNoSpecials() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setAltPhoneNumber("01234 567890");
 
@@ -722,7 +723,7 @@ public class JurorPaperResponseTest {
     public void test_setAltPhoneNumber_tooLong() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setAltPhoneNumber("+44 1234 - 56789");
 
@@ -740,7 +741,7 @@ public class JurorPaperResponseTest {
     public void test_setAltPhoneNumber_invalidSpecialChar() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setAltPhoneNumber("01234|567890");
 
@@ -758,7 +759,7 @@ public class JurorPaperResponseTest {
     public void test_setEmail_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setEmail("test@email.com");
 
@@ -770,7 +771,7 @@ public class JurorPaperResponseTest {
     public void test_setEmail_tooLong() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         String emailSuffix = "@email.com";
         response.setEmail(buildStringToLength(255 - emailSuffix.length()) + emailSuffix);
@@ -788,7 +789,7 @@ public class JurorPaperResponseTest {
     public void test_setEmail_invalid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setEmail(buildStringToLength(250));
 
@@ -805,7 +806,7 @@ public class JurorPaperResponseTest {
     public void test_setResidency_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setResidency(Boolean.FALSE);
 
@@ -819,7 +820,7 @@ public class JurorPaperResponseTest {
     public void test_setResidency_default() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -832,7 +833,7 @@ public class JurorPaperResponseTest {
     public void test_setMentalHealthAct_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setMentalHealthAct(Boolean.TRUE);
 
@@ -846,7 +847,7 @@ public class JurorPaperResponseTest {
     public void test_setMentalHealthAct_default() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -859,7 +860,7 @@ public class JurorPaperResponseTest {
     public void test_setMentalHealthCapacity_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setMentalHealthCapacity(Boolean.TRUE);
 
@@ -873,7 +874,7 @@ public class JurorPaperResponseTest {
     public void test_setMentalHealthCapacity_default() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -886,7 +887,7 @@ public class JurorPaperResponseTest {
     public void test_setBail_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setBail(Boolean.TRUE);
 
@@ -900,7 +901,7 @@ public class JurorPaperResponseTest {
     public void test_setBail_default() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -913,7 +914,7 @@ public class JurorPaperResponseTest {
     public void test_setConvictions_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setConvictions(Boolean.TRUE);
 
@@ -927,7 +928,7 @@ public class JurorPaperResponseTest {
     public void test_setConvictions_default() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -940,7 +941,7 @@ public class JurorPaperResponseTest {
     public void test_setReasonableAdjustments_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setReasonableAdjustmentsArrangements(buildStringToLength(1000));
 
@@ -952,7 +953,7 @@ public class JurorPaperResponseTest {
     public void test_setReasonableAdjustmentsArrangements_tooLong() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setReasonableAdjustmentsArrangements(buildStringToLength(1001));
 
@@ -970,7 +971,7 @@ public class JurorPaperResponseTest {
     public void test_setReasonableAdjustments_containsPipe() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setReasonableAdjustmentsArrangements("Test|String");
 
@@ -987,7 +988,7 @@ public class JurorPaperResponseTest {
     public void test_setProcessingComplete_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setProcessingComplete(Boolean.TRUE);
 
@@ -1001,7 +1002,7 @@ public class JurorPaperResponseTest {
     public void test_setProcessingComplete_default() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
@@ -1014,7 +1015,7 @@ public class JurorPaperResponseTest {
     public void test_setRelationship_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setRelationship(buildStringToLength(50));
 
@@ -1026,7 +1027,7 @@ public class JurorPaperResponseTest {
     public void test_setRelationship_tooLong() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setRelationship(buildStringToLength(51));
 
@@ -1043,7 +1044,7 @@ public class JurorPaperResponseTest {
     public void test_setRelationship_containsPipe() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setRelationship("Test|String");
 
@@ -1060,7 +1061,7 @@ public class JurorPaperResponseTest {
     public void test_setThirdPartyReason_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setThirdPartyReason(buildStringToLength(1000));
 
@@ -1072,7 +1073,7 @@ public class JurorPaperResponseTest {
     public void test_setThirdPartyReason_tooLong() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setThirdPartyReason(buildStringToLength(1001));
 
@@ -1089,7 +1090,7 @@ public class JurorPaperResponseTest {
     public void test_setThirdPartyReason_containsPipe() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setThirdPartyReason("Test|String");
 
@@ -1106,7 +1107,7 @@ public class JurorPaperResponseTest {
     public void test_setWelsh_valid() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
         response.setWelsh(Boolean.TRUE);
 
@@ -1120,7 +1121,7 @@ public class JurorPaperResponseTest {
     public void test_setWelsh_default() {
         PaperResponse response = new PaperResponse();
         response.setAddressLine1("Test");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setJurorNumber("123456789");
 
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);

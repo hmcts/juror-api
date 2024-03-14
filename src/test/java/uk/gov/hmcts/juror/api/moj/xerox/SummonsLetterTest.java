@@ -1,11 +1,12 @@
 package uk.gov.hmcts.juror.api.moj.xerox;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
-import uk.gov.hmcts.juror.api.moj.exception.PoolRequestException;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.SummonsLetter;
+import uk.gov.hmcts.juror.api.testsupport.DisableIfWeekend;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -16,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings("PMD.LawOfDemeter")
-public class SummonsLetterTest extends AbstractLetterTest {
+class SummonsLetterTest extends AbstractLetterTest {
     @Override
     protected void setupEnglishExpectedResult() {
         addEnglishField("415221201", 9);
@@ -30,12 +31,12 @@ public class SummonsLetterTest extends AbstractLetterTest {
         addEnglishField("JUROR_ADDRESS_5", 35);
         addEnglishField("", 35);
         addEnglishField("SY2 6LU", 10);
-        addEnglishField("641500541",  9);
-        addEnglishField("641500541",  9);
+        addEnglishField("641500541", 9);
+        addEnglishField("641500541", 9);
         addEnglishLetterDate();
         addEnglishField("MONDAY 6 FEBRUARY, 2017", 32);
-        addEnglishField("10:00",  8);
-        addEnglishField("457",  3);
+        addEnglishField("10:00", 8);
+        addEnglishField("457", 3);
         addEnglishField("TWO WEEKS", 20);
         addEnglishField("SWANSEA CROWN COURT", 59);
         addEnglishField("THE LAW COURTS", 35);
@@ -114,17 +115,17 @@ public class SummonsLetterTest extends AbstractLetterTest {
 
 
     @Test
-    public void confirmEnglishLetterProducesCorrectOutput() {
+    void confirmEnglishLetterProducesCorrectOutput() {
 
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
         SummonsLetter summonsLetter = new SummonsLetter(LetterTestUtils.testJurorPool(date),
-                                                        LetterTestUtils.testCourtLocation(),
-                                                        LetterTestUtils.testBureauLocation());
+            LetterTestUtils.testCourtLocation(),
+            LetterTestUtils.testBureauLocation());
 
         int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
         if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(PoolRequestException.PoolRequestDateInvalid.class)
+            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
                 .isThrownBy(summonsLetter::getLetterString);
         } else {
             assertThat(summonsLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
@@ -140,18 +141,18 @@ public class SummonsLetterTest extends AbstractLetterTest {
     }
 
     @Test
-    public void confirmWelshLetterProducesCorrectOutput() {
+    void confirmWelshLetterProducesCorrectOutput() {
 
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupWelshExpectedResult();
         SummonsLetter summonsLetter = new SummonsLetter(LetterTestUtils.testWelshJurorPool(date),
-                                                        LetterTestUtils.testCourtLocation(),
-                                                        LetterTestUtils.testBureauLocation(),
-                                                        LetterTestUtils.testWelshCourtLocation());
+            LetterTestUtils.testCourtLocation(),
+            LetterTestUtils.testBureauLocation(),
+            LetterTestUtils.testWelshCourtLocation());
 
         int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
         if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(PoolRequestException.PoolRequestDateInvalid.class)
+            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
                 .isThrownBy(summonsLetter::getLetterString);
         } else {
             assertThat(summonsLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
@@ -167,12 +168,13 @@ public class SummonsLetterTest extends AbstractLetterTest {
     }
 
     @Test
-    public void confirmWelshWithoutWelshCourtProducesEnglishOutput() {
+    @DisableIfWeekend
+    void confirmWelshWithoutWelshCourtProducesEnglishOutput() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
         SummonsLetter summonsLetter = new SummonsLetter(LetterTestUtils.testWelshJurorPool(date),
-                                                        LetterTestUtils.testCourtLocation(),
-                                                        LetterTestUtils.testBureauLocation());
+            LetterTestUtils.testCourtLocation(),
+            LetterTestUtils.testBureauLocation());
         assertThat(summonsLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
     }
 }

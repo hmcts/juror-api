@@ -39,10 +39,12 @@ import uk.gov.hmcts.juror.api.bureau.service.ResponseUpdateService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.validation.DateOfBirth;
+import uk.gov.hmcts.juror.api.validation.LocalDateOfBirth;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Date;
 
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.EMAIL_ADDRESS_REGEX;
@@ -381,10 +383,10 @@ public class ResponseUpdateController {
         @Schema(description = "Juror postcode")
         private String postcode;
 
-        @DateOfBirth
+        @LocalDateOfBirth
         @Past
         @Schema(description = "Juror date of birth")
-        private Date dob;
+        private LocalDate dob;
 
         @Pattern(regexp = PHONE_PRIMARY_REGEX)
         @Schema(description = "Juror main phone number")
@@ -398,14 +400,6 @@ public class ResponseUpdateController {
         @Length(max = 254)
         @Schema(description = "Juror email address")
         private String emailAddress;
-
-        @Deprecated
-        public Timestamp getDobTimestamp() {
-            if (this.getDob() != null) {
-                return new Timestamp(this.getDob().getTime());
-            }
-            return null;
-        }
     }
 
     @Data
@@ -416,7 +410,7 @@ public class ResponseUpdateController {
         @Builder
         private FirstPersonJurorDetailsDto(Integer version, String notes, String title, String firstName,
                                            String lastName, String address, String address2, String address3,
-                                           String address4, String address5, String postcode, Date dob,
+                                           String address4, String address5, String postcode, LocalDate dob,
                                            String mainPhone, String altPhone, String emailAddress) {
             super(
                 version,
@@ -493,7 +487,7 @@ public class ResponseUpdateController {
         @Builder
         private ThirdPartyJurorDetailsDto(Integer version, String notes, String title, String firstName,
                                           String lastName, String address, String address2, String address3,
-                                          String address4, String address5, String postcode, Date dob,
+                                          String address4, String address5, String postcode, LocalDate dob,
                                           String mainPhone, String altPhone, String emailAddress,
                                           Boolean useJurorPhone, Boolean useJurorEmail, String thirdPartyFirstName,
                                           String thirdPartyLastName, String relationship, String thirdPartyReason,
@@ -608,7 +602,7 @@ public class ResponseUpdateController {
         private String other;
 
         /**
-         * Maps to {@link uk.gov.hmcts.juror.api.juror.domain.JurorResponse#specialNeedsArrangements}.
+         * Maps to {@link uk.gov.hmcts.juror.api.juror.domain.JurorResponse# specialNeedsArrangements}.
          */
         @Length(max = 1000)
         @Schema(description = "Details about required special arrangements")

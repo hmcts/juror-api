@@ -11,19 +11,18 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import uk.gov.hmcts.juror.api.bureau.controller.request.BureauBacklogAllocateRequestDto;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauBacklogAllocateException;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,20 +37,20 @@ import static org.mockito.Mockito.verify;
 @RunWith(MockitoJUnitRunner.class)
 public class BureauBacklogAllocateServiceImplTest {
 
-    private static final Comparator<JurorResponse> ascendingDateOrder =
-        Comparator.comparing(JurorResponse::getDateReceived);
+    private static final Comparator<DigitalResponse> ascendingDateOrder =
+        Comparator.comparing(DigitalResponse::getDateReceived);
     private static final Integer NON_URGENT_TO_ALLOCATE_TO_STAFF = 1;
     private static final Integer URGENT_TO_ALLOCATE_TO_STAFF = 2;
     private static final Integer SUPER_URGENT_TO_ALLOCATE_TO_STAFF = 3;
 
     @Mock
-    private JurorResponseRepository responseRepo;
+    private JurorDigitalResponseRepositoryMod responseRepo;
 
     @Mock
     private UserRepository userRepo;
 
     @Mock
-    private StaffJurorResponseAuditRepository auditRepo;
+    private StaffJurorResponseAuditRepositoryMod auditRepo;
 
     private BureauBacklogAllocateServiceImpl bureauBacklogAllocateService;
 
@@ -59,17 +58,17 @@ public class BureauBacklogAllocateServiceImplTest {
     private User user2;
     private User user3;
 
-    private List<JurorResponse> backlog;
-    private List<JurorResponse> urgentBacklog;
-    private List<JurorResponse> superUrgentBacklog;
-    private List<JurorResponse> toBeAllocated;
+    private List<DigitalResponse> backlog;
+    private List<DigitalResponse> urgentBacklog;
+    private List<DigitalResponse> superUrgentBacklog;
+    private List<DigitalResponse> toBeAllocated;
 
     @Before
     public void setUp() {
         bureauBacklogAllocateService = new BureauBacklogAllocateServiceImpl(responseRepo, userRepo, auditRepo);
-        user1 = User.builder().name("Post Staff 1").username("staff1").active(true).level(0).build();
-        user2 = User.builder().name("Post Staff 2").username("staff2").active(true).level(0).build();
-        user3 = User.builder().name("Post Staff 3").username("staff3").active(true).level(0).build();
+        user1 = User.builder().name("Post Staff 1").username("staff1").active(true).build();
+        user2 = User.builder().name("Post Staff 2").username("staff2").active(true).build();
+        user3 = User.builder().name("Post Staff 3").username("staff3").active(true).build();
 
         doReturn(Arrays.asList(user1, user2, user3)).when(userRepo).findAllByUsernameIn(anyList());
 
@@ -78,15 +77,15 @@ public class BureauBacklogAllocateServiceImplTest {
 
         //nonurgent backlog
         backlog = generateResponses(NON_URGENT_TO_ALLOCATE_TO_STAFF, false, false, now);
-        Page<JurorResponse> nonUrgentResponses = new PageImpl<>(backlog);
+        Page<DigitalResponse> nonUrgentResponses = new PageImpl<>(backlog);
 
         //urgent backlog
         urgentBacklog = generateResponses(URGENT_TO_ALLOCATE_TO_STAFF, true, false, now);
-        Page<JurorResponse> urgentResponses = new PageImpl<>(urgentBacklog);
+        Page<DigitalResponse> urgentResponses = new PageImpl<>(urgentBacklog);
 
         //superUrgent backlog
         superUrgentBacklog = generateResponses(SUPER_URGENT_TO_ALLOCATE_TO_STAFF, false, true, now);
-        Page<JurorResponse> superUrgentResponses = new PageImpl<>(superUrgentBacklog);
+        Page<DigitalResponse> superUrgentResponses = new PageImpl<>(superUrgentBacklog);
 
         // If the service class doesn't use the correct parameters (for whatever reason) the tests will fall over
         // because the mock repo will return nothing
@@ -130,12 +129,12 @@ public class BureauBacklogAllocateServiceImplTest {
 
         // Difference will likely be < 1s, but allowing a margin of error for running on a _really_ slow
         // machine/build slave
-        final Date minusFiveSeconds =
-            Date.from(currentTime.minusSeconds(5).atZone(ZoneId.systemDefault()).toInstant());
-        final Date plusFiveSeconds =
-            Date.from(currentTime.plusSeconds(5).atZone(ZoneId.systemDefault()).toInstant());
+        final LocalDate minusFiveSeconds =
+            LocalDate.from(currentTime.minusSeconds(5));
+        final LocalDate plusFiveSeconds =
+            LocalDate.from(currentTime.plusSeconds(5));
 
-        for (JurorResponse testResponse : toBeAllocated) {
+        for (DigitalResponse testResponse : toBeAllocated) {
             if (testResponse.getStaffAssignmentDate() != null) {
                 assertThat(testResponse.getStaff())
                     .describedAs("Backlog item should be assigned to a bureau officer")
@@ -181,19 +180,18 @@ public class BureauBacklogAllocateServiceImplTest {
      * @param now           datetime stamp.
      * @return List JurorResponses
      */
-    private List<JurorResponse> generateResponses(int responseCount, Boolean urgent, Boolean superUrgent,
+    private List<DigitalResponse> generateResponses(int responseCount, Boolean urgent, Boolean superUrgent,
                                                   LocalDateTime now) {
 
-        List<JurorResponse> responses = Lists.newLinkedList();
+        List<DigitalResponse> responses = Lists.newLinkedList();
         for (int i = 0;
              i < responseCount;
              i++) {
-            JurorResponse response = new JurorResponse();
+            DigitalResponse response = new DigitalResponse();
             response.setJurorNumber(String.valueOf(i));
             response.setUrgent(urgent);
             response.setSuperUrgent(superUrgent);
-            response.setDateReceived(
-                Date.from(now.minusHours(i).atZone(ZoneId.systemDefault()).toInstant()));
+            response.setDateReceived(now.minusHours(i));
             responses.add(response);
         }
         // This is the order the repository will return entries in

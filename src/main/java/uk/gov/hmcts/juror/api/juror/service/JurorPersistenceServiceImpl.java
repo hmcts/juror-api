@@ -6,11 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSetting;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSettingRepository;
+import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
+import uk.gov.hmcts.juror.api.moj.service.StraightThroughProcessorService;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.util.Optional;
@@ -28,7 +29,8 @@ public class JurorPersistenceServiceImpl implements JurorPersistenceService {
     @Override
     @Transactional(propagation = Propagation.NEVER)
     public Boolean persistJurorResponse(final JurorResponseDto responseDto) {
-        final JurorResponse savedResponse = jurorService.saveResponse(responseDto);
+
+        final DigitalResponse savedResponse = jurorService.saveResponse(responseDto);
 
         // BEGIN: Straight-throughs (Should be non-urgent at this stage JDB-1862)
 
@@ -37,6 +39,7 @@ public class JurorPersistenceServiceImpl implements JurorPersistenceService {
         if (allowStraightThroughProcessingType(StraightThroughType.ACCEPTANCE)) {
             try {
                 straightThroughProcessor.processAcceptance(savedResponse);
+
                 log.info(
                     "Success: Processed juror {} as a straight through acceptance",
                     savedResponse.getJurorNumber()
@@ -98,7 +101,7 @@ public class JurorPersistenceServiceImpl implements JurorPersistenceService {
     /**
      * Send response receipt notification email.
      */
-    private void sendNotificationResponse(final JurorResponse savedResponse,
+    private void sendNotificationResponse(final DigitalResponse savedResponse,
                                           final NotifyTemplateType notifyTemplateType) {
         try {
             jurorNotificationService.sendResponseReceipt(savedResponse, notifyTemplateType);

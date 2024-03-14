@@ -54,6 +54,7 @@ public class BureauBacklogCountControllerTest extends AbstractIntegrationTest {
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauBacklogCountService_BacklogCount.sql")
     public void bureauBacklogCount_happy() throws Exception {
@@ -71,16 +72,16 @@ public class BureauBacklogCountControllerTest extends AbstractIntegrationTest {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
         // assert db state before.
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_digital.JUROR_RESPONSE where " +
-            "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL ", Integer.class)).isEqualTo(7);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_digital.JUROR_RESPONSE where " +
-                "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'Y' AND SUPER_URGENT='N' ",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
+            + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL ", Integer.class)).isEqualTo(7);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
+                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'Y' AND SUPER_URGENT='N' ",
             Integer.class)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_digital.JUROR_RESPONSE where " +
-                "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'N' and  SUPER_URGENT='Y' ",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
+                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'N' and  SUPER_URGENT='Y' ",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_digital.JUROR_RESPONSE where " +
-            "PROCESSING_STATUS != 'TODO' ", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
+            + "PROCESSING_STATUS != 'TODO' ", Integer.class)).isEqualTo(1);
 
 
         URI uri = URI.create("/api/v1/bureau/backlog/count");

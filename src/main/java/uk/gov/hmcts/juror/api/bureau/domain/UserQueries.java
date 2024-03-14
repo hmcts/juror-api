@@ -4,6 +4,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.moj.domain.QUser;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 /**
@@ -22,10 +23,8 @@ public class UserQueries {
      * @return QueryDSL filter
      */
     public static BooleanExpression activeBureauOfficers() {
-        return USER.level
-            .eq(SecurityUtil.STANDARD_USER_LEVEL)
-            .and(isBureau())
-            .and(active());
+        return isBureau().and(active())
+            .and(USER.roles.contains(Role.TEAM_LEADER).not());
     }
 
     public static BooleanExpression isBureau() {
@@ -50,16 +49,4 @@ public class UserQueries {
         return USER.name.asc();
     }
 
-    public static BooleanExpression byLogin(final String login) {
-        return USER.username.eq(login);
-    }
-
-    public static BooleanExpression activeStaffMember(final String login) {
-        return byLogin(login).and(active());
-    }
-
-    public static BooleanExpression loginAllowed(final String login) {
-        return USER.loginEnabledYn.isTrue()
-            .and(byLogin(login));
-    }
 }

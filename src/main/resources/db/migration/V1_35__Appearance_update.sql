@@ -86,7 +86,6 @@ AS SELECT juror_expense_subtotals.juror_number,
 
 SELECT setval('juror_mod.rev_info_seq', (SELECT max(revision_number) FROM juror_mod.rev_info), true);
 
-
 INSERT INTO juror_mod.rev_info (revision_number, revision_timestamp)
 VALUES (nextval('juror_mod.rev_info_seq'), EXTRACT(EPOCH FROM current_date));
 

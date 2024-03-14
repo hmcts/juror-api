@@ -54,6 +54,8 @@ import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetailsAppearances;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PaymentData;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.FoodDrinkClaimType;
@@ -83,6 +85,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -183,7 +186,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<CustomPageImpl<Void>> response = template.exchange(new RequestEntity<>(httpHeaders, GET,
                 uri), new ParameterizedTypeReference<>() {
-                });
+            });
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -207,7 +210,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<CustomPageImpl<Void>> response = template.exchange(new RequestEntity<>(httpHeaders, GET,
                 uri), new ParameterizedTypeReference<>() {
-                });
+            });
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
             CustomPageImpl<Void> responseBody = response.getBody();
@@ -233,7 +236,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<CustomPageImpl<Void>> response = template.exchange(new RequestEntity<>(httpHeaders, GET,
                 uri), new ParameterizedTypeReference<>() {
-                });
+            });
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -1184,7 +1187,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
         private GetEnteredExpenseRequest buildRequest(LocalDate date) {
             return GetEnteredExpenseRequest.builder()
-                .dateOfExpense(date)
+                .expenseDates(List.of(date))
                 .jurorNumber("641500020")
                 .poolNumber("415230101")
                 .build();
@@ -1193,13 +1196,14 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @Nested
         @DisplayName("Positive")
         class Positive {
-            private ResponseEntity<GetEnteredExpenseResponse> triggerValid(
+            private ResponseEntity<List<GetEnteredExpenseResponse>> triggerValid(
                 GetEnteredExpenseRequest request) throws Exception {
                 final String jwt = createBureauJwt(COURT_USER, "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-                ResponseEntity<GetEnteredExpenseResponse> response = template.exchange(
+                ResponseEntity<List<GetEnteredExpenseResponse>> response = template.exchange(
                     new RequestEntity<>(request, httpHeaders, POST, URI.create(URL)),
-                    GetEnteredExpenseResponse.class);
+                    new ParameterizedTypeReference<>() {
+                    });
                 assertThat(response.getStatusCode())
                     .as("Expect the HTTP GET request to be successful")
                     .isEqualTo(HttpStatus.OK);
@@ -1254,10 +1258,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 LocalDate dateOfExpense = LocalDate.of(2023, 1, 5);
                 GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
 
-                ResponseEntity<GetEnteredExpenseResponse> responseEntity = triggerValid(request);
+                ResponseEntity<List<GetEnteredExpenseResponse>> responseEntity = triggerValid(request);
                 assertThat(responseEntity).isNotNull();
                 assertThat(responseEntity.getBody()).isNotNull();
-                GetEnteredExpenseResponse response = responseEntity.getBody();
+                List<GetEnteredExpenseResponse> responseList = responseEntity.getBody();
+                assertThat(responseList).hasSize(1);
+                GetEnteredExpenseResponse response = responseList.get(0);
                 assertThat(response.getDateOfExpense()).isEqualTo(dateOfExpense);
                 assertThat(response.getStage()).isEqualTo(AppearanceStage.EXPENSE_ENTERED);
                 assertThat(response.getTotalDue()).isEqualTo(new BigDecimal("525.00"));
@@ -1296,10 +1302,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 LocalDate dateOfExpense = LocalDate.of(2023, 1, 8);
                 GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
 
-                ResponseEntity<GetEnteredExpenseResponse> responseEntity = triggerValid(request);
+                ResponseEntity<List<GetEnteredExpenseResponse>> responseEntity = triggerValid(request);
                 assertThat(responseEntity).isNotNull();
                 assertThat(responseEntity.getBody()).isNotNull();
-                GetEnteredExpenseResponse response = responseEntity.getBody();
+                List<GetEnteredExpenseResponse> responseList = responseEntity.getBody();
+                assertThat(responseList).hasSize(1);
+                GetEnteredExpenseResponse response = responseList.get(0);
                 assertThat(response.getDateOfExpense()).isEqualTo(dateOfExpense);
                 assertThat(response.getStage()).isEqualTo(AppearanceStage.EXPENSE_ENTERED);
                 assertThat(response.getTotalDue()).isEqualTo(new BigDecimal("552.97"));
@@ -1337,10 +1345,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 LocalDate dateOfExpense = LocalDate.of(2023, 1, 11);
                 GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
 
-                ResponseEntity<GetEnteredExpenseResponse> responseEntity = triggerValid(request);
+                ResponseEntity<List<GetEnteredExpenseResponse>> responseEntity = triggerValid(request);
                 assertThat(responseEntity).isNotNull();
                 assertThat(responseEntity.getBody()).isNotNull();
-                GetEnteredExpenseResponse response = responseEntity.getBody();
+                List<GetEnteredExpenseResponse> responseList = responseEntity.getBody();
+                assertThat(responseList).hasSize(1);
+                GetEnteredExpenseResponse response = responseList.get(0);
                 assertThat(response.getDateOfExpense()).isEqualTo(dateOfExpense);
                 assertThat(response.getStage()).isEqualTo(AppearanceStage.EXPENSE_AUTHORISED);
                 assertThat(response.getTotalDue()).isEqualTo(new BigDecimal("551.48"));
@@ -1390,7 +1400,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertInvalidPayload(triggerInvalid(GetEnteredExpenseRequest.builder()
                         .jurorNumber("INVALID")
                         .poolNumber(TestConstants.VALID_POOL_NUMBER)
-                        .dateOfExpense(LocalDate.now())
+                        .expenseDates(List.of(LocalDate.now()))
                         .build()),
                     new RestResponseEntityExceptionHandler.FieldError("jurorNumber",
                         "must match \"^\\d{9}$\""));
@@ -1634,7 +1644,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_simplifiedExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class GetSimplifiedExpenseDetails {
-        public static final String URL = BASE_URL + "/view/{type}";
+        public static final String URL = BASE_URL + "/view/{type}/simplified";
 
         public static final String JUROR_NUMBER = "641500020";
         public static final String JUROR_NUMBER_NO_APPEARANCES = "641500024";
@@ -2179,6 +2189,175 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
     }
 
+    @Nested
+    @DisplayName("GET (POST) " + GetExpenses.URL)
+    @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    class GetExpenses {
+        public static final String URL = BASE_URL + "/{juror_number}/{pool_number}";
+
+        public static final String JUROR_NUMBER = "641500020";
+        public static final String POOL_NUMBER = "415230101";
+
+        public String toUrl(String jurorNumber, String poolNumber) {
+            return URL.replace("{juror_number}", jurorNumber)
+                .replace("{pool_number}", poolNumber);
+        }
+
+        public URI toUri(String jurorNumber, String poolNumber) {
+            return URI.create(toUrl(jurorNumber, poolNumber));
+        }
+
+        @Nested
+        @DisplayName("Positive")
+        class Positive {
+            protected ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> triggerValid(
+                String jurorNumber, String poolNumber, List<LocalDate> payload) throws Exception {
+                final String jwt = createBureauJwt(COURT_USER, "415");
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+                ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> response = template.exchange(
+                    new RequestEntity<>(payload, httpHeaders, POST,
+                        toUri(jurorNumber, poolNumber)),
+                    new ParameterizedTypeReference<>() {
+                    });
+
+                assertThat(response.getStatusCode())
+                    .as("Expect the HTTP GET request to be successful")
+                    .isEqualTo(HttpStatus.OK);
+                assertThat(response.getBody())
+                    .as("Expect no body")
+                    .isNotNull();
+                return response;
+            }
+
+            @Test
+            void typical() throws Exception {
+                ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> response =
+                    triggerValid(JUROR_NUMBER, POOL_NUMBER,
+                        List.of(
+                            LocalDate.of(2023, 1, 5),
+                            LocalDate.of(2023, 1, 8),
+                            LocalDate.of(2023, 1, 14)
+                        ));
+                CombinedExpenseDetailsDto<ExpenseDetailsDto> body = response.getBody();
+                assertThat(body.getExpenseDetails()).hasSize(3);
+                assertThat(body.getExpenseDetails().get(0)).isEqualTo(
+                    ExpenseDetailsDto.builder()
+                        .attendanceDate(LocalDate.of(2023, 1, 5))
+                        .attendanceType(AttendanceType.FULL_DAY)
+                        .lossOfEarnings(new BigDecimal("90.00"))
+                        .extraCare(new BigDecimal("70.00"))
+                        .other(new BigDecimal("80.00"))
+                        .publicTransport(new BigDecimal("10.00"))
+                        .taxi(new BigDecimal("20.00"))
+                        .motorcycle(new BigDecimal("30.00"))
+                        .car(new BigDecimal("40.00"))
+                        .bicycle(new BigDecimal("50.00"))
+                        .parking(new BigDecimal("60.00"))
+                        .foodAndDrink(new BigDecimal("100.00"))
+                        .smartCard(new BigDecimal("25.00"))
+                        .paymentMethod(PaymentMethod.BACS)
+                        .build()
+                );
+                assertThat(body.getExpenseDetails().get(1)).isEqualTo(
+                    ExpenseDetailsDto.builder()
+                        .attendanceDate(LocalDate.of(2023, 1, 8))
+                        .attendanceType(AttendanceType.FULL_DAY)
+                        .lossOfEarnings(new BigDecimal("93.00"))
+                        .extraCare(new BigDecimal("73.00"))
+                        .other(new BigDecimal("83.00"))
+                        .publicTransport(new BigDecimal("13.97"))
+                        .taxi(new BigDecimal("23.00"))
+                        .motorcycle(new BigDecimal("33.00"))
+                        .car(new BigDecimal("43.00"))
+                        .bicycle(new BigDecimal("53.00"))
+                        .parking(new BigDecimal("63.00"))
+                        .foodAndDrink(new BigDecimal("103.00"))
+                        .smartCard(new BigDecimal("28.00"))
+                        .paymentMethod(PaymentMethod.BACS)
+                        .build()
+                );
+                assertThat(body.getExpenseDetails().get(2)).isEqualTo(
+                    ExpenseDetailsDto.builder()
+                        .attendanceDate(LocalDate.of(2023, 1, 14))
+                        .attendanceType(AttendanceType.FULL_DAY)
+                        .lossOfEarnings(new BigDecimal("23.00"))
+                        .extraCare(new BigDecimal("43.00"))
+                        .other(new BigDecimal("33.00"))
+                        .publicTransport(new BigDecimal("103.00"))
+                        .taxi(new BigDecimal("93.00"))
+                        .motorcycle(new BigDecimal("83.00"))
+                        .car(new BigDecimal("73.00"))
+                        .bicycle(new BigDecimal("63.00"))
+                        .parking(new BigDecimal("53.00"))
+                        .foodAndDrink(new BigDecimal("13.00"))
+                        .smartCard(new BigDecimal("28.00"))
+                        .paymentMethod(PaymentMethod.BACS)
+                        .build()
+                );
+                CombinedExpenseDetailsDto.Total total = body.getTotal();
+                assertThat(total).isEqualTo(
+                    CombinedExpenseDetailsDto.Total.builder()
+                        .totalDays(3)
+                        .lossOfEarnings(new BigDecimal("206.00"))
+                        .extraCare(new BigDecimal("186.00"))
+                        .other(new BigDecimal("196.00"))
+                        .publicTransport(new BigDecimal("126.97"))
+                        .taxi(new BigDecimal("136.00"))
+                        .motorcycle(new BigDecimal("146.00"))
+                        .car(new BigDecimal("156.00"))
+                        .bicycle(new BigDecimal("166.00"))
+                        .parking(new BigDecimal("176.00"))
+                        .foodAndDrink(new BigDecimal("216.00"))
+                        .smartCard(new BigDecimal("81.00"))
+                        .build()
+                );
+            }
+        }
+
+        @Nested
+        @DisplayName("Negative")
+        class Negative {
+            protected ResponseEntity<String> triggerInvalid(String jurorNumber,
+                                                            String poolNumber, String owner,
+                                                            List<LocalDate> payload) throws Exception {
+                final String jwt = createBureauJwt(COURT_USER, owner);
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+                return template.exchange(
+                    new RequestEntity<>(payload, httpHeaders, POST,
+                        toUri(jurorNumber, poolNumber)),
+                    String.class);
+            }
+
+            @Test
+            void canNotAccessJurorPool() throws Exception {
+                assertMojForbiddenResponse(triggerInvalid(JUROR_NUMBER, POOL_NUMBER, "414", List.of(
+                        LocalDate.of(2023, 1, 5)
+                    )),
+                    toUrl(JUROR_NUMBER, POOL_NUMBER),
+                    "User cannot access this juror pool");
+            }
+
+            @Test
+            void isBureauUser() throws Exception {
+                assertForbiddenResponse(triggerInvalid(JUROR_NUMBER, POOL_NUMBER, "400", List.of(
+                        LocalDate.of(2023, 1, 5)
+                    )),
+                    toUrl(JUROR_NUMBER, POOL_NUMBER));
+            }
+
+
+            @Test
+            void oneOrMoreDatesNotFound() throws Exception {
+                assertNotFound(triggerInvalid(JUROR_NUMBER, POOL_NUMBER, "415", List.of(
+                        LocalDate.of(2023, 1, 5),
+                        LocalDate.of(2020, 1, 8))),
+                    toUrl(JUROR_NUMBER, POOL_NUMBER),
+                    "Not all dates found");
+            }
+        }
+    }
+
 
     @Nested
     @DisplayName("POST " + ApproveExpenses.URL)
@@ -2196,7 +2375,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @Nested
         class Positive {
             protected ResponseEntity<String> triggerValid(ApproveExpenseDto... expenseDto) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, "415");
+                final String jwt = createBureauJwt(COURT_USER, "415", UserType.COURT, Set.of(Role.MANAGER), "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<String> response = template.exchange(
                     new RequestEntity<>(List.of(expenseDto), httpHeaders, POST,
@@ -2421,12 +2600,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         class Negative {
             protected ResponseEntity<String> triggerInvalid(String owner,
                                                             ApproveExpenseDto... expenseDto) throws Exception {
-                return triggerInvalid(owner, COURT_USER, expenseDto);
+                return triggerInvalid(owner, COURT_USER, UserType.COURT, Set.of(Role.MANAGER), expenseDto);
             }
 
             protected ResponseEntity<String> triggerInvalid(String owner, String username,
+                                                            UserType userType, Set<Role> roles,
                                                             ApproveExpenseDto... expenseDto) throws Exception {
-                final String jwt = createBureauJwt(username, owner);
+                final String jwt = createBureauJwt(username, owner, userType, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(List.of(expenseDto), httpHeaders, POST,
@@ -2542,6 +2722,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             @Test
             void negativeCanNotApproveMoreThan() throws Exception {
                 assertBusinessRuleViolation(triggerInvalid("415", "COURT_USER2",
+                        UserType.COURT, Set.of(Role.MANAGER),
                         ApproveExpenseDto.builder()
                             .jurorNumber(JUROR_NUMBER)
                             .poolNumber("415230101")
@@ -2592,6 +2773,35 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                             )
                         )
                         .build()), URL);
+            }
+
+            @Test
+            void negativeUnauthorizedNotManager() throws Exception {
+                assertForbiddenResponse(
+                    triggerInvalid("415",
+                        COURT_USER, UserType.COURT, Set.of(),
+                        ApproveExpenseDto.builder()
+                            .jurorNumber(JUROR_NUMBER)
+                            .poolNumber("415230101")
+                            .approvalType(ApproveExpenseDto.ApprovalType.FOR_REAPPROVAL)
+                            .cashPayment(true)
+                            .dateToRevisions(
+                                List.of(
+                                    ApproveExpenseDto.DateToRevision.builder()
+                                        .attendanceDate(LocalDate.of(2023, 1, 14))
+                                        .version(1L)
+                                        .build(),
+                                    ApproveExpenseDto.DateToRevision.builder()
+                                        .attendanceDate(LocalDate.of(2023, 1, 15))
+                                        .version(1L)
+                                        .build(),
+                                    ApproveExpenseDto.DateToRevision.builder()
+                                        .attendanceDate(LocalDate.of(2023, 1, 16))
+                                        .version(1L)
+                                        .build()
+                                )
+                            )
+                            .build()), URL);
             }
         }
     }
@@ -3052,10 +3262,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void typicalAttendanceDay() throws Exception {
                 CalculateTotalExpenseRequestDto request = CalculateTotalExpenseRequestDto.builder()
                     .jurorNumber(JUROR_NUMBER)
+                    .poolNumber(POOL_NUMBER)
                     .expenseList(List.of(
                         DailyExpense.builder()
                             .dateOfExpense(LocalDate.of(2023, 1, 5))
-                            .poolNumber(POOL_NUMBER)
                             .payCash(false)
                             .time(DailyExpenseTime.builder()
                                 .travelTime(LocalTime.of(1, 2))
@@ -3073,7 +3283,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                             .build(),
                         DailyExpense.builder()
                             .dateOfExpense(LocalDate.of(2023, 1, 11))
-                            .poolNumber(POOL_NUMBER)
                             .payCash(false)
                             .time(DailyExpenseTime.builder()
                                 .travelTime(LocalTime.of(1, 2))
@@ -3158,10 +3367,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void typicalNonAttendanceDay() throws Exception {
                 CalculateTotalExpenseRequestDto request = CalculateTotalExpenseRequestDto.builder()
                     .jurorNumber(JUROR_NUMBER)
+                    .poolNumber(POOL_NUMBER)
                     .expenseList(List.of(
                         DailyExpense.builder()
                             .dateOfExpense(LocalDate.of(2023, 1, 17))
-                            .poolNumber(POOL_NUMBER)
                             .payCash(false)
                             .time(DailyExpenseTime.builder()
                                 .payAttendance(PayAttendanceType.FULL_DAY)
@@ -3218,10 +3427,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void typicalFinancialLossApportioned() throws Exception {
                 CalculateTotalExpenseRequestDto request = CalculateTotalExpenseRequestDto.builder()
                     .jurorNumber(JUROR_NUMBER)
+                    .poolNumber(POOL_NUMBER)
                     .expenseList(List.of(
                         DailyExpense.builder()
                             .dateOfExpense(LocalDate.of(2023, 1, 5))
-                            .poolNumber(POOL_NUMBER)
                             .payCash(false)
                             .time(DailyExpenseTime.builder()
                                 .travelTime(LocalTime.of(1, 2))
@@ -3280,6 +3489,102 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .smartCard(new BigDecimal("4.20"))
                         .build());
             }
+
+            @Test
+            void typicalWithDBData() throws Exception {
+                CalculateTotalExpenseRequestDto request = CalculateTotalExpenseRequestDto.builder()
+                    .jurorNumber(JUROR_NUMBER)
+                    .poolNumber(POOL_NUMBER)
+                    .expenseList(List.of(
+                        DailyExpense.builder()
+                            .dateOfExpense(LocalDate.of(2023, 1, 5))
+                            .build(),
+                        DailyExpense.builder()
+                            .dateOfExpense(LocalDate.of(2023, 1, 11))
+                            .payCash(false)
+                            .time(DailyExpenseTime.builder()
+                                .travelTime(LocalTime.of(1, 2))
+                                .payAttendance(PayAttendanceType.FULL_DAY)
+                                .build())
+                            .financialLoss(
+                                createDailyExpenseFinancialLoss(15.01, 6.00, 6.20, "Desc")
+                            )
+                            .travel(
+                                createDailyExpenseTravel(TravelMethod.CAR, 3, 15, 13.25, 12.1, 9.4)
+                            )
+                            .foodAndDrink(
+                                createDailyExpenseFoodAndDrink(FoodDrinkClaimType.MORE_THAN_10_HOURS, 4.1)
+                            )
+                            .build()
+                    ))
+                    .build();
+
+                CombinedExpenseDetailsDto<ExpenseDetailsForTotals> response = triggerValid(request);
+                assertThat(response).isNotNull();
+                assertThat(response.getExpenseDetails()).hasSize(2);
+                assertThat(response.getExpenseDetails().get(0)).isEqualTo(
+                    ExpenseDetailsForTotals.builder()
+                        .financialLossApportionedApplied(false)
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .totalDue(new BigDecimal("525.00"))
+                        .totalPaid(new BigDecimal("0.00"))
+                        .attendanceDate(LocalDate.of(2023, 1, 5))
+                        .attendanceType(AttendanceType.FULL_DAY)
+                        .paymentMethod(PaymentMethod.BACS)
+                        .lossOfEarnings(new BigDecimal("90.00"))
+                        .extraCare(new BigDecimal("70.00"))
+                        .other(new BigDecimal("80.00"))
+                        .publicTransport(new BigDecimal("10.00"))
+                        .taxi(new BigDecimal("20.00"))
+                        .motorcycle(new BigDecimal("30.00"))
+                        .car(new BigDecimal("40.00"))
+                        .bicycle(new BigDecimal("50.00"))
+                        .parking(new BigDecimal("60.00"))
+                        .foodAndDrink(new BigDecimal("100.00"))
+                        .smartCard(new BigDecimal("25.00"))
+                        .build());
+                assertThat(response.getExpenseDetails().get(1)).isEqualTo(
+                    ExpenseDetailsForTotals.builder()
+                        .financialLossApportionedApplied(false)
+                        .payAttendance(PayAttendanceType.FULL_DAY)
+                        .totalDue(new BigDecimal("76.00000"))
+                        .totalPaid(new BigDecimal("8.00"))
+                        .attendanceDate(LocalDate.of(2023, 1, 11))
+                        .attendanceType(AttendanceType.FULL_DAY)
+                        .paymentMethod(PaymentMethod.BACS)
+                        .lossOfEarnings(new BigDecimal("15.01"))
+                        .extraCare(new BigDecimal("6.00"))
+                        .other(new BigDecimal("6.20"))
+                        .publicTransport(new BigDecimal("12.10"))
+                        .taxi(new BigDecimal("9.40"))
+                        .motorcycle(BigDecimal.ZERO)
+                        .car(new BigDecimal("5.97000"))
+                        .bicycle(BigDecimal.ZERO)
+                        .parking(new BigDecimal("13.25"))
+                        .foodAndDrink(new BigDecimal("12.17000"))
+                        .smartCard(new BigDecimal("4.10"))
+                        .build());
+                CombinedExpenseDetailsDto.Total total = response.getTotal();
+                total.setHasTotals(true);//Have to set this to true so we can view the totals
+                assertThat(total).isEqualTo(
+                    CombinedExpenseDetailsDto.Total.builder()
+                        .hasTotals(true)
+                        .totalDays(2)
+                        .lossOfEarnings(new BigDecimal("105.01"))
+                        .extraCare(new BigDecimal("76.00"))
+                        .other(new BigDecimal("86.20"))
+                        .publicTransport(new BigDecimal("22.10"))
+                        .taxi(new BigDecimal("29.40"))
+                        .motorcycle(new BigDecimal("30.00"))
+                        .car(new BigDecimal("45.97000"))
+                        .bicycle(new BigDecimal("50.00"))
+                        .parking(new BigDecimal("73.25"))
+                        .foodAndDrink(new BigDecimal("112.17000"))
+                        .smartCard(new BigDecimal("29.10"))
+                        .totalDue(new BigDecimal("601.00000"))
+                        .totalPaid(new BigDecimal("8.00"))
+                        .build());
+            }
         }
 
         @Nested
@@ -3298,10 +3603,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void badPayload() throws Exception {
                 assertInvalidPayload(triggerInvalid("415", CalculateTotalExpenseRequestDto.builder()
                         .jurorNumber(null)
+                        .poolNumber(POOL_NUMBER)
                         .expenseList(List.of(
                             DailyExpense.builder()
                                 .dateOfExpense(LocalDate.of(2023, 1, 17))
-                                .poolNumber(POOL_NUMBER)
                                 .payCash(false)
                                 .time(DailyExpenseTime.builder()
                                     .payAttendance(PayAttendanceType.FULL_DAY)
@@ -3319,10 +3624,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void forbiddenIsBureauUser() throws Exception {
                 assertForbiddenResponse(triggerInvalid("400", CalculateTotalExpenseRequestDto.builder()
                     .jurorNumber(JUROR_NUMBER)
+                    .poolNumber(POOL_NUMBER)
                     .expenseList(List.of(
                         DailyExpense.builder()
                             .dateOfExpense(LocalDate.of(2023, 1, 17))
-                            .poolNumber(POOL_NUMBER)
                             .payCash(false)
                             .time(DailyExpenseTime.builder()
                                 .payAttendance(PayAttendanceType.FULL_DAY)
@@ -3339,10 +3644,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void expenseNotFound() throws Exception {
                 assertNotFound(triggerInvalid("415", CalculateTotalExpenseRequestDto.builder()
                     .jurorNumber(JUROR_NUMBER)
+                    .poolNumber(POOL_NUMBER)
                     .expenseList(List.of(
                         DailyExpense.builder()
                             .dateOfExpense(LocalDate.of(2024, 1, 17))
-                            .poolNumber(POOL_NUMBER)
                             .payCash(false)
                             .time(DailyExpenseTime.builder()
                                 .payAttendance(PayAttendanceType.FULL_DAY)
@@ -3359,10 +3664,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void expensesLessThanZero() throws Exception {
                 assertBusinessRuleViolation(triggerInvalid("415", CalculateTotalExpenseRequestDto.builder()
                         .jurorNumber(JUROR_NUMBER)
+                        .poolNumber(POOL_NUMBER)
                         .expenseList(List.of(
                             DailyExpense.builder()
                                 .dateOfExpense(LocalDate.of(2023, 1, 5))
-                                .poolNumber(POOL_NUMBER)
                                 .payCash(false)
                                 .time(DailyExpenseTime.builder()
                                     .travelTime(LocalTime.of(1, 2))
@@ -3388,10 +3693,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void dueIsLessThanPaid() throws Exception {
                 assertBusinessRuleViolation(triggerInvalid("415", CalculateTotalExpenseRequestDto.builder()
                         .jurorNumber(JUROR_NUMBER)
+                        .poolNumber(POOL_NUMBER)
                         .expenseList(List.of(
                             DailyExpense.builder()
                                 .dateOfExpense(LocalDate.of(2023, 1, 11))
-                                .poolNumber(POOL_NUMBER)
                                 .payCash(false)
                                 .time(DailyExpenseTime.builder()
                                     .travelTime(LocalTime.of(1, 2))
@@ -3622,7 +3927,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                     .build()
                             ))
                             .build()
-                );
+                    );
             }
 
             @Test
@@ -3702,7 +4007,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                     .build()
                             ))
                             .build()
-                );
+                    );
             }
 
             @Test

@@ -5,4 +5,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 
 public interface CourtPrintLetterRepository {
     Tuple retrievePrintInformation(String jurorNumber, CourtLetterType courtLetterType, boolean welsh, String owner);
+
+    Tuple retrievePrintInformation(String jurorNumber, CourtLetterType courtLetterType, boolean welsh, String owner,
+                                   String trialNumber);
 }

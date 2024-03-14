@@ -22,6 +22,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mockStatic;
 
 @ExtendWith(SpringExtension.class)
+@SuppressWarnings("PMD.LawOfDemeter")
 class LetterBaseTest {
     private MockedStatic<Calendar> mockStaticCalendar;
     @Mock
@@ -82,7 +83,7 @@ class LetterBaseTest {
 
         LetterBase testLetter = new LetterBase(testContextBuilder().build());
         testLetter.addData(LetterBase.LetterDataType.DATE_OF_LETTER, 18);
-        assertThatExceptionOfType(MojException.InternalServerError.class)
+        assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
             .isThrownBy(testLetter::getLetterString);
     }
 

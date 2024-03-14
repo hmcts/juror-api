@@ -93,7 +93,7 @@ public class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Happy path for typical check")
     @Sql({"/db/mod/truncate.sql", "/db/PncCheck_CreateJurors.sql"})
-    public void pncCheckHappyPath() throws JsonProcessingException {
+    void pncCheckHappyPath() throws JsonProcessingException {
         stubResponse(PncCheckServiceClient.JurorCheckRequest.builder()
             .name(PncCheckServiceClient.NameDetails.builder()
                 .firstName("Liam")
@@ -115,7 +115,7 @@ public class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Unhappy path for typical check with no postcode")
     @Sql({"/db/mod/truncate.sql", "/db/PncCheck_CreateJurors.sql"})
-    public void pncCheckUnhappyPathNoPostcode() throws JsonProcessingException {
+    void pncCheckUnhappyPathNoPostcode() throws JsonProcessingException {
         stubResponse(PncCheckServiceClient.JurorCheckRequest.builder()
             .name(PncCheckServiceClient.NameDetails.builder()
                 .firstName("Liam")
@@ -137,7 +137,7 @@ public class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Unhappy path for typical check with no date of birth")
     @Sql({"/db/mod/truncate.sql", "/db/PncCheck_CreateJurors.sql"})
-    public void pncCheckUnhappyPathNoDateOfBirth() throws JsonProcessingException {
+    void pncCheckUnhappyPathNoDateOfBirth() throws JsonProcessingException {
         stubResponse(PncCheckServiceClient.JurorCheckRequest.builder()
             .name(PncCheckServiceClient.NameDetails.builder()
                 .firstName("Liam")
@@ -159,7 +159,7 @@ public class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Unhappy path for typical check no juror number found matching")
     @Sql({"/db/mod/truncate.sql", "/db/PncCheck_CreateJurors.sql"})
-    public void pncCheckUnhappyPathNoJurorNumber() throws JsonProcessingException {
+    void pncCheckUnhappyPathNoJurorNumber() throws JsonProcessingException {
         stubResponse(PncCheckServiceClient.JurorCheckRequest.builder()
             .name(PncCheckServiceClient.NameDetails.builder()
                 .firstName("Liam")

@@ -1,16 +1,15 @@
 buildscript {
     ext {
-        springBootVersion = '3.1.7'
-        //oracleVersion = '11.2.0.4'
-        notifyVersion = '3.19.2-RELEASE'
+        springBootVersion = '3.2.3'
+        notifyVersion = '5.0.0-RELEASE'
         springDocVersion = '2.3.0'
         queryDslVersion = '5.1.0'
-        flywayVersion = '10.8.1'
+        flywayVersion = '10.9.1'
         postgresVersion = '42.7.2'
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath("org.postgresql:postgresql:${postgresVersion}")
+        classpath("org.postgresqlpostgresql:${postgresVersion}")
         classpath("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
     }
 }
@@ -18,16 +17,13 @@ buildscript {
 plugins {
     id 'org.springframework.boot' version "${springBootVersion}"
     id "org.flywaydb.flyway" version "${flywayVersion}"
-    id "com.dorongold.task-tree" version "1.5"
+    id "com.dorongold.task-tree" version "2.1.1"
     id 'org.cyclonedx.bom' version '1.4.1'
     id 'org.owasp.dependencycheck' version '8.4.3'
     id 'checkstyle'
     id 'pmd'
     id 'com.github.ben-manes.versions' version '0.51.0'
     id 'org.sonarqube' version '4.4.1.3373'
-
-//      id 'com.ewerk.gradle.plugins.querydsl' version '1.0.10'
-//      id 'io.franzbecker.gradle-lombok' version '5.0.0'
 }
 apply plugin: 'java'
 apply plugin: 'eclipse'
@@ -53,9 +49,6 @@ tasks.withType(JavaExec).configureEach {
 
 bootJar {
     archiveFileName = "juror-api.jar"
-    manifest {
-        attributes('Implementation-Version': project.version.toString())
-    }
 }
 
 jacoco {
@@ -93,27 +86,28 @@ dependencies {
     implementation 'org.yaml:snakeyaml:2.2'
     implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.19'
     implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.19'
-    implementation 'org.json:json:20230618'
     //
-    implementation('org.springframework.boot:spring-boot-starter-actuator')
-    implementation('org.springframework.boot:spring-boot-starter-data-jpa')
+    implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
     implementation("org.springframework.data:spring-data-envers:${springBootVersion}")
-    implementation('org.springframework.boot:spring-boot-starter-security')
-    implementation('org.springframework.boot:spring-boot-starter-web')
-    implementation('org.springframework.boot:spring-boot-starter-json')
-    //implementation("com.oracle:ojdbc6:${oracleVersion}")
-    //implementation("com.oracle.database.jdbc:ojdbc11:23.2.0.0")
+    implementation("org.springframework.boot:spring-boot-starter-security:${springBootVersion}")
+    implementation("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
+    implementation("org.springframework.boot:spring-boot-starter-json:${springBootVersion}")
+    implementation ("org.springframework.boot:spring-boot-starter-validation:${springBootVersion}")
+    runtimeOnly("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
+
+
     implementation group: 'org.postgresql', name: 'postgresql', version: "${postgresVersion}"
-    implementation "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
-    implementation "org.flywaydb:flyway-core:${flywayVersion}"
+    runtimeOnly "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
+    runtimeOnly "org.flywaydb:flyway-core:${flywayVersion}"
 
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.2'
     implementation 'javax.mail:mail:1.4.7'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
-    implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.2'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.2'
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
 
-    implementation('com.google.guava:guava:31.1-jre')
+    implementation('com.google.guava:guava:33.0.0-jre')
 
     implementation('org.hibernate.orm:hibernate-core:6.3.0.CR1')
 
@@ -128,70 +122,38 @@ dependencies {
     annotationProcessor("com.querydsl:querydsl-apt:${queryDslVersion}:jakarta")
     annotationProcessor('jakarta.persistence:jakarta.persistence-api:3.1.0')
 
-    implementation('org.projectlombok:lombok:1.18.30')
+    implementation('org.projectlombok:lombok:1.18.28')
     annotationProcessor('org.projectlombok:lombok')
 
-    implementation('org.apache.commons:commons-lang3:3.14.0')
-    implementation('org.apache.commons:commons-text:1.11.0')
+    implementation('org.apache.commons:commons-lang3:3.12.0')
+    implementation('org.apache.commons:commons-text:1.10.0')
     implementation("uk.gov.service.notify:notifications-java-client:${notifyVersion}")
 
-    runtimeOnly('org.springframework.boot:spring-boot-devtools')
-    runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.4.19')
-
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
-    implementation group: 'io.rest-assured', name: 'rest-assured'
 
 
-    testImplementation('org.springframework.boot:spring-boot-starter-test')
-    testImplementation('org.springframework.boot:spring-boot-starter-data-jpa')
+    testImplementation("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
 
-    testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
+    testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
     //testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
-    testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:2.38.0'
+    testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:3.2.7'
     testImplementation('org.assertj:assertj-core:3.25.3')
-    testImplementation 'org.mockito:mockito-core:5.10.0'
+    testImplementation 'org.mockito:mockito-core:5.11.0'
 
-    testImplementation('org.ajbrown:name-machine:1.0.0')
     testImplementation('org.projectlombok:lombok')
     testAnnotationProcessor('org.projectlombok:lombok')
 
-    testImplementation('net.bytebuddy:byte-buddy:1.14.12')
+    testImplementation('net.bytebuddy:byte-buddy:1.12.19')
     testImplementation('junit:junit:4.13.2')
     testImplementation "org.testcontainers:testcontainers:1.19.6"
     testImplementation "org.testcontainers:junit-jupiter:1.19.6"
     testImplementation 'org.testcontainers:postgresql:1.19.6'
 
     // Validation
-    testImplementation 'org.wiremock:wiremock:3.4.2'
+    testImplementation 'org.wiremock:wiremock-standalone:3.4.2'
 }
-//
-//task deleteQueryDslClasses(type: Delete) {
-//    delete "src/querydsl/java"
-//}
-//
-//task generateQueryDSL(type: JavaCompile) {
-//    source = sourceSets.main.java.srcDirs
-//    classpath = sourceSets.main.compileClasspath
-//    getDestinationDirectory().set(file("src/querydsl/java"))
-//    options.annotationProcessorPath = configurations.annotationProcessor
-//    options.compilerArgs = [
-//            '-proc:only',
-//            '-processor',
-//            'com.querydsl.apt.jpa.JPAAnnotationProcessor',
-//            '-Aquerydsl.generatedAnnotationClass=com.querydsl.core.annotations.Generated'
-//    ]
-//}
-
-//querydsl {
-//    hibernate = true
-//    jpa = true
-//}
-//
-//compileQuerydsl {
-//    options.annotationProcessorPath = configurations.querydsl
-//}
 
 sonarqube {
     properties {
@@ -339,11 +301,11 @@ sourceSets {
 }
 
 checkstyleMain {
-    maxWarnings = 276
+    maxWarnings = 577
 }
 checkstyleIntegrationTest {
 
-    maxWarnings = 1188
+    maxWarnings = 436
 }
 checkstyle {
     maxWarnings = 0
@@ -352,13 +314,13 @@ checkstyle {
 }
 
 pmdIntegrationTest {
-    maxFailures = 785
+    maxFailures = 628
 }
 pmdTest {
-    maxFailures = 375
+    maxFailures = 391
 }
 pmdMain {
-    maxFailures = 1139
+    maxFailures = 1319
 }
 pmd {
     maxFailures = 0

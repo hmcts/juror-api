@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
 import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,32 +9,34 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeed;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeedsRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.PartAmendment;
 import uk.gov.hmcts.juror.api.bureau.domain.PartAmendmentRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHist;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHistRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.THistoryCode;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -44,55 +47,21 @@ import java.util.stream.Stream;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateService, ResponseMergeService {
-    private final JurorResponseRepository jurorResponseRepository;
-    private final JurorResponseAuditRepository auditRepository;
-    private final PoolRepository poolDetailsRepository;
+    private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
+    private final JurorResponseAuditRepositoryMod auditRepository;
+    private final JurorPoolRepository jurorDetailsRepository;
+    private final JurorStatusRepository jurorStatusRepository;
     private final PartAmendmentRepository partAmendmentRepository;
-    private final PartHistRepository partHistRepository;
+    private final JurorHistoryRepository partHistRepository;
     private final EntityManager entityManager;
-    private final PoolRepository poolRepository;
-    private final PartHistRepository historyRepository;
+    private final JurorPoolRepository jurorPoolRepository;
+    private final JurorHistoryRepository historyRepository;
     private final AssignOnUpdateService assignOnUpdateService;
-    private final BureauJurorSpecialNeedsRepository specialNeedsRepository;
+    private final JurorReasonableAdjustmentRepository specialNeedsRepository;
     private final WelshCourtLocationRepository welshCourtLocationRepository;
 
-
-    @Autowired
-    public ResponseStatusUpdateServiceImpl(final JurorResponseRepository jurorResponseRepository,
-                                           final JurorResponseAuditRepository auditRepository,
-                                           final PoolRepository poolDetailsRepository,
-                                           final PartAmendmentRepository partAmendmentRepository,
-                                           final PartHistRepository partHistRepository,
-                                           final EntityManager entityManager,
-                                           final PoolRepository poolRepository,
-                                           final PartHistRepository historyRepository,
-                                           final AssignOnUpdateService assignOnUpdateService,
-                                           final BureauJurorSpecialNeedsRepository specialNeedsRepository,
-                                           final WelshCourtLocationRepository welshCourtLocationRepository) {
-        Assert.notNull(jurorResponseRepository, "JurorResponseRepository cannot be null");
-        Assert.notNull(auditRepository, "JurorResponseAuditRepository cannot be null");
-        Assert.notNull(poolDetailsRepository, "PoolRepository cannot be null");
-        Assert.notNull(partAmendmentRepository, "RetrieveAmendmentRepository cannot be null");
-        Assert.notNull(partHistRepository, "RetrieveHistoryRepository cannot be null");
-        Assert.notNull(entityManager, "EntityManager cannot be null");
-        Assert.notNull(poolRepository, "PoolRepository cannot be null");
-        Assert.notNull(historyRepository, "PartHistRepository cannot be null");
-        Assert.notNull(assignOnUpdateService, "AssignOnUpdateService cannot be null");
-        Assert.notNull(specialNeedsRepository, " cannot be null");
-        Assert.notNull(welshCourtLocationRepository, " cannot be null");
-        this.jurorResponseRepository = jurorResponseRepository;
-        this.auditRepository = auditRepository;
-        this.poolDetailsRepository = poolDetailsRepository;
-        this.partAmendmentRepository = partAmendmentRepository;
-        this.partHistRepository = partHistRepository;
-        this.entityManager = entityManager;
-        this.poolRepository = poolRepository;
-        this.historyRepository = historyRepository;
-        this.assignOnUpdateService = assignOnUpdateService;
-        this.specialNeedsRepository = specialNeedsRepository;
-        this.welshCourtLocationRepository = welshCourtLocationRepository;
-    }
 
     /**
      * Update the processing status of a Juror response within Juror Digital.
@@ -107,7 +76,7 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
     public void updateJurorResponseStatus(final String jurorNumber, final ProcessingStatus status,
                                           final Integer version, final String auditorUsername) {
 
-        JurorResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
+        DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
 
         log.debug("Updating status for juror {} to {}", jurorNumber, status.getDescription());
         if (jurorResponse != null) {
@@ -144,27 +113,27 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
                 mergeResponse(jurorResponse, auditorUsername);
 
                 // JDB-2487 AC16.6: Changing to a CLOSED processingStatus, so set required "Positive Response" values
-                Pool poolDetails = poolRepository.findByJurorNumber(jurorNumber);
-                poolDetails.setResponded(Pool.RESPONDED);
-                poolDetails.setUserEdtq(auditorUsername);
-                poolDetails.setStatus(IPoolStatus.RESPONDED);
-                poolRepository.save(poolDetails);
+                JurorPool jurorDetails = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
+                jurorDetails.getJuror().setResponded(true);
+                jurorDetails.setUserEdtq(auditorUsername);
+                jurorDetails.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED,
+                    jurorStatusRepository));
+                jurorPoolRepository.save(jurorDetails);
 
                 // audit the pool changes
-                final PartHist history = new PartHist();
+                final JurorHistory history = new JurorHistory();
                 history.setJurorNumber(jurorNumber);
-                history.setOwner(JurorDigitalApplication.JUROR_OWNER);
-                history.setHistoryCode(THistoryCode.RESPONDED);
-                history.setUserId(auditorUsername);
-                history.setInfo(PartHist.RESPONDED);
-                history.setPoolNumber(poolDetails.getPoolNumber());
-                history.setDatePart(Date.from(Instant.now()));
+                history.setHistoryCode(HistoryCodeMod.RESPONDED_POSITIVELY);
+                history.setCreatedBy(auditorUsername);
+                history.setOtherInformation(JurorHistory.RESPONDED);
+                history.setPoolNumber(jurorDetails.getPoolNumber());
+                history.setOtherInformationDate(LocalDate.now());
                 historyRepository.save(history);
             }
             log.info("Updated juror '{}' processing status to '{}'", jurorNumber, jurorResponse.getProcessingStatus());
 
             //audit response status change
-            JurorResponseAudit responseAudit = auditRepository.save(JurorResponseAudit.builder()
+            JurorResponseAuditMod responseAudit = auditRepository.save(JurorResponseAuditMod.builder()
                 .jurorNumber(jurorResponse.getJurorNumber())
                 .login(auditorUsername)
                 .oldProcessingStatus(auditProcessingStatus)
@@ -181,7 +150,7 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
-    public void updateJurorResponseWithoutMerge(final JurorResponse jurorResponse) {
+    public void updateJurorResponseWithoutMerge(final DigitalResponse jurorResponse) {
         log.debug("Updating juror response without merging!");
         jurorResponseRepository.save(jurorResponse);
         log.debug("Updated juror response without merging.");
@@ -190,23 +159,23 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
 
     @Override
     @Transactional(propagation = Propagation.MANDATORY)
-    public void mergeResponse(final JurorResponse originalDetails, final String auditorUsername) {
+    public void mergeResponse(final DigitalResponse originalDetails, final String auditorUsername) {
         if (log.isTraceEnabled()) {
             log.trace("Merging response {}", originalDetails);
         }
 
-        final Pool poolDetails = poolDetailsRepository.findByJurorNumber(originalDetails.getJurorNumber());
-        if (poolDetails == null) {
+        final JurorPool jurorDetails = jurorDetailsRepository.findByJurorJurorNumber(originalDetails.getJurorNumber());
+        if (jurorDetails == null) {
             log.error("No pool entry found for Juror {}", originalDetails.getJurorNumber());
             throw new JurorPoolEntryNotFoundException("No pool entry found");
         }
 
-        JurorResponse updatedDetails = new JurorResponse();
+        DigitalResponse updatedDetails = new DigitalResponse();
         BeanUtils.copyProperties(originalDetails, updatedDetails);
 
 
         // JDB-3132, RA update  legacy.
-        List<BureauJurorSpecialNeed> specialNeedsByJurorNumber =
+        List<JurorReasonableAdjustment> specialNeedsByJurorNumber =
             specialNeedsRepository.findByJurorNumber(originalDetails.getJurorNumber());
 
         log.debug(
@@ -218,19 +187,21 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
         if (specialNeedsByJurorNumber != null) {
             //if multiple set need to M
             if (specialNeedsByJurorNumber.size() > 1) {
-                poolDetails.setSpecialNeed("M");
+                jurorDetails.getJuror().setReasonableAdjustmentCode("M");
             } else if (specialNeedsByJurorNumber.size() == 1
                 && specialNeedsByJurorNumber.get(0) != null) {
-                poolDetails.setSpecialNeed(specialNeedsByJurorNumber.get(0).getSpecialNeed().getCode());
+                jurorDetails.getJuror()
+                    .setReasonableAdjustmentCode(specialNeedsByJurorNumber.get(0).getReasonableAdjustment().getCode());
             }
 
-            log.debug("Merging special need information  for juror {}, Special need {}", poolDetails.getJurorNumber(),
-                poolDetails.getSpecialNeed()
+            log.debug("Merging special need information  for juror {}, Special need {}", jurorDetails.getJurorNumber(),
+                //   poolDetails.getSpecialNeed()
+                jurorDetails.getJuror().getReasonableAdjustmentMessage()
             );
 
-            poolDetailsRepository.save(poolDetails);// save the updated pool table data
+            jurorDetailsRepository.save(jurorDetails);// save the updated pool table data
 
-            log.debug("Merged special need information  for juror {}", poolDetails.getJurorNumber());
+            log.debug("Merged special need information  for juror {}", jurorDetails.getJurorNumber());
         }
 
         if ("deceased".equalsIgnoreCase(originalDetails.getThirdPartyReason())) {
@@ -241,11 +212,11 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
 
             // flag the juror digital response as completed (cannot re-copy to pool)
             originalDetails.setProcessingComplete(Boolean.TRUE);
-            originalDetails.setCompletedAt(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
+            originalDetails.setCompletedAt(LocalDateTime.now());
 
             jurorResponseRepository.save(originalDetails);// save the completed response to Juror Digital DB
             //poolDetailsRepository.save(poolDetails);// save the updated pool table data
-            log.info("Merged third party deceased information for juror {}", poolDetails.getJurorNumber());
+            log.info("Merged third party deceased information for juror {}", jurorDetails.getJurorNumber());
             return;//no further processing!
         }
 
@@ -253,8 +224,8 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
         // check for changes in original values
         boolean titleChanged = false;
         if (updatedDetails.getTitle() != null) {
-            if (poolDetails.getTitle() != null) {
-                titleChanged = updatedDetails.getTitle().compareTo(poolDetails.getTitle()) != 0;
+            if (jurorDetails.getJuror().getTitle() != null) {
+                titleChanged = updatedDetails.getTitle().compareTo(jurorDetails.getJuror().getTitle()) != 0;
             } else {
                 titleChanged = true;
             }
@@ -265,8 +236,8 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
 
         boolean firstNameChanged = false;
         if (updatedDetails.getFirstName() != null) {
-            if (poolDetails.getFirstName() != null) {
-                firstNameChanged = updatedDetails.getFirstName().compareTo(poolDetails.getFirstName()) != 0;
+            if (jurorDetails.getJuror().getFirstName() != null) {
+                firstNameChanged = updatedDetails.getFirstName().compareTo(jurorDetails.getJuror().getFirstName()) != 0;
             } else {
                 firstNameChanged = true;
             }
@@ -274,8 +245,8 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
 
         boolean lastNameChanged = false;
         if (updatedDetails.getLastName() != null) {
-            if (poolDetails.getLastName() != null) {
-                lastNameChanged = updatedDetails.getLastName().compareTo(poolDetails.getLastName()) != 0;
+            if (jurorDetails.getJuror().getLastName() != null) {
+                lastNameChanged = updatedDetails.getLastName().compareTo(jurorDetails.getJuror().getLastName()) != 0;
             } else {
                 lastNameChanged = true;
             }
@@ -283,11 +254,12 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
 
         boolean dobChanged = false;
         if (updatedDetails.getDateOfBirth() != null) {
-            if (poolDetails.getDateOfBirth() != null) {
+            if (jurorDetails.getJuror().getDateOfBirth() != null) {
 
                 // compare dates
-                String updatedDob = new SimpleDateFormat("yyyy-MM-dd").format(updatedDetails.getDateOfBirth());
-                String oldDob = new SimpleDateFormat("yyyy-MM-dd").format(poolDetails.getDateOfBirth());
+
+                String updatedDob = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(updatedDetails.getDateOfBirth());
+                String oldDob = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(jurorDetails.getJuror().getDateOfBirth());
                 dobChanged = updatedDob.compareTo(oldDob) != 0;
             } else {
                 dobChanged = true;
@@ -296,25 +268,25 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
 
         boolean postcodeChanged = false;
         if (updatedDetails.getPostcode() != null) {
-            if (poolDetails.getPostcode() != null) {
-                postcodeChanged = updatedDetails.getPostcode().compareTo(poolDetails.getPostcode()) != 0;
+            if (jurorDetails.getJuror().getPostcode() != null) {
+                postcodeChanged = updatedDetails.getPostcode().compareTo(jurorDetails.getJuror().getPostcode()) != 0;
             } else {
                 postcodeChanged = true;
             }
         }
 
         String newAddress = ""
-            + Objects.toString(updatedDetails.getAddress(), "").trim()
-            + Objects.toString(updatedDetails.getAddress2(), "").trim()
-            + Objects.toString(updatedDetails.getAddress3(), "").trim()
-            + Objects.toString(updatedDetails.getAddress4(), "").trim()
-            + Objects.toString(updatedDetails.getAddress5(), "").trim();
+            + Objects.toString(updatedDetails.getAddressLine1(), "").trim()
+            + Objects.toString(updatedDetails.getAddressLine2(), "").trim()
+            + Objects.toString(updatedDetails.getAddressLine3(), "").trim()
+            + Objects.toString(updatedDetails.getAddressLine4(), "").trim()
+            + Objects.toString(updatedDetails.getAddressLine5(), "").trim();
         String oldAddress = ""
-            + Objects.toString(poolDetails.getAddress(), "").trim()
-            + Objects.toString(poolDetails.getAddress2(), "").trim()
-            + Objects.toString(poolDetails.getAddress3(), "").trim()
-            + Objects.toString(poolDetails.getAddress4(), "").trim()
-            + Objects.toString(poolDetails.getAddress5(), "").trim();
+            + Objects.toString(jurorDetails.getJuror().getAddressLine1(), "").trim()
+            + Objects.toString(jurorDetails.getJuror().getAddressLine2(), "").trim()
+            + Objects.toString(jurorDetails.getJuror().getAddressLine3(), "").trim()
+            + Objects.toString(jurorDetails.getJuror().getAddressLine4(), "").trim()
+            + Objects.toString(jurorDetails.getJuror().getAddressLine5(), "").trim();
         boolean addressChanged = oldAddress.compareToIgnoreCase(newAddress) != 0;
 
         // copy over the juror details only if this has not been completed before
@@ -324,14 +296,15 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             PartAmendment allAmendments = new PartAmendment();
 
             // 1) copy the amendment values first!
-            BeanUtils.copyProperties(poolDetails, allAmendments);
+            mapJurorDetailsToAllAmendments(jurorDetails, allAmendments);
+
             final String fullAddress = Stream.of(
                     "",
-                    poolDetails.getAddress(),
-                    poolDetails.getAddress2(),
-                    poolDetails.getAddress3(),
-                    poolDetails.getAddress4(),
-                    poolDetails.getAddress5()
+                    jurorDetails.getJuror().getAddressLine1(),
+                    jurorDetails.getJuror().getAddressLine2(),
+                    jurorDetails.getJuror().getAddressLine3(),
+                    jurorDetails.getJuror().getAddressLine4(),
+                    jurorDetails.getJuror().getAddressLine5()
                 )
                 .filter(string -> string != null && !string.isEmpty())
                 .map(","::concat)
@@ -348,37 +321,38 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             // copy the actual details to pool. Avoid coping 3rd party details.
             if (!ObjectUtils.isEmpty(updatedDetails.getThirdPartyReason())) {
                 log.debug("Response is a third-party response");
-                BeanUtils.copyProperties(updatedDetails, poolDetails, "phoneNumber", "altPhoneNumber", "email");
+                BeanUtils.copyProperties(updatedDetails, jurorDetails, "phoneNumber", "altPhoneNumber", "email");
+                mapDetailsToJuror(updatedDetails, jurorDetails.getJuror(), false, false);
             } else {
-                BeanUtils.copyProperties(updatedDetails, poolDetails);
+                BeanUtils.copyProperties(updatedDetails, jurorDetails);
+                mapDetailsToJuror(updatedDetails, jurorDetails.getJuror(), true, true);
             }
 
             //JDB- 3053
             //If Welsh then Y, English - Null
             if (originalDetails.getWelsh() == Boolean.TRUE
-                && welshCourtLocationRepository.findByLocCode(poolDetails.getCourt().getLocCode()) != null) {
-                poolDetails.setWelsh(Boolean.TRUE);
+                && welshCourtLocationRepository.findByLocCode(jurorDetails.getCourt().getLocCode()) != null) {
+                jurorDetails.getJuror().setWelsh(Boolean.TRUE);
             } else {
-                poolDetails.setWelsh(null);
+                jurorDetails.getJuror().setWelsh(null);
             }
-
             // flag the juror digital response as completed (cannot re-copy to pool)
             originalDetails.setProcessingComplete(Boolean.TRUE);
-            originalDetails.setCompletedAt(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
+            originalDetails.setCompletedAt(LocalDateTime.now());
             log.trace("Set processing complete");
 
             jurorResponseRepository.save(originalDetails);// save the completed response to Juror Digital DB
-            poolDetailsRepository.save(poolDetails);// save the updated pool table data
+            jurorDetailsRepository.save(jurorDetails);// save the updated pool table data
 
             // 3) audit - copy the part hist entry items
             // title
             if (titleChanged) {
-                PartHist titleHistory = new PartHist();
-                BeanUtils.copyProperties(poolDetails, titleHistory);
-                titleHistory.setPoolNumber(poolDetails.getPoolNumber());
-                titleHistory.setHistoryCode(THistoryCode.CHANGE_PERSON_DETAILS);
-                titleHistory.setInfo("Title Changed");
-                titleHistory.setUserId(auditorUsername);
+                JurorHistory titleHistory = new JurorHistory();
+                BeanUtils.copyProperties(jurorDetails, titleHistory);
+                titleHistory.setPoolNumber(jurorDetails.getPoolNumber());
+                titleHistory.setHistoryCode(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
+                titleHistory.setOtherInformation("Title Changed");
+                titleHistory.setCreatedBy(auditorUsername);
 
                 PartAmendment titleAmendments = new PartAmendment();
                 BeanUtils.copyProperties(allAmendments, titleAmendments);
@@ -397,12 +371,12 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             }
 
             if (firstNameChanged) {
-                PartHist firstNameHistory = new PartHist();
-                BeanUtils.copyProperties(poolDetails, firstNameHistory);
-                firstNameHistory.setPoolNumber(poolDetails.getPoolNumber());
-                firstNameHistory.setHistoryCode(THistoryCode.CHANGE_PERSON_DETAILS);
-                firstNameHistory.setInfo("First Name Changed");
-                firstNameHistory.setUserId(auditorUsername);
+                JurorHistory firstNameHistory = new JurorHistory();
+                BeanUtils.copyProperties(jurorDetails, firstNameHistory);
+                firstNameHistory.setPoolNumber(jurorDetails.getPoolNumber());
+                firstNameHistory.setHistoryCode(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
+                firstNameHistory.setOtherInformation("First Name Changed");
+                firstNameHistory.setCreatedBy(auditorUsername);
 
                 PartAmendment firstNameAmendments = new PartAmendment();
                 BeanUtils.copyProperties(allAmendments, firstNameAmendments);
@@ -417,12 +391,12 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             }
 
             if (lastNameChanged) {
-                PartHist lastNameHistory = new PartHist();
-                BeanUtils.copyProperties(poolDetails, lastNameHistory);
-                lastNameHistory.setPoolNumber(poolDetails.getPoolNumber());
-                lastNameHistory.setHistoryCode(THistoryCode.CHANGE_PERSON_DETAILS);
-                lastNameHistory.setInfo("Last Name Changed");
-                lastNameHistory.setUserId(auditorUsername);
+                JurorHistory lastNameHistory = new JurorHistory();
+                BeanUtils.copyProperties(jurorDetails, lastNameHistory);
+                lastNameHistory.setPoolNumber(jurorDetails.getPoolNumber());
+                lastNameHistory.setHistoryCode(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
+                lastNameHistory.setOtherInformation("Last Name Changed");
+                lastNameHistory.setCreatedBy(auditorUsername);
 
                 PartAmendment lastNameAmendments = new PartAmendment();
                 BeanUtils.copyProperties(allAmendments, lastNameAmendments);
@@ -437,12 +411,12 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             }
 
             if (dobChanged) {
-                PartHist dobHistory = new PartHist();
-                BeanUtils.copyProperties(poolDetails, dobHistory);
-                dobHistory.setPoolNumber(poolDetails.getPoolNumber());
-                dobHistory.setHistoryCode(THistoryCode.CHANGE_PERSON_DETAILS);
-                dobHistory.setInfo("DOB Changed");
-                dobHistory.setUserId(auditorUsername);
+                JurorHistory dobHistory = new JurorHistory();
+                BeanUtils.copyProperties(jurorDetails, dobHistory);
+                dobHistory.setPoolNumber(jurorDetails.getPoolNumber());
+                dobHistory.setHistoryCode(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
+                dobHistory.setOtherInformation("DOB Changed");
+                dobHistory.setCreatedBy(auditorUsername);
 
                 PartAmendment dobAmendments = new PartAmendment();
                 BeanUtils.copyProperties(allAmendments, dobAmendments);
@@ -461,12 +435,12 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             }
 
             if (addressChanged) {
-                PartHist addressHistory = new PartHist();
-                BeanUtils.copyProperties(poolDetails, addressHistory);
-                addressHistory.setPoolNumber(poolDetails.getPoolNumber());
-                addressHistory.setHistoryCode(THistoryCode.CHANGE_PERSON_DETAILS);
-                addressHistory.setInfo("Address Changed");
-                addressHistory.setUserId(auditorUsername);
+                JurorHistory addressHistory = new JurorHistory();
+                BeanUtils.copyProperties(jurorDetails, addressHistory);
+                addressHistory.setPoolNumber(jurorDetails.getPoolNumber());
+                addressHistory.setHistoryCode(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
+                addressHistory.setOtherInformation("Address Changed");
+                addressHistory.setCreatedBy(auditorUsername);
 
                 PartAmendment addressAmendments = new PartAmendment();
                 BeanUtils.copyProperties(allAmendments, addressAmendments);
@@ -481,12 +455,12 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
             }
 
             if (postcodeChanged) {
-                PartHist postcodeHistory = new PartHist();
-                BeanUtils.copyProperties(poolDetails, postcodeHistory);
-                postcodeHistory.setPoolNumber(poolDetails.getPoolNumber());
-                postcodeHistory.setHistoryCode(THistoryCode.CHANGE_PERSON_DETAILS);
-                postcodeHistory.setInfo("Postcode Changed");
-                postcodeHistory.setUserId(auditorUsername);
+                JurorHistory postcodeHistory = new JurorHistory();
+                BeanUtils.copyProperties(jurorDetails, postcodeHistory);
+                postcodeHistory.setPoolNumber(jurorDetails.getPoolNumber());
+                postcodeHistory.setHistoryCode(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
+                postcodeHistory.setOtherInformation("Postcode Changed");
+                postcodeHistory.setCreatedBy(auditorUsername);
 
                 PartAmendment postcodeAmendments = new PartAmendment();
                 BeanUtils.copyProperties(allAmendments, postcodeAmendments);
@@ -502,6 +476,39 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
         }
     }
 
+    private void mapJurorDetailsToAllAmendments(JurorPool jurorDetails, PartAmendment allAmendments) {
+        BeanUtils.copyProperties(jurorDetails, allAmendments, "poolNumber");
+        allAmendments.setPoolNumber(jurorDetails.getPoolNumber());
+        Juror juror = jurorDetails.getJuror();
+        allAmendments.setTitle(juror.getTitle());
+        allAmendments.setFirstName(juror.getFirstName());
+        allAmendments.setLastName(juror.getLastName());
+        allAmendments.setDateOfBirth(juror.getDateOfBirth());
+        allAmendments.setAddress(juror.getAddressLine1());
+    }
+
+    private void mapDetailsToJuror(DigitalResponse updatedDetails, Juror juror,
+                                   boolean includePhone, boolean includeEmail) {
+        juror.setTitle(updatedDetails.getTitle());
+        juror.setFirstName(updatedDetails.getFirstName());
+        juror.setLastName(updatedDetails.getLastName());
+        juror.setAddressLine1(updatedDetails.getAddressLine1());
+        juror.setAddressLine2(updatedDetails.getAddressLine2());
+        juror.setAddressLine3(updatedDetails.getAddressLine3());
+        juror.setAddressLine4(updatedDetails.getAddressLine4());
+        juror.setAddressLine5(updatedDetails.getAddressLine5());
+        juror.setPostcode(updatedDetails.getPostcode());
+        juror.setDateOfBirth(updatedDetails.getDateOfBirth());
+        if (includePhone) {
+            juror.setPhoneNumber(updatedDetails.getPhoneNumber());
+            juror.setAltPhoneNumber(updatedDetails.getAltPhoneNumber());
+            juror.setWorkPhone(updatedDetails.getWorkPhone());
+        }
+        if (includeEmail) {
+            juror.setEmail(updatedDetails.getEmail());
+        }
+    }
+
     /**
      * Checks for the presence of third-party contact details.
      *
@@ -510,7 +517,7 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
      *
      * @param response the response object to process
      */
-    private void applyThirdPartyRules(JurorResponse response) {
+    private void applyThirdPartyRules(DigitalResponse response) {
 
         //if this is a third party response put the correct phone numbers and email addresses in pool
         if (!ObjectUtils.isEmpty(response.getThirdPartyReason())) {
@@ -533,7 +540,7 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
         }
     }
 
-    private void applyPhoneNumberRules(JurorResponse jurorResponse) {
+    private void applyPhoneNumberRules(DigitalResponse jurorResponse) {
 
         String primaryPhone = jurorResponse.getPhoneNumber();
         String secondaryPhone = jurorResponse.getAltPhoneNumber();

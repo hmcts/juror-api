@@ -8,14 +8,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
 
 
 /**
@@ -27,28 +30,32 @@ public class JurorCommsSuperUrgentSendToCourtServiceImpl implements JurorCommsSu
     private static final Integer NOTIFICATION_SENT = 9;
     private final JurorCommsNotificationService jurorCommsNotificationService;
     private final ResponseInspector responseInspector;
-    private final JurorResponseRepository jurorResponseRepository;
-    private final PoolRepository poolRepository;
+
+    private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepositoryMod;
+
+    private final JurorPoolRepository jurorRepository;
+
+
 
     @Autowired
     public JurorCommsSuperUrgentSendToCourtServiceImpl(
-        final JurorCommsNotificationService jurorCommsNotificationService,
-        final JurorResponseRepository jurorResponseRepository,
-        final PoolRepository poolRepository,
-        final ResponseInspector responseInspector) {
+       final JurorCommsNotificationService jurorCommsNotificationService,
+       final JurorPoolRepository jurorRepository,
+       final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepositoryMod,
+       final ResponseInspector responseInspector) {
         Assert.notNull(jurorCommsNotificationService, "JurorCommsNotificationService cannot be null.");
-        Assert.notNull(jurorResponseRepository, "jurorResponseRepository cannot be null.");
-        Assert.notNull(poolRepository, "PoolRepository cannot be null.");
+        Assert.notNull(jurorRepository, "JurorRepository cannot be null.");
         Assert.notNull(responseInspector, "ResponseInspector cannot be null");
+        Assert.notNull(jurorDigitalResponseRepositoryMod, "JurorDigitalResponseRepositoryMod cannot be null");
         this.jurorCommsNotificationService = jurorCommsNotificationService;
-        this.jurorResponseRepository = jurorResponseRepository;
-        this.poolRepository = poolRepository;
+        this.jurorRepository = jurorRepository;
+        this.jurorDigitalResponseRepositoryMod = jurorDigitalResponseRepositoryMod;
         this.responseInspector = responseInspector;
     }
 
     /**
      * Implements a specific job execution.
-     * Processes entries in the Juror.pool table and sends the appropriate email notifications to
+     * Processes entries in the Juror table and sends the appropriate email notifications to
      * the juror for juror where they have been transferred to court.
      */
     @Override
@@ -58,28 +65,30 @@ public class JurorCommsSuperUrgentSendToCourtServiceImpl implements JurorCommsSu
         SimpleDateFormat dateFormat = new SimpleDateFormat();
         log.info("Super Urgent Sent To Court Comms Processing : Started - {}", dateFormat.format(new Date()));
 
-        final Pool poolDetails = poolRepository.findByJurorNumber(jurorId);
-        final JurorResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorId);
+       // final Pool poolDetails = poolRepository.findByJurorNumber(jurorId);
+        final JurorPool jurorDetails = jurorRepository.findByJurorJurorNumber(jurorId);
+       // final JurorResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorId);
+        final DigitalResponse digitalResponse = jurorDigitalResponseRepositoryMod.findByJurorNumber(jurorId);
 
-        if (jurorResponse.getWelsh().equals(Boolean.TRUE)) {
-            poolDetails.setWelsh(Boolean.TRUE);
+        if (digitalResponse.getWelsh().equals(Boolean.TRUE)) {
+            jurorDetails.getJuror().setWelsh(Boolean.TRUE);
         }
         int youngestJurorAgeAllowed = responseInspector.getYoungestJurorAgeAllowed();
         int tooOldJurorAge = responseInspector.getTooOldJurorAge();
         int age = responseInspector.getJurorAgeAtHearingDate(
-            jurorResponse.getDateOfBirth(),
-            poolDetails.getHearingDate()
+            jurorDetails.getJuror().getDateOfBirth(),
+            jurorDetails.getNextDate()
         );
 
-        boolean thirdPartyResponse = isThirdPartyResponse(jurorResponse);
+        boolean thirdPartyResponse = isThirdPartyResponse(digitalResponse);
 
-        log.trace("Super Urgent Sent To Court Comms Service :  jurorNumber {}", poolDetails.getJurorNumber());
+        log.trace("Super Urgent Sent To Court Comms Service :  jurorNumber {}", jurorDetails.getJurorNumber());
         try {
             if (age >= youngestJurorAgeAllowed && age < tooOldJurorAge) {
                 //Email
-                if (jurorResponse.getEmail() != null && !thirdPartyResponse) {
+                if (digitalResponse.getEmail() != null && !thirdPartyResponse) {
                     jurorCommsNotificationService.sendJurorComms(
-                        poolDetails,
+                        jurorDetails,
                         JurorCommsNotifyTemplateType.SU_SENT_TO_COURT,
                         null,
                         null,
@@ -87,9 +96,9 @@ public class JurorCommsSuperUrgentSendToCourtServiceImpl implements JurorCommsSu
                     );
                 }
                 //SMS
-                if (jurorResponse.getPhoneNumber() != null && !thirdPartyResponse) {
+                if (digitalResponse.getPhoneNumber() != null && !thirdPartyResponse) {
                     jurorCommsNotificationService.sendJurorCommsSms(
-                        poolDetails,
+                        jurorDetails,
                         JurorCommsNotifyTemplateType.SU_SENT_TO_COURT,
                         null,
                         null,
@@ -97,18 +106,18 @@ public class JurorCommsSuperUrgentSendToCourtServiceImpl implements JurorCommsSu
                     );
                 }
                 //update regardless - stop processing next time.
-                update(poolDetails);
+                update(jurorDetails);
             } else {
                 log.info(
                     "Age Restriction: Juror {} is yonger than {} or older than {} on summon date",
-                    poolDetails.getJurorNumber(),
+                    jurorDetails.getJurorNumber(),
                     youngestJurorAgeAllowed,
                     tooOldJurorAge
                 );
             }
 
         } catch (JurorCommsNotificationServiceException e) {
-            log.error("Unable to send super urgent sent to court comms for {} : {} {}", poolDetails.getJurorNumber(),
+            log.error("Unable to send super urgent sent to court comms for {} : {} {}", jurorDetails.getJurorNumber(),
                 e.getMessage(), e.getCause().toString()
             );
         } catch (Exception e) {
@@ -120,17 +129,17 @@ public class JurorCommsSuperUrgentSendToCourtServiceImpl implements JurorCommsSu
     }
 
     /***
-     * Updates pool notifciation.
-     * @param poolDetails
+     * Updates juror notification.
+     * @param jurorDetails
      */
-    private void update(Pool poolDetails) {
+    private void update(JurorPool jurorDetails) {
         log.trace("Inside update .....");
-        poolDetails.setNotifications(NOTIFICATION_SENT);
-        poolRepository.save(poolDetails);
-        log.trace("Updating pool notification as sent ({})... ", NOTIFICATION_SENT);
+        jurorDetails.getJuror().setNotifications(NOTIFICATION_SENT);
+        jurorRepository.save(jurorDetails);
+        log.trace("Updating juror notification as sent ({})... ", NOTIFICATION_SENT);
     }
 
-    private boolean isThirdPartyResponse(JurorResponse response) {
+    private boolean isThirdPartyResponse(DigitalResponse response) {
         return !ObjectUtils.isEmpty(response.getThirdPartyReason())
             && !ObjectUtils.isEmpty(response.getJurorEmailDetails())
             && !response.getJurorEmailDetails();

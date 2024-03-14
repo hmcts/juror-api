@@ -8,9 +8,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.domain.UserQueries;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
 import java.util.Arrays;
 
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 public class BureauOfficerAllocatedRepliesServiceImplTest {
 
     @Mock
-    private JurorResponseRepository responseRepo;
+    private JurorDigitalResponseRepositoryMod responseRepo;
 
     @Mock
     private UserRepository userRepo;
@@ -38,8 +38,8 @@ public class BureauOfficerAllocatedRepliesServiceImplTest {
 
     @Before
     public void setUp() {
-        user1 = User.builder().username("staff1").name("Staff 1").level(0).active(true).build();
-        user2 = User.builder().username("staff2").name("Staff 2").level(0).active(true).build();
+        user1 = User.builder().username("staff1").name("Staff 1").active(true).build();
+        user2 = User.builder().username("staff2").name("Staff 2").active(true).build();
     }
 
     @Test

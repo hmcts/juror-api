@@ -8,5 +8,5 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 @Repository
 public interface ReasonableAdjustmentsRepository extends ReadOnlyRepository<ReasonableAdjustments, String> {
 
-
+    ReasonableAdjustments findByCode(String code);
 }

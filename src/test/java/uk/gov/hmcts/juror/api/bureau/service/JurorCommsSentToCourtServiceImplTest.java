@@ -7,10 +7,12 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateField;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateFieldMod;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -30,18 +32,21 @@ public class JurorCommsSentToCourtServiceImplTest {
 
     private static final String JUROR_TITLE = "JT";
 
-    private NotifyTemplateField templateField1;
-    private NotifyTemplateField templateField2;
-    private NotifyTemplateField templateField3;
-    private NotifyTemplateField templateField4;
-    private NotifyTemplateField templateField5;
-    private Pool pool1;
-    private Pool pool2;
-    List<NotifyTemplateField> templateFields = new LinkedList<>();
-    List<Pool> poolList = new LinkedList<>();
+    private NotifyTemplateFieldMod templateField1;
+    private NotifyTemplateFieldMod templateField2;
+    private NotifyTemplateFieldMod templateField3;
+    private NotifyTemplateFieldMod templateField4;
+    private NotifyTemplateFieldMod templateField5;
+    private JurorPool pool1;
+    private JurorPool pool2;
+    List<NotifyTemplateFieldMod> templateFields = new LinkedList<>();
+    List<JurorPool> poolList = new LinkedList<>();
+
+    private Juror juror1;
+    private Juror juror2;
 
     @Mock
-    private PoolRepository poolRepository;
+    private JurorPoolRepository poolRepository;
 
     @Mock
     private AppSettingService appSetting;
@@ -55,30 +60,32 @@ public class JurorCommsSentToCourtServiceImplTest {
     @Before
     public void setUp() throws Exception {
 
-        pool1 = Pool.builder()
-            .jurorNumber("987654321")
-            .firstName("Farah")
-            .lastName("Lee")
-            .email("a@b.com")
-            .welsh(false)
-            .notifications(0)
-            .build();
+        juror1 = new Juror();
+        pool1 = new JurorPool();
+        pool1.setJuror(juror1);
+        juror1.setJurorNumber("987654321");
+        juror1.setFirstName("Farah");
+        juror1.setLastName("Lee");
+        juror1.setEmail("a@b.com");
+        juror1.setWelsh(false);
+        juror1.setNotifications(0);
 
-        pool2 = Pool.builder()
-            .jurorNumber("123456789")
-            .title(JUROR_TITLE)
-            .firstName("Simon")
-            .lastName("Jones")
-            .email("c@d.com")
-            .welsh(false)
-            .notifications(0)
-            .build();
+
+        juror2 = new Juror();
+        pool2 = new JurorPool();
+        pool2.setJuror(juror2);
+        juror2.setJurorNumber("987654321");
+        juror2.setFirstName("Farah");
+        juror2.setLastName("Lee");
+        juror2.setEmail("a@b.com");
+        juror2.setWelsh(false);
+        juror2.setNotifications(0);
 
         poolList.add(pool1);
         poolList.add(pool2);
 
 
-        templateField1 = NotifyTemplateField.builder()
+        templateField1 = NotifyTemplateFieldMod.builder()
             .id(1L)
             .templateId(TEMPLATE_ID)
             .templateField("FIRSTNAME")
@@ -87,7 +94,7 @@ public class JurorCommsSentToCourtServiceImplTest {
             .jdClassProperty("firstName")
             .build();
 
-        templateField2 = NotifyTemplateField.builder()
+        templateField2 = NotifyTemplateFieldMod.builder()
             .id(2L)
             .templateId(TEMPLATE_ID)
             .templateField("LASTNAME")
@@ -95,7 +102,7 @@ public class JurorCommsSentToCourtServiceImplTest {
             .jdClassName("pool")
             .jdClassProperty("lastName")
             .build();
-        templateField3 = NotifyTemplateField.builder()
+        templateField3 = NotifyTemplateFieldMod.builder()
             .id(3L)
             .templateId(TEMPLATE_ID)
             .templateField("SERVICESTARTDATE")
@@ -103,7 +110,7 @@ public class JurorCommsSentToCourtServiceImplTest {
             .jdClassName("pool")
             .jdClassProperty("hearingDate")
             .build();
-        templateField4 = NotifyTemplateField.builder()
+        templateField4 = NotifyTemplateFieldMod.builder()
             .id(4L)
             .templateId(TEMPLATE_ID)
             .templateField("SERVICESTARTTIME")
@@ -111,7 +118,7 @@ public class JurorCommsSentToCourtServiceImplTest {
             .jdClassName("uniquePool")
             .jdClassProperty("attendTime")
             .build();
-        templateField5 = NotifyTemplateField.builder()
+        templateField5 = NotifyTemplateFieldMod.builder()
             .id(5L)
             .templateId(TEMPLATE_ID)
             .templateField("email address")
@@ -133,15 +140,15 @@ public class JurorCommsSentToCourtServiceImplTest {
     public void process_HappyPath() {
         given(poolRepository.findAll(any(BooleanExpression.class))).willReturn(poolList);
         service.process();
-        verify(jurorCommsNotificationService, times(2)).sendJurorComms(any(Pool.class),
+        verify(jurorCommsNotificationService, times(2)).sendJurorComms(any(JurorPool.class),
             any(JurorCommsNotifyTemplateType.class),
             eq(null), eq(null), anyBoolean());
-        verify(poolRepository, times(2)).save(any(Pool.class));
+        verify(poolRepository, times(2)).save(any(JurorPool.class));
     }
 
     @Test
     public void process_noPending_sentToCourt_pool() {
-        given(poolRepository.findAll(any(BooleanExpression.class))).willReturn(new LinkedList<Pool>());
+        given(poolRepository.findAll(any(BooleanExpression.class))).willReturn(new LinkedList<JurorPool>());
 
         service.process();
         verifyNoInteractions(jurorCommsNotificationService);

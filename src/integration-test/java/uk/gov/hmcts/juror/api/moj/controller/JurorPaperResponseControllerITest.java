@@ -53,6 +53,8 @@ import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,6 +62,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.BDDAssertions.within;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
@@ -1192,7 +1195,6 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     }
 
 
-
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPaperResponse.sql"})
     public void updatePaperResponse_reasonableAdjustments_courtUser_courtOwner_happy() throws Exception {
@@ -1910,7 +1912,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         }
 
         assertThat(responseDetailDto.getWelsh()).isEqualTo(jurorPaperResponse.getWelsh());
-        assertThat(responseDetailDto.getDateReceived()).isEqualTo(jurorPaperResponse.getDateReceived());
+        assertThat(responseDetailDto.getDateReceived()).isEqualTo(jurorPaperResponse.getDateReceived().toLocalDate());
         assertThat(responseDetailDto.getProcessingStatus()).isEqualTo(
             jurorPaperResponse.getProcessingStatus().getDescription());
 
@@ -1943,7 +1945,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     private void verifyRequestDtoMapping_personalDetails(PaperResponse jurorPaperResponse,
                                                          JurorPaperResponseDto requestDto) {
         assertThat(jurorPaperResponse.getJurorNumber()).isEqualTo(requestDto.getJurorNumber());
-        assertThat(jurorPaperResponse.getDateReceived()).isEqualTo(LocalDate.now());
+        assertThat(jurorPaperResponse.getDateReceived()).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
 
         assertThat(jurorPaperResponse.getTitle()).isEqualTo(requestDto.getTitle());
         assertThat(jurorPaperResponse.getFirstName()).isEqualTo(requestDto.getFirstName());

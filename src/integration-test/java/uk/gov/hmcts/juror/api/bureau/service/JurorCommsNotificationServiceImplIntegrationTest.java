@@ -11,11 +11,11 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
 import java.util.HashMap;
@@ -27,16 +27,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerTest {
-    private static final String UUID_REGEX = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f" +
-        "]{12}$";
-    private static final String NOTIFY_TEMPLATE_SQL = "SELECT TEMPLATE_ID FROM JUROR_DIGITAL.NOTIFY_TEMPLATE_MAPPING" +
-        " WHERE TEMPLATE_NAME = ?";
+    private static final String UUID_REGEX =
+        "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$";
+    private static final String NOTIFY_TEMPLATE_SQL =
+        "SELECT TEMPLATE_ID FROM juror_mod.notify_template_mapping WHERE TEMPLATE_NAME = ?";
 
     @Autowired
-    private JurorResponseRepository jurorResponseRepository;
+    private JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
     @Autowired
-    private PoolRepository poolRepository;
+    private JurorPoolRepository poolRepository;
 
     @Autowired
     private JurorCommsNotificationService JurorCommsNotifiyService;
@@ -45,6 +45,7 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
     private JdbcTemplate jdbcTemplate;
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/juror-comms-notify.sql")
     @Transactional
@@ -55,6 +56,7 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/juror-comms-notify.sql")
@@ -66,6 +68,7 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/juror-comms-notify.sql")
@@ -77,6 +80,7 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/juror-comms-notify.sql")
@@ -89,6 +93,7 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
 
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/juror-comms-notify.sql")
@@ -114,7 +119,7 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
         payLoad.put("FIRSTNAME", "value2");
         payLoad.put("LASTNAME", "value2");
 
-        final Pool pool = poolRepository.findByJurorNumber(jurorNumber);
+        final JurorPool pool = poolRepository.findByJurorJurorNumber(jurorNumber);
 
         final EmailNotification emailNotification = JurorCommsNotifiyService.createEmailNotification(
             pool, expectedType, templateUUID, payLoad);
@@ -124,9 +129,10 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
             .isEqualTo(templateUUID);
     }
 
-    private JurorResponse loadJurorResponse(final String jurorNumber) {
-        final JurorResponse response = jurorResponseRepository.findByJurorNumber(jurorNumber);
+    private DigitalResponse loadJurorResponse(final String jurorNumber) {
+        final DigitalResponse response = jurorResponseRepository.findByJurorNumber(jurorNumber);
         return response;
     }
 
 }
+

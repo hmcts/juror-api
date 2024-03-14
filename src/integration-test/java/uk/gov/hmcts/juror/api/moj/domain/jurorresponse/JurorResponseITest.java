@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmplo
 import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 
 @RunWith(SpringRunner.class)
@@ -65,7 +66,7 @@ public class JurorResponseITest extends ContainerTest {
     private AbstractJurorResponse createGenericResponse() {
         AbstractJurorResponse response = new PaperResponse();
         response.setJurorNumber("111111111");
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
         response.setDateOfBirth(LocalDate.of(1970, 1, 1));
         response.setEmail("test@test.com");
         response.setAddressLine1("test road");

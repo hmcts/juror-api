@@ -18,6 +18,7 @@ import org.hibernate.validator.constraints.Length;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 
@@ -44,8 +45,8 @@ public class StaffJurorResponseAudit implements Serializable {
      * @return builder populated with required arguments.
      */
     public static StaffJurorResponseAuditBuilder builder(final String teamLeaderLogin, final String staffLogin,
-                                                         final String jurorNumber, final Date dateReceived,
-                                                         final Date staffAssignmentDate) {
+                                                         final String jurorNumber, final LocalDate dateReceived,
+                                                         final LocalDate staffAssignmentDate) {
         return realBuilder()
             .teamLeaderLogin(teamLeaderLogin)
             .staffLogin(staffLogin)
@@ -74,10 +75,10 @@ public class StaffJurorResponseAudit implements Serializable {
 
     @NotNull
     @Id
-    private Date dateReceived;
+    private LocalDate dateReceived;
 
     @NotNull
-    private Date staffAssignmentDate;
+    private LocalDate staffAssignmentDate;
 
     @NotNull
     @Id

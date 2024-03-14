@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.TrialDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.PageDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -67,7 +68,7 @@ public class TrialController {
     @GetMapping("/list")
     @Operation(summary = "Get a list of all trials")
     @PreAuthorize(SecurityUtil.COURT_AUTH)
-    public ResponseEntity<Page<TrialListDto>> getTrials(
+    public ResponseEntity<PageDto<TrialListDto>> getTrials(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
         @RequestParam("page_number") @PathVariable("pageNumber") @Valid int pageNumber,
         @RequestParam("sort_by") @PathVariable("sortBy") @Valid String sortBy,
@@ -77,7 +78,7 @@ public class TrialController {
         @RequestParam("is_active") @PathVariable("isActive") @Valid Boolean isActive) {
         Page<TrialListDto> trials = trialService
             .getTrials(payload, pageNumber, sortBy, sortOrder, isActive,trialNumber);
-        return ResponseEntity.ok().body(trials);
+        return ResponseEntity.ok().body(new PageDto<>(trials));
     }
 
     @GetMapping("/summary")

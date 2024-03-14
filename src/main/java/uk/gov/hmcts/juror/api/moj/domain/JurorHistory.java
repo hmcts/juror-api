@@ -15,6 +15,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
+import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeConverter;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 
@@ -30,6 +32,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class JurorHistory implements Serializable {
 
     // Constants for History other info text
@@ -84,6 +87,7 @@ public class JurorHistory implements Serializable {
     private String otherInformationRef;
 
     @Column(name = "pool_number")
+    @Length(max = 9)
     private String poolNumber;
 
     @PrePersist

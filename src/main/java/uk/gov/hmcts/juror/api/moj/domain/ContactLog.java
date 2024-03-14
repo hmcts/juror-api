@@ -71,7 +71,7 @@ public class ContactLog implements Serializable {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "enquiry_type", referencedColumnName = "enquiry_code")
     @Enumerated(EnumType.STRING)
-    private ContactEnquiryType enquiryType;
+    private ContactCode enquiryType;
 
     @Size(max = 2000)
     @Column(name = "notes")
@@ -93,7 +93,7 @@ public class ContactLog implements Serializable {
         lastUpdate = LocalDateTime.now();
     }
 
-    public ContactLog(String username, String jurorNumber, LocalDateTime startCall, ContactEnquiryType enquiryType,
+    public ContactLog(String username, String jurorNumber, LocalDateTime startCall, ContactCode enquiryType,
                       String notes, boolean repeatEnquiry) {
         this.username = username;
         this.jurorNumber = jurorNumber;
@@ -103,5 +103,4 @@ public class ContactLog implements Serializable {
         this.repeatEnquiry = repeatEnquiry;
 
     }
-
 }

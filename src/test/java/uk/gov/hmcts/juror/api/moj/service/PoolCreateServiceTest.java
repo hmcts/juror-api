@@ -61,6 +61,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -368,9 +369,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_convertNilPool_happy() {
-
-
+    void testConvertNilPoolHappy() {
         String bureauOwner = "400";
         NilPoolRequestDto nilPoolRequestDto = createValidNilPoolRequestDto();
         PoolRequest poolRequest = createValidPoolRequest("4152221201");
@@ -520,7 +519,22 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_getPoolMembersList_bureauUser_mapsFieldsProperly() {
+    void testGetThinJurorPoolListPassThrough() {
+        final String poolNumber = "12345678";
+        final String owner = "415";
+        final List<String> jurorNumbers = Arrays.asList("123456789", "987654321");
+
+        Mockito.when(jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner))
+            .thenReturn(jurorNumbers);
+
+        final List<String> callResponse = poolCreateService.getThinJurorPoolsList(poolNumber, owner);
+
+        Mockito.verify(jurorPoolRepository, Mockito.times(1)).fetchThinPoolMembers(poolNumber, owner);
+        assertThat(callResponse).isEqualTo(jurorNumbers);
+    }
+
+    @Test
+    void testGetPoolMembersListBureauUserMapsFieldsProperly() {
         String bureauOwner = "400";
         final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
 
@@ -562,7 +576,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_getPoolMembersList_courtUser_mapsFieldsProperly() {
+    void testGetPoolMembersListCourtUserMapsFieldsProperly() {
         String bureauOwner = "415";
         final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "COURT_USER");
 

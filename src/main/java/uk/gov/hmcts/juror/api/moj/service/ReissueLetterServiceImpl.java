@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 import com.querydsl.core.Tuple;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,11 +18,14 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 @Slf4j
@@ -33,6 +37,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     private final BulkPrintDataRepository bulkPrintDataRepository;
     private final PrintDataService printDataService;
     private final JurorStatusRepository jurorStatusRepository;
+    private final JurorHistoryService jurorHistoryService;
 
     @Override
     @Transactional(readOnly = true)
@@ -72,19 +77,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         log.debug("Reissue letters request received from Bureau user {}", login);
 
         request.getLetters().stream().forEach(letter -> {
-            // verify the user is reprinting the same letter type with bulk print data table
-            bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(letter.getJurorNumber(),
-                    letter.getFormCode(), letter.getDatePrinted())
-                .orElseThrow(() -> new MojException.NotFound(
-                    String.format("Bulk print data not found for juror %s ", letter.getJurorNumber()),
-                    null));
-
-            // verify the same letter is not already pending a reprint
-            bulkPrintDataRepository.findByJurorNumberFormCodeAndPending(letter.getJurorNumber(), letter.getFormCode())
-                .ifPresent(bulkPrintData -> {
-                    throw new MojException.BadRequest(String.format("Letter already pending reprint for juror %s ",
-                        letter.getJurorNumber()), null);
-                });
+            // ensure the request to reprint the letter meets criteria
+            validateRequestedLetter(letter);
 
             FormCode formCode = FormCode.getFormCode(letter.getFormCode());
 
@@ -111,6 +105,9 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             }
 
             letterPrinter.accept(printDataService, jurorPools.get(0));
+
+            // create letter history
+            createLetterHistory(letter);
         });
     }
 
@@ -165,5 +162,50 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             newLetterData.add(newData);
         }
         return newLetterData;
+    }
+
+    private void validateRequestedLetter(ReissueLetterRequestDto.@NotNull ReissueLetterRequestData letter) {
+        // verify the letter exists to reprint
+        Optional<BulkPrintData> printedLetter =
+            bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(letter.getJurorNumber(),
+                letter.getFormCode(), letter.getDatePrinted());
+
+        if (printedLetter.isEmpty()) {
+            // for some letters do not throw exception as need to print the initial letter (after validation)
+            List<String> createLetterIfNotExist = Arrays.asList("5228", "5228C");
+            boolean createLetter = createLetterIfNotExist
+                .stream().anyMatch(code -> code.contains(letter.getFormCode()));
+
+            if (!createLetter) {
+                throw new MojException.NotFound(String.format("Bulk print data not found for juror %s ",
+                    letter.getJurorNumber()), null);
+            }
+        } else {
+            // verify the same letter is not already pending a reprint
+            bulkPrintDataRepository.findByJurorNumberFormCodeAndPending(letter.getJurorNumber(), letter.getFormCode())
+                .ifPresent(bulkPrintData -> {
+                    throw new MojException.BadRequest(String.format("Letter already pending reprint for juror %s",
+                        letter.getJurorNumber()), null);
+                });
+        }
+    }
+
+    @SuppressWarnings("PMD.TooFewBranchesForASwitchStatement")
+    private void createLetterHistory(ReissueLetterRequestDto.ReissueLetterRequestData letter) {
+        // TODO: implemement for other letter types and remove outer if statement
+        if (FormCode.ENG_SUMMONS_REMINDER.getCode().equals(letter.getFormCode())
+            || FormCode.BI_SUMMONS_REMINDER.getCode().equals(letter.getFormCode())) {
+
+            JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository,
+                letter.getJurorNumber());
+
+            // Add additional switch-case statements for other letter types
+            switch (letter.getFormCode()) {
+                case "5228", "5228C" -> {
+                    jurorHistoryService.createSummonsReminderLetterHistory(jurorPool);
+                }
+                default -> throw new MojException.NotImplemented("Letter type not implemented", null);
+            }
+        }
     }
 }

@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.moj.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.text.WordUtils;
 import org.springframework.beans.BeanUtils;
@@ -48,10 +47,12 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
+import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
+import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -73,6 +74,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
+import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactEnquiryTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -125,6 +127,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkReadAccessForCurr
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.LawOfDemeter", "PMD.ExcessiveImports"})
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorRecordServiceImpl implements JurorRecordService {
+    private final ContactCodeRepository contactCodeRepository;
     private static final Character NEW_REQUEST_STATE = 'N';
 
     private static final String REPLY_METHOD_ONLINE = "DIGITAL";
@@ -336,7 +339,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             jurorOverviewResponseDto.setOpticReference(jurorPool.getJuror().getOpticRef());
             jurorOverviewResponseDto.setWelshLanguageRequired(jurorPool.getJuror().getWelsh());
             jurorOverviewResponseDto.setReplyMethod(REPLY_METHOD_ONLINE);
-            jurorOverviewResponseDto.setReplyDate(jurorResponse.getDateReceived());
+            jurorOverviewResponseDto.setReplyDate(jurorResponse.getDateReceived().toLocalDate());
             jurorOverviewResponseDto.setReplyStatus(jurorResponse.getProcessingStatus().getDescription());
             return jurorOverviewResponseDto;
         }
@@ -702,8 +705,9 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         // juror record
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
-        ContactEnquiryType enquiryType = RepositoryUtils.retrieveFromDatabase(
-            ContactEnquiryCode.valueOf(contactLogRequestDto.getEnquiryType()), contactEnquiryTypeRepository);
+
+        ContactCode enquiryType = RepositoryUtils.retrieveFromDatabase(
+            IContactCode.fromCode(contactLogRequestDto.getEnquiryType()).getCode(), contactCodeRepository);
 
         ContactLog contactLog = ContactLog.builder()
             .username(payload.getLogin())
@@ -851,11 +855,10 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         // This part is temporary until a single approach for serving up juror response data is implemented across
         // the whole codebase
-        setBureauJurorDetailYesNoFlags(jurorDetails, bureauJurorDetails);
         setBureauDetailCjsEmployment(jurorDetails, bureauJurorDetails);
         setBureauDetailReasonableAdjustments(jurorDetails, bureauJurorDetails);
 
-        BureauJurorDetailDto responseDto = bureauService.mapJurorDetailsToDto(bureauJurorDetails);
+        BureauJurorDetailDto responseDto = bureauService.mapJurorDetailsToDto(jurorDetails);
         responseDto.setWelshCourt(jurorDetails.isWelshCourt());
         return responseDto;
     }
@@ -886,20 +889,6 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             bureauJurorCjs.add(temp);
         }
         bureauJurorDetail.setCjsEmployments(bureauJurorCjs);
-    }
-
-
-    private void setBureauJurorDetailYesNoFlags(ModJurorDetail jurorDetail, BureauJurorDetail bureauJurorDetail) {
-        bureauJurorDetail.setResidency(convertBooleanToYesNo(jurorDetail.getResidency()));
-        bureauJurorDetail.setBail(convertBooleanToYesNo(jurorDetail.getBail()));
-        bureauJurorDetail.setMentalHealthAct(convertBooleanToYesNo(jurorDetail.getMentalHealthAct()));
-        bureauJurorDetail.setConvictions(convertBooleanToYesNo(jurorDetail.getConvictions()));
-    }
-
-    private String convertBooleanToYesNo(Boolean bool) {
-        return BooleanUtils.isTrue(bool)
-            ? "Y"
-            : "N";
     }
 
     @Override
@@ -941,7 +930,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             JurorSummonsReplyResponseDto jurorSummonsReplyResponseDto = new JurorSummonsReplyResponseDto(jurorPool,
                 jurorStatusRepository, responseExcusalService, pendingJurorRepository);
             jurorSummonsReplyResponseDto.setReplyMethod(REPLY_METHOD_ONLINE);
-            jurorSummonsReplyResponseDto.setReplyDate(jurorResponse.getDateReceived());
+            jurorSummonsReplyResponseDto.setReplyDate(jurorResponse.getDateReceived().toLocalDate());
             jurorSummonsReplyResponseDto.setReplyStatus(jurorResponse.getProcessingStatus().getDescription());
             return jurorSummonsReplyResponseDto;
         }
@@ -950,7 +939,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             JurorSummonsReplyResponseDto jurorSummonsReplyResponseDto = new JurorSummonsReplyResponseDto(jurorPool,
                 jurorStatusRepository, responseExcusalService, pendingJurorRepository);
             jurorSummonsReplyResponseDto.setReplyMethod(REPLY_METHOD_PAPER);
-            jurorSummonsReplyResponseDto.setReplyDate(jurorPaperResponse.getDateReceived());
+            jurorSummonsReplyResponseDto.setReplyDate(jurorPaperResponse.getDateReceived().toLocalDate());
             jurorSummonsReplyResponseDto.setReplyStatus(jurorPaperResponse.getProcessingStatus().getDescription());
             return jurorSummonsReplyResponseDto;
         }

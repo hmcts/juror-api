@@ -35,6 +35,7 @@ import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,6 +53,7 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.juror.api.moj.domain.IJurorStatus.DISQUALIFIED;
 
 @RunWith(SpringRunner.class)
+@SuppressWarnings("PMD.LawOfDemeter")
 public class DisqualifyJurorServiceImplTest {
 
     @Mock
@@ -475,7 +477,7 @@ public class DisqualifyJurorServiceImplTest {
     private PaperResponse createPaperResponse(String jurorNumber) {
         PaperResponse response = new PaperResponse();
         response.setJurorNumber(jurorNumber);
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
 
         response.setFirstName("FName");
         response.setLastName("LName");
@@ -507,7 +509,7 @@ public class DisqualifyJurorServiceImplTest {
         DigitalResponse response = new DigitalResponse();
 
         response.setJurorNumber(jurorNumber);
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
 
         response.setFirstName("FName");
         response.setLastName("LName");

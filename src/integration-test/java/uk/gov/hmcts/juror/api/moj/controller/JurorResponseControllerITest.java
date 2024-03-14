@@ -55,6 +55,7 @@ import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -74,9 +75,11 @@ import static org.springframework.http.HttpStatus.OK;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: /api/v1/moj/juror-response/")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+
 @SuppressWarnings({
     "java:S2259",
-    "java:S5960"
+    "java:S5960",
+    "PMD.LawOfDemeter"
 })
 
 class JurorResponseControllerITest extends AbstractIntegrationTest {
@@ -656,7 +659,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
             validateData(data,  JUROR_NUMBER_111222333, "415220502", "TestOne",
                 "PersonOne", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.TODO, LocalDate.of(2023, 3, 8));
+                ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8,0,0,0));
         }
 
         @Test
@@ -678,7 +681,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             validateData(records.get(0),  JUROR_NUMBER_222222222, "415220502", "Test4Paper",
                 "Person4Paper", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.CLOSED, LocalDate.of(2023, 3, 9));
+                ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 9,0,0,0));
         }
 
         @Test
@@ -699,7 +702,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
             validateData(data,  JUROR_NUMBER_555555555, "415220502", "Test5Paper",
                 "Person5Paper", "CH1 2AN", "Chester", "JDoe",
-                ProcessingStatus.AWAITING_COURT_REPLY, LocalDate.of(2023, 3, 9));
+                ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9,10,0,0));
         }
 
         @Test
@@ -719,7 +722,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
             validateData(data,  JUROR_NUMBER_555555555, "415220502", "Test5Paper",
                 "Person5Paper", "CH1 2AN", "Chester", "JDoe",
-                ProcessingStatus.AWAITING_COURT_REPLY, LocalDate.of(2023, 3, 9));
+                ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9,10,0,0));
         }
 
         @Test
@@ -739,7 +742,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
             validateData(data,  JUROR_NUMBER_555555555, "415220502", "Test5Paper",
                 "Person5Paper", "CH1 2AN", "Chester", "JDoe",
-                ProcessingStatus.AWAITING_COURT_REPLY, LocalDate.of(2023, 3, 9));
+                ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9,10,0,0));
         }
 
         @Test
@@ -773,7 +776,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
             validateData(data,  JUROR_NUMBER_111222333, "415220502", "TestOne",
                 "PersonOne", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.TODO, LocalDate.of(2023, 3, 8));
+                ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8,0,0,0));
         }
 
         @Test
@@ -793,23 +796,23 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = body.getRecords();
             validateData(records.get(0),  JUROR_NUMBER_111222333, "415220502", "TestOne",
                 "PersonOne", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.TODO, LocalDate.of(2023, 3, 8));
+                ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8,0,0,0));
 
             validateData(records.get(1),  "333222111", "415220502", "TestTwo",
                 "PersonTwo", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.TODO, LocalDate.of(2023, 3, 8));
+                ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8,10,0,0));
 
             validateData(records.get(2),  "222222222", "415220502", "Test4Paper",
                 "Person4Paper", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.CLOSED, LocalDate.of(2023, 3, 9));
+                ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 9,0,0,0));
 
             validateData(records.get(3),  JUROR_NUMBER_555555555, "415220502", "Test5Paper",
                 "Person5Paper", "CH1 2AN", "Chester", "JDoe",
-                ProcessingStatus.AWAITING_COURT_REPLY, LocalDate.of(2023, 3, 9));
+                ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9,10,0,0));
 
             validateData(records.get(4),  "352004504", "415220502", "Test3",
                 "Person3", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.TODO, LocalDate.of(2024, 3, 15));
+                ProcessingStatus.TODO, LocalDateTime.of(2024, 3, 15,0,0,0));
         }
 
         @Test
@@ -899,7 +902,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         private void validateData(JurorResponseRetrieveResponseDto.JurorResponseDetails actual,
                                   String jurorNumber, String poolNumber, String firstName, String lastName,
                                   String jurorPostcode, String courtName, String officerAssigned,
-                                  ProcessingStatus processingStatus, LocalDate dateReceived) {
+                                  ProcessingStatus processingStatus, LocalDateTime dateReceived) {
 
             assertThat(actual.getJurorNumber()).as("Juror number should be " + jurorNumber)
                 .isEqualTo(jurorNumber);

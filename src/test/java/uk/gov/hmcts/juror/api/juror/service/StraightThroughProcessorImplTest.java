@@ -7,25 +7,26 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
-import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHist;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHistRepository;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseMergeService;
-import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetter;
-import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetterRepository;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.domain.letter.DisqualificationLetterMod;
+import uk.gov.hmcts.juror.api.moj.repository.DisqualifyLetterModRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.validation.ResponseInspectorImpl;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.BDDMockito.given;
@@ -34,6 +35,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.JurorDigitalApplication.AUTO_USER;
 
 /**
@@ -44,22 +46,24 @@ import static uk.gov.hmcts.juror.api.JurorDigitalApplication.AUTO_USER;
 public class StraightThroughProcessorImplTest {
 
     @Mock
-    private JurorResponseRepository jurorResponseRepository;
+    private JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
     @Mock
-    private JurorResponseAuditRepository jurorResponseAuditRepository;
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     @Mock
-    private PoolRepository poolRepository;
+    private JurorPoolRepository poolRepository;
+    @Mock
+    private JurorStatusRepository jurorStatusRepository;
 
     @Mock
-    private ResponseMergeService responseMergeService;
+    private ResponseMergeService mergeService;
 
     @Mock
-    private PartHistRepository partHistRepository;
+    private JurorHistoryRepository partHistRepository;
 
     @Mock
-    private DisqualificationLetterRepository disqualificationLetterRepository;
+    private DisqualifyLetterModRepository disqualificationLetterRepository;
 
     @Mock
     private UserRepository userRepository;
@@ -72,19 +76,22 @@ public class StraightThroughProcessorImplTest {
 
     private static final String TEST_JUROR_NUMBER = "209092530";
 
-    private JurorResponse jurorResponse;
-    private Pool jurorPool;
+    private DigitalResponse jurorResponse;
+    private JurorPool jurorPool;
+    private Juror juror;
 
     private static final int TOO_OLD_JUROR_AGE = 76;
     private static final int YOUNGEST_JUROR_AGE_ALLOWED = 18;
 
     @Before
     public void setup() {
-        jurorResponse = mock(JurorResponse.class);
+        jurorResponse = mock(DigitalResponse.class);
         given(jurorResponseRepository.findByJurorNumber(TEST_JUROR_NUMBER)).willReturn(jurorResponse);
 
-        jurorPool = mock(Pool.class);
-        given(poolRepository.findByJurorNumber(TEST_JUROR_NUMBER)).willReturn(jurorPool);
+        jurorPool = mock(JurorPool.class);
+        juror = mock(Juror.class);
+        given(jurorPool.getJuror()).willReturn(juror);
+        given(poolRepository.findByJurorJurorNumber(TEST_JUROR_NUMBER)).willReturn(jurorPool);
 
         given(responseInspector.getYoungestJurorAgeAllowed()).willReturn(18);
         given(responseInspector.getTooOldJurorAge()).willReturn(76);
@@ -94,28 +101,35 @@ public class StraightThroughProcessorImplTest {
     @Test
     public void processDeceasedExcusal_happyPath_jurorSuccessfullyExcused()
         throws StraightThroughProcessingServiceException {
+        JurorStatus excusedJurorStatus = mock(JurorStatus.class);
+        when(jurorStatusRepository.findById(IJurorStatus.EXCUSED)).thenReturn(Optional.ofNullable(excusedJurorStatus));
         // configure jurorResponse status to get through Deceased-Excusal logic successfully
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn("Relationship");
         given(jurorResponse.getThirdPartyReason()).willReturn("Deceased");
         given(jurorResponse.getSuperUrgent()).willReturn(false);
-        given(jurorPool.getStatus()).willReturn(IPoolStatus.SUMMONED);
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
+        given(jurorPool.getStatus()).willReturn(jurorStatus);
 
         // process response
         straightThroughProcessor.processDeceasedExcusal(jurorResponse);
 
         // check excusal was successful
-        verify(responseMergeService).mergeResponse(any(JurorResponse.class), eq(AUTO_USER));
-        verify(jurorResponseAuditRepository).save(any(JurorResponseAudit.class));
+        verify(mergeService).mergeResponse(any(DigitalResponse.class), eq(AUTO_USER));
+        verify(jurorResponseAuditRepository).save(any(JurorResponseAuditMod.class));
 
-        verify(jurorPool).setResponded(Pool.RESPONDED);
-        verify(jurorPool).setExcusalDate(any(Date.class));
-        verify(jurorPool).setExcusalCode("D");
+        verify(jurorPool, times(3)).getJuror();
+        verify(juror, times(1)).setResponded(true);
+        verify(juror, times(1)).setExcusalDate(any(LocalDate.class));
+        verify(juror, times(1)).setExcusalCode("D");
         verify(jurorPool).setUserEdtq(AUTO_USER);
-        verify(jurorPool).setStatus(IPoolStatus.EXCUSED);
-        verify(jurorPool).setHearingDate(null);
+        verify(jurorPool, times(1)).getStatus();
+        verify(jurorPool, times(1)).setStatus(excusedJurorStatus);
+        verify(jurorStatusRepository, times(1)).findById(IJurorStatus.EXCUSED);
+        verify(jurorPool).setNextDate(null);
 
-        verify(partHistRepository).save(any(PartHist.class));
+        verify(partHistRepository).save(any(JurorHistory.class));
 
         //verify(staffRepository).findOne(StaffQueries.byLogin(AUTO_USER));
         verify(userRepository).findByUsername(AUTO_USER);
@@ -135,10 +149,10 @@ public class StraightThroughProcessorImplTest {
             fail("Expected StraightThroughDeceasedExcusalProcessingServiceException not thrown.");
         } catch (StraightThroughProcessingServiceException.DeceasedExcusal expectedException) {
             // verify there was no interaction with the db etc
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
         }
     }
 
@@ -156,10 +170,10 @@ public class StraightThroughProcessorImplTest {
             fail("Expected StraightThroughDeceasedExcusalProcessingServiceException not thrown.");
         } catch (StraightThroughProcessingServiceException.DeceasedExcusal expectedException) {
             // verify there was no interaction with the db etc
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
         }
     }
 
@@ -169,9 +183,11 @@ public class StraightThroughProcessorImplTest {
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn("Relationship");
         given(jurorResponse.getThirdPartyReason()).willReturn("Deceased");
-        given(jurorPool.getStatus()).willReturn(IPoolStatus.SUMMONED);
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
+        given(jurorPool.getStatus()).willReturn(jurorStatus);
 
-        given(jurorResponse.getSuperUrgent()).willReturn(true);
+        when(jurorResponse.getSuperUrgent()).thenReturn(true);
 
         try {
             // process response
@@ -179,10 +195,10 @@ public class StraightThroughProcessorImplTest {
             fail("Expected StraightThroughProcessingServiceException.DeceasedExcusal not thrown.");
         } catch (StraightThroughProcessingServiceException.DeceasedExcusal expectedException) {
             // verify there was no interaction with the db etc
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
         }
     }
 
@@ -193,8 +209,9 @@ public class StraightThroughProcessorImplTest {
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn("Relationship");
         given(jurorResponse.getThirdPartyReason()).willReturn("Deceased");
-
-        given(jurorPool.getStatus()).willReturn(IPoolStatus.EXCUSED);
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.EXCUSED);
+        given(jurorPool.getStatus()).willReturn(jurorStatus);
 
         try {
             // process response
@@ -202,49 +219,56 @@ public class StraightThroughProcessorImplTest {
             fail("Expected StraightThroughProcessingServiceException.DeceasedExcusal not thrown.");
         } catch (StraightThroughProcessingServiceException.DeceasedExcusal expectedException) {
             // verify there was no interaction with the db etc
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
         }
     }
 
     @Test
     public void processAgeExcusal_happyPath_jurorSuccessfullyExcused_exactlyTooOld()
-        throws StraightThroughProcessingServiceException, ParseException {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
-
+        throws StraightThroughProcessingServiceException {
+        JurorStatus disquallifiedJurorStatus = mock(JurorStatus.class);
+        when(jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED))
+            .thenReturn(Optional.ofNullable(disquallifiedJurorStatus));
         // configure jurorResponse status to get through Age-Excusal logic successfully
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
         given(jurorResponse.getSuperUrgent()).willReturn(false);
-        given(jurorPool.getStatus()).willReturn(IPoolStatus.SUMMONED);
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
+        given(jurorPool.getStatus()).willReturn(jurorStatus);
 
-        Date birthDate = simpleDateFormat.parse("01/01/1901");
+        LocalDate birthDate = LocalDate.of(1901, 1, 1);
+
         given(jurorResponse.getDateOfBirth()).willReturn(birthDate);
 
         // Juror turns too old on first day of hearing
-        Date hearingDate = addTime(birthDate, TOO_OLD_JUROR_AGE, 0);
-        given(jurorPool.getHearingDate()).willReturn(hearingDate);
+        LocalDate hearingDate = addTime(birthDate, TOO_OLD_JUROR_AGE, 0);
+        given(jurorPool.getNextDate()).willReturn(hearingDate);
+
 
         // process response
         straightThroughProcessor.processAgeExcusal(jurorResponse);
 
         // check excusal was successful
-        verify(responseMergeService).mergeResponse(any(JurorResponse.class), eq(AUTO_USER));
-        verify(jurorResponseAuditRepository).save(any(JurorResponseAudit.class));
+        verify(mergeService).mergeResponse(any(DigitalResponse.class), eq(AUTO_USER));
+        verify(jurorResponseAuditRepository).save(any(JurorResponseAuditMod.class));
 
-        verify(jurorPool).setResponded(Pool.RESPONDED);
-        verify(jurorPool).setDisqualifyDate(any(Date.class));
-        verify(jurorPool).setDisqualifyCode(DisCode.AGE);
+        verify(jurorPool, times(3)).getJuror();
+        verify(juror, times(1)).setResponded(true);
+        verify(juror, times(1)).setDisqualifyDate(any(LocalDate.class));
+        verify(juror, times(1)).setDisqualifyCode(DisCode.AGE);
         verify(jurorPool).setUserEdtq(AUTO_USER);
-        verify(jurorPool).setStatus(IPoolStatus.DISQUALIFIED);
-        verify(jurorPool).setHearingDate(null);
-        verify(poolRepository).save(any(Pool.class));
+        verify(jurorPool).setStatus(disquallifiedJurorStatus);
+        verify(jurorStatusRepository).findById(IJurorStatus.DISQUALIFIED);
+        verify(jurorPool).setNextDate(null);
+        verify(poolRepository).save(any(JurorPool.class));
 
-        verify(partHistRepository, times(2)).save(any(PartHist.class));
+        verify(partHistRepository, times(2)).save(any(JurorHistory.class));
 
-        verify(disqualificationLetterRepository).save(any(DisqualificationLetter.class));
+        verify(disqualificationLetterRepository).save(any(DisqualificationLetterMod.class));
 
         //verify(staffRepository).findOne(StaffQueries.byLogin(AUTO_USER));
         verify(userRepository).findByUsername(AUTO_USER);
@@ -252,40 +276,45 @@ public class StraightThroughProcessorImplTest {
 
     @Test
     public void processAgeExcusal_happyPath_jurorSuccessfullyExcused_exactlyTooYoung()
-        throws StraightThroughProcessingServiceException, ParseException {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        throws StraightThroughProcessingServiceException {
+        JurorStatus disquallifiedJurorStatus = mock(JurorStatus.class);
+        when(jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED))
+            .thenReturn(Optional.ofNullable(disquallifiedJurorStatus));
 
         // configure jurorResponse status to get through Age-Excusal logic successfully
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
         given(jurorResponse.getSuperUrgent()).willReturn(false);
-        given(jurorPool.getStatus()).willReturn(IPoolStatus.SUMMONED);
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
+        given(jurorPool.getStatus()).willReturn(jurorStatus);
 
-        Date birthDate = simpleDateFormat.parse("01/01/1901");
+        LocalDate birthDate = LocalDate.of(1901, 1, 1);
         given(jurorResponse.getDateOfBirth()).willReturn(birthDate);
 
         // set Juror to be one day too young on first day of hearing
-        Date hearingDate = addTime(birthDate, YOUNGEST_JUROR_AGE_ALLOWED - 1, 364);
-        given(jurorPool.getHearingDate()).willReturn(hearingDate);
+        LocalDate hearingDate = addTime(birthDate, YOUNGEST_JUROR_AGE_ALLOWED - 1, 364);
+        given(jurorPool.getNextDate()).willReturn(hearingDate);
 
         // process response
         straightThroughProcessor.processAgeExcusal(jurorResponse);
 
         // check excusal was successful
-        verify(responseMergeService).mergeResponse(any(JurorResponse.class), eq(AUTO_USER));
-        verify(jurorResponseAuditRepository).save(any(JurorResponseAudit.class));
+        verify(mergeService).mergeResponse(any(DigitalResponse.class), eq(AUTO_USER));
+        verify(jurorResponseAuditRepository).save(any(JurorResponseAuditMod.class));
 
-        verify(jurorPool).setResponded(Pool.RESPONDED);
-        verify(jurorPool).setDisqualifyDate(any(Date.class));
-        verify(jurorPool).setDisqualifyCode(DisCode.AGE);
+        verify(jurorPool, times(3)).getJuror();
+        verify(juror).setResponded(true);
+        verify(juror).setDisqualifyDate(any(LocalDate.class));
+        verify(juror).setDisqualifyCode(DisCode.AGE);
         verify(jurorPool).setUserEdtq(AUTO_USER);
-        verify(jurorPool).setStatus(IPoolStatus.DISQUALIFIED);
-        verify(jurorPool).setHearingDate(null);
-        verify(poolRepository).save(any(Pool.class));
+        verify(jurorPool).setStatus(disquallifiedJurorStatus);
+        verify(jurorPool).setNextDate(null);
+        verify(poolRepository).save(any(JurorPool.class));
 
-        verify(partHistRepository, times(2)).save(any(PartHist.class));
+        verify(partHistRepository, times(2)).save(any(JurorHistory.class));
 
-        verify(disqualificationLetterRepository).save(any(DisqualificationLetter.class));
+        verify(disqualificationLetterRepository).save(any(DisqualificationLetterMod.class));
 
         //verify(staffRepository).findOne(StaffQueries.byLogin(AUTO_USER));
         verify(userRepository).findByUsername(AUTO_USER);
@@ -293,21 +322,22 @@ public class StraightThroughProcessorImplTest {
 
     @Test
     public void processAgeExcusal_unhappyPath_jurorExactlyMinimumAge()
-        throws StraightThroughProcessingServiceException, ParseException {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        throws StraightThroughProcessingServiceException {
 
         // configure jurorResponse
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
         given(jurorResponse.getSuperUrgent()).willReturn(false);
-        given(jurorPool.getStatus()).willReturn(IPoolStatus.SUMMONED);
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
+        given(jurorPool.getStatus()).willReturn(jurorStatus);
 
-        Date birthDate = simpleDateFormat.parse("01/01/1901");
+        LocalDate birthDate = LocalDate.of(1901, 1, 1);
         given(jurorResponse.getDateOfBirth()).willReturn(birthDate);
 
         // Juror is exactly minimum age on first day of hearing so can't be excused
-        Date hearingDate = addTime(birthDate, YOUNGEST_JUROR_AGE_ALLOWED, 0);
-        given(jurorPool.getHearingDate()).willReturn(hearingDate);
+        LocalDate hearingDate = addTime(birthDate, YOUNGEST_JUROR_AGE_ALLOWED, 0);
+        given(jurorPool.getNextDate()).willReturn(hearingDate);
 
         try {
             // process response
@@ -315,31 +345,32 @@ public class StraightThroughProcessorImplTest {
             fail("Expected StraightThroughProcessingServiceException.AgeExcusal not thrown.");
         } catch (StraightThroughProcessingServiceException.AgeExcusal expectedException) {
             // check database was not updated
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
-            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetter.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
+            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
         }
     }
 
     @Test
     public void processAgeExcusal_unhappyPath_jurorOneDayUnderTooOld()
-        throws StraightThroughProcessingServiceException, ParseException {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        throws StraightThroughProcessingServiceException {
 
         // configure jurorResponse
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
         given(jurorResponse.getSuperUrgent()).willReturn(false);
-        given(jurorPool.getStatus()).willReturn(IPoolStatus.SUMMONED);
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
+        given(jurorPool.getStatus()).willReturn(jurorStatus);
 
-        Date birthDate = simpleDateFormat.parse("01/01/1901");
+        LocalDate birthDate = LocalDate.of(1901, 1, 1);
         given(jurorResponse.getDateOfBirth()).willReturn(birthDate);
 
         // Juror is one day away from being excused
-        Date hearingDate = addTime(birthDate, TOO_OLD_JUROR_AGE - 1, 364);
-        given(jurorPool.getHearingDate()).willReturn(hearingDate);
+        LocalDate hearingDate = addTime(birthDate, TOO_OLD_JUROR_AGE - 1, 364);
+        given(jurorPool.getNextDate()).willReturn(hearingDate);
 
         try {
             // process response
@@ -347,11 +378,11 @@ public class StraightThroughProcessorImplTest {
             fail("Expected StraightThroughProcessingServiceException.AgeExcusal not thrown.");
         } catch (StraightThroughProcessingServiceException.AgeExcusal expectedException) {
             // check database was not updated
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
-            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetter.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
+            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
         }
     }
 
@@ -367,11 +398,11 @@ public class StraightThroughProcessorImplTest {
             fail("Expected StraightThroughProcessingServiceException.AgeExcusal not thrown.");
         } catch (StraightThroughProcessingServiceException.AgeExcusal expectedException) {
             // check database was not updated
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
-            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetter.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
+            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
         }
     }
 
@@ -381,7 +412,9 @@ public class StraightThroughProcessorImplTest {
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
         given(jurorResponse.getSuperUrgent()).willReturn(true);
-        given(jurorPool.getStatus()).willReturn(IPoolStatus.SUMMONED);
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
+        given(jurorPool.getStatus()).willReturn(jurorStatus);
 
         try {
             // process response
@@ -389,11 +422,11 @@ public class StraightThroughProcessorImplTest {
             fail("Expected StraightThroughProcessingServiceException.AgeExcusal not thrown.");
         } catch (StraightThroughProcessingServiceException.AgeExcusal expectedException) {
             // check database was not updated
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
-            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetter.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
+            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
         }
     }
 
@@ -402,7 +435,9 @@ public class StraightThroughProcessorImplTest {
         // configure jurorResponse status to fail validation
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
-        given(jurorPool.getStatus()).willReturn(IPoolStatus.EXCUSED);
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.EXCUSED);
+        given(jurorPool.getStatus()).willReturn(jurorStatus);
 
         try {
             // process response
@@ -410,11 +445,11 @@ public class StraightThroughProcessorImplTest {
             fail("Expected StraightThroughProcessingServiceException.AgeExcusal not thrown.");
         } catch (StraightThroughProcessingServiceException.AgeExcusal expectedException) {
             // check database was not updated
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
-            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetter.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
+            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
         }
     }
 
@@ -424,8 +459,8 @@ public class StraightThroughProcessorImplTest {
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getTitle()).willReturn("Mr");
         given(jurorResponse.getFirstName()).willReturn("David");
-        given(jurorPool.getTitle()).willReturn("Mr");
-        given(jurorPool.getFirstName()).willReturn("Matt");
+        given(jurorPool.getJuror().getTitle()).willReturn("Mr");
+        given(jurorPool.getJuror().getFirstName()).willReturn("Matt");
 
         try {
             // process response
@@ -433,10 +468,10 @@ public class StraightThroughProcessorImplTest {
             fail("Firstname does not match with saved response");
         } catch (StraightThroughProcessingServiceException expectedException) {
             // verify there was no interaction with the db etc
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
         }
     }
 
@@ -448,10 +483,10 @@ public class StraightThroughProcessorImplTest {
         given(jurorResponse.getFirstName()).willReturn("David");
         given(jurorResponse.getLastName()).willReturn("Gardener");
         given(jurorResponse.getPostcode()).willReturn("RG1 7HG");
-        given(jurorPool.getTitle()).willReturn("Mr");
-        given(jurorPool.getFirstName()).willReturn("David");
-        given(jurorPool.getLastName()).willReturn("Gardener");
-        given(jurorPool.getPostcode()).willReturn("RG1 8HG");
+        given(jurorPool.getJuror().getTitle()).willReturn("Mr");
+        given(jurorPool.getJuror().getFirstName()).willReturn("David");
+        given(jurorPool.getJuror().getLastName()).willReturn("Gardener");
+        given(jurorPool.getJuror().getPostcode()).willReturn("RG1 8HG");
 
 
         try {
@@ -460,10 +495,10 @@ public class StraightThroughProcessorImplTest {
             fail("Postcode does not coincide with saved response");
         } catch (StraightThroughProcessingServiceException expectedException) {
             // verify there was no interaction with the db etc
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
         }
     }
 
@@ -476,14 +511,14 @@ public class StraightThroughProcessorImplTest {
         given(jurorResponse.getFirstName()).willReturn("David");
         given(jurorResponse.getLastName()).willReturn("Gardener");
 
-        given(jurorPool.getTitle()).willReturn("Mr");
-        given(jurorPool.getFirstName()).willReturn("David");
-        given(jurorPool.getLastName()).willReturn("Gardener");
+        given(jurorPool.getJuror().getTitle()).willReturn("Mr");
+        given(jurorPool.getJuror().getFirstName()).willReturn("David");
+        given(jurorPool.getJuror().getLastName()).willReturn("Gardener");
 
         given(jurorResponse.getPostcode()).willReturn("RG1 7HG");
-        given(jurorPool.getPostcode()).willReturn("RG1 7HG");
-        given(jurorResponse.getAddress()).willReturn("Green Park, Reading");
-        given(jurorPool.getAddress()).willReturn("250 Brooks Drive");
+        given(jurorPool.getJuror().getPostcode()).willReturn("RG1 7HG");
+        given(jurorResponse.getAddressLine1()).willReturn("Green Park, Reading");
+        given(jurorPool.getJuror().getAddressLine1()).willReturn("250 Brooks Drive");
 
 
         try {
@@ -492,10 +527,10 @@ public class StraightThroughProcessorImplTest {
             fail("Address  does not coincide with saved response");
         } catch (StraightThroughProcessingServiceException expectedException) {
             // verify there was no interaction with the db etc
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
         }
     }
 
@@ -508,14 +543,14 @@ public class StraightThroughProcessorImplTest {
         given(jurorResponse.getFirstName()).willReturn("David");
         given(jurorResponse.getLastName()).willReturn("Gardener");
 
-        given(jurorPool.getTitle()).willReturn("Mr");
-        given(jurorPool.getFirstName()).willReturn("David");
-        given(jurorPool.getLastName()).willReturn("Gardener");
+        given(jurorPool.getJuror().getTitle()).willReturn("Mr");
+        given(jurorPool.getJuror().getFirstName()).willReturn("David");
+        given(jurorPool.getJuror().getLastName()).willReturn("Gardener");
 
         given(jurorResponse.getPostcode()).willReturn("RG1 7HG");
-        given(jurorPool.getPostcode()).willReturn("RG1 7HG");
-        given(jurorResponse.getAddress2()).willReturn("Green Park, Reading");
-        given(jurorPool.getAddress2()).willReturn("250 Brooks Drive");
+        given(jurorPool.getJuror().getPostcode()).willReturn("RG1 7HG");
+        given(jurorResponse.getAddressLine2()).willReturn("Green Park, Reading");
+        given(jurorPool.getJuror().getAddressLine2()).willReturn("250 Brooks Drive");
 
 
         try {
@@ -524,10 +559,10 @@ public class StraightThroughProcessorImplTest {
             fail("Address  does not coincide with saved response");
         } catch (StraightThroughProcessingServiceException expectedException) {
             // verify there was no interaction with the db etc
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
         }
     }
 
@@ -540,14 +575,14 @@ public class StraightThroughProcessorImplTest {
         given(jurorResponse.getFirstName()).willReturn("David");
         given(jurorResponse.getLastName()).willReturn("Gardener");
 
-        given(jurorPool.getTitle()).willReturn("Mr");
-        given(jurorPool.getFirstName()).willReturn("David");
-        given(jurorPool.getLastName()).willReturn("Gardener");
+        given(jurorPool.getJuror().getTitle()).willReturn("Mr");
+        given(jurorPool.getJuror().getFirstName()).willReturn("David");
+        given(jurorPool.getJuror().getLastName()).willReturn("Gardener");
 
         given(jurorResponse.getPostcode()).willReturn("RG1 7HG");
-        given(jurorPool.getPostcode()).willReturn("RG1 7HG");
-        given(jurorResponse.getAddress2()).willReturn("Green Park, Reading");
-        given(jurorPool.getAddress2()).willReturn(null);
+        given(jurorPool.getJuror().getPostcode()).willReturn("RG1 7HG");
+        given(jurorResponse.getAddressLine2()).willReturn("Green Park, Reading");
+        given(jurorPool.getJuror().getAddressLine2()).willReturn(null);
 
         try {
             // process response
@@ -555,10 +590,10 @@ public class StraightThroughProcessorImplTest {
             fail("Address  does not coincide with saved response");
         } catch (StraightThroughProcessingServiceException expectedException) {
             // verify there was no interaction with the db etc
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
         }
     }
 
@@ -575,10 +610,10 @@ public class StraightThroughProcessorImplTest {
             fail("Expected StraightThroughProcessingServiceException  is  thrown.");
         } catch (StraightThroughProcessingServiceException expectedException) {
             // verify there was no interaction with the db etc
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
         }
     }
 
@@ -594,10 +629,10 @@ public class StraightThroughProcessorImplTest {
             fail("Expected StraightThroughProcessingServiceException  is  thrown.");
         } catch (StraightThroughProcessingServiceException expectedException) {
             // verify there was no interaction with the db etc
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
         }
     }
 
@@ -613,10 +648,10 @@ public class StraightThroughProcessorImplTest {
             fail("Expected StraightThroughProcessingServiceException  is  thrown.");
         } catch (StraightThroughProcessingServiceException.DeceasedExcusal expectedException) {
             // verify there was no interaction with the db etc
-            verify(jurorResponseRepository, times(0)).save(any(JurorResponse.class));
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
-            verify(poolRepository, times(0)).save(any(Pool.class));
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(jurorResponseRepository, times(0)).save(any(DigitalResponse.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
+            verify(poolRepository, times(0)).save(any(JurorPool.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
         }
     }
 
@@ -627,25 +662,21 @@ public class StraightThroughProcessorImplTest {
         given(jurorResponse.getFirstName()).willReturn("David");
         given(jurorResponse.getLastName()).willReturn("Gardener");
 
-        given(jurorPool.getTitle()).willReturn("Mr");
-        given(jurorPool.getFirstName()).willReturn("David");
-        given(jurorPool.getLastName()).willReturn("Gardener");
+        given(jurorPool.getJuror().getTitle()).willReturn("Mr");
+        given(jurorPool.getJuror().getFirstName()).willReturn("David");
+        given(jurorPool.getJuror().getLastName()).willReturn("Gardener");
 
         given(jurorResponse.getPostcode()).willReturn("RG1 7HG");
-        given(jurorPool.getPostcode()).willReturn("RG1 7HG");
-        given(jurorResponse.getAddress()).willReturn("Green Park, Reading");
-        given(jurorPool.getAddress()).willReturn("Green Park, Reading");
-        given(jurorResponse.getAddress2()).willReturn("250 Brooks Drive");
-        given(jurorPool.getAddress2()).willReturn("250 Brooks Drive");
+        given(jurorPool.getJuror().getPostcode()).willReturn("RG1 7HG");
+        given(jurorResponse.getAddressLine1()).willReturn("Green Park, Reading");
+        given(jurorPool.getJuror().getAddressLine1()).willReturn("Green Park, Reading");
+        given(jurorResponse.getAddressLine2()).willReturn("250 Brooks Drive");
+        given(jurorPool.getJuror().getAddressLine2()).willReturn("250 Brooks Drive");
     }
 
 
-    private Date addTime(Date date, int years, int days) {
-        Calendar c = Calendar.getInstance();
-        c.setTime(date);
-        c.add(Calendar.YEAR, years);
-        c.add(Calendar.DAY_OF_YEAR, days);
-        return c.getTime();
+    private LocalDate addTime(LocalDate date, int years, int days) {
+        LocalDate realDate = date.plusYears(years).plusDays(days);
+        return realDate;
     }
-
 }

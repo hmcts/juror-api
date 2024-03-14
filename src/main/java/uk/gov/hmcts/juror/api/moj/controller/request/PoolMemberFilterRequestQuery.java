@@ -58,7 +58,7 @@ public class PoolMemberFilterRequestQuery implements IsPageable {
     @JsonProperty("next_due")
     @Schema(name = "Next due in court", description =
         "If present, searches members who have a date set for true, or don't have date set for false")
-    private Boolean nextDue;
+    private List<String> nextDue;
 
     @JsonProperty("status")
     @Schema(name = "Statuses", description = "List of statuses to filter pool members by")

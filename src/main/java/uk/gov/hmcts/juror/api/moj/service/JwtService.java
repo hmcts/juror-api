@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 import io.jsonwebtoken.Claims;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 
 import java.security.Key;
 import java.util.Date;
@@ -19,4 +20,6 @@ public interface JwtService {
 
     String generateJwtToken(String id, String issuer, String subject, long tokenValidity, Key secretKey,
                             Map<String, Object> claims);
+
+    String generateBureauJwtToken(String id, BureauJWTPayload payload);
 }

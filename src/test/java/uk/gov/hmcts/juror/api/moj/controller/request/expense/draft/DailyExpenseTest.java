@@ -10,6 +10,8 @@ import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
     @Override
     protected DailyExpense createValidObject() {
@@ -18,6 +20,96 @@ public class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
             .poolNumber(TestConstants.VALID_POOL_NUMBER)
             .payCash(true)
             .build();
+    }
+
+    @Test
+    void positiveShouldPullFromDatabaseTrue() {
+        assertThat(
+            DailyExpense.builder()
+                .payCash(null)
+                .time(null)
+                .financialLoss(null)
+                .travel(null)
+                .foodAndDrink(null)
+                .dateOfExpense(LocalDate.now())
+                .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                .build().shouldPullFromDatabase()
+        ).isTrue();
+    }
+
+    @Test
+    void positiveShouldPullFromDatabaseFalseHasPayCash() {
+        assertThat(
+            DailyExpense.builder()
+                .payCash(true)
+                .time(null)
+                .financialLoss(null)
+                .travel(null)
+                .foodAndDrink(null)
+                .dateOfExpense(LocalDate.now())
+                .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                .build().shouldPullFromDatabase()
+        ).isFalse();
+    }
+
+    @Test
+    void positiveShouldPullFromDatabaseFalseHasTime() {
+        assertThat(
+            DailyExpense.builder()
+                .payCash(null)
+                .time(DailyExpenseTime.builder().build())
+                .financialLoss(null)
+                .travel(null)
+                .foodAndDrink(null)
+                .dateOfExpense(LocalDate.now())
+                .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                .build().shouldPullFromDatabase()
+        ).isFalse();
+    }
+
+    @Test
+    void positiveShouldPullFromDatabaseFalseHasFinancialLoss() {
+        assertThat(
+            DailyExpense.builder()
+                .payCash(null)
+                .time(null)
+                .financialLoss(DailyExpenseFinancialLoss.builder().build())
+                .travel(null)
+                .foodAndDrink(null)
+                .dateOfExpense(LocalDate.now())
+                .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                .build().shouldPullFromDatabase()
+        ).isFalse();
+    }
+
+    @Test
+    void positiveShouldPullFromDatabaseFalseTravel() {
+        assertThat(
+            DailyExpense.builder()
+                .payCash(null)
+                .time(null)
+                .financialLoss(null)
+                .travel(DailyExpenseTravel.builder().build())
+                .foodAndDrink(null)
+                .dateOfExpense(LocalDate.now())
+                .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                .build().shouldPullFromDatabase()
+        ).isFalse();
+    }
+
+    @Test
+    void positiveShouldPullFromDatabaseFalseFoodAndDrink() {
+        assertThat(
+            DailyExpense.builder()
+                .payCash(null)
+                .time(null)
+                .financialLoss(null)
+                .travel(null)
+                .foodAndDrink(DailyExpenseFoodAndDrink.builder().build())
+                .dateOfExpense(LocalDate.now())
+                .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                .build().shouldPullFromDatabase()
+        ).isFalse();
     }
 
     @Nested
