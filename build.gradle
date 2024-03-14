@@ -9,7 +9,7 @@ buildscript {
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath("org.postgresqlpostgresql:${postgresVersion}")
+        classpath("org.postgresql:postgresql:${postgresVersion}")
         classpath("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
     }
 }
@@ -101,11 +101,11 @@ dependencies {
     runtimeOnly "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
     runtimeOnly "org.flywaydb:flyway-core:${flywayVersion}"
 
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.2'
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     implementation 'javax.mail:mail:1.4.7'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.2'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.2'
-    implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
 
     implementation('com.google.guava:guava:33.0.0-jre')
 
@@ -122,11 +122,11 @@ dependencies {
     annotationProcessor("com.querydsl:querydsl-apt:${queryDslVersion}:jakarta")
     annotationProcessor('jakarta.persistence:jakarta.persistence-api:3.1.0')
 
-    implementation('org.projectlombok:lombok:1.18.28')
+    implementation('org.projectlombok:lombok:1.18.30')
     annotationProcessor('org.projectlombok:lombok')
 
-    implementation('org.apache.commons:commons-lang3:3.12.0')
-    implementation('org.apache.commons:commons-text:1.10.0')
+    implementation('org.apache.commons:commons-lang3:3.14.0')
+    implementation('org.apache.commons:commons-text:1.11.0')
     implementation("uk.gov.service.notify:notifications-java-client:${notifyVersion}")
 
 
@@ -136,7 +136,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
 
-    testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
+    testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
     //testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
     testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:3.2.7'
     testImplementation('org.assertj:assertj-core:3.25.3')
@@ -145,7 +145,7 @@ dependencies {
     testImplementation('org.projectlombok:lombok')
     testAnnotationProcessor('org.projectlombok:lombok')
 
-    testImplementation('net.bytebuddy:byte-buddy:1.12.19')
+    testImplementation('net.bytebuddy:byte-buddy:1.14.12')
     testImplementation('junit:junit:4.13.2')
     testImplementation "org.testcontainers:testcontainers:1.19.6"
     testImplementation "org.testcontainers:junit-jupiter:1.19.6"
