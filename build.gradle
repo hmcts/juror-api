@@ -98,8 +98,8 @@ dependencies {
 
 
     implementation group: 'org.postgresql', name: 'postgresql', version: "${postgresVersion}"
-    runtimeOnly "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
-    runtimeOnly "org.flywaydb:flyway-core:${flywayVersion}"
+    implementation "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
+    implementation "org.flywaydb:flyway-core:${flywayVersion}"
 
     implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     implementation 'javax.mail:mail:1.4.7'
