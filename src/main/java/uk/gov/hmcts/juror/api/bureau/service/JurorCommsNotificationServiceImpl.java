@@ -4,13 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateMappingRepository;
+import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateMapping;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyAdapter;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyApiException;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotification;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateMappingMod;
 import uk.gov.hmcts.juror.api.moj.repository.NotifyTemplateMappingRepositoryMod;
@@ -27,7 +28,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
 
     @Autowired
     public JurorCommsNotificationServiceImpl(final NotifyAdapter notifyAdapter,
-                                             final NotifyTemplateMappingRepository notifyTemplateMappingRepositoryMod,
+                                             final NotifyTemplateMappingRepositoryMod notifyTemplateMappingRepositoryMod,
                                              final JurorCommsNotifyPayLoadService jurorCommsNotifyPayLoadService) {
         Assert.notNull(notifyAdapter, "NotifyAdapter cannot be null");
         Assert.notNull(notifyTemplateMappingRepositoryMod, "NotifyTemplateMappingRepositoryMod cannot be null");
