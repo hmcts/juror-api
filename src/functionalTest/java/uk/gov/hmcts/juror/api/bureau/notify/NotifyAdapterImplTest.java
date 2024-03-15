@@ -10,15 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSettings;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSettingsRepository;
-import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotificationReceipt;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyAdapter;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
 import uk.gov.hmcts.juror.api.juror.service.JurorNotificationServiceImpl;
+import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
 import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
@@ -56,9 +55,6 @@ class NotifyAdapterImplTest extends ContainerTest {
     @Mock
     private NotifyAdapter mockNotifyAdapter;
 
-    @Mock
-    private AppSettingService mockAppSettingService;
-
     /**
      * mock provided to JurorNotificationServiceImpl constructor only.
      */
@@ -69,11 +65,11 @@ class NotifyAdapterImplTest extends ContainerTest {
      * mock provided to JurorNotificationServiceImpl constructor only.
      */
     @Mock
-    private AppSettingsRepository appSettingRepository;
+    private AppSettingRepository appSettingRepository;
 
     /**
      * Used to access utility method.
-     * {@link JurorNotificationServiceImpl#createEmailNotification(JurorResponse, NotifyTemplateType)} only!
+     * {@link JurorNotificationServiceImpl#createEmailNotification(DigitalResponse, NotifyTemplateType)} only!
      */
     private JurorNotificationServiceImpl utilService;
 
@@ -98,14 +94,14 @@ class NotifyAdapterImplTest extends ContainerTest {
         final String firstName = "Testy";
         final String lastName = "McTest";
         final String email = "testy.mctest@cgi.com";
-        final JurorResponse firstPersonResponse = JurorResponse.builder()
+        final DigitalResponse firstPersonResponse = DigitalResponse.builder()
             .jurorNumber(jurorNumber)
             .title(title)
             .firstName(firstName)
             .lastName(lastName)
             .email(email)
             .build();
-        final AppSettings testTemplateSetting = new AppSettings();
+        final AppSetting testTemplateSetting = new AppSetting();
         testTemplateSetting.setValue(DEV_FIRST_PERSON_TEMPLATE_ID);
 
         given(appSettingRepository.findById(anyString())).willReturn(Optional.of(testTemplateSetting));
@@ -144,7 +140,7 @@ class NotifyAdapterImplTest extends ContainerTest {
         final String firstName = "Testy";
         final String lastName = "Jones";
         final String email = "testy.jones@cgi.com";
-        final JurorResponse firstPersonResponse = JurorResponse.builder()
+        final DigitalResponse firstPersonResponse = DigitalResponse.builder()
             .jurorNumber(jurorNumber)
             .title(title)
             .firstName(firstName)
@@ -153,7 +149,7 @@ class NotifyAdapterImplTest extends ContainerTest {
             .welsh(true)
             .build();
 
-        final AppSettings testTemplateSetting = new AppSettings();
+        final AppSetting testTemplateSetting = new AppSetting();
         testTemplateSetting.setValue(DEV_FIRST_PERSON_CY_TEMPLATE_ID);
 
         given(appSettingRepository.findById(anyString())).willReturn(Optional.of(testTemplateSetting));
@@ -199,7 +195,7 @@ class NotifyAdapterImplTest extends ContainerTest {
         final String tpFname = "Thirdy";
         final String tpLname = "McThird";
         final String tpEmail = "thirdy.mcthird@cgi.com";
-        final JurorResponse thirdPartyJurorDetailsResponse = JurorResponse.builder()
+        final DigitalResponse thirdPartyJurorDetailsResponse = DigitalResponse.builder()
             .jurorNumber(jurorNumber)
             .title(title)
             .firstName(firstName)
@@ -210,7 +206,7 @@ class NotifyAdapterImplTest extends ContainerTest {
             .thirdPartyLName(tpLname)
             .emailAddress(tpEmail)
             .build();
-        final AppSettings testTemplateSetting = new AppSettings();
+        final AppSetting testTemplateSetting = new AppSetting();
         testTemplateSetting.setValue(DEV_THIRD_PARTY_TEMPLATE_ID);
 
         given(appSettingRepository.findById(anyString())).willReturn(Optional.of(testTemplateSetting));
@@ -250,7 +246,7 @@ class NotifyAdapterImplTest extends ContainerTest {
         final String tpFname = "Thirdy";
         final String tpLname = "McThird";
         final String tpEmail = "thirdy.mcthird@cgi.com";
-        final JurorResponse thirdPartyJurorDetailsResponse = JurorResponse.builder()
+        final DigitalResponse thirdPartyJurorDetailsResponse = DigitalResponse.builder()
             .jurorNumber(jurorNumber)
             .title(title)
             .firstName(firstName)
@@ -262,7 +258,7 @@ class NotifyAdapterImplTest extends ContainerTest {
             .emailAddress(tpEmail)
             .welsh(true)
             .build();
-        final AppSettings testTemplateSetting = new AppSettings();
+        final AppSetting testTemplateSetting = new AppSetting();
         testTemplateSetting.setValue(DEV_THIRD_PARTY_CY_TEMPLATE_ID);
 
         given(appSettingRepository.findById(anyString())).willReturn(Optional.of(testTemplateSetting));
@@ -307,7 +303,7 @@ class NotifyAdapterImplTest extends ContainerTest {
         final String tpLname = "McThird";
         final String tpEmail = "thirdy.mcthird@cgi.com";
 
-        final JurorResponse thirdPartyJurorDetailsResponse = JurorResponse.builder()
+        final DigitalResponse thirdPartyJurorDetailsResponse = DigitalResponse.builder()
             .jurorNumber(jurorNumber)
             .title(title)
             .firstName(firstName)
@@ -318,7 +314,7 @@ class NotifyAdapterImplTest extends ContainerTest {
             .thirdPartyLName(tpLname)
             .emailAddress(tpEmail)
             .build();
-        final AppSettings testTemplateSetting = new AppSettings();
+        final AppSetting testTemplateSetting = new AppSetting();
         testTemplateSetting.setValue(DEV_THIRD_PARTY_TEMPLATE_ID);
 
         given(appSettingRepository.findById(anyString())).willReturn(Optional.of(testTemplateSetting));
