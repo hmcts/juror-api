@@ -1,0 +1,88 @@
+package uk.gov.hmcts.juror.api.moj.report;
+
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import lombok.Getter;
+import uk.gov.hmcts.juror.api.juror.domain.QPool;
+import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
+import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Locale;
+
+@Getter
+public enum DataType {
+    JUROR_NUMBER("Juror Number", String.class, QJuror.juror.jurorNumber, QJuror.juror),
+    FIRST_NAME("First Name", String.class, QJuror.juror.firstName, QJuror.juror),
+    LAST_NAME("Last Name", String.class, QJuror.juror.lastName, QJuror.juror),
+    STATUS("Status", String.class, QJurorPool.jurorPool.status.statusDesc, QJurorPool.jurorPool),
+    DEFERRALS("Deferrals", String.class, QJuror.juror.noDefPos, QJuror.juror),
+    ABSENCES("Juror Number", Integer.class,
+        QAppearance.appearance.attendanceType.eq(AttendanceType.ABSENT).count()),
+    MAIN_PHONE("Main Phone", String.class, QJuror.juror.phoneNumber, QJuror.juror),
+    MOBILE_PHONE("Mobile Phone", String.class, QJuror.juror.altPhoneNumber, QJuror.juror),
+    HOME_PHONE("Mobile Phone", String.class, QJuror.juror.phoneNumber, QJuror.juror),
+
+    OTHER_PHONE("Other Phone", String.class, QJuror.juror.altPhoneNumber, QJuror.juror),
+    WORK_PHONE("Work Phone", String.class, QJuror.juror.workPhone, QJuror.juror),
+    EMAIL("Email", String.class, QJuror.juror.email, QJuror.juror),
+    CONTACT_DETAILS("Contact Details", List.class, MAIN_PHONE, OTHER_PHONE, WORK_PHONE, EMAIL),
+    WARNING("Warning", String.class, new CaseBuilder()
+        .when(QJuror.juror.policeCheck.isNull()
+            .or(QJuror.juror.policeCheck.notIn(PoliceCheck.ELIGIBLE, PoliceCheck.INELIGIBLE)))
+        .then("Not police checked")
+        .when(QJuror.juror.policeCheck.eq(PoliceCheck.INELIGIBLE)).then("Failed police check")
+        .otherwise(""), QJuror.juror),
+    POSTCODE("Postcode", String.class, QJuror.juror.postcode, QJuror.juror),
+    POSTPONED_TO("Postcode", LocalDate.class, QJurorPool.jurorPool.deferralDate, QJuror.juror),
+
+    DEFERRED_TO("Deferred To", LocalDate.class, QJurorPool.jurorPool.deferralDate, QJuror.juror),
+    NUMBER_DEFERRED("Number Deferred", Integer.class, QJuror.juror.count()),
+
+
+    REASONABLE_ADJUSTMENT_CODE("Reasonable Adjustment Code", String.class, QJuror.juror.reasonableAdjustmentCode,
+        QJuror.juror),
+    REASONABLE_ADJUSTMENT_MESSAGE("Reasonable Adjustment Message", String.class,
+        QJuror.juror.reasonableAdjustmentMessage, QJuror.juror),
+    REASONABLE_ADJUSTMENT("Reasonable Adjustment", List.class, REASONABLE_ADJUSTMENT_CODE,
+        REASONABLE_ADJUSTMENT_MESSAGE),
+
+    ON_CALL("On Call", Boolean.class, QJurorPool.jurorPool.onCall, QJurorPool.jurorPool),
+    SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate, QPool.pool),
+
+    ;
+
+
+    private final List<EntityPath<?>> requiredTables;
+    private final String displayName;
+    private final Class<?> dataType;
+    private final Expression<?> expression;
+    private final DataType[] returnTypes;
+
+    DataType(String displayName, Class<?> dataType, Expression<?> expression,
+             EntityPath<?>... requiredTables) {
+        this.displayName = displayName;
+        this.dataType = dataType;
+        this.expression = expression;
+        this.requiredTables = List.of(requiredTables);
+        this.returnTypes = null;
+    }
+
+    DataType(String displayName, Class<?> dataType, DataType... dataTypes) {
+        this.returnTypes = dataTypes;
+        this.displayName = displayName;
+        this.dataType = dataType;
+        this.expression = null;
+        this.requiredTables = null;
+    }
+
+    public String getId() {
+        return this.name().toLowerCase(Locale.ROOT);
+    }
+}
