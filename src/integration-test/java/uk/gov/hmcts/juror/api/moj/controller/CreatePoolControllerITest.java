@@ -560,8 +560,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         assertThat(response.getBody()).hasSize(2);
-        assertThat(response.getBody().get(0)).isEqualTo("777777777");
-        assertThat(response.getBody().get(1)).isEqualTo("888888888");
+        assertThat(response.getBody()).containsExactly("777777777", "888888888");
     }
 
     @Test

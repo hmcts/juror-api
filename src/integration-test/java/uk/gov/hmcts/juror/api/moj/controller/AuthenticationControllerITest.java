@@ -238,13 +238,9 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                         "courts", expectedJwtClaims.getStaff().getCourts()
                     ));
 
-                if (expectedJwtClaims.getRoles() == null || expectedJwtClaims.getRoles().isEmpty()) {
-                    assertThat(claims).hasSize(12);
-                } else {
-                    assertThat(claims).hasSize(13)
-                        .containsEntry("roles", expectedJwtClaims.getRoles()
-                            .stream().map(Enum::name).toList());
-                }
+                assertThat(claims).hasSize(13)
+                    .containsEntry("roles", expectedJwtClaims.getRoles()
+                        .stream().map(Enum::name).toList());
             }
 
             @Test
