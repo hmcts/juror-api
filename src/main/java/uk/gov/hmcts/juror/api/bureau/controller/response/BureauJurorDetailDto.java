@@ -202,12 +202,15 @@ public class BureauJurorDetailDto implements Serializable {
     private String newAltPhoneNumber;
 
     @Schema(description = "Juror date of birth")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
 
     @Schema(description = "Juror date of birth updated")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate newDateOfBirth;
 
     @Schema(description = "Date response was received")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateReceived;
 
     @Schema(description = "Juror email address")
