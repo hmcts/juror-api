@@ -523,7 +523,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             @Test
             void unauthorisedNotManagerUser() {
                 assertForbiddenResponse(triggerInvalid("415", "415", getValidPayload(),
-                        UserType.COURT, Set.of(Role.COURT_OFFICER)),
+                        UserType.COURT, Set.of()),
                     toUrl("415"));
             }
 
@@ -536,7 +536,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             @Test
             void unauthorisedIsBureau() {
                 assertForbiddenResponse(triggerInvalid("400", "416", getValidPayload(),
-                        UserType.BUREAU, Set.of(Role.BUREAU_OFFICER)),
+                        UserType.BUREAU, Set.of()),
                     toUrl("416"));
             }
 
@@ -601,7 +601,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
 
             @Test
             void typicalAdministrator() {
-                assertValid("001", getValidPayload(), UserType.ADMINISTRATOR, Set.of(Role.ADMINISTRATOR));
+                assertValid("001", getValidPayload(), UserType.ADMINISTRATOR, Set.of());
                 CourtLocation courtLocation = courtLocationRepository.findByLocCode("001")
                     .orElseThrow(() -> new AssertionError("Court not found"));
                 assertThat(courtLocation.getLocPhone()).isEqualTo("0123456789");
@@ -618,7 +618,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
 
             private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode,
                                                           UpdateCourtDetailsDto request) {
-                return triggerInvalid(owner, urlLocCode, request, UserType.COURT, Set.of(Role.COURT_OFFICER));
+                return triggerInvalid(owner, urlLocCode, request, UserType.COURT, Set.of());
             }
 
             private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode,
@@ -646,8 +646,9 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
 
             @Test
             void unauthorisedBureauOfficer() {
-                assertForbiddenResponse(triggerInvalid("400", "400", getValidPayload()),
-                    toUrl("400"));
+                assertForbiddenResponse(triggerInvalid("400", "415", getValidPayload(),
+                        UserType.BUREAU,Set.of()),
+                    toUrl("415"));
             }
 
             @Test
@@ -702,7 +703,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
 
             List<CourtDetailsReduced> assertValid() {
                 final String jwt = createBureauJwt(COURT_USER, "415", UserType.ADMINISTRATOR,
-                    Set.of(Role.ADMINISTRATOR), "415");
+                    Set.of(), "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<List<CourtDetailsReduced>> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -773,21 +774,15 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void unauthorisedNotAdministratorRole() {
-                assertForbiddenResponse(triggerInvalid(UserType.ADMINISTRATOR, Set.of(Role.COURT_OFFICER)),
-                    URL);
-            }
-
-            @Test
             void unauthorisedIsBureau() {
-                assertForbiddenResponse(triggerInvalid(UserType.BUREAU, Set.of(Role.BUREAU_OFFICER), "400"),
+                assertForbiddenResponse(triggerInvalid(UserType.BUREAU, Set.of(), "400"),
                     URL);
             }
 
             @ParameterizedTest
             @EnumSource(value = UserType.class, names = {"ADMINISTRATOR"}, mode = EnumSource.Mode.EXCLUDE)
             void unauthorisedNotAdministratorUserType(UserType userType) {
-                assertForbiddenResponse(triggerInvalid(userType, Set.of(Role.ADMINISTRATOR)),
+                assertForbiddenResponse(triggerInvalid(userType, Set.of()),
                     URL);
             }
         }
@@ -812,7 +807,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             @Test
             void typical() {
                 final String jwt = createBureauJwt(COURT_USER, TestConstants.VALID_COURT_LOCATION,
-                    UserType.ADMINISTRATOR, Set.of(Role.ADMINISTRATOR),
+                    UserType.ADMINISTRATOR, Set.of(),
                     TestConstants.VALID_COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<ExpenseRatesDto> response = template.exchange(
@@ -846,13 +841,8 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void unauthorisedNotAdminRole() {
-                assertForbiddenResponse(triggerInvalid(UserType.ADMINISTRATOR, Set.of(Role.COURT_OFFICER)), URL);
-            }
-
-            @Test
             void unauthorisedNotAdminUser() {
-                assertForbiddenResponse(triggerInvalid(UserType.COURT, Set.of(Role.ADMINISTRATOR)), URL);
+                assertForbiddenResponse(triggerInvalid(UserType.COURT, Set.of()), URL);
             }
         }
     }
@@ -891,7 +881,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                 final String jwt = createBureauJwt(COURT_USER,
                     TestConstants.VALID_COURT_LOCATION,
                     UserType.ADMINISTRATOR,
-                    Set.of(Role.ADMINISTRATOR));
+                    Set.of());
 
                 ExpenseRatesDto request = getValidPayload();
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
@@ -991,14 +981,8 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void unauthorisedNotAdminRole() {
-                assertForbiddenResponse(
-                    triggerInvalid(UserType.ADMINISTRATOR, Set.of(Role.COURT_OFFICER), getValidPayload()), URL);
-            }
-
-            @Test
             void unauthorisedNotAdminUser() {
-                assertForbiddenResponse(triggerInvalid(UserType.COURT, Set.of(Role.ADMINISTRATOR), getValidPayload()),
+                assertForbiddenResponse(triggerInvalid(UserType.COURT, Set.of(), getValidPayload()),
                     URL);
             }
 
@@ -1006,7 +990,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             @Test
             void unauthorisedIsBureauUser() {
                 assertForbiddenResponse(
-                    triggerInvalid("400", UserType.BUREAU, Set.of(Role.BUREAU_OFFICER), getValidPayload()),
+                    triggerInvalid("400", UserType.BUREAU, Set.of(), getValidPayload()),
                     URL);
             }
 
@@ -1015,7 +999,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                 ExpenseRatesDto invalidPayload = getValidPayload();
                 invalidPayload.setBikeRate(null);
                 assertInvalidPayload(
-                    triggerInvalid(UserType.ADMINISTRATOR, Set.of(Role.ADMINISTRATOR), invalidPayload),
+                    triggerInvalid(UserType.ADMINISTRATOR, Set.of(), invalidPayload),
                     new RestResponseEntityExceptionHandler.FieldError("bikeRate", "must not be null"));
             }
         }

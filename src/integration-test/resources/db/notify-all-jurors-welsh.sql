@@ -1,2 +1,3 @@
 -- set all juror responses to Welsh language
-UPDATE JUROR_DIGITAL.JUROR_RESPONSE SET WELSH = 'Y';
+UPDATE juror_mod.juror SET WELSH = true;
+UPDATE juror_mod.juror_response SET WELSH = true;

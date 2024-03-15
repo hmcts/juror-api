@@ -7,12 +7,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorCJS;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeed;
 import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogItem;
 import uk.gov.hmcts.juror.api.bureau.domain.PhoneLog;
+import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
+import uk.gov.hmcts.juror.api.moj.domain.User;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,7 +60,8 @@ public class BureauJurorDetailDto implements Serializable {
     private String processingStatus;
 
     @Schema(description = "Date/time completed")
-    private Date completedAt;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", shape = JsonFormat.Shape.STRING)
+    private LocalDateTime completedAt;
 
     @Schema(description = "Status index number")
     private Long status;
@@ -108,7 +112,7 @@ public class BureauJurorDetailDto implements Serializable {
      * Date and time allocated slot CJ-7820-64.
      */
     @Schema(description = "Juror court date")
-    private Date hearingDate;
+    private LocalDate hearingDate;
 
     @Schema(description = "Juror court time")
     private String hearingTime;
@@ -198,13 +202,13 @@ public class BureauJurorDetailDto implements Serializable {
     private String newAltPhoneNumber;
 
     @Schema(description = "Juror date of birth")
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
 
     @Schema(description = "Juror date of birth updated")
-    private Date newDateOfBirth;
+    private LocalDate newDateOfBirth;
 
     @Schema(description = "Date response was received")
-    private Date dateReceived;
+    private LocalDate dateReceived;
 
     @Schema(description = "Juror email address")
     private String email;
@@ -242,7 +246,7 @@ public class BureauJurorDetailDto implements Serializable {
 
 
     @Schema(description = "Juror residency")
-    private String residency;
+    private Boolean residency;
 
 
     @Schema(description = "Juror residency description")
@@ -250,7 +254,7 @@ public class BureauJurorDetailDto implements Serializable {
 
 
     @Schema(description = "Mental Health Act option selected")
-    private String mentalHealthAct;
+    private Boolean mentalHealthAct;
 
 
     @Schema(description = "Description about mental health act")
@@ -258,7 +262,7 @@ public class BureauJurorDetailDto implements Serializable {
 
 
     @Schema(description = "Bail option selected")
-    private String bail;
+    private Boolean bail;
 
 
     @Schema(description = "Details about bail")
@@ -266,7 +270,7 @@ public class BureauJurorDetailDto implements Serializable {
 
 
     @Schema(description = "Conviction option selected")
-    private String convictions;
+    private Boolean convictions;
 
 
     @Schema(description = "Details about convictions")
@@ -370,7 +374,7 @@ public class BureauJurorDetailDto implements Serializable {
     @Schema(description = "List of change logs associated to Juror")
     private List<ChangeLogDto> changeLog;
 
-    public BureauJurorDetailDto(final BureauJurorDetail jurorDetails) {
+    public BureauJurorDetailDto(final ModJurorDetail jurorDetails) {
         this.jurorNumber = jurorDetails.getJurorNumber();
         this.version = jurorDetails.getVersion();
         this.title = jurorDetails.getTitle();
@@ -392,8 +396,6 @@ public class BureauJurorDetailDto implements Serializable {
         this.newJurorAddress4 = jurorDetails.getNewJurorAddress4();
         this.jurorAddress5 = jurorDetails.getJurorAddress5();
         this.newJurorAddress5 = jurorDetails.getNewJurorAddress5();
-        this.jurorAddress6 = jurorDetails.getJurorAddress6();
-        this.newJurorAddress6 = jurorDetails.getNewJurorAddress6();
         this.jurorPostcode = jurorDetails.getJurorPostcode();
         this.newJurorPostcode = jurorDetails.getNewJurorPostcode();
         this.hearingDate = jurorDetails.getHearingDate();
@@ -437,22 +439,19 @@ public class BureauJurorDetailDto implements Serializable {
         this.convictionsDetails = jurorDetails.getConvictionsDetails();
         this.deferralReason = jurorDetails.getDeferralReason();
         this.deferralDate = jurorDetails.getDeferralDate();
-        this.specialNeedsArrangements = jurorDetails.getSpecialNeedsArrangements();
+        this.specialNeedsArrangements = jurorDetails.getReasonableAdjustmentsArrangements();
         this.excusalReason = jurorDetails.getExcusalReason();
         this.useJurorEmailDetails = jurorDetails.getUseJurorEmailDetails();
         this.useJurorPhoneDetails = jurorDetails.getUseJurorPhoneDetails();
         this.assignedStaffMember = jurorDetails.getAssignedStaffMember() != null
-            ?
-            new StaffDto(jurorDetails.getAssignedStaffMember())
-            :
-                null;
+            ? new StaffDto(jurorDetails.getAssignedStaffMember()) : null;
         this.staffAssignmentDate = jurorDetails.getStaffAssignmentDate();
         this.assignmentAllowed = jurorDetails.getAssignmentAllowed();
         this.phoneLogs = jurorDetails.getPhoneLogs().stream().map(PhoneLogDto::new).collect(Collectors.toList());
         this.cjsEmployments =
             jurorDetails.getCjsEmployments().stream().map(CJSEmploymentDto::new).collect(Collectors.toList());
         this.specialNeeds =
-            jurorDetails.getSpecialNeeds().stream().map(SpecialNeedDto::new).collect(Collectors.toList());
+            jurorDetails.getReasonableAdjustments().stream().map(SpecialNeedDto::new).collect(Collectors.toList());
         this.urgent = jurorDetails.getUrgent();
         this.superUrgent = jurorDetails.getSuperUrgent();
         this.slaOverdue = jurorDetails.getSlaOverdue();

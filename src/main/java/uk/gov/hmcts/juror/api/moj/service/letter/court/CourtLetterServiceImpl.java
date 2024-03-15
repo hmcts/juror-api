@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CourtLetterListRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.CertificateOfAttendanceLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.DeferralLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ExcusalLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.FailedToAttendLetterData;
@@ -16,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.NonDeferralLe
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.WithdrawalLetterData;
 import uk.gov.hmcts.juror.api.moj.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.moj.domain.letter.CourtLetterSearchCriteria;
+import uk.gov.hmcts.juror.api.moj.domain.letter.court.CertificateOfAttendanceLetterList;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralDeniedLetterList;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.DeferralGrantedLetterList;
 import uk.gov.hmcts.juror.api.moj.domain.letter.court.ExcusalGrantedLetterList;
@@ -25,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.MojExcusalCodeRepository;
+import uk.gov.hmcts.juror.api.moj.repository.letter.court.CertificateOfAttendanceListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.DeferralDeniedLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.DeferralGrantedLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.ExcusalGrantedLetterListRepository;
@@ -43,6 +46,7 @@ import java.util.Optional;
 @Primary
 public class CourtLetterServiceImpl implements CourtLetterService {
 
+    private final CertificateOfAttendanceListRepository certificateOfAttendanceListRepository;
     private final DeferralGrantedLetterListRepository deferralGrantedLetterListRepository;
     private final ExcusalGrantedLetterListRepository excusalGrantedLetterListRepository;
     private final DeferralDeniedLetterListRepository deferralDeniedLetterListRepository;
@@ -80,13 +84,15 @@ public class CourtLetterServiceImpl implements CourtLetterService {
             case POSTPONED -> courtPostponementLetterService.getEligibleList(request);
             case SHOW_CAUSE -> getEligibleShowCauseList(request);
             case EXCUSAL_GRANTED -> getEligibleExcusalGrantedList(request);
+            case CERTIFICATE_OF_ATTENDANCE -> getEligibleCertificateOfAttendanceList(request);
             case EXCUSAL_REFUSED -> courtExcusalRefusedLetterService.getEligibleList(request);
             case FAILED_TO_ATTEND -> courtFailedToAttendLetterService.getEligibleList(request);
             default -> throw new MojException.InternalServerError("Letter type not yet implemented", null);
         };
     }
 
-    private LetterListResponseDto getEligibleDeferralGrantedList(CourtLetterListRequestDto courtLetterListRequestDto) {
+    private LetterListResponseDto getEligibleDeferralGrantedList(CourtLetterListRequestDto
+                                                                     courtLetterListRequestDto) {
         log.trace("Enter getEligibleDeferralGrantedList");
 
         String owner = SecurityUtil.getActiveOwner();
@@ -114,6 +120,41 @@ public class CourtLetterServiceImpl implements CourtLetterService {
 
         log.trace("Exit getEligibleDeferralGrantedList");
         return responseDto;
+    }
+
+    private LetterListResponseDto getEligibleCertificateOfAttendanceList(CourtLetterListRequestDto
+                                                                             courtLetterListRequestDto) {
+        String owner = SecurityUtil.getActiveOwner();
+
+        CourtLetterSearchCriteria searchCriteria = buildSearchCriteria(courtLetterListRequestDto);
+
+        log.debug("Find jurors eligible for a court certificate of attendance letter for the primary court: {}",
+            owner);
+        List<CertificateOfAttendanceLetterList> eligibleJurorRecords =
+            certificateOfAttendanceListRepository.findJurorsEligibleForCertificateOfAcceptanceLetter(searchCriteria,
+                owner);
+        log.debug("{} records found", eligibleJurorRecords.size());
+
+        List<String> headings =
+            List.of(JUROR_NUMBER, FIRST_NAME, LAST_NAME, POOL_NUMBER, START_DATE, COMPLETION_DATE,
+                DATE_PRINTED);
+
+        List<String> dataTypes =
+            List.of(STRING, STRING, STRING, STRING, DATE, DATE, DATE); //
+
+        List<CertificateOfAttendanceLetterData> certificateOfAttendanceLetterData =
+            serialiseCertificateOfAttendanceLetterData(eligibleJurorRecords,
+                courtLetterListRequestDto.isIncludePrinted());
+
+        LetterListResponseDto responseDto = LetterListResponseDto.builder()
+            .headings(headings)
+            .dataTypes(dataTypes)
+            .data(certificateOfAttendanceLetterData)
+            .build();
+
+        log.trace("Exit getEligibleCertificateOfAttendanceList");
+        return responseDto;
+
     }
 
     private LetterListResponseDto getEligibleDeferralDeniedList(CourtLetterListRequestDto courtLetterListRequestDto) {
@@ -176,7 +217,7 @@ public class CourtLetterServiceImpl implements CourtLetterService {
     }
 
     private List<DeferralLetterData> serialiseDeferralLetterData(List<DeferralGrantedLetterList> eligibleJurorRecords,
-                                                                 boolean isIncludePrinted) {
+         boolean isIncludePrinted) {
         List<DeferralLetterData> deferralLetterDataList = new ArrayList<>();
         for (DeferralGrantedLetterList result : eligibleJurorRecords) {
 
@@ -210,15 +251,16 @@ public class CourtLetterServiceImpl implements CourtLetterService {
 
             String deferralReason = getDeferralReasonDescription(result.getOtherInformation());
 
-            NonDeferralLetterData.NonDeferralLetterDataBuilder nonDeferralLetterData = NonDeferralLetterData.builder()
-                .jurorNumber(result.getJurorNumber())
-                .firstName(result.getFirstName())
-                .lastName(result.getLastName())
-                .postcode(result.getPostcode())
-                .status(result.getStatus())
-                .dateRefused(result.getRefusalDate())
-                .reason(deferralReason)
-                .poolNumber(result.getPoolNumber());
+            NonDeferralLetterData.NonDeferralLetterDataBuilder nonDeferralLetterData =
+                NonDeferralLetterData.builder()
+                    .jurorNumber(result.getJurorNumber())
+                    .firstName(result.getFirstName())
+                    .lastName(result.getLastName())
+                    .postcode(result.getPostcode())
+                    .status(result.getStatus())
+                    .dateRefused(result.getRefusalDate())
+                    .reason(deferralReason)
+                    .poolNumber(result.getPoolNumber());
 
             if (isIncludePrinted) {
                 LocalDateTime datePrinted = result.getDatePrinted();
@@ -287,7 +329,7 @@ public class CourtLetterServiceImpl implements CourtLetterService {
     }
 
     private List<WithdrawalLetterData> serialiseWithdrawalLetterData(List<WithdrawalLetterList> eligibleJurorRecords,
-                                                                     boolean isIncludePrinted) {
+         boolean isIncludePrinted) {
         List<WithdrawalLetterData> withdrawalLetterDataList = new ArrayList<>();
         for (WithdrawalLetterList result : eligibleJurorRecords) {
 
@@ -384,4 +426,36 @@ public class CourtLetterServiceImpl implements CourtLetterService {
         }
         return excusalLetterDataList;
     }
+
+    private List<CertificateOfAttendanceLetterData> serialiseCertificateOfAttendanceLetterData(
+        List<CertificateOfAttendanceLetterList> eligibleJurorRecords,
+        boolean isIncludePrinted) {
+        List<CertificateOfAttendanceLetterData> dataList = new ArrayList<>();
+        for (CertificateOfAttendanceLetterList result : eligibleJurorRecords) {
+
+            CertificateOfAttendanceLetterData.CertificateOfAttendanceLetterDataBuilder
+                certificateOfAttendanceLetterDataBuilder =
+                CertificateOfAttendanceLetterData.builder()
+                    .jurorNumber(result.getJurorNumber())
+                    .firstName(result.getFirstName())
+                    .lastName(result.getLastName())
+                    .poolNumber(result.getPoolNumber())
+                    .startDate(result.getStartDate())
+                    .completionDate(result.getCompletionDate());
+
+
+            if (isIncludePrinted) {
+                LocalDateTime datePrinted = result.getDatePrinted();
+                certificateOfAttendanceLetterDataBuilder.datePrinted(datePrinted != null
+                    ? datePrinted.toLocalDate()
+                    : null);
+            }
+
+            dataList.add(certificateOfAttendanceLetterDataBuilder.build());
+        }
+        return dataList;
+    }
 }
+
+
+

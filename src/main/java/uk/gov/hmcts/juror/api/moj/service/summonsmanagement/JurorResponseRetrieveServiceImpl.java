@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,7 +62,7 @@ public class JurorResponseRetrieveServiceImpl implements JurorResponseRetrieveSe
                     .lastName(tuple.get(2, String.class))
                     .postcode(tuple.get(3, String.class))
                     .replyStatus(tuple.get(4, ProcessingStatus.class))
-                    .dateReceived(tuple.get(5, LocalDate.class))
+                    .dateReceived(tuple.get(5, LocalDateTime.class))
                     .officerAssigned(tuple.get(6, String.class))
                     .poolNumber(tuple.get(7, String.class))
                     .courtName(toProperCase(requireNonNull(tuple.get(8, String.class))))

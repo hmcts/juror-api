@@ -11,8 +11,11 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.BDDAssertions.within;
 
 @RunWith(SpringRunner.class)
 public class JurorResponseUtilsTest {
@@ -26,7 +29,7 @@ public class JurorResponseUtilsTest {
         String jurorNumber = "123456789";
         String disqualifiedComment = "Disqualified due to age.";
         Juror mockJuror = createMockJuror(jurorNumber);
-        LocalDate mockLocalDate = LocalDate.now();
+        LocalDateTime mockLocalDate = LocalDateTime.now();
         PaperResponse mockPaperResponse = createMockPaperResponse(mockJuror, mockLocalDate, disqualifiedComment);
 
         Mockito.doReturn(mockPaperResponse).when(jurorPaperResponseRepositoryMod).findByJurorNumber(jurorNumber);
@@ -50,10 +53,12 @@ public class JurorResponseUtilsTest {
         assertThat(actualPaperResponse.getPostcode()).isEqualTo(mockPaperResponse.getPostcode());
         assertThat(actualPaperResponse.getThirdPartyReason()).isEqualTo(mockPaperResponse.getThirdPartyReason());
         assertThat(actualPaperResponse.getProcessingComplete()).isEqualTo(mockPaperResponse.getProcessingComplete());
-        assertThat(actualPaperResponse.getCompletedAt()).isEqualTo(mockPaperResponse.getCompletedAt());
+        assertThat(actualPaperResponse.getCompletedAt()).isCloseTo(mockPaperResponse.getCompletedAt(),
+            within(10, ChronoUnit.SECONDS));
     }
 
-    private PaperResponse createMockPaperResponse(Juror juror, LocalDate mockLocalDate, String disqualifiedComment) {
+    private PaperResponse createMockPaperResponse(Juror juror, LocalDateTime mockLocalDate,
+                                                  String disqualifiedComment) {
         PaperResponse mockPaperResponse = new PaperResponse();
         mockPaperResponse.setJurorNumber(juror.getJurorNumber());
         mockPaperResponse.setDateReceived(mockLocalDate);

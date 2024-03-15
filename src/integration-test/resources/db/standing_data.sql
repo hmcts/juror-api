@@ -1,7 +1,6 @@
 -- Standing data.
-INSERT INTO JUROR_DIGITAL.APP_SETTINGS (SETTING, VALUE) VALUES ('URGENCY_DAYS', '10');
-INSERT INTO JUROR_DIGITAL.APP_SETTINGS (SETTING, VALUE) VALUES ('SLA_OVERDUE_DAYS', '5');
-
+INSERT INTO juror_mod.APP_SETTING (SETTING, VALUE) VALUES ('URGENCY_DAYS', '10');
+INSERT INTO juror_mod.APP_SETTING (SETTING, VALUE) VALUES ('SLA_OVERDUE_DAYS', '5');
 
 INSERT INTO JUROR_MOD.SYSTEM_PARAMETER(SP_ID, SP_DESC, SP_VALUE) values('100','Upper Age Limit', '76')
 ON CONFLICT(SP_ID)
@@ -20,8 +19,8 @@ DO UPDATE SET SP_DESC = 'Lower Age Limit', SP_VALUE = '18';
 --WHEN NOT MATCHED THEN INSERT (SP_ID, SP_DESC, SP_VALUE) VALUES ('101', 'Lower Age Limit', '18');
 
 -- Auto user
-INSERT INTO juror_mod.users (owner, username, name, level, active, password, version)
-VALUES ('400', 'AUTO', 'AUTO', -1, true, '', 0);
+INSERT INTO juror_mod.users (owner, username, name, active, email, version)
+VALUES ('400', 'AUTO', 'AUTO', true, 'AUTO@hmcts.gov.uk', 0);
 
 -- Teams
 INSERT INTO JUROR_DIGITAL.TEAM (ID, TEAM_NAME, VERSION) VALUES (1, 'London ' || chr(38) || ' Wales', 0);

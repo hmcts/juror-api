@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.controller.response.expense;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -19,6 +20,8 @@ import java.time.LocalTime;
 
 @Builder
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class GetEnteredExpenseResponse {
     @JsonProperty("date_of_expense")
     @JsonFormat(pattern = "yyyy-MM-dd")

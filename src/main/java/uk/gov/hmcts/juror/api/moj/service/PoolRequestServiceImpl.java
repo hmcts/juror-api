@@ -94,7 +94,6 @@ public class PoolRequestServiceImpl implements PoolRequestService {
      * convert the returned entity records into a DTO to serve back as a response object.
      *
      * @param courtLocation Unique 3 digit code to identify a specific court location
-     *
      * @return Data Transfer Object (DTO) containing a list of pool requests including their relevant properties
      */
     @Override
@@ -172,7 +171,6 @@ public class PoolRequestServiceImpl implements PoolRequestService {
      * @param locationCode 3-digit numeric string unique identifier for court locations
      * @param deferredTo   the date the pool is being requested for to check if there are any jurors who have
      *                     deferred to this date
-     *
      * @return a count of deferral records matching the predicate criteria
      */
     @Override
@@ -188,7 +186,6 @@ public class PoolRequestServiceImpl implements PoolRequestService {
      *
      * @param attendanceDate the date the pool is being requested for, when jurors are first expected to attend court
      * @param locationCode   3-digit numeric string unique identifier for court locations
-     *
      * @return Whether the date is a valid BUSINESS_DAY or an invalid WEEKEND or other HOLIDAY
      */
     @Override
@@ -215,7 +212,6 @@ public class PoolRequestServiceImpl implements PoolRequestService {
      *
      * @param poolNumberPrefix The first 7 characters of a pool number containing the court location code,
      *                         attendance date year (yy) and attendance date month (mm)
-     *
      * @return A list of distinct pool numbers and their attendance date for the given poolNumberPrefix
      */
     @Override
@@ -613,6 +609,25 @@ public class PoolRequestServiceImpl implements PoolRequestService {
 
         totalSize = activePoolsBureauList.getTotalElements();
         return totalSize;
+    }
+
+    @Override
+    public String getPoolAttendanceTime(String poolId) {
+        log.trace("Looking up pool attendance time for pool ID {}", poolId);
+        Optional<PoolRequest> optPoolRequest = poolRequestRepository.findById(poolId);
+        final PoolRequest poolRequest = optPoolRequest.orElse(null);
+        if (poolRequest == null) {
+            log.trace("No pool request entry for pool ID {} (this is not necessarily an error)", poolId);
+            return null;
+        }
+        final LocalDateTime attendanceTime = poolRequest.getAttendTime();
+        if (attendanceTime == null) {
+            log.trace("No attend time set in  pool for pool ID {}", poolId);
+            return null;
+        }
+        log.trace("Attend time for pool ID {} is: {}", poolId, attendanceTime);
+
+        return attendanceTime.toString();
     }
 
     public static <T> Page<T> convertListToPage(List<T> objectList, Pageable pageable) {

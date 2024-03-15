@@ -44,6 +44,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauRepository_findByJurorNumber.sql")
     public void getDetailsByJurorNumber_WithValidJurorNumber_ReturnsJustJurorDetailsNotEnriched() {
@@ -57,6 +58,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauRepository_findByJurorNumber.sql")
     @Sql("/db/BureauLogRepository_findByLogKey.sql")
@@ -77,6 +79,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauRepository_findByJurorNumber.sql")
     public void getDetailsByProcessingStatus_WithValidCategory_ReturnsDetailsWithStatusPlusCount() {
@@ -91,6 +94,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauRepository_findByJurorNumber.sql")
     public void getDetailsByProcessingStatus_WithInValidCategory_ReturnsAllResults() {
@@ -106,6 +110,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
@@ -125,6 +130,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
@@ -137,6 +143,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
@@ -158,6 +165,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
@@ -169,6 +177,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauServiceImplTest_completedToday.sql")
     public void getCompletedToday_returnsCorrectResults() {
@@ -186,6 +195,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauServiceImplTest_completedToday.sql")
     public void getCompletedToday_returnsEmptyListWhenNoResults() {

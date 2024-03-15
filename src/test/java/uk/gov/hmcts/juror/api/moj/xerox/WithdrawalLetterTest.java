@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
-import uk.gov.hmcts.juror.api.moj.exception.PoolRequestException;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.WithdrawalLetter;
 
 import java.time.LocalDate;
@@ -86,7 +86,7 @@ public class WithdrawalLetterTest extends AbstractLetterTest {
 
         int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
         if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(PoolRequestException.PoolRequestDateInvalid.class)
+            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
                 .isThrownBy(withdrawalLetter::getLetterString);
         } else {
             assertThat(withdrawalLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
@@ -114,7 +114,7 @@ public class WithdrawalLetterTest extends AbstractLetterTest {
 
         int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
         if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(PoolRequestException.PoolRequestDateInvalid.class)
+            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
                 .isThrownBy(withdrawalLetter::getLetterString);
         } else {
             assertThat(withdrawalLetter.getLetterString()).isEqualTo(getExpectedWelshResult());

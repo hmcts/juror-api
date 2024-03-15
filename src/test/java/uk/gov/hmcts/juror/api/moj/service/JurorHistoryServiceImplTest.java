@@ -437,6 +437,21 @@ class JurorHistoryServiceImplTest {
                 "£23.45"));
     }
 
+    @Test
+    void createSummonsReminderLetterHistory() {
+        JurorPool jurorPool = createJurorPool();
+        jurorPool.setIsActive(true);
+
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.RESPONDED);
+        jurorPool.setStatus(jurorStatus);
+
+        jurorHistoryService.createSummonsReminderLetterHistory(jurorPool);
+        assertValuesAdditional(jurorPool, "SYSTEM", null, null,
+            new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.NON_RESPONDED_LETTER,
+                "Reminder letter printed"));
+    }
+
     private void assertValuesAdditional(JurorPool jurorPool, String userId,
                                         LocalDate additionalDateInfo, String additionalReferenceInfo,
                                         JurorHistoryPartHistoryJurorHistoryExpectedValues... expectedValues) {

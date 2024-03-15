@@ -48,7 +48,7 @@ public class PrintLetterDataResponseDto implements Serializable {
     LocalTime attendTime;
     String defendant;
     String judgeName;
-    int periodOfExemption;
+    String periodOfExemption;
     String nonAttendance;
     BigDecimal lossOfEarnings;
     BigDecimal childCare;

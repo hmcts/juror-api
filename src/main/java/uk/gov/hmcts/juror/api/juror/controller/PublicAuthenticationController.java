@@ -76,6 +76,7 @@ public class PublicAuthenticationController {
         @Schema(description = "Juror number", requiredMode = Schema.RequiredMode.REQUIRED)
         private String jurorNumber;
 
+
         @NotEmpty
         @Length(max = 20)
         @Pattern(regexp = NO_PIPES_REGEX)

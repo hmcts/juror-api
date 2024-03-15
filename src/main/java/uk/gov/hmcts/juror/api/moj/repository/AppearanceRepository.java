@@ -41,9 +41,11 @@ public interface AppearanceRepository extends
 
     List<Appearance> findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(String jurorNumber, String poolNumber);
 
-
     List<Appearance> findAllByCourtLocationLocCodeAndAppearanceStageAndPayCashAndIsDraftExpenseFalse(
         String locCode,
         AppearanceStage appearanceStage,
         boolean payCash);
+
+    List<Appearance> findAllByJurorNumberAndPoolNumberAndAttendanceDateIn(String jurorNumber, String poolNumber,
+                                                                          List<LocalDate> dates);
 }

@@ -9,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -18,8 +17,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.request.AssignmentsMultiRequestD
 import uk.gov.hmcts.juror.api.bureau.controller.request.MultipleStaffAssignmentDto;
 import uk.gov.hmcts.juror.api.bureau.controller.request.ReassignResponsesDto;
 import uk.gov.hmcts.juror.api.bureau.controller.request.StaffAssignmentRequestDto;
-import uk.gov.hmcts.juror.api.bureau.controller.request.StaffMemberCrudRequestDto;
-import uk.gov.hmcts.juror.api.bureau.controller.request.StaffMemberCrudResponseDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.AssignmentsListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.AssignmentsListDto.AssignmentListDataDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.OperationFailureDto;
@@ -32,38 +29,40 @@ import uk.gov.hmcts.juror.api.bureau.domain.QTeam;
 import uk.gov.hmcts.juror.api.bureau.domain.StaffAmendmentAction;
 import uk.gov.hmcts.juror.api.bureau.domain.StaffAudit;
 import uk.gov.hmcts.juror.api.bureau.domain.StaffAuditRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.Team;
 import uk.gov.hmcts.juror.api.bureau.domain.TeamRepository;
+import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAudit;
+import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.ReassignException;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.*;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.juror.domain.QJurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.QPool;
-import uk.gov.hmcts.juror.api.moj.domain.QUser;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -71,7 +70,6 @@ import java.util.stream.StreamSupport;
 import static uk.gov.hmcts.juror.api.JurorDigitalApplication.AUTO_USER;
 import static uk.gov.hmcts.juror.api.bureau.domain.UserQueries.active;
 import static uk.gov.hmcts.juror.api.bureau.domain.UserQueries.inactive;
-import static uk.gov.hmcts.juror.api.bureau.domain.UserQueries.loginAllowed;
 import static uk.gov.hmcts.juror.api.bureau.domain.UserQueries.owner;
 import static uk.gov.hmcts.juror.api.bureau.domain.UserQueries.sortNameAsc;
 
@@ -84,12 +82,10 @@ import static uk.gov.hmcts.juror.api.bureau.domain.UserQueries.sortNameAsc;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final JurorResponseRepository jurorResponseRepository;
-    private final StaffJurorResponseAuditRepository staffJurorResponseAuditRepository;
-    private final PoolRepository poolRepository;
+    private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
+    private final StaffJurorResponseAuditRepositoryMod staffJurorResponseAuditRepository;
+    private final JurorPoolRepository poolRepository;
     private final EntityManager entityManager;
-    private final TeamRepository teamRepository;
-    private final StaffAuditRepository staffAuditRepository;
     private final BureauTransformsService bureauTransformsService;
 
 
@@ -105,7 +101,7 @@ public class UserServiceImpl implements UserService {
             log.warn("Assigning user '{}' Staff record does not exist!", currentUser);
             throw new StaffAssignmentException("Assigning staff record does not exist!");
         }
-        final JurorResponse jurorResponse = jurorResponseRepository.findByJurorNumber(
+        final DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(
             staffAssignmentRequestDto.getResponseJurorNumber());
         if (ObjectUtils.isEmpty(jurorResponse)) {
             log.warn("Response '{}' record does not exist!", staffAssignmentRequestDto.getResponseJurorNumber());
@@ -202,13 +198,13 @@ public class UserServiceImpl implements UserService {
             ));
         }
 
-        final Date assignmentDate = Date.from(Instant.now().truncatedTo(ChronoUnit.DAYS));
+        final LocalDate assignmentDate = LocalDate.now();
         if (log.isTraceEnabled()) {
             log.trace("Assignment date: {}", assignmentDate);
         }
 
         // 2. audit entity
-        final StaffJurorResponseAudit staffJurorResponseAudit = StaffJurorResponseAudit.realBuilder()
+        final StaffJurorResponseAuditMod staffJurorResponseAudit = StaffJurorResponseAuditMod.realBuilder()
             .teamLeaderLogin(assigningUser.getUsername())
             .staffLogin(assignToUser != null
                 ?
@@ -315,7 +311,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public void assignUrgentResponse(final JurorResponse urgentJurorResponse) throws StaffAssignmentException {
+    public void assignUrgentResponse(final DigitalResponse urgentJurorResponse) throws StaffAssignmentException {
         if (!urgentJurorResponse.getSuperUrgent() && !urgentJurorResponse.getUrgent()) {
             // this state should be invalid
             log.warn("Not urgent or super urgent: {}", urgentJurorResponse);
@@ -323,12 +319,12 @@ public class UserServiceImpl implements UserService {
         }
 
         // get an attached version of the response from the DB
-        final JurorResponse updateResponse =
+        final DigitalResponse updateResponse =
             jurorResponseRepository.findByJurorNumber(urgentJurorResponse.getJurorNumber());
 
         //for want of a unified DTO for JUROR.POOL
 
-        final Pool pool = poolRepository.findOne(QPool.pool.jurorNumber.eq(urgentJurorResponse.getJurorNumber())).get();
+        final JurorPool pool = poolRepository.findOne(QJuror.juror.jurorNumber.eq(urgentJurorResponse.getJurorNumber())).get();
         final String courtId = pool.getCourt().getLocCode();
 
         final List<User> availableStaff = new ArrayList<>();
@@ -337,8 +333,7 @@ public class UserServiceImpl implements UserService {
             // assign a random staff member to the juror response
             final User staffToAssign = availableStaff.get(RandomUtils.nextInt(0, availableStaff.size()));
             updateResponse.setStaff(staffToAssign);
-            final Date now =
-                Date.from(Instant.now().atZone(ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS).toInstant());
+            final LocalDate now = LocalDate.now();
             if (log.isDebugEnabled()) {
                 log.debug("Setting now as {}", now);
             }
@@ -348,7 +343,7 @@ public class UserServiceImpl implements UserService {
             }
             jurorResponseRepository.save(updateResponse);
 
-            final StaffJurorResponseAudit staffJurorResponseAudit = StaffJurorResponseAudit.realBuilder()
+            final StaffJurorResponseAuditMod staffJurorResponseAudit = StaffJurorResponseAuditMod.realBuilder()
                 .teamLeaderLogin(AUTO_USER)
                 .staffLogin(staffToAssign.getUsername())
                 .jurorNumber(urgentJurorResponse.getJurorNumber())
@@ -393,8 +388,8 @@ public class UserServiceImpl implements UserService {
     public AssignmentsListDto getStaffAssignments(AssignmentsMultiRequestDto responseListDto, String currentUser) {
         List<AssignmentListDataDto> assignmentListDataDtos = new ArrayList<>();
 
-        final QJurorResponse query = QJurorResponse.jurorResponse;
-        Iterable<JurorResponse> jurorResponses =
+        final QDigitalResponse query = QDigitalResponse.digitalResponse;
+        Iterable<DigitalResponse> jurorResponses =
             jurorResponseRepository.findAll(query.jurorNumber.in(responseListDto.getJurorNumbers()));
 
         Set<String> jurorResponseSet = new HashSet<>();
@@ -414,7 +409,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // process list of responses
-        for (JurorResponse jurorResponse : jurorResponses) {
+        for (DigitalResponse jurorResponse : jurorResponses) {
 
             String assignedTo = null;
             if (null != jurorResponse.getStaff()) {
@@ -486,6 +481,7 @@ public class UserServiceImpl implements UserService {
                 }
             } catch (StaffAssignmentException.StatusUrgent | StaffAssignmentException.StatusSuperUrgent
                      | StaffAssignmentException.StatusClosed e) {
+                e.printStackTrace();
                 log.debug("StaffAssignment Status-related exception caught during multiple assignment", e);
                 OperationFailureDto failureReason = new OperationFailureDto(
                     responseMetadata.getResponseJurorNumber(),
@@ -493,6 +489,7 @@ public class UserServiceImpl implements UserService {
                 );
                 failuresList.add(failureReason);
             } catch (StaffAssignmentException e) {
+                e.printStackTrace();
                 log.debug("StaffAssignment exception caught during multiple assignment", e);
                 OperationFailureDto failureReason = new OperationFailureDto(
                     responseMetadata.getResponseJurorNumber(),
@@ -594,16 +591,16 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        Iterable<JurorResponse> jurorResponses = jurorResponseRepository.findAll(responseGroupFilter);
+        Iterable<DigitalResponse> jurorResponses = jurorResponseRepository.findAll(responseGroupFilter);
 
-        for (JurorResponse jurorResponse : jurorResponses) {
-            final Date assignmentDate = Date.from(Instant.now().truncatedTo(ChronoUnit.DAYS));
+        for (DigitalResponse jurorResponse : jurorResponses) {
+            final LocalDate assignmentDate = LocalDate.now();
             if (log.isTraceEnabled()) {
                 log.trace("Assignment date: {}", assignmentDate);
             }
 
             // audit entity
-            final StaffJurorResponseAudit staffJurorResponseAudit = StaffJurorResponseAudit.realBuilder()
+            final StaffJurorResponseAuditMod staffJurorResponseAudit = StaffJurorResponseAuditMod.realBuilder()
                 .teamLeaderLogin(assigningUser)
                 .staffLogin(assignToUser)
                 .jurorNumber(jurorResponse.getJurorNumber())
@@ -625,176 +622,5 @@ public class UserServiceImpl implements UserService {
             }
             staffJurorResponseAuditRepository.save(staffJurorResponseAudit);
         }
-    }
-
-    @Override
-    @Transactional
-    public StaffMemberCrudResponseDto createNewStaffMember(
-        final StaffMemberCrudRequestDto staffMember, final String currentUser)
-        throws StaffMemberCrudException {
-        log.trace("Creating new staff member");
-        //1. check the login name is not in use by another staff member entry
-        if (0 == JurorDigitalApplication.AUTO_USER.compareToIgnoreCase(staffMember.getLogin())) {
-            log.error("Cannot create the {} user!", JurorDigitalApplication.AUTO_USER);
-            throw new StaffMemberCrudException("Cannot create user " + JurorDigitalApplication.AUTO_USER);
-        }
-
-        final User existingStaff = userRepository.findByUsername(staffMember.getLogin());
-        if (existingStaff != null) {
-            // found an existing staff member assigned to the juror login name (bad)
-            final String message =
-                "Juror username " + staffMember.getLogin() + " has already been allocated to "
-                    + existingStaff.getName();
-            log.warn(message);
-            throw new StaffMemberCrudException(message);
-        }
-        log.trace("Login name {} is not already assigned to a staff member", staffMember.getLogin());
-
-        //2. get a attached reference to the team
-        Optional<Team> optTeam = teamRepository.findOne(QTeam.team.id.eq(staffMember.getTeam()));
-        final Team team = optTeam.orElse(null);
-        if (null == team) {
-            log.error("Team {} was not found!", staffMember.getTeam());
-            throw new StaffMemberCrudException("Invalid team id: " + staffMember.getTeam());
-        }
-
-        //3. save the new staff member
-
-        final User staffEntity = userRepository.save(staffMemberCrudDtoToStaffEntity(staffMember, team));
-        //4. audit change
-        final StaffAudit staffAudit = StaffAudit.builder(staffEntity, StaffAmendmentAction.CREATE, currentUser).build();
-        log.trace("Auditing: {}", staffAudit);
-        staffAuditRepository.save(staffAudit);
-
-        //5. commit the new user to the database and refresh the entity (Ensures courts are loaded)
-        entityManager.flush();
-        entityManager.refresh(staffEntity);
-        //6. return dto of the new team member
-        return staffEntityToStaffMemberCrudDto(staffEntity);
-    }
-
-    @Override
-    public StaffMemberCrudResponseDto updateStaffMember(final String login, final StaffMemberCrudRequestDto staffMember,
-                                                        final String currentUser)
-        throws StaffMemberCrudException, JurorAccountLockedException {
-        log.trace("Updating new staff member");
-        // check the staff member exists
-        if (0 == JurorDigitalApplication.AUTO_USER.compareToIgnoreCase(login)) {
-            log.error("Cannot update the {} user!", JurorDigitalApplication.AUTO_USER);
-            throw new StaffMemberCrudException("Cannot update user " + JurorDigitalApplication.AUTO_USER);
-        }
-        Optional<User> optStaff = userRepository.findOne(QUser.user.username.equalsIgnoreCase(login));
-        final User existingStaff = optStaff.orElse(null);
-        if (null == existingStaff) {
-            // didn't find the staff member (bad)
-            final String message = "Juror username " + staffMember.getLogin() + "does not exist";
-            log.warn(message);
-            throw new StaffMemberCrudException(message);
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("Found staff member {}", existingStaff);
-        }
-        if (!existingStaff.isActive()
-            && staffMember.isActive()
-            && userRepository.count(loginAllowed(login)) == 0) {
-            log.info("Cannot activate {} as they are not allowed to login to Juror", login);
-            throw new JurorAccountLockedException("Cannot activate user that is not permitted to login to Juror");
-        }
-
-        //2. get a attached reference to the team if it has changed
-        Optional<Team> optTeam = teamRepository.findOne(QTeam.team.id.eq(staffMember.getTeam()));
-        final Team updateTeam = optTeam.orElse(null);
-        if (null == updateTeam && log.isDebugEnabled()) {
-            log.debug("Team to update {} was not found!", staffMember.getTeam());
-        }
-
-        //3. audit the existing user as a history event within the transaction
-        final StaffAudit staffAudit = StaffAudit.builder(existingStaff, StaffAmendmentAction.EDIT, currentUser).build();
-        log.trace("Auditing: {}", staffAudit);
-        // NOTE: save the audit after the changes have been saved!
-
-        //4. update the new staff member
-        // note we do not allow updating the login field as it is the primary key
-        existingStaff.setName(staffMember.getName());
-        existingStaff.setLevel(staffMember.getLevel());
-        existingStaff.setActive(staffMember.isActive());
-
-        existingStaff.setTeam(updateTeam);
-        existingStaff.setVersion(staffMember.getVersion());
-
-
-        entityManager.detach(existingStaff);
-        final User updatedStaff = userRepository.save(existingStaff);
-        staffAuditRepository.save(staffAudit);
-
-        //5. return dto of the new team member
-        final StaffMemberCrudResponseDto updatedStaffDto = staffEntityToStaffMemberCrudDto(updatedStaff);
-        if (log.isTraceEnabled()) {
-            log.trace("Updated staff from {} to {}", staffMember, updatedStaff);
-        }
-        return updatedStaffDto;
-    }
-
-    @PreAuthorize(SecurityUtil.TEAM_LEADER_AUTH)
-    private User staffMemberCrudDtoToStaffEntity(final StaffMemberCrudRequestDto dto, final Team teamEntity) {
-        BureauJWTPayload authPrincipal = SecurityUtil.getActiveUsersBureauPayload();
-        final User staff = new User(
-            authPrincipal.getOwner(),
-            dto.getLogin(),
-            dto.getName(),
-            dto.getLevel(),
-            dto.isActive(),
-            null,
-            null,
-            teamEntity,
-            dto.getVersion(),
-            null,
-            null,
-            null,
-            null,
-            0,
-            true,
-            BigDecimal.ZERO,
-            false,
-            null,
-            null
-        );
-        if (log.isTraceEnabled()) {
-            log.trace("Converted {} and {} into {}", dto, teamEntity, staff);
-        }
-        return staff;
-    }
-
-    /**
-     * Convert a {@link User} entity to a {@link StaffMemberCrudResponseDto}.
-     *
-     * @param entity domain layer entity
-     * @return controller layer dto
-     */
-    private StaffMemberCrudResponseDto staffEntityToStaffMemberCrudDto(final User entity) {
-        final StaffMemberCrudResponseDto dto = new StaffMemberCrudResponseDto(
-            entity.getUsername(),
-            entity.getName(),
-            entity.isTeamLeader(),
-            entity.isActive(),
-            entity.getTeam().getId(),
-            entity.getCourtAtIndex(0, null),
-            entity.getCourtAtIndex(1, null),
-            entity.getCourtAtIndex(2, null),
-            entity.getCourtAtIndex(3, null),
-            entity.getCourtAtIndex(4, null),
-            entity.getCourtAtIndex(5, null),
-            entity.getCourtAtIndex(6, null),
-            entity.getCourtAtIndex(7, null),
-            entity.getCourtAtIndex(8, null),
-            entity.getCourtAtIndex(9, null),
-            entity.getVersion()
-        );
-
-        if (log.isTraceEnabled()) {
-            log.trace("Converted {} into {}", entity, dto);
-        }
-
-        return dto;
     }
 }

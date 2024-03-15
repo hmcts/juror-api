@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.juror.domain.Holidays;
 import uk.gov.hmcts.juror.api.juror.domain.HolidaysRepository;
 import uk.gov.hmcts.juror.api.moj.controller.response.administration.HolidayDate;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
@@ -75,8 +76,8 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
         @DisplayName("Positive")
         class Positive {
 
-            Map<Integer, List<HolidayDate>> assertValid(Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, "415", UserType.COURT, roles, "415");
+            Map<Integer, List<HolidayDate>> assertValid(UserType userType, Set<Role> roles) {
+                final String jwt = createBureauJwt(COURT_USER, "415", userType, roles, "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<Map<Integer, List<HolidayDate>>> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -108,12 +109,12 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
 
             @Test
             void typicalCourtUser() {
-                assertValid(Set.of(Role.MANAGER));
+                assertValid(UserType.COURT, Set.of(Role.MANAGER));
             }
 
             @Test
             void typicalAdministrator() {
-                assertValid(Set.of(Role.ADMINISTRATOR));
+                assertValid(UserType.ADMINISTRATOR, Set.of());
             }
 
         }
@@ -123,8 +124,8 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
         class Negative {
 
 
-            private ResponseEntity<String> triggerInvalid(String owner, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, UserType.COURT, roles, owner);
+            private ResponseEntity<String> triggerInvalid(String owner, UserType userType, Set<Role> roles) {
+                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -134,7 +135,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
 
             @Test
             void unauthorisedNotManagerOrAdminUser() {
-                assertForbiddenResponse(triggerInvalid("415", Set.of(Role.COURT_OFFICER)),
+                assertForbiddenResponse(triggerInvalid("415", UserType.COURT, Set.of()),
                     URL);
             }
         }
@@ -192,11 +193,12 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
         class Negative {
 
             private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode) {
-                return triggerInvalid(owner, urlLocCode, Set.of(Role.MANAGER));
+                return triggerInvalid(owner, urlLocCode, UserType.COURT, Set.of(Role.MANAGER));
             }
 
-            private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, UserType.COURT, roles, owner);
+            private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode, UserType userType,
+                                                          Set<Role> roles) {
+                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -212,7 +214,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
 
             @Test
             void unauthorisedNotManagerUser() {
-                assertForbiddenResponse(triggerInvalid("415", "415", Set.of(Role.COURT_OFFICER)),
+                assertForbiddenResponse(triggerInvalid("415", "415", UserType.COURT, Set.of()),
                     toUrl("415"));
             }
 
@@ -224,7 +226,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
 
             @Test
             void unauthorisedBureauUSer() {
-                assertForbiddenResponse(triggerInvalid("400", "415", Set.of(Role.BUREAU_OFFICER)),
+                assertForbiddenResponse(triggerInvalid("400", "415",UserType.BUREAU, Set.of()),
                     toUrl("415"));
             }
         }
@@ -282,12 +284,12 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
             private static final String VALID_DATE = "2023-01-01";
 
             private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode, String date) {
-                return triggerInvalid(owner, urlLocCode, date, Set.of(Role.MANAGER));
+                return triggerInvalid(owner, urlLocCode, date, UserType.COURT, Set.of(Role.MANAGER));
             }
 
             private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode, String date,
-                                                          Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, UserType.COURT, roles, owner);
+                                                          UserType userType, Set<Role> roles) {
+                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, DELETE,
@@ -304,7 +306,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
             @Test
             void unauthorisedNotManagerUser() {
                 assertForbiddenResponse(triggerInvalid("415", "415", VALID_DATE,
-                    Set.of(Role.COURT_OFFICER)), toUrl("415", "2023-01-01"));
+                    UserType.COURT, Set.of()), toUrl("415", "2023-01-01"));
             }
 
             @Test
@@ -315,7 +317,8 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
 
             @Test
             void unauthorisedBureauUSer() {
-                assertForbiddenResponse(triggerInvalid("400", "415", VALID_DATE, Set.of(Role.BUREAU_OFFICER)),
+                assertForbiddenResponse(triggerInvalid("400", "415", VALID_DATE,
+                        UserType.BUREAU, Set.of()),
                     toUrl("415", VALID_DATE));
             }
 
@@ -422,7 +425,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
             @Test
             void unauthorisedNotManagerUser() {
                 assertForbiddenResponse(triggerInvalid("415", "415", getValidPayload(),
-                        UserType.COURT, Set.of(Role.COURT_OFFICER)),
+                        UserType.COURT,Set.of()),
                     toUrl("415"));
             }
 
@@ -435,7 +438,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
             @Test
             void unauthorisedBureauUSer() {
                 assertForbiddenResponse(triggerInvalid("400", "415", getValidPayload(),
-                        UserType.BUREAU, Set.of(Role.BUREAU_OFFICER)),
+                        UserType.BUREAU, Set.of()),
                     toUrl("415"));
             }
 

@@ -9,23 +9,23 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.controller.request.AutoAssignRequest;
 import uk.gov.hmcts.juror.api.bureau.controller.response.AutoAssignResponse;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.UserQueries;
 import uk.gov.hmcts.juror.api.bureau.exception.AutoAssignException;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,15 +44,15 @@ import static uk.gov.hmcts.juror.api.bureau.service.AutoAssignmentServiceImpl.DE
 @SuppressWarnings("PMD.LawOfDemeter")
 public class AutoAssignmentServiceImplTest {
 
-    private static final Comparator<JurorResponse> ascendingDateOrder =
-        Comparator.comparing(JurorResponse::getDateReceived);
+    private static final Comparator<DigitalResponse> ascendingDateOrder =
+        Comparator.comparing(DigitalResponse::getDateReceived);
     private static final long FIRST_STAFF_MEMBER_ASSIGNED_INCOMPLETES = 5;
     private static final long SECOND_STAFF_MEMBER_ASSIGNED_INCOMPLETES = 7;
     private static final long FIRST_STAFF_MEMBER_URGENTS = 8;
     private static final long SECOND_STAFF_MEMBER_URGENTS = 10;
 
     @Mock
-    private JurorResponseRepository responseRepo;
+    private JurorDigitalResponseRepositoryMod responseRepo;
 
     @Mock
     private UserRepository userRepo;
@@ -61,7 +61,7 @@ public class AutoAssignmentServiceImplTest {
     private AppSettingService appSettingService;
 
     @Mock
-    private StaffJurorResponseAuditRepository auditRepo;
+    private StaffJurorResponseAuditRepositoryMod auditRepo;
 
     private AutoAssignmentServiceImpl autoAssignmentService;
 
@@ -69,14 +69,14 @@ public class AutoAssignmentServiceImplTest {
     private User user2;
     private User user3;
 
-    private List<JurorResponse> backlog;
+    private List<DigitalResponse> backlog;
 
     @Before
     public void setUp() {
         autoAssignmentService = new AutoAssignmentServiceImpl(responseRepo, userRepo, appSettingService, auditRepo);
-        user1 = User.builder().name("Post Staff 1").username("staff1").active(true).level(0).build();
-        user2 = User.builder().name("Post Staff 2").username("staff2").active(true).level(0).build();
-        user3 = User.builder().name("Post Staff 3").username("staff3").active(true).level(0).build();
+        user1 = User.builder().name("Post Staff 1").username("staff1").active(true).build();
+        user2 = User.builder().name("Post Staff 2").username("staff2").active(true).build();
+        user3 = User.builder().name("Post Staff 3").username("staff3").active(true).build();
 
         doReturn(Arrays.asList(user1, user2)).when(userRepo).findAll(UserQueries.activeBureauOfficers());
 
@@ -97,10 +97,9 @@ public class AutoAssignmentServiceImplTest {
         final LocalDateTime now = LocalDateTime.now();
         backlog = new LinkedList<>();
         for (int i = 0; i < 180; i++) {
-            JurorResponse response = new JurorResponse();
+            DigitalResponse response = new DigitalResponse();
             response.setJurorNumber(String.valueOf(i));
-            response.setDateReceived(
-                Date.from(now.minusHours(i).atZone(ZoneId.systemDefault()).toInstant()));
+            response.setDateReceived(now.minusHours(i));
             backlog.add(response);
         }
 
@@ -132,12 +131,12 @@ public class AutoAssignmentServiceImplTest {
 
         // Difference will likely be < 1s, but allowing a margin of error for running on a _really_ slow
         // machine/build slave
-        final Date minusFiveSeconds =
-            Date.from(currentTime.minusSeconds(5).atZone(ZoneId.systemDefault()).toInstant());
-        final Date plusFiveSeconds =
-            Date.from(currentTime.plusSeconds(5).atZone(ZoneId.systemDefault()).toInstant());
+        final LocalDate minusFiveSeconds =
+            LocalDate.from(currentTime.minusSeconds(5));
+        final LocalDate plusFiveSeconds =
+            LocalDate.from(currentTime.plusSeconds(5));
 
-        for (JurorResponse dummyResponse : backlog) {
+        for (DigitalResponse dummyResponse : backlog) {
             assertThat(dummyResponse.getStaff())
                 .describedAs("Every backlog item should be assigned to a bureau officer")
                 .isNotNull();
@@ -152,20 +151,20 @@ public class AutoAssignmentServiceImplTest {
         assertThat(backlog.parallelStream().filter(r -> r.getStaff().equals(user2)).count()).isEqualTo(60);
         assertThat(backlog.parallelStream().filter(r -> r.getStaff().equals(user3)).count()).isEqualTo(60);
 
-        ArgumentCaptor<Iterable<StaffJurorResponseAudit>> auditCaptor = ArgumentCaptor.forClass(Iterable.class);
+        ArgumentCaptor<Iterable<StaffJurorResponseAuditMod>> auditCaptor = ArgumentCaptor.forClass(Iterable.class);
         verify(responseRepo, times(1)).saveAll(backlog);
         verify(auditRepo).saveAll(auditCaptor.capture());
-        List<StaffJurorResponseAudit> auditEntries =
-            Lists.newLinkedList(((Iterable<StaffJurorResponseAudit>) auditCaptor.getValue()));
+        List<StaffJurorResponseAuditMod> auditEntries =
+            Lists.newLinkedList(((Iterable<StaffJurorResponseAuditMod>) auditCaptor.getValue()));
 
-        for (JurorResponse backlogItem : backlog) {
+        for (DigitalResponse backlogItem : backlog) {
 
-            List<StaffJurorResponseAudit> itemAudit = auditEntries.parallelStream()
+            List<StaffJurorResponseAuditMod> itemAudit = auditEntries.parallelStream()
                 .filter(audit -> audit.getJurorNumber().equals(backlogItem.getJurorNumber()))
                 .collect(Collectors.toList());
             assertThat(itemAudit).hasSize(1);
 
-            StaffJurorResponseAudit audit = itemAudit.get(0);
+            StaffJurorResponseAuditMod audit = itemAudit.get(0);
             assertThat(audit.getTeamLeaderLogin()).isEqualTo("testUser");
             assertThat(audit.getStaffLogin()).isEqualTo(backlogItem.getStaff().getUsername());
         }
@@ -239,7 +238,7 @@ public class AutoAssignmentServiceImplTest {
      */
     @Test(expected = AutoAssignException.IneligibleStaff.class)
     public void autoAssign_errorPath_teamLeader() throws Exception {
-        user3.setLevel(SecurityUtil.TEAM_LEADER_LEVEL);
+        user3.addRole(Role.TEAM_LEADER);
         autoAssignmentService.autoAssign(AutoAssignRequest.builder()
             .data(Arrays.asList(
                 AutoAssignRequest.StaffCapacity.builder().capacity(60).login("staff1").build(),
@@ -261,38 +260,33 @@ public class AutoAssignmentServiceImplTest {
                 AutoAssignRequest.StaffCapacity.builder().capacity(10).login("staff2").build(),
                 AutoAssignRequest.StaffCapacity.builder().capacity(10).login("staff3").build()
             )).build(), "testUser");
-        final List<JurorResponse> assigned = backlog.stream()
+        final List<DigitalResponse> assigned = backlog.stream()
             .filter(r -> r.getStaff() != null).collect(Collectors.toList());
-        final List<JurorResponse> unassigned = backlog.stream()
+        final List<DigitalResponse> unassigned = backlog.stream()
             .filter(r -> r.getStaff() == null).collect(Collectors.toList());
 
         assertThat(assigned).isSortedAccordingTo(ascendingDateOrder);
 
         // Should be assigned in simple order (not round-robin)
-        for (int i = 0;
-             i < 10;
-             i++) {
+        for (int i = 0; i < 10; i++) {
             assertThat(assigned.get(i).getStaff()).isEqualTo(user1);
         }
-        for (int i = 10;
-             i < 20;
-             i++) {
+        for (int i = 10; i < 20; i++) {
             assertThat(assigned.get(i).getStaff()).isEqualTo(user2);
         }
-        for (int i = 20;
-             i < 30;
-             i++) {
+        for (int i = 20; i < 30; i++) {
             assertThat(assigned.get(i).getStaff()).isEqualTo(user3);
         }
 
         // Every assigned response should be older than every unassigned response
-        for (JurorResponse assignedResponse : assigned) {
+        for (DigitalResponse assignedResponse : assigned) {
             assertThat(unassigned)
                 .describedAs("Unassigned responses should all be after assigned response date "
                     + assignedResponse.getDateReceived())
-                .allMatch(r -> r.getDateReceived().after(assignedResponse.getDateReceived()));
+                .allMatch(r -> r.getDateReceived().isAfter(assignedResponse.getDateReceived()));
         }
     }
+
 
     /**
      * When the capacity value is set in the database, that value should be used.

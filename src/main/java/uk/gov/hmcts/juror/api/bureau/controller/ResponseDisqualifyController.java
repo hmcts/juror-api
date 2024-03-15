@@ -24,11 +24,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
-import uk.gov.hmcts.juror.api.bureau.domain.DisqualifyCodeEntity;
 import uk.gov.hmcts.juror.api.bureau.exception.DisqualifyException;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseDisqualifyService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
 
 import java.util.List;
 import java.util.Objects;
@@ -127,9 +127,9 @@ public class ResponseDisqualifyController {
         @Schema(description = "Description of disqualification code", example = "On Bail")
         private String description;
 
-        public DisqualifyCodeDto(DisqualifyCodeEntity disqualifyCodeEntity) {
+        public DisqualifyCodeDto(DisqualifiedCode disqualifyCodeEntity) {
             if (!Objects.isNull(disqualifyCodeEntity)) {
-                this.disqualifyCode = disqualifyCodeEntity.getDisqualifyCode();
+                this.disqualifyCode = disqualifyCodeEntity.getDisqualifiedCode();
                 this.description = disqualifyCodeEntity.getDescription();
             }
         }

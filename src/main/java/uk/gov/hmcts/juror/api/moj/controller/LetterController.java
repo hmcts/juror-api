@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
@@ -28,18 +29,23 @@ import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.AdditionalInformationDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CertificateOfExemptionRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CourtLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.PrintLettersRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDataResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.JurorForExemptionListDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialExemptionListDto;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
 import uk.gov.hmcts.juror.api.moj.service.letter.RequestInformationLetterService;
 import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtLetterPrintService;
 import uk.gov.hmcts.juror.api.moj.service.letter.court.CourtLetterService;
+import uk.gov.hmcts.juror.api.moj.service.trial.ExemptionCertificateService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 
 import java.util.List;
 
@@ -63,6 +69,9 @@ public class LetterController {
     private final ReissueLetterService reissueLetterService;
     @NonNull
     private final CourtLetterPrintService courtLetterPrintService;
+
+    @NonNull
+    private final ExemptionCertificateService exemptionCertificateService;
 
     @PostMapping(path = "/request-information")
     @Operation(summary = "Request information",
@@ -165,6 +174,35 @@ public class LetterController {
     @IsCourtUser
     public ResponseEntity<List<PrintLetterDataResponseDto>> printCourtLetters(
         @RequestBody @Valid PrintLettersRequestDto lettersRequestDto) {
+        List<PrintLetterDataResponseDto> dto = courtLetterPrintService.getPrintLettersData(lettersRequestDto,
+            SecurityUtil.getActiveLogin());
+        return ResponseEntity.ok().body(dto);
+    }
+
+    @GetMapping(path = "/trials-exemption-list")
+    @Operation(summary = "Get trial list for exemption")
+    @IsCourtUser
+    public ResponseEntity<List<TrialExemptionListDto>> getTrialExemptionList(
+        @CourtLocationCode @RequestParam("court_location") @PathVariable("courtLocation") String courtLocation
+    ) {
+        return ResponseEntity.ok(exemptionCertificateService.getTrialExemptionList(courtLocation));
+    }
+
+    @GetMapping(path = "/jurors-exemption-list")
+    @Operation(summary = "GET with body - Get juror list for exemption")
+    @IsCourtUser
+    public ResponseEntity<List<JurorForExemptionListDto>> getJurorsForExemptionList(
+        @RequestParam("case_number") @PathVariable("caseNumber") String caseNumber,
+        @CourtLocationCode @RequestParam("court_location") @PathVariable("courtLocation") String courtLocation) {
+        return ResponseEntity.ok(exemptionCertificateService.getJurorsForExemptionList(caseNumber, courtLocation));
+    }
+
+    @PostMapping(path = "/print-certificate-of-exemption")
+    @Operation(summary = "GET With Body - issue certificate of exemptions for juror(s)",
+        description = "Print certificate of exemption")
+    @IsCourtUser
+    public ResponseEntity<List<PrintLetterDataResponseDto>> issueCertificateOfExemption(
+        @RequestBody @Valid CertificateOfExemptionRequestDto lettersRequestDto) {
         List<PrintLetterDataResponseDto> dto = courtLetterPrintService.getPrintLettersData(lettersRequestDto,
             SecurityUtil.getActiveLogin());
         return ResponseEntity.ok().body(dto);

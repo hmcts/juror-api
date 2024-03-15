@@ -5,10 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jdk.jfr.SettingDefinition;
+import lombok.*;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.validator.constraints.Length;
 
@@ -20,6 +18,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Builder
 @Getter
+@Setter
 @Immutable
 public class FormAttribute implements Serializable {
 

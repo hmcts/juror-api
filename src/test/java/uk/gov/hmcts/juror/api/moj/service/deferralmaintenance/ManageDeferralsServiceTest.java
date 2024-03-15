@@ -91,7 +91,7 @@ import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDefer
 import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsServiceTestData.createJurorResponseWithoutDeferrals;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.LawOfDemeter"})
 class ManageDeferralsServiceTest {
 
     private static final String BUREAU_OWNER = "400";

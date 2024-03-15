@@ -60,53 +60,54 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicAuthenticationControllerTest.publicAuthenticationEndpoint_happy.sql")
     public void publicAuthenticationEndpoint_happy() throws Exception {
-        final String JUROR_NUMBER = "644892530";
-        final String LAST_NAME = "Castillo";
-        final String POSTCODE = "AB3 9RY";
+        final String jurorNumber = "644892530";
+        final String lastName = "Castillo";
+        final String postcode = "AB3 9RY";
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .lastName(LAST_NAME)
-            .postcode(POSTCODE)
+            .jurorNumber(jurorNumber)
+            .lastName(lastName)
+            .postcode(postcode)
             .build();
 
         RequestEntity<PublicAuthenticationRequestDto> requestEntity = new RequestEntity<>(requestDto,
             httpHeaders, HttpMethod.POST, uri);
 
         ResponseEntity<PublicAuthenticationResponseDto> exchange = template.exchange(requestEntity,
-            new ParameterizedTypeReference<PublicAuthenticationResponseDto>() {
+            new ParameterizedTypeReference<>() {
             });
-
         assertThat(exchange).isNotNull();
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
         final String responseJson = TestUtil.parseToJsonString(exchange.getBody());
-        assertThatJson(responseJson).node("jurorNumber").isStringEqualTo(JUROR_NUMBER);
-        assertThatJson(responseJson).node("lastName").isStringEqualTo(LAST_NAME.toUpperCase());
-        assertThatJson(responseJson).node("postcode").isStringEqualTo(POSTCODE.toUpperCase());
+        assertThatJson(responseJson).node("jurorNumber").isStringEqualTo(jurorNumber);
+        assertThatJson(responseJson).node("lastName").isStringEqualTo(lastName.toUpperCase());
+        assertThatJson(responseJson).node("postcode").isStringEqualTo(postcode.toUpperCase());
     }
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicAuthenticationControllerTest.publicAuthenticationEndpoint_happy.sql")
     public void publicAuthenticationEndpoint_happy_no_space_postcode() throws Exception {
-        final String JUROR_NUMBER = "644892530";
-        final String LAST_NAME = "Castillo";
-        final String POSTCODE = "AB39RY";
+        final String jurorNumber = "644892530";
+        final String lastName = "Castillo";
+        final String postcode = "AB39RY";
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .lastName(LAST_NAME)
-            .postcode(POSTCODE)
+            .jurorNumber(jurorNumber)
+            .lastName(lastName)
+            .postcode(postcode)
             .build();
 
         RequestEntity<PublicAuthenticationRequestDto> requestEntity = new RequestEntity<>(requestDto,
@@ -119,13 +120,14 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         assertThat(exchange).isNotNull();
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
         final String responseJson = TestUtil.parseToJsonString(exchange.getBody());
-        assertThatJson(responseJson).node("jurorNumber").isStringEqualTo(JUROR_NUMBER);
-        assertThatJson(responseJson).node("lastName").isStringEqualTo(LAST_NAME.toUpperCase());
+        assertThatJson(responseJson).node("jurorNumber").isStringEqualTo(jurorNumber);
+        assertThatJson(responseJson).node("lastName").isStringEqualTo(lastName.toUpperCase());
         assertThatJson(responseJson).node("postcode").isStringEqualTo("AB3 9RY");// matches database value with space
     }
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     public void publicAuthenticationEndpoint_unhappy_header1() throws Exception {
         final String description = "Authentication header is not present";
 
@@ -158,6 +160,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     public void publicAuthenticationEndpoint_unhappy_header2() throws Exception {
         final String description = "Authentication header is empty";
 
@@ -191,6 +194,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     public void publicAuthenticationEndpoint_unhappy_header3() throws Exception {
         final String description = "Authentication header is invalid";
 
@@ -224,6 +228,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicAuthenticationControllerTest.publicAuthenticationEndpoint_happy.sql")
     public void publicAuthenticationEndpoint_unhappy_invalidCredentials() throws Exception {
@@ -261,22 +266,23 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicAuthenticationControllerTest.publicAuthenticationEndpoint_happy.sql")
     public void publicAuthenticationEndpoint_unhappy_invalidCredentialsLockout() throws Exception {
         final String description = "Invalid credentials";
 
-        final String JUROR_NUMBER = "644892530";
-        final String LAST_NAME = "Castilloo";// invalid, should be "Castillo"
-        final String POSTCODE = "AB3 9RY";
+        final String jurorNumber = "644892530";
+        final String lastName = "Castilloo";// invalid, should be "Castillo"
+        final String postcode = "AB3 9RY";
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .lastName(LAST_NAME)
-            .postcode(POSTCODE)
+            .jurorNumber(jurorNumber)
+            .lastName(lastName)
+            .postcode(postcode)
             .build();
 
         RequestEntity<PublicAuthenticationRequestDto> requestEntity = new RequestEntity<>(requestDto,
@@ -288,7 +294,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
 
         // failed login 1
         ResponseEntity<SpringBootErrorResponse> exchange = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         assertThat(exchange).describedAs(description).isNotNull();
@@ -300,12 +306,12 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         assertThat(exchange.getBody().getMessage()).isEqualTo("Invalid credentials");
 
         // check that the login counter not exists.
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL_USER.LOGIN_ATTEMPTS",
+        assertThat(jdbcTemplate.queryForObject("select login_attempts from juror_mod.juror where juror_number = '644892530'",
             Integer.class)).isEqualTo(1);
 
         // failed login 2
         exchange = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         assertThat(exchange).describedAs(description).isNotNull();
@@ -317,12 +323,12 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         assertThat(exchange.getBody().getMessage()).isEqualTo("Invalid credentials");
 
         // check that the login counter is still there.
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL_USER.LOGIN_ATTEMPTS",
-            Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select login_attempts from juror_mod.juror where juror_number = '644892530'",
+            Integer.class)).isEqualTo(2);
 
         // failed login 3
         exchange = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         assertThat(exchange).describedAs(description).isNotNull();
@@ -335,17 +341,18 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
 
         // account should now be locked
         // the login attempt counter was reset after the account was locked
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL_USER.LOGIN_ATTEMPTS",
+        assertThat(jdbcTemplate.queryForObject("select login_attempts from juror_mod.juror where juror_number = '644892530'",
             Integer.class)).isEqualTo(0);
         // the account is indeed locked
-        assertThat(jdbcTemplate.queryForObject("select IS_LOCKED from JUROR_DIGITAL.POOL_EXTEND where PART_NO = '644892530'",
-            String.class)).isEqualToIgnoringCase("Y");
+        assertThat(
+            jdbcTemplate.queryForObject("select is_locked from juror_mod.juror where juror_number = '644892530'",
+                Boolean.class)).isEqualTo(true);
 
         // valid login should result in lock error
         requestDto = PublicAuthenticationRequestDto.builder()
-            .jurorNumber(JUROR_NUMBER)
+            .jurorNumber(jurorNumber)
             .lastName("Castillo") // correct credentials
-            .postcode(POSTCODE)
+            .postcode(postcode)
             .build();
 
         requestEntity = new RequestEntity<>(requestDto,
@@ -370,22 +377,24 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicAuthenticationControllerTest.publicAuthenticationEndpoint_unhappy_alreadyResponded.sql")
     public void publicAuthenticationEndpoint_unhappy_alreadyResponded() throws Exception {
         final String description = "Already responded";
 
-        final String JUROR_NUMBER = "644892530";
-        final String LAST_NAME = "Castillo";
-        final String POSTCODE = "AB3 9RY";
+        final String jurorNumber = "644892530";
+        final String lastName = "Castillo";
+        final String postcode = "AB3 9RY";
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .lastName(LAST_NAME)
-            .postcode(POSTCODE)
+            .jurorNumber(jurorNumber)
+            .lastName(lastName)
+            .postcode(postcode)
             .build();
 
         RequestEntity<PublicAuthenticationRequestDto> requestEntity = new RequestEntity<>(requestDto,
@@ -393,7 +402,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
 
 
         ResponseEntity<SpringBootErrorResponse> exchange = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         assertThat(exchange).describedAs(description).isNotNull();
@@ -407,22 +416,23 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicAuthenticationControllerTest.publicAuthenticationEndpoint_unhappy_courtNotWhitelisted.sql")
     public void publicAuthenticationEndpoint_unhappy_courtNotWhitelisted() throws Exception {
         final String description = "Court not whitelisted";
 
-        final String JUROR_NUMBER = "644892530";
-        final String LAST_NAME = "Castillo";
-        final String POSTCODE = "AB3 9RY";
+        final String jurorNumber = "644892530";
+        final String lastName = "Castillo";
+        final String postcode = "AB3 9RY";
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .lastName(LAST_NAME)
-            .postcode(POSTCODE)
+            .jurorNumber(jurorNumber)
+            .lastName(lastName)
+            .postcode(postcode)
             .build();
 
         RequestEntity<PublicAuthenticationRequestDto> requestEntity = new RequestEntity<>(requestDto,
@@ -444,6 +454,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicAuthenticationControllerTest.publicAuthenticationEndpoint_unhappy_courtDatePassed.sql")
     public void publicAuthenticationEndpoint_unhappy_courtDatePassed() throws Exception {
@@ -467,7 +478,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
 
 
         ResponseEntity<SpringBootErrorResponse> exchange = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         assertThat(exchange).describedAs(description).isNotNull();

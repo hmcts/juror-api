@@ -1,27 +1,27 @@
 package uk.gov.hmcts.juror.api.juror.service;
 
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 
 public interface JurorNotificationService {
     /**
      * Send a notify message.
      *
-     * @param jurorResponse      Response to send the notification for.
+     * @param digitalResponse      Response to send the notification for.
      * @param notifyTemplateType Template type to use for the message
      * @throws NotificationServiceException Failed sending message
      */
-    void sendResponseReceipt(JurorResponse jurorResponse,
+    void sendResponseReceipt(DigitalResponse digitalResponse,
                              NotifyTemplateType notifyTemplateType) throws NotificationServiceException;
 
     /**
      * Build a email.
      *
-     * @param jurorResponse      Juror response.
+     * @param digitalResponse      Juror response.
      * @param notifyTemplateType Type of response.
      * @return Email content with correct template selected.
      */
-    EmailNotification createEmailNotification(JurorResponse jurorResponse,
+    EmailNotification createEmailNotification(DigitalResponse digitalResponse,
                                               NotifyTemplateType notifyTemplateType);
 }

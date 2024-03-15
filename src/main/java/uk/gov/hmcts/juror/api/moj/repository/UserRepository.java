@@ -10,13 +10,17 @@ import uk.gov.hmcts.juror.api.moj.domain.QUser;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface UserRepository extends CrudRepository<User, String>, QuerydslPredicateExecutor<User> {
+@SuppressWarnings("PMD.LawOfDemeter")
+public interface UserRepository extends CrudRepository<User, String>, QuerydslPredicateExecutor<User>, IUserRepository {
 
     List<User> findAllByUsernameIn(List<String> username);
 
     User findByUsername(String username);
+
+    Optional<User> findByEmail(String email);
 
     default Iterable<User> findUsersByCourt(EntityManager entityManager, String court) {
         QCourtLocation courtLocation = QCourtLocation.courtLocation;
@@ -32,4 +36,6 @@ public interface UserRepository extends CrudRepository<User, String>, QuerydslPr
             .where(courtLocation.locCode.eq(court))
             .fetch();
     }
+
+    boolean existsByEmail(String email);
 }

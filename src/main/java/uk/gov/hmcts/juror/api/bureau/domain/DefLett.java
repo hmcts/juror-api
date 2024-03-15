@@ -14,11 +14,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
+
 
 /**
  * Entity representing deferral letter entry.
@@ -45,30 +46,12 @@ public class DefLett implements Serializable {
 
     @NotNull
     @Column(name = "DATE_DEF")
-    private Date dateDef;
+    private LocalDate dateDef;
 
     @Size(max = 1)
     @Column(name = "PRINTED")
     private String printed;
 
     @Column(name = "DATE_PRINTED")
-    private Date datePrinted;
-
-    @PrePersist
-    @PreUpdate
-    private void prePersist() {
-        // Process dates to avoid timezone issues JDB-2993
-        this.dateDef = adjustTimeOnDate(this.dateDef, false);
-        this.datePrinted = adjustTimeOnDate(this.datePrinted, true);
-    }
-
-    private static Date adjustTimeOnDate(final Date date, final boolean isNullable) {
-        if (isNullable && null == date) {
-            return null;
-        }
-        return Date.from(ZonedDateTime.ofInstant(
-            date.toInstant().plus(6, ChronoUnit.HOURS),
-            ZoneId.systemDefault()
-        ).with(LocalTime.of(6, 0)).toInstant());
-    }
+    private LocalDate datePrinted;
 }

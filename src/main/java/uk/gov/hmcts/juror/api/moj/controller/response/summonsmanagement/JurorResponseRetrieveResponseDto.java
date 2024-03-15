@@ -12,6 +12,7 @@ import lombok.Singular;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @NoArgsConstructor
@@ -70,7 +71,7 @@ public class JurorResponseRetrieveResponseDto {
 
         @JsonProperty("date_received")
         @Schema(description = "Date response received")
-        private LocalDate dateReceived;
+        private LocalDateTime dateReceived;
 
         @JsonProperty("reply_type")
         @Schema(description = "The reply type (Paper or Digital)")

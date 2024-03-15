@@ -6,8 +6,10 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 
 import java.security.Key;
 import java.time.Clock;
@@ -20,6 +22,12 @@ import javax.crypto.SecretKey;
 @Service
 public class JwtServiceImpl implements JwtService {
     private final Clock clock;
+
+    @Value("${jwt.secret.bureau}")
+    private String bureauSecret;
+
+    @Value("${jwt.expiry.bureau}")
+    private Long bureauExpiry;
 
     @Autowired
     public JwtServiceImpl(Clock clock) {
@@ -58,7 +66,7 @@ public class JwtServiceImpl implements JwtService {
         return extractExpiration(jwt, secret).before(new Date(clock.millis()));
     }
 
-    private SecretKey getSigningKey(String jwtSecret) {
+    SecretKey getSigningKey(String jwtSecret) {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
@@ -79,5 +87,17 @@ public class JwtServiceImpl implements JwtService {
         } catch (Exception exception) {
             throw new InvalidJwtAuthenticationException("Failed to parse JWT", exception);
         }
+    }
+
+    @Override
+    public String generateBureauJwtToken(String id, BureauJWTPayload payload) {
+        return generateJwtToken(
+            id,
+            "juror",
+            null,
+            bureauExpiry,
+            getSigningKey(bureauSecret),
+            payload.toClaims()
+        );
     }
 }

@@ -6,26 +6,33 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeedsRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.PartAmendment;
 import uk.gov.hmcts.juror.api.bureau.domain.PartAmendmentRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHist;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHistRepository;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit test for {@link ResponseStatusUpdateServiceImpl}.
@@ -34,19 +41,21 @@ import static org.mockito.Mockito.verify;
 public class ResponseStatusUpdateServiceImplTest {
 
     @Mock
-    JurorResponseRepository jurorResponseRepository;
+    JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
     @Mock
-    JurorResponseAuditRepository auditRepository;
+    JurorStatusRepository jurorStatusRepository;
+    @Mock
+    JurorResponseAuditRepositoryMod auditRepository;
 
     @Mock
-    PoolRepository poolDetailsRepository;
+    JurorPoolRepository poolDetailsRepository;
 
     @Mock
     PartAmendmentRepository partAmendmentRepository;
 
     @Mock
-    PartHistRepository partHistRepository;
+    JurorHistoryRepository partHistRepository;
 
     @Mock
     EntityManager entityManager;
@@ -58,7 +67,7 @@ public class ResponseStatusUpdateServiceImplTest {
     private AssignOnUpdateService assignOnUpdateService;
 
     @Mock
-    private BureauJurorSpecialNeedsRepository specialNeedsRepository;
+    private JurorReasonableAdjustmentRepository specialNeedsRepository;
 
     @Mock
     private WelshCourtLocationRepository welshCourtLocationRepository;
@@ -69,7 +78,7 @@ public class ResponseStatusUpdateServiceImplTest {
     @Test
     public void updateResponse_awaitingContact_happy() throws Exception {
         // Configure mocks
-        JurorResponse mockJurorResponse = mock(JurorResponse.class);
+        DigitalResponse mockJurorResponse = mock(DigitalResponse.class);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(mockJurorResponse);
         ProcessingStatus currentProcessingStatus = ProcessingStatus.TODO;
         given(mockJurorResponse.getProcessingStatus()).willReturn(currentProcessingStatus);
@@ -90,16 +99,16 @@ public class ResponseStatusUpdateServiceImplTest {
         verify(jurorResponseRepository).save(mockJurorResponse);
 
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
-        verify(poolDetailsRepository, times(0)).findByJurorNumber(any(String.class));
-        verify(poolDetailsRepository, times(0)).save(any(Pool.class));
+        verify(poolDetailsRepository, times(0)).findByJurorJurorNumber(any(String.class));
+        verify(poolDetailsRepository, times(0)).save(any(JurorPool.class));
         verify(partAmendmentRepository, times(0)).save(any(PartAmendment.class));
-        verify(partHistRepository, times(0)).save(any(PartHist.class));
+        verify(partHistRepository, times(0)).save(any(JurorHistory.class));
     }
 
     @Test
     public void updateResponse_awaitingCourtReply_happy() throws Exception {
         // Configure mocks
-        JurorResponse mockJurorResponse = mock(JurorResponse.class);
+        DigitalResponse mockJurorResponse = mock(DigitalResponse.class);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(mockJurorResponse);
         ProcessingStatus currentProcessingStatus = ProcessingStatus.TODO;
         given(mockJurorResponse.getProcessingStatus()).willReturn(currentProcessingStatus);
@@ -123,17 +132,17 @@ public class ResponseStatusUpdateServiceImplTest {
         verify(jurorResponseRepository).save(mockJurorResponse);
 
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
-        verify(poolDetailsRepository, times(0)).findByJurorNumber(any(String.class));
-        verify(poolDetailsRepository, times(0)).save(any(Pool.class));
+        verify(poolDetailsRepository, times(0)).findByJurorJurorNumber(any(String.class));
+        verify(poolDetailsRepository, times(0)).save(any(JurorPool.class));
         verify(partAmendmentRepository, times(0)).save(any(PartAmendment.class));
-        verify(partHistRepository, times(0)).save(any(PartHist.class));
+        verify(partHistRepository, times(0)).save(any(JurorHistory.class));
     }
 
     @Test
     public void updateResponse_awaitingTranslation_happy() throws Exception {
 
         // Configure mocks
-        JurorResponse mockJurorResponse = mock(JurorResponse.class);
+        DigitalResponse mockJurorResponse = mock(DigitalResponse.class);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(mockJurorResponse);
         ProcessingStatus currentProcessingStatus = ProcessingStatus.TODO;
         given(mockJurorResponse.getProcessingStatus()).willReturn(currentProcessingStatus);
@@ -156,10 +165,10 @@ public class ResponseStatusUpdateServiceImplTest {
         verify(jurorResponseRepository).save(mockJurorResponse);
 
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
-        verify(poolDetailsRepository, times(0)).findByJurorNumber(any(String.class));
-        verify(poolDetailsRepository, times(0)).save(any(Pool.class));
+        verify(poolDetailsRepository, times(0)).findByJurorJurorNumber(any(String.class));
+        verify(poolDetailsRepository, times(0)).save(any(JurorPool.class));
         verify(partAmendmentRepository, times(0)).save(any(PartAmendment.class));
-        verify(partHistRepository, times(0)).save(any(PartHist.class));
+        verify(partHistRepository, times(0)).save(any(JurorHistory.class));
     }
 
     @Test
@@ -172,7 +181,7 @@ public class ResponseStatusUpdateServiceImplTest {
         String auditorUsername = "testuser";
 
         // Configure mocks
-        JurorResponse mockJurorResponse = mock(JurorResponse.class);
+        DigitalResponse mockJurorResponse = mock(DigitalResponse.class);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(mockJurorResponse);
         given(mockJurorResponse.getProcessingStatus()).willReturn(currentProcessingStatus);
 
@@ -186,25 +195,30 @@ public class ResponseStatusUpdateServiceImplTest {
         verify(jurorResponseRepository).save(mockJurorResponse);
 
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
-        verify(poolDetailsRepository, times(0)).findByJurorNumber(any(String.class));
-        verify(poolDetailsRepository, times(0)).save(any(Pool.class));
+        verify(poolDetailsRepository, times(0)).findByJurorJurorNumber(any(String.class));
+        verify(poolDetailsRepository, times(0)).save(any(JurorPool.class));
         verify(partAmendmentRepository, times(0)).save(any(PartAmendment.class));
-        verify(partHistRepository, times(0)).save(any(PartHist.class));
+        verify(partHistRepository, times(0)).save(any(JurorHistory.class));
     }
 
     @Test
     public void updateResponse_closed_happy() throws Exception {
+        JurorStatus respondedJurorStatus = mock(JurorStatus.class);
+        when(jurorStatusRepository.findById(IJurorStatus.RESPONDED))
+            .thenReturn(Optional.ofNullable(respondedJurorStatus));
 
         String jurorNumber = "1";
         ProcessingStatus currentProcessingStatus = ProcessingStatus.AWAITING_CONTACT;
 
         // Configure mocks
-        JurorResponse mockJurorResponse = mock(JurorResponse.class);
-        Pool mockPool = mock(Pool.class);
+        DigitalResponse mockJurorResponse = mock(DigitalResponse.class);
+        JurorPool mockPool = mock(JurorPool.class);
+        Juror juror = mock(Juror.class);
+        when(mockPool.getJuror()).thenReturn(juror);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(mockJurorResponse);
         given(mockJurorResponse.getJurorNumber()).willReturn(jurorNumber);
         given(mockJurorResponse.getProcessingStatus()).willReturn(currentProcessingStatus);
-        given(poolDetailsRepository.findByJurorNumber(jurorNumber)).willReturn(mockPool);
+        given(poolDetailsRepository.findByJurorJurorNumber(jurorNumber)).willReturn(mockPool);
 
         User mockStaff = mock(User.class);
         given(mockJurorResponse.getStaff()).willReturn(mockStaff);
@@ -223,10 +237,10 @@ public class ResponseStatusUpdateServiceImplTest {
 
         // as we're setting the status to CLOSED, we should be merging data to Juror
         // and also setting RESPONDED to Y, so double the Pool interactions
-        verify(poolDetailsRepository, times(2)).findByJurorNumber(jurorNumber);
-        verify(poolDetailsRepository, times(3)).save(any(Pool.class));
+        verify(poolDetailsRepository, times(2)).findByJurorJurorNumber(jurorNumber);
+        verify(poolDetailsRepository, times(3)).save(any(JurorPool.class));
         verify(partAmendmentRepository, times(1)).save(any(PartAmendment.class));
-        verify(partHistRepository, times(2)).save(any(PartHist.class));
+        verify(partHistRepository, times(2)).save(any(JurorHistory.class));
     }
 
     @Test
@@ -234,7 +248,7 @@ public class ResponseStatusUpdateServiceImplTest {
         ProcessingStatus currentProcessingStatus = ProcessingStatus.AWAITING_CONTACT;
 
         // Configure mocks
-        JurorResponse mockJurorResponse = mock(JurorResponse.class);
+        DigitalResponse mockJurorResponse = mock(DigitalResponse.class);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(mockJurorResponse);
         given(mockJurorResponse.getProcessingStatus()).willReturn(currentProcessingStatus);
         given(mockJurorResponse.getStaff()).willReturn(null);
@@ -254,9 +268,9 @@ public class ResponseStatusUpdateServiceImplTest {
         verify(jurorResponseRepository).save(mockJurorResponse);
 
         // as we're not setting the status to CLOSED, we should not be merging data to Juror
-        verify(poolDetailsRepository, times(0)).findByJurorNumber(any(String.class));
-        verify(poolDetailsRepository, times(0)).save(any(Pool.class));
+        verify(poolDetailsRepository, times(0)).findByJurorJurorNumber(any(String.class));
+        verify(poolDetailsRepository, times(0)).save(any(JurorPool.class));
         verify(partAmendmentRepository, times(0)).save(any(PartAmendment.class));
-        verify(partHistRepository, times(0)).save(any(PartHist.class));
+        verify(partHistRepository, times(0)).save(any(JurorHistory.class));
     }
 }

@@ -5,7 +5,10 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+
+import java.util.List;
 
 public final class SecurityUtil {
     public static final int STANDARD_USER_LEVEL = 0;
@@ -28,8 +31,6 @@ public final class SecurityUtil {
     public static final String IS_MANAGER = "hasRole('ROLE_MANAGER')";
 
     public static final String USER_TYPE_ADMINISTRATOR = "principal.userType.name() == 'ADMINISTRATOR'";
-    public static final String IS_ADMINISTRATOR =
-        "hasRole('ROLE_ADMINISTRATOR')";
 
 
     private SecurityUtil() {
@@ -86,5 +87,21 @@ public final class SecurityUtil {
         if (!getActiveOwner().equals(owner)) {
             throw new MojException.Forbidden("User does not have access", null);
         }
+    }
+
+    public static List<String> getCourts() {
+        return getActiveUsersBureauPayload().getStaff().getCourts();
+    }
+
+    public static String getUsername() {
+        return getActiveUsersBureauPayload().getLogin();
+    }
+
+    public static boolean isAdministration() {
+        return getUserType().equals(UserType.ADMINISTRATOR);
+    }
+
+    public static UserType getUserType() {
+        return getActiveUsersBureauPayload().getUserType();
     }
 }

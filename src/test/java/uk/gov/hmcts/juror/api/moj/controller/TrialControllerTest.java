@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
@@ -158,6 +159,7 @@ class TrialControllerTest {
 
         mockMvc.perform(get(BASE_URL + methodUrl).principal(mockPrincipal))
             .andExpect(status().isOk())
+            .andDo(MockMvcResultHandlers.print())
             .andExpect(jsonPath("$").value(notNullValue()))
             .andExpect(jsonPath("$.content.length()", is(2)))
             .andExpect(jsonPath("$.content.[*].trial_number").value(containsInRelativeOrder(

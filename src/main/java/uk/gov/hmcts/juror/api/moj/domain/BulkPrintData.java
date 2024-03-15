@@ -1,5 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
+
+import org.hibernate.validator.constraints.Length;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,7 +17,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.Length;
+
 
 import java.time.LocalDate;
 
@@ -26,6 +28,7 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @Builder
+//@IdClass(BulkPrintDataKey.class)
 @Table(name = "bulk_print_data", schema = "juror_mod")
 public class BulkPrintData {
 
@@ -37,6 +40,7 @@ public class BulkPrintData {
         allocationSize = 1)
     @GeneratedValue(generator = GENERATOR_NAME, strategy = GenerationType.SEQUENCE)
     private Long id;
+
 
     @Length(max = 9)
     @Column(name = "juror_no")

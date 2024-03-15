@@ -576,6 +576,11 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     }
 
     @Override
+    public List<String> getThinJurorPoolsList(String poolNumber, String owner) {
+        return jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner);
+    }
+
+    @Override
     public List<VotersLocPostcodeTotals.CourtCatchmentSummaryItem> getAvailableVotersByLocation(String areaCode,
                                                                                                 boolean isCoronerPool) {
 

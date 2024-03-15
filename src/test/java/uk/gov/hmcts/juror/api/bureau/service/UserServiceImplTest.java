@@ -15,22 +15,24 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.OperationFailureListDto
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffAssignmentResponseDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
 import uk.gov.hmcts.juror.api.bureau.domain.StaffAuditRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.TeamRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.UserQueries;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -53,10 +55,10 @@ public class UserServiceImplTest {
     private UserRepository mockuserRepository;
 
     @Mock
-    private JurorResponseRepository mockJurorResponseRepository;
+    private JurorDigitalResponseRepositoryMod mockJurorResponseRepository;
 
     @Mock
-    private StaffJurorResponseAuditRepository mockStaffJurorResponseAuditRepository;
+    private StaffJurorResponseAuditRepositoryMod mockStaffJurorResponseAuditRepository;
 
     @Mock
     private EntityManager mockEntityManager;
@@ -80,7 +82,7 @@ public class UserServiceImplTest {
     private static final User ASSIGNER_STAFF_ENTITY = User.builder()
         .username(ASSIGNING_LOGIN)
         .name("Bob")
-        .level(1)
+        .roles(Set.of(Role.TEAM_LEADER))
         .active(true)
         .build();
 
@@ -88,28 +90,28 @@ public class UserServiceImplTest {
     private static final String JUROR_NUMBER = "123456789";
     private static final String JUROR_NUMBER_2 = "987654321";
     private static final String JUROR_NUMBER_3 = "123456788";
-    private static final JurorResponse JUROR_RESPONSE = JurorResponse.builder()
+    private static final DigitalResponse JUROR_RESPONSE = DigitalResponse.builder()
         .jurorNumber(JUROR_NUMBER)
         .processingComplete(false)
         .urgent(false)
         .superUrgent(false)
         .processingStatus(ProcessingStatus.TODO)
         .build();
-    private static final JurorResponse JUROR_RESPONSE_2 = JurorResponse.builder()
+    private static final DigitalResponse JUROR_RESPONSE_2 = DigitalResponse.builder()
         .jurorNumber(JUROR_NUMBER_2)
         .processingComplete(false)
         .urgent(false)
         .superUrgent(false)
         .processingStatus(ProcessingStatus.TODO)
         .build();
-    private static final JurorResponse JUROR_RESPONSE_INVALID_AWAITING_CONTACT = JurorResponse.builder()
+    private static final DigitalResponse JUROR_RESPONSE_INVALID_AWAITING_CONTACT = DigitalResponse.builder()
         .jurorNumber(JUROR_NUMBER_3)
         .processingComplete(false)
         .urgent(false)
         .superUrgent(false)
         .processingStatus(ProcessingStatus.AWAITING_CONTACT)
         .build();
-    private static final JurorResponse JUROR_RESPONSE_INVALID_CLOSED = JurorResponse.builder()
+    private static final DigitalResponse JUROR_RESPONSE_INVALID_CLOSED = DigitalResponse.builder()
         .jurorNumber(JUROR_NUMBER)
         .processingComplete(true)
         .urgent(false)
@@ -121,7 +123,6 @@ public class UserServiceImplTest {
     private static final User TARGET_LOGIN_ENTITY = User.builder()
         .username(TARGET_LOGIN)
         .name("Sally")
-        .level(0)
         .active(true)
         .build();
     private static final StaffAssignmentRequestDto DTO = StaffAssignmentRequestDto.builder()
@@ -147,7 +148,7 @@ public class UserServiceImplTest {
         verify(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
         verify(mockuserRepository).findByUsername(TARGET_LOGIN);
-        verify(mockStaffJurorResponseAuditRepository).save(any(StaffJurorResponseAudit.class));
+        verify(mockStaffJurorResponseAuditRepository).save(any(StaffJurorResponseAuditMod.class));
         verify(mockEntityManager).detach(any());
     }
 
@@ -168,7 +169,7 @@ public class UserServiceImplTest {
 
         verify(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
-        verify(mockStaffJurorResponseAuditRepository).save(any(StaffJurorResponseAudit.class));
+        verify(mockStaffJurorResponseAuditRepository).save(any(StaffJurorResponseAuditMod.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -206,19 +207,16 @@ public class UserServiceImplTest {
         staffList.add(User.builder()
             .username("aaa")
             .name("Bob")
-            .level(0)
             .active(true)
             .build());
         staffList.add(User.builder()
             .username("bbb")
             .name("Charlie")
-            .level(0)
             .active(true)
             .build());
         staffList.add(User.builder()
             .username("ccc")
             .name("Ali")
-            .level(0)
             .active(true)
             .build());
         assertThat(staffList)
@@ -280,9 +278,9 @@ public class UserServiceImplTest {
         verify(mockuserRepository, times(4)).findByUsername(anyString());
         verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
         verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER_2);
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAudit.class));
-        verify(mockJurorResponseRepository, times(2)).save(any(JurorResponse.class));
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAudit.class));
+        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockJurorResponseRepository, times(2)).save(any(DigitalResponse.class));
+        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
     }
 
     @Test
@@ -315,9 +313,9 @@ public class UserServiceImplTest {
         // members record!
         verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
         verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER_2);
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAudit.class));
-        verify(mockJurorResponseRepository, times(2)).save(any(JurorResponse.class));
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAudit.class));
+        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockJurorResponseRepository, times(2)).save(any(DigitalResponse.class));
+        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
     }
 
     @Test
@@ -362,9 +360,9 @@ public class UserServiceImplTest {
         verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER_3);
 
         // only two attempts to update should have occurred
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAudit.class));
-        verify(mockJurorResponseRepository, times(2)).save(any(JurorResponse.class));
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAudit.class));
+        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockJurorResponseRepository, times(2)).save(any(DigitalResponse.class));
+        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
 
 
     }

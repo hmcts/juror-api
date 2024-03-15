@@ -6,11 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
+import uk.gov.hmcts.juror.api.moj.domain.HasTotals;
 import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
 
@@ -19,7 +23,8 @@ import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class ExpenseDetailsForTotals extends ExpenseDetailsDto {
+@ToString(callSuper = true)
+public class ExpenseDetailsForTotals extends ExpenseDetailsDto implements HasTotals {
 
     private boolean financialLossApportionedApplied;
 
@@ -29,20 +34,25 @@ public class ExpenseDetailsForTotals extends ExpenseDetailsDto {
     @NotNull
     private BigDecimal totalPaid;
 
+
+    public ExpenseDetailsForTotals(Appearance appearance) {
+        super(appearance);
+        this.financialLossApportionedApplied = false;
+        this.payAttendance = appearance.getPayAttendanceType();
+        this.totalDue = appearance.getTotalDue();
+        this.totalPaid = appearance.getTotalPaid();
+    }
+
     @JsonProperty("total_due")
+    @Override
     public BigDecimal getTotalDue() {
-        if (totalDue == null) {
-            return BigDecimal.ZERO;
-        }
-        return totalDue;
+        return Optional.ofNullable(totalDue).orElse(BigDecimal.ZERO);
     }
 
     @JsonProperty("total_paid")
+    @Override
     public BigDecimal getTotalPaid() {
-        if (totalPaid == null) {
-            return BigDecimal.ZERO;
-        }
-        return totalPaid;
+        return Optional.ofNullable(totalPaid).orElse(BigDecimal.ZERO);
     }
 
     @JsonProperty("total_financial_loss_apportioned")

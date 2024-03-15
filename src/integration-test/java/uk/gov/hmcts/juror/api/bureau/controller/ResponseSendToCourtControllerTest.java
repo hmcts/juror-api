@@ -22,10 +22,11 @@ import uk.gov.hmcts.juror.api.SpringBootErrorResponse;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsNotificationService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
 import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotification;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 
 import java.net.URI;
 import java.util.Collections;
@@ -56,15 +57,18 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
     private PoolRepository poolRepository;
 
     @Autowired
+    private JurorPoolRepository jurorPoolRepository;
+
+    @Autowired
     private JurorCommsNotificationService JurorCommsNotifiyService;
 
     private HttpHeaders httpHeaders;
 
-    private static final String NOTIFY_TEMPLATE_SQL = "SELECT TEMPLATE_ID FROM JUROR_DIGITAL.NOTIFY_TEMPLATE_MAPPING" +
-        " WHERE TEMPLATE_NAME = ?";
+    private static final String NOTIFY_TEMPLATE_SQL =
+        "SELECT TEMPLATE_ID FROM juror_mod.NOTIFY_TEMPLATE_MAPPING WHERE TEMPLATE_NAME = ?";
 
-    private static final String UUID_REGEX = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f" +
-        "]{12}$";
+    private static final String UUID_REGEX =
+        "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$";
     private static final String JUROR_NUMBER_1 = "209092530";
     private static final String JUROR_NUMBER_2 = "641500130";
     private static final String JUROR_NUMBER_3 = "641500542";
@@ -77,7 +81,7 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
     private ResponseSendToCourtController.SendToCourtDto dto;
     private Map<String, String> payLoad;
     private String templateUUID;
-    private Pool pool;
+    private JurorPool pool;
 
 
     @Override
@@ -91,6 +95,7 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauResponseSendToCourtController.sql",
         "/db/notify_template_mapping.sql",
@@ -100,15 +105,15 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
         getDto();
 
         // assert db state before.
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(34);
-        assertThat(jdbcTemplate.queryForObject("SELECT PROCESSING_COMPLETE FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE " +
-            "JUROR_NUMBER = '209092530'", String.class)).isEqualTo("N");
-        assertThat(jdbcTemplate.queryForObject("SELECT PROCESSING_STATUS FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE " +
-            "JUROR_NUMBER = '209092530'", String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("SELECT Email FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE JUROR_NUMBER = " +
-            "'209092530'", String.class)).isEqualTo(null);
-        assertThat(jdbcTemplate.queryForObject("SELECT ALT_PHONE_NUMBER FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE " +
-            "JUROR_NUMBER = '209092530'", String.class)).isEqualTo("07554498123");
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(34);
+        assertThat(jdbcTemplate.queryForObject("SELECT PROCESSING_COMPLETE FROM juror_mod.JUROR_RESPONSE WHERE "
+            + "JUROR_NUMBER = '209092530'", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("SELECT PROCESSING_STATUS FROM juror_mod.JUROR_RESPONSE WHERE "
+            + "JUROR_NUMBER = '209092530'", String.class)).isEqualTo("TODO");
+        assertThat(jdbcTemplate.queryForObject("SELECT Email FROM juror_mod.JUROR_RESPONSE WHERE JUROR_NUMBER = "
+            + "'209092530'", String.class)).isEqualTo(null);
+        assertThat(jdbcTemplate.queryForObject("SELECT ALT_PHONE_NUMBER FROM juror_mod.JUROR_RESPONSE WHERE "
+            + "JUROR_NUMBER = '209092530'", String.class)).isEqualTo("07554498123");
 
         URI uri = URI.create("/api/v1/bureau/juror/tocourt/209092530");
 
@@ -132,14 +137,15 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
 
 
         // assert db state after.
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT PROCESSING_COMPLETE FROM JUROR_DIGITAL.JUROR_RESPONSE " +
-            "WHERE JUROR_NUMBER = '209092530'", String.class)).isEqualTo("Y");
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT PROCESSING_STATUS FROM JUROR_DIGITAL.JUROR_RESPONSE " +
-            "WHERE JUROR_NUMBER = '209092530'", String.class)).isEqualTo("CLOSED");
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT PROCESSING_COMPLETE FROM juror_mod.JUROR_RESPONSE "
+            + "WHERE JUROR_NUMBER = '209092530'", Boolean.class)).isEqualTo(true);
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT PROCESSING_STATUS FROM juror_mod.JUROR_RESPONSE "
+            + "WHERE JUROR_NUMBER = '209092530'", String.class)).isEqualTo("CLOSED");
         softly.assertAll();
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/juror-comms-notify.sql")
@@ -152,13 +158,14 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
         assertJurorCommsSmsNotification(JUROR_NUMBER_2, TEMPLATE_NAME_2,
             JurorCommsNotifyTemplateType.SU_SENT_TO_COURT);
 
-        assertThat(jdbcTemplate.queryForObject("SELECT ALT_PHONE_NUMBER FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE " +
-            "JUROR_NUMBER = '641500130'", String.class)).isEqualTo(null);
-        assertThat(jdbcTemplate.queryForObject("SELECT Email FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE JUROR_NUMBER = " +
-            "'641500130'", String.class)).isEqualTo(EMAIL);
+        assertThat(jdbcTemplate.queryForObject("SELECT ALT_PHONE_NUMBER FROM juror_mod.JUROR_RESPONSE WHERE "
+            + "JUROR_NUMBER = '641500130'", String.class)).isEqualTo(null);
+        assertThat(jdbcTemplate.queryForObject("SELECT Email FROM juror_mod.JUROR_RESPONSE WHERE JUROR_NUMBER = "
+            + "'641500130'", String.class)).isEqualTo(EMAIL);
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/juror-comms-notify.sql")
@@ -171,13 +178,14 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
         assertJurorCommsSmsNotification(JUROR_NUMBER_3, TEMPLATE_NAME_2,
             JurorCommsNotifyTemplateType.SU_SENT_TO_COURT);
 
-        assertThat(jdbcTemplate.queryForObject("SELECT Email FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE JUROR_NUMBER = " +
-            "'641500542'", String.class)).isEqualTo(null);
-        assertThat(jdbcTemplate.queryForObject("SELECT ALT_PHONE_NUMBER FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE " +
-            "JUROR_NUMBER = '641500542'", String.class)).isEqualTo(null);
+        assertThat(jdbcTemplate.queryForObject("SELECT Email FROM juror_mod.JUROR_RESPONSE WHERE JUROR_NUMBER = "
+            + "'641500542'", String.class)).isEqualTo(null);
+        assertThat(jdbcTemplate.queryForObject("SELECT ALT_PHONE_NUMBER FROM juror_mod.JUROR_RESPONSE WHERE "
+            + "JUROR_NUMBER = '641500542'", String.class)).isEqualTo(null);
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/juror-comms-notify.sql")
@@ -190,10 +198,10 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
         assertJurorCommsSmsNotification(JUROR_NUMBER_4, TEMPLATE_NAME_2,
             JurorCommsNotifyTemplateType.SU_SENT_TO_COURT);
 
-        assertThat(jdbcTemplate.queryForObject("SELECT Email FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE JUROR_NUMBER = " +
-            "'641500130'", String.class)).isEqualTo(EMAIL);
-        assertThat(jdbcTemplate.queryForObject("SELECT ALT_PHONE_NUMBER FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE " +
-            "JUROR_NUMBER = '641500127'", String.class)).isEqualTo("07332297123");
+        assertThat(jdbcTemplate.queryForObject("SELECT Email FROM juror_mod.JUROR_RESPONSE WHERE JUROR_NUMBER = "
+            + "'641500130'", String.class)).isEqualTo(EMAIL);
+        assertThat(jdbcTemplate.queryForObject("SELECT ALT_PHONE_NUMBER FROM juror_mod.JUROR_RESPONSE WHERE "
+            + "JUROR_NUMBER = '641500127'", String.class)).isEqualTo("07332297123");
     }
 
 
@@ -236,12 +244,12 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
         payLoad.put("FIRSTNAME", VALUE2);
         payLoad.put("LASTNAME", VALUE2);
 
-        pool = poolRepository.findByJurorNumber(jurorNumber);
+        pool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
 
     }
 
     private void getDto() throws Exception {
-        final Integer VALID_VERSION = 555;
+        final Integer validVersion = 555;
 
         final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
             .userLevel("99")
@@ -255,7 +263,7 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
         dto = ResponseSendToCourtController.SendToCourtDto.builder()
-            .version(VALID_VERSION)
+            .version(validVersion)
             .build();
     }
 }

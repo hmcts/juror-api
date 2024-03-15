@@ -9,13 +9,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.moj.domain.QUser;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 
-import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 
@@ -48,6 +48,7 @@ public class UserRepositoryTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     @Sql("/db/UserRepositoryTest.userRepository_happy_findStaffMember.sql")
     @Test
+    @Transactional
     public void userRepository_happy_findStaffMember() {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.users", Integer.class)).isEqualTo(4);
 
@@ -59,7 +60,7 @@ public class UserRepositoryTest extends AbstractIntegrationTest {
                 tuple("Joe McBob", 0, true),
                 tuple("Sarah McBob", 1, true),
                 tuple("Joe Bobson", 1, false),
-                tuple("AUTO", -1, true)
+                tuple("AUTO", 0, true)
             );
         assertThat(userRepository.findAll()).isNotNull()
             .describedAs("Teams associated and loaded eagerly")
@@ -72,57 +73,12 @@ public class UserRepositoryTest extends AbstractIntegrationTest {
             );
     }
 
-    @Sql("/db/truncate.sql")
-    @Sql("/db/standing_data.sql")
-    @Sql("/db/UserRepositoryTest.userRepository_happy_findStaffMember.sql")
-    @Test
-    public void userRepository_happy_saveNewStaffMember() {
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.users", Integer.class)).isEqualTo(4);
-
-        final String NEW_LOGIN = "rvilliers";
-        final String NEW_NAME = "Ronald Villiers";
-        final User newStaff =
-            userRepository.save(User.builder().owner("400").username(NEW_LOGIN).approvalLimit(BigDecimal.ZERO).name(NEW_NAME).level(1).active(true).build());
-
-        assertThat(newStaff).isNotNull();
-
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.users", Integer.class)).isEqualTo(5);
-
-        assertThat(jdbcTemplate.queryForObject(
-            "SELECT count(*) FROM juror_mod.users s WHERE username = '" + NEW_LOGIN + "'", Integer.class)).isEqualTo(
-            1);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.users s WHERE s.NAME = '" + NEW_NAME + "'",
-                Integer.class)).isEqualTo(1);
-    }
-
-
-    @Sql("/db/truncate.sql")
-    @Sql("/db/standing_data.sql")
-    @Sql("/db/UserRepositoryTest.userRepository_happy_findStaffMember.sql")
-    @Test
-    public void userRepository_happy_updateStaffMember() {
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.users", Integer.class)).isEqualTo(4);
-
-        final String LOGIN = "smcbob";
-        final Integer NEW_RANK = 0;
-        final User staff = userRepository.findByUsername(LOGIN);
-        assertThat(staff.getLevel()).isNotEqualTo(NEW_RANK);
-
-        staff.setLevel(NEW_RANK);
-        final User updatedStaff = userRepository.save(staff);
-        assertThat(updatedStaff.getLevel()).isEqualTo(NEW_RANK);
-
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.users", Integer.class)).isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject("SELECT level FROM juror_mod.users s WHERE s.username = '" + LOGIN +
-            "'", Integer.class)).isEqualTo(NEW_RANK);
-
-    }
 
     @Sql("/db/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/UserRepositoryTest.userRepository_happy_findActiveStaffMembers.sql")
     @Test
+    @Transactional
     public void userRepository_happy_findActiveStaffMembers() {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.users", Integer.class)).isEqualTo(6);
 

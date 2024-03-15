@@ -7,15 +7,17 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeedsRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.PartAmendmentRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHistRepository;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -26,7 +28,6 @@ import static org.mockito.Mockito.verify;
  * Tests for third-party rules in {@link ResponseStatusUpdateServiceImpl}.
  */
 @RunWith(MockitoJUnitRunner.class)
-@SuppressWarnings({"unused", "ResultOfMethodCallIgnored"})
 public class ResponseStatusUpdateThirdPartyRulesTest {
 
     private static final String AUDITOR_USERNAME = "unitTestUser";
@@ -40,15 +41,16 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
     private static final String THIRD_PARTY_REASON = "Needed for test";
 
     @Mock
-    private JurorResponseRepository jurorResponseRepository;
+    private JurorDigitalResponseRepositoryMod jurorResponseRepository;
+
     @Mock
-    private JurorResponseAuditRepository auditRepository;
+    private JurorResponseAuditRepositoryMod auditRepository;
     @Mock
-    private PoolRepository poolDetailsRepository;
+    private JurorPoolRepository poolDetailsRepository;
     @Mock
     private PartAmendmentRepository amendmentRepository;
     @Mock
-    private PartHistRepository historyRepository;
+    private JurorHistoryRepository historyRepository;
     @Mock
     private UrgencyService urgencyService;
     @Mock
@@ -56,7 +58,7 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
     @Mock
     private AssignOnUpdateService assignOnUpdateService;
     @Mock
-    private BureauJurorSpecialNeedsRepository specialNeedsRepository;
+    private JurorReasonableAdjustmentRepository specialNeedsRepository;
     @Mock
     private WelshCourtLocationRepository welshCourtLocationRepository;
 
@@ -64,13 +66,15 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
     private ResponseStatusUpdateServiceImpl statusUpdateService;
 
     // Needs to be a mock so we can verify the setters weren't called on the instance saved to the DB
-    private JurorResponse jurorResponse;
+    private DigitalResponse jurorResponse;
 
-    private Pool poolDetails;
+    private JurorPool poolDetails;
+    private Juror juror;
+    private PoolRequest poolRequest;
 
     @Before
     public void setUp() {
-        jurorResponse = new JurorResponse();
+        jurorResponse = new DigitalResponse();
         jurorResponse.setJurorNumber(JUROR_NUMBER);
         jurorResponse.setProcessingComplete(false);
         jurorResponse.setThirdPartyReason(THIRD_PARTY_REASON);
@@ -85,9 +89,13 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
         jurorResponse.setMainPhone(THIRD_PARTY_PRIMARY_PHONE);
         jurorResponse.setOtherPhone(THIRD_PARTY_MOBILE_PHONE);
 
-        poolDetails = new Pool();
-        poolDetails.setJurorNumber(JUROR_NUMBER);
-        doReturn(poolDetails).when(poolDetailsRepository).findByJurorNumber(JUROR_NUMBER);
+        poolDetails = new JurorPool();
+        juror = new Juror();
+        poolDetails.setJuror(juror);
+        poolRequest = new PoolRequest();
+        poolDetails.setPool(poolRequest);
+        poolDetails.getJuror().setJurorNumber(JUROR_NUMBER);
+        doReturn(poolDetails).when(poolDetailsRepository).findByJurorJurorNumber(JUROR_NUMBER);
     }
 
     @Test
@@ -99,7 +107,7 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
         verify(poolDetailsRepository, times(2)).save(poolDetails);
         verify(jurorResponseRepository, times(1)).save(jurorResponse);
 
-        assertThat(poolDetails.getEmail()).isNotEqualTo(THIRD_PARTY_EMAIL_ADDRESS);
+        assertThat(poolDetails.getJuror().getEmail()).isNotEqualTo(THIRD_PARTY_EMAIL_ADDRESS);
 
         assertThat(jurorResponse.getProcessingComplete()).isTrue();
     }
@@ -114,7 +122,7 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
         verify(poolDetailsRepository, times(2)).save(poolDetails);
         verify(jurorResponseRepository, times(1)).save(jurorResponse);
 
-        assertThat(poolDetails.getEmail()).isEqualTo(JUROR_EMAIL_ADDRESS);
+        assertThat(poolDetails.getJuror().getEmail()).isEqualTo(JUROR_EMAIL_ADDRESS);
 
         assertThat(jurorResponse.getProcessingComplete()).isTrue();
     }
@@ -128,8 +136,8 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
         verify(poolDetailsRepository, times(2)).save(poolDetails);
         verify(jurorResponseRepository, times(1)).save(jurorResponse);
 
-        assertThat(poolDetails.getPhoneNumber()).isNotEqualTo(THIRD_PARTY_PRIMARY_PHONE);
-        assertThat(poolDetails.getAltPhoneNumber()).isNotEqualTo(THIRD_PARTY_MOBILE_PHONE);
+        assertThat(poolDetails.getJuror().getPhoneNumber()).isNotEqualTo(THIRD_PARTY_PRIMARY_PHONE);
+        assertThat(poolDetails.getJuror().getAltPhoneNumber()).isNotEqualTo(THIRD_PARTY_MOBILE_PHONE);
 
         // The response saved to the DB shouldn't be changed, only the pool details should
         assertThat(jurorResponse.getPhoneNumber()).isEqualTo(JUROR_PRIMARY_PHONE);
@@ -148,8 +156,8 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
         verify(poolDetailsRepository, times(2)).save(poolDetails);
         verify(jurorResponseRepository, times(1)).save(jurorResponse);
 
-        assertThat(poolDetails.getPhoneNumber()).isEqualTo(JUROR_PRIMARY_PHONE);
-        assertThat(poolDetails.getAltPhoneNumber()).isEqualTo(JUROR_MOBILE_PHONE);
+        assertThat(poolDetails.getJuror().getPhoneNumber()).isEqualTo(JUROR_PRIMARY_PHONE);
+        assertThat(poolDetails.getJuror().getAltPhoneNumber()).isEqualTo(JUROR_MOBILE_PHONE);
 
         // This is the ONLY field that should change on the juror response object
         assertThat(jurorResponse.getProcessingComplete()).isTrue();

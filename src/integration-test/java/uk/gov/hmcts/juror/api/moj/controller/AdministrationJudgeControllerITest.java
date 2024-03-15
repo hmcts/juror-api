@@ -148,7 +148,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
 
             @Test
             void unauthorisedNotManager() {
-                assertForbiddenResponse(triggerInvalid("999991", "415", Set.of(Role.COURT_OFFICER)),
+                assertForbiddenResponse(triggerInvalid("999991", "415", Set.of()),
                     toUrl("999991"));
             }
 
@@ -238,7 +238,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
 
             @Test
             void unauthorisedNotManager() {
-                assertForbiddenResponse(triggerInvalid("999993", "415", Set.of(Role.COURT_OFFICER)),
+                assertForbiddenResponse(triggerInvalid("999993", "415", Set.of()),
                     toUrl("999993"));
             }
 
@@ -404,7 +404,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
 
             @Test
             void unauthorisedNotManager() {
-                assertForbiddenResponse(triggerInvalid(null, "415", Set.of(Role.COURT_OFFICER)), URL);
+                assertForbiddenResponse(triggerInvalid(null, "415", Set.of()), URL);
             }
 
             @Test
@@ -481,7 +481,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
 
             @Test
             void unauthorisedNotManager() {
-                assertForbiddenResponse(triggerInvalid(getValidPayload(), "415", Set.of(Role.COURT_OFFICER)),
+                assertForbiddenResponse(triggerInvalid(getValidPayload(), "415", Set.of()),
                     URL);
             }
 
@@ -606,7 +606,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
 
             @Test
             void unauthorisedNotManger() {
-                assertForbiddenResponse(triggerInvalid("999991", getValidPayload(), "415", Set.of(Role.COURT_OFFICER)),
+                assertForbiddenResponse(triggerInvalid("999991", getValidPayload(), "415", Set.of()),
                     toUrl("999991"));
             }
 

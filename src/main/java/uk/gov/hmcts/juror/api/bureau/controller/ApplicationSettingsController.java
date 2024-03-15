@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.bureau.controller.response.AppSettingsResponseDto;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSetting;
-import uk.gov.hmcts.juror.api.bureau.service.AppSettingService;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
+import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
 
 import java.util.List;
 

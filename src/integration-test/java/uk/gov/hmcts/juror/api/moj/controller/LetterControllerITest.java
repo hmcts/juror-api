@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.AdditionalInformationDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CertificateOfExemptionRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CourtLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.PrintLettersRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
@@ -39,13 +41,17 @@ import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.NonDeferralLe
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PostponeLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDataResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.WithdrawalLetterData;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.JurorForExemptionListDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialExemptionListDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.letter.LetterId;
 import uk.gov.hmcts.juror.api.moj.domain.letter.RequestLetter;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
@@ -53,12 +59,14 @@ import uk.gov.hmcts.juror.api.moj.enumeration.letter.MissingInformation;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.letter.RequestLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.PostponementLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.ShowCauseLetterListRepository;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -71,8 +79,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
 import static java.util.Calendar.FRIDAY;
 import static java.util.Calendar.MONDAY;
 import static java.util.Calendar.SATURDAY;
@@ -92,6 +98,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static uk.gov.hmcts.juror.api.TestUtil.getValuesInJsonObject;
 import static uk.gov.hmcts.juror.api.TestUtils.objectMapper;
+import static uk.gov.hmcts.juror.api.moj.controller.LetterControllerITest.PrintCourtLettersPostponement.JUROR_NUMBER;
 import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetails;
 
 /**
@@ -119,6 +126,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
     private PostponementLetterListRepository postponementLetterListRepository;
     @Autowired
     private ShowCauseLetterListRepository showCauseLetterListRepository;
+    @Autowired
+    private JurorHistoryRepository jurorHistoryRepository;
 
     private HttpHeaders httpHeaders;
 
@@ -454,7 +463,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 ))
                 .build(), httpHeaders, POST, uri);
             ResponseEntity<String> response = template.exchange(request, String.class);
-
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode()).isEqualTo(CREATED);
             assertThat(response.getBody()).isEqualTo("Request Letter queued for juror number " + jurorNumber);
@@ -1683,7 +1691,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertThat(dataList).size().isEqualTo(6);
         }
-
     }
 
     @Nested
@@ -2892,7 +2899,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
-
             ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
                 .letters(List.of(requestBody))
                 .build();
@@ -2924,6 +2930,131 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertThat(bulkPrintData).isNotNull();
             assertThat(bulkPrintData.getExtractedFlag()).isNull();
+        }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
+        void issueSummonsReminderLetterIfLetterDoesNotExist() {
+            final String jurorNumber = "555555570";
+
+            // verify letter does not already exist for today's date (this is the date the letter is to be created)
+            assertThat(bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
+                FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()))
+                .as("Existing letter should not exist for today's date ").isEmpty();
+
+            // verify history does not already exist for today's date
+            List<JurorHistory> updatedJurorHistoryList =
+                jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
+            assertThat(updatedJurorHistoryList).as("History record should not exist").isEmpty();
+
+            // invoke api
+            triggerValidBureau(
+                ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                    .jurorNumber(jurorNumber)
+                    .formCode(FormCode.ENG_SUMMONS_REMINDER.getCode())
+                    .datePrinted(LocalDate.of(2024, 1, 31))
+                    .build()
+            );
+
+            // verify letter added
+            BulkPrintData bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
+                    FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
+                .orElseThrow(() -> Failures.instance().failure("Expected record to be found in bulk print data table"));
+
+            assertThat(bulkPrintData).as("Letter should have been added in bulk print table").isNotNull();
+            assertThat(bulkPrintData.getExtractedFlag()).as("Extracted flag should be null").isNull();
+
+            // verify history added
+            updatedJurorHistoryList =
+                jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
+            assertThat(updatedJurorHistoryList).as("History record should have been added").isNotNull();
+            assertThat(updatedJurorHistoryList.size()).as("Expect 1 history record").isEqualTo(1);
+            assertThat(updatedJurorHistoryList.get(0).getJurorNumber()).as("Juror number is " + jurorNumber)
+                .isEqualTo(jurorNumber);
+            assertThat(updatedJurorHistoryList.get(0).getPoolNumber()).as("Pool number is 415220401")
+                .isEqualTo("415220401");
+            assertThat(updatedJurorHistoryList.get(0).getHistoryCode())
+                .as("History code is " + HistoryCodeMod.NON_RESPONDED_LETTER)
+                .isEqualTo(HistoryCodeMod.NON_RESPONDED_LETTER);
+            assertThat(updatedJurorHistoryList.get(0).getCreatedBy()).as("History record created by SYSTEM")
+                .isEqualTo("SYSTEM");
+            assertThat(updatedJurorHistoryList.get(0).getDateCreated())
+                .as("Date created is today's date").isAfterOrEqualTo(LocalDate.now().atStartOfDay());
+            assertThat(updatedJurorHistoryList.get(0).getOtherInformation())
+                .as("Other information is 'Reminder letter printed'")
+                .isEqualTo("Reminder letter printed");
+            assertThat(updatedJurorHistoryList.get(0).getOtherInformationDate())
+                .as("Other Information Date is null").isNull();
+            assertThat(updatedJurorHistoryList.get(0).getOtherInformationRef())
+                .as("Other Information Ref is null").isNull();
+        }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
+        void issueSummonsReminderReprintAfterLetterIsCreated() {
+            final String jurorNumber = "555555570";
+
+            // invoke api
+            triggerValidBureau(
+                ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                    .jurorNumber(jurorNumber)
+                    .formCode(FormCode.ENG_SUMMONS_REMINDER.getCode())
+                    .datePrinted(LocalDate.of(2024, 1, 31))
+                    .build()
+            );
+
+            // verify letter added
+            BulkPrintData bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
+                    FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
+                .orElseThrow(() -> Failures.instance().failure("Expected record to be found in bulk print data table"));
+
+            assertThat(bulkPrintData).isNotNull();
+            assertThat(bulkPrintData.getExtractedFlag()).isNull();
+
+            // verify history added
+            List<JurorHistory> updatedJurorHistoryList =
+                jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
+            assertThat(updatedJurorHistoryList).isNotNull();
+            assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
+            assertThat(updatedJurorHistoryList.get(0).getJurorNumber()).isEqualTo(jurorNumber);
+            assertThat(updatedJurorHistoryList.get(0).getPoolNumber()).isEqualTo("415220401");
+            assertThat(updatedJurorHistoryList.get(0).getHistoryCode())
+                .isEqualTo(HistoryCodeMod.NON_RESPONDED_LETTER);
+            assertThat(updatedJurorHistoryList.get(0).getCreatedBy()).isEqualTo("SYSTEM");
+            assertThat(updatedJurorHistoryList.get(0).getDateCreated().isEqual(LocalDate.now().atStartOfDay()));
+            assertThat(updatedJurorHistoryList.get(0).getOtherInformation())
+                .isEqualTo("Reminder letter printed");
+            assertThat(updatedJurorHistoryList.get(0).getOtherInformationDate()).isNull();
+            assertThat(updatedJurorHistoryList.get(0).getOtherInformationRef()).isNull();
+
+            // invoke api again for same juror and letter
+            final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
+            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ReissueLetterRequestDto.ReissueLetterRequestData requestBody =
+                ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                    .jurorNumber(jurorNumber)
+                    .formCode(FormCode.ENG_SUMMONS_REMINDER.getCode())
+                    .datePrinted(LocalDate.now()) // use today's date as letter was printed today
+                    .build();
+
+            ReissueLetterRequestDto requestDto = ReissueLetterRequestDto.builder()
+                .letters(List.of(requestBody))
+                .build();
+
+            RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(requestDto,
+                httpHeaders, POST, uri);
+            ResponseEntity<String> response = template.exchange(request, String.class);
+
+            assertThat(response.getStatusCode()).as("Expect response to be BAD_REQUEST")
+                .isEqualTo(BAD_REQUEST);
+
+            JSONObject exceptionDetails = getExceptionDetails(response);
+            assertThat(exceptionDetails.getString("error")).isEqualTo("Bad Request");
+            assertThat(exceptionDetails.getString("message"))
+                .isEqualTo("Letter already pending reprint for juror 555555570");
         }
     }
 
@@ -3064,10 +3195,10 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             // ensure response is in correct order
             verifyResponse(data, 0, "561", "Childcare",
-                EXCUSAL_DATE_2024_01_21, PRINTED_DATE_2024_01_31, FALSE, FormCode.ENG_EXCUSAL.getCode(), EXCUSED);
+                EXCUSAL_DATE_2024_01_21, PRINTED_DATE_2024_01_31, false, FormCode.ENG_EXCUSAL.getCode(), EXCUSED);
 
             verifyResponse(data, 1, "561", "Childcare",
-                EXCUSAL_DATE_2024_01_21, PRINTED_DATE_2024_01_31, TRUE, FormCode.BI_EXCUSAL.getCode(), EXCUSED);
+                EXCUSAL_DATE_2024_01_21, PRINTED_DATE_2024_01_31, true, FormCode.BI_EXCUSAL.getCode(), EXCUSED);
         }
 
         @Test
@@ -3091,7 +3222,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data.size()).isEqualTo(1);
 
             verifyResponse(data, 0, "562", EXCUSED_REASON_TRAVELLING_DIFFICULTIES,
-                "2024-01-22", "2024-02-01", FALSE, FormCode.ENG_EXCUSAL.getCode(), EXCUSED);
+                "2024-01-22", "2024-02-01", false, FormCode.ENG_EXCUSAL.getCode(), EXCUSED);
         }
 
         @Test
@@ -3116,19 +3247,19 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             // data should be in order (based on search criteria)
             verifyResponse(data, 0, "562", EXCUSED_REASON_TRAVELLING_DIFFICULTIES,
-                "2024-01-22", "2024-02-01", FALSE, FormCode.ENG_EXCUSAL.getCode(), EXCUSED);
+                "2024-01-22", "2024-02-01", false, FormCode.ENG_EXCUSAL.getCode(), EXCUSED);
 
             verifyResponse(data, 1, "565", "Moved from area",
-                "2024-01-22", "2024-02-01", FALSE, FormCode.ENG_EXCUSAL.getCode(), EXCUSED);
+                "2024-01-22", "2024-02-01", false, FormCode.ENG_EXCUSAL.getCode(), EXCUSED);
 
             verifyResponse(data, 2, "567", "Ill",
-                "2024-01-28", "2024-01-27", FALSE, FormCode.ENG_EXCUSAL.getCode(), EXCUSED);
+                "2024-01-28", "2024-01-27", false, FormCode.ENG_EXCUSAL.getCode(), EXCUSED);
 
             verifyResponse(data, 3, "563", "Childcare",
-                "2024-01-25", "2024-01-25", FALSE, FormCode.ENG_EXCUSAL.getCode(), EXCUSED);
+                "2024-01-25", "2024-01-25", false, FormCode.ENG_EXCUSAL.getCode(), EXCUSED);
 
             verifyResponse(data, 4, "564", "Childcare",
-                EXCUSAL_DATE_2024_01_21, "2024-01-20", FALSE, FormCode.ENG_EXCUSAL.getCode(), EXCUSED);
+                EXCUSAL_DATE_2024_01_21, "2024-01-20", false, FormCode.ENG_EXCUSAL.getCode(), EXCUSED);
         }
 
         @Test
@@ -3216,7 +3347,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data.size()).isEqualTo(1);
 
             verifyResponse(data, 0, "569", EXCUSED_REASON_TRAVELLING_DIFFICULTIES,
-                "2024-01-22", "2024-02-01", FALSE, FormCode.ENG_EXCUSALDENIED.getCode(),
+                "2024-01-22", "2024-02-01", false, FormCode.ENG_EXCUSALDENIED.getCode(),
                 "Responded");
         }
 
@@ -3377,6 +3508,96 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data2.get(6)).isEqualTo("5228C");
         }
 
+        @Test
+        @DisplayName("Get Reissue summons reminder letter - not created (not in bulk print table)")
+        void reissueSummonsReminderLetterByJurorNumberLetterNotCreated() throws Exception {
+            ReissueLetterListResponseDto response = triggerValid(ReissueLetterListRequestDto.builder()
+                .letterType(LetterType.SUMMONED_REMINDER)
+                .jurorName("Juror570")
+                .build());
+            verifyHeadingsAndTypes(response);
+
+            List<List<Object>> data = response.getData();
+            assertThat(data).isNotNull();
+            assertThat(data.size()).isEqualTo(1);
+
+            List<Object> dataIndex0 = data.get(0);
+            verifyResponse(dataIndex0, "570", null, false, null);
+        }
+
+        @Test
+        @DisplayName("Get Reissue summons reminder letter - pool number (can be pending, printed, not created)")
+        void reissueSummonsReminderLetterByPoolNumber() throws Exception {
+            ReissueLetterListResponseDto response = triggerValid(ReissueLetterListRequestDto.builder()
+                .letterType(LetterType.SUMMONED_REMINDER)
+                .poolNumber("415220401")
+                .build());
+            verifyHeadingsAndTypes(response);
+
+            List<List<Object>> data = response.getData();
+            assertThat(data).isNotNull();
+            assertThat(data.size()).isEqualTo(7);
+
+            List<Object> dataIndex0 = data.get(0); // not created
+            verifyResponse(dataIndex0, "570", null, false, null);
+
+            List<Object> dataIndex1 = data.get(1);
+            verifyResponse(dataIndex1, "562", "2024-02-01", false, "5228");
+
+            List<Object> dataIndex2 = data.get(2);
+            verifyResponse(dataIndex2, "565", "2024-02-01", false, "5228");
+
+            List<Object> dataIndex3 = data.get(3);
+            verifyResponse(dataIndex3, "571", "2024-01-31", true, "5228C");
+
+            List<Object> dataIndex4 = data.get(4);
+            verifyResponse(dataIndex4, "567", "2024-01-27", false, "5228");
+
+            List<Object> dataIndex5 = data.get(5);
+            verifyResponse(dataIndex5, "563", "2024-01-25", false, "5228");
+
+            List<Object> dataIndex6 = data.get(6);
+            verifyResponse(dataIndex6, "564", "2024-01-20", false, "5228");
+        }
+
+        @Test
+        @DisplayName("Get Reissue summons reminder letter - all queued (pending and printed in Bulk Table)")
+        void reissueSummonsReminderLetterAllQueued() throws Exception {
+            ReissueLetterListResponseDto response = triggerValid(ReissueLetterListRequestDto.builder()
+                .letterType(LetterType.SUMMONED_REMINDER)
+                .showAllQueued(true)
+                .build());
+            verifyHeadingsAndTypes(response);
+
+            List<List<Object>> data = response.getData();
+            assertThat(data).isNotNull();
+            assertThat(data.size()).isEqualTo(8);
+
+            List<Object> dataIndex0 = data.get(0);
+            verifyResponse(dataIndex0, "562", "2024-02-01", false, "5228");
+
+            List<Object> dataIndex1 = data.get(1);
+            verifyResponse(dataIndex1, "565", "2024-02-01", false, "5228");
+
+            List<Object> dataIndex2 = data.get(2);
+            verifyResponse(dataIndex2, "561", "2024-01-31", true, "5228");
+
+            List<Object> dataIndex3 = data.get(3);
+            verifyResponse(dataIndex3, "561", "2024-01-31", true, "5228C");
+
+            List<Object> dataIndex4 = data.get(4);
+            verifyResponse(dataIndex4, "571", "2024-01-31", true, "5228C");
+
+            List<Object> dataIndex5 = data.get(5);
+            verifyResponse(dataIndex5, "567", "2024-01-27", false, "5228");
+
+            List<Object> dataIndex6 = data.get(6);
+            verifyResponse(dataIndex6, "563", "2024-01-25", false, "5228");
+
+            List<Object> dataIndex7 = data.get(7);
+            verifyResponse(dataIndex7, "564", "2024-01-20", false, "5228");
+        }
+
         private void verifyHeadings(ReissueLetterListResponseDto reissueLetterListResponseDto) {
 
             assertThat(reissueLetterListResponseDto).isNotNull();
@@ -3408,6 +3629,18 @@ class LetterControllerITest extends AbstractIntegrationTest {
         private void verifyHeadingsAndTypes(ReissueLetterListResponseDto reissueLetterListResponseDto) {
             verifyHeadings(reissueLetterListResponseDto);
             verifyTypes(reissueLetterListResponseDto);
+        }
+
+        private void verifyResponse(List<Object> dataIndex, String jurorPostfix, String datePrinted,
+                                    Boolean extractedFlag, String formCode) {
+            assertThat(dataIndex).hasSize(7);
+            assertThat(dataIndex.get(0)).isEqualTo("555555" + jurorPostfix);
+            assertThat(dataIndex.get(1)).isEqualTo("Juror" + jurorPostfix);
+            assertThat(dataIndex.get(2)).isEqualTo("Juror" + jurorPostfix + "Surname");
+            assertThat(dataIndex.get(3)).isEqualTo("CH1 2AN");
+            assertThat(dataIndex.get(4)).isEqualTo(datePrinted);
+            assertThat(dataIndex.get(5)).isEqualTo(extractedFlag);
+            assertThat(dataIndex.get(6)).isEqualTo(formCode);
         }
     }
 
@@ -4289,6 +4522,649 @@ class LetterControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
+    @DisplayName("Certificate of exemption")
+    @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_CertificateOfExemption.sql"})
+    class CertificateOfExemption {
+        static final String JUROR_NUMBER_ENGLISH = "123456789";
+        static final String TRIAL_NUMBER_ENGLISH = "T10000000";
+        static final String TRIAL_NUMBER_WELSH = "T10000002";
+
+
+        @Nested
+        @DisplayName("POST - /api/v1/moj/letter/print-certificate-of-exemption")
+        class PrintCertificateOfExemption {
+            static final String PRINT_CERTIFICATE_OF_EXEMPTION_URL =
+                "/api/v1/moj/letter/print-certificate-of-exemption";
+
+            protected PrintCertificateOfExemption() {
+
+            }
+
+            @Nested
+            @DisplayName("Positive")
+            class Positive {
+                @Test
+                @SneakyThrows
+                @DisplayName("Print Certificate of exemption - Override judge name")
+                void printCertificateOfExemptionOverrideJudgeName() {
+                    final String payload = createBureauJwt("COURT_USER", "415");
+
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+                    CertificateOfExemptionRequestDto requestDto =
+                        CertificateOfExemptionRequestDto.builder()
+                            .trialNumber(TRIAL_NUMBER_ENGLISH)
+                            .exemptionPeriod("indefinite")
+                            .jurorNumbers(Collections.singletonList(JUROR_NUMBER_ENGLISH))
+                            .letterType(CourtLetterType.CERTIFICATE_OF_EXEMPTION)
+                            .judge("SIR DREDD")
+                            .build();
+
+                    RequestEntity<CertificateOfExemptionRequestDto> request = new RequestEntity<>(requestDto,
+                        httpHeaders, POST,
+                        URI.create(PRINT_CERTIFICATE_OF_EXEMPTION_URL));
+
+                    ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(request,
+                        PrintLetterDataResponseDto[].class);
+
+                    assertThat(response).isNotNull();
+                    assertThat(response.getStatusCode())
+                        .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
+                        .isEqualTo(OK);
+                    assertThat(response.getBody()).isNotNull();
+
+                    PrintLetterDataResponseDto[] data = response.getBody();
+                    assertThat(data.length).as("Expect 1 letters").isEqualTo(1);
+                    verifyLetterDataEnglish(data[0], requestDto.getJudge());
+                }
+
+                @Test
+                @SneakyThrows
+                @DisplayName("Print Certificate of exemption - Happy path - English")
+                void printCertificateOfExemption() {
+                    final String payload = createBureauJwt("COURT_USER", "415");
+
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+                    CertificateOfExemptionRequestDto requestDto =
+                        CertificateOfExemptionRequestDto.builder()
+                            .trialNumber(TRIAL_NUMBER_ENGLISH)
+                            .exemptionPeriod("indefinite")
+                            .jurorNumbers(Collections.singletonList(JUROR_NUMBER_ENGLISH))
+                            .letterType(CourtLetterType.CERTIFICATE_OF_EXEMPTION)
+                            .build();
+
+                    RequestEntity<CertificateOfExemptionRequestDto> request = new RequestEntity<>(requestDto,
+                        httpHeaders, POST,
+                        URI.create(PRINT_CERTIFICATE_OF_EXEMPTION_URL));
+                    ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(request,
+                        PrintLetterDataResponseDto[].class);
+
+                    assertThat(response).isNotNull();
+                    assertThat(response.getStatusCode())
+                        .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
+                        .isEqualTo(OK);
+                    assertThat(response.getBody()).isNotNull();
+
+                    PrintLetterDataResponseDto[] data = response.getBody();
+                    assertThat(data.length).as("Expect 1 letters").isEqualTo(1);
+                    verifyLetterDataEnglish(data[0], "Test judge");
+                }
+            }
+
+            @Nested
+            @DisplayName("Negative")
+            class Negative {
+                @Test
+                @SneakyThrows
+                @DisplayName("Print Certificate of exemption - trial not found")
+                void printCertificateOfExemptionTrialNotFound() {
+                    final String payload = createBureauJwt("COURT_USER", "415");
+
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+                    CertificateOfExemptionRequestDto requestDto =
+                        CertificateOfExemptionRequestDto.builder()
+                            .trialNumber("T1")
+                            .exemptionPeriod("indefinite")
+                            .jurorNumbers(Collections.singletonList(JUROR_NUMBER_ENGLISH))
+                            .letterType(CourtLetterType.CERTIFICATE_OF_EXEMPTION)
+                            .build();
+
+                    RequestEntity<CertificateOfExemptionRequestDto> request = new RequestEntity<>(requestDto,
+                        httpHeaders, POST,
+                        URI.create(PRINT_CERTIFICATE_OF_EXEMPTION_URL));
+                    ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(request,
+                        PrintLetterDataResponseDto[].class);
+
+                    assertThat(response).isNotNull();
+                    assertThat(response.getStatusCode())
+                        .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
+                        .isEqualTo(OK);
+                    assertThat(response.getBody()).isNotNull();
+                    assertThat(response.getBody().length).as("Expecting results to be zero").isEqualTo(0);
+                }
+
+                @Test
+                @SneakyThrows
+                @DisplayName("Print Certificate of exemption - accessing wrong court information")
+                void printCertificateOfExemptionNoAccessToCourtTrial() {
+                    final String payload = createBureauJwt("COURT_USER", "415");
+
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+                    CertificateOfExemptionRequestDto requestDto =
+                        CertificateOfExemptionRequestDto.builder()
+                            .trialNumber("T10000001")
+                            .exemptionPeriod("indefinite")
+                            .jurorNumbers(Collections.singletonList("987654321"))
+                            .letterType(CourtLetterType.CERTIFICATE_OF_EXEMPTION)
+                            .build();
+
+                    RequestEntity<CertificateOfExemptionRequestDto> request = new RequestEntity<>(requestDto,
+                        httpHeaders, POST,
+                        URI.create(PRINT_CERTIFICATE_OF_EXEMPTION_URL));
+                    ResponseEntity<String> response = template.exchange(request,
+                        String.class);
+
+                    assertThat(response).isNotNull();
+                    assertThat(response.getBody()).isNotNull();
+                    assertMojForbiddenResponse(response, PRINT_CERTIFICATE_OF_EXEMPTION_URL,
+                        "User does not have ownership of the supplied juror record");
+                }
+
+                @Test
+                @SneakyThrows
+                @DisplayName("Print Certificate of exemption - juror number incorrect")
+                void printCertificateOfExemptionTrialFoundJurorNumberIncorrect() {
+                    final String payload = createBureauJwt("COURT_USER", "415");
+
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+                    CertificateOfExemptionRequestDto requestDto =
+                        CertificateOfExemptionRequestDto.builder()
+                            .trialNumber("T10000000")
+                            .exemptionPeriod("indefinite")
+                            .jurorNumbers(Collections.singletonList("1"))
+                            .letterType(CourtLetterType.CERTIFICATE_OF_EXEMPTION)
+                            .build();
+
+                    RequestEntity<CertificateOfExemptionRequestDto> request =
+                        new RequestEntity<>(requestDto, httpHeaders, POST,
+                            URI.create(PRINT_CERTIFICATE_OF_EXEMPTION_URL));
+                    ResponseEntity<String> response = template.exchange(request,
+                        String.class);
+
+                    assertThat(response).isNotNull();
+                    assertNotFound(response, PRINT_CERTIFICATE_OF_EXEMPTION_URL, "Cannot find juror number: 1");
+                }
+
+                @Test
+                @SneakyThrows
+                @DisplayName("Print Certificate of exemption - Unhappy path - Bureau user")
+                void printCertificateOfExemptionBureauUser() {
+                    final String payload = createBureauJwt("BUREAU_USER", "400");
+
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+                    CertificateOfExemptionRequestDto requestDto =
+                        CertificateOfExemptionRequestDto.builder()
+                            .trialNumber("T10000000")
+                            .exemptionPeriod("indefinite")
+                            .jurorNumbers(Collections.singletonList(JUROR_NUMBER_ENGLISH))
+                            .letterType(CourtLetterType.CERTIFICATE_OF_EXEMPTION)
+                            .build();
+
+                    RequestEntity<CertificateOfExemptionRequestDto> request =
+                        new RequestEntity<>(requestDto, httpHeaders, POST,
+                            URI.create(PRINT_CERTIFICATE_OF_EXEMPTION_URL));
+                    ResponseEntity<String> response = template.exchange(request,
+                        String.class);
+                    assertForbiddenResponse(response, PRINT_CERTIFICATE_OF_EXEMPTION_URL);
+                }
+            }
+        }
+
+        @Nested
+        @DisplayName("GET - /api/v1/moj/letter/trials-exemption-list")
+        class TrialExemptionList {
+            protected TrialExemptionList() {
+
+            }
+
+            static final String TRIAL_EXEMPTION_URL = "/api/v1/moj/letter/trials-exemption-list";
+
+            @Nested
+            @DisplayName("Positive")
+            class Positive {
+                @Test
+                @SneakyThrows
+                @DisplayName("Certificate of exemption - trials exemption list - Happy path ")
+                void trialsExemptionList() {
+                    final String payload = createBureauJwt("COURT_USER", "415");
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+                    String url = TRIAL_EXEMPTION_URL + "?court_location=415";
+
+                    RequestEntity<Void> request = new RequestEntity<>(null, httpHeaders, GET,
+                        URI.create(url));
+                    ResponseEntity<TrialExemptionListDto[]> response = template.exchange(request,
+                        TrialExemptionListDto[].class);
+
+                    assertThat(response).isNotNull();
+                    assertThat(response.getStatusCode())
+                        .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
+                        .isEqualTo(OK);
+                    assertThat(response.getBody()).isNotNull();
+                    assertThat(response.getBody().length)
+                        .as("Expect length to be 2")
+                        .isEqualTo(2);
+                    TrialExemptionListDto dto = response.getBody()[0];
+                    assertThat(dto.getStartDate())
+                        .as("Expect start date to be " + LocalDate.now())
+                        .isEqualTo(LocalDate.now());
+                    assertThat(dto.getJudge())
+                        .as("Expect judge to be Test judge")
+                        .isEqualTo("Test judge");
+                    assertThat(dto.getTrialType())
+                        .as("Expect trial type to be Civil")
+                        .isEqualTo("Civil");
+                    assertThat(dto.getTrialNumber())
+                        .as("Expect trial number to be " + TRIAL_NUMBER_ENGLISH)
+                        .isEqualTo(TRIAL_NUMBER_ENGLISH);
+                    assertThat(dto.getDefendants())
+                        .as("Expect defendants to be TEST DEFENDANT")
+                        .isEqualTo("TEST DEFENDANT");
+                    assertThat(dto.getEndDate())
+                        .as("Expect end date to be null")
+                        .isNull();
+
+                    TrialExemptionListDto welshDto = response.getBody()[1];
+                    assertThat(welshDto.getStartDate())
+                        .as("Expect start date to be " + LocalDate.now())
+                        .isEqualTo(LocalDate.now());
+                    assertThat(welshDto.getJudge())
+                        .as("Expect judge to be Test judge")
+                        .isEqualTo("Test judge");
+                    assertThat(welshDto.getTrialType())
+                        .as("Expect trial type to be Civil")
+                        .isEqualTo("Civil");
+                    assertThat(welshDto.getTrialNumber())
+                        .as("Expect trial number to be " + TRIAL_NUMBER_WELSH)
+                        .isEqualTo(TRIAL_NUMBER_WELSH);
+                    assertThat(welshDto.getDefendants())
+                        .as("Expect defendants to be TEST DEFENDANT")
+                        .isEqualTo("TEST DEFENDANT");
+                    assertThat(welshDto.getEndDate())
+                        .as("Expect end date to be null")
+                        .isNull();
+                }
+            }
+
+            @Nested
+            @DisplayName("Negative")
+            class Negative {
+                @Test
+                @SneakyThrows
+                @DisplayName("trials exemption list - No Active trials")
+                void trialsExemptionListNoActiveTrialsFound() {
+                    final String payload = createBureauJwt("COURT_USER", "761");
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+                    String url = TRIAL_EXEMPTION_URL + "?court_location=761";
+
+                    RequestEntity<Void> request = new RequestEntity<>(null, httpHeaders, GET,
+                        URI.create(url));
+                    ResponseEntity<TrialExemptionListDto[]> response = template.exchange(request,
+                        TrialExemptionListDto[].class);
+
+                    assertThat(response).isNotNull();
+                    assertThat(response.getBody()).isNotNull();
+                    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+                    assertThat(response.getBody().length).as("Expect size to be zero").isEqualTo(0);
+                }
+
+                @Test
+                @SneakyThrows
+                @DisplayName("trials exemption list - No court location provided")
+                void trialsExemptionListNoCourtLocation() {
+                    final String payload = createBureauJwt("COURT_USER", "761");
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+                    RequestEntity<Void> request = new RequestEntity<>(null, httpHeaders, GET,
+                        URI.create(TRIAL_EXEMPTION_URL));
+                    ResponseEntity<String> response = template.exchange(request,
+                        String.class);
+
+                    assertThat(response).isNotNull();
+                    assertThat(response.getBody()).isNotNull();
+                    assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
+                    assertThat(JsonPath.read(response.getBody(), "$['detail']").toString())
+                        .as("JSON: Error message")
+                        .isEqualTo("Required parameter 'court_location' is not present.");
+
+                }
+
+                @Test
+                @SneakyThrows
+                @DisplayName("trials exemption list - Invalid court location")
+                void trialsExemptionListInvalidCourtLocation() {
+                    final String payload = createBureauJwt("COURT_USER", "761");
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+                    RequestEntity<Void> request = new RequestEntity<>(null, httpHeaders, GET,
+                        URI.create(TRIAL_EXEMPTION_URL + "?court_location=761"));
+                    ResponseEntity<TrialExemptionListDto[]> response = template.exchange(request,
+                        TrialExemptionListDto[].class);
+
+                    assertThat(response).isNotNull();
+                    assertThat(response.getBody()).isNotNull();
+                    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+                    assertThat(response.getBody().length).isEqualTo(0);
+                }
+
+                @Test
+                @SneakyThrows
+                @DisplayName("trials exemption list - No access to court location")
+                void trialsExemptionListNoAccessToCourtLocation() {
+                    final String payload = createBureauJwt("COURT_USER", "761");
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+                    String url = TRIAL_EXEMPTION_URL + "?court_location=415";
+
+                    RequestEntity<Void> request = new RequestEntity<>(null, httpHeaders, GET,
+                        URI.create(url));
+                    ResponseEntity<String> response = template.exchange(request,
+                        String.class);
+
+                    assertThat(response).isNotNull();
+                    assertThat(response.getBody()).isNotNull();
+                    assertMojForbiddenResponse(response,
+                        TRIAL_EXEMPTION_URL,
+                        "Current user has insufficient permission to view the trial details for the court location");
+                }
+
+
+                @Test
+                @SneakyThrows
+                @DisplayName("trial exemption list - Unhappy path - Bureau user")
+                void trialsExemptionListBureauUser() {
+                    final String payload = createBureauJwt("BUREAU_USER", "400");
+
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+                    String url = TRIAL_EXEMPTION_URL + "?court_location=415";
+
+                    RequestEntity<Void> request = new RequestEntity<>(null,
+                        httpHeaders, GET,
+                        URI.create(url));
+
+                    ResponseEntity<String> response = template.exchange(request,
+                        String.class);
+                    assertForbiddenResponse(response, TRIAL_EXEMPTION_URL);
+                }
+            }
+        }
+
+        @Nested
+        @DisplayName("GET - /api/v1/moj/letter/jurors-exemption-list")
+        class JurorForExemptionList {
+            static final String JUROR_EXEMPITON_URL = "/api/v1/moj/letter/jurors-exemption-list";
+
+            @Nested
+            @DisplayName("Positive")
+            class Positive {
+
+                @Test
+                @SneakyThrows
+                @DisplayName("Certificate of exemption - jurors exemption list - Happy path")
+                void jurorsForExemptionList() {
+                    final String payload = createBureauJwt("COURT_USER", "415");
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+                    RequestEntity<Void> request = new RequestEntity<>(null, httpHeaders, GET,
+                        URI.create(buildJurorExemptionUri("T10000000", "415")));
+                    ResponseEntity<JurorForExemptionListDto[]> response = template.exchange(request,
+                        JurorForExemptionListDto[].class);
+
+                    assertThat(response).isNotNull();
+                    assertThat(response.getStatusCode())
+                        .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
+                        .isEqualTo(OK);
+                    assertThat(response.getBody()).isNotNull();
+                    assertThat(response.getBody().length).as("Expect size to be 1").isEqualTo(1);
+
+                    JurorForExemptionListDto dto = response.getBody()[0];
+                    assertThat(dto.getJurorNumber())
+                        .as("Juror number")
+                        .isEqualTo(JUROR_NUMBER_ENGLISH);
+                    assertThat(dto.getFirstName())
+                        .as("First name")
+                        .isEqualTo("FNAME");
+                    assertThat(dto.getLastName())
+                        .as("Last name ")
+                        .isEqualTo("LNAME");
+                    assertThat(dto.getDateEmpanelled())
+                        .as("Date empanelled")
+                        .isEqualTo(LocalDate.of(2024, 2, 22));
+                }
+            }
+
+            @Nested
+            @DisplayName("Negative")
+            class Negative {
+
+                @Test
+                @SneakyThrows
+                @DisplayName("Jurors exemption list - unhappy path - no court location found in token")
+                void jurorsForExemptionListNoCourtLocationFoundInToken() {
+                    final String payload = createBureauJwt("COURT_USER", "415", "416");
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+                    RequestEntity<Void> request = new RequestEntity<>(null, httpHeaders, GET,
+                        URI.create(buildJurorExemptionUri("T10000002", "415")));
+                    ResponseEntity<String> response = template.exchange(request,
+                        String.class);
+
+                    assertThat(response).isNotNull();
+                    assertThat(response.getStatusCode())
+                        .as("Status code")
+                        .isEqualTo(FORBIDDEN);
+                    assertThat(response.getBody()).isNotNull();
+                    assertThat(JsonPath.read(response.getBody(), "$['message']").toString())
+                        .isEqualTo("Current user has insufficient permission to view the trial details for the court "
+                            + "location");
+                }
+
+                @Test
+                @SneakyThrows
+                @DisplayName("Jurors exemption list - No Panel members - Unhappy path")
+                void jurorsForExemptionListNoPanelMembers() {
+                    final String payload = createBureauJwt("COURT_USER", "415");
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+                    RequestEntity<Void> request = new RequestEntity<>(null, httpHeaders, GET,
+                        URI.create(buildJurorExemptionUri("T10000002", "415")));
+                    ResponseEntity<JurorForExemptionListDto[]> response = template.exchange(request,
+                        JurorForExemptionListDto[].class);
+
+                    assertThat(response).isNotNull();
+                    assertThat(response.getStatusCode())
+                        .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
+                        .isEqualTo(OK);
+                    assertThat(response.getBody()).isNotNull();
+                    assertThat(response.getBody().length).as("Expect size to be zero").isEqualTo(0);
+                }
+
+                @Test
+                @SneakyThrows
+                @DisplayName("Juror exemption list - Unhappy path - Bureau user")
+                void jurorsForExemptionListBureauUser() {
+                    final String payload = createBureauJwt("BUREAU_USER", "400");
+
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+                    CertificateOfExemptionRequestDto requestDto =
+                        CertificateOfExemptionRequestDto.builder()
+                            .trialNumber("T10000000")
+                            .exemptionPeriod("indefinite")
+                            .jurorNumbers(Collections.singletonList(JUROR_NUMBER_ENGLISH))
+                            .letterType(CourtLetterType.CERTIFICATE_OF_EXEMPTION)
+                            .build();
+
+                    RequestEntity<CertificateOfExemptionRequestDto> request = new RequestEntity<>(requestDto,
+                        httpHeaders, GET,
+                        URI.create(buildJurorExemptionUri("T10000000", "400")));
+                    ResponseEntity<String> response = template.exchange(request,
+                        String.class);
+                    assertForbiddenResponse(response, JUROR_EXEMPITON_URL);
+                }
+
+                @Test
+                @SneakyThrows
+                @DisplayName("Juror exemption list - invalid court location")
+                void jurorExemptionListInvalidCourtLocation() {
+                    final String payload = createBureauJwt("BUREAU_USER", "999");
+
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+                    CertificateOfExemptionRequestDto requestDto =
+                        CertificateOfExemptionRequestDto.builder()
+                            .trialNumber("T10000000")
+                            .exemptionPeriod("indefinite")
+                            .jurorNumbers(Collections.singletonList(JUROR_NUMBER_ENGLISH))
+                            .letterType(CourtLetterType.CERTIFICATE_OF_EXEMPTION)
+                            .build();
+
+                    RequestEntity<CertificateOfExemptionRequestDto> request = new RequestEntity<>(requestDto,
+                        httpHeaders, GET,
+                        URI.create(buildJurorExemptionUri("T10000000", "999")));
+                    ResponseEntity<JurorForExemptionListDto[]> response = template.exchange(request,
+                        JurorForExemptionListDto[].class);
+                    assertThat(response.getStatusCode()).isEqualTo(OK);
+                    assertThat(response.getBody()).isNotNull();
+                    assertThat(response.getBody().length).isEqualTo(0);
+
+                }
+
+                @Test
+                @SneakyThrows
+                @DisplayName("Juror exemption list - no court provided")
+                void jurorExemptionListNoCourtProvided() {
+                    final String payload = createBureauJwt("BUREAU_USER", "415");
+
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+                    CertificateOfExemptionRequestDto requestDto =
+                        CertificateOfExemptionRequestDto.builder()
+                            .trialNumber("T10000000")
+                            .exemptionPeriod("indefinite")
+                            .jurorNumbers(Collections.singletonList(JUROR_NUMBER_ENGLISH))
+                            .letterType(CourtLetterType.CERTIFICATE_OF_EXEMPTION)
+                            .build();
+
+                    RequestEntity<CertificateOfExemptionRequestDto> request = new RequestEntity<>(requestDto,
+                        httpHeaders, GET,
+                        URI.create(buildJurorExemptionUri("T10000000", "")));
+                    ResponseEntity<String> response = template.exchange(request,
+                        String.class);
+                    assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
+                    assertThat(JsonPath.read(response.getBody(), "$['detail']").toString())
+                        .as("JSON: Error message")
+                        .isEqualTo("Required parameter 'court_location' is not present.");
+
+                }
+
+                @Test
+                @SneakyThrows
+                @DisplayName("Juror exemption list - no case number provided")
+                void jurorExemptionListNoCaseNumberProvided() {
+                    final String payload = createBureauJwt("BUREAU_USER", "415");
+
+                    httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+                    CertificateOfExemptionRequestDto requestDto =
+                        CertificateOfExemptionRequestDto.builder()
+                            .exemptionPeriod("indefinite")
+                            .trialNumber("T10000000")
+                            .jurorNumbers(Collections.singletonList(JUROR_NUMBER_ENGLISH))
+                            .letterType(CourtLetterType.CERTIFICATE_OF_EXEMPTION)
+                            .build();
+
+                    RequestEntity<CertificateOfExemptionRequestDto> request = new RequestEntity<>(requestDto,
+                        httpHeaders, GET,
+                        URI.create(buildJurorExemptionUri("", "415")));
+                    ResponseEntity<String> response = template.exchange(request,
+                        String.class);
+                    assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
+                    assertThat(JsonPath.read(response.getBody(), "$['detail']").toString())
+                        .as("JSON: Error message")
+                        .isEqualTo("Required parameter 'case_number' is not present.");
+
+                }
+            }
+
+            private String buildJurorExemptionUri(String caseNumber, String courtLocation) {
+                String newUri = JUROR_EXEMPITON_URL;
+
+                if (!caseNumber.isBlank()) {
+                    newUri += "?case_number=" + caseNumber;
+                }
+
+                if (!courtLocation.isBlank()) {
+                    newUri += newUri.contains("?")
+                        ? "&court_location=" + courtLocation
+                        :
+                            "?court_location=" + courtLocation;
+                }
+                return newUri;
+            }
+        }
+
+        private void verifyLetterDataEnglish(PrintLetterDataResponseDto dto, String judge) {
+            assertThat(dto.getCourtName())
+                .as("Court name")
+                .isEqualTo("The Crown Court\nat CHESTER");
+            assertThat(dto.getCourtAddressLine1()).as("Expect address line 1 to be 'THE CASTLE'")
+                .isEqualTo("THE CASTLE");
+            assertThat(dto.getCourtAddressLine2()).as("Expect address line 2 to be 'CHESTER'")
+                .isEqualTo("CHESTER");
+            assertThat(dto.getCourtAddressLine3()).as("Expect address line 3 to be null").isNull();
+            assertThat(dto.getCourtAddressLine4()).as("Expect address line 4 to be null").isNull();
+            assertThat(dto.getCourtAddressLine5()).as("Expect address line 5 to be null").isNull();
+            assertThat(dto.getCourtAddressLine6()).as("Expect address line 6 to be null").isNull();
+            assertThat(dto.getCourtPostCode()).as("Expect post code to be 'CH1 2AN'")
+                .isEqualTo("CH1 2AN");
+            assertThat(dto.getCourtPhoneNumber()).as("Expect court number to be 01244 356726")
+                .isEqualTo("01244 356726");
+            assertThat(dto.getUrl()).as("Expect URL to be www.gov.uk/jury-service")
+                .isEqualTo("www.gov.uk/jury-service");
+            assertThat(dto.getSignature()).as("Expect signatory to be Jury Manager")
+                .isEqualTo("Jury Manager\n\nAn Officer of the Crown Court");
+            assertThat(dto.getJurorFirstName()).as("Expect first name to be FNAME")
+                .isEqualTo("FNAME");
+            assertThat(dto.getJurorLastName()).as("Expect last name to be LNAME")
+                .isEqualTo("LNAME");
+            assertThat(dto.getJurorAddressLine1()).as("Expect address line 1 to be Address Line 1")
+                .isEqualTo("Address Line 1");
+            assertThat(dto.getJurorAddressLine2()).as("Expect address line 2 to be Address  Line 2")
+                .isEqualTo("Address Line 2");
+            assertThat(dto.getJurorAddressLine3()).as("Expect address line 3 to be Address Line 3")
+                .isEqualTo("Address Line 3");
+            assertThat(dto.getJurorAddressLine4()).as("Expect address line 4 to be CARDIFF")
+                .isEqualTo("CARDIFF");
+            assertThat(dto.getJurorAddressLine5())
+                .as("Expect address line 5 to be Some County")
+                .isEqualTo("Some County");
+            assertThat(dto.getJurorPostcode()).as("Expect post code to be CH1 2AN")
+                .isEqualTo("CH1 2AN");
+            assertThat(dto.getJurorNumber()).as("Expect juror number to be " + JUROR_NUMBER_ENGLISH)
+                .isEqualTo(JUROR_NUMBER_ENGLISH);
+            assertThat(dto.getPeriodOfExemption())
+                .as("Expect period of exemption to be indefinite")
+                .isEqualTo("indefinite");
+            assertThat(dto.getJudgeName())
+                .as("Expect judge name to be " + judge)
+                .isEqualTo(judge);
+        }
+    }
+
+    @Nested
     @DisplayName("POST /api/v1/moj/letter/court-letter-list (Postponement)")
     @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_Postponement.sql"})
     class CourtLetterListPostponement {
@@ -4337,7 +5213,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .builder()
                 .jurorNumber(JUROR_555555562)
                 .letterType(CourtLetterType.POSTPONED)
-                .includePrinted(TRUE)
+                .includePrinted(true)
                 .build();
 
             RequestEntity<CourtLetterListRequestDto> request =
@@ -4467,7 +5343,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
                 .builder()
                 .jurorNumber(JUROR_5555555 + "61")
-                .includePrinted(TRUE)
+                .includePrinted(true)
                 .letterType(CourtLetterType.SHOW_CAUSE)
                 .build();
 
@@ -4569,7 +5445,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 3)).isEqualTo(3);
 
             FailedToAttendLetterData dataIndex0 = (FailedToAttendLetterData) responseBody.get(0);
-            verifyResponse("63", dataIndex0, LocalDate.now().minusDays(10));
+            verifyResponse("63", dataIndex0, LocalDate.now().minusDays(10)); // no juror_history record exists
             assertThat(dataIndex0.getDatePrinted()).as(DATE_PRINTED_IS_NULL_MESSAGE).isNull();
 
             FailedToAttendLetterData dataIndex1 = (FailedToAttendLetterData) responseBody.get(1);
@@ -4592,7 +5468,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
                 .builder()
                 .poolNumber("415220402")
-                .includePrinted(TRUE)
+                .includePrinted(true)
                 .letterType(CourtLetterType.SHOW_CAUSE)
                 .build();
 
@@ -4648,7 +5524,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .builder()
                 .jurorNumber(JUROR_5555555 + "66")
                 .letterType(CourtLetterType.SHOW_CAUSE)
-                .includePrinted(TRUE)
+                .includePrinted(true)
                 .build();
 
             RequestEntity<CourtLetterListRequestDto> request =
@@ -4702,7 +5578,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @SneakyThrows
             @DisplayName("Failed To Attend letter - include printed letters")
             void includePrinted() {
-                List<?> responseBody = invokeApiHappy(TRUE, OWNER_415, URL);
+                List<?> responseBody = invokeApiHappy(true, OWNER_415, URL);
                 assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 6)).isEqualTo(6);
 
                 verifyResponse("67", (FailedToAttendLetterData) responseBody.get(0), null,
@@ -4723,7 +5599,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @SneakyThrows
             @DisplayName("Failed To Attend letter - exclude printed letters")
             void excludePrinted() {
-                List<?> responseBody = invokeApiHappy(FALSE, OWNER_415, URL);
+                List<?> responseBody = invokeApiHappy(false, OWNER_415, URL);
                 assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 3)).isEqualTo(3);
 
                 verifyResponse("67", (FailedToAttendLetterData) responseBody.get(0), null,
@@ -4738,7 +5614,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @SneakyThrows
             @DisplayName("Failed To Attend letter - court owner 457")
             void courtOwner457() {
-                List<?> responseBody = invokeApiHappy(TRUE, "457", URL);
+                List<?> responseBody = invokeApiHappy(true, "457", URL);
                 assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 1)).isEqualTo(1);
 
                 verifyResponse("68", (FailedToAttendLetterData) responseBody.get(0),
@@ -4757,7 +5633,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @SneakyThrows
             @DisplayName("Show Cause letter - include printed letters")
             void includePrinted() {
-                List<?> responseBody = invokeApiHappy(TRUE, OWNER_415, URL);
+                List<?> responseBody = invokeApiHappy(true, OWNER_415, URL);
                 assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 6)).isEqualTo(6);
 
                 verifyResponse("63", (FailedToAttendLetterData) responseBody.get(0), null,
@@ -4778,7 +5654,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @SneakyThrows
             @DisplayName("Show Cause letter - exclude printed letters")
             void excludePrinted() {
-                List<?> responseBody = invokeApiHappy(FALSE, OWNER_415, URL);
+                List<?> responseBody = invokeApiHappy(false, OWNER_415, URL);
                 assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 3)).isEqualTo(3);
 
                 verifyResponse("63", (FailedToAttendLetterData) responseBody.get(0), null,
@@ -4793,7 +5669,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @SneakyThrows
             @DisplayName("Show Cause letter - court owner 457")
             void courtOwner457() {
-                List<?> responseBody = invokeApiHappy(TRUE, "457", URL);
+                List<?> responseBody = invokeApiHappy(true, "457", URL);
                 assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 2)).isEqualTo(2);
 
                 verifyResponse("68", (FailedToAttendLetterData) responseBody.get(0),
@@ -4890,7 +5766,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "61");
             jurorNumbers.add(JUROR_NUMBER + "62");
-            jurorNumbers.add(JUROR_NUMBER + "68"); // welsh
 
             final String payload = createBureauJwt(COURT_USER, OWNER_415);
 
@@ -5526,7 +6401,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .builder()
                 .jurorNumber(JUROR_5555555 + "61")
                 .letterType(CourtLetterType.FAILED_TO_ATTEND)
-                .includePrinted(TRUE)
+                .includePrinted(true)
                 .build();
 
             RequestEntity<CourtLetterListRequestDto> request =
@@ -5544,6 +6419,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.get(0);
             verifyResponse("61", data,
                 LocalDate.now().minusDays(1), LocalDate.now().minusDays(10));
+
         }
 
         @Test
@@ -5620,7 +6496,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
                 .builder()
                 .poolNumber("415220402")
-                .includePrinted(TRUE)
+                .includePrinted(true)
                 .letterType(CourtLetterType.FAILED_TO_ATTEND)
                 .build();
 
@@ -5677,7 +6553,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .builder()
                 .jurorNumber(JUROR_5555555 + "66")
                 .letterType(CourtLetterType.FAILED_TO_ATTEND)
-                .includePrinted(TRUE)
+                .includePrinted(true)
                 .build();
 
             RequestEntity<CourtLetterListRequestDto> request =
@@ -5711,6 +6587,360 @@ class LetterControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
+    @DisplayName("Certificate of Attendance")
+    @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_CertificateOfAttendance.sql"})
+    class CertificateOfAttendance {
+
+        static final URI uri = URI.create("/api/v1/moj/letter/print-court-letter");
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Issue Certificate of Attendance Letter - Happy path - English")
+        void englishLetter() {
+            final String jurorNumber = "555555562";
+            final String courtOwner = "415";
+            final String payload = createBureauJwt("COURT_USER", courtOwner);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            PrintLettersRequestDto requestDto = PrintLettersRequestDto
+                .builder()
+                .jurorNumbers(List.of(jurorNumber))
+                .letterType(CourtLetterType.CERTIFICATE_OF_ATTENDANCE)
+                .build();
+
+            RequestEntity<PrintLettersRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(request,
+                PrintLetterDataResponseDto[].class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
+                .isEqualTo(OK);
+
+            assertThat(response.getBody()).isNotNull();
+
+            for (PrintLetterDataResponseDto dto : response.getBody()) {
+                assertThat(dto.getCourtName())
+                    .as("Expect court name to be " + "The Crown Court\nat CHESTER")
+                    .isEqualTo("The Crown Court\nat CHESTER");
+                assertThat(dto.getCourtAddressLine1())
+                    .as("Expect address line 1 to be 'THE CASTLE'")
+                    .isEqualTo("THE CASTLE");
+                assertThat(dto.getCourtAddressLine2())
+                    .as("Expect address line 2 to be 'CHESTER'")
+                    .isEqualTo("CHESTER");
+                assertThat(dto.getCourtAddressLine3())
+                    .as("Expect address line 3 to be null")
+                    .isNull();
+                assertThat(dto.getCourtAddressLine4())
+                    .as("Expect address line 4 to be null")
+                    .isNull();
+                assertThat(dto.getCourtAddressLine5())
+                    .as("Expect address line 5 to be null")
+                    .isNull();
+                assertThat(dto.getCourtAddressLine6())
+                    .as("Expect address line 6 to be null")
+                    .isNull();
+                assertThat(dto.getCourtPostCode())
+                    .as("Expect post code to be 'CH1 2AN'")
+                    .isEqualTo("CH1 2AN");
+                assertThat(dto.getCourtPhoneNumber())
+                    .as("Expect court number to be 01244 356726")
+                    .isEqualTo("01244 356726");
+
+                assertThat(dto.getUrl())
+                    .as("Expect URL to be www.gov.uk/jury-service")
+                    .isEqualTo("www.gov.uk/jury-service");
+                assertThat(dto.getSignature())
+                    .as("Expect signatory to be Jury Manager")
+                    .isEqualTo("Jury Manager\n\nAn Officer of the Crown Court");
+
+                assertThat(dto.getJurorFirstName())
+                    .as("Expect first name to be TEST_SIX")
+                    .isEqualTo("TEST_SIX");
+                assertThat(dto.getJurorLastName())
+                    .as("Expect last name to be PERSON")
+                    .isEqualTo("PERSON");
+                assertThat(dto.getJurorAddressLine1())
+                    .as("Expect address line 1 to be Address Line 1")
+                    .isEqualTo("Address Line 1");
+                assertThat(dto.getJurorAddressLine2())
+                    .as("Expect address line 2 to be Address  Line 2")
+                    .isEqualTo("Address  Line 2");
+                assertThat(dto.getJurorAddressLine3())
+                    .as("Expect address line 3 to be Address Line 3")
+                    .isEqualTo("Address Line 3");
+                assertThat(dto.getJurorAddressLine4())
+                    .as("Expect address line 4 to be CARDIFF")
+                    .isEqualTo("CARDIFF");
+                assertThat(dto.getJurorAddressLine5())
+                    .as("Expect address line 5 to be Some County")
+                    .isEqualTo("Some County");
+                assertThat(dto.getJurorPostcode())
+                    .as("Expect post code to be CH1 2AN")
+                    .isEqualTo("CH1 2AN");
+                assertThat(dto.getJurorNumber())
+                    .as("Expect juror number to be " + jurorNumber)
+                    .isEqualTo(jurorNumber);
+                assertThat(dto.getAttendTime())
+                    .as("Expect Attend Time to be 09:00")
+                    .isEqualTo(LocalTime.of(9, 0));
+                assertThat(dto.getWelsh())
+                    .as("Expect welsh to be false")
+                    .isFalse();
+                assertThat(dto.getNonAttendance())
+                    .as("Expect to be Non Attendance")
+                    .isEqualTo("Non Attendance");
+                assertThat(dto.getLossOfEarnings())
+                    .as("Expect to be 40")
+                    .isEqualTo(BigDecimal.valueOf(40));
+                assertThat(dto.getChildCare())
+                    .as("Expect to be 10")
+                    .isEqualTo(BigDecimal.valueOf(10));
+                assertThat(dto.getMisc())
+                    .as("Expect to be 10")
+                    .isEqualTo(BigDecimal.valueOf(10));
+            }
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Issue Certificate of Attendance Letter - Happy path - Welsh")
+        void welshLetter() {
+            List<String> jurorNumbers = new ArrayList<>();
+            final String jurorNumber = "555555560";
+            jurorNumbers.add(jurorNumber);
+            final String payload = createBureauJwt("COURT_USER", "457");
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            PrintLettersRequestDto requestDto = PrintLettersRequestDto.builder()
+                .jurorNumbers(jurorNumbers)
+                .letterType(CourtLetterType.CERTIFICATE_OF_ATTENDANCE)
+                .build();
+
+            RequestEntity<PrintLettersRequestDto> request = new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(request,
+                PrintLetterDataResponseDto[].class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatusCode())
+                .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
+                .isEqualTo(OK);
+
+            assertThat(response.getBody()).isNotNull();
+            for (PrintLetterDataResponseDto dto : response.getBody()) {
+                assertThat(dto.getCourtName())
+                    .as("Expect court name to be " + "Llys y Goron\nynAbertawe")
+                    .isEqualTo("Llys y Goron\nynAbertawe");
+                assertThat(dto.getCourtAddressLine1())
+                    .as("Expect address line 1 to be 'Y LLYSOEDD BARN'")
+                    .isEqualTo("Y LLYSOEDD BARN");
+                assertThat(dto.getCourtAddressLine2())
+                    .as("Expect address line 2 to be 'LON SAN HELEN'")
+                    .isEqualTo("LON SAN HELEN");
+                assertThat(dto.getCourtAddressLine3())
+                    .as("Expect address line 3 to be ABERTAWE")
+                    .isEqualTo("ABERTAWE");
+                assertThat(dto.getCourtAddressLine4())
+                    .as("Expect address line 4 to be null")
+                    .isNull();
+                assertThat(dto.getCourtAddressLine5())
+                    .as("Expect address line 5 to be null")
+                    .isNull();
+                assertThat(dto.getCourtAddressLine6())
+                    .as("Expect address line 6 to be null")
+                    .isNull();
+                assertThat(dto.getCourtPostCode())
+                    .as("Expect post code to be 'SA1 4PF'")
+                    .isEqualTo("SA1 4PF");
+                assertThat(dto.getCourtPhoneNumber())
+                    .as("Expect court number to be 01792 637067")
+                    .isEqualTo("01792 637067");
+
+                assertThat(dto.getUrl())
+                    .as("Expect URL to be www.gov.uk/jury-service")
+                    .isEqualTo("www.gov.uk/jury-service");
+                assertThat(dto.getSignature())
+                    .as("Expect signatory to be Jury Manager")
+                    .isEqualTo("Jury Manager\n\nSwyddog Llys");
+
+                assertThat(dto.getJurorFirstName())
+                    .as("Expect first name to be TEST_SEVEN")
+                    .isEqualTo("TEST_SEVEN");
+                assertThat(dto.getJurorLastName())
+                    .as("Expect last name to be PERSON")
+                    .isEqualTo("PERSON");
+                assertThat(dto.getJurorAddressLine1())
+                    .as("Expect address line 1 to be Address Line 1")
+                    .isEqualTo("Address Line 1");
+                assertThat(dto.getJurorAddressLine2())
+                    .as("Expect address line 2 to be Address  Line 2")
+                    .isEqualTo("Address  Line 2");
+                assertThat(dto.getJurorAddressLine3())
+                    .as("Expect address line 3 to be Address Line 3")
+                    .isEqualTo("Address Line 3");
+                assertThat(dto.getJurorAddressLine4())
+                    .as("Expect address line 4 to be CARDIFF")
+                    .isEqualTo("CARDIFF");
+                assertThat(dto.getJurorAddressLine5())
+                    .as("Expect address line 5 to be Some County")
+                    .isEqualTo("Some County");
+                assertThat(dto.getJurorPostcode())
+                    .as("Expect post code to be CH1 2AN")
+                    .isEqualTo("CH1 2AN");
+                assertThat(dto.getJurorNumber())
+                    .as("Expect juror number to be " + jurorNumber)
+                    .isEqualTo(jurorNumber);
+                assertThat(dto.getAttendTime())
+                    .as("Expect Attend Time to be 09:30")
+                    .isEqualTo(LocalTime.of(9, 30));
+                assertThat(dto.getWelsh())
+                    .as("Expect welsh to be true")
+                    .isTrue();
+                assertThat(dto.getNonAttendance())
+                    .as("Expect to be Non Attendance")
+                    .isEqualTo("Non Attendance");
+                assertThat(dto.getLossOfEarnings())
+                    .as("Expect to be 40")
+                    .isEqualTo(BigDecimal.valueOf(10));
+                assertThat(dto.getChildCare())
+                    .as("Expect to be 10")
+                    .isEqualTo(BigDecimal.valueOf(30));
+                assertThat(dto.getMisc())
+                    .as("Expect to be 10")
+                    .isEqualTo(BigDecimal.valueOf(10));
+            }
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Issue Certificate of Attendance Letter - Invalid Owner - English")
+        void englishLetterInvalidOwner() {
+            final String jurorNumber = "555555561";
+            final String bureauOwner = "400";
+            final String payload = createBureauJwt("BUREAU_USER", bureauOwner);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            PrintLettersRequestDto requestDto = PrintLettersRequestDto.builder()
+                .jurorNumbers(List.of(jurorNumber))
+                .letterType(CourtLetterType.CERTIFICATE_OF_ATTENDANCE)
+                .build();
+
+            RequestEntity<PrintLettersRequestDto> request =
+                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<String> response = template.exchange(request,
+                String.class);
+
+            assertForbiddenResponse(response, String.valueOf(uri));
+        }
+
+
+        void verifyDataEnglish(PrintLetterDataResponseDto response,
+                               LocalDate attendanceDate,
+                               String jurorPostfix) {
+            assertThat(response.getCourtName())
+                .as("Expect court name to be " + "The Crown Court\nat CHESTER")
+                .isEqualTo("The Crown Court\nat CHESTER");
+            assertThat(response.getCourtAddressLine1()).as("Expect address line 1 to be 'THE CASTLE'")
+                .isEqualTo("THE CASTLE");
+            assertThat(response.getCourtAddressLine2()).as("Expect address line 2 to be 'CHESTER'")
+                .isEqualTo("CHESTER");
+            assertThat(response.getCourtAddressLine3()).as("Expect address line 3 to be null").isNull();
+            assertThat(response.getCourtAddressLine4()).as("Expect address line 4 to be null").isNull();
+            assertThat(response.getCourtAddressLine5()).as("Expect address line 5 to be null").isNull();
+            assertThat(response.getCourtAddressLine6()).as("Expect address line 6 to be null").isNull();
+            assertThat(response.getCourtPostCode()).as("Expect post code to be 'CH1 2AN'")
+                .isEqualTo("CH1 2AN");
+            assertThat(response.getCourtPhoneNumber()).as("Expect court number to be 01244 356726")
+                .isEqualTo("01244 356726");
+            assertThat(response.getUrl()).as("Expect URL to be www.gov.uk/jury-service")
+                .isEqualTo("www.gov.uk/jury-service");
+            assertThat(response.getSignature()).as("Expect signatory to be Jury Manager")
+                .isEqualTo("Jury Manager\n\nAn Officer of the Crown Court");
+            assertThat(response.getJurorFirstName()).as("Expect first name to be Juror " + jurorPostfix)
+                .isEqualTo("JurorForename" + jurorPostfix);
+            assertThat(response.getJurorLastName()).as("Expect last name to be JurorSurname" + jurorPostfix)
+                .isEqualTo("JurorSurname" + jurorPostfix);
+            assertThat(response.getJurorAddressLine1()).as("Expect address line 1 to be Address Line 1")
+                .isEqualTo("Address Line 1");
+            assertThat(response.getJurorAddressLine2()).as("Expect address line 2 to be Address  Line 2")
+                .isEqualTo("Address Line 2");
+            assertThat(response.getJurorAddressLine3()).as("Expect address line 3 to be Address Line 3")
+                .isEqualTo("Address Line 3");
+            assertThat(response.getJurorAddressLine4()).as("Expect address line 4 to be CARDIFF")
+                .isEqualTo("CARDIFF");
+            assertThat(response.getJurorAddressLine5())
+                .as("Expect address line 5 to be Some County")
+                .isEqualTo("Some County");
+            assertThat(response.getJurorPostcode()).as("Expect post code to be CH1 2AN")
+                .isEqualTo("CH1 2AN");
+            assertThat(response.getJurorNumber()).as("Expect juror number to be 5555555" + jurorPostfix)
+                .isEqualTo(JUROR_NUMBER + jurorPostfix);
+
+            assertThat(response.getAttendanceDate())
+                .as("Expect the attendance date the juror was no show for to be " + attendanceDate)
+                .isEqualTo(attendanceDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
+            assertThat(response.getReplyByDate())
+                .as("Expect reply by date to be " + LocalDate.now()
+                    .plusDays(7)
+                    .format(DateTimeFormatter.ofPattern("dd MMMM yyyy")))
+                .isEqualTo(LocalDate.now().plusDays(7).format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
+        }
+
+        void verifyDataWelsh(PrintLetterDataResponseDto response,
+                             String jurorPostfix) {
+            assertThat(response.getCourtName()).as("Expect court name to be " + "Llys y Goron\nynAbertawe")
+                .isEqualTo("Llys y Goron\nynAbertawe");
+            assertThat(response.getCourtAddressLine1()).as("Expect address line 1 to be 'Y LLYSOEDD BARN'")
+                .isEqualTo("Y LLYSOEDD BARN");
+            assertThat(response.getCourtAddressLine2()).as("Expect address line 2 to be 'LON SAN HELEN'")
+                .isEqualTo("LON SAN HELEN");
+            assertThat(response.getCourtAddressLine3()).as("Expect address line 3 to be ABERTAWE")
+                .isEqualTo("ABERTAWE");
+            assertThat(response.getCourtAddressLine4()).as("Expect address line 4 to be null").isNull();
+            assertThat(response.getCourtAddressLine5()).as("Expect address line 5 to be null").isNull();
+            assertThat(response.getCourtAddressLine6()).as("Expect address line 6 to be null").isNull();
+            assertThat(response.getCourtPostCode()).as("Expect post code to be 'SA1 4PF'").isEqualTo("SA1 4PF");
+            assertThat(response.getCourtPhoneNumber()).as("Expect court number to be 01792 637067")
+                .isEqualTo("01792 637067");
+
+            assertThat(response.getUrl()).as("Expect URL to be www.gov.uk/jury-service")
+                .isEqualTo("www.gov.uk/jury-service");
+            assertThat(response.getSignature()).as("Expect signatory to be Jury Manager")
+                .isEqualTo("Jury Manager\n\nSwyddog Llys");
+
+            assertThat(response.getJurorFirstName())
+                .as("Expect first name to be JurorForename" + jurorPostfix)
+                .isEqualTo("JurorForename" + jurorPostfix);
+            assertThat(response.getJurorLastName())
+                .as("Expect last name to be JurorSurname" + jurorPostfix)
+                .isEqualTo("JurorSurname" + jurorPostfix);
+            assertThat(response.getJurorAddressLine1()).as("Expect address line 1 to be Address Line 1")
+                .isEqualTo("Address Line 1");
+            assertThat(response.getJurorAddressLine2()).as("Expect address line 2 to be Address Line 2")
+                .isEqualTo("Address Line 2");
+            assertThat(response.getJurorAddressLine3()).as("Expect address line 3 to be Address Line 3")
+                .isEqualTo("Address Line 3");
+            assertThat(response.getJurorAddressLine4()).as("Expect address line 4 to be CARDIFF")
+                .isEqualTo("CARDIFF");
+            assertThat(response.getJurorAddressLine5()).as("Expect address line 5 to be Some County")
+                .isEqualTo("Some County");
+            assertThat(response.getJurorPostcode()).as("Expect post code to be CH1 2AN")
+                .isEqualTo("CH1 2AN");
+            assertThat(response.getJurorNumber())
+                .as("Expect juror number to be " + JUROR_NUMBER + jurorPostfix)
+                .isEqualTo(JUROR_NUMBER + jurorPostfix);
+
+            assertThat(response.getWelsh()).as("Expect welsh to be true").isTrue();
+        }
+
+    }
+
+    @Nested
     @DisplayName("POST - /api/v1/moj/letter/print-court-letter (Failed To Attend)")
     @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_FailedToAttend.sql"})
     class PrintCourtLetterFailedToAttend {
@@ -5735,7 +6965,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "61");
             jurorNumbers.add(JUROR_NUMBER + "62");
-            jurorNumbers.add(JUROR_NUMBER + "68"); // welsh - should be ignored by service
 
             final String payload = createBureauJwt(COURT_USER, OWNER_415);
 
@@ -5892,3 +7121,4 @@ class LetterControllerITest extends AbstractIntegrationTest {
         }
     }
 }
+

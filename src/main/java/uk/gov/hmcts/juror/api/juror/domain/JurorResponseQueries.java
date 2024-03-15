@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.juror.domain;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class JurorResponseQueries {
     private JurorResponseQueries() {
     }
 
-    private static final QJurorResponse jurorResponse = QJurorResponse.jurorResponse;
+    private static final QDigitalResponse jurorResponse = QDigitalResponse.digitalResponse;
 
 
     /**

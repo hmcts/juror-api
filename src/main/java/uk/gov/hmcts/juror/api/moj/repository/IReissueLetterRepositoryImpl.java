@@ -55,8 +55,14 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
 
         query.join(JUROR_POOL).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
 
-        // must have this join for every letter type except for Summons letters - tbc later
-        query.join(BULK_PRINT_DATA).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo));
+        if (request.getLetterType().equals(LetterType.SUMMONED_REMINDER)) {
+            // for this letter type need to ensure any letters not printed (don't exist in bulk table) are retrieved
+            query.leftJoin(BULK_PRINT_DATA).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo)
+                .and(BULK_PRINT_DATA.formAttribute.formType.in(request.getLetterType().getFormCodes().stream()
+                    .map(FormCode::getCode).toList())));
+        } else {
+            query.leftJoin(BULK_PRINT_DATA).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo));
+        }
 
         if (queryConsumer != null) {
             queryConsumer.accept(query);
@@ -77,11 +83,12 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
             if (request.getLetterType().equals(LetterType.DEFERRAL_REFUSED)) {
                 query.where(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.NON_DEFERRED_LETTER));
             }
-
         }
 
-        query.where(BULK_PRINT_DATA.formAttribute.formType.in(request.getLetterType().getFormCodes().stream()
-            .map(FormCode::getCode).toList()));
+        if (!request.getLetterType().equals(LetterType.SUMMONED_REMINDER)) {
+            query.where(BULK_PRINT_DATA.formAttribute.formType.in(request.getLetterType().getFormCodes().stream()
+                .map(FormCode::getCode).toList()));
+        }
         query.where(JUROR_POOL.isActive.eq(true));
         query.where(JUROR_POOL.owner.eq(SecurityUtil.BUREAU_OWNER));
 
@@ -98,7 +105,12 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
         } else if (request.getPoolNumber() != null) {
             query.where(JUROR_POOL.pool.poolNumber.eq(request.getPoolNumber()));
         } else if (Boolean.TRUE.equals(request.getShowAllQueued())) {
-            query.where(BULK_PRINT_DATA.extractedFlag.isNull().or(BULK_PRINT_DATA.extractedFlag.eq(false)));
+            if  (request.getLetterType().equals(LetterType.SUMMONED_REMINDER)) {
+                query.where(BULK_PRINT_DATA.formAttribute.formType.in(request.getLetterType().getFormCodes().stream()
+                    .map(FormCode::getCode).toList()));
+            } else {
+                query.where(BULK_PRINT_DATA.extractedFlag.isNull().or(BULK_PRINT_DATA.extractedFlag.eq(false)));
+            }
         } else if (request.getJurorName() != null) {
             query.where(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName).toLowerCase()
                 .likeIgnoreCase("%" + request.getJurorName().toLowerCase(Settings.LOCALE) + "%"));

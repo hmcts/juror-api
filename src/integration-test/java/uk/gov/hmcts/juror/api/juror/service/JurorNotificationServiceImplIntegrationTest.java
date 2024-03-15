@@ -11,10 +11,11 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,10 +25,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegrationTest {
     private static final String UUID_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
-    private static final String TEMPLATE_SQL = "SELECT VALUE FROM JUROR_DIGITAL.APP_SETTINGS WHERE SETTING = ?";
+    private static final String TEMPLATE_SQL = "SELECT VALUE FROM juror_mod.APP_SETTING WHERE SETTING = ?";
 
     @Autowired
     private JurorResponseRepository jurorResponseRepository;
+    @Autowired
+    private JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
 
     @Autowired
     private ResponseInspector responseInspector;
@@ -41,6 +44,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     // ### straight through
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -52,6 +56,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -64,6 +69,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -75,6 +81,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -87,6 +94,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -98,6 +106,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -110,6 +119,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -122,6 +132,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -135,6 +146,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -146,6 +158,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -158,6 +171,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -170,6 +184,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -183,6 +198,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -195,6 +211,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -208,6 +225,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -220,6 +238,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -233,6 +252,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -244,6 +264,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -256,6 +277,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -267,6 +289,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -279,6 +302,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -290,6 +314,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -302,6 +327,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -313,6 +339,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -325,6 +352,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -336,6 +364,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -348,6 +377,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -359,6 +389,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -371,6 +402,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -383,6 +415,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -396,6 +429,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -408,6 +442,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -421,6 +456,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -433,6 +469,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -446,6 +483,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -458,6 +496,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -471,6 +510,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -482,6 +522,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -494,6 +535,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -505,6 +547,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -517,6 +560,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -528,6 +572,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -540,6 +585,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -551,6 +597,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -563,6 +610,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -575,6 +623,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -588,6 +637,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -600,6 +650,9 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
+    @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -613,6 +666,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -625,6 +679,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -638,6 +693,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -650,6 +706,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -663,6 +720,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -674,6 +732,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     }
 
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/notify-scenarios.sql")
@@ -694,7 +753,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
         assertThat(templateUUID).as("UUID value present")
             .isNotBlank().containsPattern(UUID_REGEX);
 
-        final JurorResponse savedResponse = loadJurorResponse(jurorNumber);
+        final DigitalResponse savedResponse = loadDigitalResponse(jurorNumber);
         final NotifyTemplateType type = responseInspector.responseType(savedResponse);
 
         assertThat(type)
@@ -708,13 +767,13 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
             .isEqualTo(templateUUID);
     }
 
-    private JurorResponse loadJurorResponse(final String jurorNumber) {
-        final JurorResponse response = jurorResponseRepository.findByJurorNumber(jurorNumber);
+    private DigitalResponse loadDigitalResponse(final String jurorNumber) {
+        final DigitalResponse response = jurorDigitalResponseRepository.findByJurorNumber(jurorNumber);
         if (response.getCjsEmployments() != null) {
             response.getCjsEmployments().size();
         }
-        if (response.getSpecialNeeds() != null) {
-            response.getSpecialNeeds().size();
+        if (response.getReasonableAdjustments() != null) {
+            response.getReasonableAdjustments().size();
         }
         return response;
     }

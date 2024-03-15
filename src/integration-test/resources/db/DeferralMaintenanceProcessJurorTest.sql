@@ -139,9 +139,9 @@ VALUES('555555559', TIMESTAMP '2023-03-08 00:00:00.000000', 'Mr', 'Test', 'Perso
  'N', 'Digital');
 
 
-INSERT INTO juror_mod.users (owner, username, name, level, active,password,version)
-VALUES ('400','BUREAU_USER','Test User',0,true,'5baa61e4c9b93f3f',0),
-       ('415','COURT_USER','Test User',0,true,'5baa61e4c9b93f3f',0);
+INSERT INTO juror_mod.users (owner, username,email, name, active,version)
+VALUES ('400','BUREAU_USER','BUREAU_USER@email.gov.uk','Test User',true,0),
+       ('415','COURT_USER','COURT_USER@email.gov.uk','Test User',true,0);
 -- paper
 INSERT INTO juror_mod.juror_response
 (JUROR_NUMBER, DATE_RECEIVED, TITLE, FIRST_NAME, LAST_NAME, address_line_1, address_line_2, address_line_3, address_line_4, address_line_5,

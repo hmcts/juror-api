@@ -8,13 +8,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -32,12 +31,15 @@ public class JurorCommsWeeklyInfoServiceImplTest {
 
     private static final String JUROR_TITLE = "JT";
 
-    private Pool pool1;
-    private Pool pool2;
-    List<Pool> poolList = new LinkedList<>();
+    private JurorPool pool1;
+    private JurorPool pool2;
+
+    private Juror juror1;
+    private Juror juror2;
+    List<JurorPool> poolList = new LinkedList<>();
 
     @Mock
-    private PoolRepository poolRepository;
+    private JurorPoolRepository poolRepository;
 
     @Mock
     private JurorCommsNotificationService jurorCommsNotificationService;
@@ -48,30 +50,30 @@ public class JurorCommsWeeklyInfoServiceImplTest {
     @Before
     public void setUp() throws Exception {
 
-        pool1 = Pool.builder()
-            .jurorNumber("987654321")
-            .firstName("Farah")
-            .lastName("Lee")
-            .email("a@b.com")
-            .welsh(false)
-            .notifications(0)
-            .readOnly(false)
-            .policeCheck("P")
-            .hearingDate(Date.from(Instant.now().plus(20, ChronoUnit.DAYS).atZone(ZoneId.systemDefault()).toInstant()))
-            .build();
+        pool1 = new  JurorPool();
+        juror1 = new Juror();
+        pool1.setJuror(juror1);
+        juror1.setJurorNumber("987654321");
+        juror1.setFirstName("Farah");
+        juror1.setLastName("Lee");
+        juror1.setEmail("a@b.com");
+        juror1.setWelsh(false);
+        juror1.setNotifications(0);
+        juror1.setPoliceCheck(PoliceCheck.ELIGIBLE);
+        pool1.setNextDate(LocalDateTime.now().plusDays(20L).toLocalDate());
 
-        pool2 = Pool.builder()
-            .jurorNumber("123456789")
-            .title(JUROR_TITLE)
-            .firstName("Simon")
-            .lastName("Jones")
-            .email("c@d.com")
-            .welsh(false)
-            .readOnly(false)
-            .policeCheck("P")
-            .hearingDate(Date.from(Instant.now().plus(15, ChronoUnit.DAYS).atZone(ZoneId.systemDefault()).toInstant()))
-            .notifications(0)
-            .build();
+        pool2 = new  JurorPool();
+        juror2 = new Juror();
+        pool2.setJuror(juror2);
+        juror2.setTitle(JUROR_TITLE);
+        juror2.setJurorNumber("123456789");
+        juror2.setFirstName("Simon");
+        juror2.setLastName("Jones");
+        juror2.setEmail("c@d.com");
+        juror2.setWelsh(false);
+        juror2.setNotifications(0);
+        juror2.setPoliceCheck(PoliceCheck.ELIGIBLE);
+        pool2.setNextDate(LocalDateTime.now().plusDays(15L).toLocalDate());
 
         poolList.add(pool1);
         poolList.add(pool2);
@@ -82,15 +84,15 @@ public class JurorCommsWeeklyInfoServiceImplTest {
     public void process_HappyPath() {
         given(poolRepository.findAll(any(BooleanExpression.class))).willReturn(poolList);
         service.process();
-        verify(jurorCommsNotificationService, times(2)).sendJurorComms(any(Pool.class),
+        verify(jurorCommsNotificationService, times(2)).sendJurorComms(any(JurorPool.class),
             any(JurorCommsNotifyTemplateType.class),
             eq(null), eq(null), anyBoolean());
-        verify(poolRepository, times(2)).save(any(Pool.class));
+        verify(poolRepository, times(2)).save(any(JurorPool.class));
     }
 
     @Test
     public void process_noPending_inforComms_pool() {
-        given(poolRepository.findAll(any(BooleanExpression.class))).willReturn(new LinkedList<Pool>());
+        given(poolRepository.findAll(any(BooleanExpression.class))).willReturn(new LinkedList<>());
 
         service.process();
         verifyNoInteractions(jurorCommsNotificationService);

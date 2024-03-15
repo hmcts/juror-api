@@ -149,7 +149,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
 
             @Test
             void unauthorisedNotManagerUser() {
-                assertForbiddenResponse(triggerInvalid("415", "415", UserType.COURT, Set.of(Role.COURT_OFFICER)),
+                assertForbiddenResponse(triggerInvalid("415", "415", UserType.COURT, Set.of()),
                     toUrl("415"));
             }
 
@@ -161,7 +161,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
 
             @Test
             void unauthorisedIsBureau() {
-                assertForbiddenResponse(triggerInvalid("400", "400", UserType.BUREAU, Set.of(Role.BUREAU_OFFICER)),
+                assertForbiddenResponse(triggerInvalid("400", "400", UserType.BUREAU, Set.of()),
                     toUrl("400"));
             }
         }
@@ -240,7 +240,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             @Test
             void unauthorisedNotManagerUser() {
                 assertForbiddenResponse(triggerInvalid("415", "415", getValidCourtRoomDto(),
-                        UserType.COURT, Set.of(Role.COURT_OFFICER)),
+                        UserType.COURT, Set.of()),
                     toUrl("415"));
             }
 
@@ -253,7 +253,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             @Test
             void unauthorisedIsBureau() {
                 assertForbiddenResponse(triggerInvalid("400", "400", getValidCourtRoomDto(), UserType.BUREAU,
-                        Set.of(Role.BUREAU_OFFICER)),
+                        Set.of()),
                     toUrl("400"));
             }
 
@@ -354,7 +354,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
 
             @Test
             void unauthorisedNotManagerUser() {
-                assertForbiddenResponse(triggerInvalid("415", "415", "1", UserType.COURT, Set.of(Role.COURT_OFFICER)),
+                assertForbiddenResponse(triggerInvalid("415", "415", "1", UserType.COURT, Set.of()),
                     toUrl("415", "1"));
             }
 
@@ -366,7 +366,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
 
             @Test
             void unauthorisedIsBureau() {
-                assertForbiddenResponse(triggerInvalid("400", "400", "1", UserType.BUREAU, Set.of(Role.BUREAU_OFFICER)),
+                assertForbiddenResponse(triggerInvalid("400", "400", "1", UserType.BUREAU, Set.of()),
                     toUrl("400", "1"));
             }
 
@@ -467,7 +467,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             @Test
             void unauthorisedNotManagerUser() {
                 assertForbiddenResponse(triggerInvalid("415", "415", "1", getValidCourtRoomDto(),
-                        UserType.COURT, Set.of(Role.COURT_OFFICER)),
+                        UserType.COURT, Set.of()),
                     toUrl("415", "1"));
             }
 
@@ -480,7 +480,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             @Test
             void unauthorisedIsBureau() {
                 assertForbiddenResponse(triggerInvalid("400", "400", "1", getValidCourtRoomDto(),
-                        UserType.BUREAU, Set.of(Role.BUREAU_OFFICER)),
+                        UserType.BUREAU, Set.of()),
                     toUrl("400", "1"));
             }
 

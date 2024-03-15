@@ -23,7 +23,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "app_settings", schema = "juror_mod")
+@Table(name = "app_setting", schema = "juror_mod")
 @Immutable
 @Builder
 public class ApplicationSettings implements Serializable {

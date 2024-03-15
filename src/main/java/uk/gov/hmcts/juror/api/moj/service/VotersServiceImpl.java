@@ -39,12 +39,12 @@ public class VotersServiceImpl implements VotersService {
         String postcodeString = createPostCodeString(poolCreateRequestDto.getPostcodes());
 
         //Determine Max and Min DOB allowed based on attendance date
-        LocalDate maxDob = calculateDateLimit(attendanceDate, AGE_LOWER_SP_ID, 18);
-        LocalDate minDob = calculateDateLimit(attendanceDate, AGE_UPPER_SP_ID, 76);
+        LocalDate maxDateOfBirth = calculateDateLimit(attendanceDate, AGE_LOWER_SP_ID, 18);
+        LocalDate minDateOfBirth = calculateDateLimit(attendanceDate, AGE_UPPER_SP_ID, 76);
 
         List<String> voters = votersRepository.callGetVoters(poolCreateRequestDto.getCitizensToSummon(),
-                minDob.toString(),
-                maxDob.toString(),
+                minDateOfBirth.toString(),
+                maxDateOfBirth.toString(),
                 poolCreateRequestDto.getCatchmentArea(),
                 postcodeString,
                 "N");
@@ -53,9 +53,7 @@ public class VotersServiceImpl implements VotersService {
 
         Map<String, String> voterMap = new HashMap<>();
 
-        voters.forEach(voter -> {
-            voterMap.put(voter.split(",")[0], voter.split(",")[1]);
-        });
+        voters.forEach(voter -> voterMap.put(voter.split(",")[0], voter.split(",")[1]));
 
         return voterMap;
     }
@@ -67,20 +65,21 @@ public class VotersServiceImpl implements VotersService {
         LocalDate currentDate = LocalDate.now();
 
         //Determine Max and Min DOB allowed based on attendance date
-        LocalDate maxDob = calculateDateLimit(currentDate, AGE_LOWER_SP_ID, 18);
-        LocalDate minDob = calculateDateLimit(currentDate, AGE_UPPER_SP_ID, 76);
+        LocalDate maxDateOfBirth = calculateDateLimit(currentDate, AGE_LOWER_SP_ID, 18);
+        LocalDate minDateOfBirth = calculateDateLimit(currentDate, AGE_UPPER_SP_ID, 76);
 
-        List<String> voters = votersRepository.callGetVoters(number, minDob.toString(), maxDob.toString(),
-                                                                   locCode, postcode, "C");
+        List<String> voters = votersRepository.callGetVoters(
+            number,
+            minDateOfBirth.toString(),
+            maxDateOfBirth.toString(),
+            locCode,
+            postcode, "C");
 
         log.info("Obtained {} records from voters table for coroner pool ", voters.size());
 
         Map<String, String> votersMap = new HashMap<>();
 
-        voters.forEach(voter -> {
-            votersMap.put(voter.split(",")[0], voter.split(",")[1]);
-        });
-
+        voters.forEach(voter -> votersMap.put(voter.split(",")[0], voter.split(",")[1]));
         return votersMap;
     }
 
@@ -94,11 +93,11 @@ public class VotersServiceImpl implements VotersService {
 
     private String createPostCodeString(List<String> postcodes) {
 
-        StringBuffer postcodeString = new StringBuffer();
+        StringBuilder postcodeString = new StringBuilder();
 
         postcodes.forEach(postcode -> postcodeString.append(postcode).append(","));
         //trim the last comma from the string buffer
-        return postcodeString.toString().substring(0, postcodeString.length() - 1);
+        return postcodeString.substring(0, postcodeString.length() - 1);
 
     }
 

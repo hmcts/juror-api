@@ -17,8 +17,11 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DailyExpenseTime {
-    @NotNull(groups = {DailyExpense.AttendanceDay.class, DailyExpense.NonAttendanceDay.class,
-        DailyExpense.EditDay.class})
+    @NotNull(groups = {
+        DailyExpense.AttendanceDay.class,
+        DailyExpense.NonAttendanceDay.class,
+        DailyExpense.EditDay.class
+    })
     @JsonProperty("pay_attendance")
     private PayAttendanceType payAttendance;
 

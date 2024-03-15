@@ -6,15 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorCommsPrintFiles;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorCommsPrintFilesRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.PrintFile;
-import uk.gov.hmcts.juror.api.bureau.domain.PrintFileRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
-
+import uk.gov.hmcts.juror.api.moj.domain.*;
+import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -28,24 +25,27 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
 
 
     private final JurorCommsNotificationService jurorCommsNotificationService;
-    private final JurorCommsPrintFilesRepository jurorCommsPrintFilesRepository;
-    private final PrintFileRepository printFileRepository;
-    private final PoolRepository poolRepository;
+    private final BulkPrintDataNotifyCommsRepository bulkPrintDataNotifyCommsRepository;
+    private final BulkPrintDataRepository bulkPrintDataRepository ;
+    private final JurorPoolRepository jurorRepository;
 
     @Autowired
     public JurorCommsLetterServiceImpl(
         final JurorCommsNotificationService jurorCommsNotificationService,
-        final JurorCommsPrintFilesRepository jurorCommsPrintFilesRepository,
-        final PrintFileRepository printFileRepository,
-        final PoolRepository poolRepository) {
+        final BulkPrintDataNotifyCommsRepository bulkPrintDataNotifyCommsRepository,
+        final BulkPrintDataRepository bulkPrintDataRepository,
+        final JurorPoolRepository jurorRepository)
+        {
         Assert.notNull(jurorCommsNotificationService, "JurorCommsNotificationService cannot be null.");
-        Assert.notNull(jurorCommsPrintFilesRepository, "JurorCommsPrintFilesRepository cannot be null.");
-        Assert.notNull(printFileRepository, "PrintFileRepository cannot be null.");
-        Assert.notNull(poolRepository, "PoolRepository cannot be null.");
+        Assert.notNull(bulkPrintDataRepository,"BulkPrintDataRepository cannot be null.");
+        Assert.notNull(bulkPrintDataNotifyCommsRepository, "BulkPrintDataNotifyCommsRepository cannot be null.");
+        Assert.notNull(jurorRepository, "JurorRepository cannot be null.");
+
         this.jurorCommsNotificationService = jurorCommsNotificationService;
-        this.jurorCommsPrintFilesRepository = jurorCommsPrintFilesRepository;
-        this.printFileRepository = printFileRepository;
-        this.poolRepository = poolRepository;
+        this.bulkPrintDataRepository = bulkPrintDataRepository;
+        this.bulkPrintDataNotifyCommsRepository = bulkPrintDataNotifyCommsRepository;
+        this.jurorRepository = jurorRepository;
+
     }
 
     /**
@@ -60,24 +60,24 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         SimpleDateFormat dateFormat = new SimpleDateFormat();
         log.info("Letter Comms Processing : Started - {}", dateFormat.format(new Date()));
 
-        final List<JurorCommsPrintFiles> jurorCommsPrintFilesList =
-            Lists.newLinkedList(jurorCommsPrintFilesRepository.findAll());
+        final List<BulkPrintDataNotifyComms> bulkPrintDataNotifyCommsList =
+            Lists.newLinkedList(bulkPrintDataNotifyCommsRepository.findAll());
 
-        log.debug("jurorCommsPrintFiles {}", jurorCommsPrintFilesList.size());
+        log.debug("jurorCommsPrintFiles {}", bulkPrintDataNotifyCommsList.size());
 
-        if (!jurorCommsPrintFilesList.isEmpty()) {
+        if (!bulkPrintDataNotifyCommsList.isEmpty()) {
 
             int commsSent = 0;
             int commsfailed = 0;
-            for (JurorCommsPrintFiles printFile : jurorCommsPrintFilesList) {
+            for (BulkPrintDataNotifyComms printFile : bulkPrintDataNotifyCommsList) {
 
-                log.trace("LetterService :  jurorNumber {}", printFile.getJurorNumber());
-                final Pool pool = poolRepository.findByJurorNumber(printFile.getJurorNumber());
+                log.trace("LetterService :  jurorNumber {}", printFile.getJurorNo());
+                final JurorPool juror = jurorRepository.findByJurorJurorNumber(printFile.getJurorNo());
 
                 try {
 
                     jurorCommsNotificationService.sendJurorComms(
-                        pool,
+                        juror,
                         JurorCommsNotifyTemplateType.LETTER_COMMS,
                         printFile.getTemplateId(),
                         printFile.getDetailRec(),
@@ -89,7 +89,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
                 } catch (JurorCommsNotificationServiceException e) {
                     log.error(
                         "Unable to send Letter comms for {} : {} {}",
-                        printFile.getJurorNumber(),
+                        printFile.getJurorNo(),
                         e.getMessage(),
                         e.getCause().toString()
                     );
@@ -105,7 +105,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
 
             }
             log.info("LetterService : Summary, identified:{}, sent:{}, failed:{},",
-                jurorCommsPrintFilesList.size(), commsSent, commsfailed
+                bulkPrintDataNotifyCommsList.size(), commsSent, commsfailed
             );
         } else {
             log.trace("Letter Comms Processing : No pending records found.");
@@ -115,23 +115,23 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
 
     /***
      * Updates the digital_comms flag after comms has been sent to Notify.
-     * @param jurorCommsPrintFiles
+     * @param bulkPrintDataNotifyComms
      */
-    private void updatePrintFiles(JurorCommsPrintFiles jurorCommsPrintFiles) {
+    private void updatePrintFiles(BulkPrintDataNotifyComms bulkPrintDataNotifyComms) {
 
         log.trace("Inside updatePrintFiles .....");
-        final List<PrintFile> printFileDetail = printFileRepository.findByPartNoAndPrintFileNameAndCreationDate(
-            jurorCommsPrintFiles.getJurorNumber(),
-            jurorCommsPrintFiles.getPrintFileName(),
-            jurorCommsPrintFiles.getCreationDate()
+        final List<BulkPrintData> bulkPrintDataDetail = bulkPrintDataRepository.findByJurorNoAndIdAndCreationDate(
+            bulkPrintDataNotifyComms.getJurorNo(),
+            bulkPrintDataNotifyComms.getId(),
+            bulkPrintDataNotifyComms.getCreationDate()
         );
-        if (printFileDetail.isEmpty() || printFileDetail.size() > 1) {
+        if (bulkPrintDataDetail.isEmpty() || bulkPrintDataDetail.size() > 1) {
             throw new JurorCommsNotificationServiceException(
                 "updatePrintFiles: Unable to update printFiles after Juror Comms sent.");
         }
 
-        printFileDetail.get(0).setDigitalComms(true);
-        printFileRepository.saveAll(printFileDetail);
+        bulkPrintDataDetail.get(0).setDigitalComms(true);
+        bulkPrintDataRepository.saveAll(bulkPrintDataDetail);
         log.trace("Saving updated printFile.digital_comms - updatePrintFiles .....");
     }
 

@@ -10,18 +10,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameter;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
-import uk.gov.hmcts.juror.api.bureau.service.AppSettingService;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
 
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneOffset;
-import java.util.Date;
+import java.time.*;
 import java.util.Optional;
+
+import static java.time.ZoneId.systemDefault;
 
 @Component
 @Slf4j
@@ -34,27 +35,30 @@ public class ResponseInspectorImpl implements ResponseInspector {
      */
     public static final String DECEASED = "deceased";
     private final SystemParameterRepository systemParameterRepository;
-    private final PoolRepository poolRepository;
+
+    private final JurorPoolRepository jurorRepository;
+
     private final WelshCourtLocationRepository welshCourtLocRepository;
     private final AppSettingService appSettingService;
 
     @Autowired
     public ResponseInspectorImpl(final SystemParameterRepository systemParameterRepository,
-                                 final PoolRepository poolRepository,
+
+                                 final JurorPoolRepository jurorRepository,
                                  final AppSettingService appSettingService,
                                  final WelshCourtLocationRepository welshCourtLocRepository) {
         Assert.notNull(systemParameterRepository, "SystemParameterRepository cannot be null.");
-        Assert.notNull(poolRepository, "PoolRepository cannot be null.");
+        Assert.notNull(jurorRepository, "JurorRepository cannot be null.");
         Assert.notNull(appSettingService, "AppSettingService cannot be null.");
         Assert.notNull(welshCourtLocRepository, "WelshCourtLocationRepository cannot be null.");
         this.systemParameterRepository = systemParameterRepository;
-        this.poolRepository = poolRepository;
+        this.jurorRepository = jurorRepository;
         this.appSettingService = appSettingService;
         this.welshCourtLocRepository = welshCourtLocRepository;
     }
 
     @Override
-    public boolean isThirdPartyResponse(@NonNull final JurorResponse r) {
+    public boolean isThirdPartyResponse(@NonNull final DigitalResponse r) {
         boolean isThirdPartyResponse = !Strings.isNullOrEmpty(r.getThirdPartyFName());
         if (log.isDebugEnabled()) {
             log.debug("Third party response: {}", isThirdPartyResponse);
@@ -64,9 +68,10 @@ public class ResponseInspectorImpl implements ResponseInspector {
 
     @Transactional(readOnly = true)
     @Override
-    public boolean hasAdjustments(@NonNull final JurorResponse r) {
-        if ((r.getSpecialNeeds() != null && !r.getSpecialNeeds().isEmpty())
-            || !Strings.isNullOrEmpty(r.getSpecialNeedsArrangements())) {
+    public boolean hasAdjustments(@NonNull final DigitalResponse r) {
+        if ((r.getReasonableAdjustments() != null && !r.getReasonableAdjustments().isEmpty())
+            //    if ((r.getSpecialNeeds() != null && !r.getSpecialNeeds().isEmpty())
+            || !Strings.isNullOrEmpty(r.getReasonableAdjustmentsArrangements())) {
             log.debug("Response {} has reasonable adjustments", r.getJurorNumber());
             return true;
         }
@@ -76,7 +81,7 @@ public class ResponseInspectorImpl implements ResponseInspector {
     }
 
     @Override
-    public boolean isWelshLanguage(@NonNull final JurorResponse r) {
+    public boolean isWelshLanguage(@NonNull final DigitalResponse r) {
         if (appSettingService.isWelshEnabled()) {
             if (BooleanUtils.isTrue(r.getWelsh())) {
                 log.debug("Juror response {} is Welsh language response.", r.getJurorNumber());
@@ -87,7 +92,7 @@ public class ResponseInspectorImpl implements ResponseInspector {
     }
 
     @Override
-    public String activeContactEmail(@NonNull final JurorResponse r) {
+    public String activeContactEmail(@NonNull final DigitalResponse r) {
         if (isThirdPartyResponse(r)) {
             if (BooleanUtils.isFalse(r.getJurorEmailDetails())) {
                 log.debug("Active contact email is third party.");
@@ -99,7 +104,7 @@ public class ResponseInspectorImpl implements ResponseInspector {
     }
 
     @Override
-    public NotifyTemplateType responseType(@NonNull final JurorResponse r) {
+    public NotifyTemplateType responseType(@NonNull final DigitalResponse r) {
         final String jurorNumber = r.getJurorNumber();
 
         // fail fast
@@ -128,27 +133,27 @@ public class ResponseInspectorImpl implements ResponseInspector {
     }
 
     @Override
-    public boolean isJurorAgeDisqualified(final JurorResponse r) {
+    public boolean isJurorAgeDisqualified(final DigitalResponse r) {
         try {
-            final Pool p = poolRepository.findByJurorNumber(r.getJurorNumber());
-            int age = getJurorAgeAtHearingDate(r.getDateOfBirth(), p.getHearingDate());
+            final JurorPool j = jurorRepository.findByJurorJurorNumber(r.getJurorNumber());
+            int age = getJurorAgeAtHearingDate(r.getDateOfBirth(), j.getNextDate());
             if (log.isTraceEnabled()) {
                 log.trace(
                     "Juror DOB {} at hearing date {} will be {} years old",
                     r.getDateOfBirth(),
-                    p.getHearingDate(),
+                    j.getNextDate(),
                     age
                 );
             }
             if (age < getYoungestJurorAgeAllowed()) {
                 log.info("Juror {} too young for straight through as they are younger than {} on summon date",
-                    p.getJurorNumber(), getYoungestJurorAgeAllowed()
+                    j.getJurorNumber(), getYoungestJurorAgeAllowed()
                 );
                 return true;
             } else if (age >= getTooOldJurorAge()) {
                 log.info(
                     "Juror {} too old for straight through as they are {} or older on summon date",
-                    p.getJurorNumber(),
+                    j.getJurorNumber(),
                     getTooOldJurorAge()
                 );
                 return true;
@@ -160,10 +165,11 @@ public class ResponseInspectorImpl implements ResponseInspector {
             log.error("Failed to calculate juror age at hearing date: {}", e);
             return false;
         }
+
     }
 
     @Override
-    public boolean isIneligible(final JurorResponse r) {
+    public boolean isIneligible(final DigitalResponse r) {
         if (BooleanUtils.isFalse(r.getResidency())) {
             log.debug("Response {} ineligible - Residency", r.getJurorNumber());
             return true;
@@ -194,30 +200,28 @@ public class ResponseInspectorImpl implements ResponseInspector {
     }
 
     @Override
-    public boolean isDeferral(final JurorResponse r) {
+    public boolean isDeferral(final DigitalResponse r) {
         return !Strings.isNullOrEmpty(r.getDeferralReason());
     }
 
     @Override
-    public boolean isExcusal(final JurorResponse r) {
+    public boolean isExcusal(final DigitalResponse r) {
         return !Strings.isNullOrEmpty(r.getExcusalReason());
     }
 
     @Override
-    public boolean isJurorDeceased(final JurorResponse r) {
+    public boolean isJurorDeceased(final DigitalResponse r) {
         return !Strings.isNullOrEmpty(r.getThirdPartyReason()) && DECEASED.equalsIgnoreCase(r.getThirdPartyReason());
     }
 
     @Override
-    public int getJurorAgeAtHearingDate(final Date birthDate, final Date hearingDate) throws IllegalArgumentException {
+    public int getJurorAgeAtHearingDate(final LocalDate birthDate,
+                                        final LocalDate hearingDate) throws IllegalArgumentException {
         if (birthDate == null || hearingDate == null) {
             log.warn("Cannot compare null dates!");
             throw new IllegalArgumentException("Birth Date and Hearing Date cannot be null");
         }
-        final LocalDate localBirthDate = birthDate.toInstant().atZone(ZoneOffset.systemDefault()).toLocalDate();
-        final LocalDate localHearingDate = hearingDate.toInstant().atZone(ZoneOffset.systemDefault()).toLocalDate();
-
-        return Period.between(localBirthDate, localHearingDate).getYears();
+        return Period.between(birthDate, hearingDate).getYears();
     }
 
     @Override
@@ -263,10 +267,11 @@ public class ResponseInspectorImpl implements ResponseInspector {
     }
 
     @Override
-    public int getPoolNotification(final JurorResponse r) {
+    public int getPoolNotification(final DigitalResponse r) {
         try {
-            final Pool p = poolRepository.findByJurorNumber(r.getJurorNumber());
-            return p.getNotifications();
+            // final Pool p = poolRepository.findByJurorNumber(r.getJurorNumber());
+            final JurorPool j = jurorRepository.findByJurorJurorNumber(r.getJurorNumber());
+            return j.getJuror().getNotifications();
         } catch (Exception e) {
             log.error("Failed to retrieve the pool.notification value for this juror response.", e);
             return -1;
@@ -274,13 +279,14 @@ public class ResponseInspectorImpl implements ResponseInspector {
     }
 
     @Override
-    public boolean isWelshCourt(final JurorResponse r) {
+    public boolean isWelshCourt(final DigitalResponse r) {
         boolean courtIsWelsh = false;
         try {
 
-            final Pool p = poolRepository.findByJurorNumber(r.getJurorNumber());
-            if (isWelshLanguage(r) && welshCourtLocRepository.findByLocCode(p.getCourt().getLocCode()) != null) {
-                log.debug("Court (locCode) {} is Welsh.", p.getCourt().getLocCode());
+            // final Pool p = poolRepository.findByJurorNumber(r.getJurorNumber());
+            final JurorPool j = jurorRepository.findByJurorJurorNumber(r.getJurorNumber());
+            if (isWelshLanguage(r) && welshCourtLocRepository.findByLocCode(j.getCourt().getLocCode()) != null) {
+                log.debug("Court (locCode) {} is Welsh.", j.getCourt().getLocCode());
                 courtIsWelsh = true;
             }
         } catch (Exception e) {

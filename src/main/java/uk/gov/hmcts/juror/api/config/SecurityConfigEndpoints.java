@@ -76,6 +76,7 @@ public class SecurityConfigEndpoints {
             .authorizeHttpRequests(auth -> auth.requestMatchers(
                 "/api/v1/auth/juror/**",
                 "/api/v1/auth/bureau/**",
+                "/api/v1/auth/moj/**",
                 "/api/v1/auth/public/**",
                 "/api/v1/auth/settings/**"
             ).authenticated())

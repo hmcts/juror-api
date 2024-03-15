@@ -19,7 +19,7 @@ public class DailyExpenseFinancialLossTest extends AbstractValidatorTest<DailyEx
     class LossOfEarningsOrBenefitsTest extends AbstractValidationFieldTestBigDecimal {
         protected LossOfEarningsOrBenefitsTest() {
             super("lossOfEarningsOrBenefits", DailyExpenseFinancialLoss::setLossOfEarningsOrBenefits);
-            addNotRequiredTest(BigDecimal.ONE);
+            addNotRequiredTest(null);
             addMin(BigDecimal.ZERO, null);
             addMax(new BigDecimal("1000000"),null);
         }
@@ -29,7 +29,7 @@ public class DailyExpenseFinancialLossTest extends AbstractValidatorTest<DailyEx
     class ExtraCareCostTest extends AbstractValidationFieldTestBigDecimal {
         protected ExtraCareCostTest() {
             super("extraCareCost", DailyExpenseFinancialLoss::setExtraCareCost);
-            addNotRequiredTest(BigDecimal.ONE);
+            addNotRequiredTest(null);
             addMin(BigDecimal.ZERO, null);
             addMax(new BigDecimal("1000000"),null);
         }
@@ -39,7 +39,7 @@ public class DailyExpenseFinancialLossTest extends AbstractValidatorTest<DailyEx
     class OtherCostsTest extends AbstractValidationFieldTestBigDecimal {
         protected OtherCostsTest() {
             super("otherCosts", DailyExpenseFinancialLoss::setOtherCosts);
-            addNotRequiredTest(BigDecimal.ONE);
+            addNotRequiredTest(null);
             addMin(BigDecimal.ZERO, null);
             addMax(new BigDecimal("1000000"),null);
         }
@@ -49,7 +49,7 @@ public class DailyExpenseFinancialLossTest extends AbstractValidatorTest<DailyEx
     class OtherCostsDescriptionTest extends AbstractValidationFieldTestString {
         protected OtherCostsDescriptionTest() {
             super("otherCostsDescription", DailyExpenseFinancialLoss::setOtherCostsDescription);
-            addNotRequiredTest("Desc");
+            addNotRequiredTest(null);
         }
     }
 }

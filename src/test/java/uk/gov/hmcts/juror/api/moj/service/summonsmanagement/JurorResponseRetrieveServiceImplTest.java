@@ -16,12 +16,11 @@ import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.JurorRes
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static java.time.LocalDate.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -53,7 +52,7 @@ class JurorResponseRetrieveServiceImplTest {
     private static final String BUREAU_STAFF_NAME = "Bureau User";
     private static final String COURT_STAFF_NAME = "Court User";
 
-    private static final LocalDate DATE_RECEIVED = now();
+    private static final LocalDateTime DATE_RECEIVED = LocalDateTime.now();
 
     @Mock
     private JurorResponseCommonRepositoryMod jurorResponseCommonRepository;
@@ -237,7 +236,7 @@ class JurorResponseRetrieveServiceImplTest {
             doReturn(LAST_NAME + id).when(tuple).get(2, String.class);
             doReturn(POSTCODE).when(tuple).get(3, String.class);
             doReturn(processingStatus).when(tuple).get(4, ProcessingStatus.class);
-            doReturn(DATE_RECEIVED.plusDays(postfixId)).when(tuple).get(5, LocalDate.class);
+            doReturn(DATE_RECEIVED.plusDays(postfixId)).when(tuple).get(5, LocalDateTime.class);
             doReturn(OFFICER_ASSIGNED + id).when(tuple).get(6, String.class);
             doReturn(POOL_X_8 + id).when(tuple).get(7, String.class);
             doReturn(COURT_NAME).when(tuple).get(8, String.class);

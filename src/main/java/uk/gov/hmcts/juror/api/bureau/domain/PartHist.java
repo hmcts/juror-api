@@ -7,6 +7,8 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -37,6 +39,9 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @IdClass(PartHistKey.class)
 @Entity
 @Table(name = "PART_HIST", schema = "JUROR_DIGITAL_USER")
+@NamedQueries({
+    @NamedQuery(name = "PartHist.findAll", query = "select p from PartHist p")
+})
 public class PartHist implements Serializable {
     private static final String SINGLE_SPACE_CHARACTER = " ";
 

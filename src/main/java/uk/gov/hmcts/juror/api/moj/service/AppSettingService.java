@@ -1,6 +1,7 @@
-package uk.gov.hmcts.juror.api.bureau.service;
+package uk.gov.hmcts.juror.api.moj.service;
 
-import uk.gov.hmcts.juror.api.bureau.domain.AppSetting;
+
+import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
 
 import java.util.List;
 

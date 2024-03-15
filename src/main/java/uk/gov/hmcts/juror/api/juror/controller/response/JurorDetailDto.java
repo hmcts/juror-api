@@ -7,10 +7,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+
+import java.time.LocalDate;
+
 
 /**
- * DTO for the public frontend to represent data from {@link uk.gov.hmcts.juror.api.juror.domain.Pool}.
+ * DTO for the public frontend digital response to represent data from {@link uk.gov.hmcts.juror.api.moj.domain.Juror}.
  */
 @AllArgsConstructor
 @NoArgsConstructor
@@ -37,7 +39,7 @@ public class JurorDetailDto {
 
     @Schema(description = "The processing status of the juror summons")
     @JsonProperty("processingStatus")
-    private Long processingStatus;
+    private Integer processingStatus;
 
     @Schema
     @JsonProperty("address")
@@ -78,7 +80,7 @@ public class JurorDetailDto {
      */
     @Schema(description = "The date of the hearing the juror has been summoned to")
     @JsonProperty("hearingDate")
-    private Date hearingDate;
+    private LocalDate hearingDate;
 
     @Schema(description = "Court location code")
     @JsonProperty("locCode")

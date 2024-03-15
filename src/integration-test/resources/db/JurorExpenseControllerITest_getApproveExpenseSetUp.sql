@@ -1,16 +1,20 @@
 SELECT setval('juror_mod.appearance_f_audit_seq', 1, true);
 SELECT setval('juror_mod.payment_data_unique_id_seq', 1, true);
 SELECT setval('juror_mod.payment_data_invoice_number_seq', 1, true);
-INSERT INTO juror_mod.app_settings (setting, value)
+INSERT INTO juror_mod.app_setting (setting, value)
 VALUES ('PAYMENT_AUTH_CODE', 'testValue');
 delete
 from juror_mod.users
 where users.username in ('COURT_USER', 'COURT_USER2');
-INSERT INTO juror_mod.users (owner, username, name, level, active, team_id, version, password,
-                             approval_limit, can_approve)
-VALUES ('415', 'COURT_USER', 'Stephanie Mcintyre', 0, true, 1, 1, '5baa61e4c9b93f3f', 10000, true),
-       ('415', 'COURT_USER2', 'Stephanie Mcintyre', 0, true, 1, 1, '5baa61e4c9b93f3f', 500, true),
-       ('415', 'COURT_USER3', 'Stephanie Mcintyre', 0, true, 1, 1, '5baa61e4c9b93f3f', 100, false);
+INSERT INTO juror_mod.users (owner, username, email,name, active, team_id, version, approval_limit)
+VALUES ('415', 'COURT_USER', 'COURT_USER@email.gov.uk','Stephanie Mcintyre', true, 1, 1, 10000),
+       ('415', 'COURT_USER2', 'COURT_USER2@email.gov.uk', 'Stephanie Mcintyre',true, 1, 1, 500),
+       ('415', 'COURT_USER3', 'COURT_USER3@email.gov.uk', 'Stephanie Mcintyre', true, 1, 1, 100);
+
+INSERT INTO juror_mod.user_roles (username, role)
+VALUES ('COURT_USER', 'MANAGER'),
+       ('COURT_USER2', 'MANAGER');
+
 -- create a pool for court location 415
 insert into juror_mod.pool (owner, pool_no, return_date, total_no_required, no_requested, pool_type, loc_code,
                             new_request, attend_time)
@@ -78,13 +82,13 @@ values ('415', '641500020', '415230101', 2, '415', true),
 
 
 
-INSERT INTO juror_mod.users (owner, username, name, level, active, team_id, version, password)
-VALUES ('415', 'smcintyre', 'Stephanie Mcintyre', 0, true, 1, 1, '5baa61e4c9b93f3f'),
-       ('415', 'sbell', 'Sandra Bell', 0, true, 2, 1, '5baa61e4c9b93f3f'),
-       ('415', 'alineweaver', 'Albert Lineweaver', 0, true, 3, 1, '5baa61e4c9b93f3f'),
-       ('416', 'jbrown1', 'Jared Brown', 1, true, 1, 1, '5baa61e4c9b93f3f'),
-       ('417', 'jwilliams', 'Jeremy Williams', 1, true, 2, 1, '5baa61e4c9b93f3f'),
-       ('418', 'jbrown', 'John Brown', 1, true, 3, 1, '5baa61e4c9b93f3f');
+INSERT INTO juror_mod.users (owner, username,email, name, active, team_id, version)
+VALUES ('415', 'smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre', true, 1, 1),
+       ('415', 'sbell','sbell@email.gov.uk', 'Sandra Bell', true, 2, 1),
+       ('415', 'alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3, 1),
+       ('416', 'jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1, 1),
+       ('417', 'jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2, 1),
+       ('418', 'jbrown','jbrown@email.gov.uk', 'John Brown', true, 3, 1);
 
 INSERT INTO juror_mod.financial_audit_details(id, juror_revision, court_location_revision, type, created_by, created_on)
 VALUES (1234, 1, 1, 'FOR_APPROVAL', 'COURT_USER2', '2023-01-11 09:31:01.000'),

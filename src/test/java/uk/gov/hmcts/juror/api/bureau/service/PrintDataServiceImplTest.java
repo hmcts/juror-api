@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.service.PrintDataServiceImpl;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.xerox.LetterBase;
 import uk.gov.hmcts.juror.api.moj.xerox.LetterTestUtils;
+import uk.gov.hmcts.juror.api.testsupport.DisableIfWeekend;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -91,6 +92,7 @@ class PrintDataServiceImplTest {
     }
 
     @Test
+    @DisableIfWeekend
     void bulkPrintSummonsLetterCallsForEachListMember() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 
@@ -104,6 +106,7 @@ class PrintDataServiceImplTest {
     }
 
     @Test
+    @DisableIfWeekend
     void bulkPrintSummonsLetterSkipsDisqualifiedListMembers() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 
@@ -123,6 +126,7 @@ class PrintDataServiceImplTest {
     }
 
     @Test
+    @DisableIfWeekend
     void printDeferralLetterCallsCommit() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 
@@ -138,6 +142,7 @@ class PrintDataServiceImplTest {
     }
 
     @Test
+    @DisableIfWeekend
     void printDeferralDeniedLetterCallsCommit() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 
@@ -153,6 +158,7 @@ class PrintDataServiceImplTest {
     }
 
     @Test
+    @DisableIfWeekend
     void printExcusalDeniedLetterCallsCommit() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 
@@ -168,6 +174,7 @@ class PrintDataServiceImplTest {
     }
 
     @Test
+    @DisableIfWeekend
     void printConfirmationLetterCallsCommit() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 
@@ -183,6 +190,7 @@ class PrintDataServiceImplTest {
     }
 
     @Test
+    @DisableIfWeekend
     void printPostponeLetterCallsCommit() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 
@@ -197,6 +205,7 @@ class PrintDataServiceImplTest {
     }
 
     @Test
+    @DisableIfWeekend
     void printExcusalLetterCallsCommit() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
@@ -211,6 +220,7 @@ class PrintDataServiceImplTest {
     }
 
     @Test
+    @DisableIfWeekend
     void printWithdrawalLetterCallsCommit() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();

@@ -94,7 +94,7 @@ class MessageTemplateRepositoryImplTest {
     void positiveSimpleResponseBureauUser() {
         mockBureauUser();
         JPAQuery<Tuple> jpaQuery = mock(JPAQuery.class,
-            withSettings().verboseLogging());
+            withSettings());
         MessageSearch messageSearch = mock(MessageSearch.class);
 
         when(queryFactory.select(any(Expression[].class))).thenReturn(jpaQuery);
@@ -250,7 +250,7 @@ class MessageTemplateRepositoryImplTest {
     void positiveSimpleResponseCourtUserCourt() {
         mockCourtUser();
         JPAQuery<Tuple> jpaQuery = mock(JPAQuery.class,
-            withSettings().verboseLogging());
+            withSettings());
         MessageSearch messageSearch = mock(MessageSearch.class);
 
         when(queryFactory.select(any(Expression[].class))).thenReturn(jpaQuery);

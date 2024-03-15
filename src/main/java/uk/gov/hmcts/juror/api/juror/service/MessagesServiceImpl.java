@@ -9,19 +9,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
-import uk.gov.hmcts.juror.api.bureau.service.AppSettingService;
+import uk.gov.hmcts.juror.api.moj.domain.CourtRegionMod;
+import uk.gov.hmcts.juror.api.moj.domain.RegionNotifyTemplateMod;
+import uk.gov.hmcts.juror.api.moj.domain.messages.Message;
+import uk.gov.hmcts.juror.api.moj.repository.CourtRegionModRepository;
+import uk.gov.hmcts.juror.api.moj.repository.MessageQueries;
+import uk.gov.hmcts.juror.api.moj.repository.MessageRepository;
+import uk.gov.hmcts.juror.api.moj.repository.RegionNotifyTemplateRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 import uk.gov.hmcts.juror.api.bureau.service.BureauProcessService;
 import uk.gov.hmcts.juror.api.config.NotifyConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.NotifyRegionsConfigurationProperties;
-import uk.gov.hmcts.juror.api.juror.domain.CourtRegion;
-import uk.gov.hmcts.juror.api.juror.domain.CourtRegionRepository;
-import uk.gov.hmcts.juror.api.juror.domain.MessageStagingRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Messages;
-import uk.gov.hmcts.juror.api.juror.domain.MessagesQueries;
-import uk.gov.hmcts.juror.api.juror.domain.MessagesRepository;
-import uk.gov.hmcts.juror.api.juror.domain.RegionNotifyTemplate;
+
 import uk.gov.hmcts.juror.api.juror.domain.RegionNotifyTemplateQueries;
-import uk.gov.hmcts.juror.api.juror.domain.RegionNotifyTemplateRepository;
+
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -50,10 +51,9 @@ public class MessagesServiceImpl implements BureauProcessService {
     private final static String LOG_ERROR_MESSAGE_TEMPLATE_ID = " Missing templateId. Cannot send notify "
         + "communication:";
     private final AppSettingService appSetting;
-    private final MessageStagingRepository messageStagingRepository;
-    private final MessagesRepository messagesRepository;
-    private final CourtRegionRepository courtRegionRepository;
-    private final RegionNotifyTemplateRepository regionNotifyTemplateRepository;
+    private final MessageRepository messageRepository;
+    private final CourtRegionModRepository courtRegionModRepository;
+    private final RegionNotifyTemplateRepositoryMod regionNotifyTemplateRepositoryMod;
     private final NotifyConfigurationProperties notifyConfigurationProperties;
     private final NotifyRegionsConfigurationProperties notifyRegionsConfigurationProperties;
     private Proxy proxy;
@@ -63,26 +63,23 @@ public class MessagesServiceImpl implements BureauProcessService {
     public MessagesServiceImpl(
 
         final AppSettingService appSetting,
-        final MessageStagingRepository messageStagingRepository,
-        final MessagesRepository messagesRepository,
-        final CourtRegionRepository courtRegionRepository,
+        final MessageRepository messageRepository,
+        final CourtRegionModRepository courtRegionModRepository,
         final NotifyConfigurationProperties notifyConfigurationProperties,
         final NotifyRegionsConfigurationProperties notifyRegionsConfigurationProperties,
-        final RegionNotifyTemplateRepository regionNotifyTemplateRepository) {
+        final RegionNotifyTemplateRepositoryMod regionNotifyTemplateRepositoryMod) {
         Assert.notNull(appSetting, "AppSettingService cannot be null.");
-        Assert.notNull(messageStagingRepository, "messageStagingRepository cannot be null.");
-        Assert.notNull(messagesRepository, "MessagesRepository cannot be null.");
-        Assert.notNull(courtRegionRepository, "CourtRegionRepository cannot be null.");
-        Assert.notNull(notifyConfigurationProperties, "NotifyConfigurationProperties cannot be null.");
-        Assert.notNull(notifyRegionsConfigurationProperties, "NotifyRegionsConfigurationProperties cannot be null.");
-        Assert.notNull(regionNotifyTemplateRepository, "RegionNotifyTemplateRepository cannot be null.");
+        Assert.notNull(messageRepository, "MessageRepository can not be null.");
+        Assert.notNull(courtRegionModRepository, "CourtRegionModRepository can not be null.");
+        Assert.notNull(notifyConfigurationProperties, "NotifyConfigurationProperties can not be null.");
+        Assert.notNull(notifyRegionsConfigurationProperties, "NotifyRegionsConfigurationProperties can not be null.");
+        Assert.notNull(regionNotifyTemplateRepositoryMod, "RegionNotifyTemplateRepositoryMod can not be null.");
         this.appSetting = appSetting;
-        this.messageStagingRepository = messageStagingRepository;
-        this.messagesRepository = messagesRepository;
-        this.courtRegionRepository = courtRegionRepository;
+        this.messageRepository = messageRepository;
+        this.courtRegionModRepository = courtRegionModRepository;
         this.notifyConfigurationProperties = notifyConfigurationProperties;
         this.notifyRegionsConfigurationProperties = notifyRegionsConfigurationProperties;
-        this.regionNotifyTemplateRepository = regionNotifyTemplateRepository;
+        this.regionNotifyTemplateRepositoryMod = regionNotifyTemplateRepositoryMod;
     }
 
     /**
@@ -117,13 +114,13 @@ public class MessagesServiceImpl implements BureauProcessService {
 
         String welshTempComparisonText = appSetting.getWelshTranslation();
 
-        BooleanExpression unreadMessagesFilter = MessagesQueries.messageReadStatus();
+        BooleanExpression unreadMessagesFilter = MessageQueries.messageReadStatus();
 
-        final List<Messages> messageDetailList = Lists.newLinkedList(messagesRepository.findAll(unreadMessagesFilter));
+        final List<Message> messageDetailList = Lists.newLinkedList(messageRepository.findAll(unreadMessagesFilter));
 
         log.info("messageDetailList Number of records to process : {}", messageDetailList.size());
 
-        for (Messages messagesDetail : messageDetailList) {
+        for (Message messagesDetail : messageDetailList) {
             log.info("messagesDetail  PART_NO : {}", messagesDetail.getJurorNumber());
 
             try {
@@ -161,14 +158,14 @@ public class MessagesServiceImpl implements BureauProcessService {
                     );
 
                 //Queries to filter on Region_id ,Legacy_Template_id,Message_Format and Welsh_Language
-                final List<RegionNotifyTemplate> regionNotifyTemplateListEmail = Lists.newLinkedList(
-                    regionNotifyTemplateRepository.findAll(regionNotifyTemplateEmailFilter));
-                final List<RegionNotifyTemplate> regionNotifyTemplateListSms = Lists.newLinkedList(
-                    regionNotifyTemplateRepository.findAll(regionNotifyTemplateSmsFilter));
-                final List<RegionNotifyTemplate> regionNotifyTemplateListSmsWelsh = Lists.newLinkedList(
-                    regionNotifyTemplateRepository.findAll(regionNotifyTemplateSmsFilterWelsh));
-                final List<RegionNotifyTemplate> regionNotifyTemplateListEmailWelsh = Lists.newLinkedList(
-                    regionNotifyTemplateRepository.findAll(regionNotifyTemplateEmailFilterWelsh));
+                final List<RegionNotifyTemplateMod> regionNotifyTemplateListEmail = Lists.newLinkedList(
+                    regionNotifyTemplateRepositoryMod.findAll(regionNotifyTemplateEmailFilter));
+                final List<RegionNotifyTemplateMod> regionNotifyTemplateListSms = Lists.newLinkedList(
+                    regionNotifyTemplateRepositoryMod.findAll(regionNotifyTemplateSmsFilter));
+                final List<RegionNotifyTemplateMod> regionNotifyTemplateListSmsWelsh = Lists.newLinkedList(
+                    regionNotifyTemplateRepositoryMod.findAll(regionNotifyTemplateSmsFilterWelsh));
+                final List<RegionNotifyTemplateMod> regionNotifyTemplateListEmailWelsh = Lists.newLinkedList(
+                    regionNotifyTemplateRepositoryMod.findAll(regionNotifyTemplateEmailFilterWelsh));
 
 
                 templateCheck(
@@ -215,7 +212,7 @@ public class MessagesServiceImpl implements BureauProcessService {
                     if (Objects.equals(welshTempComparisonText, welshSubjectText)) {
 
                         NotificationClient clientSendSms = new NotificationClient(regionApikey, gotProxy);
-                        for (RegionNotifyTemplate regionNotifyTemplateSmsListWelsh : regionNotifyTemplateListSmsWelsh) {
+                        for (RegionNotifyTemplateMod regionNotifyTemplateSmsListWelsh : regionNotifyTemplateListSmsWelsh) {
                             String smsTemplateIdWelsh = (regionNotifyTemplateSmsListWelsh != null
                                 ? regionNotifyTemplateSmsListWelsh.getNotifyTemplateId()
                                 : null);
@@ -244,7 +241,7 @@ public class MessagesServiceImpl implements BureauProcessService {
 
                     NotificationClient clientSendSms = new NotificationClient(regionApikey, gotProxy);
 
-                    for (RegionNotifyTemplate regionNotifyTemplateSmsList : regionNotifyTemplateListSms) {
+                    for (RegionNotifyTemplateMod regionNotifyTemplateSmsList : regionNotifyTemplateListSms) {
 
                         String smsTemplateId = (regionNotifyTemplateSmsList != null
                             ? regionNotifyTemplateSmsList.getNotifyTemplateId()
@@ -283,7 +280,7 @@ public class MessagesServiceImpl implements BureauProcessService {
 
                         NotificationClient clientSendEmail = new NotificationClient(regionApikey, gotProxy);
 
-                        for (RegionNotifyTemplate regionNotifyTemplateEmailListWelsh :
+                        for (RegionNotifyTemplateMod regionNotifyTemplateEmailListWelsh :
                             regionNotifyTemplateListEmailWelsh) {
                             String emailTemplateIdWelsh = (regionNotifyTemplateEmailListWelsh != null
                                 ? regionNotifyTemplateEmailListWelsh.getNotifyTemplateId()
@@ -312,7 +309,7 @@ public class MessagesServiceImpl implements BureauProcessService {
                     NotificationClient clientSendEmail = new NotificationClient(regionApikey, gotProxy);
 
 
-                    for (RegionNotifyTemplate regionNotifyTemplateEmailList : regionNotifyTemplateListEmail) {
+                    for (RegionNotifyTemplateMod regionNotifyTemplateEmailList : regionNotifyTemplateListEmail) {
                         String emailTemplateId = (regionNotifyTemplateEmailList != null
                             ? regionNotifyTemplateEmailList.getNotifyTemplateId()
                             : null);
@@ -355,10 +352,10 @@ public class MessagesServiceImpl implements BureauProcessService {
     }
 
 
-    private void templateCheck(Messages messagesDetail, List<RegionNotifyTemplate> regionNotifyTemplateListEmail,
-                               List<RegionNotifyTemplate> regionNotifyTemplateListSms,
-                               List<RegionNotifyTemplate> regionNotifyTemplateListEmailWelsh,
-                               List<RegionNotifyTemplate> regionNotifyTemplateListSmsWelsh) {
+    private void templateCheck(Message messagesDetail, List<RegionNotifyTemplateMod> regionNotifyTemplateListEmail,
+                               List<RegionNotifyTemplateMod> regionNotifyTemplateListSms,
+                               List<RegionNotifyTemplateMod> regionNotifyTemplateListEmailWelsh,
+                               List<RegionNotifyTemplateMod> regionNotifyTemplateListSmsWelsh) {
         int missingEmailTemplateCheck = regionNotifyTemplateListEmail.size();
         int missingSmsTemplateCheck = regionNotifyTemplateListSms.size();
         int missingWelshEmailTemplateCheck = regionNotifyTemplateListEmailWelsh.size();
@@ -398,10 +395,10 @@ public class MessagesServiceImpl implements BureauProcessService {
         return proxy;
     }
 
-    private void updateMessageFlag(Messages messagesDetail) {
+    private void updateMessageFlag(Message messagesDetail) {
         try {
             log.trace("Inside update....");
-            messagesRepository.save(messagesDetail);
+            messageRepository.save(messagesDetail);
             log.trace("Updating messages_read ");
         } catch (TransactionSystemException e) {
             Throwable cause = e.getRootCause();
@@ -431,10 +428,10 @@ public class MessagesServiceImpl implements BureauProcessService {
     }
 
     public List<String> setUpRegionIds() {
-        List<CourtRegion> courtRegions = Lists.newLinkedList(courtRegionRepository.findAll());
+        List<CourtRegionMod> courtRegions = Lists.newLinkedList(courtRegionModRepository.findAll());
         List<String> regionIds = new ArrayList<>();
 
-        for (CourtRegion courtRegion : courtRegions) {
+        for (CourtRegionMod courtRegion : courtRegions) {
             String courtregionIds = courtRegion.getRegionId();
             regionIds.add(courtregionIds);
 

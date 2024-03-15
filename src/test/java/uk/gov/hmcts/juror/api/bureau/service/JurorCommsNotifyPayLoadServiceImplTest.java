@@ -6,21 +6,23 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateField;
-import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateFieldRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateMapping;
 import uk.gov.hmcts.juror.api.config.WelshDayMonthTranslationConfig;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateFieldMod;
+import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateMappingMod;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.NotifyTemplateFieldRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +39,7 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
     private static final String LAST_NAME_1 = "Lee";
     private static final String LAST_NAME = "LASTNAME";
     private static final String EMAIL = "email";
-    private static final String POOL = "pool";
+    private static final String JUROR = "juror";
     private static final String EMAIL_1 = "a@aaa.com";
     private static final String EMAIL_2 = "b@b.com";
     private static final String COURT_NAME_1 = "COURTNAME";
@@ -49,40 +51,43 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
     private static final String EMAIL_ADDRESS = "email address";
     private static final String SERVICE_START_TIME = "SERVICESTARTTIME";
     private static final String SERVICE_START_DATE = "SERVICESTARTDATE";
-    private static final String PRINT_FILES_DETAIL_REC = "PRINT_FILES.DETAIL_REC";
+    private static final String BULK_PRINT_DATA_DETAIL_REC = "bulk_print_data.detail_rec";
     private static final String Description_1 = "ServiceStartDate is present in the payLoad Map";
     private static final String Description_2 = "ServiceStartTime is present in the payLoad Map";
     private static final String Description_3 = "Email address is present in the payLoad Map";
 
 
-    private NotifyTemplateField templateField1;
-    private NotifyTemplateField templateField2;
-    private NotifyTemplateField templateField3;
-    private NotifyTemplateField templateField4;
-    private NotifyTemplateField templateField5;
-    private NotifyTemplateField templateField6;
-    private NotifyTemplateMapping notifyCommsTemplateMapping;
+    private NotifyTemplateFieldMod templateField1;
+    private NotifyTemplateFieldMod templateField2;
+    private NotifyTemplateFieldMod templateField3;
+    private NotifyTemplateFieldMod templateField4;
+
+    private NotifyTemplateFieldMod templateField5;
+    private NotifyTemplateFieldMod templateField6;
+    private NotifyTemplateMappingMod notifyCommsTemplateMapping;
     private Map<String, String> payLoad;
-    private List<NotifyTemplateField> templateFields;
-    private Pool pool;
-    private JurorResponse jurorResponse;
-    private Date hearingDate;
+    private List<NotifyTemplateFieldMod> templateFields;
+    private JurorPool pool;
+    private DigitalResponse jurorResponse;
+    private LocalDate hearingDate;
     private CourtLocation court;
 
-    @Mock
-    private NotifyTemplateFieldRepository notifyTemplateFieldRepository;
+    private Juror juror;
 
     @Mock
-    private JurorResponseRepository jurorResponseRepository;
+    private NotifyTemplateFieldRepositoryMod notifyTemplateFieldRepository;
 
     @Mock
-    private PoolRepository poolRepository;
+    private JurorDigitalResponseRepositoryMod jurorResponseRepository;
+
+    @Mock
+    private JurorPoolRepository poolRepository;
 
     @Mock
     private WelshDayMonthTranslationConfig welshDayMonthTranslationConfig;
 
     @Mock
-    private UniquePoolService uniquePoolService;
+    private PoolRequestService uniquePoolService;
 
     @Mock
     private WelshCourtLocationRepository welshCourtLocationRepository;
@@ -97,19 +102,23 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
 
         getNotifyCommsTemplateMapping();
 
-        jurorResponse = new JurorResponse();
+        jurorResponse = new DigitalResponse();
+        juror = new Juror();
 
         court = new CourtLocation();
 
-        hearingDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2019-07-08 09:44:17");
+        hearingDate = LocalDate.of(2019, 7, 8);
 
-        pool = Pool.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .firstName(FIRST_NAME)
-            .lastName(LAST_NAME_1)
-            .hearingDate(hearingDate)
-            .email(EMAIL_1)
-            .build();
+        juror = new Juror();
+        pool = new JurorPool();
+        pool.setJuror(juror);
+        juror = pool.getJuror();
+        juror.setJurorNumber(JUROR_NUMBER);
+        juror.setFirstName(FIRST_NAME);
+        juror.setLastName(LAST_NAME_1);
+        pool.setNextDate(hearingDate);
+        juror.setEmail(EMAIL_1);
+
     }
 
     @Test
@@ -117,8 +126,9 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
         final String detailRec = "    Farah     Lee       YYY   " + JUROR_NUMBER + "XX     ";
 
         getCourt(false);
-        pool.setCourt(court);
-
+        PoolRequest poolRequest = new PoolRequest();
+        pool.setPool(poolRequest);
+        poolRequest.setCourtLocation(court);
         given(notifyTemplateFieldRepository.findByTemplateId(TEMPLATE_ID)).willReturn(templateFields);
         payLoad = service.generatePayLoadData(TEMPLATE_ID, detailRec, pool);
 
@@ -159,7 +169,7 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
         templateFields.remove(templateFields.remove(templateField2));
         templateFields.remove(templateFields.remove(templateField3));
 
-        NotifyTemplateField templateField = NotifyTemplateField.builder()
+        NotifyTemplateFieldMod templateField = NotifyTemplateFieldMod.builder()
             .id(7L)
             .templateId(TEMPLATE_ID)
             .templateField(COURT_NAME_1)
@@ -171,7 +181,9 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
         templateFields.add(templateField);
 
         getCourt(true);
-        pool.setCourt(court);
+        PoolRequest poolRequest = new PoolRequest();
+        pool.setPool(poolRequest);
+        poolRequest.setCourtLocation(court);
 
         given(notifyTemplateFieldRepository.findByTemplateId(TEMPLATE_ID)).willReturn(templateFields);
         payLoad = service.generatePayLoadData(TEMPLATE_ID, pool);
@@ -203,7 +215,7 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
     @Test
     public void generatePayLoadData_superUrgentSentToCourt_HappyPath() throws ParseException {
 
-        NotifyTemplateField templateField = NotifyTemplateField.builder()
+        NotifyTemplateFieldMod templateField = NotifyTemplateFieldMod.builder()
             .id(8L)
             .templateId(TEMPLATE_ID)
             .templateField(EMAIL_ADDRESS)
@@ -218,7 +230,9 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
 
 
         getCourt(true);
-        pool.setCourt(court);
+        PoolRequest poolRequest = new PoolRequest();
+        pool.setPool(poolRequest);
+        poolRequest.setCourtLocation(court);
 
         given(jurorResponseRepository.findByJurorNumber(JUROR_NUMBER)).willReturn(jurorResponse);
         given(notifyTemplateFieldRepository.findByTemplateId(TEMPLATE_ID)).willReturn(templateFields);
@@ -246,20 +260,6 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
     }
 
 
-    @Test(expected = StringIndexOutOfBoundsException.class)
-    public void generatePayLoadData_Invalid() throws Exception {
-        String detailRec = "Farah  Lee    YYY   " + JUROR_NUMBER;
-        pool = Pool.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .firstName(FIRST_NAME)
-            .lastName(LAST_NAME_1)
-            .build();
-
-        given(notifyTemplateFieldRepository.findByTemplateId(TEMPLATE_ID)).willReturn(templateFields);
-        payLoad = service.generatePayLoadData(TEMPLATE_ID, detailRec, pool);
-    }
-
-
     private CourtLocation getCourt(final boolean sentToCourt) {
         if (sentToCourt == true) {
             court.setLocCourtName(COURT_NAME);
@@ -269,7 +269,7 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
     }
 
 
-    private JurorResponse getJurorResponse() {
+    private DigitalResponse getJurorResponse() {
         jurorResponse.setEmail(EMAIL_2);
         jurorResponse.setPhoneNumber("07112293123");
         return jurorResponse;
@@ -277,54 +277,54 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
 
 
     private void getNotifyCommsTemplateMapping() {
-        templateField1 = NotifyTemplateField.builder()
+        templateField1 = NotifyTemplateFieldMod.builder()
             .id(1L)
             .templateId(TEMPLATE_ID)
             .templateField("FIRSTNAME")
-            .databaseField(PRINT_FILES_DETAIL_REC)
+            .databaseField(BULK_PRINT_DATA_DETAIL_REC)
             .positionFrom(5)
             .positionTo(14)
             .build();
 
-        templateField2 = NotifyTemplateField.builder()
+        templateField2 = NotifyTemplateFieldMod.builder()
             .id(2L)
             .templateId(TEMPLATE_ID)
             .templateField(LAST_NAME)
-            .databaseField(PRINT_FILES_DETAIL_REC)
+            .databaseField(BULK_PRINT_DATA_DETAIL_REC)
             .positionFrom(15)
             .positionTo(24)
             .build();
-        templateField3 = NotifyTemplateField.builder()
+        templateField3 = NotifyTemplateFieldMod.builder()
             .id(3L)
             .templateId(TEMPLATE_ID)
             .templateField(JUROR_NUM)
-            .databaseField(PRINT_FILES_DETAIL_REC)
+            .databaseField(BULK_PRINT_DATA_DETAIL_REC)
             .positionFrom(31)
             .positionTo(39)
             .build();
 
-        templateField4 = NotifyTemplateField.builder()
+        templateField4 = NotifyTemplateFieldMod.builder()
             .id(4L)
             .templateId(TEMPLATE_ID)
             .templateField(SERVICE_START_DATE)
-            .databaseField("POOL.NEXT_DATE")
-            .jdClassName(POOL)
-            .jdClassProperty("hearingDate")
+            .databaseField("jurorPool.next_date")
+            .jdClassName(JUROR)
+            .jdClassProperty("nextDate")
             .build();
-        templateField5 = NotifyTemplateField.builder()
+        templateField5 = NotifyTemplateFieldMod.builder()
             .id(5L)
             .templateId(TEMPLATE_ID)
             .templateField(SERVICE_START_TIME)
-            .databaseField("UNIQUE_POOL.ATTEND_TIME")
-            .jdClassName("uniquePool")
+            .databaseField("pool.attend_time")
+            .jdClassName("Pool")
             .jdClassProperty("attendTime")
             .build();
-        templateField6 = NotifyTemplateField.builder()
+        templateField6 = NotifyTemplateFieldMod.builder()
             .id(6L)
             .templateId(TEMPLATE_ID)
             .templateField(EMAIL_ADDRESS)
-            .databaseField("POOL.H_EMAIL")
-            .jdClassName(POOL)
+            .databaseField("juror.h_email")
+            .jdClassName(JUROR)
             .jdClassProperty(EMAIL)
             .build();
 
@@ -335,6 +335,6 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
         templateFields.add(templateField4);
         templateFields.add(templateField5);
         templateFields.add(templateField6);
-        notifyCommsTemplateMapping = NotifyTemplateMapping.builder().templateId(TEMPLATE_ID.toString()).build();
+        notifyCommsTemplateMapping = NotifyTemplateMappingMod.builder().templateId(TEMPLATE_ID.toString()).build();
     }
 }

@@ -63,6 +63,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
@@ -98,6 +99,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
@@ -135,6 +137,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauServiceImplTest_completedToday.sql"
     })
@@ -170,6 +173,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
@@ -200,6 +204,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql"
     })
@@ -226,6 +231,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql"
     })
@@ -252,6 +258,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql"
     })
@@ -278,6 +285,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql"
     })
@@ -304,6 +312,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql"
     })
@@ -338,6 +347,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/JurorResponseSearchServiceImpl_searchForResponses_teamLeader.sql"
     })
@@ -371,6 +381,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
@@ -402,6 +413,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
@@ -432,6 +444,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
@@ -462,6 +475,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
@@ -492,6 +506,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
@@ -521,6 +536,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
@@ -556,6 +572,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
@@ -589,6 +606,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
@@ -622,6 +640,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
@@ -650,10 +669,11 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauResponsesController_autoAssignGet.sql"
     })
-    @Sql(statements = "INSERT INTO JUROR_DIGITAL.APP_SETTINGS (SETTING,VALUE) "
+    @Sql(statements = "INSERT INTO juror_mod.app_setting (SETTING,VALUE) "
         + "VALUES ('AUTO_ASSIGNMENT_DEFAULT_CAPACITY', '50');")
     public void autoAssign_get_happyPath() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
@@ -688,6 +708,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauResponsesController_autoAssignGet.sql"
     })
@@ -721,6 +742,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/truncate.sql",
+        "/db/mod/truncate.sql",
         "/db/standing_data.sql",
         "/db/BureauResponsesController_autoAssignGet.sql"
     })

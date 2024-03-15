@@ -4,6 +4,7 @@ import uk.gov.hmcts.juror.api.config.Settings;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.util.Optional;
 
 public final class BigDecimalUtils {
 
@@ -12,7 +13,7 @@ public final class BigDecimalUtils {
     }
 
     public static BigDecimal getOrZero(BigDecimal value) {
-        return value == null ? BigDecimal.ZERO : value;
+        return Optional.ofNullable(value).orElse(BigDecimal.ZERO);
     }
 
     public static boolean isGreaterThan(BigDecimal value1, BigDecimal value2) {

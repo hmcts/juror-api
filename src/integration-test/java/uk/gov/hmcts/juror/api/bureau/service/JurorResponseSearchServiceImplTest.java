@@ -10,6 +10,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.bureau.controller.request.JurorResponseSearchRequest;
+import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.JurorResponseSearchResults;
 
 import java.util.Arrays;
@@ -43,6 +44,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql")
     public void searchForResponses_jurorNumberOnly() {
@@ -58,6 +60,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql")
     public void searchForResponses_lastNameOnly() {
@@ -74,9 +77,12 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
     }
 
     @Test
-    @Sql("/db/truncate.sql")
-    @Sql("/db/standing_data.sql")
-    @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer_detailsChangedInResponse.sql")
+    @Sql({
+        "/db/truncate.sql",
+        "/db/mod/truncate.sql",
+        "/db/standing_data.sql",
+        "/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer_detailsChangedInResponse.sql"
+    })
     public void searchForResponses_lastNameOnly_lastNameChangedInJurorResponse() {
         final JurorResponseSearchResults dto =
             searchService.searchForResponses(JurorResponseSearchRequest.builder().lastName("McChangedname").build(),
@@ -88,6 +94,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql")
     public void searchForResponses_lastNameOnly_bureauOfficer_maximum100Results() {
@@ -103,6 +110,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_teamLeader.sql")
     public void searchForResponses_lastNameOnly_teamLeader_maximum250Results() {
@@ -118,6 +126,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql")
     public void searchForResponses_postcodeOnly() {
@@ -132,6 +141,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer_detailsChangedInResponse.sql")
     public void searchForResponses_postcodeOnly_postcodeChangedInJurorResponse() {
@@ -146,6 +156,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql")
     public void searchForResponses_postcodeOnly_spaceHandling() {
@@ -163,6 +174,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_fiveCharacterPostcode.sql")
     public void searchForResponses_postcodeOnly_fiveCharacterPostcode() {
@@ -177,6 +189,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_sixCharacterPostcode.sql")
     public void searchForResponses_postcodeOnly_sixCharacterPostcode() {
@@ -191,6 +204,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_sevenCharacterPostcode.sql")
     public void searchForResponses_postcodeOnly_sevenCharacterPostcode() {
@@ -223,6 +237,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql")
     public void searchForResponses_jurorNumberAndLastName() {
@@ -238,6 +253,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql")
     public void searchForResponses_jurorNumberAndPostcode() {
@@ -252,6 +268,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql")
     public void searchForResponses_lastNameAndPostcode() {
@@ -267,6 +284,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql")
     public void searchForResponses_jurorNumberAndLastNameAndPostcode() {
@@ -281,6 +299,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql")
     public void searchForResponses_poolNumber() {
@@ -294,6 +313,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_teamLeader.sql")
     public void searchForResponses_status() {
@@ -309,6 +329,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_teamLeader.sql")
     public void searchForResponses__status_alternatePath_emptyList() {
@@ -321,6 +342,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_teamLeader.sql")
     public void searchForResponses_urgentsOnly() {
@@ -334,6 +356,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_teamLeader.sql")
     public void searchForResponses_assignedTo() {
@@ -347,6 +370,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_teamLeader.sql")
     public void searchForResponses_urgentsOnly_assignedTo() {
@@ -364,6 +388,7 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_teamLeader.sql")
     public void searchForResponses_courtCodeOnly() {
@@ -384,6 +409,6 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
      */
     public static void assertResponsesSortedCorrectly(JurorResponseSearchResults dto) {
         assertThat(dto.getResponses()).isSortedAccordingTo(
-            Comparator.comparingLong(o -> o.getDateReceived().toInstant().toEpochMilli()));
+            Comparator.comparing(BureauResponseSummaryDto::getDateReceived));
     }
 }

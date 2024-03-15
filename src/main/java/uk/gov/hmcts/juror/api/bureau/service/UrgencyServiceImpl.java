@@ -1,32 +1,35 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
+import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSetting;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSettingRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
+import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.time.DayOfWeek;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+import static java.time.ZoneId.systemDefault;
+
 /**
- * Set the urgency flags on a {@link BureauJurorDetail}.
+ * Set the urgency flags on a {@link ModJurorDetail}.
  */
 @Component
 @Setter
+@Getter
 @Slf4j
 public class UrgencyServiceImpl implements UrgencyService {
     /**
@@ -51,12 +54,12 @@ public class UrgencyServiceImpl implements UrgencyService {
     /**
      * Manages the setting of urgency level flags.
      *
-     * @param details {@link BureauJurorDetail}
+     * @param details {@link ModJurorDetail}
      */
     @Override
-    public List<BureauJurorDetail> flagSlaOverdueFromList(List<BureauJurorDetail> details) {
-        final List<BureauJurorDetail> processedDetails = new LinkedList<>();
-        details.forEach(bureauJurorDetail -> processedDetails.add(flagSlaOverdueForResponse(bureauJurorDetail)));
+    public List<ModJurorDetail> flagSlaOverdueFromList(List<ModJurorDetail> details) {
+        final List<ModJurorDetail> processedDetails = new LinkedList<>();
+        details.forEach(modJurorDetail -> processedDetails.add(flagSlaOverdueForResponse(modJurorDetail)));
 
         return processedDetails;
     }
@@ -64,13 +67,13 @@ public class UrgencyServiceImpl implements UrgencyService {
     /**
      * Set the urgency levels for a single bureauJurorDetail response.
      *
-     * @param bureauJurorDetail Fully attached response to set the urgency flags upon.
+     * @param modJurorDetail Fully attached response to set the urgency flags upon.
      * @throws AppSettingException Failed to find a value for the application setting in persistence.
      * @implNote CJ7820-885 for business rules on urgency thresholds
      */
     @Override
     @SuppressWarnings("Duplicates")
-    public BureauJurorDetail flagSlaOverdueForResponse(final BureauJurorDetail bureauJurorDetail) {
+    public ModJurorDetail flagSlaOverdueForResponse(final ModJurorDetail modJurorDetail) {
         //SLA period for responses in days.
         Integer workingDays;
 
@@ -92,26 +95,26 @@ public class UrgencyServiceImpl implements UrgencyService {
         }
 
         if (log.isTraceEnabled()) {
-            log.trace("Processing urgency for {}", bureauJurorDetail);
+            log.trace("Processing urgency for {}", modJurorDetail);
         }
 
         final String processingStatus =
-            bureauJurorDetail.getProcessingStatus() != null
+            modJurorDetail.getProcessingStatus() != null
                 ?
-                bureauJurorDetail.getProcessingStatus()
+                modJurorDetail.getProcessingStatus()
                 :
                     "";
         try {
             final LocalDateTime dateReceived = LocalDateTime.ofInstant(
-                bureauJurorDetail.getDateReceived().toInstant(),
+                modJurorDetail.getDateReceived().atStartOfDay(systemDefault()).toInstant(),
                 ZoneId.systemDefault()
             );
 
             log.trace("Date received:   {}", dateReceived);
 
-            if (bureauJurorDetail.getHearingDate() != null) {
+            if (modJurorDetail.getHearingDate() != null) {
                 final LocalDateTime courtDate = LocalDateTime.ofInstant(
-                    bureauJurorDetail.getHearingDate().toInstant(),
+                    modJurorDetail.getHearingDate().atStartOfDay(systemDefault()).toInstant(),
                     ZoneId.systemDefault()
                 );
                 log.trace("Court date:      {}", courtDate);
@@ -124,29 +127,29 @@ public class UrgencyServiceImpl implements UrgencyService {
             if (!processingStatus.equalsIgnoreCase(CLOSED)
                 &&                // not closed
                 slaBreachWindowStart.isBefore(LocalDateTime.now())) {  // window start has happened
-                bureauJurorDetail.setSlaOverdue(Boolean.TRUE);
+                modJurorDetail.setSlaOverdue(Boolean.TRUE);
                 log.debug("SLA overdue");
             }
 
             log.debug("Processing complete.");
-            return bureauJurorDetail;
+            return modJurorDetail;
         } catch (NullPointerException npe) {
             log.error(JUROR_RESPONSE_FOR_JUROR_NUMBER_HAS_INVALID_DATE_INFORMATION_ERROR);
             if (log.isTraceEnabled()) {
                 log.trace(
                     JUROR_RESPONSE_FOR_JUROR_NUMBER_HAS_INVALID_DATE_INFORMATION_TRACE,
-                    bureauJurorDetail.getJurorNumber(),
+                    modJurorDetail.getJurorNumber(),
                     npe
                 );
             }
-            return bureauJurorDetail;
+            return modJurorDetail;
         }
     }
 
     @Override
     public LocalDateTime fridayCutOff(LocalDateTime jurySlotDay) {
         final LocalDateTime firstFridayBefore = jurySlotDay.with(TemporalAdjusters.previous(DayOfWeek.FRIDAY));
-        final LocalDateTime cutOff = firstFridayBefore.minus(1, ChronoUnit.WEEKS);
+        final LocalDateTime cutOff = firstFridayBefore.minusWeeks(1L);
         if (log.isTraceEnabled()) {
             log.trace("First Friday before cutoff: {}", firstFridayBefore);
             log.trace("Cut off date:               {}", cutOff);
@@ -168,7 +171,7 @@ public class UrgencyServiceImpl implements UrgencyService {
         LocalDateTime modifiedDate = date;
         int addedDays = 0;
         while (addedDays < workingDays) {
-            modifiedDate = modifiedDate.plusDays(1);
+            modifiedDate = modifiedDate.plusDays(1L);
             if (!(modifiedDate.getDayOfWeek() == DayOfWeek.SATURDAY
                 || modifiedDate.getDayOfWeek() == DayOfWeek.SUNDAY)) {
                 addedDays++;
@@ -194,7 +197,7 @@ public class UrgencyServiceImpl implements UrgencyService {
         int subtractedDays = 0;
         LocalDateTime modifiedDate = date;
         while (subtractedDays < workingDays) {
-            modifiedDate = modifiedDate.minusDays(1);
+            modifiedDate = modifiedDate.minusDays(1L);
             if (!(modifiedDate.getDayOfWeek() == DayOfWeek.SATURDAY
                 || modifiedDate.getDayOfWeek() == DayOfWeek.SUNDAY)) {
                 subtractedDays++;
@@ -207,10 +210,11 @@ public class UrgencyServiceImpl implements UrgencyService {
     }
 
     @Override
-    public boolean isSuperUrgent(JurorResponse response, Pool poolDetails) {
+    public boolean isSuperUrgent(DigitalResponse response, JurorPool jurorDetails) {
         try {
             if (!CLOSED.equalsIgnoreCase(response.getProcessingStatus().getDescription())
-                && poolDetails.getReadOnly()) {
+                && !SecurityUtil.BUREAU_OWNER.equalsIgnoreCase(jurorDetails.getOwner())
+            ) {
                 log.trace("isSuperUrgent: Super urgent");
                 return Boolean.TRUE;
             } else {
@@ -239,11 +243,7 @@ public class UrgencyServiceImpl implements UrgencyService {
         Integer cutOffDays;
 
         Optional<AppSetting> optUrgencyDays = appSettingRepository.findById(URGENCY_DAYS);
-        final AppSetting urgencyDays = optUrgencyDays.isPresent()
-            ?
-            optUrgencyDays.get()
-            :
-                null;
+        final AppSetting urgencyDays = optUrgencyDays.orElse(null);
 
         // check the URGENCY_DAYS application setting
         if (null != urgencyDays && !ObjectUtils.isEmpty(urgencyDays)
@@ -264,21 +264,19 @@ public class UrgencyServiceImpl implements UrgencyService {
 
     @SuppressWarnings("Duplicates")
     @Override
-    public boolean isUrgent(JurorResponse response, Pool poolDetails) {
+    public boolean isUrgent(DigitalResponse response, JurorPool jurorDetails) {
         //Responses not closed and received within this many <b>working days</b> are urgent.
 
         try {
-            final LocalDateTime courtDate = LocalDateTime.ofInstant(
-                poolDetails.getHearingDate().toInstant(),
-                ZoneId.systemDefault()
-            );
+            final LocalDateTime courtDate = jurorDetails.getNextDate().atStartOfDay();
+
             final LocalDateTime cutOffDaysBeforeCourtDate = subtractWorkingDays(
                 fridayCutOff(courtDate),
                 getCutOffDays()
             );
 
             if (!CLOSED.equalsIgnoreCase(response.getProcessingStatus().getDescription())
-                && !poolDetails.getReadOnly()
+                && SecurityUtil.BUREAU_OWNER.equalsIgnoreCase(jurorDetails.getOwner())
                 && LocalDateTime.now().isAfter(cutOffDaysBeforeCourtDate)
             ) {
                 log.trace("Urgent");
@@ -303,9 +301,9 @@ public class UrgencyServiceImpl implements UrgencyService {
 
 
     @Override
-    public void setUrgencyFlags(JurorResponse response, Pool poolDetails) {
-        response.setUrgent(isUrgent(response, poolDetails));
-        response.setSuperUrgent(isSuperUrgent(response, poolDetails));
+    public void setUrgencyFlags(DigitalResponse response, JurorPool jurorDetails) {
+        response.setUrgent(isUrgent(response, jurorDetails));
+        response.setSuperUrgent(isSuperUrgent(response, jurorDetails));
         if (log.isTraceEnabled()) {
             log.trace("Response {} Urgency flags updated: urgent={} super={}", response.getJurorNumber(),
                 response.getUrgent(), response.getSuperUrgent()

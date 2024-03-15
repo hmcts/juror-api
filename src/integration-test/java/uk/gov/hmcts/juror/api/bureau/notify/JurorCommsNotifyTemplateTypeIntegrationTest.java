@@ -53,7 +53,7 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     public void getNotifyTemplateKey_COMMS() {
         final JurorCommsNotifyTemplateType type = COMMS;
 
-        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM JUROR_DIGITAL" +
+        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod" +
             ".NOTIFY_TEMPLATE_MAPPING").stream().map(s -> s.get("TEMPLATE_NAME")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
@@ -89,7 +89,7 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     public void getNotifyTemplateKey_SENT_TO_COURT() {
         final JurorCommsNotifyTemplateType type = SENT_TO_COURT;
 
-        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM JUROR_DIGITAL"
+        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod"
             + ".NOTIFY_TEMPLATE_MAPPING").stream().map(s -> s.get("TEMPLATE_NAME")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
@@ -117,7 +117,7 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     public void getNotifyTemplateKey_SU_SENT_TO_COURT() {
         final JurorCommsNotifyTemplateType type = SU_SENT_TO_COURT;
 
-        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM JUROR_DIGITAL"
+        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod"
             + ".NOTIFY_TEMPLATE_MAPPING").stream().map(s -> s.get("TEMPLATE_NAME")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
@@ -146,7 +146,7 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     public void getNotifyTemplateKey_COMMS_welshLanguage() {
         final JurorCommsNotifyTemplateType type = COMMS;
 
-        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM JUROR_DIGITAL" +
+        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod" +
             ".NOTIFY_TEMPLATE_MAPPING").stream().map(s -> s.get("TEMPLATE_NAME")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
@@ -182,7 +182,7 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     public void getNotifyTemplateKey_SENT_TO_COURT_welshLanguage() {
         final JurorCommsNotifyTemplateType type = SENT_TO_COURT;
 
-        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM JUROR_DIGITAL" +
+        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod" +
             ".NOTIFY_TEMPLATE_MAPPING").stream().map(s -> s.get("TEMPLATE_NAME")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
@@ -210,7 +210,7 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     public void getNotifyTemplateKey_SU_SENT_TO_COURT_welshLanguage() {
         final JurorCommsNotifyTemplateType type = SU_SENT_TO_COURT;
 
-        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM JUROR_DIGITAL" +
+        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod" +
             ".NOTIFY_TEMPLATE_MAPPING").stream().map(s -> s.get("TEMPLATE_NAME")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();

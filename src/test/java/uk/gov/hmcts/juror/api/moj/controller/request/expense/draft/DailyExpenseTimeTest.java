@@ -20,9 +20,10 @@ public class DailyExpenseTimeTest extends AbstractValidatorTest<DailyExpenseTime
     class PayAttendanceTest extends AbstractValidationFieldTestBase<PayAttendanceType> {
         protected PayAttendanceTest() {
             super("payAttendance", DailyExpenseTime::setPayAttendance);
-            addNotRequiredTest(PayAttendanceType.FULL_DAY, new FieldTestSupport().setGroups(
+            addRequiredTest(new FieldTestSupport().setGroups(
                 DailyExpense.NonAttendanceDay.class,
-                DailyExpense.AttendanceDay.class));
+                DailyExpense.AttendanceDay.class,
+                DailyExpense.EditDay.class));
         }
     }
 }

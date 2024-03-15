@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 /**
  * Validates a court location code. (Meta-annotation)
  */
-@Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
+@Target({ElementType.TYPE_USE, ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
 @Pattern(regexp = ValidationConstants.LOCATION_CODE)

@@ -17,10 +17,17 @@ import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,10 +55,10 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
 
     static final int DEFAULT_CAPACITY_FALLBACK = 60;
 
-    private final JurorResponseRepository jurorResponseRepository;
+    private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
     private final UserRepository userRepository;
     private final AppSettingService appSettingService;
-    private final StaffJurorResponseAuditRepository auditRepository;
+    private final StaffJurorResponseAuditRepositoryMod auditRepository;
 
 
     @Override
@@ -76,7 +83,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
 
         log.trace("Total assignment capacity for auto-assignment is {}", totalCapacity);
 
-        final List<JurorResponse> backlog = Lists.newLinkedList(jurorResponseRepository.findAll(
+        final List<DigitalResponse> backlog = Lists.newLinkedList(jurorResponseRepository.findAll(
             JurorResponseQueries.backlog(),
             JurorResponseQueries.oldestFirst()
         ));
@@ -89,7 +96,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
             throw new AutoAssignException.CapacityBiggerThanBacklog(totalCapacity, backlogSize);
         }
 
-        final List<StaffJurorResponseAudit> auditEntries = assignAndAudit(backlog, request.getData(), requestingUser);
+        final List<StaffJurorResponseAuditMod> auditEntries = assignAndAudit(backlog, request.getData(), requestingUser);
 
         jurorResponseRepository.saveAll(backlog);
         auditRepository.saveAll(auditEntries);
@@ -165,7 +172,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
      * @throws AutoAssignException if input is invalid
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
-    public List<StaffJurorResponseAudit> assignAndAudit(List<JurorResponse> backlog,
+    public List<StaffJurorResponseAuditMod> assignAndAudit(List<DigitalResponse> backlog,
                                                          List<AutoAssignRequest.StaffCapacity> staffCapacity,
                                                          String requestingUser) throws AutoAssignException {
 
@@ -181,16 +188,16 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
             AutoAssignRequest.StaffCapacity::getCapacity
         ));
 
-        final Map<User, Set<JurorResponse>> allocation = distributeWorkload(backlog, staff, capacityMap);
+        final Map<User, Set<DigitalResponse>> allocation = distributeWorkload(backlog, staff, capacityMap);
 
-        final List<StaffJurorResponseAudit> auditEntries = new LinkedList<>();
-        final Date now = Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant());
+        final List<StaffJurorResponseAuditMod> auditEntries = new LinkedList<>();
+        final LocalDate now = LocalDateTime.now().toLocalDate();
 
         allocation.forEach((key, value) -> value.forEach(r -> {
             r.setStaff(key);
             r.setStaffAssignmentDate(now);
             r.setVersion(r.getVersion() != null ? r.getVersion() + 1 : 1);
-            auditEntries.add(StaffJurorResponseAudit.realBuilder()
+            auditEntries.add(StaffJurorResponseAuditMod.realBuilder()
                 .teamLeaderLogin(requestingUser)
                 .staffLogin(key.getUsername())
                 .jurorNumber(r.getJurorNumber())
@@ -212,11 +219,11 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
      * @param staffMemberCapacities capacity limits for each staff member
      * @return distributed workload
      */
-    private Map<User, Set<JurorResponse>> distributeWorkload(Collection<JurorResponse> backlog, List<User> staff,
+    private Map<User, Set<DigitalResponse>> distributeWorkload(Collection<DigitalResponse> backlog, List<User> staff,
                                                              Map<String, Integer> staffMemberCapacities) {
-        final Iterator<JurorResponse> backlogItems = backlog.iterator();
+        final Iterator<DigitalResponse> backlogItems = backlog.iterator();
 
-        Map<User, Set<JurorResponse>> allocation = new HashMap<>();
+        Map<User, Set<DigitalResponse>> allocation = new HashMap<>();
 
         for (final User staffMember : staff) {
             for (int j = 0; j < staffMemberCapacities.get(staffMember.getUsername()) && backlogItems.hasNext(); j++) {

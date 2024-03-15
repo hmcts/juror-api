@@ -7,8 +7,8 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryDt
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.TeamDto;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
 import uk.gov.hmcts.juror.api.bureau.domain.Team;
+import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 
 import java.util.LinkedList;
@@ -32,20 +32,20 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
     }
 
     @Override
-    public List<BureauResponseSummaryDto> convertToDtos(Iterable<BureauJurorDetail> details) {
+    public List<BureauResponseSummaryDto> convertToDtos(Iterable<ModJurorDetail> details) {
         return StreamSupport.stream(details.spliterator(), false)
-            .map(urgencyCalculator::flagSlaOverdueForResponse)
+           // .map(urgencyCalculator::flagSlaOverdueForResponse)
             .map(this::detailToDto)
             .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override
-    public BureauResponseSummaryWrapper prepareOutput(Iterable<BureauJurorDetail> details) {
+    public BureauResponseSummaryWrapper prepareOutput(Iterable<ModJurorDetail> details) {
         return BureauResponseSummaryWrapper.builder().responses(convertToDtos(details)).build();
     }
 
     @Override
-    public BureauResponseSummaryDto detailToDto(BureauJurorDetail detail) {
+    public BureauResponseSummaryDto detailToDto(ModJurorDetail detail) {
         return BureauResponseSummaryDto.builder()
             .jurorNumber(detail.getJurorNumber())
             .title(detail.getNewTitle())
@@ -89,16 +89,6 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
             .isActive(staffMember.isActive())
             .isTeamLeader(staffMember.isTeamLeader())
             .version(staffMember.getVersion())
-            .court1(staffMember.getCourtAtIndex(0, null))
-            .court2(staffMember.getCourtAtIndex(1, null))
-            .court3(staffMember.getCourtAtIndex(2, null))
-            .court4(staffMember.getCourtAtIndex(3, null))
-            .court5(staffMember.getCourtAtIndex(4, null))
-            .court6(staffMember.getCourtAtIndex(5, null))
-            .court7(staffMember.getCourtAtIndex(6, null))
-            .court8(staffMember.getCourtAtIndex(7, null))
-            .court9(staffMember.getCourtAtIndex(8, null))
-            .court10(staffMember.getCourtAtIndex(9, null))
             .build();
     }
 

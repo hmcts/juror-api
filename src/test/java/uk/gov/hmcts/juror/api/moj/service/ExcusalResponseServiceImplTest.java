@@ -37,6 +37,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import uk.gov.hmcts.juror.api.moj.service.letter.ExcusalLetterServiceImpl;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -760,7 +761,7 @@ public class ExcusalResponseServiceImplTest {
     private PaperResponse createTestJurorPaperResponse(String jurorNumber) {
         PaperResponse response = Mockito.spy(new PaperResponse());
         response.setJurorNumber(jurorNumber);
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
 
         response.setFirstName("FName");
         response.setLastName("LName");
@@ -792,7 +793,7 @@ public class ExcusalResponseServiceImplTest {
         DigitalResponse response = new DigitalResponse();
 
         response.setJurorNumber(jurorNumber);
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
 
         response.setFirstName("FName");
         response.setLastName("LName");

@@ -197,12 +197,15 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
             "Pending juror authorised");
     }
 
-
     @Override
     public void createPoliceCheckInsufficientInformationHistory(JurorPool jurorPool) {
         registerHistorySystem(jurorPool, HistoryCodeMod.INSUFFICIENT_INFORMATION, "Insufficient Information");
     }
 
+    @Override
+    public void createSummonsReminderLetterHistory(JurorPool jurorPool) {
+        registerHistorySystem(jurorPool, HistoryCodeMod.NON_RESPONDED_LETTER, "Reminder letter printed");
+    }
 
     private void save(JurorHistory jurorHistory) {
         jurorHistoryRepository.save(jurorHistory);
@@ -273,5 +276,4 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
             .otherInformationRef(otherInfoRef)
             .build());
     }
-
 }

@@ -5,7 +5,12 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.StringPath;
 import org.apache.commons.lang3.StringUtils;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
+import uk.gov.hmcts.juror.api.moj.domain.QModJurorDetail;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -25,10 +30,11 @@ public class BureauJurorDetailQueries {
     private static final String OUTWARD_CODE_FRAGMENT = "^([A-Z]{0,2})([0-9]{1,2})$";
     private static final String TODO = "TODO";
     private static final String YES = "Y";
+    private static final String OWNER_IS_BUREAU = "400";
 
 
-    private static final QBureauJurorDetail bureauJurorDetail = QBureauJurorDetail.bureauJurorDetail;
-
+  //  private static final QBureauJurorDetail bureauJurorDetail = QBureauJurorDetail.bureauJurorDetail;
+      private static final QModJurorDetail bureauJurorDetail = QModJurorDetail.modJurorDetail;
     private BureauJurorDetailQueries() {
     }
 
@@ -107,7 +113,7 @@ public class BureauJurorDetailQueries {
             .and(byStatus(statuses));
     }
 
-    public static BooleanExpression byCompletedAt(String staffLogin, Date startOfSearchPeriod, Date endOfSearchPeriod) {
+    public static BooleanExpression byCompletedAt(String staffLogin, LocalDateTime startOfSearchPeriod, LocalDateTime endOfSearchPeriod) {
         return byMemberOfStaffAssigned(staffLogin)
             .and(byStatus(Collections.singletonList(ProcessingStatus.CLOSED.name())))
             .and(bureauJurorDetail.completedAt.between(startOfSearchPeriod, endOfSearchPeriod));
@@ -223,7 +229,7 @@ public class BureauJurorDetailQueries {
      */
 
     public static BooleanExpression ByReadOnly() {
-        return bureauJurorDetail.readOnly.eq(YES);
+        return bureauJurorDetail.owner.ne(OWNER_IS_BUREAU);
 
     }
 
@@ -233,7 +239,7 @@ public class BureauJurorDetailQueries {
      */
 
     public static BooleanExpression ByPoolStatusSummoned() {
-        return bureauJurorDetail.status.eq(IPoolStatus.SUMMONED);
+        return bureauJurorDetail.status.eq((long) IJurorStatus.SUMMONED);
     }
 
     /**
@@ -242,7 +248,7 @@ public class BureauJurorDetailQueries {
      */
 
     public static BooleanExpression ByPoolStatusNotSummoned() {
-        return bureauJurorDetail.status.ne(IPoolStatus.SUMMONED);
+        return bureauJurorDetail.status.ne((long) IJurorStatus.SUMMONED);
     }
 
     /**
@@ -257,7 +263,7 @@ public class BureauJurorDetailQueries {
 
     /**
      * Matches records where that need to be closed.
-     * @return
+     * jurorDetail@return
      */
 
     public static BooleanExpression JurorResponsesForClosing() {

@@ -34,7 +34,7 @@ class MessageSendRequestTest extends AbstractValidatorTest<MessageSendRequest> {
             super("placeholderValues", MessageSendRequest::setPlaceholderValues);
             addNullKeyValueInMapTest(null);
             addNullValueInMapTest(null);
-            addNotRequiredTest(getValidMap(), null);
+            addNotRequiredTest(null);
         }
 
         @Override

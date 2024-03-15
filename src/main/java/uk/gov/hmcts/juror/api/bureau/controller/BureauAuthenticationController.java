@@ -4,16 +4,17 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.juror.api.bureau.service.BureauAuthenticationService;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
+import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 
 import java.io.Serializable;
 import java.util.List;
@@ -34,18 +36,17 @@ import java.util.Set;
 @RequestMapping(value = "/api/v1", produces = MediaType.APPLICATION_JSON_VALUE)
 @Slf4j
 @Tag(name = "Auth (Bureau)", description = "Bureau Authentication API")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Deprecated(forRemoval = true)
 public class BureauAuthenticationController {
     private final BureauAuthenticationService authenticationService;
+    private final CourtLocationRepository courtLocationRepository;
+    private final EntityManager entityManager;
 
-    @Autowired
-    public BureauAuthenticationController(final BureauAuthenticationService authenticationService) {
-        Assert.notNull(authenticationService, "BureauAuthenticationService cannot be null.");
-        this.authenticationService = authenticationService;
-    }
 
     @PostMapping(path = "/auth/bureau")
     @Operation(summary = "Authenticate Bureau Login",
-               description = "Authenticate Bureau Officer credentials to allow creation of a JWT")
+        description = "Authenticate Bureau Officer credentials to allow creation of a JWT")
     public ResponseEntity<BureauAuthenticationResponseDto> authenticationEndpoint(
         @RequestBody BureauAuthenticationRequestDto requestDto) {
         return ResponseEntity.ok().body(authenticationService.authenticateBureauOfficer(requestDto));
@@ -97,6 +98,11 @@ public class BureauAuthenticationController {
         @JsonInclude(JsonInclude.Include.NON_NULL)
         private Boolean passwordWarning;
 
+        private UserType userType;
+
+
+        private Set<Role> roles;
+
         @Schema(description = "Staff information")
         private UserDto staff;
     }
@@ -140,18 +146,8 @@ public class BureauAuthenticationController {
         @Schema(description = "Court location codes the staff member administrates.")
         private List<String> courts;
 
-
-        private UserType userType;
-
-        private Set<Role> roles;
-
-        /**
-         * Convert a {@link User} entity into an instance of {@link UserDto}.
-         *
-         * @param user A populated staff entity
-         * @return DTO instance with the staff information
-         */
-        public static UserDto from(final User user) {
+        public static UserDto from(final CourtLocationRepository courtLocationRepository, EntityManager entityManager,
+                                   final User user) {
             if (null == user) {
                 log.debug("User record was null!");
                 return null;
@@ -161,10 +157,13 @@ public class BureauAuthenticationController {
                 .active(user.isActive() ? 1 : 0)
                 .name(user.getUsername())
                 .rank(user.getLevel())
-                .courts(user.getCourts())
-                .userType(user.getUserType())
-                .roles(user.getRoles())
+                .courts(courtLocationRepository.findLocCodeByOwner(entityManager, user.getOwner()))
                 .build();
         }
+    }
+
+
+    public UserDto from(final User user) {
+        return UserDto.from(courtLocationRepository, entityManager, user);
     }
 }

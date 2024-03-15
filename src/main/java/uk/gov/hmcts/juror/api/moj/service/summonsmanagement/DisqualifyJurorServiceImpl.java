@@ -35,6 +35,7 @@ import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
@@ -155,7 +156,7 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
             checkJurorResponseStatus(digitalResponse);
             final ProcessingStatus oldProcessingStatus = setJurorResponseProcessingStatus(digitalResponse);
             digitalResponse.setProcessingComplete(true);
-            digitalResponse.setCompletedAt(LocalDate.now());
+            digitalResponse.setCompletedAt(LocalDateTime.now());
             saveJurorDigitalResponse(bureauJwtPayload.getLogin(), oldProcessingStatus, digitalResponse);
             processDisqualification(jurorPool, digitalResponse, bureauJwtPayload, DisqualifyCodeEnum.A);
 
@@ -163,7 +164,7 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
             checkJurorResponseStatus(paperResponse);
             paperResponse.setProcessingComplete(true);
             paperResponse.setProcessingStatus(ProcessingStatus.CLOSED);
-            paperResponse.setCompletedAt(LocalDate.now());
+            paperResponse.setCompletedAt(LocalDateTime.now());
             saveJurorPaperResponse(bureauJwtPayload.getLogin(),
                 paperResponse);
             processDisqualification(jurorPool, paperResponse, bureauJwtPayload, DisqualifyCodeEnum.A);

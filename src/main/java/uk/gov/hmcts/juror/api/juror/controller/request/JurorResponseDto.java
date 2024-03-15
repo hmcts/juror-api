@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.juror.controller.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -13,10 +14,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.ScriptAssert;
-import uk.gov.hmcts.juror.api.validation.DateOfBirth;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
+import uk.gov.hmcts.juror.api.validation.LocalDateOfBirth;
 import uk.gov.hmcts.juror.api.validation.ThirdPartyRequireAtLeastOneOf;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.EMAIL_ADDRESS_REGEX;
@@ -42,8 +44,8 @@ public class JurorResponseDto {
      */
     public static JurorResponseDtoBuilder builder(String jurorNumber, String firstName, String lastName,
                                                   String addressLineOne, String addressLineTwo, String addressLineThree,
-                                                  String addressPostcode, Date dateOfBirth, String primaryPhone,
-                                                  String emailAddress, Qualify qualify, Integer version) {
+                                                  String addressPostcode, LocalDate dateOfBirth, String primaryPhone,
+                                                  String emailAddress, Qualify qualify, Integer version,ReplyMethod replyMethod) {
         return realBuilder()
             .jurorNumber(jurorNumber)
             .firstName(firstName)
@@ -57,7 +59,7 @@ public class JurorResponseDto {
             .emailAddress(emailAddress)
             .qualify(qualify)
             .version(version)
-            ;
+            .replyMethod(replyMethod);
     }
 
     /**
@@ -69,6 +71,8 @@ public class JurorResponseDto {
             .thirdParty(thirdParty)
             ;
     }
+
+
 
     @Schema(description = "Juror number", requiredMode = Schema.RequiredMode.REQUIRED)
     private String jurorNumber;
@@ -134,10 +138,10 @@ public class JurorResponseDto {
     private String addressPostcode;
 
     @NotNull
-    @DateOfBirth(groups = IneligibleAgeValidationGroup.class)
+    @LocalDateOfBirth(groups = IneligibleAgeValidationGroup.class)
     @Null(groups = ThirdPartyDeceasedValidationGroup.class)
     @Schema(description = "Juror date of birth")
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
 
     @NotEmpty
     @Pattern(regexp = PHONE_PRIMARY_REGEX, groups = {ThirdPartyValidationGroup.class, Default.class})
@@ -163,7 +167,7 @@ public class JurorResponseDto {
 
     @Null(groups = ThirdPartyDeceasedValidationGroup.class)
     @Schema(description = "Array of any special requirements of the Juror at the court location")
-    private List<SpecialNeed> specialNeeds;
+    private List<ReasonableAdjustment> reasonableAdjustments;
 
     @Null(groups = ThirdPartyDeceasedValidationGroup.class)
     @Schema(description = "Juror text description of special arrangements required")
@@ -184,6 +188,12 @@ public class JurorResponseDto {
 
     @Schema(description = "Optimistic locking version number (maintain across requests)")
     private Integer version;
+
+    @JsonProperty("replyMethod")
+    @Schema(name = "Reply method", description = "Reply method is either PAPER or DIGITAL", requiredMode =
+        Schema.RequiredMode.REQUIRED)
+    @NotNull
+    private ReplyMethod replyMethod;
 
     @Valid
     @NotNull(groups = ThirdPartyDeceasedValidationGroup.class)
@@ -275,11 +285,17 @@ public class JurorResponseDto {
         + "P=Pregnancy"
         + "R=Reading"
         + "L=Limited Mobility"
+        + "C=Caring responsibilities"
+        + "U=Medication"
+        + "J=CJS Employee"
+        + "E=Epilepsy"
+        + "A=Religious Reasons"
+        + "T=Travelling Difficulties"
         + ")"
     )
-    public static class SpecialNeed {
+    public static class ReasonableAdjustment {
         @Schema(description = "Assistance type", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues =
-            "null,V,W,H,O,I,D,P,R,L")
+            "null,V,W,H,O,I,D,P,R,L,C,U,J,E,A,T")
         @NotNull
         private String assistanceType;
 
@@ -314,7 +330,7 @@ public class JurorResponseDto {
     @ThirdPartyRequireAtLeastOneOf(
         groups = {ThirdPartyValidationCommonGroup.class},
         message = "Third party must supply a main phone or an email address")
-    public static class ThirdParty {
+   public static class ThirdParty {
         @Schema(description = "Third party firstname", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotEmpty(groups = {ThirdPartyValidationGroup.class, ThirdPartyDeceasedValidationGroup.class})
         private String thirdPartyFName;

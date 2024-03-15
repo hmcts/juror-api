@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -15,6 +17,7 @@ import java.util.Optional;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @SuppressWarnings("PMD.LawOfDemeter")
 public class ExpenseValuesDto {
@@ -30,6 +33,21 @@ public class ExpenseValuesDto {
     protected BigDecimal parking;
     protected BigDecimal foodAndDrink;
     protected BigDecimal smartCard;
+
+
+    public ExpenseValuesDto(Appearance appearance) {
+        this.lossOfEarnings = appearance.getLossOfEarningsDue();
+        this.extraCare = appearance.getChildcareDue();
+        this.other = appearance.getMiscAmountDue();
+        this.publicTransport = appearance.getPublicTransportDue();
+        this.taxi = appearance.getHiredVehicleDue();
+        this.motorcycle = appearance.getMotorcycleDue();
+        this.car = appearance.getCarDue();
+        this.bicycle = appearance.getBicycleDue();
+        this.parking = appearance.getParkingDue();
+        this.foodAndDrink = appearance.getSubsistenceDue();
+        this.smartCard = appearance.getSmartCardAmountDue();
+    }
 
     @JsonProperty("total")
     public BigDecimal getTotal() {

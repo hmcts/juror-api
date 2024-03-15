@@ -63,7 +63,6 @@ INSERT INTO juror_mod.juror_pool ("owner",juror_number,pool_number,next_date,use
 
 
 -- staff
-INSERT INTO juror_mod.users (owner, username, name, level, active,password,version)
-VALUES ('400','BUREAU_USER','Test User',0,true,'5baa61e4c9b93f3f',0),
-       ('415','COURT_USER','Test User',0,true,'5baa61e4c9b93f3f',0);
-
+INSERT INTO juror_mod.users (owner, username,email, name, active,version)
+VALUES ('400','BUREAU_USER','BUREAU_USER@email.gov.uk','Test User',true,0),
+       ('415','COURT_USER','COURT_USER@email.gov.uk','Test User',true,0);

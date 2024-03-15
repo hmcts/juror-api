@@ -51,7 +51,7 @@ class PaginatedListTest extends AbstractValidatorTest<PaginatedList<String>> {
     class DataTest extends AbstractValidationFieldTestList<String> {
         protected DataTest() {
             super("data", PaginatedList::setData);
-            addNotRequiredTest(List.of("Any"));
+            addNotRequiredTest(null);
             addNullValueInListTest(null);
         }
     }

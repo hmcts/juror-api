@@ -9,9 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.MarkAsDeceasedDto;
-import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
-import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
+import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
+import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -19,7 +19,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
-import uk.gov.hmcts.juror.api.moj.repository.ContactEnquiryTypeRepository;
+import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -36,8 +36,8 @@ import java.time.ZoneId;
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class DeceasedResponseServiceImpl implements DeceasedResponseService {
+    private final ContactCodeRepository contactCodeRepository;
 
-    public static final String UNABLE_TO_ATTEND = "UA";
     private static final String DECEASED_CODE = "D";
     private static final String PAPER_RESPONSE_EXISTS_TEXT = "A Paper summons reply exists.";
 
@@ -49,8 +49,6 @@ public class DeceasedResponseServiceImpl implements DeceasedResponseService {
     private final JurorRepository jurorRepository;
     @NonNull
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-    @NonNull
-    private final ContactEnquiryTypeRepository contactEnquiryTypeRepository;
     @NonNull
     private final ContactLogRepository contactLogRepository;
 
@@ -100,8 +98,8 @@ public class DeceasedResponseServiceImpl implements DeceasedResponseService {
             createMinimalPaperSummonsRecord(juror, deceasedComment);
         }
 
-        ContactEnquiryType enquiryType = RepositoryUtils.retrieveFromDatabase(
-            ContactEnquiryCode.valueOf(UNABLE_TO_ATTEND), contactEnquiryTypeRepository);
+        ContactCode enquiryType = RepositoryUtils.retrieveFromDatabase(
+            IContactCode.UNABLE_TO_ATTEND.getCode(), contactCodeRepository);
 
         ContactLog contactLog = ContactLog.builder()
             .username(payload.getLogin())
@@ -124,7 +122,7 @@ public class DeceasedResponseServiceImpl implements DeceasedResponseService {
         jurorPaperResponse.setJurorNumber(juror.getJurorNumber());
 
         // setting the received date to now
-        jurorPaperResponse.setDateReceived(LocalDate.now());
+        jurorPaperResponse.setDateReceived(LocalDateTime.now());
 
         // set up Juror personal details
         jurorPaperResponse.setTitle(juror.getTitle());
@@ -138,7 +136,7 @@ public class DeceasedResponseServiceImpl implements DeceasedResponseService {
 
         jurorPaperResponse.setProcessingComplete(true);
         jurorPaperResponse.setProcessingStatus(ProcessingStatus.CLOSED);
-        jurorPaperResponse.setCompletedAt(LocalDate.now());
+        jurorPaperResponse.setCompletedAt(LocalDateTime.now());
 
         jurorPaperResponseRepository.save(jurorPaperResponse);
     }
