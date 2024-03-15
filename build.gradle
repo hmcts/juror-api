@@ -18,8 +18,7 @@ plugins {
     id 'org.springframework.boot' version "${springBootVersion}"
     id "org.flywaydb.flyway" version "${flywayVersion}"
     id "com.dorongold.task-tree" version "2.1.1"
-    id 'org.cyclonedx.bom' version '1.4.1'
-    id 'org.owasp.dependencycheck' version '8.4.3'
+    id 'org.owasp.dependencycheck' version '9.0.9'
     id 'checkstyle'
     id 'pmd'
     id 'com.github.ben-manes.versions' version '0.51.0'
@@ -129,6 +128,7 @@ dependencies {
     implementation('org.apache.commons:commons-text:1.11.0')
     implementation("uk.gov.service.notify:notifications-java-client:${notifyVersion}")
 
+    runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.4.19')
 
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
     implementation group: 'io.rest-assured', name: 'rest-assured'
@@ -235,33 +235,6 @@ processResources.finalizedBy(copyDocs)
 
 wrapper {
     gradleVersion = '8.6'
-}
-
-cyclonedxBom {
-
-    // Currently using v 1.4.1 , so many config items are not supported, but retained below for future upgrades
-
-    // includeConfigs is the list of configuration names to include when generating the BOM (leave empty to include every configuration)
-    //includeConfigs = ["runtimeClasspath"]
-    includeConfigs = ["runtimeClasspath"]
-    // skipConfigs is a list of configuration names to exclude when generating the BOM
-    skipConfigs += ["/src/test", "src/integration-test"]
-    // skipProjects is a list of project names to exclude when generating the BOM
-    //skipProjects = [rootProject.name, "yourTestSubProject"]
-    // Specified the type of project being built. Defaults to 'library'
-    //projectType = "application"
-    // Specified the version of the CycloneDX specification to use. Defaults to 1.4.
-    //schemaVersion = "1.2"
-    // Boms destination directory (defaults to build/reports)
-    // destination = file("build/reports")
-    // The file name for the generated BOMs (before the file format suffix). Defaults to 'bom'
-    //outputName = "bom"
-    // The file format generated, can be xml, json or all for generating both
-    //outputFormat = "json"
-    // Exclude BOM Serial Number
-    //includeBomSerialNumber = false
-    // Override component version
-    //componentVersion = "2.0.0"
 }
 
 sourceSets {
