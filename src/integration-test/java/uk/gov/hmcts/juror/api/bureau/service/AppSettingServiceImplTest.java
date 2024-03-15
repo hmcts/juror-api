@@ -8,7 +8,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSetting;
+import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
 import java.util.List;
 

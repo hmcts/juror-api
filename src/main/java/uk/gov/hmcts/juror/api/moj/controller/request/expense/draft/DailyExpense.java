@@ -11,6 +11,8 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.juror.api.validation.EnumValidator;
 import uk.gov.hmcts.juror.api.validation.PoolNumber;
+import uk.gov.hmcts.juror.api.validation.ValidateIf;
+import uk.gov.hmcts.juror.api.validation.ValidateIfTrigger;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -18,20 +20,25 @@ import java.util.List;
 
 @Data
 @Builder
+@ValidateIfTrigger(classToValidate = DailyExpense.class, groups = DailyExpense.CalculateTotals.class)
 public class DailyExpense {
 
     @JsonProperty("date_of_expense")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @NotNull(groups = {AttendanceDay.class, NonAttendanceDay.class, EditDay.class})
+    @NotNull(groups = {AttendanceDay.class, NonAttendanceDay.class, EditDay.class, CalculateTotals.class})
     private LocalDate dateOfExpense;
 
     @PoolNumber
     @JsonProperty("pool_number")
     @NotBlank(groups = {AttendanceDay.class, NonAttendanceDay.class, EditDay.class})
+    @Null(groups = {CalculateTotals.class})
     private String poolNumber;
 
     @JsonProperty("pay_cash")
     @NotNull(groups = {AttendanceDay.class, NonAttendanceDay.class, EditDay.class})
+    @ValidateIf(fields = {"time", "financialLoss", "travel", "foodAndDrink"},
+        condition = ValidateIf.Condition.ANY_PRESENT,
+        type = ValidateIf.Type.REQUIRE)
     private Boolean payCash;
 
     @JsonProperty("time")
@@ -72,6 +79,14 @@ public class DailyExpense {
         return Collections.unmodifiableList(applyToAllDays);
     }
 
+    public boolean shouldPullFromDatabase() {
+        return payCash == null
+            && time == null
+            && financialLoss == null
+            && travel == null
+            && foodAndDrink == null;
+    }
+
     public interface AttendanceDay {
 
     }
@@ -81,6 +96,10 @@ public class DailyExpense {
     }
 
     public interface EditDay {
+
+    }
+
+    public interface CalculateTotals {
 
     }
 }

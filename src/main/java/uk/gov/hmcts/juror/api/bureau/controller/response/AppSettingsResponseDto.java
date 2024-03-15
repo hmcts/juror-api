@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSetting;
+import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
 
 import java.io.Serializable;
 import java.util.List;

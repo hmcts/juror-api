@@ -93,7 +93,6 @@ public final class TestUtils {
      * Serialise a java object into a JSON string.
      *
      * @param obj the Java object to be serialised in to a JSON string
-     *
      * @return a String containing the object structure and data in JSON format
      */
     @SneakyThrows
@@ -129,5 +128,5 @@ public final class TestUtils {
         when(securityContext.getAuthentication()).thenReturn(auth);
         SecurityContextHolder.setContext(securityContext);
     }
-    
+
 }

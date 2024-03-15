@@ -541,6 +541,126 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
+    public void getThinPoolMembersHappyPath() throws Exception {
+        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+            .userLevel("1")
+            .login("COURT_USER")
+            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .daysToExpire(89)
+            .owner("415")
+            .build());
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/members/415230103");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolMemberFilterRequestQuery> requestEntity = new RequestEntity<>(httpHeaders,
+                                                                                        HttpMethod.GET, uri);
+        ResponseEntity<List<String>> response = template.exchange(requestEntity, new ParameterizedTypeReference<>() {
+            });
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        assertThat(response.getBody()).hasSize(2);
+        assertThat(response.getBody()).containsExactly("777777777", "888888888");
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
+    public void getThinPoolMembersNoInaccessibleJurors() throws Exception {
+        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+            .userLevel("1")
+            .login("COURT_USER")
+            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .daysToExpire(89)
+            .owner("415")
+            .build());
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/members/415230101");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolMemberFilterRequestQuery> requestEntity = new RequestEntity<>(httpHeaders,
+                                                                                        HttpMethod.GET, uri);
+        ResponseEntity<List<String>> response = template.exchange(requestEntity, new ParameterizedTypeReference<>() {
+        });
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        assertThat(response.getBody()).hasSize(1);
+        assertThat(response.getBody().get(0)).isEqualTo("333333333");
+        assertThat(response.getBody().indexOf("444444444")).isEqualTo(-1);
+        assertThat(response.getBody().indexOf("111111111")).isEqualTo(-1);
+        assertThat(response.getBody().indexOf("777777777")).isEqualTo(-1);
+    }
+    
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
+    public void getThinPoolMembersMissingPool() throws Exception {
+        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+                                                   .userLevel("1")
+                                                   .login("COURT_USER")
+                                                   .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+                                                   .daysToExpire(89)
+                                                   .owner("415")
+                                                   .build());
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/members/123456789");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolMemberFilterRequestQuery> requestEntity = new RequestEntity<>(httpHeaders,
+                                                                                        HttpMethod.GET, uri);
+        ResponseEntity<List<String>> response = template.exchange(requestEntity, new ParameterizedTypeReference<>() {
+        });
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        assertThat(response.getBody()).hasSize(0);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
+    public void getThinPoolMembersInvalidPool() throws Exception {
+        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+            .userLevel("1")
+            .login("COURT_USER")
+            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .daysToExpire(89)
+            .owner("415")
+            .build());
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/members/0000");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolMemberFilterRequestQuery> requestEntity = new RequestEntity<>(httpHeaders,
+                                                                                        HttpMethod.GET, uri);
+        ResponseEntity<?> response = template.exchange(requestEntity, new ParameterizedTypeReference<>() {
+        });
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+        assertThat(response.getBody());
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
+    public void getThinPoolMembersEmptyPool() throws Exception {
+        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+            .userLevel("1")
+            .login("COURT_USER")
+            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .daysToExpire(89)
+            .owner("415")
+            .build());
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/members/415230104");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolMemberFilterRequestQuery> requestEntity = new RequestEntity<>(httpHeaders,
+                                                                                        HttpMethod.GET, uri);
+        ResponseEntity<List<String>> response = template.exchange(requestEntity, new ParameterizedTypeReference<>() {
+        });
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        assertThat(response.getBody()).hasSize(0);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getPoolMembers_bureauUser_bureauOwnedPool() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
             .userLevel("1")
@@ -795,7 +915,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/moj/pool-create/members");
 
         final PoolMemberFilterRequestQuery filteredBody3 = PoolMemberFilterRequestQuery.builder()
-            .poolNumber("415230103").nextDue(true).pageNumber(1).pageLimit(25).build();
+            .poolNumber("415230103").nextDue(Arrays.asList("set")).pageNumber(1).pageLimit(25).build();
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         RequestEntity<PoolMemberFilterRequestQuery> filteredEntity3 = new RequestEntity<>(filteredBody3, httpHeaders,
@@ -828,7 +948,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/moj/pool-create/members");
 
         final PoolMemberFilterRequestQuery filteredBody3 = PoolMemberFilterRequestQuery.builder()
-            .poolNumber("415230103").nextDue(false).pageNumber(1).pageLimit(25).build();
+            .poolNumber("415230103").nextDue(Arrays.asList("notSet")).pageNumber(1).pageLimit(25).build();
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         RequestEntity<PoolMemberFilterRequestQuery> filteredEntity3 = new RequestEntity<>(filteredBody3, httpHeaders,
@@ -843,6 +963,39 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(filteredPoolMembers3.size()).isEqualTo(1);
         assertThat(filteredPoolMembers3.get(0).getLastName()).isEqualToIgnoringCase("eight");
         assertThat(filteredPoolMembers3.get(0).getNextDate()).isNull();
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
+    public void getPoolMembers_filterByBothNextDueValues() throws Exception {
+        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+            .userLevel("1")
+            .login("COURT_USER")
+            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .daysToExpire(89)
+            .owner("415")
+            .build());
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/members");
+
+        final PoolMemberFilterRequestQuery filteredBody3 = PoolMemberFilterRequestQuery.builder()
+            .poolNumber("415230103").nextDue(Arrays.asList("set", "notSet")).pageNumber(1).pageLimit(25).build();
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolMemberFilterRequestQuery> filteredEntity3 = new RequestEntity<>(filteredBody3, httpHeaders,
+                                                                                          HttpMethod.POST, uri);
+        ResponseEntity<PaginatedList<FilterPoolMember>> filteredResponse3 = template
+            .exchange(filteredEntity3, new ParameterizedTypeReference<>() {
+            });
+
+        assertThat(filteredResponse3.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(filteredResponse3.getBody()).isNotNull();
+        List<FilterPoolMember> filteredPoolMembers3 = filteredResponse3.getBody().getData();
+        assertThat(filteredPoolMembers3.size()).isEqualTo(2);
+        assertThat(filteredPoolMembers3.get(0).getLastName()).isEqualToIgnoringCase("seven");
+        assertThat(filteredPoolMembers3.get(0).getNextDate()).isEqualTo(LocalDate.parse("2023-01-01"));
+        assertThat(filteredPoolMembers3.get(1).getLastName()).isEqualToIgnoringCase("eight");
+        assertThat(filteredPoolMembers3.get(1).getNextDate()).isNull();
     }
 
     @Test

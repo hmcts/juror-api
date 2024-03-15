@@ -246,7 +246,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         ResponseEntity<PoolRequestActiveListDto> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/pool-request/pools-active?locCode=415&tab=bureau&offset=0&sortBy"
-                    + "=serviceStartDate&sortOrder=asc")), PoolRequestActiveListDto.class);
+                    + "=poolNumber&sortOrder=asc")), PoolRequestActiveListDto.class);
 
         assertThat(responseEntity.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -258,7 +258,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .as("Expect the response body to contain 2 Pool Requests")
             .isEqualTo(2);
 
-        PoolRequestActiveListDto.PoolRequestActiveDataDto data = responseBody.getData().get(0);
+        PoolRequestActiveListDto.PoolRequestActiveDataDto data = responseBody.getData().get(1);
         assertThat(data.getCourtName())
             .as("Court Name should be populated from the Court Location table using the LOC_CODE foreign key")
             .isEqualTo("CHESTER");

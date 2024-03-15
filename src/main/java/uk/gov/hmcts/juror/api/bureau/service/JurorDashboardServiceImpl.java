@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.bureau.domain.StatsUnprocessedResponse;
 import uk.gov.hmcts.juror.api.bureau.domain.StatsWelshOnlineResponse;
 import uk.gov.hmcts.juror.api.bureau.domain.SurveyResponse;
 import uk.gov.hmcts.juror.api.bureau.exception.DashboardException;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

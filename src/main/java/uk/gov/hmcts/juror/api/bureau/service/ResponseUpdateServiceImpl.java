@@ -12,40 +12,42 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
-import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorCJS;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorCJSRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeed;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeedsRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.ChangeLog;
 import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogItem;
 import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogType;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHist;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHistRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.PhoneLog;
-import uk.gov.hmcts.juror.api.bureau.domain.PhoneLogRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.THistoryCode;
-import uk.gov.hmcts.juror.api.bureau.domain.TSpecialRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
+import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
+import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
+import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.time.ZoneId;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -58,12 +60,7 @@ import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.
 import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.JurorPhoneLogDto;
 import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.ReasonableAdjustmentsDto;
 import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.ThirdPartyJurorDetailsDto;
-import static uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeedQueries.byJurorNumberAndCode;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.ADDRESS;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.ADDRESS2;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.ADDRESS3;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.ADDRESS4;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.ADDRESS5;
+import static uk.gov.hmcts.juror.api.bureau.domain.ReasonableAdjustmentQueries.byJurorNumberAndCode;
 import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.ALT_PHONE_NUMBER;
 import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.BAIL;
 import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.BAIL_DETAILS;
@@ -85,7 +82,6 @@ import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.POSTCODE;
 import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.RELATIONSHIP;
 import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.RESIDENCY;
 import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.RESIDENCY_DETAIL;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.SPECIAL_NEEDS_ARRANGEMENTS;
 import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.THIRD_PARTY_EMAIL_ADDRESS;
 import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.THIRD_PARTY_FIRST_NAME;
 import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.THIRD_PARTY_LAST_NAME;
@@ -94,37 +90,37 @@ import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.THIRD_PARTY_OTHE
 import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.THIRD_PARTY_OTHER_REASON;
 import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.THIRD_PARTY_REASON;
 import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.TITLE;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.adjustTimeOnDate;
 
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ResponseUpdateServiceImpl implements ResponseUpdateService {
+    private final ContactCodeRepository contactCodeRepository;
     static final String HASH_SALT = "445NlwAglWA78Vh9DKbVwN5vPHsvy2kA";
     public static final String UPDATED_NOTES = "Updated notes";
     private static final String MESSAGE = "User {} applied {} total changes to response {}";
     private static final String OTHER_1 = "Other";
-    private final PoolRepository poolRepository;
-    private final PartHistRepository partHistRepository;
-    private final PhoneLogRepository phoneLogRepository;
-    private final JurorResponseRepository responseRepository;
+    private final JurorPoolRepository jurorRepository;
+    private final JurorHistoryRepository partHistRepository;
+    private final ContactLogRepository phoneLogRepository;
+    private final JurorDigitalResponseRepositoryMod responseRepository;
     private final ChangeLogRepository changeLogRepository;
     private final UserRepository userRepository;
     private final EntityManager entityManager;
-    private final BureauJurorSpecialNeedsRepository bureauJurorSpecialNeedsRepository;
-    private final TSpecialRepository tSpecialRepository;
-    private final BureauJurorCJSRepository cjsRepository;
+    private final JurorReasonableAdjustmentRepository bureauJurorSpecialNeedsRepository;
+    private final ReasonableAdjustmentsRepository reasonableAdjustmentsRepository;
+    private final JurorResponseCjsEmploymentRepositoryMod cjsRepository;
     private final AssignOnUpdateService assignOnUpdateService;
-    private final JurorResponseAuditRepository responseAuditRepository;
+    private final JurorResponseAuditRepositoryMod responseAuditRepository;
 
 
     @Override
     @Transactional(readOnly = true)
     public JurorNoteDto notesByJurorNumber(final String jurorId) {
-        final Pool pool = poolRepository.findByJurorNumber(jurorId);
+        final JurorPool juror = jurorRepository.findByJurorJurorNumber(jurorId);
 
-        if (pool != null) {
-            final String notes = pool.getNotes();
+        if (juror != null) {
+            final String notes = juror.getJuror().getNotes();
             return new JurorNoteDto(notes, comparisonHash(notes));
         } else {
             log.error("No POOL entry found for PART_NO={}", jurorId);
@@ -137,16 +133,16 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     public void updateNote(final JurorNoteDto noteDto,
                            final String jurorId,
                            final String auditUser) {
-        final Pool pool = poolRepository.findByJurorNumber(jurorId);
+        final JurorPool juror = jurorRepository.findByJurorJurorNumber(jurorId);
 
-        if (pool != null) {
-            if (comparisonHash(pool.getNotes()).compareTo(noteDto.getVersion()) == 0) {
+        if (juror != null) {
+            if (comparisonHash(juror.getJuror().getNotes()).compareTo(noteDto.getVersion()) == 0) {
                 // hashcode matches, save changes to notes
-                pool.setNotes(noteDto.getNotes());
-                final Pool updatedPool = poolRepository.save(pool);
+                juror.getJuror().setNotes(noteDto.getNotes());
+                final JurorPool updatedPool = jurorRepository.save(juror);
 
                 // JDB-2685: if no staff assigned, assign current login
-                JurorResponse jurorResponse = responseRepository.findByJurorNumber(jurorId);
+                DigitalResponse jurorResponse = responseRepository.findByJurorNumber(jurorId);
                 if (null == jurorResponse.getStaff()) {
                     assignOnUpdateService.assignToCurrentLogin(jurorResponse, auditUser);
                 }
@@ -158,27 +154,27 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                 responseRepository.save(jurorResponse);
 
                 if (log.isDebugEnabled()) {
-                    log.debug("Updated note for juror {}: {}", jurorId, updatedPool.getNotes());
+                    log.debug("Updated note for juror {}: {}", jurorId, updatedPool.getJuror().getNotes());
                 }
 
                 // audit the change to the notes column
-                partHistRepository.save(PartHist.builder()
-                    .userId(auditUser)
+                partHistRepository.save(JurorHistory.builder()
+                    .createdBy(auditUser)
                     .poolNumber(updatedPool.getPoolNumber())
-                    .info(UPDATED_NOTES)
-                    .historyCode(THistoryCode.POOL_EDIT)
+                    .otherInformation(UPDATED_NOTES)
+                    .historyCode(HistoryCodeMod.POOL_EDIT)
                     .jurorNumber(updatedPool.getJurorNumber())
                     .build());
             } else {
                 log.debug("Note failed hash comparison.");
                 if (log.isTraceEnabled()) {
-                    log.trace("UI={} DB={}", noteDto.getVersion(), comparisonHash(pool.getNotes()));
+                    log.trace("UI={} DB={}", noteDto.getVersion(), comparisonHash(juror.getJuror().getNotes()));
                 }
                 throw new NoteComparisonFailureException();
             }
         } else {
-            log.warn("No POOL entry found for PART_NO={}", jurorId);
-            throw new NoteNotFoundException("POOL entry not found");
+            log.warn("No Juror entry found for PART_NO={}", jurorId);
+            throw new NoteNotFoundException("Juror entry not found");
         }
     }
 
@@ -199,13 +195,13 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     @Transactional
     public void updatePhoneLog(final JurorPhoneLogDto phoneLogDto,
                                final String jurorId, final String auditUser) {
-        final PhoneLog phoneLog = PhoneLog.builder()
+        final ContactLog phoneLog = ContactLog.builder()
             .jurorNumber(jurorId)
             .notes(phoneLogDto.getNotes())
-            .startCall(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()))
+            .startCall(LocalDateTime.now())
             .username(auditUser)
-            .phoneCode(DEFAULT_PHONE_CODE)
-            .owner(JurorDigitalApplication.JUROR_OWNER)
+            .enquiryType(RepositoryUtils.retrieveFromDatabase(IContactCode.GENERAL.getCode(), contactCodeRepository))
+            //   .owner(JurorDigitalApplication.JUROR_OWNER)
             .build();
         if (log.isDebugEnabled()) {
             log.debug("User {} added to juror {} phone log: {}", auditUser, jurorId, phoneLog);
@@ -213,7 +209,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         phoneLogRepository.save(phoneLog);
 
         // JDB-2685: if no staff assigned, assign current login
-        JurorResponse savedResponse = responseRepository.findByJurorNumber(jurorId);
+        DigitalResponse savedResponse = responseRepository.findByJurorNumber(jurorId);
         if (null == savedResponse.getStaff()) {
             assignOnUpdateService.assignToCurrentLogin(savedResponse, auditUser);
         }
@@ -227,7 +223,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                                               final String jurorId, final String login)
         throws BureauOptimisticLockingException {
         log.debug("First person response {} juror details edit", jurorId);
-        final JurorResponse domain = responseRepository.findByJurorNumber(jurorId);
+        final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
         final User staff = userRepository.findByUsername(login);
 
         validateResponseState(jurorId, login, domain, staff);
@@ -247,13 +243,13 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         updateAndLog(TITLE, domain, dto.getTitle(), changeLog);
         updateAndLog(FIRST_NAME, domain, dto.getFirstName(), changeLog);
         updateAndLog(LAST_NAME, domain, dto.getLastName(), changeLog);
-        updateAndLog(ADDRESS, domain, dto.getAddress(), changeLog);
-        updateAndLog(ADDRESS2, domain, dto.getAddress2(), changeLog);
-        updateAndLog(ADDRESS3, domain, dto.getAddress3(), changeLog);
-        updateAndLog(ADDRESS4, domain, dto.getAddress4(), changeLog);
-        updateAndLog(ADDRESS5, domain, dto.getAddress5(), changeLog);
+        updateAndLog("addressLine1", domain, dto.getAddress(), changeLog);
+        updateAndLog("addressLine2", domain, dto.getAddress2(), changeLog);
+        updateAndLog("addressLine3", domain, dto.getAddress3(), changeLog);
+        updateAndLog("addressLine4", domain, dto.getAddress4(), changeLog);
+        updateAndLog("addressLine5", domain, dto.getAddress5(), changeLog);
         updateAndLog(POSTCODE, domain, dto.getPostcode(), changeLog);
-        updateAndLog(DOB, domain, dto.getDobTimestamp(), changeLog);
+        updateAndLog(DOB, domain, dto.getDob(), changeLog);
         updateAndLog(PHONE_NUMBER, domain, dto.getMainPhone(), changeLog);
         updateAndLog(ALT_PHONE_NUMBER, domain, dto.getAltPhone(), changeLog);
         updateAndLog(EMAIL, domain, dto.getEmailAddress(), changeLog);
@@ -281,7 +277,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                                              final String jurorId, final String login)
         throws BureauOptimisticLockingException {
         log.debug("Third party response {} juror details edit", jurorId);
-        final JurorResponse domain = responseRepository.findByJurorNumber(jurorId);
+        final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
         final User staff = userRepository.findByUsername(login);
 
         validateResponseState(jurorId, login, domain, staff);
@@ -300,13 +296,13 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         updateAndLog(TITLE, domain, dto.getTitle(), changeLog);
         updateAndLog(FIRST_NAME, domain, dto.getFirstName(), changeLog);
         updateAndLog(LAST_NAME, domain, dto.getLastName(), changeLog);
-        updateAndLog(ADDRESS, domain, dto.getAddress(), changeLog);
-        updateAndLog(ADDRESS2, domain, dto.getAddress2(), changeLog);
-        updateAndLog(ADDRESS3, domain, dto.getAddress3(), changeLog);
-        updateAndLog(ADDRESS4, domain, dto.getAddress4(), changeLog);
-        updateAndLog(ADDRESS5, domain, dto.getAddress5(), changeLog);
+        updateAndLog("addressLine1", domain, dto.getAddress(), changeLog);
+        updateAndLog("addressLine2", domain, dto.getAddress2(), changeLog);
+        updateAndLog("addressLine3", domain, dto.getAddress3(), changeLog);
+        updateAndLog("addressLine4", domain, dto.getAddress4(), changeLog);
+        updateAndLog("addressLine5", domain, dto.getAddress5(), changeLog);
         updateAndLog(POSTCODE, domain, dto.getPostcode(), changeLog);
-        updateAndLog(DOB, domain, dto.getDobTimestamp(), changeLog);
+        updateAndLog(DOB, domain, dto.getDob(), changeLog);
         updateAndLog(PHONE_NUMBER, domain, dto.getMainPhone(), changeLog);
         updateAndLog(ALT_PHONE_NUMBER, domain, dto.getAltPhone(), changeLog);
         updateAndLog(EMAIL, domain, dto.getEmailAddress(), changeLog);
@@ -351,7 +347,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         throws BureauOptimisticLockingException {
 
         log.debug("Deferral/excusal {} juror details edit", jurorId);
-        final JurorResponse domain = responseRepository.findByJurorNumber(jurorId);
+        final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
         final User staff = userRepository.findByUsername(login);
 
         validateResponseState(jurorId, login, domain, staff);
@@ -409,7 +405,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     public void updateSpecialNeeds(final ReasonableAdjustmentsDto dto, final String jurorId, final String login)
         throws BureauOptimisticLockingException {
         log.debug("Reasonable adjustment juror {} edit", jurorId);
-        final JurorResponse domain = responseRepository.findByJurorNumber(jurorId);
+        final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
         final User staff = userRepository.findByUsername(login);
 
         validateResponseState(jurorId, login, domain, staff);
@@ -424,7 +420,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
             .build();
 
         // perform the updates
-        updateAndLog(SPECIAL_NEEDS_ARRANGEMENTS, domain, dto.getSpecialArrangements(), changeLog);
+        updateAndLog("reasonableAdjustmentsArrangements", domain, dto.getSpecialArrangements(), changeLog);
         updateAndLogSpecialNeed(jurorId, SpecNeed.LIMITED_MOBILITY, dto.getLimitedMobility(), changeLog);
         updateAndLogSpecialNeed(jurorId, SpecNeed.HEARING_IMPAIRMENT, dto.getHearingImpairment(), changeLog);
         updateAndLogSpecialNeed(jurorId, SpecNeed.DIABETIC, dto.getDiabetes(), changeLog);
@@ -446,7 +442,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     public void updateCjs(final CJSEmploymentDetailsDto dto, final String jurorId, final String login)
         throws BureauOptimisticLockingException {
         log.debug("CJS employment for juror {} edit", jurorId);
-        final JurorResponse domain = responseRepository.findByJurorNumber(jurorId);
+        final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
         final User staff = userRepository.findByUsername(login);
 
         validateResponseState(jurorId, login, domain, staff);
@@ -499,13 +495,17 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     @Override
     public void updateResponseStatus(String jurorId, ProcessingStatus status, Integer version, String login) {
 
-        List<Long> poolStatus = Arrays.asList(2L, 5L, 6L, 7L);
+        List<Integer> poolStatus = Arrays.asList(
+            IJurorStatus.RESPONDED,
+            IJurorStatus.EXCUSED,
+            IJurorStatus.DISQUALIFIED,
+            IJurorStatus.DEFERRED);
 
         log.debug("Start - update response status, when legacy status changed for juror {}", jurorId);
 
-        final JurorResponse domain = responseRepository.findByJurorNumber(jurorId);
-        final Pool pool = poolRepository.findByJurorNumber(jurorId);
-        JurorResponse savedResponse = null;
+        final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
+        final JurorPool juror = jurorRepository.findByJurorJurorNumber(jurorId);
+        DigitalResponse savedResponse = null;
 
         if (jurorId != null) {
 
@@ -514,12 +514,12 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
 
         applyOptimisticLocking(domain, version);
 
-        if (pool != null) {
+        if (juror != null) {
             //update response if pool status = 2,5, 6 & 7
-            if (poolStatus.contains(pool.getStatus())) {
+            if (poolStatus.contains(juror.getStatus().getStatus())) {
                 domain.setProcessingStatus(ProcessingStatus.CLOSED);
                 domain.setProcessingComplete(Boolean.TRUE);
-            } else if (pool.getStatus().equals(11L)) {
+            } else if (juror.getStatus().getStatus() == IJurorStatus.ADDITIONAL_INFO) {
 
                 if (status.equals(ProcessingStatus.AWAITING_COURT_REPLY)) {
                     domain.setProcessingStatus(ProcessingStatus.AWAITING_COURT_REPLY);
@@ -538,7 +538,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
 
             if (savedResponse != null) {
                 //audit response status change
-                responseAuditRepository.save(JurorResponseAudit.builder()
+                responseAuditRepository.save(JurorResponseAuditMod.builder()
                     .jurorNumber(jurorId)
                     .login(login)
                     .oldProcessingStatus(savedResponse.getProcessingStatus())
@@ -561,7 +561,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     public void updateJurorEligibility(final JurorEligibilityDto dto,
                                        final String jurorId, final String login) {
         log.debug("Third party response {} juror details edit", jurorId);
-        final JurorResponse domain = responseRepository.findByJurorNumber(jurorId);
+        final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
         final User staff = userRepository.findByUsername(login);
 
         validateResponseState(jurorId, login, domain, staff);
@@ -699,32 +699,29 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         // find existing special need of type
         final String key = specNeedType.getCode();
         final String description = specNeedType.getDescription();
-        Optional<BureauJurorSpecialNeed> optSpNeeds = bureauJurorSpecialNeedsRepository.findOne(
+        Optional<JurorReasonableAdjustment> optSpNeeds = bureauJurorSpecialNeedsRepository.findOne(
             byJurorNumberAndCode(jurorId, key));
-        final BureauJurorSpecialNeed existingSpecNeed = optSpNeeds.isPresent()
-            ?
-            optSpNeeds.get()
-            :
-                null;
+        final JurorReasonableAdjustment existingSpecNeed = optSpNeeds.orElse(null);
         if (null != value) {
             log.debug("Updating special need employer '{}'", key);
-            BureauJurorSpecialNeed savedSpecialNeed;
+            JurorReasonableAdjustment savedSpecialNeed;
             if (null != existingSpecNeed) {
                 log.debug("Updating existing special need {}", existingSpecNeed);
-                final String oldValue = existingSpecNeed.getDetail();
-                existingSpecNeed.setDetail(value);
+                final String oldValue = existingSpecNeed.getReasonableAdjustmentDetail();
+                existingSpecNeed.setReasonableAdjustmentDetail(value);
                 savedSpecialNeed = bureauJurorSpecialNeedsRepository.save(existingSpecNeed);
-                changeLog.addChangeLogItem(new ChangeLogItem(key, oldValue, key, savedSpecialNeed.getDetail()));
+                changeLog.addChangeLogItem(
+                    new ChangeLogItem(key, oldValue, key, savedSpecialNeed.getReasonableAdjustmentDetail()));
             } else {
                 // insert new need
 
-                savedSpecialNeed = bureauJurorSpecialNeedsRepository.save(BureauJurorSpecialNeed.builder()
-                    .detail(value)
+                savedSpecialNeed = bureauJurorSpecialNeedsRepository.save(JurorReasonableAdjustment.builder()
+                    .reasonableAdjustmentDetail(value)
                     .jurorNumber(jurorId)
-                    .specialNeed(tSpecialRepository.findByCode(
-                        key))
+                    .reasonableAdjustment(reasonableAdjustmentsRepository.findByCode(key))
                     .build());
-                changeLog.addChangeLogItem(new ChangeLogItem(null, null, key, savedSpecialNeed.getDetail()));
+                changeLog.addChangeLogItem(
+                    new ChangeLogItem(null, null, key, savedSpecialNeed.getReasonableAdjustmentDetail()));
             }
             log.debug("Saved {}", savedSpecialNeed);
         } else {
@@ -732,7 +729,8 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
                 log.debug("Deleting {}", description);
                 bureauJurorSpecialNeedsRepository.delete(existingSpecNeed);
                 log.info("Deleted existing {} '{}'", description, key);
-                changeLog.addChangeLogItem(new ChangeLogItem(key, existingSpecNeed.getDetail(), null, null));
+                changeLog.addChangeLogItem(
+                    new ChangeLogItem(key, existingSpecNeed.getReasonableAdjustmentDetail(), null, null));
             } else {
                 log.trace("No {} employer '{}' to update", description, key);
             }
@@ -754,39 +752,39 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         final String key = cjsEmploymentType.getEmployer();
         final String description = cjsEmploymentType.getDescription();
 
-        final BureauJurorCJS existingCjs = cjsRepository.findByJurorNumberAndEmployer(jurorId, key);
+        final JurorResponseCjsEmployment existingCjs = cjsRepository.findByJurorNumberAndCjsEmployer(jurorId, key);
 
         if (null != value) {
             log.debug("Updating CJS employment employer '{}'", key);
-            BureauJurorCJS savedCjs;
+            JurorResponseCjsEmployment savedCjs;
             if (null != existingCjs) {
                 //found an existing employment
                 log.debug("Updating existing CJS employment {}", existingCjs);
-                final String oldValue = existingCjs.getDetails();
-                existingCjs.setDetails(value);
+                final String oldValue = existingCjs.getCjsEmployerDetails();
+                existingCjs.setCjsEmployerDetails(value);
                 if (value.compareTo(oldValue) != 0) {
                     // value has changed
                     savedCjs = cjsRepository.save(existingCjs);
-                    changeLog.addChangeLogItem(new ChangeLogItem(key, oldValue, key, savedCjs.getDetails()));
+                    changeLog.addChangeLogItem(new ChangeLogItem(key, oldValue, key, savedCjs.getCjsEmployerDetails()));
                     log.debug("Saved {}", savedCjs);
                 } else {
                     log.trace("No changes for {}", cjsEmploymentType);
                 }
             } else {
                 // insert new employment
-                savedCjs = cjsRepository.save(BureauJurorCJS.builder()
-                    .employer(cjsEmploymentType.getEmployer())
-                    .details(value)
+                savedCjs = cjsRepository.save(JurorResponseCjsEmployment.builder()
+                    .cjsEmployer(cjsEmploymentType.getEmployer())
+                    .cjsEmployerDetails(value)
                     .jurorNumber(jurorId)
                     .build());
-                changeLog.addChangeLogItem(new ChangeLogItem(null, null, key, savedCjs.getDetails()));
+                changeLog.addChangeLogItem(new ChangeLogItem(null, null, key, savedCjs.getCjsEmployerDetails()));
             }
         } else {
             if (null != existingCjs) {
                 log.debug("Deleting {}", description);
                 cjsRepository.delete(existingCjs);
                 log.info("Deleted existing {} '{}'", description, key);
-                changeLog.addChangeLogItem(new ChangeLogItem(key, existingCjs.getDetails(), null, null));
+                changeLog.addChangeLogItem(new ChangeLogItem(key, existingCjs.getCjsEmployerDetails(), null, null));
             } else {
                 log.trace("No {} employer '{}' to update", description, key);
             }
@@ -802,7 +800,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
      * @param value     New value for the fieldName in the domain object
      * @param changeLog Change log to add a {@link ChangeLogItem} auditing the changes (if any)
      */
-    private void updateAndLog(String fieldName, JurorResponse domain, Object value, ChangeLog changeLog) {
+    private void updateAndLog(String fieldName, DigitalResponse domain, Object value, ChangeLog changeLog) {
         final Field field = ReflectionUtils.findField(domain.getClass(), fieldName);
         if (field == null) {
             log.error("Failed to find field '{}' on object {}", fieldName, domain);
@@ -815,7 +813,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         // discern object equality
         boolean equal;
         if (!Objects.isNull(oldValue) && !Objects.isNull(value)
-            && oldValue instanceof final Date oldDate && value instanceof final Date newDate) {
+            && oldValue instanceof final LocalDate oldDate && value instanceof final LocalDate newDate) {
             log.trace("Date comparison");
             equal = isSameDate(oldDate, newDate);
         } else {
@@ -850,17 +848,13 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
      */
     private ChangeLogItem getReadableChangeLogItem(String fieldName, Object oldValue, Object newValue) {
         // we only want to tweak Strings and ignore Dates
-        if ((oldValue instanceof Date) || newValue instanceof Date) {
+        if ((oldValue instanceof LocalDate) || newValue instanceof LocalDate) {
             final DateTimeFormatter dobFormat = DateTimeFormatter.ISO_LOCAL_DATE;
-            if (oldValue instanceof Date) {
-                oldValue = (adjustTimeOnDate((Date) oldValue)).toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .format(dobFormat);
+            if (oldValue instanceof LocalDate oldValueLocalDate) {
+                oldValue = dobFormat.format(oldValueLocalDate);
             }
-            if (newValue instanceof Date) {
-                newValue = (adjustTimeOnDate((Date) newValue)).toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .format(dobFormat);
+            if (newValue instanceof LocalDate newValueLocalDate) {
+                newValue = dobFormat.format(newValueLocalDate);
             }
             return new ChangeLogItem(fieldName, oldValue, fieldName, newValue);
         }
@@ -899,7 +893,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
      * @throws StaffAssignmentException       Staff not found in persistence
      * @throws ResponseAlreadyMergedException Response cannot be updated as it has previously been completed
      */
-    private void validateResponseState(final String jurorId, final String login, final JurorResponse domain,
+    private void validateResponseState(final String jurorId, final String login, final DigitalResponse domain,
                                        final User staff) {
         log.debug("Validating response state for {}", jurorId);
 
@@ -934,12 +928,12 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
      * @param uiVersion Version supplied by the UI
      * @implNote Version bump will be evaluated by Hibernate during the next save operation.
      */
-    private void applyOptimisticLocking(final JurorResponse domain, final Integer uiVersion) {
+    private void applyOptimisticLocking(final DigitalResponse domain, final Integer uiVersion) {
         log.debug("Version: DB={}, UI={}", domain.getVersion(), uiVersion);
         if (domain.getVersion().compareTo(uiVersion) != 0) {
             log.warn("Version does not match!");
             throw new BureauOptimisticLockingException(new ObjectOptimisticLockingFailureException(
-                JurorResponse.class,
+                DigitalResponse.class,
                 null
             ));
         }
@@ -953,7 +947,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
      * @param changeLog Populated change log
      * @param domain    Updated DETATCHED juror response entity
      */
-    private void saveUpdatesOptimistically(final ChangeLog changeLog, final JurorResponse domain)
+    private void saveUpdatesOptimistically(final ChangeLog changeLog, final DigitalResponse domain)
         throws BureauOptimisticLockingException {
         try {
             log.debug("Saving updates.");
@@ -972,13 +966,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
      * @param date2
      * @return Boolean representing whether the dates match, regardless of time
      */
-    private boolean isSameDate(Date date1, Date date2) {
-        Calendar cal1 = Calendar.getInstance();
-        Calendar cal2 = Calendar.getInstance();
-        cal1.setTime(date1);
-        cal2.setTime(date2);
-
-        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR)
-            && cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR);
+    private boolean isSameDate(LocalDate date1, LocalDate date2) {
+        return date1.isEqual(date2);
     }
 }

@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -50,6 +51,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.moj.domain.IJurorStatus.DISQUALIFIED;
 
 @RunWith(SpringRunner.class)
+@SuppressWarnings("PMD.TooManyMethods")
 public class DisqualifyJurorDueToAgeServiceImplTest {
     private static final String BUREAU_USER = "400";
     private static final String JUROR_NUMBER = "123456789";
@@ -291,7 +293,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
     public void disqualifyJurorDueToAge_bureau_completedDigitalResponse() {
         DigitalResponse digitalResponse = createDigitalResponse(JUROR_NUMBER);
         digitalResponse.setProcessingComplete(true);
-        digitalResponse.setCompletedAt(LocalDate.now());
+        digitalResponse.setCompletedAt(LocalDateTime.now());
         digitalResponse.setProcessingStatus(ProcessingStatus.CLOSED);
 
         when(jurorDigitalResponseRepository.findByJurorNumber(JUROR_NUMBER)).thenReturn(digitalResponse);
@@ -331,7 +333,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
     public void disqualifyJurorDueToAge_bureau_completedPaperResponse() {
         PaperResponse paperResponse = createPaperResponse(JUROR_NUMBER);
         paperResponse.setProcessingComplete(true);
-        paperResponse.setCompletedAt(LocalDate.now());
+        paperResponse.setCompletedAt(LocalDateTime.now());
         paperResponse.setProcessingStatus(ProcessingStatus.CLOSED);
 
         when(jurorPaperResponseRepository.findByJurorNumber(JUROR_NUMBER)).thenReturn(paperResponse);
@@ -442,7 +444,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
     private PaperResponse createPaperResponse(String jurorNumber) {
         PaperResponse response = new PaperResponse();
         response.setJurorNumber(jurorNumber);
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
 
         response.setFirstName("FName");
         response.setLastName("LName");
@@ -474,7 +476,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         DigitalResponse response = new DigitalResponse();
 
         response.setJurorNumber(jurorNumber);
-        response.setDateReceived(LocalDate.now());
+        response.setDateReceived(LocalDateTime.now());
 
         response.setFirstName("FName");
         response.setLastName("LName");

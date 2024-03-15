@@ -7,32 +7,34 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSetting;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSettingRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorCJS;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorCJSRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeed;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeedsRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.TSpecial;
-import uk.gov.hmcts.juror.api.bureau.domain.TSpecialRepository;
-import uk.gov.hmcts.juror.api.bureau.service.UniquePoolService;
 import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReplyType;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
+import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.ReplyTypeRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
+import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
 import uk.gov.hmcts.juror.api.validation.ResponseInspectorImpl;
 
-import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,19 +58,21 @@ public class JurorServiceImplTest {
     private static final String TEST_JUROR_NUMBER = "209092530";
 
     @Mock
-    private BureauJurorSpecialNeedsRepository specialNeedRepository;
+    private JurorReasonableAdjustmentRepository specialNeedRepository;
 
     @Mock
-    private TSpecialRepository specialRepository;
+    private ReplyTypeRepository replyTypeRepository;
+    @Mock
+    private ReasonableAdjustmentsRepository reasonableAdjustmentsRepository;
 
     @Mock
-    private BureauJurorCJSRepository cjsEmploymentRepository;
+    private JurorResponseCjsEmploymentRepositoryMod cjsEmploymentRepository;
 
     @Mock
-    private JurorResponseRepository jurorResponseRepository;
+    private JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
     @Mock
-    private PoolRepository poolDetailsRepository;
+    private JurorPoolRepository poolDetailsRepository;
 
     @Mock
     private StraightThroughProcessor straightThroughProcessor;
@@ -83,7 +87,7 @@ public class JurorServiceImplTest {
     private UserService mockUserService;
 
     @Mock
-    private UniquePoolService mockUniquePoolService;
+    private PoolRequestService mockUniquePoolService;
 
     @Mock
     private JurorNotificationService jurorNotificationService;
@@ -100,34 +104,44 @@ public class JurorServiceImplTest {
     @InjectMocks
     private JurorPersistenceServiceImpl jurorPersistenceService;
 
-    private Pool jurorPoolDetails;
+    private JurorPool jurorPoolDetails;
+
+    private Juror juror;
 
     @Before
     public void setup() {
+        juror = new Juror();
+        PoolRequest poolRequest = new PoolRequest();
 
-        jurorPoolDetails = new Pool();
-        jurorPoolDetails.setPoolNumber("101");
-        jurorPoolDetails.setJurorNumber(TEST_JUROR_NUMBER);
-        jurorPoolDetails.setTitle("Dr");
-        jurorPoolDetails.setFirstName("Jane");
-        jurorPoolDetails.setLastName("CASTILLO");
+        jurorPoolDetails = new JurorPool();
+        jurorPoolDetails.setJuror(juror);
+        jurorPoolDetails.setPool(poolRequest);
+        juror = jurorPoolDetails.getJuror();
+
+        poolRequest.setPoolNumber("101");
+        juror.setJurorNumber(TEST_JUROR_NUMBER);
+        juror.setTitle("Dr");
+        juror.setFirstName("Jane");
+        juror.setLastName("CASTILLO");
+
 
         final CourtLocation testCourt = new CourtLocation();
-        testCourt.setCourtAttendTime(LocalTime.of(9,0));
-
-        jurorPoolDetails.setCourt(testCourt);
+        testCourt.setCourtAttendTime(LocalTime.of(9, 0));
+        poolRequest.setCourtLocation(testCourt);
+        jurorPoolDetails.getPool().setCourtLocation(testCourt);
     }
 
     @Test
     public void getJurorByByJurorNumber_WithJurorNumber_ReturnsJurorDetails() {
 
-        doReturn(jurorPoolDetails).when(poolDetailsRepository).findByJurorNumber(TEST_JUROR_NUMBER);
+        doReturn(jurorPoolDetails).when(poolDetailsRepository).findByJurorJurorNumber(TEST_JUROR_NUMBER);
 
         final JurorDetailDto jurorDto = defaultService.getJurorByJurorNumber(TEST_JUROR_NUMBER);
         assertThat(jurorDto)
             .extracting("jurorNumber", "title", "firstName", "lastName")
-            .contains(jurorPoolDetails.getJurorNumber(), jurorPoolDetails.getTitle(), jurorPoolDetails.getFirstName(),
-                jurorPoolDetails.getLastName());
+            .contains(jurorPoolDetails.getJurorNumber(), jurorPoolDetails.getJuror().getTitle(),
+                jurorPoolDetails.getJuror().getFirstName(),
+                jurorPoolDetails.getJuror().getLastName());
         assertThat(jurorDto.getCourtAttendTime()).isEqualTo("09:00");
     }
 
@@ -139,7 +153,7 @@ public class JurorServiceImplTest {
     @Test
     public void getJurorByJurorNumber_alternatePath_uniquePoolAttendTime() {
         doReturn("8am").when(mockUniquePoolService).getPoolAttendanceTime("101");
-        doReturn(jurorPoolDetails).when(poolDetailsRepository).findByJurorNumber(TEST_JUROR_NUMBER);
+        doReturn(jurorPoolDetails).when(poolDetailsRepository).findByJurorJurorNumber(TEST_JUROR_NUMBER);
 
         final JurorDetailDto jurorDto = defaultService.getJurorByJurorNumber(TEST_JUROR_NUMBER);
         assertThat(jurorDto.getCourtAttendTime()).isEqualTo("8am");
@@ -148,7 +162,7 @@ public class JurorServiceImplTest {
     @Test
     public void convertJurorResponseDtoToEntityTest() throws Exception {
         final String jurorNumber = "546547731";
-        final Date dob = Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant());
+        final LocalDate dob = LocalDateTime.now().toLocalDate();
         final String title = "Dr";
         final String firstName = "Namey";
         final String lastName = "McName";
@@ -172,7 +186,7 @@ public class JurorServiceImplTest {
         final String cjsEmployer = "Police";
         final String cjsEmployerDetails = "I am a policeman";
         final String specialNeedType = "M";
-        final String specialNeedDetails = "I have a broken leg.";
+        final String specialNeedDetail = "I have a broken leg.";
         final String specialArrangements = "I cannot get up stairs easily.";
         final String deferralReason = "I am in hospital.";
         final String deferralDates = "I'm in traction for another 6 weeks.";
@@ -220,9 +234,9 @@ public class JurorServiceImplTest {
                 .cjsEmployer(cjsEmployer)
                 .cjsEmployerDetails(cjsEmployerDetails)
                 .build()))
-            .specialNeeds(Collections.singletonList(JurorResponseDto.SpecialNeed.builder()
+            .reasonableAdjustments(Collections.singletonList(JurorResponseDto.ReasonableAdjustment.builder()
                 .assistanceType(specialNeedType)
-                .assistanceTypeDetails(specialNeedDetails)
+                .assistanceTypeDetails(specialNeedDetail)
                 .build()))
             .assistanceSpecialArrangements(specialArrangements)
             .thirdParty(JurorResponseDto.ThirdParty.builder()
@@ -237,24 +251,21 @@ public class JurorServiceImplTest {
                 .dates(deferralDates)
                 .build())
             .version(version)
+            .replyMethod(ReplyMethod.DIGITAL)
             .build();
 
         // set mocks to return the saved entities when repositories are invoked, simulating receiving back the
         // attached entity.
         //when(tSpecialRepository.findOne(any(Predicate.class))).thenReturn(new TSpecial(SPECIAL_NEED_TYPE, "Spec
         // need description"));
-        when(specialRepository.findByCode(anyString())).thenReturn(new TSpecial(specialNeedType,
-            "Spec need " + "description"));
-        // echo back the input
-        when(specialNeedRepository.save(any(BureauJurorSpecialNeed.class))).thenAnswer(
-            invocation -> invocation.getArgument(0));
-        // echo back the input
-        when(cjsEmploymentRepository.save(any(BureauJurorCJS.class))).thenAnswer(
-            invocation -> invocation.getArgument(0));
+        when(reasonableAdjustmentsRepository.findByCode(anyString()))
+            .thenReturn(new ReasonableAdjustments(specialNeedType, "Spec need " + "description"));
 
-        final JurorResponse entity = defaultService.convertJurorResponseDtoToEntity(dto);
-        verify(specialNeedRepository).save(any(BureauJurorSpecialNeed.class));
-        verify(cjsEmploymentRepository).save(any(BureauJurorCJS.class));
+        when(replyTypeRepository.findById(anyString())).thenReturn(
+            Optional.of(new ReplyType("DIGITAL", "Digital")));
+
+
+        final DigitalResponse entity = defaultService.convertJurorResponseDtoToEntity(dto);
 
         assertThat(entity).isNotNull();
         assertThat(entity.getJurorNumber()).isEqualTo(jurorNumber);
@@ -265,11 +276,11 @@ public class JurorServiceImplTest {
         assertThat(entity.getPhoneNumber()).isEqualTo(phoneNumber);
         assertThat(entity.getAltPhoneNumber()).isEqualTo(altPhoneNumber);
         assertThat(entity.getEmail()).isEqualTo(email);
-        assertThat(entity.getAddress()).isEqualTo(address1);
-        assertThat(entity.getAddress2()).isEqualTo(address2);
-        assertThat(entity.getAddress3()).isEqualTo(address3);
-        assertThat(entity.getAddress4()).isEqualTo(address4);
-        assertThat(entity.getAddress5()).isEqualTo(address5);
+        assertThat(entity.getAddressLine1()).isEqualTo(address1);
+        assertThat(entity.getAddressLine2()).isEqualTo(address2);
+        assertThat(entity.getAddressLine3()).isEqualTo(address3);
+        assertThat(entity.getAddressLine4()).isEqualTo(address4);
+        assertThat(entity.getAddressLine5()).isEqualTo(address5);
         assertThat(entity.getPostcode()).isEqualTo(postcode);
 
         assertThat(entity.getResidency()).isEqualTo(livedConsecutivelyAnswer);
@@ -283,14 +294,16 @@ public class JurorServiceImplTest {
 
         assertThat(entity.getCjsEmployments()).hasSize(1);
         assertThat(entity.getCjsEmployments().get(0).getJurorNumber()).isEqualTo(jurorNumber);
-        assertThat(entity.getCjsEmployments().get(0).getEmployer()).isEqualTo(cjsEmployer);
-        assertThat(entity.getCjsEmployments().get(0).getDetails()).isEqualTo(cjsEmployerDetails);
+        assertThat(entity.getCjsEmployments().get(0).getCjsEmployer()).isEqualTo(cjsEmployer);
+        assertThat(entity.getCjsEmployments().get(0).getCjsEmployerDetails()).isEqualTo(cjsEmployerDetails);
 
-        assertThat(entity.getSpecialNeeds()).hasSize(1);
-        assertThat(entity.getSpecialNeeds().get(0).getJurorNumber()).isEqualTo(jurorNumber);
-        assertThat(entity.getSpecialNeeds().get(0).getSpecialNeed().getCode()).isEqualTo(specialNeedType);
-        assertThat(entity.getSpecialNeeds().get(0).getDetail()).isEqualTo(specialNeedDetails);
-        assertThat(entity.getSpecialNeedsArrangements()).isEqualTo(specialArrangements);
+        assertThat(entity.getReasonableAdjustments()).hasSize(1);
+        assertThat(entity.getReasonableAdjustments().get(0).getJurorNumber()).isEqualTo(jurorNumber);
+        assertThat(entity.getReasonableAdjustments().get(0).getReasonableAdjustment().getCode())
+            .isEqualTo(specialNeedType);
+        assertThat(entity.getReasonableAdjustments().get(0).getReasonableAdjustmentDetail())
+            .isEqualTo(specialNeedDetail);
+        assertThat(entity.getReasonableAdjustmentsArrangements()).isEqualTo(specialArrangements);
 
         assertThat(entity.getDeferralReason()).isEqualTo(deferralReason);
         assertThat(entity.getDeferralDate()).isEqualTo(deferralDates);
@@ -301,12 +314,13 @@ public class JurorServiceImplTest {
         assertThat(entity.getThirdPartyLName()).isEqualTo(thirdPartyLname);
         assertThat(entity.getThirdPartyReason()).isEqualTo(thirdPartyReason);
 
-        assertThat(entity.getDateReceived()).isBefore(Date.from(Instant.now().plusSeconds(1)));
+        assertThat(entity.getDateReceived()).isBefore(LocalDateTime.now().plusSeconds(1));
         assertThat(entity.getProcessingStatus()).isEqualTo(ProcessingStatus.TODO);
 
         assertThat(entity.getVersion()).isEqualTo(version);
 
-        verify(poolDetailsRepository, times(1)).findByJurorNumber(jurorNumber);
+
+        verify(poolDetailsRepository, times(1)).findByJurorJurorNumber(jurorNumber);
         verify(urgencyService, times(1)).setUrgencyFlags(eq(entity), Mockito.isNull());
     }
 
@@ -315,7 +329,7 @@ public class JurorServiceImplTest {
         StraightThroughProcessingServiceException {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
-        final JurorResponse jurorResponse = mock(JurorResponse.class);
+        final DigitalResponse jurorResponse = mock(DigitalResponse.class);
 
         given(mockJurorService.saveResponse(any(JurorResponseDto.class))).willReturn(jurorResponse);
 
@@ -329,7 +343,7 @@ public class JurorServiceImplTest {
 
         assertThat(success).isTrue();
         // check we executed the straight-through acceptance logic
-        verify(straightThroughProcessor).processAcceptance(any(JurorResponse.class));
+        verify(straightThroughProcessor).processAcceptance(any(DigitalResponse.class));
     }
 
     @Test
@@ -337,7 +351,7 @@ public class JurorServiceImplTest {
         StraightThroughProcessingServiceException {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
-        final JurorResponse jurorResponse = mock(JurorResponse.class);
+        final DigitalResponse jurorResponse = mock(DigitalResponse.class);
 
         given(mockJurorService.saveResponse(any(JurorResponseDto.class))).willReturn(jurorResponse);
 
@@ -352,7 +366,7 @@ public class JurorServiceImplTest {
 
         assertThat(success).isTrue();
         // check we didn't execute the straight-through acceptance logic
-        verify(straightThroughProcessor, times(0)).processAcceptance(any(JurorResponse.class));
+        verify(straightThroughProcessor, times(0)).processAcceptance(any(DigitalResponse.class));
     }
 
     @Test
@@ -360,7 +374,7 @@ public class JurorServiceImplTest {
         StraightThroughProcessingServiceException {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
-        final JurorResponse jurorResponse = mock(JurorResponse.class);
+        final DigitalResponse jurorResponse = mock(DigitalResponse.class);
 
         given(mockJurorService.saveResponse(any(JurorResponseDto.class))).willReturn(jurorResponse);
 
@@ -375,9 +389,9 @@ public class JurorServiceImplTest {
         Boolean success = jurorPersistenceService.persistJurorResponse(responseDto);
 
         assertThat(success).isTrue();
-        verify(straightThroughProcessor, times(0)).processAcceptance(any(JurorResponse.class));
-        verify(straightThroughProcessor).processDeceasedExcusal(any(JurorResponse.class));
-        verify(straightThroughProcessor, times(0)).processAgeExcusal(any(JurorResponse.class));
+        verify(straightThroughProcessor, times(0)).processAcceptance(any(DigitalResponse.class));
+        verify(straightThroughProcessor).processDeceasedExcusal(any(DigitalResponse.class));
+        verify(straightThroughProcessor, times(0)).processAgeExcusal(any(DigitalResponse.class));
     }
 
     @Test
@@ -385,7 +399,7 @@ public class JurorServiceImplTest {
         StraightThroughProcessingServiceException {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
-        final JurorResponse jurorResponse = mock(JurorResponse.class);
+        final DigitalResponse jurorResponse = mock(DigitalResponse.class);
 
         given(mockJurorService.saveResponse(any(JurorResponseDto.class))).willReturn(jurorResponse);
 
@@ -406,15 +420,15 @@ public class JurorServiceImplTest {
 
         assertThat(success).isTrue();
         // check we didn't execute the deceased-excusal logic
-        verify(straightThroughProcessor, times(0)).processAcceptance(any(JurorResponse.class));
-        verify(straightThroughProcessor, times(0)).processDeceasedExcusal(any(JurorResponse.class));
+        verify(straightThroughProcessor, times(0)).processAcceptance(any(DigitalResponse.class));
+        verify(straightThroughProcessor, times(0)).processDeceasedExcusal(any(DigitalResponse.class));
     }
 
     @Test
     public void processAgeExcusal_happyPath_ageExcusalCalled() throws StraightThroughProcessingServiceException {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
-        final JurorResponse jurorResponse = mock(JurorResponse.class);
+        final DigitalResponse jurorResponse = mock(DigitalResponse.class);
 
         given(mockJurorService.saveResponse(any(JurorResponseDto.class))).willReturn(jurorResponse);
 
@@ -435,17 +449,17 @@ public class JurorServiceImplTest {
 
         assertThat(success).isTrue();
         // check we executed the age-excusal logic
-        verify(straightThroughProcessor, times(0)).processAcceptance(any(JurorResponse.class));
+        verify(straightThroughProcessor, times(0)).processAcceptance(any(DigitalResponse.class));
         verify(straightThroughProcessor, times(0))
-            .processDeceasedExcusal(any(JurorResponse.class));
-        verify(straightThroughProcessor).processAgeExcusal(any(JurorResponse.class));
+            .processDeceasedExcusal(any(DigitalResponse.class));
+        verify(straightThroughProcessor).processAgeExcusal(any(DigitalResponse.class));
     }
 
     @Test
     public void processAgeExcusal_unhappyPath_ageExcusalNotCalled() throws StraightThroughProcessingServiceException {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
-        final JurorResponse jurorResponse = mock(JurorResponse.class);
+        final DigitalResponse jurorResponse = mock(DigitalResponse.class);
 
         given(mockJurorService.saveResponse(any(JurorResponseDto.class))).willReturn(jurorResponse);
 
@@ -467,9 +481,9 @@ public class JurorServiceImplTest {
 
         assertThat(success).isTrue();
         // check we executed the age-excusal logic
-        verify(straightThroughProcessor, times(0)).processAcceptance(any(JurorResponse.class));
+        verify(straightThroughProcessor, times(0)).processAcceptance(any(DigitalResponse.class));
         verify(straightThroughProcessor, times(0))
-            .processDeceasedExcusal(any(JurorResponse.class));
-        verify(straightThroughProcessor, times(0)).processAgeExcusal(any(JurorResponse.class));
+            .processDeceasedExcusal(any(DigitalResponse.class));
+        verify(straightThroughProcessor, times(0)).processAgeExcusal(any(DigitalResponse.class));
     }
 }

@@ -6,12 +6,12 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSetting;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSettingRepository;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyAdapter;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
+import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
 import uk.gov.hmcts.juror.api.validation.ResponseInspectorImpl;
 
 import java.util.Optional;
@@ -39,9 +39,9 @@ public class JurorNotificationServiceImplTest {
     private static final Boolean USE_THIRDPARTY_EMAIL = Boolean.FALSE;
     private static final String TP_EMAIL = "thirdparty@thirdparty.com";
 
-    private JurorResponse firstPerson;
-    private JurorResponse thirdPartyJurorEmail;
-    private JurorResponse thirdPartyOwnEmail;
+    private DigitalResponse firstPerson;
+    private DigitalResponse thirdPartyJurorEmail;
+    private DigitalResponse thirdPartyOwnEmail;
     private AppSetting firstPersonDevTemplateSetting;
     private AppSetting thirdPartyDevTemplateSetting;
     private final UUID firstPersonTemplateUuid = UUID.randomUUID();
@@ -61,38 +61,41 @@ public class JurorNotificationServiceImplTest {
 
     @Before
     public void setUp() throws Exception {
-        firstPerson = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .title(JUROR_TITLE)
-            .firstName(JUROR_FIRST_NAME)
-            .lastName(JUROR_LAST_NAME)
-            .email(JUROR_EMAIL)
-            .build();
+        firstPerson = new DigitalResponse();
+        firstPerson.setJurorNumber(JUROR_NUMBER);
+        firstPerson.setTitle(JUROR_TITLE);
+        firstPerson.setFirstName(JUROR_FIRST_NAME);
+        firstPerson.setLastName(JUROR_LAST_NAME);
+        firstPerson.setEmail(JUROR_EMAIL);
 
-        thirdPartyJurorEmail = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .title(JUROR_TITLE)
-            .firstName(JUROR_FIRST_NAME)
-            .lastName(JUROR_LAST_NAME)
-            .thirdPartyFName(THIRD_PARTY_FIRST_NAME)
-            .thirdPartyLName(THIRD_PARTY_LAST_NAME)
-            .email(JUROR_EMAIL)
-            //third party details
-            .jurorEmailDetails(USE_JUROR_EMAIL)
-            .emailAddress(TP_EMAIL)
-            .build();
-        thirdPartyOwnEmail = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .title(JUROR_TITLE)
-            .firstName(JUROR_FIRST_NAME)
-            .lastName(JUROR_LAST_NAME)
-            .thirdPartyFName(THIRD_PARTY_FIRST_NAME)
-            .thirdPartyLName(THIRD_PARTY_LAST_NAME)
-            .email(JUROR_EMAIL)
-            //third party details
-            .jurorEmailDetails(USE_THIRDPARTY_EMAIL)
-            .emailAddress(TP_EMAIL)//juror email
-            .build();
+
+        thirdPartyJurorEmail = new DigitalResponse();
+        thirdPartyJurorEmail.setJurorNumber(JUROR_NUMBER);
+        thirdPartyJurorEmail.setTitle(JUROR_TITLE);
+        thirdPartyJurorEmail.setFirstName(JUROR_FIRST_NAME);
+        thirdPartyJurorEmail.setLastName(JUROR_LAST_NAME);
+        thirdPartyJurorEmail.setThirdPartyFName(THIRD_PARTY_FIRST_NAME);
+        thirdPartyJurorEmail.setThirdPartyLName(THIRD_PARTY_LAST_NAME);
+        thirdPartyJurorEmail.setEmail(JUROR_EMAIL);
+
+        //third party details
+        thirdPartyJurorEmail.setJurorEmailDetails(USE_JUROR_EMAIL);
+        thirdPartyJurorEmail.setEmailAddress(TP_EMAIL);
+
+
+        thirdPartyOwnEmail = new DigitalResponse();
+        thirdPartyOwnEmail.setJurorNumber(JUROR_NUMBER);
+        thirdPartyOwnEmail.setTitle(JUROR_TITLE);
+        thirdPartyOwnEmail.setFirstName(JUROR_FIRST_NAME);
+        thirdPartyOwnEmail.setLastName(JUROR_LAST_NAME);
+        thirdPartyOwnEmail.setThirdPartyFName(THIRD_PARTY_FIRST_NAME);
+        thirdPartyOwnEmail.setThirdPartyLName(THIRD_PARTY_LAST_NAME);
+        thirdPartyOwnEmail.setEmail(JUROR_EMAIL);
+
+        //third party details
+        thirdPartyOwnEmail.setJurorEmailDetails(USE_THIRDPARTY_EMAIL);
+        thirdPartyOwnEmail.setEmailAddress(TP_EMAIL);
+
 
         firstPersonDevTemplateSetting = AppSetting.builder().value(firstPersonTemplateUuid.toString()).build();
         thirdPartyDevTemplateSetting = AppSetting.builder().value(thirdPartyTemplateUuid.toString()).build();
@@ -136,7 +139,7 @@ public class JurorNotificationServiceImplTest {
     public void createEmailNotification() {
 
         given(appSettingRepository.findById(anyString())).willReturn(Optional.of(firstPersonDevTemplateSetting));
-        given(responseInspector.activeContactEmail(any(JurorResponse.class))).willCallRealMethod();
+        given(responseInspector.activeContactEmail(any(DigitalResponse.class))).willCallRealMethod();
 
         final EmailNotification notification = service.createEmailNotification(firstPerson,
             NotifyTemplateType.STRAIGHT_THROUGH);
@@ -161,7 +164,7 @@ public class JurorNotificationServiceImplTest {
     public void thirdParty_jurorEmailMessage() {
 
         given(appSettingRepository.findById(anyString())).willReturn(Optional.of(thirdPartyDevTemplateSetting));
-        given(responseInspector.activeContactEmail(any(JurorResponse.class))).willCallRealMethod();
+        given(responseInspector.activeContactEmail(any(DigitalResponse.class))).willCallRealMethod();
 
         final EmailNotification notification = service.createEmailNotification(thirdPartyJurorEmail,
             NotifyTemplateType.STRAIGHT_THROUGH);
@@ -186,8 +189,8 @@ public class JurorNotificationServiceImplTest {
     public void thirdParty_thirdPartyEmailMessage() {
 
         given(appSettingRepository.findById(anyString())).willReturn(Optional.of(thirdPartyDevTemplateSetting));
-        given(responseInspector.activeContactEmail(any(JurorResponse.class))).willCallRealMethod();
-        given(responseInspector.isThirdPartyResponse(any(JurorResponse.class))).willCallRealMethod();
+        given(responseInspector.activeContactEmail(any(DigitalResponse.class))).willCallRealMethod();
+        given(responseInspector.isThirdPartyResponse(any(DigitalResponse.class))).willCallRealMethod();
 
         final EmailNotification notification = service.createEmailNotification(thirdPartyOwnEmail,
             NotifyTemplateType.STRAIGHT_THROUGH);

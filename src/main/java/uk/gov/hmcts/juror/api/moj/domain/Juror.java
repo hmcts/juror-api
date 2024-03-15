@@ -1,16 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -55,6 +45,7 @@ public class Juror extends Address implements Serializable {
     @Pattern(regexp = JUROR_NUMBER)
     @Length(max = 9)
     private String jurorNumber;
+
 
     @Column(name = "poll_number")
     @Length(max = 5)
@@ -247,13 +238,26 @@ public class Juror extends Address implements Serializable {
     @Column(name = "claiming_subsistence_allowance")
     private boolean claimingSubsistenceAllowance;
 
+    @Column(name = "is_locked")
+    @NotAudited
+    private boolean isLocked;
+
+    @Column(name = "login_attempts")
+    @NotAudited
+    private int loginAttempts;
+
     @Column(name = "bureau_transfer_date")
     @NotAudited
     private LocalDate bureauTransferDate;
 
+    @Column(name = "service_comp_comms_status")
+    @NotAudited
+    private String serviceCompCommsStatus;
+
     @NotAudited
     @OneToMany(mappedBy = "juror", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     private Set<JurorPool> associatedPools;
+
 
     @PrePersist
     private void prePersist() {

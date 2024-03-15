@@ -9,26 +9,30 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalCodeDto;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeEntity;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHist;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHistRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.ExcusalException;
 import uk.gov.hmcts.juror.api.juror.domain.ExcusalDeniedLetter;
 import uk.gov.hmcts.juror.api.juror.domain.ExcusalDeniedLetterRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ExcusalLetter;
 import uk.gov.hmcts.juror.api.juror.domain.ExcusalLetterRepository;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -37,21 +41,23 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ResponseExcusalServiceImplTest {
 
     @Mock
-    private JurorResponseRepository jurorResponseRepository;
+    private JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
     @Mock
-    private JurorResponseAuditRepository jurorResponseAuditRepository;
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     @Mock
-    private PoolRepository poolRepository;
-
+    private JurorPoolRepository poolRepository;
     @Mock
-    private PartHistRepository partHistRepository;
+    private JurorStatusRepository jurorStatusRepository;
+    @Mock
+    private JurorHistoryRepository partHistRepository;
 
     @Mock
     private ExcusalCodeRepository excusalCodeRepository;
@@ -97,15 +103,20 @@ public class ResponseExcusalServiceImplTest {
 
     @Test
     public void excuseJuror_happy() throws Exception {
+        JurorStatus excusedJurorStatus = mock(JurorStatus.class);
+        when(jurorStatusRepository.findById(IJurorStatus.EXCUSED))
+            .thenReturn(Optional.ofNullable(excusedJurorStatus));
         String jurorId = "123456789";
 
         // configure mocks
-        JurorResponse jurorResponse = mock(JurorResponse.class);
+        DigitalResponse jurorResponse = mock(DigitalResponse.class);
         given(jurorResponse.getJurorNumber()).willReturn(jurorId);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(jurorResponse);
 
-        Pool poolDetails = mock(Pool.class);
-        given(poolRepository.findByJurorNumber(any(String.class))).willReturn(poolDetails);
+        JurorPool poolDetails = mock(JurorPool.class);
+        Juror juror = mock(Juror.class);
+        when(poolDetails.getJuror()).thenReturn(juror);
+        given(poolRepository.findByJurorJurorNumber(any(String.class))).willReturn(poolDetails);
 
         String excusalCode = "B";
         List<ExcusalCodeEntity> excusalCodeEntityList = new ArrayList<>();
@@ -124,17 +135,18 @@ public class ResponseExcusalServiceImplTest {
         verify(jurorResponse).setProcessingStatus(ProcessingStatus.CLOSED);
         verify(mergeService).mergeResponse(jurorResponse, login);
 
-        verify(jurorResponseAuditRepository).save(any(JurorResponseAudit.class));
+        verify(jurorResponseAuditRepository).save(any(JurorResponseAuditMod.class));
 
-        verify(poolDetails).setResponded(Pool.RESPONDED);
-        verify(poolDetails).setExcusalDate(any(Date.class));
-        verify(poolDetails).setExcusalCode(excusalCode);
+        verify(poolDetails, times(3)).getJuror();
+        verify(juror).setResponded(true);
+        verify(juror).setExcusalDate(any(LocalDate.class));
+        verify(juror).setExcusalCode(excusalCode);
         verify(poolDetails).setUserEdtq(login);
-        verify(poolDetails).setStatus(IPoolStatus.EXCUSED);
-        verify(poolDetails).setHearingDate(null);
+        verify(poolDetails).setStatus(excusedJurorStatus);
+        verify(poolDetails).setNextDate(null);
         verify(poolRepository).save(poolDetails);
 
-        verify(partHistRepository).save(any(PartHist.class));
+        verify(partHistRepository).save(any(JurorHistory.class));
         verify(excusalLetterRepository).save(any(ExcusalLetter.class));
     }
 
@@ -146,8 +158,8 @@ public class ResponseExcusalServiceImplTest {
         ExcusalCodeDto excusalCodeDto = new ExcusalCodeDto(1, excusalCode, "Description");
 
         // configure mocks
-        JurorResponse jurorResponse = mock(JurorResponse.class);
-        Pool poolDetails = mock(Pool.class);
+        DigitalResponse jurorResponse = mock(DigitalResponse.class);
+        JurorPool poolDetails = mock(JurorPool.class);
 
         List<ExcusalCodeEntity> excusalCodeEntityList = new ArrayList<>();
         // Add codes to list, but not the one we are using in this test
@@ -166,17 +178,16 @@ public class ResponseExcusalServiceImplTest {
             verify(jurorResponse, times(0)).setProcessingStatus(ProcessingStatus.CLOSED);
             verify(jurorResponseRepository, times(0)).save(jurorResponse);
 
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
 
-            verify(poolDetails, times(0)).setResponded(Pool.RESPONDED);
-            verify(poolDetails, times(0)).setExcusalDate(any(Date.class));
-            verify(poolDetails, times(0)).setExcusalCode(excusalCode);
+            verify(poolDetails, times(0)).getJuror();
             verify(poolDetails, times(0)).setUserEdtq(login);
-            verify(poolDetails, times(0)).setStatus(IPoolStatus.EXCUSED);
-            verify(poolDetails, times(0)).setHearingDate(null);
+            verify(poolDetails, times(0)).getStatus();
+            verify(poolDetails, times(0)).setStatus(any());
+            verify(poolDetails, times(0)).setNextDate(null);
             verify(poolRepository, times(0)).save(poolDetails);
 
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
             verify(excusalLetterRepository, times(0)).save(any(ExcusalLetter.class));
         }
     }
@@ -189,9 +200,9 @@ public class ResponseExcusalServiceImplTest {
         ExcusalCodeDto excusalCodeDto = new ExcusalCodeDto(1, excusalCode, "Description");
 
         // configure mocks
-        JurorResponse jurorResponse = mock(JurorResponse.class);
+        DigitalResponse jurorResponse = mock(DigitalResponse.class);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(null);
-        Pool poolDetails = mock(Pool.class);
+        JurorPool poolDetails = mock(JurorPool.class);
 
         List<ExcusalCodeEntity> excusalCodeEntityList = new ArrayList<>();
         excusalCodeEntityList.add(new ExcusalCodeEntity("B", "Description of code"));
@@ -209,32 +220,37 @@ public class ResponseExcusalServiceImplTest {
             verify(jurorResponse, times(0)).setProcessingStatus(ProcessingStatus.CLOSED);
             verify(jurorResponseRepository, times(0)).save(jurorResponse);
 
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
 
-            verify(poolDetails, times(0)).setResponded(Pool.RESPONDED);
-            verify(poolDetails, times(0)).setExcusalDate(any(Date.class));
-            verify(poolDetails, times(0)).setExcusalCode(excusalCode);
+            verify(poolDetails, times(0)).getJuror();
             verify(poolDetails, times(0)).setUserEdtq(login);
-            verify(poolDetails, times(0)).setStatus(IPoolStatus.EXCUSED);
-            verify(poolDetails, times(0)).setHearingDate(null);
+            verify(poolDetails, times(0)).getStatus();
+            verify(poolDetails, times(0)).setStatus(any());
+            verify(poolDetails, times(0)).setNextDate(null);
             verify(poolRepository, times(0)).save(poolDetails);
 
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
             verify(excusalLetterRepository, times(0)).save(any(ExcusalLetter.class));
         }
     }
 
     @Test
     public void rejectExcusalRequest_happy() throws Exception {
+        JurorStatus respondedStatus = mock(JurorStatus.class);
+        when(jurorStatusRepository.findById(IJurorStatus.RESPONDED))
+            .thenReturn(Optional.of(respondedStatus));
+
         String jurorId = "123456789";
 
         // configure mocks
-        JurorResponse jurorResponse = mock(JurorResponse.class);
+        DigitalResponse jurorResponse = mock(DigitalResponse.class);
         given(jurorResponse.getJurorNumber()).willReturn(jurorId);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(jurorResponse);
 
-        Pool poolDetails = mock(Pool.class);
-        given(poolRepository.findByJurorNumber(any(String.class))).willReturn(poolDetails);
+        JurorPool poolDetails = mock(JurorPool.class);
+        Juror juror = mock(Juror.class);
+        when(poolDetails.getJuror()).thenReturn(juror);
+        given(poolRepository.findByJurorJurorNumber(any(String.class))).willReturn(poolDetails);
 
         String excusalCode = "B";
         List<ExcusalCodeEntity> excusalCodeEntityList = new ArrayList<>();
@@ -253,17 +269,19 @@ public class ResponseExcusalServiceImplTest {
         verify(jurorResponse).setProcessingStatus(ProcessingStatus.CLOSED);
         verify(mergeService).mergeResponse(jurorResponse, login);
 
-        verify(jurorResponseAuditRepository).save(any(JurorResponseAudit.class));
+        verify(jurorResponseAuditRepository).save(any(JurorResponseAuditMod.class));
 
-        verify(poolDetails).setResponded(Pool.RESPONDED);
-        verify(poolDetails).setExcusalDate(any(Date.class));
-        verify(poolDetails).setExcusalCode(excusalCode);
+        verify(poolDetails, times(4)).getJuror();
+        verify(juror).setResponded(true);
+        verify(juror).setExcusalDate(any(LocalDate.class));
+        verify(juror).setExcusalCode(excusalCode);
+        verify(juror).setExcusalRejected("Y");
         verify(poolDetails).setUserEdtq(login);
-        verify(poolDetails).setExcusalRejected("Y");
-        verify(poolDetails).setStatus(IPoolStatus.RESPONDED);
+        verify(poolDetails).setStatus(respondedStatus);
+        verify(jurorStatusRepository).findById(IJurorStatus.RESPONDED);
         verify(poolRepository).save(poolDetails);
 
-        verify(partHistRepository, times(2)).save(any(PartHist.class));
+        verify(partHistRepository, times(2)).save(any(JurorHistory.class));
         verify(excusalDeniedLetterRepository).save(any(ExcusalDeniedLetter.class));
     }
 
@@ -275,8 +293,8 @@ public class ResponseExcusalServiceImplTest {
         ExcusalCodeDto excusalCodeDto = new ExcusalCodeDto(1, excusalCode, "Description");
 
         // configure mocks
-        JurorResponse jurorResponse = mock(JurorResponse.class);
-        Pool poolDetails = mock(Pool.class);
+        DigitalResponse jurorResponse = mock(DigitalResponse.class);
+        JurorPool poolDetails = mock(JurorPool.class);
 
         List<ExcusalCodeEntity> excusalCodeEntityList = new ArrayList<>();
         // Add codes to list, but not the one we are using in this test
@@ -295,17 +313,15 @@ public class ResponseExcusalServiceImplTest {
             verify(jurorResponse, times(0)).setProcessingStatus(ProcessingStatus.CLOSED);
             verify(mergeService, times(0)).mergeResponse(jurorResponse, login);
 
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
 
-            verify(poolDetails, times(0)).setResponded(Pool.RESPONDED);
-            verify(poolDetails, times(0)).setExcusalDate(any(Date.class));
-            verify(poolDetails, times(0)).setExcusalCode(excusalCode);
+            verify(poolDetails, times(0)).getJuror();
             verify(poolDetails, times(0)).setUserEdtq(login);
-            verify(poolDetails, times(0)).setExcusalRejected("Y");
-            verify(poolDetails, times(0)).setStatus(IPoolStatus.RESPONDED);
+            verify(poolDetails, times(0)).getStatus();
+            verify(poolDetails, times(0)).setStatus(any(JurorStatus.class));
             verify(poolRepository, times(0)).save(poolDetails);
 
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
             verify(excusalDeniedLetterRepository, times(0)).save(any(ExcusalDeniedLetter.class));
         }
     }
@@ -318,10 +334,9 @@ public class ResponseExcusalServiceImplTest {
         ExcusalCodeDto excusalCodeDto = new ExcusalCodeDto(1, excusalCode, "Description");
 
         // configure mocks
-        JurorResponse jurorResponse = mock(JurorResponse.class);
+        DigitalResponse jurorResponse = mock(DigitalResponse.class);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(null);
-        Pool poolDetails = mock(Pool.class);
-
+        JurorPool poolDetails = mock(JurorPool.class);
         List<ExcusalCodeEntity> excusalCodeEntityList = new ArrayList<>();
         excusalCodeEntityList.add(new ExcusalCodeEntity("B", "Description of code"));
         excusalCodeEntityList.add(new ExcusalCodeEntity(excusalCode, "Description of another code"));
@@ -337,17 +352,15 @@ public class ResponseExcusalServiceImplTest {
             verify(jurorResponse, times(0)).setProcessingStatus(ProcessingStatus.CLOSED);
             verify(mergeService, times(0)).mergeResponse(jurorResponse, login);
 
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
 
-            verify(poolDetails, times(0)).setResponded(Pool.RESPONDED);
-            verify(poolDetails, times(0)).setExcusalDate(any(Date.class));
-            verify(poolDetails, times(0)).setExcusalCode(excusalCode);
+            verify(poolDetails, times(0)).getJuror();
             verify(poolDetails, times(0)).setUserEdtq(login);
-            verify(poolDetails, times(0)).setExcusalRejected("Y");
-            verify(poolDetails, times(0)).setStatus(IPoolStatus.RESPONDED);
+            verify(poolDetails, times(0)).getStatus();
+            verify(poolDetails, times(0)).setStatus(any(JurorStatus.class));
             verify(poolRepository, times(0)).save(poolDetails);
 
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
             verify(excusalDeniedLetterRepository, times(0)).save(any(ExcusalDeniedLetter.class));
         }
     }

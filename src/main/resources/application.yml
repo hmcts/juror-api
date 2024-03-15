@@ -10,6 +10,8 @@ management:
       exposure:
         include: health, info
 jwt:
+  expiry:
+    bureau: 3600000
   secret:
     hmac: ${JWT_SECRET_HMAC:}
     public: ${JWT_SECRET_PUBLIC:}

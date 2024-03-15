@@ -11,9 +11,9 @@ import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolQueries;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolQueries;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -29,21 +29,24 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
 
     private static final Integer NOTIFICATION_SENT = 1;
     private final JurorCommsNotificationService jurorCommsNotificationService;
-    private final PoolRepository poolRepository;
+
+
+    private final JurorPoolRepository jurorRepository;
 
     @Autowired
     public JurorCommsWeeklyInfoServiceImpl(
         final JurorCommsNotificationService jurorCommsNotificationService,
-        final PoolRepository poolRepository) {
+        final JurorPoolRepository jurorRepository) {
         Assert.notNull(jurorCommsNotificationService, "JurorCommsNotificationService cannot be null.");
-        Assert.notNull(poolRepository, "PoolRepository cannot be null.");
+        Assert.notNull(jurorRepository, "JurorRepository cannot be null.");
         this.jurorCommsNotificationService = jurorCommsNotificationService;
-        this.poolRepository = poolRepository;
+        this.jurorRepository = jurorRepository;
+
     }
 
     /**
      * Implements a specific job execution.
-     * Processes entries in the Juror.pool table and sends the appropriate email notifications to
+     * Processes entries in the Juror table and sends the appropriate email notifications to
      * the juror for juror where they have been transferred to court.
      */
     @Override
@@ -53,38 +56,38 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
         SimpleDateFormat dateFormat = new SimpleDateFormat();
         log.info("Informational Comms Processing : Started - {}", dateFormat.format(new Date()));
 
-        BooleanExpression infomationalCommsFilter = PoolQueries.awaitingInfoComms();
+        BooleanExpression infomationalCommsFilter = JurorPoolQueries.awaitingInfoComms();
 
-        final List<Pool> pooldetailList = Lists.newLinkedList(poolRepository.findAll(infomationalCommsFilter));
+        final List<JurorPool> jurordetailList = Lists.newLinkedList(jurorRepository.findAll(infomationalCommsFilter));
 
-        log.debug("pooldetailList {}", pooldetailList.size());
+        log.debug("jurordetailList {}", jurordetailList.size());
 
         int infoCommsSent = 0;
         int noEmailAddress = 0;
         int infoCommsfailed = 0;
-        for (Pool poolDetail : pooldetailList) {
+        for (JurorPool jurorDetail : jurordetailList) {
 
-            log.trace("Informational Comms Service :  jurorNumber {}", poolDetail.getJurorNumber());
+            log.trace("Informational Comms Service :  jurorNumber {}", jurorDetail.getJurorNumber());
             try {
                 //Email
-                if (poolDetail.getEmail() != null) {
-                    jurorCommsNotificationService.sendJurorComms(poolDetail, JurorCommsNotifyTemplateType.COMMS,
+                if (jurorDetail.getJuror().getEmail() != null) {
+                    jurorCommsNotificationService.sendJurorComms(jurorDetail, JurorCommsNotifyTemplateType.COMMS,
                         null, null, false
                     );
                     infoCommsSent++;
                 } else {
                     log.debug(
                         "Informational Comms Service :  Email Address not found for {}",
-                        poolDetail.getJurorNumber()
+                        jurorDetail.getJurorNumber()
                     );
                     noEmailAddress++;
                 }
-                update(poolDetail);
+                update(jurorDetail);
 
             } catch (JurorCommsNotificationServiceException e) {
                 log.error(
                     "Unable to send Informational comms for {} : {} {}",
-                    poolDetail.getJurorNumber(),
+                    jurorDetail.getJurorNumber(),
                     e.getMessage(),
                     e.getCause().toString()
                 );
@@ -95,21 +98,21 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
             }
         }
         log.info("Informational Comms Service : Summary, identified:{}, sent:{}, failed:{}, no email address: {}",
-            pooldetailList.size(), infoCommsSent, infoCommsfailed, noEmailAddress
+            jurordetailList.size(), infoCommsSent, infoCommsfailed, noEmailAddress
         );
         log.info("Informational Comms Processing : Finished - {}", dateFormat.format(new Date()));
     }
 
     /***
      * Updates pool notifciation.
-     * @param poolDetails
+     * @param jurorDetails
      */
-    private void update(Pool poolDetails) {
+    private void update(JurorPool jurorDetails) {
 
         try {
             log.trace("Informational Comms : Inside update .....");
-            poolDetails.setNotifications(NOTIFICATION_SENT);
-            poolRepository.save(poolDetails);
+            jurorDetails.getJuror().setNotifications(NOTIFICATION_SENT);
+            jurorRepository.save(jurorDetails);
             log.trace("Informational Comms : Updating pool notification as sent ({})... ", NOTIFICATION_SENT);
         } catch (TransactionSystemException e) {
             Throwable cause = e.getRootCause();

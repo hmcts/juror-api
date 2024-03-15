@@ -2525,7 +2525,6 @@ class JurorExpenseServiceTest {
         @Test
         void positiveTypicalBacs() {
             User user = mockUser("testUser");
-            when(user.isCanApprove()).thenReturn(true);
             when(user.getApprovalLimit()).thenReturn(new BigDecimal("1000.00"));
             ApproveExpenseDto.ApprovalType approvalType = mock(ApproveExpenseDto.ApprovalType.class);
             ApproveExpenseDto approveExpenseDto = ApproveExpenseDto.builder()
@@ -2628,7 +2627,6 @@ class JurorExpenseServiceTest {
         @Test
         void positiveTypicalCash() {
             User user = mockUser("testUser");
-            when(user.isCanApprove()).thenReturn(true);
             when(user.getApprovalLimit()).thenReturn(new BigDecimal("1000.00"));
             ApproveExpenseDto.ApprovalType approvalType = mock(ApproveExpenseDto.ApprovalType.class);
             ApproveExpenseDto approveExpenseDto = ApproveExpenseDto.builder()
@@ -2715,9 +2713,6 @@ class JurorExpenseServiceTest {
 
         @Test
         void negativeNoAppearances() {
-            User user = mockUser("testUser");
-            when(user.isCanApprove()).thenReturn(true);
-
             ApproveExpenseDto.ApprovalType approvalType = mock(ApproveExpenseDto.ApprovalType.class);
             doReturn("EXAMPLE_APPROVAL_TYPE").when(approvalType).name();
             ApproveExpenseDto approveExpenseDto = ApproveExpenseDto.builder()
@@ -2755,29 +2750,7 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        void negativeUserCanNotApprove() {
-            User user = mockUser("testUser");
-            when(user.isCanApprove()).thenReturn(false);
-            MojException.Forbidden exception =
-                assertThrows(MojException.Forbidden.class,
-                    () -> jurorExpenseService.approveExpenses(mock(ApproveExpenseDto.class)),
-                    "Expect exception to be thrown when user cannot approve expenses");
-
-            assertThat(exception).isNotNull();
-            assertThat(exception.getCause()).isNull();
-            assertThat(exception.getMessage())
-                .isEqualTo("User cannot approve expenses");
-
-            verifyNoInteractions(financialAuditDetailsRepository);
-            verify(appearanceRepository, never())
-                .saveAll(any());
-        }
-
-        @Test
         void negativeAppearancesFoundButWrongOwner() {
-            User user = mockUser("testUser");
-            when(user.isCanApprove()).thenReturn(true);
-
             ApproveExpenseDto.ApprovalType approvalType = mock(ApproveExpenseDto.ApprovalType.class);
             doReturn("EXAMPLE_APPROVAL_TYPE").when(approvalType).name();
             ApproveExpenseDto approveExpenseDto = ApproveExpenseDto.builder()
@@ -2828,9 +2801,6 @@ class JurorExpenseServiceTest {
 
         @Test
         void negativeAppearancesFoundButWrongCashType() {
-            User user = mockUser("testUser");
-            when(user.isCanApprove()).thenReturn(true);
-
             ApproveExpenseDto.ApprovalType approvalType = mock(ApproveExpenseDto.ApprovalType.class);
             doReturn("EXAMPLE_APPROVAL_TYPE").when(approvalType).name();
             ApproveExpenseDto approveExpenseDto = ApproveExpenseDto.builder()
@@ -2882,9 +2852,6 @@ class JurorExpenseServiceTest {
 
         @Test
         void negativeAppearancesFoundButNotApplicable() {
-            User user = mockUser("testUser");
-            when(user.isCanApprove()).thenReturn(true);
-
             ApproveExpenseDto.ApprovalType approvalType = mock(ApproveExpenseDto.ApprovalType.class);
             doReturn("EXAMPLE_APPROVAL_TYPE").when(approvalType).name();
             ApproveExpenseDto approveExpenseDto = ApproveExpenseDto.builder()
@@ -2938,7 +2905,6 @@ class JurorExpenseServiceTest {
         void negativeExpenseTotalAboveUsersLimit() {
             User user = mockUser("testUser2");
             when(user.getApprovalLimit()).thenReturn(new BigDecimal("123.45"));
-            when(user.isCanApprove()).thenReturn(true);
             ApproveExpenseDto.ApprovalType approvalType = mock(ApproveExpenseDto.ApprovalType.class);
             ApproveExpenseDto approveExpenseDto = ApproveExpenseDto.builder()
                 .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
@@ -3000,8 +2966,6 @@ class JurorExpenseServiceTest {
 
         @Test
         void negativeDataOutOfDate() {
-            User user = mockUser("testUser3");
-            when(user.isCanApprove()).thenReturn(true);
             ApproveExpenseDto.ApprovalType approvalType = mock(ApproveExpenseDto.ApprovalType.class);
             ApproveExpenseDto approveExpenseDto = ApproveExpenseDto.builder()
                 .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
@@ -3059,8 +3023,6 @@ class JurorExpenseServiceTest {
 
         @Test
         void negativeCanNotApproveOwnEdit() {
-            User user = mockUser("testUser2");
-            when(user.isCanApprove()).thenReturn(true);
             ApproveExpenseDto.ApprovalType approvalType = mock(ApproveExpenseDto.ApprovalType.class);
             ApproveExpenseDto approveExpenseDto = ApproveExpenseDto.builder()
                 .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
@@ -3453,6 +3415,7 @@ class JurorExpenseServiceTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypical() {
             CourtLocation courtLocation = mock(CourtLocation.class);
             when(courtLocation.getOwner()).thenReturn(TestConstants.VALID_COURT_LOCATION);
@@ -3688,10 +3651,60 @@ class JurorExpenseServiceTest {
     }
 
     @Nested
-    @DisplayName(" public CombinedExpenseDetailsDto<ExpenseDetailsDto> getDraftExpenses(String jurorNumber, String "
-        + "poolNumber)")
-    class GetDraftExpenses {
+    @DisplayName(
+        "public CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(String jurorNumber, String poolNumber, "
+            + "List<LocalDate> dates)")
+    class GetExpensesByDates {
 
+        @Test
+        void positiveTypical() {
+            List<LocalDate> localDates = List.of(mock(LocalDate.class), mock(LocalDate.class), mock(LocalDate.class));
+
+            List<Appearance> appearances = List.of(mock(Appearance.class), mock(Appearance.class));
+            when(appearanceRepository.findAllByJurorNumberAndPoolNumberAndAttendanceDateIn(
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, localDates))
+                .thenReturn(appearances);
+            CombinedExpenseDetailsDto<ExpenseDetailsDto> result = mock(CombinedExpenseDetailsDto.class);
+            doReturn(result).when(jurorExpenseService).getExpenses(appearances);
+            when(result.getExpenseDetails()).thenReturn(List.of(mock(ExpenseDetailsDto.class),
+                mock(ExpenseDetailsDto.class), mock(ExpenseDetailsDto.class)));
+
+            assertThat(jurorExpenseService.getExpenses(
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, localDates))
+                .isEqualTo(result);
+
+            verify(appearanceRepository, times(1))
+                .findAllByJurorNumberAndPoolNumberAndAttendanceDateIn(
+                    TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, localDates);
+            verify(jurorExpenseService, times(1)).getExpenses(appearances);
+        }
+
+        @Test
+        void negativeWrongSize() {
+            List<LocalDate> localDates = List.of(mock(LocalDate.class), mock(LocalDate.class), mock(LocalDate.class));
+
+            List<Appearance> appearances = List.of(mock(Appearance.class), mock(Appearance.class));
+            when(appearanceRepository.findAllByJurorNumberAndPoolNumberAndAttendanceDateIn(
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, localDates))
+                .thenReturn(appearances);
+            CombinedExpenseDetailsDto<ExpenseDetailsDto> result = mock(CombinedExpenseDetailsDto.class);
+            doReturn(result).when(jurorExpenseService).getExpenses(appearances);
+            when(result.getExpenseDetails()).thenReturn(
+                List.of(mock(ExpenseDetailsDto.class), mock(ExpenseDetailsDto.class)));
+
+            MojException.NotFound exception = assertThrows(MojException.NotFound.class,
+                () -> jurorExpenseService.getExpenses(
+                    TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, localDates),
+                "Should throw exception when dates size is not equal to 3");
+            assertThat(exception).isNotNull();
+            assertThat(exception.getCause()).isNull();
+            assertThat(exception.getMessage()).isEqualTo("Not all dates found");
+        }
+    }
+
+    @Nested
+    @DisplayName("CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(List<Appearance> appearances)")
+    class GetExpensesList {
         @BeforeEach
         void mockCurrentUser() {
             securityUtilMockedStatic = mockStatic(SecurityUtil.class);
@@ -3732,75 +3745,22 @@ class JurorExpenseServiceTest {
             ExpenseDetailsDto expenseDetailDto3 = createExpenseDetailsDto(LocalDate.of(2023, 1, 2));
             doReturn(expenseDetailDto3).when(jurorExpenseService).mapAppearanceToExpenseDetailsDto(appearance3);
 
-            when(appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(
-                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER
-            )).thenReturn(List.of(appearance1, appearance2, appearance3));
 
-            CombinedExpenseDetailsDto<ExpenseDetailsDto> result = jurorExpenseService.getDraftExpenses(
-                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER
+            CombinedExpenseDetailsDto<ExpenseDetailsDto> result = jurorExpenseService.getExpenses(
+                List.of(appearance1, appearance2, appearance3)
             );
             assertThat(result).isNotNull();
             assertThat(result.getExpenseDetails()).hasSize(3);
             assertThat(result.getExpenseDetails()).containsExactly(
-                expenseDetailDto2, expenseDetailDto3, expenseDetailDto1);
-
-            verify(appearanceRepository, times(1))
-                .findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(
-                    TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER
-                );
-
+                expenseDetailDto1, expenseDetailDto2, expenseDetailDto3);
         }
 
         @Test
         void positiveNotFound() {
-            when(appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(
-                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER
-            )).thenReturn(List.of());
-
-            CombinedExpenseDetailsDto<ExpenseDetailsDto> result = jurorExpenseService.getDraftExpenses(
-                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER
-            );
+            CombinedExpenseDetailsDto<ExpenseDetailsDto> result = jurorExpenseService.getExpenses(
+                List.of());
             assertThat(result).isNotNull();
             assertThat(result.getExpenseDetails()).hasSize(0);
-
-            verify(appearanceRepository, times(1))
-                .findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(
-                    TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER
-                );
-        }
-
-        @Test
-        void positiveNotFoundNotExpenseEnteredOrAppearanceConfirmed() {
-            Appearance appearance1 = mock(Appearance.class);
-            when(appearance1.getAppearanceStage()).thenReturn(AppearanceStage.CHECKED_IN);
-            when(appearance1.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 1));
-
-            Appearance appearance2 = mock(Appearance.class);
-            when(appearance2.getAppearanceStage()).thenReturn(AppearanceStage.CHECKED_OUT);
-            when(appearance2.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 2));
-
-            Appearance appearance3 = mock(Appearance.class);
-            when(appearance3.getAppearanceStage()).thenReturn(AppearanceStage.EXPENSE_AUTHORISED);
-            when(appearance1.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 3));
-
-            Appearance appearance4 = mock(Appearance.class);
-            when(appearance4.getAppearanceStage()).thenReturn(AppearanceStage.EXPENSE_EDITED);
-            when(appearance4.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 4));
-
-            when(appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(
-                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER
-            )).thenReturn(List.of(appearance1, appearance2, appearance3, appearance4));
-
-            CombinedExpenseDetailsDto<ExpenseDetailsDto> result = jurorExpenseService.getDraftExpenses(
-                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER
-            );
-            assertThat(result).isNotNull();
-            assertThat(result.getExpenseDetails()).hasSize(0);
-
-            verify(appearanceRepository, times(1))
-                .findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(
-                    TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER
-                );
         }
 
         @Test
@@ -3811,11 +3771,60 @@ class JurorExpenseServiceTest {
             when(appearance1.getCourtLocation()).thenReturn(courtLocation);
             when(appearance1.getAppearanceStage()).thenReturn(AppearanceStage.EXPENSE_ENTERED);
             when(appearance1.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 3));
+
+            Appearance appearance2 = mock(Appearance.class);
+            when(appearance2.getCourtLocation()).thenReturn(courtLocation);
+            when(appearance2.getAppearanceStage()).thenReturn(AppearanceStage.EXPENSE_ENTERED);
+            when(appearance2.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 1));
+
+            Appearance appearance3 = mock(Appearance.class);
+            when(appearance3.getCourtLocation()).thenReturn(courtLocation);
+            when(appearance3.getAppearanceStage()).thenReturn(AppearanceStage.EXPENSE_ENTERED);
+            when(appearance3.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 2));
+
+            MojException.Forbidden exception = assertThrows(MojException.Forbidden.class,
+                () -> jurorExpenseService.getExpenses(List.of(appearance1, appearance2, appearance3)),
+                "Should throw exception when juror tries to access a pool they do not have access to");
+            assertThat(exception).isNotNull();
+            assertThat(exception.getCause()).isNull();
+            assertThat(exception.getMessage())
+                .isEqualTo("User cannot access this juror pool");
+        }
+
+        private ExpenseDetailsDto createExpenseDetailsDto(LocalDate date) {
+            return ExpenseDetailsDto.builder()
+                .attendanceDate(date)
+                .attendanceType(AttendanceType.FULL_DAY)
+                .lossOfEarnings(new BigDecimal("91.00"))
+                .extraCare(new BigDecimal("71.00"))
+                .other(new BigDecimal("81.00"))
+                .publicTransport(new BigDecimal("11.00"))
+                .taxi(new BigDecimal("21.00"))
+                .motorcycle(new BigDecimal("31.00"))
+                .car(new BigDecimal("41.00"))
+                .bicycle(new BigDecimal("51.00"))
+                .parking(new BigDecimal("61.00"))
+                .foodAndDrink(new BigDecimal("101.00"))
+                .smartCard(new BigDecimal("26.00"))
+                .paymentMethod(PaymentMethod.CASH)
+                .build();
+        }
+    }
+
+    @Nested
+    @DisplayName("public CombinedExpenseDetailsDto<ExpenseDetailsDto> getDraftExpenses(String jurorNumber, String "
+        + "poolNumber)")
+    class GetDraftExpenses {
+
+        @Test
+        void positiveTypical() {
+            Appearance appearance1 = mock(Appearance.class);
+            when(appearance1.getAppearanceStage()).thenReturn(AppearanceStage.EXPENSE_ENTERED);
+            when(appearance1.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 3));
             ExpenseDetailsDto expenseDetailDto1 = createExpenseDetailsDto(LocalDate.of(2023, 1, 3));
             doReturn(expenseDetailDto1).when(jurorExpenseService).mapAppearanceToExpenseDetailsDto(appearance1);
 
             Appearance appearance2 = mock(Appearance.class);
-            when(appearance2.getCourtLocation()).thenReturn(courtLocation);
             when(appearance2.getAppearanceStage()).thenReturn(AppearanceStage.EXPENSE_ENTERED);
             when(appearance2.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 1));
             ExpenseDetailsDto expenseDetailDto2 = createExpenseDetailsDto(LocalDate.of(2023, 1, 1));
@@ -3823,7 +3832,6 @@ class JurorExpenseServiceTest {
 
 
             Appearance appearance3 = mock(Appearance.class);
-            when(appearance3.getCourtLocation()).thenReturn(courtLocation);
             when(appearance3.getAppearanceStage()).thenReturn(AppearanceStage.EXPENSE_ENTERED);
             when(appearance3.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 2));
             ExpenseDetailsDto expenseDetailDto3 = createExpenseDetailsDto(LocalDate.of(2023, 1, 2));
@@ -3833,17 +3841,23 @@ class JurorExpenseServiceTest {
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER
             )).thenReturn(List.of(appearance1, appearance2, appearance3));
 
-            MojException.Forbidden exception = assertThrows(MojException.Forbidden.class,
-                () -> jurorExpenseService.getDraftExpenses(
+            CombinedExpenseDetailsDto<ExpenseDetailsDto> combinedExpenseDetailsDto = new CombinedExpenseDetailsDto<>();
+            doReturn(combinedExpenseDetailsDto).when(jurorExpenseService).getExpenses(any());
+
+            CombinedExpenseDetailsDto<ExpenseDetailsDto> result = jurorExpenseService.getDraftExpenses(
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER
+            );
+            assertThat(result).isNotNull();
+            assertThat(result).isEqualTo(combinedExpenseDetailsDto);
+
+            verify(appearanceRepository, times(1))
+                .findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(
                     TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER
-                ),
-                "Should throw exception when juror tries to access a pool they do not have access to");
-            assertThat(exception).isNotNull();
-            assertThat(exception.getCause()).isNull();
-            assertThat(exception.getMessage())
-                .isEqualTo("User cannot access this juror pool");
+                );
+            verify(jurorExpenseService, times(1)).getExpenses(List.of(appearance2, appearance3, appearance1));
 
         }
+
 
         private ExpenseDetailsDto createExpenseDetailsDto(LocalDate date) {
             return ExpenseDetailsDto.builder()
@@ -4058,33 +4072,24 @@ class JurorExpenseServiceTest {
             DailyExpense dailyExpense1 = mock(DailyExpense.class);
             when(dailyExpense1.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
             when(dailyExpense1.getDateOfExpense()).thenReturn(LocalDate.of(2023, 1, 1));
-            ExpenseDetailsForTotals expenseDetailsForTotals1 = mockExpenseDetailsForTotals(LocalDate.of(2023, 1, 1));
-            doReturn(expenseDetailsForTotals1).when(jurorExpenseService)
-                .calculateTotalsFromAppearance(appearance1, dailyExpense1);
-
+            when(appearance1.getTotalPaid()).thenReturn(new BigDecimal("1.11"));
 
             Appearance appearance2 = mock(Appearance.class);
-            when(appearance2.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
             when(appearance2.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 2));
             DailyExpense dailyExpense2 = mock(DailyExpense.class);
-            when(dailyExpense2.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
             when(dailyExpense2.getDateOfExpense()).thenReturn(LocalDate.of(2023, 1, 2));
-            ExpenseDetailsForTotals expenseDetailsForTotals2 = mockExpenseDetailsForTotals(LocalDate.of(2023, 1, 2));
-            doReturn(expenseDetailsForTotals2).when(jurorExpenseService)
-                .calculateTotalsFromAppearance(appearance2, dailyExpense2);
+            when(dailyExpense2.shouldPullFromDatabase()).thenReturn(true);
+            when(appearance2.getTotalPaid()).thenReturn(new BigDecimal("2.22"));
 
             Appearance appearance3 = mock(Appearance.class);
-            when(appearance3.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
             when(appearance3.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 3));
             DailyExpense dailyExpense3 = mock(DailyExpense.class);
-            when(dailyExpense3.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
             when(dailyExpense3.getDateOfExpense()).thenReturn(LocalDate.of(2023, 1, 3));
-            ExpenseDetailsForTotals expenseDetailsForTotals3 = mockExpenseDetailsForTotals(LocalDate.of(2023, 1, 3));
-            doReturn(expenseDetailsForTotals3).when(jurorExpenseService)
-                .calculateTotalsFromAppearance(appearance3, dailyExpense3);
+            when(appearance3.getTotalPaid()).thenReturn(new BigDecimal("3.33"));
 
             CalculateTotalExpenseRequestDto request = CalculateTotalExpenseRequestDto.builder()
                 .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                .poolNumber(TestConstants.VALID_POOL_NUMBER)
                 .expenseList(List.of(dailyExpense1, dailyExpense2, dailyExpense3))
                 .build();
 
@@ -4099,19 +4104,30 @@ class JurorExpenseServiceTest {
                 .getAppearance(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER,
                     LocalDate.of(2023, 1, 3));
 
+            doReturn(new DailyExpenseResponse()).when(jurorExpenseService)
+                .updateExpenseInternal(appearance1, dailyExpense1);
+
+
+            doReturn(new DailyExpenseResponse()).when(jurorExpenseService)
+                .updateExpenseInternal(appearance3, dailyExpense3);
+
             CombinedExpenseDetailsDto<ExpenseDetailsForTotals> result =
                 jurorExpenseService.calculateTotals(request);
 
             assertThat(result).isNotNull();
             assertThat(result.getExpenseDetails()).contains(
-                expenseDetailsForTotals1, expenseDetailsForTotals2, expenseDetailsForTotals3);
-
-            verify(jurorExpenseService, times(1))
-                .calculateTotalsFromAppearance(appearance1, dailyExpense1);
-            verify(jurorExpenseService, times(1))
-                .calculateTotalsFromAppearance(appearance2, dailyExpense2);
-            verify(jurorExpenseService, times(1))
-                .calculateTotalsFromAppearance(appearance3, dailyExpense3);
+                ExpenseDetailsForTotals.builder()
+                    .attendanceDate(LocalDate.of(2023, 1, 1))
+                    .paymentMethod(PaymentMethod.BACS)
+                    .totalPaid(new BigDecimal("1.11")).build(),
+                ExpenseDetailsForTotals.builder()
+                    .attendanceDate(LocalDate.of(2023, 1, 2))
+                    .paymentMethod(PaymentMethod.BACS)
+                    .totalPaid(new BigDecimal("2.22")).build(),
+                ExpenseDetailsForTotals.builder()
+                    .attendanceDate(LocalDate.of(2023, 1, 3))
+                    .paymentMethod(PaymentMethod.BACS)
+                    .totalPaid(new BigDecimal("3.33")).build());
 
             verify(jurorExpenseService, times(1))
                 .getAppearance(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER,
@@ -4122,208 +4138,106 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1))
                 .getAppearance(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER,
                     LocalDate.of(2023, 1, 3));
+
+            verify(jurorExpenseService, times(1))
+                .updateExpenseInternal(appearance1, dailyExpense1);
+            verify(jurorExpenseService, never())
+                .updateExpenseInternal(appearance2, dailyExpense2);
+            verify(jurorExpenseService, times(1))
+                .updateExpenseInternal(appearance3, dailyExpense3);
+
+
             verify(entityManager, times(1)).detach(appearance1);
             verify(entityManager, times(1)).detach(appearance2);
             verify(entityManager, times(1)).detach(appearance3);
         }
 
-        private ExpenseDetailsForTotals mockExpenseDetailsForTotals(LocalDate date) {
-            return ExpenseDetailsForTotals.builder()
-                .financialLossApportionedApplied(false)
-                .payAttendance(PayAttendanceType.FULL_DAY)
-                .totalDue(new BigDecimal("45.34000"))
-                .totalPaid(BigDecimal.ZERO)
-                .attendanceDate(date)
-                .attendanceType(AttendanceType.FULL_DAY)
-                .paymentMethod(PaymentMethod.BACS)
-                .lossOfEarnings(new BigDecimal("25.01"))
-                .extraCare(new BigDecimal("10.00"))
-                .other(new BigDecimal("5.00"))
-                .publicTransport(BigDecimal.ZERO)
-                .taxi(BigDecimal.ZERO)
-                .motorcycle(BigDecimal.ZERO)
-                .car(new BigDecimal("1.57000"))
-                .bicycle(BigDecimal.ZERO)
-                .parking(new BigDecimal("2.25"))
-                .foodAndDrink(new BigDecimal("5.71000"))
-                .smartCard(new BigDecimal("4.20"))
-                .build();
-        }
-
-    }
-
-    @Nested
-    @DisplayName("ExpenseDetailsForTotals calculateTotalsFromAppearance(Appearance appearance, DailyExpense dto)")
-    class CalculateTotalsFromAppearance {
-
         @Test
-        void positiveTypicalHasFinancialLossApplied() {
-            Appearance appearance = Appearance.builder()
-                .attendanceDate(LocalDate.of(2023, 1, 1))
-                .attendanceType(AttendanceType.FULL_DAY)
-                .payCash(true)
-                .lossOfEarningsDue(new BigDecimal("1.1"))
-                .childcareDue(new BigDecimal("2.2"))
-                .miscAmountDue(new BigDecimal("3.3"))
-                .publicTransportDue(new BigDecimal("4.4"))
-                .hiredVehicleDue(new BigDecimal("5.5"))
-                .motorcycleDue(new BigDecimal("6.6"))
-                .carDue(new BigDecimal("7.7"))
-                .bicycleDue(new BigDecimal("8.8"))
-                .parkingDue(new BigDecimal("9.9"))
-                .subsistenceDue(new BigDecimal("10.10"))
-                .smartCardAmountDue(new BigDecimal("11.11"))
+        void positiveTypicalApportionExpense() {
+            Appearance appearance1 = mock(Appearance.class);
+            when(appearance1.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 1));
+            DailyExpense dailyExpense1 = mock(DailyExpense.class);
+            when(dailyExpense1.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
+            when(dailyExpense1.getDateOfExpense()).thenReturn(LocalDate.of(2023, 1, 1));
+            when(appearance1.getTotalPaid()).thenReturn(new BigDecimal("1.11"));
+
+            Appearance appearance2 = mock(Appearance.class);
+            when(appearance2.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 2));
+            DailyExpense dailyExpense2 = mock(DailyExpense.class);
+            when(dailyExpense2.getDateOfExpense()).thenReturn(LocalDate.of(2023, 1, 2));
+            when(dailyExpense2.shouldPullFromDatabase()).thenReturn(true);
+            when(appearance2.getTotalPaid()).thenReturn(new BigDecimal("2.22"));
+
+            Appearance appearance3 = mock(Appearance.class);
+            when(appearance3.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 3));
+            DailyExpense dailyExpense3 = mock(DailyExpense.class);
+            when(dailyExpense3.getDateOfExpense()).thenReturn(LocalDate.of(2023, 1, 3));
+            when(appearance3.getTotalPaid()).thenReturn(new BigDecimal("3.33"));
+
+            CalculateTotalExpenseRequestDto request = CalculateTotalExpenseRequestDto.builder()
+                .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                .expenseList(List.of(dailyExpense1, dailyExpense2, dailyExpense3))
                 .build();
-            DailyExpense dailyExpense = mock(DailyExpense.class);
-
-            DailyExpenseResponse dailyExpenseResponse = mock(DailyExpenseResponse.class);
-            when(dailyExpenseResponse.getFinancialLossWarning()).thenReturn(
-                mock(FinancialLossWarning.class)
-            );
-            doReturn(dailyExpenseResponse).when(jurorExpenseService)
-                .updateExpenseInternal(appearance, dailyExpense);
 
 
-            assertThat(jurorExpenseService.calculateTotalsFromAppearance(appearance, dailyExpense))
-                .isEqualTo(
-                    ExpenseDetailsForTotals.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 1))
-                        .attendanceType(AttendanceType.FULL_DAY)
-                        .payAttendance(PayAttendanceType.FULL_DAY)
-                        .financialLossApportionedApplied(true)
-                        .totalDue(new BigDecimal("48.49"))
-                        .totalPaid(BigDecimal.ZERO)
-                        .lossOfEarnings(new BigDecimal("1.1"))
-                        .extraCare(new BigDecimal("2.2"))
-                        .other(new BigDecimal("3.3"))
-                        .publicTransport(new BigDecimal("4.4"))
-                        .taxi(new BigDecimal("5.5"))
-                        .motorcycle(new BigDecimal("6.6"))
-                        .car(new BigDecimal("7.7"))
-                        .bicycle(new BigDecimal("8.8"))
-                        .parking(new BigDecimal("9.9"))
-                        .foodAndDrink(new BigDecimal("10.10"))
-                        .smartCard(new BigDecimal("11.11"))
-                        .paymentMethod(PaymentMethod.CASH)
-                        .build()
-                );
+            doReturn(appearance1).when(jurorExpenseService)
+                .getAppearance(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER,
+                    LocalDate.of(2023, 1, 1));
+            doReturn(appearance2).when(jurorExpenseService)
+                .getAppearance(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER,
+                    LocalDate.of(2023, 1, 2));
+            doReturn(appearance3).when(jurorExpenseService)
+                .getAppearance(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER,
+                    LocalDate.of(2023, 1, 3));
 
+            doReturn(new DailyExpenseResponse(new FinancialLossWarning())).when(jurorExpenseService)
+                .updateExpenseInternal(appearance1, dailyExpense1);
+
+
+            doReturn(new DailyExpenseResponse()).when(jurorExpenseService)
+                .updateExpenseInternal(appearance3, dailyExpense3);
+
+            CombinedExpenseDetailsDto<ExpenseDetailsForTotals> result =
+                jurorExpenseService.calculateTotals(request);
+
+            assertThat(result).isNotNull();
+            assertThat(result.getExpenseDetails()).contains(
+                ExpenseDetailsForTotals.builder()
+                    .attendanceDate(LocalDate.of(2023, 1, 1))
+                    .paymentMethod(PaymentMethod.BACS)
+                    .financialLossApportionedApplied(true)
+                    .totalPaid(new BigDecimal("1.11")).build(),
+                ExpenseDetailsForTotals.builder()
+                    .attendanceDate(LocalDate.of(2023, 1, 2))
+                    .paymentMethod(PaymentMethod.BACS)
+                    .totalPaid(new BigDecimal("2.22")).build(),
+                ExpenseDetailsForTotals.builder()
+                    .attendanceDate(LocalDate.of(2023, 1, 3))
+                    .paymentMethod(PaymentMethod.BACS)
+                    .totalPaid(new BigDecimal("3.33")).build());
 
             verify(jurorExpenseService, times(1))
-                .updateExpenseInternal(appearance, dailyExpense);
-
-        }
-
-        @Test
-        void positiveTypicalCash() {
-            Appearance appearance = Appearance.builder()
-                .attendanceDate(LocalDate.of(2023, 1, 1))
-                .attendanceType(AttendanceType.FULL_DAY)
-                .payCash(true)
-                .lossOfEarningsDue(new BigDecimal("1.1"))
-                .childcareDue(new BigDecimal("2.2"))
-                .miscAmountDue(new BigDecimal("3.3"))
-                .publicTransportDue(new BigDecimal("4.4"))
-                .hiredVehicleDue(new BigDecimal("5.5"))
-                .motorcycleDue(new BigDecimal("6.6"))
-                .carDue(new BigDecimal("7.7"))
-                .bicycleDue(new BigDecimal("8.8"))
-                .parkingDue(new BigDecimal("9.9"))
-                .subsistenceDue(new BigDecimal("10.10"))
-                .smartCardAmountDue(new BigDecimal("11.11"))
-                .build();
-            DailyExpense dailyExpense = mock(DailyExpense.class);
-
-            DailyExpenseResponse dailyExpenseResponse = mock(DailyExpenseResponse.class);
-            when(dailyExpenseResponse.getFinancialLossWarning()).thenReturn(null);
-            doReturn(dailyExpenseResponse).when(jurorExpenseService)
-                .updateExpenseInternal(appearance, dailyExpense);
-
-
-            assertThat(jurorExpenseService.calculateTotalsFromAppearance(appearance, dailyExpense))
-                .isEqualTo(
-                    ExpenseDetailsForTotals.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 1))
-                        .attendanceType(AttendanceType.FULL_DAY)
-                        .payAttendance(PayAttendanceType.FULL_DAY)
-                        .financialLossApportionedApplied(false)
-                        .totalDue(new BigDecimal("48.49"))
-                        .totalPaid(BigDecimal.ZERO)
-                        .lossOfEarnings(new BigDecimal("1.1"))
-                        .extraCare(new BigDecimal("2.2"))
-                        .other(new BigDecimal("3.3"))
-                        .publicTransport(new BigDecimal("4.4"))
-                        .taxi(new BigDecimal("5.5"))
-                        .motorcycle(new BigDecimal("6.6"))
-                        .car(new BigDecimal("7.7"))
-                        .bicycle(new BigDecimal("8.8"))
-                        .parking(new BigDecimal("9.9"))
-                        .foodAndDrink(new BigDecimal("10.10"))
-                        .smartCard(new BigDecimal("11.11"))
-                        .paymentMethod(PaymentMethod.CASH)
-                        .build()
-                );
-
+                .getAppearance(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER,
+                    LocalDate.of(2023, 1, 1));
+            verify(jurorExpenseService, times(1))
+                .getAppearance(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER,
+                    LocalDate.of(2023, 1, 2));
+            verify(jurorExpenseService, times(1))
+                .getAppearance(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER,
+                    LocalDate.of(2023, 1, 3));
 
             verify(jurorExpenseService, times(1))
-                .updateExpenseInternal(appearance, dailyExpense);
-        }
-
-
-        @Test
-        void positiveTypicalBacs() {
-            Appearance appearance = Appearance.builder()
-                .attendanceDate(LocalDate.of(2023, 1, 1))
-                .attendanceType(AttendanceType.FULL_DAY)
-                .payCash(false)
-                .lossOfEarningsDue(new BigDecimal("1.1"))
-                .childcareDue(new BigDecimal("2.2"))
-                .miscAmountDue(new BigDecimal("3.3"))
-                .publicTransportDue(new BigDecimal("4.4"))
-                .hiredVehicleDue(new BigDecimal("5.5"))
-                .hiredVehiclePaid(new BigDecimal("5.5"))
-                .motorcycleDue(new BigDecimal("6.6"))
-                .carDue(new BigDecimal("7.7"))
-                .bicycleDue(new BigDecimal("8.8"))
-                .parkingDue(new BigDecimal("9.9"))
-                .subsistenceDue(new BigDecimal("10.10"))
-                .smartCardAmountDue(new BigDecimal("11.11"))
-                .build();
-            DailyExpense dailyExpense = mock(DailyExpense.class);
-
-            DailyExpenseResponse dailyExpenseResponse = mock(DailyExpenseResponse.class);
-            when(dailyExpenseResponse.getFinancialLossWarning()).thenReturn(null);
-            doReturn(dailyExpenseResponse).when(jurorExpenseService)
-                .updateExpenseInternal(appearance, dailyExpense);
-
-            assertThat(jurorExpenseService.calculateTotalsFromAppearance(appearance, dailyExpense))
-                .isEqualTo(
-                    ExpenseDetailsForTotals.builder()
-                        .attendanceDate(LocalDate.of(2023, 1, 1))
-                        .attendanceType(AttendanceType.FULL_DAY)
-                        .payAttendance(PayAttendanceType.FULL_DAY)
-                        .financialLossApportionedApplied(false)
-                        .totalDue(new BigDecimal("48.49"))
-                        .totalPaid(new BigDecimal("5.5"))
-                        .lossOfEarnings(new BigDecimal("1.1"))
-                        .extraCare(new BigDecimal("2.2"))
-                        .other(new BigDecimal("3.3"))
-                        .publicTransport(new BigDecimal("4.4"))
-                        .taxi(new BigDecimal("5.5"))
-                        .motorcycle(new BigDecimal("6.6"))
-                        .car(new BigDecimal("7.7"))
-                        .bicycle(new BigDecimal("8.8"))
-                        .parking(new BigDecimal("9.9"))
-                        .foodAndDrink(new BigDecimal("10.10"))
-                        .smartCard(new BigDecimal("11.11"))
-                        .paymentMethod(PaymentMethod.BACS)
-                        .build()
-                );
-
-
+                .updateExpenseInternal(appearance1, dailyExpense1);
+            verify(jurorExpenseService, never())
+                .updateExpenseInternal(appearance2, dailyExpense2);
             verify(jurorExpenseService, times(1))
-                .updateExpenseInternal(appearance, dailyExpense);
+                .updateExpenseInternal(appearance3, dailyExpense3);
 
+
+            verify(entityManager, times(1)).detach(appearance1);
+            verify(entityManager, times(1)).detach(appearance2);
+            verify(entityManager, times(1)).detach(appearance3);
         }
 
     }
@@ -4606,6 +4520,7 @@ class JurorExpenseServiceTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalFromDateEquals() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -4657,6 +4572,7 @@ class JurorExpenseServiceTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalFromDateIsAfter() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -4708,6 +4624,7 @@ class JurorExpenseServiceTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalToDateEquals() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -4759,6 +4676,7 @@ class JurorExpenseServiceTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalToDateIsBefore() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -5720,8 +5638,6 @@ class JurorExpenseServiceTest {
                     )
                 )
                 .build();
-            ;
-
             doReturn(new ArrayList<>(List.of(
                 mockAppearance(LocalDate.of(2023, 1, 1)),
                 mockAppearance(LocalDate.of(2023, 1, 2)),

@@ -14,6 +14,11 @@
       "name": "jwt.secret.bureau",
       "type": "java.lang.String",
       "description": "Base64 encoded secret."
+    },
+    {
+      "name": "jwt.expiry.bureau",
+      "type": "java.lang.Long",
+      "description": "Expiry in milliseconds."
     }
   ]
 }

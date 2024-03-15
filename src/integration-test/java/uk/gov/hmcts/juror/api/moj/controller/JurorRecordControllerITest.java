@@ -61,6 +61,7 @@ import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
+import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -91,7 +92,6 @@ import uk.gov.hmcts.juror.api.moj.repository.SummonsSnapshotRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
-import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
@@ -1755,7 +1755,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .as("Initial test data contained a single contact log, expect a second, new contact log to be created")
             .isEqualTo(2);
         ContactLog contactLog = contactLogs.stream().filter(cl ->
-            cl.getEnquiryType().getEnquiryCode().equals(ContactEnquiryCode.LS)).findFirst().get();
+            cl.getEnquiryType().getCode().equals(IContactCode.LENGTH_OF_SERVICE.getCode())).findFirst().get();
 
         assertThat(contactLog.getJurorNumber())
             .as("The newly created contact log should have it's Juror Number value mapped from the request DTO")
@@ -1767,9 +1767,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(contactLog.getUsername())
             .as("The newly created contact log should have it's Username value mapped from the request DTO")
             .isEqualTo("BUREAU_USER");
-        assertThat(contactLog.getEnquiryType().getEnquiryCode())
+        assertThat(contactLog.getEnquiryType().getCode())
             .as("The newly created contact log should have it's Enquiry Type value mapped from the request DTO")
-            .isEqualTo(ContactEnquiryCode.valueOf(requestDto.getEnquiryType()));
+            .isEqualTo(requestDto.getEnquiryType());
         assertThat(contactLog.getNotes())
             .as("The newly created contact log should have it's Notes value mapped from the request DTO")
             .isEqualTo(requestDto.getNotes());
@@ -1926,7 +1926,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .as("Initial test data contained two contact logs, expect a third, new contact log to be created")
             .isEqualTo(3);
         ContactLog newContactLog = contactLogs.stream().filter(cl ->
-            cl.getEnquiryType().getEnquiryCode().equals(ContactEnquiryCode.ER)).findFirst().get();
+            cl.getEnquiryType().getCode().equals(IContactCode.EARLY_RELEASE.getCode())).findFirst().get();
 
 
         assertThat(newContactLog.getJurorNumber())
@@ -1939,9 +1939,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(newContactLog.getUsername())
             .as("The newly created contact log should have it's Username value mapped from the request DTO")
             .isEqualTo("COURT_USER");
-        assertThat(newContactLog.getEnquiryType().getEnquiryCode())
+        assertThat(newContactLog.getEnquiryType().getCode())
             .as("The newly created contact log should have it's Enquiry Type value mapped from the request DTO")
-            .isEqualTo(ContactEnquiryCode.valueOf(requestDto.getEnquiryType()));
+            .isEqualTo(requestDto.getEnquiryType());
         assertThat(newContactLog.getNotes())
             .as("The newly created contact log should have it's Notes value mapped from the request DTO")
             .isEqualTo(requestDto.getNotes());
@@ -2904,7 +2904,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(dto.getLastName())
             .as("Expect Last Name property to be mapped from the Juror record")
             .isEqualToIgnoringCase(juror.getLastName());
-        LocalDate dob = DateUtils.convertToLocalDateViaMillisecond(dto.getDateOfBirth());
+        LocalDate dob = dto.getDateOfBirth();
         assertThat(dob)
             .as("Expect Date Of Birth property to be mapped from the Juror record")
             .isEqualTo(juror.getDateOfBirth());
@@ -2945,9 +2945,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         // verify pool details
         assertThat(dto.getPoolNumber()).as("Expect Pool Number property to be mapped from Part_Hist lookup")
             .isEqualTo(expectedPoolNumber);
-        assertThat(TestUtils.compareDateToLocalDate(dto.getHearingDate(), jurorPool.getNextDate()))
+        assertThat(dto.getHearingDate())
             .as("Expect Hearing Date property to be mapped from the Juror record")
-            .isTrue();
+            .isEqualTo(jurorPool.getNextDate());
         // verify additional details
         assertThat(TestUtils.compareDateToLocalDate(dto.getPoolDate(), jurorPool.getReturnDate()));
         assertThat(dto.getStatus()).as("Expect Status property to be mapped from the Juror record")
@@ -3008,9 +3008,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .isEqualToIgnoringCase(jurorResponse.getLastName());
         LocalDate convertedDob =
             jurorResponse.getDateOfBirth();
-        assertThat(TestUtils.compareDateToLocalDate(dto.getNewDateOfBirth(), convertedDob))
+        assertThat(dto.getNewDateOfBirth())
             .as("Expect New Date Of Birth property to be mapped from the Juror Response record")
-            .isTrue();
+            .isEqualTo(convertedDob);
 
         // verify address details
         assertThat(dto.getNewJurorAddress1())
@@ -3045,10 +3045,10 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         // verify response details
         LocalDate convertedDateReceived =
-            jurorResponse.getDateReceived();
-        assertThat(TestUtils.compareDateToLocalDate(dto.getDateReceived(), convertedDateReceived))
+            jurorResponse.getDateReceived().toLocalDate();
+        assertThat(dto.getDateReceived())
             .as("Expect Date Received property to be mapped from the Juror Response record")
-            .isTrue();
+            .isEqualTo(convertedDateReceived);
         assertThat(dto.getProcessingStatus())
             .as("Expect Processing Status property to be mapped from the Juror Response record")
             .isEqualToIgnoringCase(jurorResponse.getProcessingStatus().toString());
@@ -3078,7 +3078,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         // verify eligibility details
         assertThat(dto.getResidency())
             .as("Expect Residency property to be mapped from the Juror Response record")
-            .isEqualTo(convertBooleanToYesNo(jurorResponse.getResidency()));
+            .isEqualTo(jurorResponse.getResidency());
         if (dto.getResidencyDetail() != null) {
             assertThat(dto.getResidencyDetail())
                 .as("Expect Residency Detail property to be mapped from the Juror Response record")
@@ -3086,7 +3086,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
         assertThat(dto.getMentalHealthAct())
             .as("Expect Mental Health Act property to be mapped from the Juror Response record")
-            .isEqualTo(convertBooleanToYesNo(jurorResponse.getMentalHealthAct()));
+            .isEqualTo(jurorResponse.getMentalHealthAct());
         if (dto.getMentalHealthActDetails() != null) {
             assertThat(dto.getMentalHealthActDetails())
                 .as("Expect Mental Health Act Details property to be mapped from the Juror Response record")
@@ -3094,7 +3094,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
         assertThat(dto.getBail())
             .as("Expect Bail property to be mapped from the Juror Response record")
-            .isEqualTo(convertBooleanToYesNo(jurorResponse.getBail()));
+            .isEqualTo(jurorResponse.getBail());
         if (dto.getBailDetails() != null) {
             assertThat(dto.getBailDetails())
                 .as("Expect Bail Details property to be mapped from the Juror Response record")
@@ -3102,7 +3102,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
         assertThat(dto.getConvictions())
             .as("Expect Convictions property to be mapped from the Juror Response record")
-            .isEqualTo(convertBooleanToYesNo(jurorResponse.getConvictions()));
+            .isEqualTo(jurorResponse.getConvictions());
         if (dto.getConvictionsDetails() != null) {
             assertThat(dto.getConvictionsDetails())
                 .as("Expect Convictions Details property to be mapped from the Juror Response record")

@@ -643,7 +643,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     private void markSummonReplyAsCompleted(AbstractJurorResponse originalDetails) {
         log.trace("Juror: {}. Enter markSummonReplyAsCompleted", originalDetails.getJurorNumber());
         originalDetails.setProcessingComplete(Boolean.TRUE);
-        originalDetails.setCompletedAt(LocalDate.now());
+        originalDetails.setCompletedAt(LocalDateTime.now());
 
         if (originalDetails.getReplyType().getType().equals(ReplyMethod.PAPER.getDescription())) {
             jurorPaperResponseRepository.save((PaperResponse) originalDetails);

@@ -31,7 +31,7 @@ public class DailyExpenseTravelTest extends AbstractValidatorTest<DailyExpenseTr
     class JurorsTakenCarTest extends AbstractValidationFieldTestInteger {
         protected JurorsTakenCarTest() {
             super("jurorsTakenCar", DailyExpenseTravel::setJurorsTakenCar);
-            addNotRequiredTest(1);
+            addNotRequiredTest(null);
             addMin(0, null);
             addMax(1_000_000,null);
         }
@@ -49,7 +49,7 @@ public class DailyExpenseTravelTest extends AbstractValidatorTest<DailyExpenseTr
     class JurorsTakenMotorcycleTest extends AbstractValidationFieldTestInteger {
         protected JurorsTakenMotorcycleTest() {
             super("jurorsTakenMotorcycle", DailyExpenseTravel::setJurorsTakenMotorcycle);
-            addNotRequiredTest(1);
+            addNotRequiredTest(null);
             addMin(0, null);
             addMax(1_000_000,null);
         }
@@ -67,7 +67,7 @@ public class DailyExpenseTravelTest extends AbstractValidatorTest<DailyExpenseTr
     class MilesTraveledTest extends AbstractValidationFieldTestInteger {
         protected MilesTraveledTest() {
             super("milesTraveled", DailyExpenseTravel::setMilesTraveled);
-            addNotRequiredTest(1);
+            addNotRequiredTest(null);
             addMin(0, null);
             addMax(1_000_000,null);
         }
@@ -77,7 +77,7 @@ public class DailyExpenseTravelTest extends AbstractValidatorTest<DailyExpenseTr
     class ParkingTest extends AbstractValidationFieldTestBigDecimal {
         protected ParkingTest() {
             super("parking", DailyExpenseTravel::setParking);
-            addNotRequiredTest(BigDecimal.ONE);
+            addNotRequiredTest(null);
             addMin(BigDecimal.ZERO, null);
             addMax(new BigDecimal("1000000"),null);
         }
@@ -87,7 +87,7 @@ public class DailyExpenseTravelTest extends AbstractValidatorTest<DailyExpenseTr
     class PublicTransportTest extends AbstractValidationFieldTestBigDecimal {
         protected PublicTransportTest() {
             super("publicTransport", DailyExpenseTravel::setPublicTransport);
-            addNotRequiredTest(BigDecimal.ONE);
+            addNotRequiredTest(null);
             addMin(BigDecimal.ZERO, null);
             addMax(new BigDecimal("1000000"),null);
         }
@@ -97,7 +97,7 @@ public class DailyExpenseTravelTest extends AbstractValidatorTest<DailyExpenseTr
     class TaxiTest extends AbstractValidationFieldTestBigDecimal {
         protected TaxiTest() {
             super("taxi", DailyExpenseTravel::setTaxi);
-            addNotRequiredTest(BigDecimal.ONE);
+            addNotRequiredTest(null);
             addMin(BigDecimal.ZERO, null);
             addMax(new BigDecimal("1000000"),null);
         }

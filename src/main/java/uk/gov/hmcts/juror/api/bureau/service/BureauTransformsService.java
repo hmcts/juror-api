@@ -6,6 +6,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.TeamDto;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
 import uk.gov.hmcts.juror.api.bureau.domain.Team;
+import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public interface BureauTransformsService {
      * @param details domain models to transform
      * @return transformed DTOs
      */
-    List<BureauResponseSummaryDto> convertToDtos(Iterable<BureauJurorDetail> details);
+    List<BureauResponseSummaryDto> convertToDtos(Iterable<ModJurorDetail> details);
 
     /**
      * Transforms domain models to the output wrapper DTO.
@@ -29,7 +30,7 @@ public interface BureauTransformsService {
      * @param details domain models to transform
      * @return transformed DTOs
      */
-    BureauResponseSummaryWrapper prepareOutput(Iterable<BureauJurorDetail> details);
+    BureauResponseSummaryWrapper prepareOutput(Iterable<ModJurorDetail> details);
 
     /**
      * Transforms domain model to response DTO.
@@ -37,7 +38,7 @@ public interface BureauTransformsService {
      * @param detail domain model instance to transform
      * @return response DTO
      */
-    BureauResponseSummaryDto detailToDto(BureauJurorDetail detail);
+    BureauResponseSummaryDto detailToDto(ModJurorDetail detail);
 
     /**
      * Transforms Staff entity to StaffDto.

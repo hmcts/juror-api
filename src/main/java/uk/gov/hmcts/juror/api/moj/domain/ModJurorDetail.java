@@ -15,6 +15,8 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
 import uk.gov.hmcts.juror.api.bureau.domain.ChangeLog;
 import uk.gov.hmcts.juror.api.bureau.domain.PhoneLog;
@@ -23,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmploymen
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -39,6 +42,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Setter
 @Table(name = "mod_juror_detail", schema = "juror_mod")
 @EqualsAndHashCode(exclude = "changeLogs")
 public class ModJurorDetail implements Serializable {
@@ -75,12 +79,16 @@ public class ModJurorDetail implements Serializable {
     @Column(name = "processing_status")
     private String processingStatus;
 
+    @NotNull
+    @Column(name = "owner")
+    @Length(max = 3)
+    private String owner;
+
     @Column(name = "processing_complete")
-    @Convert(converter = org.hibernate.type.YesNoConverter.class)
     private Boolean processingComplete = Boolean.FALSE;
 
     @Column(name = "completed_at")
-    private LocalDate completedAt;
+    private LocalDateTime completedAt;
 
     @Column(name = "status")
     private Long status;
@@ -122,7 +130,7 @@ public class ModJurorDetail implements Serializable {
     private String newJurorPostcode;
 
     @Column(name = "next_date")
-    private Date hearingDate;
+    private LocalDate hearingDate;
 
     @Column(name = "loc_attend_time")
     private String hearingTime;
@@ -179,13 +187,13 @@ public class ModJurorDetail implements Serializable {
     private String newAltPhoneNumber;
 
     @Column(name = "dob")
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
 
     @Column(name = "new_dob")
-    private Date newDateOfBirth;
+    private LocalDate newDateOfBirth;
 
     @Column(name = "date_received")
-    private Date dateReceived;
+    private LocalDate dateReceived;
 
     @Column(name = "email")
     private String email;
@@ -227,7 +235,7 @@ public class ModJurorDetail implements Serializable {
     private Boolean mentalHealthAct;
 
     @Column(name = "mental_health_act_details")
-    private Boolean mentalHealthActDetails;
+    private String mentalHealthActDetails;
 
     @Column(name = "bail")
     private Boolean bail;
@@ -260,7 +268,6 @@ public class ModJurorDetail implements Serializable {
      * Whether the juror's email details should be used (false = use third party details).
      */
     @Column(name = "juror_email_details")
-    @Convert(converter = org.hibernate.type.YesNoConverter.class)
     @NotNull
     private Boolean useJurorEmailDetails = Boolean.TRUE;
 
@@ -268,7 +275,6 @@ public class ModJurorDetail implements Serializable {
      * Whether the juror's phone details should be used (false = use third party details).
      */
     @Column(name = "juror_phone_details")
-    @Convert(converter = org.hibernate.type.YesNoConverter.class)
     @NotNull
     private Boolean useJurorPhoneDetails = Boolean.TRUE;
 

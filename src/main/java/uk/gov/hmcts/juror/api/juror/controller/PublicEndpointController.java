@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.juror.controller.response.JurorHolidaysResponseDto
 import uk.gov.hmcts.juror.api.juror.service.HolidaysService;
 import uk.gov.hmcts.juror.api.juror.service.JurorPersistenceService;
 import uk.gov.hmcts.juror.api.juror.service.JurorService;
+import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 
 /**
  * API endpoints controller for Public Juror Endpoints.
@@ -47,18 +48,23 @@ public class PublicEndpointController {
     private final SpringValidatorAdapter validator;
     private final HolidaysService holidaysService;
 
+    private final JurorResponseService jurorResponseService ;
+
     @Autowired
     public PublicEndpointController(final JurorPersistenceService jurorPersistenceService,
                                     final JurorService jurorService,
                                     final HolidaysService holidaysService,
+                                    final JurorResponseService jurorResponseService,
                                     @SuppressWarnings("SpringJavaAutowiringInspection") final SpringValidatorAdapter validator) {
         Assert.notNull(jurorPersistenceService, "JurorPersistenceService cannot be null.");
         Assert.notNull(jurorService, "JurorService cannot be null.");
         Assert.notNull(holidaysService, "HolidaysService cannot be null");
+        Assert.notNull(jurorResponseService, "JurorResponseService cannot be null");
         Assert.notNull(validator, "Validator cannot be null.");
         this.jurorPersistenceService = jurorPersistenceService;
         this.jurorService = jurorService;
         this.holidaysService = holidaysService;
+        this.jurorResponseService = jurorResponseService;
         this.validator = validator;
     }
 

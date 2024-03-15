@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
 
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class FinancialLossWarning {
     @JsonProperty("date")

@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.bureau.controller.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeed;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 
 import java.io.Serializable;
 
@@ -22,10 +23,10 @@ public class SpecialNeedDto implements Serializable {
     @Schema(description = "Special need details")
     private String detail;
 
-    public SpecialNeedDto(final BureauJurorSpecialNeed bureauJurorSpecialNeed) {
+    public SpecialNeedDto(final JurorReasonableAdjustment bureauJurorSpecialNeed) {
         this.jurorNumber = bureauJurorSpecialNeed.getJurorNumber();
-        this.code = bureauJurorSpecialNeed.getSpecialNeed().getCode();
-        this.description = bureauJurorSpecialNeed.getSpecialNeed().getDescription();
-        this.detail = bureauJurorSpecialNeed.getDetail();
+        this.code = bureauJurorSpecialNeed.getReasonableAdjustment().getCode();
+        this.description = bureauJurorSpecialNeed.getReasonableAdjustment().getDescription();
+        this.detail = bureauJurorSpecialNeed.getReasonableAdjustmentDetail();
     }
 }

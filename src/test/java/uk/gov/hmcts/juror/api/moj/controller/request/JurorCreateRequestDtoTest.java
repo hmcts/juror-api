@@ -62,7 +62,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
     class Title extends AbstractValidationFieldTestString {
         protected Title() {
             super("title", JurorCreateRequestDto::setTitle);
-            addAllowBlankTest("ABC");
+            addAllowBlankTest();
             addMaxLengthTest(10, null);
             addContainsPipesTest(null);
         }
@@ -111,7 +111,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
     class PrimaryPhone extends AbstractValidationFieldTestString {
         protected PrimaryPhone() {
             super("primaryPhone", JurorCreateRequestDto::setPrimaryPhone);
-            addNotRequiredTest("012345678");
+            addNotRequiredTest(null);
             addInvalidPatternTest("INVALID", ValidationConstants.PHONE_NO_REGEX, null);
         }
     }
@@ -120,7 +120,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
     class AlternativePhone extends AbstractValidationFieldTestString {
         protected AlternativePhone() {
             super("alternativePhone", JurorCreateRequestDto::setAlternativePhone);
-            addNotRequiredTest("012345678");
+            addNotRequiredTest(null);
             addInvalidPatternTest("INVALID", ValidationConstants.PHONE_NO_REGEX, null);
         }
     }
@@ -129,7 +129,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
     class EmailAddress extends AbstractValidationFieldTestString {
         protected EmailAddress() {
             super("emailAddress", JurorCreateRequestDto::setEmailAddress);
-            addAllowBlankTest("test@email.com");
+            addAllowBlankTest();
             addMaxLengthTest(RandomStringUtils.randomAlphabetic(245) + "@email.com", 254, null);
             addInvalidPatternTest("INVALID", ValidationConstants.EMAIL_ADDRESS_REGEX, null);
         }
@@ -139,7 +139,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
     class Notes extends AbstractValidationFieldTestString {
         protected Notes() {
             super("notes", JurorCreateRequestDto::setNotes);
-            addAllowBlankTest("ABC");
+            addAllowBlankTest();
             addMaxLengthTest(2000, null);
         }
     }
@@ -148,7 +148,6 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
     class PoolNumber extends AbstractValidationFieldTestString {
         protected PoolNumber() {
             super("poolNumber", JurorCreateRequestDto::setPoolNumber);
-            addNotRequiredTest("123456789");
             addInvalidPatternTest("INVALID", ValidationConstants.POOL_NUMBER, null);
         }
 
@@ -217,7 +216,6 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
     class StartDate extends AbstractValidationFieldTestLocalDate {
         protected StartDate() {
             super("startDate", JurorCreateRequestDto::setStartDate);
-            addNotRequiredTest(LocalDate.now());
         }
 
         @Test
@@ -238,7 +236,7 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
     class PoolType extends AbstractValidationFieldTestString {
         protected PoolType() {
             super("poolType", JurorCreateRequestDto::setPoolType);
-            addNotRequiredTest("ABC");
+            ignoreAdditionalFailures();
             addLengthTest(3, 3, null);
         }
 
@@ -260,7 +258,8 @@ public class JurorCreateRequestDtoTest extends AbstractValidatorTest<JurorCreate
     class LocationCode extends AbstractValidationFieldTestString {
         protected LocationCode() {
             super("locationCode", JurorCreateRequestDto::setLocationCode);
-            addNotRequiredTest("400");
+            ignoreAdditionalFailures();
+            addNotBlankTest(null);
             addLengthTest("40", "4000", 3, 3, null);
         }
     }

@@ -6,17 +6,19 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
-import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateMapping;
-import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateMappingRepository;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyAdapter;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotification;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
+import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateMappingMod;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.NotifyTemplateMappingRepositoryMod;
 import uk.gov.hmcts.juror.api.validation.ResponseInspectorImpl;
 
 import java.time.LocalDateTime;
@@ -50,10 +52,13 @@ public class JurorCommsNotificationServiceImplTest {
     private static final String LOC_COURT_NAME_ENGLISH = "PRESTON";
     private static final String LOC_ADDRESS1_ENGLISH = "THE LAW COURTS";
 
-    private JurorResponse juror;
-    private Pool pool;
-    private BureauJurorDetail bureauJurorDetail;
-    private NotifyTemplateMapping notifyCommsTemplateMapping;
+    private DigitalResponse juror;
+    private Juror jurorSet;
+
+    private PoolRequest poolRequest;
+    private JurorPool pool;
+    private ModJurorDetail bureauJurorDetail;
+    private NotifyTemplateMappingMod notifyCommsTemplateMapping;
     private final UUID notifyTemplateId = UUID.randomUUID();
     Map<String, String> payLoad;
     private WelshCourtLocation welshCourt;
@@ -66,7 +71,7 @@ public class JurorCommsNotificationServiceImplTest {
     private ResponseInspectorImpl responseInspector;
 
     @Mock
-    private NotifyTemplateMappingRepository notifyTemplateMappingRepository;
+    private NotifyTemplateMappingRepositoryMod notifyTemplateMappingRepository;
 
     @Mock
     private JurorCommsNotifyPayLoadService jurorCommsNotifyPayLoadService;
@@ -76,13 +81,14 @@ public class JurorCommsNotificationServiceImplTest {
 
     @Before
     public void setUp() throws Exception {
-        juror = JurorResponse.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .title(JUROR_TITLE)
-            .firstName(JUROR_FIRST_NAME)
-            .lastName(JUROR_LAST_NAME)
-            .email(JUROR_EMAIL)
-            .build();
+        juror = new DigitalResponse();
+        juror.setJurorNumber(JUROR_NUMBER);
+        juror.setTitle(JUROR_TITLE);
+        juror.setFirstName(JUROR_FIRST_NAME);
+        juror.setLastName(JUROR_LAST_NAME);
+        juror.setEmail(JUROR_EMAIL);
+
+
 
         welshCourt = new WelshCourtLocation();
         welshCourt.setLocCode(LOC_CODE_WESLH);
@@ -94,18 +100,26 @@ public class JurorCommsNotificationServiceImplTest {
         court.setLocCourtName(LOC_COURT_NAME_ENGLISH);
         court.setAddress1(LOC_ADDRESS1_ENGLISH);
 
-        pool = Pool.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .title(JUROR_TITLE)
-            .firstName(JUROR_FIRST_NAME)
-            .lastName(JUROR_LAST_NAME)
-            .email(JUROR_EMAIL)
-            .welsh(false)
-            .court(court)
-            .notifications(0)
-            .build();
 
-        notifyCommsTemplateMapping = NotifyTemplateMapping.builder().templateId(notifyTemplateId.toString()).build();
+        poolRequest = new PoolRequest();
+        jurorSet = new Juror();
+        pool = new JurorPool();
+        pool.setJuror(jurorSet);
+        pool.setPool(poolRequest);
+        jurorSet = pool.getJuror();
+
+        jurorSet.setJurorNumber(JUROR_NUMBER);
+        jurorSet.setTitle(JUROR_TITLE);
+        jurorSet.setFirstName(JUROR_FIRST_NAME);
+        jurorSet.setLastName(JUROR_LAST_NAME);
+        jurorSet.setEmail(JUROR_EMAIL);
+        jurorSet.setWelsh(false);
+        poolRequest.setCourtLocation(court);
+        jurorSet.setNotifications(0);
+
+
+
+        notifyCommsTemplateMapping = NotifyTemplateMappingMod.builder().templateId(notifyTemplateId.toString()).build();
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -125,8 +139,8 @@ public class JurorCommsNotificationServiceImplTest {
     @Test
     public void sendJurorCommsEmail_confirmation_english() {
         String detailRec = "    Farah     Lee       YYY   " + JUROR_NUMBER + "XX     ";
-        given(jurorCommsNotifyPayLoadService.generatePayLoadData(anyString(), anyString(), any(Pool.class))).willReturn(
-            payLoad);
+        given(jurorCommsNotifyPayLoadService.generatePayLoadData(anyString(), anyString(), any(JurorPool.class)))
+            .willReturn(payLoad);
         service.sendJurorComms(pool, JurorCommsNotifyTemplateType.LETTER_COMMS, notifyTemplateId.toString(),
             detailRec, false);
         verify(mockNotifyAdapter).sendCommsEmail(any());
@@ -135,7 +149,8 @@ public class JurorCommsNotificationServiceImplTest {
     @Test
     public void sendJurorCommsEmail_comms_english() {
         given(notifyTemplateMappingRepository.findByTemplateName(anyString())).willReturn(notifyCommsTemplateMapping);
-        given(jurorCommsNotifyPayLoadService.generatePayLoadData(anyString(), any(Pool.class))).willReturn(payLoad);
+        given(jurorCommsNotifyPayLoadService.generatePayLoadData(anyString(), any(JurorPool.class)))
+            .willReturn(payLoad);
         service.sendJurorComms(pool, JurorCommsNotifyTemplateType.COMMS, null, null, false);
         verify(mockNotifyAdapter).sendCommsEmail(any());
     }
@@ -147,7 +162,8 @@ public class JurorCommsNotificationServiceImplTest {
             any(WelshCourtLocation.class))).willReturn(Boolean.TRUE);
         given(jurorCommsNotifyPayLoadService.getWelshCourtLocation(anyString())).willReturn(welshCourt);
 
-        given(jurorCommsNotifyPayLoadService.generatePayLoadData(anyString(), any(Pool.class))).willReturn(payLoad);
+        given(jurorCommsNotifyPayLoadService.generatePayLoadData(anyString(), any(JurorPool.class)))
+            .willReturn(payLoad);
         service.sendJurorComms(pool, JurorCommsNotifyTemplateType.SENT_TO_COURT, null, null, false);
         verify(mockNotifyAdapter).sendCommsEmail(any());
     }
@@ -159,7 +175,8 @@ public class JurorCommsNotificationServiceImplTest {
             any(WelshCourtLocation.class))).willReturn(Boolean.TRUE);
         given(jurorCommsNotifyPayLoadService.getWelshCourtLocation(anyString())).willReturn(welshCourt);
 
-        given(jurorCommsNotifyPayLoadService.generatePayLoadData(anyString(), any(Pool.class))).willReturn(payLoad);
+        given(jurorCommsNotifyPayLoadService.generatePayLoadData(anyString(), any(JurorPool.class)))
+            .willReturn(payLoad);
         service.sendJurorComms(pool, JurorCommsNotifyTemplateType.SU_SENT_TO_COURT, null, null, false);
         verify(mockNotifyAdapter).sendCommsEmail(any());
     }
@@ -169,9 +186,11 @@ public class JurorCommsNotificationServiceImplTest {
         given(notifyTemplateMappingRepository.findByTemplateName(anyString())).willReturn(notifyCommsTemplateMapping);
         given(jurorCommsNotifyPayLoadService.isWelshCourtAndComms(anyBoolean(),
             any(WelshCourtLocation.class))).willReturn(Boolean.TRUE);
-        given(jurorCommsNotifyPayLoadService.getWelshCourtLocation(anyString())).willReturn(welshCourt);
+        given(jurorCommsNotifyPayLoadService.getWelshCourtLocation(anyString()))
+            .willReturn(welshCourt);
 
-        given(jurorCommsNotifyPayLoadService.generatePayLoadData(anyString(), any(Pool.class))).willReturn(payLoad);
+        given(jurorCommsNotifyPayLoadService.generatePayLoadData(anyString(), any(JurorPool.class)))
+            .willReturn(payLoad);
         service.sendJurorCommsSms(pool, JurorCommsNotifyTemplateType.SENT_TO_COURT, null, null, true);
         verify(mockNotifyAdapter).sendCommsSms(any());
     }

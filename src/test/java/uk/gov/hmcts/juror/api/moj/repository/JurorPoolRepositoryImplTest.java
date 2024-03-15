@@ -49,16 +49,39 @@ class JurorPoolRepositoryImplTest {
         jurorPoolRepository = Mockito.spy(new JurorPoolRepositoryImpl());
         Mockito.doReturn(queryFactory).when(jurorPoolRepository).getQueryFactory();
 
-        Mockito.when(queryFactory.from(Mockito.any(EntityPath.class))).thenReturn(jpaQuery);
-        Mockito.when(jpaQuery.join(Mockito.any(EntityPath.class))).thenReturn(jpaQuery);
-        Mockito.when(jpaQuery.on(Mockito.any(Predicate.class))).thenReturn(jpaQuery);
-        Mockito.when(jpaQuery.leftJoin(Mockito.any(EntityPath.class))).thenReturn(jpaQuery);
         Mockito.when(jpaQuery.where(Mockito.any(Predicate.class))).thenReturn(jpaQuery);
-        Mockito.when(jpaQuery.select(Mockito.any(Expression[].class))).thenReturn(jpaQuery);
+    }
+
+    @Test
+    void fetchThinPoolMembers() {
+        final String poolNumber = "12345678";
+        final String owner = "415";
+
+        Mockito.when(queryFactory.select(Mockito.any(Expression.class))).thenReturn(jpaQuery);
+        Mockito.when(jpaQuery.from(Mockito.any(EntityPath.class))).thenReturn(jpaQuery);
+
+        jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner);
+
+        Mockito.verify(queryFactory, Mockito.times(1)).select(QJurorPool.jurorPool.juror.jurorNumber);
+        Mockito.verify(jpaQuery, Mockito.times(1)).from(QJurorPool.jurorPool);
+        Mockito.verify(jpaQuery, Mockito.times(1)).where(QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber)
+                                                             .and(QJurorPool.jurorPool.owner.eq(owner))
+                                                             .and(QJurorPool.jurorPool.isActive.isTrue()));
+        Mockito.verify(jpaQuery, Mockito.times(1)).fetch();
+        Mockito.verifyNoMoreInteractions(jpaQuery);
     }
 
     @Nested
     class FetchFilteredPoolMembers {
+        @BeforeEach
+        void beforeEach() {
+            Mockito.when(queryFactory.from(Mockito.any(EntityPath.class))).thenReturn(jpaQuery);
+            Mockito.when(jpaQuery.join(Mockito.any(EntityPath.class))).thenReturn(jpaQuery);
+            Mockito.when(jpaQuery.on(Mockito.any(Predicate.class))).thenReturn(jpaQuery);
+            Mockito.when(jpaQuery.leftJoin(Mockito.any(EntityPath.class))).thenReturn(jpaQuery);
+            Mockito.when(jpaQuery.select(Mockito.any(Expression[].class))).thenReturn(jpaQuery);
+        }
+
         @Test
         void coreFunctionality() {
             final String ownerId = "415";
@@ -241,7 +264,8 @@ class JurorPoolRepositoryImplTest {
 
         @Test
         void filterByNextDue() {
-            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().nextDue(true).build(), "");
+            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder()
+                                                             .nextDue(Arrays.asList("set")).build(), "");
             Mockito.verify(jpaQuery, Mockito.times(4))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
@@ -250,11 +274,24 @@ class JurorPoolRepositoryImplTest {
 
         @Test
         void filterByNextDueFalse() {
-            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().nextDue(false).build(), "");
+            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder()
+                                                             .nextDue(Arrays.asList("notSet")).build(), "");
             Mockito.verify(jpaQuery, Mockito.times(4))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(QJurorPool.jurorPool.nextDate.isNull());
+        }
+
+        @Test
+        void filterByBothNextDueValues() {
+            jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder()
+                                                             .nextDue(Arrays.asList("set","notSet")).build(), "");
+            Mockito.verify(jpaQuery, Mockito.times(3))
+                .where(Mockito.any(Predicate.class));
+            Mockito.verify(jpaQuery, Mockito.times(0))
+                .where(QJurorPool.jurorPool.nextDate.isNull());
+            Mockito.verify(jpaQuery, Mockito.times(0))
+                .where(QJurorPool.jurorPool.nextDate.isNotNull());
         }
 
         @Test

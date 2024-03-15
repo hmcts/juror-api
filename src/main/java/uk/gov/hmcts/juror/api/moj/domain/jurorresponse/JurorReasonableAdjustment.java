@@ -10,13 +10,19 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 import java.io.Serializable;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Data
+@Builder
 @Table(name = "juror_reasonable_adjustment", schema = "juror_mod")
 public class JurorReasonableAdjustment implements Serializable {
     @Column(name = "juror_number")

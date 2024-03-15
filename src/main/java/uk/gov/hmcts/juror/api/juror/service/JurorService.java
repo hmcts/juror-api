@@ -3,7 +3,7 @@ package uk.gov.hmcts.juror.api.juror.service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 
 /**
  * Public Juror service for public data access operations.
@@ -24,5 +24,5 @@ public interface JurorService {
      * @return The saved entity
      */
     @Transactional
-    JurorResponse saveResponse(JurorResponseDto responseDto);
+    DigitalResponse saveResponse(JurorResponseDto responseDto);
 }

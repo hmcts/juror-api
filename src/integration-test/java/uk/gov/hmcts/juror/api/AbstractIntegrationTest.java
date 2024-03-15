@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -28,6 +29,7 @@ import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +56,9 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
 
     @Value("${jwt.secret.bureau}")
     protected String bureauSecret;
+
+    @Value("${jwt.secret.hmac}")
+    protected String hmacSecret;
 
     /**
      * Reset sequences in the database. This method must be called when overriding!
@@ -127,10 +132,14 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     }
 
     protected String mintBureauJwt(final BureauJWTPayload payload) {
-        return TestUtil.mintBureauJwt(payload, SignatureAlgorithm.HS256, bureauSecret, Instant.now().plus(100L * 365L,
-            ChronoUnit.DAYS));
+        return TestUtil.mintBureauJwt(payload, SignatureAlgorithm.HS256, bureauSecret,
+            Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }
 
+    protected String createHmacJwt() {
+        return TestUtil.mintHmacJwt(SignatureAlgorithm.HS256, hmacSecret,
+            Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
+    }
 
     protected String createBureauJwt(String login, String owner) {
         return createBureauJwt(login, owner, owner);
@@ -140,7 +149,8 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
         return createBureauJwt(login, owner, null, null, courts);
     }
 
-    protected String createBureauJwt(String login, String owner, UserType userType, Set<Role> roles, String... courts) {
+    protected String createBureauJwt(String login, String owner, UserType userType, Collection<Role> roles,
+                                     String... courts) {
         return mintBureauJwt(BureauJWTPayload.builder()
             .userLevel("1")
             .login(login)
@@ -230,6 +240,15 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
             HttpStatus.INTERNAL_SERVER_ERROR,
             url,
             MojException.InternalServerError.class,
+            expectedError);
+    }
+    protected void assertInternalServerErrorViolation(ResponseEntity<String> response, String url,
+                                                      Class<? extends Exception> expectedException,
+                                                      String expectedError) {
+        assertErrorResponse(response,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            url,
+            expectedException,
             expectedError);
     }
 

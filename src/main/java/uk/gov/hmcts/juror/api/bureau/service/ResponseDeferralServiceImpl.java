@@ -20,60 +20,64 @@ import uk.gov.hmcts.juror.api.bureau.domain.DefLettRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.DeferDBF;
 import uk.gov.hmcts.juror.api.bureau.domain.DeferDBFRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHist;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHistRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.THistoryCode;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 @Service
 @Slf4j
 public class ResponseDeferralServiceImpl implements ResponseDeferralService {
+    private final JurorStatusRepository jurorStatusRepository;
     public static final String DEFER_DBF_CHECKED_VALUE = null;// null is an intentional value
-    private final PoolRepository poolRepository;
+    private final JurorPoolRepository poolRepository;
     private final ResponseMergeService responseMergeService;
-    private final JurorResponseRepository jurorResponseRepository;
+
+    private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
     private final EntityManager entityManager;
-    private final JurorResponseAuditRepository auditRepository;
+    private final JurorResponseAuditRepositoryMod auditRepository;
     private final DeferDBFRepository deferDBFRepository;
-    private final PartHistRepository partHistRepository;
+    private final JurorHistoryRepository partHistRepository;
     private final DefLettRepository defLettRepository;
     private final DefDeniedRepository defDeniedRepository;
     private final ExcusalCodeRepository excusalCodeRepository;
     private final AssignOnUpdateService assignOnUpdateService;
 
     @Autowired
-    public ResponseDeferralServiceImpl(final PoolRepository poolRepository,
+    public ResponseDeferralServiceImpl(final JurorPoolRepository poolRepository,
                                        final ResponseMergeService responseMergeService,
-                                       final JurorResponseRepository jurorResponseRepository,
+                                       final JurorDigitalResponseRepositoryMod jurorResponseRepository,
                                        final EntityManager entityManager,
-                                       final JurorResponseAuditRepository auditRepository,
+                                       final JurorResponseAuditRepositoryMod auditRepository,
                                        final DeferDBFRepository deferDBFRepository,
-                                       final PartHistRepository partHistRepository,
+                                       final JurorHistoryRepository partHistRepository,
                                        final DefLettRepository defLettRepository,
                                        final DefDeniedRepository defDeniedRepository,
                                        final ExcusalCodeRepository excusalCodeRepository,
-                                       final AssignOnUpdateService assignOnUpdateService) {
-        Assert.notNull(poolRepository, "PoolRepository cannot be null.");
-        Assert.notNull(responseMergeService, "ResponseMergeService cannot be null.");
-        Assert.notNull(jurorResponseRepository, "JurorResponseRepository cannot be null.");
+                                       final AssignOnUpdateService assignOnUpdateService,
+                                       JurorStatusRepository jurorStatusRepository) {
+        Assert.notNull(poolRepository, "JurorRepository cannot be null.");
+        Assert.notNull(responseMergeService, "SummonsReplyMergeService cannot be null.");
+        Assert.notNull(jurorResponseRepository, "JurorDigitalResponseRepositoryMod cannot be null.");
         Assert.notNull(entityManager, "EntityManager cannot be null.");
-        Assert.notNull(auditRepository, "JurorResponseAuditRepository cannot be null.");
+        Assert.notNull(auditRepository, "JurorResponseAuditRepositoryMod cannot be null.");
         Assert.notNull(deferDBFRepository, "DeferDBFRepository cannot be null.");
-        Assert.notNull(partHistRepository, "PartHistRepository cannot be null.");
+        Assert.notNull(partHistRepository, "JurorHistoryRepository cannot be null.");
         Assert.notNull(defLettRepository, "DefLettRepository cannot be null.");
         Assert.notNull(defDeniedRepository, "DefDeniedRepository cannot be null.");
         Assert.notNull(excusalCodeRepository, "ExcusalCodeRepository cannot be null.");
@@ -89,6 +93,7 @@ public class ResponseDeferralServiceImpl implements ResponseDeferralService {
         this.defDeniedRepository = defDeniedRepository;
         this.excusalCodeRepository = excusalCodeRepository;
         this.assignOnUpdateService = assignOnUpdateService;
+        this.jurorStatusRepository = jurorStatusRepository;
     }
 
     @Override
@@ -97,7 +102,7 @@ public class ResponseDeferralServiceImpl implements ResponseDeferralService {
                                         final ResponseDeferralController.DeferralDto deferralDto) {
         isValidExcusalCode(deferralDto.getDeferralReason());
 
-        final JurorResponse deferResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
+        final DigitalResponse deferResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
         log.debug("Processing manual deferral of juror {} with {}", jurorNumber, deferralDto);
         if (deferResponse != null) {
             if (BooleanUtils.isTrue(deferResponse.getProcessingComplete())) {
@@ -119,7 +124,7 @@ public class ResponseDeferralServiceImpl implements ResponseDeferralService {
             final ProcessingStatus auditStatus = deferResponse.getProcessingStatus();
 
             // attempt to defer
-            final Pool pool = poolRepository.findByJurorNumber(jurorNumber);
+            final JurorPool pool = poolRepository.findByJurorJurorNumber(jurorNumber);
             // validate credentials.
             if (pool == null) {
                 log.info("Could not find juror using juror number {}", jurorNumber);
@@ -128,22 +133,14 @@ public class ResponseDeferralServiceImpl implements ResponseDeferralService {
 
             if (deferralDto.getAcceptDeferral()) {
                 // do acceptance
-                final Date deferTo = deferralDto.getDeferralDate();
-                final Date courtDate = pool.getHearingDate();
-                final Date oneYearFromCourtDate = Date.from(ZonedDateTime.ofInstant(
-                        courtDate.toInstant(),
-                        ZoneId.systemDefault()
-                    )
-                    .plus(6, ChronoUnit.HOURS)
-                    .truncatedTo(ChronoUnit.DAYS)
-                    .plus(12, ChronoUnit.MONTHS)
-                    .plus(1, ChronoUnit.DAYS)
-                    .toInstant());
+                final LocalDate deferTo = deferralDto.getDeferralDate();
+                final LocalDate courtDate = pool.getNextDate();
+                final LocalDate oneYearFromCourtDate = LocalDate.now().plusMonths(12).plusDays(1);
                 if (log.isTraceEnabled()) {
                     log.trace("One year from now = {}", oneYearFromCourtDate);
                 }
                 // validate deferral date is within 12 months
-                if (deferTo != null && !deferTo.before(oneYearFromCourtDate)) {
+                if (deferTo != null && !deferTo.isBefore(oneYearFromCourtDate)) {
                     log.warn("Cannot defer juror {} until {} as it is not within the next 12 months of {}", jurorNumber,
                         deferTo, oneYearFromCourtDate
                     );
@@ -151,15 +148,15 @@ public class ResponseDeferralServiceImpl implements ResponseDeferralService {
                         "Deferral date not within the next twelve months of the court date");
                 }
 
-                pool.setStatus(IPoolStatus.DEFERRED);
-                pool.setResponded("Y");
+                pool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.DEFERRED, jurorStatusRepository));
+                pool.getJuror().setResponded(true);
                 pool.setDeferralDate(deferTo);
-                pool.setExcusalDate(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant().truncatedTo(
-                    ChronoUnit.DAYS)));
-                pool.setExcusalCode(deferralDto.getDeferralReason());
+                pool.getJuror()
+                    .setExcusalDate(LocalDate.now());
+                pool.getJuror().setExcusalCode(deferralDto.getDeferralReason());
                 pool.setUserEdtq(auditorUsername);
-                pool.setNoDefPos(1L);
-                pool.setHearingDate(null);//this should map to POOL.NEXT_DATE
+                pool.getJuror().setNoDefPos(1);
+                pool.setNextDate(null);//this should map to POOL.NEXT_DATE
 
 
                 poolRepository.save(pool);
@@ -170,32 +167,28 @@ public class ResponseDeferralServiceImpl implements ResponseDeferralService {
                     .partNo(deferResponse.getJurorNumber())
                     .deferTo(deferTo)
                     .checked(DEFER_DBF_CHECKED_VALUE)
-                    .locCode(pool.getCourt() != null
-                        ?
-                        pool.getCourt().getLocCode()
-                        :
-                            null)
+                    .locCode(pool.getCourt() != null ? pool.getCourt().getLocCode() : null)
                     .build());
                 log.warn("POOL {} LOC_CODE was null!", deferResponse.getJurorNumber());
 
                 // audit log the responded status
-                partHistRepository.save(PartHist.builder()
-                    .owner(JurorDigitalApplication.JUROR_OWNER)
-                    .historyCode(THistoryCode.RESPONDED)
+                partHistRepository.save(JurorHistory.builder()
+                    //    .owner(JurorDigitalApplication.JUROR_OWNER)
+                    .historyCode(HistoryCodeMod.RESPONDED_POSITIVELY)
                     .jurorNumber(deferResponse.getJurorNumber())
-                    .datePart(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()))
-                    .userId(auditorUsername)
-                    .info(PartHist.RESPONDED)
+                    .dateCreated(LocalDateTime.now())
+                    .createdBy(auditorUsername)
+                    .otherInformation(JurorHistory.RESPONDED)
                     .poolNumber(pool.getPoolNumber())
                     .build());
                 // audit log the deferral status
-                partHistRepository.save(PartHist.builder()
-                    .owner(JurorDigitalApplication.JUROR_OWNER)
-                    .historyCode(THistoryCode.DEFERRED)
+                partHistRepository.save(JurorHistory.builder()
+                    //.owner(JurorDigitalApplication.JUROR_OWNER)
+                    .historyCode(HistoryCodeMod.DEFERRED_POOL_MEMBER)
                     .jurorNumber(deferResponse.getJurorNumber())
-                    .datePart(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()))
-                    .userId(auditorUsername)
-                    .info("Add defer - " + pool.getExcusalCode())
+                    .dateCreated(LocalDateTime.now())
+                    .createdBy(auditorUsername)
+                    .otherInformation("Add defer - " + pool.getJuror().getExcusalCode())
                     .poolNumber(pool.getPoolNumber())
                     .build());
 
@@ -204,37 +197,37 @@ public class ResponseDeferralServiceImpl implements ResponseDeferralService {
                     .owner(JurorDigitalApplication.JUROR_OWNER)
                     .partNo(deferResponse.getJurorNumber())
                     .dateDef(pool.getDeferralDate())
-                    .excusalCode(pool.getExcusalCode())
+                    .excusalCode(pool.getJuror().getExcusalCode())
                     .build());
             } else {
                 // do denial
-                pool.setStatus(IPoolStatus.RESPONDED);
-                pool.setResponded("Y");
-                pool.setExcusalCode(deferralDto.getDeferralReason());
+                pool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));
+                pool.getJuror().setResponded(true);
+                pool.getJuror().setExcusalCode(deferralDto.getDeferralReason());
                 pool.setUserEdtq(auditorUsername);
-                pool.setExcusalRejected("Z");
+                pool.getJuror().setExcusalRejected("Z");
                 pool.setDeferralDate(null);
-                pool.setExcusalDate(null);
+                pool.getJuror().setExcusalDate(null);
                 poolRepository.save(pool);
 
                 // audit log the responded status
-                partHistRepository.save(PartHist.builder()
-                    .owner(JurorDigitalApplication.JUROR_OWNER)
-                    .historyCode(THistoryCode.RESPONDED)
+                partHistRepository.save(JurorHistory.builder()
+                    //    .owner(JurorDigitalApplication.JUROR_OWNER)
+                    .historyCode(HistoryCodeMod.RESPONDED_POSITIVELY)
                     .jurorNumber(deferResponse.getJurorNumber())
-                    .datePart(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()))
-                    .userId(auditorUsername)
-                    .info(PartHist.RESPONDED)
+                    .dateCreated(LocalDateTime.now())
+                    .createdBy(auditorUsername)
+                    .otherInformation(JurorHistory.RESPONDED)
                     .poolNumber(pool.getPoolNumber())
                     .build());
                 // audit log the deferral DENIED status
-                partHistRepository.save(PartHist.builder()
-                    .owner(JurorDigitalApplication.JUROR_OWNER)
-                    .historyCode(THistoryCode.DEFERRED)
+                partHistRepository.save(JurorHistory.builder()
+                    //    .owner(JurorDigitalApplication.JUROR_OWNER)
+                    .historyCode(HistoryCodeMod.DEFERRED_POOL_MEMBER)
                     .jurorNumber(deferResponse.getJurorNumber())
-                    .datePart(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()))
-                    .userId(auditorUsername)
-                    .info("Deferral Denied - " + pool.getExcusalCode())
+                    .dateCreated(LocalDateTime.now())
+                    .createdBy(auditorUsername)
+                    .otherInformation("Deferral Denied - " + pool.getJuror().getExcusalCode())
                     .poolNumber(pool.getPoolNumber())
                     .build());
 
@@ -243,7 +236,7 @@ public class ResponseDeferralServiceImpl implements ResponseDeferralService {
                     .owner(JurorDigitalApplication.JUROR_OWNER)
                     .partNo(deferResponse.getJurorNumber())
                     .dateDef(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()))
-                    .excusalCode(pool.getExcusalCode())
+                    .excusalCode(pool.getJuror().getExcusalCode())
                     .datePrinted(null)
                     .printed(null)
                     .build());
@@ -269,7 +262,7 @@ public class ResponseDeferralServiceImpl implements ResponseDeferralService {
             log.info("Updated juror '{}' processing status to '{}'", jurorNumber, deferResponse.getProcessingStatus());
 
             //audit response status change
-            final JurorResponseAudit responseAudit = auditRepository.save(JurorResponseAudit.builder()
+            final JurorResponseAuditMod responseAudit = auditRepository.save(JurorResponseAuditMod.builder()
                 .jurorNumber(deferResponse.getJurorNumber())
                 .login(auditorUsername)
                 .oldProcessingStatus(auditStatus)

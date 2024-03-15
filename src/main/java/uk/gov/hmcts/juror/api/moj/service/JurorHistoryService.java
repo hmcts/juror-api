@@ -54,4 +54,6 @@ public interface JurorHistoryService {
 
     void createExpenseEditHistory(FinancialAuditDetails financialAuditDetails,
                                   Appearance appearance);
+
+    void createSummonsReminderLetterHistory(JurorPool jurorPool);
 }

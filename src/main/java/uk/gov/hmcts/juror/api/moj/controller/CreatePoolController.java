@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,9 +43,11 @@ import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.VotersLocPostcodeTotals;
 import uk.gov.hmcts.juror.api.moj.service.PoolCreateService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.validation.PoolNumber;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -85,6 +88,20 @@ public class CreatePoolController {
         return ResponseEntity.ok().body(summonsForms);
     }
 
+    @GetMapping("/members/{poolNumber}")
+    @Operation(summary = "Retrieve a list of all juror numbers for a specific pool, ie: ['123456789', '987654321'].")
+    public ResponseEntity<List<String>> getThinPoolMembers(
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @PathVariable @PoolNumber
+        @Parameter(description = "Pool number", required = true)
+        @Valid String poolNumber) {
+        List<String> poolMembers = poolCreateService.getThinJurorPoolsList(poolNumber, payload.getOwner());
+        if (poolMembers == null) {
+            return ResponseEntity.ok().body(new ArrayList<>());
+        }
+        return ResponseEntity.ok().body(poolMembers);
+    }
+
     @PostMapping("/members")
     @Operation(summary = "Retrieve a list of all pool members by pool number. Post to effect a GET with body")
     public ResponseEntity<PaginatedList<FilterPoolMember>> getPoolMembers(
@@ -92,7 +109,7 @@ public class CreatePoolController {
         @Validated @RequestBody PoolMemberFilterRequestQuery query) {
         PaginatedList<FilterPoolMember> poolMembers = poolCreateService.getJurorPoolsList(payload, query);
         if (poolMembers == null) {
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok().body(poolMembers);
     }

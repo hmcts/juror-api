@@ -15,9 +15,15 @@ import uk.gov.hmcts.juror.api.bureau.service.JurorResponsesSummonedService;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.JurorDetailRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
@@ -27,14 +33,14 @@ import java.util.List;
 @Slf4j
 public class CloseJurorResponsesScheduler implements JurorResponsesSummonedService {
 
-    private final JurorResponseRepository jurorResponseRepository;
+    private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
-    private final BureauJurorDetailRepository bureauJurorDetailRepository;
+    private final JurorDetailRepositoryMod bureauJurorDetailRepository;
 
     @Autowired
     public CloseJurorResponsesScheduler(
-        final JurorResponseRepository jurorResponseRepository,
-        final BureauJurorDetailRepository bureauJurorDetailRepository
+        final JurorDigitalResponseRepositoryMod jurorResponseRepository,
+        final JurorDetailRepositoryMod bureauJurorDetailRepository
     ) {
 
         Assert.notNull(bureauJurorDetailRepository, "BureauJurorDetailRepository cannot be null");
@@ -51,26 +57,26 @@ public class CloseJurorResponsesScheduler implements JurorResponsesSummonedServi
 
 
         BooleanExpression JurorResponseCloseFilter = BureauJurorDetailQueries.JurorResponsesForClosing();
-        final List<BureauJurorDetail> JurorResponsesDetail = Lists.newLinkedList(bureauJurorDetailRepository.findAll(
+        final List<ModJurorDetail> JurorResponsesDetail = Lists.newLinkedList(bureauJurorDetailRepository.findAll(
             JurorResponseCloseFilter));
 
 
         int numberRecordsClosed = 0;
 
-        for (BureauJurorDetail responseRecord : JurorResponsesDetail) {
+        for (ModJurorDetail responseRecord : JurorResponsesDetail) {
             log.info("jurorResponsesSummonedToClosed JUROR_NO: {}", responseRecord.getJurorNumber());
 
             String jurorNumber = responseRecord.getJurorNumber();
 
             log.info("Juror Numbers {}", jurorNumber);
 
-            JurorResponse jurorResponseRecord = jurorResponseRepository.findByJurorNumber(jurorNumber);
+            DigitalResponse jurorResponseRecord = jurorResponseRepository.findByJurorNumber(jurorNumber);
             log.info(" Juror numbers to be processed {} ", jurorResponseRecord.getJurorNumber());
 
 
             jurorResponseRecord.setProcessingStatus(ProcessingStatus.CLOSED);
             jurorResponseRecord.setProcessingComplete(Boolean.TRUE);
-            jurorResponseRecord.setCompletedAt(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
+            jurorResponseRecord.setCompletedAt(LocalDateTime.now());
             updateJurorResponse(jurorResponseRecord);
             numberRecordsClosed++;
 
@@ -80,7 +86,7 @@ public class CloseJurorResponsesScheduler implements JurorResponsesSummonedServi
         log.info("Close Response Scheduler: Finished, time is now {}", dateFormat.format(new Date()));
     }
 
-    private void updateJurorResponse(JurorResponse jurorResponseRecord) {
+    private void updateJurorResponse(DigitalResponse jurorResponseRecord) {
         try {
             log.trace("Inside update ....");
             jurorResponseRepository.save(jurorResponseRecord);

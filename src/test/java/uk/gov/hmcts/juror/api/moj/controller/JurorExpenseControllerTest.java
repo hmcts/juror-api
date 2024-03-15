@@ -735,7 +735,7 @@ class JurorExpenseControllerTest {
             @Test
             void badPayload() throws Exception {
                 GetEnteredExpenseRequest request = GetEnteredExpenseRequest.builder()
-                    .dateOfExpense(LocalDate.now())
+                    .expenseDates(List.of(LocalDate.now()))
                     .poolNumber(TestConstants.INVALID_POOL_NUMBER)
                     .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
                     .build();
@@ -755,30 +755,38 @@ class JurorExpenseControllerTest {
             @DisplayName("typical")
             void typical() throws Exception {
                 GetEnteredExpenseRequest request = GetEnteredExpenseRequest.builder()
-                    .dateOfExpense(LocalDate.now())
+                    .expenseDates(List.of(LocalDate.now(), LocalDate.now().plusDays(1)))
                     .poolNumber(TestConstants.VALID_POOL_NUMBER)
                     .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
-                    .build();
-                GetEnteredExpenseResponse response = GetEnteredExpenseResponse.builder()
-                    .totalPaid(new BigDecimal("1.23"))
                     .build();
                 when(jurorExpenseService
                     .getEnteredExpense(TestConstants.VALID_JUROR_NUMBER,
                         TestConstants.VALID_POOL_NUMBER,
-                        request.getDateOfExpense())
-                ).thenReturn(response);
+                        request.getExpenseDates().get(0))
+                ).thenReturn(GetEnteredExpenseResponse.builder()
+                    .totalPaid(new BigDecimal("1.23"))
+                    .build());
+                when(jurorExpenseService
+                    .getEnteredExpense(TestConstants.VALID_JUROR_NUMBER,
+                        TestConstants.VALID_POOL_NUMBER,
+                        request.getExpenseDates().get(1))
+                ).thenReturn(GetEnteredExpenseResponse.builder()
+                    .totalPaid(new BigDecimal("2.34"))
+                    .build());
 
                 mockMvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtils.asJsonString(request)))
                     .andDo(MockMvcResultHandlers.print())
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.total_paid", CoreMatchers.is(1.23)));
+                    .andExpect(jsonPath("$.size()", CoreMatchers.is(2)))
+                    .andExpect(jsonPath("$.[0].total_paid", CoreMatchers.is(1.23)))
+                    .andExpect(jsonPath("$.[1].total_paid", CoreMatchers.is(2.34)));
 
                 verify(jurorExpenseService, times(1))
                     .getEnteredExpense(TestConstants.VALID_JUROR_NUMBER,
                         TestConstants.VALID_POOL_NUMBER,
-                        request.getDateOfExpense());
+                        request.getExpenseDates().get(0));
             }
         }
     }
@@ -863,7 +871,7 @@ class JurorExpenseControllerTest {
     @Nested
     @DisplayName("POST (get) " + GetSimplifiedExpenseDetails.URL)
     class GetSimplifiedExpenseDetails {
-        public static final String URL = BASE_URL + "/view/{type}";
+        public static final String URL = BASE_URL + "/view/{type}/simplified";
 
         public String toUrl(String type) {
             return URL.replace("{type}", type);
@@ -1025,6 +1033,105 @@ class JurorExpenseControllerTest {
                 verify(jurorExpenseService, times(1))
                     .getDraftExpenses(TestConstants.VALID_JUROR_NUMBER,
                         TestConstants.VALID_POOL_NUMBER);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("GET (POST) " + GetExpenses.URL)
+    class GetExpenses {
+        public static final String URL = BASE_URL + "/{juror_number}/{pool_number}";
+
+        public String toUrl(String jurorNumber, String poolNumber) {
+            return URL.replace("{juror_number}", jurorNumber)
+                .replace("{pool_number}", poolNumber);
+        }
+
+        static List<LocalDate> getValidPayload() {
+            return List.of(
+                LocalDate.now(),
+                LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(2)
+
+            );
+        }
+
+        @Nested
+        @DisplayName("Negative")
+        class Negative {
+
+            @Test
+            void invalidJurorNumber() throws Exception {
+                mockMvc.perform(post(toUrl(TestConstants.INVALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.asJsonString(getValidPayload())))
+                    .andDo(MockMvcResultHandlers.print())
+                    .andExpect(status().isBadRequest());
+                verifyNoInteractions(jurorExpenseService);
+            }
+
+            @Test
+            void invalidPoolNumber() throws Exception {
+                mockMvc.perform(post(toUrl(TestConstants.INVALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.asJsonString(getValidPayload())))
+                    .andDo(MockMvcResultHandlers.print())
+                    .andExpect(status().isBadRequest());
+                verifyNoInteractions(jurorExpenseService);
+            }
+
+            @Test
+            void invalidPayload() throws Exception {
+                mockMvc.perform(post(toUrl(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.asJsonString(List.of())))
+                    .andDo(MockMvcResultHandlers.print())
+                    .andExpect(status().isBadRequest());
+                verifyNoInteractions(jurorExpenseService);
+            }
+        }
+
+        @Nested
+        @DisplayName("Positive")
+        class Positive {
+            @Test
+            @DisplayName("typical")
+            void typical() throws Exception {
+
+                CombinedExpenseDetailsDto<ExpenseDetailsDto> combinedExpenseDetailsDto =
+                    new CombinedExpenseDetailsDto<>();
+                combinedExpenseDetailsDto.addExpenseDetail(
+                    ExpenseDetailsDto.builder()
+                        .attendanceDate(LocalDate.of(2023, 1, 5))
+                        .attendanceType(AttendanceType.FULL_DAY)
+                        .lossOfEarnings(new BigDecimal("90.00"))
+                        .extraCare(new BigDecimal("70.00"))
+                        .other(new BigDecimal("80.00"))
+                        .publicTransport(new BigDecimal("10.00"))
+                        .taxi(new BigDecimal("20.00"))
+                        .motorcycle(new BigDecimal("30.00"))
+                        .car(new BigDecimal("40.00"))
+                        .bicycle(new BigDecimal("50.00"))
+                        .parking(new BigDecimal("60.00"))
+                        .foodAndDrink(new BigDecimal("100.00"))
+                        .smartCard(new BigDecimal("25.00"))
+                        .paymentMethod(PaymentMethod.BACS)
+                        .build());
+
+                List<LocalDate> payload = getValidPayload();
+                when(jurorExpenseService.getExpenses(TestConstants.VALID_JUROR_NUMBER,
+                    TestConstants.VALID_POOL_NUMBER, payload))
+                    .thenReturn(combinedExpenseDetailsDto);
+
+                mockMvc.perform(post(toUrl(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.asJsonString(payload)))
+                    .andExpect(status().isOk())
+                    .andExpect(content().json(TestUtils.asJsonString(combinedExpenseDetailsDto)));
+
+                verify(jurorExpenseService, times(1))
+                    .getExpenses(TestConstants.VALID_JUROR_NUMBER,
+                        TestConstants.VALID_POOL_NUMBER, payload);
             }
         }
     }
@@ -1332,10 +1439,10 @@ class JurorExpenseControllerTest {
 
                 CalculateTotalExpenseRequestDto requestDto = CalculateTotalExpenseRequestDto.builder()
                     .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                    .poolNumber(TestConstants.VALID_POOL_NUMBER)
                     .expenseList(List.of(
                         DailyExpense.builder()
                             .dateOfExpense(LocalDate.of(2023, 1, 17))
-                            .poolNumber(TestConstants.VALID_POOL_NUMBER)
                             .payCash(false)
                             .time(DailyExpenseTime.builder()
                                 .payAttendance(PayAttendanceType.FULL_DAY)

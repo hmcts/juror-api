@@ -15,6 +15,8 @@ public interface CourtLetterService {
     String REASON = "Reason";
     String DATE_PRINTED = "Date printed";
     String POOL_NUMBER = "Pool number";
+    String START_DATE = "Start date";
+    String COMPLETION_DATE = "Completion date";
 
     // String constants for data type descriptions
     String STRING = "string";

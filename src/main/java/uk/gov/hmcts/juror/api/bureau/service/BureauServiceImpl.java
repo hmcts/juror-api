@@ -11,23 +11,25 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseOverviewDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetailQueries;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetailRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.QBureauJurorDetail;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
+import uk.gov.hmcts.juror.api.moj.domain.QModJurorDetail;
+import uk.gov.hmcts.juror.api.moj.repository.JurorDetailRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 
 /**
  * Implementation of Bureau service for bureau data access operations.
@@ -39,38 +41,40 @@ public class BureauServiceImpl implements BureauService {
     private static final String TODO = "todo";
     private static final String PENDING = "pending";
     private static final String COMPLETED = "completed";
-    private final BureauJurorDetailRepository bureauJurorDetailRepository;
+    private final JurorDetailRepositoryMod bureauJurorDetailRepository;
     private final UrgencyService urgencyCalculator;
     private final BureauTransformsService bureauTransformsService;
-    private final JurorResponseRepository jurorResponseRepository;
+    private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
+
+
 
 
     @Override
     @Transactional(readOnly = true)
     public BureauJurorDetailDto getDetailsByJurorNumber(final String jurorNumber) {
-        final BureauJurorDetail jurorDetails = bureauJurorDetailRepository.findOne(
-            QBureauJurorDetail.bureauJurorDetail.jurorNumber.eq(jurorNumber)).get();
+        final Optional<ModJurorDetail> jurorDetails = bureauJurorDetailRepository.findOne(
+            QModJurorDetail.modJurorDetail.jurorNumber.eq(jurorNumber));
 
-        if (jurorDetails == null) {
+        if (jurorDetails.isEmpty()) {
             log.error("Could not find juror response for {}", jurorNumber);
             throw new JurorResponseNotFoundException("Failed to find juror response!");
         }
 
-        return mapJurorDetailsToDto(jurorDetails);
+        return mapJurorDetailsToDto(jurorDetails.get());
     }
 
     @Override
-    public BureauJurorDetailDto mapJurorDetailsToDto(BureauJurorDetail jurorDetails) {
+    public BureauJurorDetailDto mapJurorDetailsToDto(ModJurorDetail jurorDetails) {
         // touch the collections to load lazy relationships within the transaction
         jurorDetails.getPhoneLogs().size();
         jurorDetails.getCjsEmployments().size();
-        jurorDetails.getSpecialNeeds().size();
+        jurorDetails.getReasonableAdjustments().size();
 
         if (log.isDebugEnabled()) {
             log.debug("Found {}", jurorDetails);
         }
 
-        final BureauJurorDetail slaFlaggedJurorDetails = urgencyCalculator.flagSlaOverdueForResponse(jurorDetails);
+        final ModJurorDetail slaFlaggedJurorDetails = urgencyCalculator.flagSlaOverdueForResponse(jurorDetails);
         final BureauJurorDetailDto responseDto = new BureauJurorDetailDto(slaFlaggedJurorDetails);
 
         if (log.isTraceEnabled()) {
@@ -84,11 +88,11 @@ public class BureauServiceImpl implements BureauService {
     @Transactional(readOnly = true)
     public BureauResponseSummaryWrapper getDetailsByProcessingStatus(String category) {
 
-        List<BureauJurorDetail> detailsByStatus = Lists.newLinkedList(bureauJurorDetailRepository.findAll(
+        List<ModJurorDetail> detailsByStatus = Lists.newLinkedList(bureauJurorDetailRepository.findAll(
             BureauJurorDetailQueries.byStatus(queryableStatusList(category)),
             BureauJurorDetailQueries.dateReceivedAscending()
         ));
-        List<BureauJurorDetail> enrichedDetails = urgencyCalculator.flagSlaOverdueFromList(detailsByStatus);
+        List<ModJurorDetail> enrichedDetails = urgencyCalculator.flagSlaOverdueFromList(detailsByStatus);
         List<BureauResponseSummaryDto> filteredResponses =
             enrichedDetails.stream().map(bureauTransformsService::detailToDto).collect(
                 Collectors.toCollection(LinkedList::new));
@@ -215,20 +219,18 @@ public class BureauServiceImpl implements BureauService {
      * @return matching entities
      * @since JDB-2142
      */
-    private Iterable<BureauJurorDetail> getInDisplayOrder(Predicate query) {
+    private Iterable<ModJurorDetail> getInDisplayOrder(Predicate query) {
         return bureauJurorDetailRepository.findAll(query, BureauJurorDetailQueries.dateReceivedAscending());
     }
 
-    private Date startOfToday() {
-        return Date.from(ZonedDateTime.now().toLocalDate().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+
+
+    private LocalDateTime startOfToday() {
+    return LocalDate.now().atStartOfDay();
     }
 
-    private Date endOfToday() {
-        return Date.from(ZonedDateTime.now().toLocalDate().atTime(
-            23,
-            59,
-            59
-        ).atZone(ZoneId.systemDefault()).toInstant());
+    private LocalDateTime endOfToday() {
+        return LocalDate.now().atTime(LocalTime.MAX);
     }
 
     private List<String> queryableStatusList(final String category) {

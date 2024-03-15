@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Slf4j
@@ -45,7 +46,7 @@ public final class JurorResponseUtils {
         PaperResponse jurorPaperResponse = new PaperResponse();
         jurorPaperResponse.setJurorNumber(juror.getJurorNumber());
         // setting the received date to now
-        jurorPaperResponse.setDateReceived(LocalDate.now());
+        jurorPaperResponse.setDateReceived(LocalDateTime.now());
         // set up Juror personal details
         jurorPaperResponse.setTitle(juror.getTitle());
         jurorPaperResponse.setFirstName(juror.getFirstName());
@@ -57,7 +58,7 @@ public final class JurorResponseUtils {
         jurorPaperResponse.setThirdPartyReason(disqualifiedComment);
         jurorPaperResponse.setProcessingStatus(ProcessingStatus.CLOSED);
         jurorPaperResponse.setProcessingComplete(true);
-        jurorPaperResponse.setCompletedAt(LocalDate.now());
+        jurorPaperResponse.setCompletedAt(LocalDateTime.now());
         return jurorPaperResponse;
     }
 

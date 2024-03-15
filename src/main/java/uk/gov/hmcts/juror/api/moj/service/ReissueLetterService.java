@@ -114,6 +114,8 @@ public interface ReissueLetterService {
         public Object transform(Object data) {
             if (this.transformer == null) {
                 return data;
+            } else if (data == null && this.classType == LocalDate.class) {
+                return null;
             }
             return this.transformer.apply(data);
         }

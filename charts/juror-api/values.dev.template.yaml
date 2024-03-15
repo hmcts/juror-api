@@ -1,6 +1,10 @@
 java:
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_FQDN}
+  devmemoryRequests: "2048Mi"
+  devcpuRequests: "500m"
+  devmemoryLimits: "4096Mi"
+  devcpuLimits: "3000m"
   keyVaults:
     juror:
       secrets:

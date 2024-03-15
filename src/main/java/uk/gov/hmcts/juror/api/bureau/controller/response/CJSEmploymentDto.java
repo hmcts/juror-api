@@ -2,7 +2,7 @@ package uk.gov.hmcts.juror.api.bureau.controller.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorCJS;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 
 import java.io.Serializable;
 
@@ -19,9 +19,9 @@ public class CJSEmploymentDto implements Serializable {
     @Schema(description = "Details of the CJS employment")
     private String details;
 
-    public CJSEmploymentDto(final BureauJurorCJS bureauJurorCJS) {
+    public CJSEmploymentDto(final JurorResponseCjsEmployment bureauJurorCJS) {
         this.jurorNumber = bureauJurorCJS.getJurorNumber();
-        this.employer = bureauJurorCJS.getEmployer();
-        this.details = bureauJurorCJS.getDetails();
+        this.employer = bureauJurorCJS.getCjsEmployer();
+        this.details = bureauJurorCJS.getCjsEmployerDetails();
     }
 }

@@ -1,11 +1,12 @@
 package uk.gov.hmcts.juror.api.moj.xerox;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
-import uk.gov.hmcts.juror.api.moj.exception.PoolRequestException;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ConfirmLetter;
+import uk.gov.hmcts.juror.api.testsupport.DisableIfWeekend;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -15,7 +16,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @ExtendWith(SpringExtension.class)
-public class ConfirmLetterTest extends AbstractLetterTest {
+@SuppressWarnings("PMD.LawOfDemeter")
+class ConfirmLetterTest extends AbstractLetterTest {
     @Override
     protected void setupEnglishExpectedResult() {
         addEnglishLetterDate();
@@ -79,7 +81,7 @@ public class ConfirmLetterTest extends AbstractLetterTest {
 
 
     @Test
-    public void confirmEnglishLetterProducesCorrectOutput() {
+    void confirmEnglishLetterProducesCorrectOutput() {
 
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
@@ -89,7 +91,7 @@ public class ConfirmLetterTest extends AbstractLetterTest {
 
         int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
         if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(PoolRequestException.PoolRequestDateInvalid.class)
+            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
                 .isThrownBy(confirmLetter::getLetterString);
         } else {
             assertThat(confirmLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
@@ -104,7 +106,7 @@ public class ConfirmLetterTest extends AbstractLetterTest {
     }
 
     @Test
-    public void confirmWelshLetterProducesCorrectOutput() {
+    void confirmWelshLetterProducesCorrectOutput() {
 
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupWelshExpectedResult();
@@ -115,7 +117,7 @@ public class ConfirmLetterTest extends AbstractLetterTest {
 
         int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
         if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(PoolRequestException.PoolRequestDateInvalid.class)
+            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
                 .isThrownBy(confirmLetter::getLetterString);
         } else {
             assertThat(confirmLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
@@ -130,7 +132,8 @@ public class ConfirmLetterTest extends AbstractLetterTest {
     }
 
     @Test
-    public void confirmWelshWithoutWelshCourtProducesEnglishOutput() {
+    @DisableIfWeekend
+    void confirmWelshWithoutWelshCourtProducesEnglishOutput() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
         ConfirmLetter confirmLetter = new ConfirmLetter(LetterTestUtils.testWelshJurorPool(date),

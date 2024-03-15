@@ -36,6 +36,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
+@SuppressWarnings("PMD.TooManyMethods")
 public class ManagePoolsServiceImplTest extends TestCase {
     public static final String COURT_LOCATION_CODE = "415";
     public static final String POOL_TYPE = "CRO";

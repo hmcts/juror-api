@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.exception.PoolRequestException;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 
 import java.sql.Date;
@@ -76,6 +77,8 @@ public class LetterBase {
                 .map(LetterData::getFormattedString)
                 .collect(Collectors.joining())
                 .toUpperCase();
+        } catch (MojException exception) {
+            throw exception;
         } catch (Exception exception) {
             throw new MojException.InternalServerError("Failed to generate letter string",
                 exception);

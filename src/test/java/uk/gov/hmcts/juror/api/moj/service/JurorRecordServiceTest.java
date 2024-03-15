@@ -48,10 +48,12 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.NameDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PaymentDetails;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
+import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
+import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -72,6 +74,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
+import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactEnquiryTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -137,7 +140,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.LawOfDemeter", "PMD.CouplingBetweenObjects",
-    "PMD.TooManyMethods", "PMD.TooManyFields"})
+    "PMD.TooManyMethods", "PMD.TooManyFields", "PMD.NcssCount"})
 class JurorRecordServiceTest {
 
     private static final String BUREAU_OWNER = "400";
@@ -155,6 +158,8 @@ class JurorRecordServiceTest {
     private JurorRepository jurorRepository;
     @Mock
     private JurorPoolRepository jurorPoolRepository;
+    @Mock
+    private ContactCodeRepository contactCodeRepository;
     @Mock
     private JurorStatusRepository jurorStatusRepository;
     @Mock
@@ -776,7 +781,7 @@ class JurorRecordServiceTest {
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER));
         ContactLog contactLog = createContactLog(VALID_JUROR_NUMBER,
-            new ContactEnquiryType(ContactEnquiryCode.GE, "General Enquiry"), "Some test notes");
+            IContactCode.GENERAL, "Some test notes");
 
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
@@ -801,8 +806,7 @@ class JurorRecordServiceTest {
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, COURT_OWNER));
 
-        ContactLog contactLog = createContactLog(VALID_JUROR_NUMBER,
-            new ContactEnquiryType(ContactEnquiryCode.GE, "General Enquiry"), "Some test notes");
+        ContactLog contactLog = createContactLog(VALID_JUROR_NUMBER, IContactCode.GENERAL, "Some test notes");
 
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
@@ -872,10 +876,10 @@ class JurorRecordServiceTest {
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, COURT_OWNER));
         ContactLog contactLog1 = createContactLog(VALID_JUROR_NUMBER,
-            new ContactEnquiryType(ContactEnquiryCode.GE, "General Enquiry"),
+            IContactCode.GENERAL,
             "Some general test notes");
         ContactLog contactLog2 = createContactLog(VALID_JUROR_NUMBER,
-            new ContactEnquiryType(ContactEnquiryCode.DE, "Discuss Deferral"),
+            IContactCode.DISCUSS_DEFERRAL,
             "Some deferral test notes");
 
         doReturn(jurorPools).when(jurorPoolRepository)
@@ -932,16 +936,17 @@ class JurorRecordServiceTest {
         final BureauJWTPayload payload = buildPayload(BUREAU_OWNER);
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER));
-        ContactEnquiryType contactEnquiryType = new ContactEnquiryType(ContactEnquiryCode.GE, "General Enquiry");
-        ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, ContactEnquiryCode.GE);
+        ContactCode contactEnquiryType = new ContactCode(IContactCode.GENERAL.getCode(),
+            IContactCode.GENERAL.getDescription());
+        ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, IContactCode.GENERAL);
         LocalDateTime startCall = LocalDateTime.now();
         requestDto.setStartCall(startCall);
 
 
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
-        doReturn(Optional.of(contactEnquiryType)).when(contactEnquiryTypeRepository)
-            .findById(ContactEnquiryCode.GE);
+        doReturn(Optional.of(contactEnquiryType)).when(contactCodeRepository)
+            .findById(IContactCode.GENERAL.getCode());
         doReturn(null).when(contactLogRepository)
             .saveAndFlush(any());
 
@@ -959,7 +964,7 @@ class JurorRecordServiceTest {
     @Test
     void testCreateJurorContactLogBureauUserJurorNotFound() {
         BureauJWTPayload payload = buildPayload(BUREAU_OWNER);
-        ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, ContactEnquiryCode.GE);
+        ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, IContactCode.GENERAL);
 
         List<JurorPool> jurorPools = new ArrayList<>();
 
@@ -981,7 +986,7 @@ class JurorRecordServiceTest {
 
         ContactEnquiryType contactEnquiryType = new ContactEnquiryType(ContactEnquiryCode.GE, "General Enquiry");
         ContactLog contactLog = new ContactLog();
-        ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, ContactEnquiryCode.GE);
+        ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, IContactCode.GENERAL);
 
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
@@ -1002,15 +1007,16 @@ class JurorRecordServiceTest {
         final BureauJWTPayload payload = buildPayload(COURT_OWNER);
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, "415"));
-        ContactEnquiryType contactEnquiryType = new ContactEnquiryType(ContactEnquiryCode.GE, "General Enquiry");
-        ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, ContactEnquiryCode.GE);
+        ContactCode contactEnquiryType =
+            new ContactCode(IContactCode.GENERAL.getCode(), IContactCode.GENERAL.getDescription());
+        ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, IContactCode.GENERAL);
         LocalDateTime startCall = LocalDateTime.now();
         requestDto.setStartCall(startCall);
 
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER, true);
-        doReturn(Optional.of(contactEnquiryType)).when(contactEnquiryTypeRepository)
-            .findById(ContactEnquiryCode.GE);
+        doReturn(Optional.of(contactEnquiryType)).when(contactCodeRepository)
+            .findById(IContactCode.GENERAL.getCode());
         doReturn(null).when(contactLogRepository)
             .saveAndFlush(any());
 
@@ -1033,7 +1039,7 @@ class JurorRecordServiceTest {
 
         ContactEnquiryType contactEnquiryType = new ContactEnquiryType(ContactEnquiryCode.GE, "General Enquiry");
         ContactLog contactLog = new ContactLog();
-        ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, ContactEnquiryCode.GE);
+        ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, IContactCode.GENERAL);
 
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER, true);
@@ -1056,7 +1062,7 @@ class JurorRecordServiceTest {
         jurorPools.add(createValidJurorPool(jurorNumber, "416"));
         ContactEnquiryType contactEnquiryType = new ContactEnquiryType(ContactEnquiryCode.GE, "General Enquiry");
         ContactLog contactLog = new ContactLog();
-        ContactLogRequestDto requestDto = createContactLogRequestDto(jurorNumber, ContactEnquiryCode.GE);
+        ContactLogRequestDto requestDto = createContactLogRequestDto(jurorNumber, IContactCode.GENERAL);
 
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
@@ -1078,7 +1084,7 @@ class JurorRecordServiceTest {
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(jurorNumber, "415"));
         ContactLog contactLog = new ContactLog();
-        ContactLogRequestDto requestDto = createContactLogRequestDto(jurorNumber, ContactEnquiryCode.GE);
+        ContactLogRequestDto requestDto = createContactLogRequestDto(jurorNumber, IContactCode.GENERAL);
 
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
@@ -1168,22 +1174,22 @@ class JurorRecordServiceTest {
     }
 
     private ContactLog createContactLog(String jurorNumber,
-                                        ContactEnquiryType contactEnquiryType, String notes) {
+                                        IContactCode contactCode, String notes) {
         return ContactLog.builder()
             .username("Test User")
             .jurorNumber(jurorNumber)
             .startCall(LocalDateTime.now())
-            .enquiryType(contactEnquiryType)
+            .enquiryType(new ContactCode(contactCode.getCode(), contactCode.getDescription()))
             .notes(notes)
             .lastUpdate(LocalDateTime.now())
             .repeatEnquiry(false)
             .build();
     }
 
-    private ContactLogRequestDto createContactLogRequestDto(String jurorNumber, ContactEnquiryCode enquiryCode) {
+    private ContactLogRequestDto createContactLogRequestDto(String jurorNumber, IContactCode enquiryCode) {
         ContactLogRequestDto contactLogRequestDto = new ContactLogRequestDto();
         contactLogRequestDto.setJurorNumber(jurorNumber);
-        contactLogRequestDto.setEnquiryType(enquiryCode.toString());
+        contactLogRequestDto.setEnquiryType(enquiryCode.getCode());
         return contactLogRequestDto;
     }
 

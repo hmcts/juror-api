@@ -52,4 +52,6 @@ public interface IJurorPoolRepository {
                                                 Long maxItems);
 
     JPAQuery<Tuple> fetchFilteredPoolMembers(PoolMemberFilterRequestQuery search, String owner);
+
+    List<String> fetchThinPoolMembers(String poolNumber, String owner);
 }

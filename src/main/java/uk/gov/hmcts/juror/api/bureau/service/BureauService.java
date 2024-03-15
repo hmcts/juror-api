@@ -3,7 +3,7 @@ package uk.gov.hmcts.juror.api.bureau.service;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseOverviewDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
+import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 
 /**
  * Bureau service for bureau data access operations.
@@ -21,5 +21,5 @@ public interface BureauService {
 
     BureauResponseOverviewDto getOverview(String staffLogin);
 
-    BureauJurorDetailDto mapJurorDetailsToDto(BureauJurorDetail jurorDetail);
+    BureauJurorDetailDto mapJurorDetailsToDto(ModJurorDetail jurorDetail);
 }

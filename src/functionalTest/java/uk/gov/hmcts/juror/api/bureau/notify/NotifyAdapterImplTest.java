@@ -10,15 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSetting;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSettingRepository;
-import uk.gov.hmcts.juror.api.bureau.service.AppSettingService;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotificationReceipt;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyAdapter;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
 import uk.gov.hmcts.juror.api.juror.service.JurorNotificationServiceImpl;
+import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
 import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
@@ -56,9 +55,6 @@ class NotifyAdapterImplTest extends ContainerTest {
     @Mock
     private NotifyAdapter mockNotifyAdapter;
 
-    @Mock
-    private AppSettingService mockAppSettingService;
-
     /**
      * mock provided to JurorNotificationServiceImpl constructor only.
      */
@@ -73,7 +69,7 @@ class NotifyAdapterImplTest extends ContainerTest {
 
     /**
      * Used to access utility method.
-     * {@link JurorNotificationServiceImpl#createEmailNotification(JurorResponse, NotifyTemplateType)} only!
+     * {@link JurorNotificationServiceImpl#createEmailNotification(DigitalResponse, NotifyTemplateType)} only!
      */
     private JurorNotificationServiceImpl utilService;
 
@@ -98,7 +94,7 @@ class NotifyAdapterImplTest extends ContainerTest {
         final String firstName = "Testy";
         final String lastName = "McTest";
         final String email = "testy.mctest@cgi.com";
-        final JurorResponse firstPersonResponse = JurorResponse.builder()
+        final DigitalResponse firstPersonResponse = DigitalResponse.builder()
             .jurorNumber(jurorNumber)
             .title(title)
             .firstName(firstName)
@@ -144,7 +140,7 @@ class NotifyAdapterImplTest extends ContainerTest {
         final String firstName = "Testy";
         final String lastName = "Jones";
         final String email = "testy.jones@cgi.com";
-        final JurorResponse firstPersonResponse = JurorResponse.builder()
+        final DigitalResponse firstPersonResponse = DigitalResponse.builder()
             .jurorNumber(jurorNumber)
             .title(title)
             .firstName(firstName)
@@ -199,7 +195,7 @@ class NotifyAdapterImplTest extends ContainerTest {
         final String tpFname = "Thirdy";
         final String tpLname = "McThird";
         final String tpEmail = "thirdy.mcthird@cgi.com";
-        final JurorResponse thirdPartyJurorDetailsResponse = JurorResponse.builder()
+        final DigitalResponse thirdPartyJurorDetailsResponse = DigitalResponse.builder()
             .jurorNumber(jurorNumber)
             .title(title)
             .firstName(firstName)
@@ -250,7 +246,7 @@ class NotifyAdapterImplTest extends ContainerTest {
         final String tpFname = "Thirdy";
         final String tpLname = "McThird";
         final String tpEmail = "thirdy.mcthird@cgi.com";
-        final JurorResponse thirdPartyJurorDetailsResponse = JurorResponse.builder()
+        final DigitalResponse thirdPartyJurorDetailsResponse = DigitalResponse.builder()
             .jurorNumber(jurorNumber)
             .title(title)
             .firstName(firstName)
@@ -307,7 +303,7 @@ class NotifyAdapterImplTest extends ContainerTest {
         final String tpLname = "McThird";
         final String tpEmail = "thirdy.mcthird@cgi.com";
 
-        final JurorResponse thirdPartyJurorDetailsResponse = JurorResponse.builder()
+        final DigitalResponse thirdPartyJurorDetailsResponse = DigitalResponse.builder()
             .jurorNumber(jurorNumber)
             .title(title)
             .firstName(firstName)

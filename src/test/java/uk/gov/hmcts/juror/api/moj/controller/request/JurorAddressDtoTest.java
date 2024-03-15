@@ -63,7 +63,7 @@ public class JurorAddressDtoTest extends AbstractValidatorTest<JurorAddressDto> 
     class LineTwo extends AbstractValidationFieldTestString {
         protected LineTwo() {
             super("lineTwo", JurorAddressDto::setLineTwo);
-            addAllowBlankTest("ABC");
+            addAllowBlankTest();
             addMaxLengthTest(35, null);
             addContainsPipesTest(null);
         }
@@ -73,7 +73,7 @@ public class JurorAddressDtoTest extends AbstractValidatorTest<JurorAddressDto> 
     class LineThree extends AbstractValidationFieldTestString {
         protected LineThree() {
             super("lineThree", JurorAddressDto::setLineThree);
-            addAllowBlankTest("A");
+            addAllowBlankTest();
             addMaxLengthTest(35, null);
             addContainsPipesTest(null);
         }
@@ -93,7 +93,7 @@ public class JurorAddressDtoTest extends AbstractValidatorTest<JurorAddressDto> 
     class County extends AbstractValidationFieldTestString {
         protected County() {
             super("county", JurorAddressDto::setCounty);
-            addAllowBlankTest("ABC");
+            addAllowBlankTest();
             addMaxLengthTest(35, null);
             addContainsPipesTest(null);
         }

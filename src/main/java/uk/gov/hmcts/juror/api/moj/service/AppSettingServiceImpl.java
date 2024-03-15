@@ -1,4 +1,4 @@
-package uk.gov.hmcts.juror.api.bureau.service;
+package uk.gov.hmcts.juror.api.moj.service;
 
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -7,10 +7,11 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSetting;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSettingRepository;
+import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
+import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameter;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -149,11 +150,7 @@ public class AppSettingServiceImpl implements AppSettingService {
     @Override
     public boolean isWelshEnabled() {
         Optional<AppSetting> optWelshSetting = appSettingRepository.findById(WELSH_LANGUAGE_ENABLED);
-        final AppSetting welshSetting = optWelshSetting.isPresent()
-            ?
-            optWelshSetting.get()
-            :
-                null;
+        final AppSetting welshSetting = optWelshSetting.orElse(null);
         if (welshSetting != null) {
             boolean welshEnabled = BooleanUtils.toBoolean(welshSetting.getValue());
             if (log.isDebugEnabled()) {

@@ -7,26 +7,30 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseDisqualifyController.DisqualifyCodeDto;
-import uk.gov.hmcts.juror.api.bureau.domain.DisqualifyCodeEntity;
-import uk.gov.hmcts.juror.api.bureau.domain.DisqualifyCodeRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHist;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHistRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.DisqualifyException;
-import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetter;
-import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetterRepository;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.domain.letter.DisqualificationLetterMod;
+import uk.gov.hmcts.juror.api.moj.repository.DisqualifiedCodeRepository;
+import uk.gov.hmcts.juror.api.moj.repository.DisqualifyLetterModRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -35,27 +39,30 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ResponseDisqualifyServiceImplTest {
 
     @Mock
-    private JurorResponseRepository jurorResponseRepository;
+    private JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
     @Mock
-    private JurorResponseAuditRepository jurorResponseAuditRepository;
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     @Mock
-    private PoolRepository poolRepository;
+    private JurorStatusRepository jurorStatusRepository;
+    @Mock
+    private JurorPoolRepository poolRepository;
 
     @Mock
-    private PartHistRepository partHistRepository;
+    private JurorHistoryRepository partHistRepository;
 
     @Mock
-    private DisqualifyCodeRepository disqualifyCodeRepository;
+    private DisqualifiedCodeRepository disqualifyCodeRepository;
 
     @Mock
-    private DisqualificationLetterRepository disqualificationLetterRepository;
+    private DisqualifyLetterModRepository disqualificationLetterRepository;
 
     @Mock
     private ResponseMergeService mergeService;
@@ -74,16 +81,16 @@ public class ResponseDisqualifyServiceImplTest {
 
     @Test
     public void getDisqualifyReasons_happy() throws Exception {
-        List<DisqualifyCodeEntity> disqualifyReasonsList = new ArrayList<>();
-        disqualifyReasonsList.add(new DisqualifyCodeEntity("A", "Description"));
-        disqualifyReasonsList.add(new DisqualifyCodeEntity("B", "Description"));
-        disqualifyReasonsList.add(new DisqualifyCodeEntity("C", "Description"));
+        List<DisqualifiedCode> disqualifyReasonsList = new ArrayList<>();
+        disqualifyReasonsList.add(new DisqualifiedCode("A", "Description", true));
+        disqualifyReasonsList.add(new DisqualifiedCode("B", "Description", true));
+        disqualifyReasonsList.add(new DisqualifiedCode("C", "Description", true));
         given(disqualifyCodeRepository.findAll()).willReturn(disqualifyReasonsList);
 
         List<DisqualifyCodeDto> disqualifyReasonsListDto = new ArrayList<>();
-        for (DisqualifyCodeEntity disqualifyCodeEntity : disqualifyReasonsList) {
+        for (DisqualifiedCode disqualifyCodeEntity : disqualifyReasonsList) {
             disqualifyReasonsListDto.add(new DisqualifyCodeDto(1,
-                disqualifyCodeEntity.getDisqualifyCode(), disqualifyCodeEntity.getDescription()));
+                disqualifyCodeEntity.getCode(), disqualifyCodeEntity.getDescription()));
         }
 
         List<DisqualifyCodeDto> retrievedDisqualifyReasonsList = responseDisqualifyService.getDisqualifyReasons();
@@ -93,20 +100,25 @@ public class ResponseDisqualifyServiceImplTest {
 
     @Test
     public void disqualifyJuror_happy() throws Exception {
+        JurorStatus disqualifiedJurorStatus = mock(JurorStatus.class);
+        when(jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED))
+            .thenReturn(Optional.ofNullable(disqualifiedJurorStatus));
         String jurorId = "123456789";
 
         // configure mocks
-        JurorResponse jurorResponse = mock(JurorResponse.class);
+        DigitalResponse jurorResponse = mock(DigitalResponse.class);
         given(jurorResponse.getJurorNumber()).willReturn(jurorId);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(jurorResponse);
 
-        Pool poolDetails = mock(Pool.class);
-        given(poolRepository.findByJurorNumber(any(String.class))).willReturn(poolDetails);
+        JurorPool poolDetails = mock(JurorPool.class);
+        Juror juror = mock(Juror.class);
+        when(poolDetails.getJuror()).thenReturn(juror);
+        given(poolRepository.findByJurorJurorNumber(any(String.class))).willReturn(poolDetails);
 
-        List<DisqualifyCodeEntity> disqualifyCodeEntityList = new ArrayList<>();
+        List<DisqualifiedCode> disqualifyCodeEntityList = new ArrayList<>();
         String disqualifyCode = "B";
-        disqualifyCodeEntityList.add(new DisqualifyCodeEntity("B", "Description of code"));
-        disqualifyCodeEntityList.add(new DisqualifyCodeEntity(disqualifyCode, "Description of another code"));
+        disqualifyCodeEntityList.add(new DisqualifiedCode("B", "Description of code", true));
+        disqualifyCodeEntityList.add(new DisqualifiedCode(disqualifyCode, "Description of another code", true));
         given(disqualifyCodeRepository.findAll()).willReturn(disqualifyCodeEntityList);
 
         String login = "login";
@@ -120,18 +132,20 @@ public class ResponseDisqualifyServiceImplTest {
         verify(jurorResponse).setProcessingStatus(ProcessingStatus.CLOSED);
         verify(mergeService).mergeResponse(jurorResponse, login);
 
-        verify(jurorResponseAuditRepository).save(any(JurorResponseAudit.class));
+        verify(jurorResponseAuditRepository).save(any(JurorResponseAuditMod.class));
 
-        verify(poolDetails).setResponded(Pool.RESPONDED);
-        verify(poolDetails).setDisqualifyDate(any(Date.class));
-        verify(poolDetails).setDisqualifyCode(disqualifyCode);
+        verify(poolDetails,times(3)).getJuror();
+        verify(juror).setResponded(true);
+        verify(juror).setDisqualifyDate(any(LocalDate.class));
+        verify(juror).setDisqualifyCode(disqualifyCode);
         verify(poolDetails).setUserEdtq(login);
-        verify(poolDetails).setStatus(IPoolStatus.DISQUALIFIED);
-        verify(poolDetails).setHearingDate(null);
+        verify(poolDetails).setStatus(disqualifiedJurorStatus);
+        verify(jurorStatusRepository).findById(IJurorStatus.DISQUALIFIED);
+        verify(poolDetails).setNextDate(null);
         verify(poolRepository).save(poolDetails);
 
-        verify(partHistRepository).save(any(PartHist.class));
-        verify(disqualificationLetterRepository).save(any(DisqualificationLetter.class));
+        verify(partHistRepository).save(any(JurorHistory.class));
+        verify(disqualificationLetterRepository).save(any(DisqualificationLetterMod.class));
     }
 
     @Test
@@ -142,13 +156,13 @@ public class ResponseDisqualifyServiceImplTest {
         DisqualifyCodeDto disqualifyCodeDto = new DisqualifyCodeDto(1, disqualifyCode, "A code");
 
         // configure mocks
-        JurorResponse jurorResponse = mock(JurorResponse.class);
-        Pool poolDetails = mock(Pool.class);
+        DigitalResponse jurorResponse = mock(DigitalResponse.class);
+        JurorPool poolDetails = mock(JurorPool.class);
 
-        List<DisqualifyCodeEntity> disqualifyCodeEntityList = new ArrayList<>();
+        List<DisqualifiedCode> disqualifyCodeEntityList = new ArrayList<>();
         // Add codes to list, but not the one we are using in this test
-        disqualifyCodeEntityList.add(new DisqualifyCodeEntity("B", "Description of code"));
-        disqualifyCodeEntityList.add(new DisqualifyCodeEntity("C", "Description of another code"));
+        disqualifyCodeEntityList.add(new DisqualifiedCode("B", "Description of code", true));
+        disqualifyCodeEntityList.add(new DisqualifiedCode("C", "Description of another code", true));
         given(disqualifyCodeRepository.findAll()).willReturn(disqualifyCodeEntityList);
 
         // run process
@@ -162,18 +176,16 @@ public class ResponseDisqualifyServiceImplTest {
             verify(jurorResponse, times(0)).setProcessingStatus(ProcessingStatus.CLOSED);
             verify(jurorResponseRepository, times(0)).save(jurorResponse);
 
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
 
-            verify(poolDetails, times(0)).setResponded(Pool.RESPONDED);
-            verify(poolDetails, times(0)).setDisqualifyDate(any(Date.class));
-            verify(poolDetails, times(0)).setExcusalCode(disqualifyCode);
+            verify(poolDetails, times(0)).getJuror();
             verify(poolDetails, times(0)).setUserEdtq(login);
-            verify(poolDetails, times(0)).setStatus(IPoolStatus.DISQUALIFIED);
-            verify(poolDetails, times(0)).setHearingDate(null);
+            verify(poolDetails, times(0)).setStatus(any());
+            verify(poolDetails, times(0)).setNextDate(null);
             verify(poolRepository, times(0)).save(poolDetails);
 
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
-            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetter.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
+            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
         }
     }
 
@@ -185,13 +197,13 @@ public class ResponseDisqualifyServiceImplTest {
         DisqualifyCodeDto disqualifyCodeDto = new DisqualifyCodeDto(1, disqualifyCode, "A code");
 
         // configure mocks
-        JurorResponse jurorResponse = mock(JurorResponse.class);
+        DigitalResponse jurorResponse = mock(DigitalResponse.class);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(null);
-        Pool poolDetails = mock(Pool.class);
+        JurorPool poolDetails = mock(JurorPool.class);
 
-        List<DisqualifyCodeEntity> disqualifyCodeEntityList = new ArrayList<>();
-        disqualifyCodeEntityList.add(new DisqualifyCodeEntity("B", "Description of code"));
-        disqualifyCodeEntityList.add(new DisqualifyCodeEntity(disqualifyCode, "Description of another code"));
+        List<DisqualifiedCode> disqualifyCodeEntityList = new ArrayList<>();
+        disqualifyCodeEntityList.add(new DisqualifiedCode("B", "Description of code", true));
+        disqualifyCodeEntityList.add(new DisqualifiedCode(disqualifyCode, "Description of another code", true));
         given(disqualifyCodeRepository.findAll()).willReturn(disqualifyCodeEntityList);
 
         // run process
@@ -205,18 +217,16 @@ public class ResponseDisqualifyServiceImplTest {
             verify(jurorResponse, times(0)).setProcessingStatus(ProcessingStatus.CLOSED);
             verify(jurorResponseRepository, times(0)).save(jurorResponse);
 
-            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAudit.class));
+            verify(jurorResponseAuditRepository, times(0)).save(any(JurorResponseAuditMod.class));
 
-            verify(poolDetails, times(0)).setResponded(Pool.RESPONDED);
-            verify(poolDetails, times(0)).setDisqualifyDate(any(Date.class));
-            verify(poolDetails, times(0)).setExcusalCode(disqualifyCode);
+            verify(poolDetails, times(0)).getJuror();
             verify(poolDetails, times(0)).setUserEdtq(login);
-            verify(poolDetails, times(0)).setStatus(IPoolStatus.DISQUALIFIED);
-            verify(poolDetails, times(0)).setHearingDate(null);
+            verify(poolDetails, times(0)).setStatus(any());
+            verify(poolDetails, times(0)).setNextDate(null);
             verify(poolRepository, times(0)).save(poolDetails);
 
-            verify(partHistRepository, times(0)).save(any(PartHist.class));
-            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetter.class));
+            verify(partHistRepository, times(0)).save(any(JurorHistory.class));
+            verify(disqualificationLetterRepository, times(0)).save(any(DisqualificationLetterMod.class));
         }
     }
 }

@@ -6,8 +6,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -55,7 +55,6 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
 import uk.gov.hmcts.juror.api.validation.PoolNumber;
-import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -140,13 +139,14 @@ public class JurorExpenseController {
     @Operation(summary = "Get a jurors entered expense details for a given day.")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @IsCourtUser
-    public ResponseEntity<GetEnteredExpenseResponse> getEnteredExpenseDetails(
+    public ResponseEntity<List<GetEnteredExpenseResponse>> getEnteredExpenseDetails(
         @Valid @RequestBody @NotNull GetEnteredExpenseRequest request
     ) {
-        return ResponseEntity.ok(jurorExpenseService.getEnteredExpense(
-            request.getJurorNumber(),
-            request.getPoolNumber(),
-            request.getDateOfExpense()));
+        return ResponseEntity.ok(bulkService.process(request.getExpenseDates(),
+            localDate -> jurorExpenseService.getEnteredExpense(
+                request.getJurorNumber(),
+                request.getPoolNumber(),
+                localDate)));
     }
 
     @PatchMapping("/smartcard")
@@ -189,7 +189,7 @@ public class JurorExpenseController {
 
     @PostMapping("/approve")
     @Operation(summary = "Approve all expense records of a given type (for a single juror)")
-    @IsCourtUser
+    @PreAuthorize(SecurityUtil.COURT_AUTH  + " and " + SecurityUtil.IS_MANAGER)
     @ResponseStatus(HttpStatus.OK)
     @Transactional
     public ResponseEntity<Void> approveExpenses(@Valid @RequestBody List<ApproveExpenseDto> dto) {
@@ -197,7 +197,7 @@ public class JurorExpenseController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/view/{type}")
+    @PostMapping("/view/{type}/simplified")
     @Operation(summary = "Get a jurors entered simplified expense detail for a given day and type.")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @IsCourtUser
@@ -222,6 +222,23 @@ public class JurorExpenseController {
             poolNumber));
     }
 
+    @PostMapping("/{juror_number}/{pool_number}")
+    @Operation(summary = "Get a list of a jurors expenses for given dates")
+    @ResponseStatus(HttpStatus.OK)
+    @IsCourtUser
+    public ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> getExpenses(
+        @PathVariable("juror_number") @Valid @NotBlank @JurorNumber String jurorNumber,
+        @PathVariable("pool_number") @Valid @NotBlank @PoolNumber String poolNumber,
+        @JsonFormat(pattern = "HH:MM")
+        @RequestBody @Valid @NotEmpty
+        List<@NotNull LocalDate> dates
+    ) {
+        return ResponseEntity.ok(jurorExpenseService.getExpenses(
+            jurorNumber,
+            poolNumber,
+            dates));
+    }
+
     @GetMapping("/counts/{juror_number}/{pool_number}")
     @Operation(summary = "Get the count of each type of expense for a juror and pool number.")
     @ResponseStatus(HttpStatus.OK)
@@ -240,7 +257,7 @@ public class JurorExpenseController {
     @ResponseStatus(HttpStatus.OK)
     @IsCourtUser
     public ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsForTotals>> calculateTotals(
-        @Validated(DailyExpense.EditDay.class)
+        @Validated(DailyExpense.CalculateTotals.class)
         @Valid @RequestBody CalculateTotalExpenseRequestDto dto) {
         return ResponseEntity.ok(jurorExpenseService.calculateTotals(dto));
     }
@@ -251,7 +268,7 @@ public class JurorExpenseController {
     @PreAuthorize(SecurityUtil.LOC_CODE_AUTH)
     public ResponseEntity<PendingApprovalList> getExpensesForApproval(
         @P("loc_code") @PathVariable("loc_code") @Valid @NotBlank
-        @Pattern(regexp = ValidationConstants.LOCATION_CODE) String locCode,
+        @CourtLocationCode String locCode,
         @PathVariable("payment_method") @Valid @NotNull PaymentMethod paymentMethod,
         @JsonFormat(pattern = "yyyy-MM-dd") @RequestParam(value = "from", required = false) LocalDate fromInclusive,
         @JsonFormat(pattern = "yyyy-MM-dd") @RequestParam(value = "to", required = false) LocalDate toInclusive

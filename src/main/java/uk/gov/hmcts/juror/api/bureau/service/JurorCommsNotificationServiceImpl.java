@@ -5,14 +5,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateMapping;
-import uk.gov.hmcts.juror.api.bureau.domain.NotifyTemplateMappingRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyAdapter;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyApiException;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotification;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateMappingMod;
+import uk.gov.hmcts.juror.api.moj.repository.NotifyTemplateMappingRepositoryMod;
 
 import java.util.Map;
 
@@ -21,18 +23,18 @@ import java.util.Map;
 public class JurorCommsNotificationServiceImpl implements JurorCommsNotificationService {
 
     private final NotifyAdapter notifyAdapter;
-    private final NotifyTemplateMappingRepository notifyTemplateMappingRepository;
+    private final NotifyTemplateMappingRepositoryMod notifyTemplateMappingRepositoryMod;
     private final JurorCommsNotifyPayLoadService jurorCommsNotifyPayLoadService;
 
     @Autowired
     public JurorCommsNotificationServiceImpl(final NotifyAdapter notifyAdapter,
-                                             final NotifyTemplateMappingRepository notifyTemplateMappingRepository,
+                                             final NotifyTemplateMappingRepositoryMod notifyTemplateMappingRepositoryMod,
                                              final JurorCommsNotifyPayLoadService jurorCommsNotifyPayLoadService) {
         Assert.notNull(notifyAdapter, "NotifyAdapter cannot be null");
-        Assert.notNull(notifyTemplateMappingRepository, "NotifyTemplateMappingRepository cannot be null");
+        Assert.notNull(notifyTemplateMappingRepositoryMod, "NotifyTemplateMappingRepositoryMod cannot be null");
         Assert.notNull(jurorCommsNotifyPayLoadService, "JurorCommsNotifyPayLoadService cannot be null");
         this.notifyAdapter = notifyAdapter;
-        this.notifyTemplateMappingRepository = notifyTemplateMappingRepository;
+        this.notifyTemplateMappingRepositoryMod = notifyTemplateMappingRepositoryMod;
         this.jurorCommsNotifyPayLoadService = jurorCommsNotifyPayLoadService;
     }
 
@@ -40,14 +42,14 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
      * Handles the identification of the templateId and calls the notify client to send the
      * notification comms to notify.
      *
-     * @param poolDetails                  Response to send the notification for.
+     * @param jurorDetails                  Response to send the notification for.
      * @param jurorCommsNotifyTemplateType Template type to use for the message
      * @param commsTemplateId              TemplateId provided for LETTER_COMMS
      * @param detailData                   additional data to establish payload for the message.
      * @param smsComms                     is a sms message to be sent.
      */
     @Override
-    public void sendJurorComms(final Pool poolDetails, final JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
+    public void sendJurorComms(final JurorPool jurorDetails, final JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
                                final String commsTemplateId, final String detailData, final Boolean smsComms) {
 
         String templateId;
@@ -63,12 +65,12 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
                 throw new IllegalStateException("detailData null or empty");
             }
             log.trace("Inside sendJurorComms: calling generatePayLoadData.");
-            payLoad = jurorCommsNotifyPayLoadService.generatePayLoadData(templateId, detailData, poolDetails);
+            payLoad = jurorCommsNotifyPayLoadService.generatePayLoadData(templateId, detailData, jurorDetails);
         } else {
-            final String templateKey = getTemplateKey(poolDetails, jurorCommsNotifyTemplateType, smsComms);
+            final String templateKey = getTemplateKey(jurorDetails, jurorCommsNotifyTemplateType, smsComms);
             // get template for given template key.
             log.debug(" template key obtained as {}", templateKey);
-            NotifyTemplateMapping template = getTemplate(templateKey);
+            NotifyTemplateMappingMod template = getTemplate(templateKey);
             if (template == null) {
                 log.error("Missing Template. Cannot determine the template to use for this notification.");
                 throw new IllegalStateException("Cannot find template");
@@ -76,18 +78,18 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
             templateId = template.getTemplateId();
             log.debug("Inside sendJurorComms: templateId obtained as : {}", templateId);
             //Deal with payload.
-            payLoad = jurorCommsNotifyPayLoadService.generatePayLoadData(templateId, poolDetails);
+            payLoad = jurorCommsNotifyPayLoadService.generatePayLoadData(templateId, jurorDetails);
         }
 
         log.trace("sendJurorComms- calling createEmailNotification");
-        final EmailNotification emailNotification = createEmailNotification(poolDetails, jurorCommsNotifyTemplateType,
+        final EmailNotification emailNotification = createEmailNotification(jurorDetails, jurorCommsNotifyTemplateType,
             templateId, payLoad
         );
 
         try {
             if (notifyAdapter.sendCommsEmail(emailNotification) == null) {
                 throw new JurorCommsNotificationServiceException(
-                    "Failed to Send Comms to Notify : " + poolDetails.getJurorNumber());
+                    "Failed to Send Comms to Notify : " + jurorDetails.getJurorNumber());
             }
 
         } catch (NotifyApiException nae) {
@@ -108,23 +110,23 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
      * Handles the identification of the templateId and calls the notify client to send the
      * notification comms to notify.
      *
-     * @param poolDetails                  Response to send the notification for.
+     * @param jurorDetails                  Response to send the notification for.
      * @param jurorCommsNotifyTemplateType Template type to use for the message
      * @param commsTemplateId              TemplateId provided for LETTER_COMMS
      * @param detailData                   additional data to establish payload for the message.
      * @param smsComms                     is a sms message to be sent.
      */
     @Override
-    public void sendJurorCommsSms(final Pool poolDetails,
+    public void sendJurorCommsSms(final JurorPool jurorDetails,
                                   final JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
                                   final String commsTemplateId, final String detailData, final Boolean smsComms) {
 
         String templateId;
         Map<String, String> payLoad;
-        final String templateKey = getTemplateKey(poolDetails, jurorCommsNotifyTemplateType, smsComms);
+        final String templateKey = getTemplateKey(jurorDetails, jurorCommsNotifyTemplateType, smsComms);
         // get template for given template key.
         log.debug(" sms template key obtained as {}", templateKey);
-        NotifyTemplateMapping template = getTemplate(templateKey);
+        NotifyTemplateMappingMod template = getTemplate(templateKey);
         if (template == null) {
             log.error("Missing Template. Cannot determine the sms template to use for this notification.");
             throw new IllegalStateException("Cannot find template");
@@ -132,17 +134,17 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
         templateId = template.getTemplateId();
         log.debug("Inside sendJurorCommsSms: templateId obtained as : {}", templateId);
         //Deal with payload.
-        payLoad = jurorCommsNotifyPayLoadService.generatePayLoadData(templateId, poolDetails);
+        payLoad = jurorCommsNotifyPayLoadService.generatePayLoadData(templateId, jurorDetails);
 
         log.debug("sendJurorCommsSms - calling createSmsNotification");
-        final SmsNotification smsNotification = createSmsNotification(poolDetails, jurorCommsNotifyTemplateType,
+        final SmsNotification smsNotification = createSmsNotification(jurorDetails, jurorCommsNotifyTemplateType,
             templateId, payLoad
         );
 
         try {
             if (notifyAdapter.sendCommsSms(smsNotification) == null) {
                 throw new JurorCommsNotificationServiceException(
-                    "Failed to Send SMS Comms to Notify : " + poolDetails.getJurorNumber());
+                    "Failed to Send SMS Comms to Notify : " + jurorDetails.getJurorNumber());
             }
 
         } catch (NotifyApiException nae) {
@@ -162,20 +164,20 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
     /**
      * Identify and return the templateId based on the paramters proivided.
      *
-     * @param poolDetails                  pool details
+     * @param jurorDetails                  juror details
      * @param jurorCommsNotifyTemplateType Type of Notify Comms ie weekly, sentToCourt
      * @param smsComms                     is sms required for this type of comms.
      * @return String - TemplateId.
      */
-    private String getTemplateKey(Pool poolDetails, JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
+    private String getTemplateKey(JurorPool jurorDetails, JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
                                   Boolean smsComms) {
         try {
             Boolean isWelsh = Boolean.FALSE;
 
-            if (poolDetails.getWelsh() != null) {
+            if (jurorDetails.getJuror().getWelsh() != null) {
                 isWelsh = jurorCommsNotifyPayLoadService.isWelshCourtAndComms(
-                    poolDetails.getWelsh(),
-                    jurorCommsNotifyPayLoadService.getWelshCourtLocation(poolDetails.getCourt().getLocCode())
+                    jurorDetails.getJuror().getWelsh(),
+                    jurorCommsNotifyPayLoadService.getWelshCourtLocation(jurorDetails.getCourt().getLocCode())
                 );
             }
 
@@ -183,7 +185,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
             if (jurorCommsNotifyTemplateType == JurorCommsNotifyTemplateType.COMMS) {
                 return jurorCommsNotifyTemplateType.getNotifyTemplateKey(
                     isWelsh,
-                    poolDetails.getNotifications() + 1
+                    jurorDetails.getJuror().getNotifications() + 1
                 );
             } else { // covers TYPE 2, 3 : send to court comms
                 return jurorCommsNotifyTemplateType.getNotifyTemplateKey(
@@ -203,18 +205,19 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
      * @param templateKey Notify template Id
      * @return NotifyTemplateMapping details for given template Id.
      */
-    private NotifyTemplateMapping getTemplate(String templateKey) {
-        return notifyTemplateMappingRepository.findByTemplateName(templateKey);
+    private NotifyTemplateMappingMod getTemplate(String templateKey) {
+        //return notifyTemplateMappingRepository.findByTemplateName(templateKey);
+        return notifyTemplateMappingRepositoryMod.findByTemplateName(templateKey);
     }
 
     /**
      * Create a notification email payload from a juror response.
      *
-     * @param poolDetails extract notification payload from
+     * @param jurorDetails extract notification payload from
      * @return Email notification payload
      */
     @Override
-    public EmailNotification createEmailNotification(final Pool poolDetails,
+    public EmailNotification createEmailNotification(final JurorPool jurorDetails,
                                                      final JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
                                                      final String templateId, final Map<String, String> payLoad) {
         try {
@@ -224,7 +227,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
                 payLoad.get("email address"),
                 payLoad
             );
-            emailNotification.setReferenceNumber(poolDetails.getJurorNumber());
+            emailNotification.setReferenceNumber(jurorDetails.getJurorNumber());
             return emailNotification;
 
         } catch (Exception e) {
@@ -235,11 +238,11 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
     /**
      * Create a notification sms payload from a juror response.
      *
-     * @param poolDetails extract notification payload from
+     * @param jurorDetails extract notification payload from
      * @return Sms notification payload
      */
     @Override
-    public SmsNotification createSmsNotification(final Pool poolDetails,
+    public SmsNotification createSmsNotification(final JurorPool jurorDetails,
                                                  final JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
                                                  final String templateId, final Map<String, String> payLoad) {
         try {
@@ -249,7 +252,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
                 payLoad.get("phone number"),
                 payLoad
             );
-            smsNotification.setReferenceNumber(poolDetails.getJurorNumber());
+            smsNotification.setReferenceNumber(jurorDetails.getJurorNumber());
             return smsNotification;
 
         } catch (Exception e) {

@@ -49,7 +49,7 @@ public class StaffJurorResponseAuditMod {
 
     @Column(name = "date_received")
     @Id
-    private LocalDate dateReceived;
+    private LocalDateTime dateReceived;
 
     @Column(name = "staff_assignment_date")
     private LocalDate staffAssignmentDate;
@@ -70,7 +70,7 @@ public class StaffJurorResponseAuditMod {
         final String teamLeaderLogin,
         final String staffLogin,
         final String jurorNumber,
-        final LocalDate dateReceived,
+        final LocalDateTime dateReceived,
         final LocalDate staffAssignmentDate) {
         return realBuilder()
             .teamLeaderLogin(teamLeaderLogin)

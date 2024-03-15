@@ -11,19 +11,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorCJS;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorCJSRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeedsRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.ChangeLog;
 import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHistRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.PhoneLogRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.TSpecialRepository;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
 
 import java.nio.charset.StandardCharsets;
 
@@ -39,16 +39,16 @@ import static org.mockito.Mockito.verify;
 public class ResponseUpdateServiceImplTest {
 
     @Mock
-    private PoolRepository poolRepository;
+    private JurorPoolRepository poolRepository;
 
     @Mock
-    private PartHistRepository partHistRepository;
+    private JurorHistoryRepository partHistRepository;
 
     @Mock
     private PhoneLogRepository phoneLogRepository;
 
     @Mock
-    private JurorResponseRepository responseRepository;
+    private JurorDigitalResponseRepositoryMod responseRepository;
 
     @Mock
     private ChangeLogRepository changeLogRepository;
@@ -60,13 +60,13 @@ public class ResponseUpdateServiceImplTest {
     private EntityManager entityManager;
 
     @Mock
-    private BureauJurorSpecialNeedsRepository bureauJurorSpecialNeedsRepository;
+    private JurorReasonableAdjustmentRepository bureauJurorSpecialNeedsRepository;
 
     @Mock
-    private TSpecialRepository specialRepository;
+    private ReasonableAdjustmentsRepository reasonableAdjustmentsRepository;
 
     @Mock
-    private BureauJurorCJSRepository cjsRepository;
+    private JurorResponseCjsEmploymentRepositoryMod cjsRepository;
 
     @Mock
     private AssignOnUpdateService assignOnUpdateService;
@@ -82,7 +82,7 @@ public class ResponseUpdateServiceImplTest {
         Integer version = 0;
 
         // configure mocks
-        JurorResponse domain = mock(JurorResponse.class);
+        DigitalResponse domain = mock(DigitalResponse.class);
         given(domain.getProcessingComplete()).willReturn(false);
 
         User staff = mock(User.class);
@@ -117,18 +117,16 @@ public class ResponseUpdateServiceImplTest {
         Integer version = 0;
 
         // configure mocks
-        JurorResponse domain = mock(JurorResponse.class);
+        DigitalResponse domain = mock(DigitalResponse.class);
         given(domain.getProcessingComplete()).willReturn(false);
 
-        BureauJurorCJS policeEntry = mock(BureauJurorCJS.class);
-        given(policeEntry.getDetails()).willReturn("Original police details");
-        //given(cjsRepository.findOne(byJurorNumberAndEmployer(jurorId, "Police Force")))
-        //.willReturn(policeEntry);
+        JurorResponseCjsEmployment policeEntry = mock(JurorResponseCjsEmployment.class);
+        given(policeEntry.getCjsEmployerDetails()).willReturn("Original police details");
 
-        given(cjsRepository.findByJurorNumberAndEmployer(jurorId, "Police Force")).willReturn(policeEntry);
+        given(cjsRepository.findByJurorNumberAndCjsEmployer(jurorId, "Police Force")).willReturn(policeEntry);
 
         // return our BureauJurorCJS on save just to avoid NullPointerExceptions
-        given(cjsRepository.save(any(BureauJurorCJS.class))).willReturn(policeEntry);
+        given(cjsRepository.save(any(JurorResponseCjsEmployment.class))).willReturn(policeEntry);
 
         User staff = mock(User.class);
 
@@ -156,10 +154,10 @@ public class ResponseUpdateServiceImplTest {
         verify(entityManager, times(1)).lock(domain, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
 
         // verify updateAndLogCjs logic
-        verify(cjsRepository, times(6)).findByJurorNumberAndEmployer(anyString(), anyString());
+        verify(cjsRepository, times(6)).findByJurorNumberAndCjsEmployer(anyString(), anyString());
 
-        verify(cjsRepository, times(5)).save(any(BureauJurorCJS.class));
-        verify(cjsRepository, times(1)).delete(any(BureauJurorCJS.class));
+        verify(cjsRepository, times(5)).save(any(JurorResponseCjsEmployment.class));
+        verify(cjsRepository, times(1)).delete(any(JurorResponseCjsEmployment.class));
 
         // verify save logic
         verify(changeLogRepository, times(1)).save(any(ChangeLog.class));

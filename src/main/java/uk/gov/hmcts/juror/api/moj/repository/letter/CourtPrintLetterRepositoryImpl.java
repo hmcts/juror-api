@@ -14,6 +14,8 @@ import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
@@ -36,13 +38,21 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
     private static final QJuror JUROR = QJuror.juror;
-    private static final QAppearance APPEARANCE = QAppearance.appearance;
+    private static final QPanel PANEL = QPanel.panel;
+    private static final QTrial TRIAL = QTrial.trial;
 
+    private static final QAppearance APPEARANCE = QAppearance.appearance;
 
     @Override
     @SuppressWarnings("PMD.CyclomaticComplexity")
     public Tuple retrievePrintInformation(String jurorNumber, CourtLetterType courtLetterType, boolean welsh,
                                           String owner) {
+        return retrievePrintInformation(jurorNumber, courtLetterType, welsh, owner, null);
+    }
+
+    @Override
+    public Tuple retrievePrintInformation(String jurorNumber, CourtLetterType courtLetterType, boolean welsh,
+                                          String owner, String trialNumber) {
         List<Expression<?>> expressions = fetchCommonPrintData(welsh);
 
         // start building the sql expressions based on the letter type
@@ -70,11 +80,11 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                 query.where(JUROR_POOL.status.status.eq(IJurorStatus.DEFERRED))
                     .orderBy(JUROR_POOL.deferralDate.desc());
             }
-            case DEFERRAL_REFUSED, EXCUSAL_REFUSED -> query
-                .where(JUROR_POOL.isActive.eq(true));
+            case DEFERRAL_REFUSED, EXCUSAL_REFUSED -> query.where(JUROR_POOL.isActive.eq(true));
             case EXCUSAL_GRANTED -> query
                 .where(JUROR_POOL.status.status.eq(IJurorStatus.EXCUSED))
                 .orderBy(JUROR_POOL.juror.excusalDate.desc());
+
             case WITHDRAWAL -> query
                 .where(JUROR_POOL.status.status.eq(IJurorStatus.DISQUALIFIED))
                 .orderBy(JUROR_POOL.juror.disqualifyDate.desc());
@@ -84,6 +94,15 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                     .where(APPEARANCE.noShow.isTrue())
                     .where(APPEARANCE.attendanceType.eq(AttendanceType.ABSENT))
                     .orderBy(APPEARANCE.attendanceDate.desc());
+            case CERTIFICATE_OF_EXEMPTION ->
+                query
+                    .join(PANEL).on(PANEL.jurorPool.eq(JUROR_POOL).and(PANEL.trial.eq(TRIAL)))
+                    .where(PANEL.trial.trialNumber.eq(trialNumber))
+                    .orderBy(PANEL.trial.trialNumber.desc());
+            case CERTIFICATE_OF_ATTENDANCE -> query
+                .join(APPEARANCE).on(JUROR_POOL.pool.poolNumber.eq(APPEARANCE.poolNumber)
+                    .and(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber)))
+                .where(APPEARANCE.attendanceDate.isNotNull());
             default -> throw new MojException.NotImplemented("letter type not implemented", null);
         }
 
@@ -122,6 +141,16 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                 expressions.add(APPEARANCE.noShow);
             }
             case FAILED_TO_ATTEND -> expressions.add(APPEARANCE.attendanceDate);
+            case CERTIFICATE_OF_EXEMPTION -> {
+                expressions.add(TRIAL.judge.description);
+                expressions.add(TRIAL.description);
+            }
+            case CERTIFICATE_OF_ATTENDANCE -> {
+                expressions.add(APPEARANCE.childcareDue);
+                expressions.add(APPEARANCE.nonAttendanceDay);
+                expressions.add(APPEARANCE.miscAmountDue);
+                expressions.add(APPEARANCE.lossOfEarningsDue);
+            }
 
             default -> throw new MojException.NotImplemented("letter type not implemented", null);
         }

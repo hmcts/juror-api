@@ -1,65 +1,106 @@
 -- staff
-INSERT INTO juror_mod.users (username, name, level, active, team_id, version, owner)
-VALUES ('JPOWERS','Joanna Powers', 0, true, 1, 0,'446'),
-('TSANCHEZ','Todd Sanchez', 0, true, 2, 0,'446'),
-('GBECK','Grant Beck', 0, false, 3, 0,'446'),
-('RPRICE','Roxanne Price', 1, true, 1, 0,'446'),
-('PBREWER','Preston Brewer', 1, true, 2, 0,'626'),
-('ACOPELAND','Amelia Copeland', 1, true, 3, 0,'400');
+INSERT INTO juror_mod.users (username,email, name, active, team_id, version, owner)
+VALUES ('JPOWERS','JPOWERS@email.gov.uk','Joanna Powers', true, 1, 0,'446'),
+       ('TSANCHEZ','TSANCHEZ@email.gov.uk','Todd Sanchez', true, 2, 0,'446'),
+       ('GBECK','GBECK@email.gov.uk','Grant Beck', false, 3, 0,'446'),
+       ('RPRICE','RPRICE@email.gov.uk','Roxanne Price', true, 1, 0,'446'),
+       ('PBREWER','PBREWER@email.gov.uk','Preston Brewer', true, 2, 0,'626'),
+       ('ACOPELAND','ACOPELAND@email.gov.uk','Amelia Copeland', true, 3, 0,'400');
 
--- Unassigned urgent juror
-INSERT INTO JUROR.POOL (
-  part_no, fname, lname, h_email, title, dob, address, address2, address3, address4, zip,
-  h_phone, w_phone, is_active, owner, loc_code, m_phone, responded, poll_number, pool_no,
-  on_call, completion_flag, read_only, contact_preference, reg_spc, ret_date, next_date, status) VALUES (
-  '123251234', 'Gypsey', 'Hoola', 'jhoola@ed.gov', 'Mr', TO_DATE('1984-07-24 16:04:09', 'YYYY-MM-DD HH24:MI:SS'),
-             '27 Knutson Trail', 'Scotland', 'Aberdeen', 'United Kingdom', 'AB21 3RY',
-  '44(703)209-6991', '44(109)549-5621', 'Y', 400, 446, '44(145)525-2391', 'N', 21112, 555,
-  'N', 'N', 'N', 0, 'N', current_date, current_date + 60, 1);
+INSERT INTO juror_mod.user_roles (username, role)
+VALUES ('RPRICE', 'TEAM_LEADER'),
+       ('PBREWER', 'TEAM_LEADER'),
+       ('ACOPELAND', 'TEAM_LEADER');
 
-INSERT INTO JUROR_DIGITAL.JUROR_RESPONSE (JUROR_NUMBER, DATE_RECEIVED) VALUES (123251234, current_date);
+INSERT INTO juror_mod.pool (pool_no, "owner", return_date, no_requested, pool_type, loc_code, new_request, last_update,
+                            additional_summons, attend_time, nil_pool, total_no_required, date_created)
+VALUES ('555', '400', '2022-05-03', 5, 'CRO', '446', 'N', NULL, NULL, NULL, false, 5, NULL);
 
-UPDATE JUROR_DIGITAL.JUROR_RESPONSE SET
-  TITLE = 'Mr',
-  FIRST_NAME = 'Gypsey',
-  LAST_NAME = 'Hoola',
-  ADDRESS = '27 Knutson Trail', ADDRESS2 = 'Scotland', ADDRESS3 = 'Aberdeen', ADDRESS4 = 'United Kingdom', ZIP = 'AB21 3RY',
-  PROCESSING_STATUS = 'TODO',
-  DATE_OF_BIRTH = TO_DATE('1984-07-24 00:00:00', 'YYYY-MM-DD HH24:MI:SS'),
-  PHONE_NUMBER = '44(703)209-6991',
-  ALT_PHONE_NUMBER = '44(145)525-2391',
-  EMAIL = 'jhoola@ed.gov',
-  RESIDENCY='Y',
-  URGENT='Y',
-  SUPER_URGENT='N'
-
+INSERT INTO juror_mod.juror (juror_number, poll_number, title, last_name, first_name, dob, address_line_1,
+                             address_line_2, address_line_3, address_line_4, address_line_5, postcode, h_phone, w_phone,
+                             w_ph_local, responded, date_excused, excusal_code, acc_exc, date_disq, disq_code,
+                             user_edtq, notes, no_def_pos, perm_disqual, reasonable_adj_code, reasonable_adj_msg,
+                             smart_card_number, completion_date, sort_code, bank_acct_name, bank_acct_no,
+                             bldg_soc_roll_no, welsh, police_check, last_update, summons_file, m_phone, h_email,
+                             contact_preference, notifications, date_created, optic_reference, pending_title,
+                             pending_first_name, pending_last_name, mileage, financial_loss, travel_time,
+                             bureau_transfer_date, claiming_subsistence_allowance, service_comp_comms_status,
+                             login_attempts, is_locked)
+VALUES ('123251234', '21112', 'Mr', 'Hoola', 'Gypsey', '1984-07-24 00:00:00', '27 Knutson Trail', 'Scotland',
+        'Aberdeen', 'United Kingdom', NULL, 'AB21 3RY', '44(703)209-6991', '44(109)549-5621', NULL, false, NULL, NULL,
+        NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL,
+        '2024-03-13 00:53:36', NULL, '44(145)525-2391', 'jhoola@ed.gov', 0, 0, '2024-03-13 00:53:36', NULL, NULL, NULL,
+        NULL, NULL, NULL, NULL, NULL, false, NULL, 0, false),
+       ('209092530', '21112', 'Dr', 'Castillo', 'Jane', '1984-07-24 00:00:00', '4 Knutson Trail', 'Scotland',
+        'Aberdeen', 'United Kingdom', NULL, 'AB21 3RY', '44(703)209-6993', '44(109)549-5625', NULL, false, NULL, NULL,
+        NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL,
+        '2024-03-13 00:53:37', NULL, '44(145)525-2390', 'jcastillo0@ed.gov', 0, 0, '2024-03-13 00:53:37', NULL, NULL,
+        NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 0, false);
+INSERT INTO juror_mod.juror_pool (juror_number, pool_number, "owner", user_edtq, is_active, status, times_sel, def_date,
+                                  "location", no_attendances, no_attended, no_fta, no_awol, pool_seq, edit_tag,
+                                  next_date, on_call, smart_card, was_deferred, deferral_code, id_checked, postpone,
+                                  paid_cash, scan_code, last_update, reminder_sent, transfer_date, date_created)
+VALUES ('123251234', '555', '400', NULL, true, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        current_date + 60, false, NULL, false, NULL, NULL, false, false, NULL, '2024-03-13 00:53:36', false, NULL,
+        NULL),
+       ('209092530', '555', '400', NULL, true, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        current_date + 60, false, NULL, false, NULL, NULL, false, false, NULL, '2024-03-13 00:53:37', false, NULL,
+        NULL);
+INSERT INTO juror_mod.juror_response (juror_number, date_received, title, first_name, last_name, address_line_1,
+                                      address_line_2, address_line_3, address_line_4, address_line_5, postcode,
+                                      processing_status, date_of_birth, phone_number, alt_phone_number, email,
+                                      residency, residency_detail, mental_health_act, mental_health_capacity,
+                                      mental_health_act_details, bail, bail_details, convictions, convictions_details,
+                                      deferral, deferral_reason, deferral_date, reasonable_adjustments_arrangements,
+                                      excusal, excusal_reason, processing_complete, signed, "version", thirdparty_fname,
+                                      thirdparty_lname, relationship, main_phone, other_phone, email_address,
+                                      thirdparty_reason, thirdparty_other_reason, juror_phone_details,
+                                      juror_email_details, staff_login, staff_assignment_date, urgent, super_urgent,
+                                      completed_at, welsh, reply_type)
+VALUES ('123251234', '2024-03-13 00:00:00', 'Mr', 'Gypsey', 'Hoola', '27 Knutson Trail', 'Scotland', 'Aberdeen',
+        'United Kingdom', NULL, 'AB21 3RY', 'TODO', '1984-07-24', '44(703)209-6991', '44(145)525-2391', 'jhoola@ed.gov',
+        true, NULL, false, NULL, NULL, false, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 0,
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, NULL, NULL, true, false, NULL, false, 'Digital'),
+       ('209092530', '2024-03-13 00:00:00', 'Dr', 'Jane', 'Castillo', '4 Knutson Trail', 'Scotland', 'Aberdeen',
+        'United Kingdom', NULL, 'AB21 3RY', 'TODO', '1984-07-24', '44(703)209-6993', '44(145)525-2390',
+        'jcastillo0@ed.gov', true, NULL, false, NULL, NULL, false, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL,
+        NULL, false, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, NULL, NULL, false, true,
+        NULL, false, 'Digital');
+UPDATE juror_mod.JUROR_RESPONSE
+SET TITLE             = 'Mr',
+    FIRST_NAME        = 'Gypsey',
+    LAST_NAME         = 'Hoola',
+    address_line_1    = '27 Knutson Trail',
+    address_line_2    = 'Scotland',
+    address_line_3    = 'Aberdeen',
+    address_line_4    = 'United Kingdom',
+    postcode          = 'AB21 3RY',
+    PROCESSING_STATUS = 'TODO',
+    DATE_OF_BIRTH     = TO_DATE('1984-07-24 00:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+    PHONE_NUMBER      = '44(703)209-6991',
+    ALT_PHONE_NUMBER  = '44(145)525-2391',
+    EMAIL             = 'jhoola@ed.gov',
+    RESIDENCY='Y',
+    URGENT='Y',
+    SUPER_URGENT='N'
 WHERE JUROR_NUMBER = '123251234';
 
--- Unassigned super urgent juror
-INSERT INTO JUROR.POOL (
-  part_no, fname, lname, h_email, title, dob, address, address2, address3, address4, zip,
-  h_phone, w_phone, is_active, owner, loc_code, m_phone, responded, poll_number, pool_no,
-  on_call, completion_flag, read_only, contact_preference, reg_spc, ret_date, next_date, status) VALUES (
-  '209092530', 'Jane', 'Castillo', 'jcastillo0@ed.gov', 'Dr', TO_DATE('1984-07-24 16:04:09', 'YYYY-MM-DD HH24:MI:SS'),
-             '4 Knutson Trail', 'Scotland', 'Aberdeen', 'United Kingdom', 'AB21 3RY',
-  '44(703)209-6993', '44(109)549-5625', 'Y', 400, 446, '44(145)525-2390', 'N', 21112, 555,
-  'N', 'N', 'N', 0, 'N', current_date, current_date + 60, 1);
-
-
-INSERT INTO JUROR_DIGITAL.JUROR_RESPONSE (JUROR_NUMBER, DATE_RECEIVED) VALUES ('209092530', current_date);
-
-UPDATE JUROR_DIGITAL.JUROR_RESPONSE SET
-  TITLE = 'Dr',
-  FIRST_NAME = 'Jane',
-  LAST_NAME = 'Castillo',
-  ADDRESS = '4 Knutson Trail', ADDRESS2 = 'Scotland', ADDRESS3 = 'Aberdeen', ADDRESS4 = 'United Kingdom', ZIP = 'AB21 3RY',
-  PROCESSING_STATUS = 'TODO',
-  DATE_OF_BIRTH = TO_DATE('1984-07-24 00:00:00', 'YYYY-MM-DD HH24:MI:SS'),
-  PHONE_NUMBER = '44(703)209-6993',
-  ALT_PHONE_NUMBER = '44(145)525-2390',
-  EMAIL = 'jcastillo0@ed.gov',
-  RESIDENCY='Y',
-  URGENT='N',
-  SUPER_URGENT='Y'
+UPDATE juror_mod.JUROR_RESPONSE
+SET TITLE             = 'Dr',
+    FIRST_NAME        = 'Jane',
+    LAST_NAME         = 'Castillo',
+    address_line_1    = '4 Knutson Trail',
+    address_line_2    = 'Scotland',
+    address_line_3    = 'Aberdeen',
+    address_line_4    = 'United Kingdom',
+    postcode          = 'AB21 3RY',
+    PROCESSING_STATUS = 'TODO',
+    DATE_OF_BIRTH     = TO_DATE('1984-07-24 00:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+    PHONE_NUMBER      = '44(703)209-6993',
+    ALT_PHONE_NUMBER  = '44(145)525-2390',
+    EMAIL             = 'jcastillo0@ed.gov',
+    RESIDENCY='Y',
+    URGENT='N',
+    SUPER_URGENT='Y'
 
 WHERE JUROR_NUMBER = '209092530';

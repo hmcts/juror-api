@@ -9,13 +9,16 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.MarkAsDeceasedDto;
+import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
+import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactEnquiryTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -34,6 +37,8 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 public class DeceasedResponseServiceTest {
     @Mock
     private JurorHistoryRepository jurorHistoryRepository;
+    @Mock
+    private ContactCodeRepository contactCodeRepository;
     @Mock
     private JurorRepository jurorRepository;
     @Mock
@@ -128,12 +133,18 @@ public class DeceasedResponseServiceTest {
         Mockito.doReturn(enquiryTypeOpt).when(contactEnquiryTypeRepository)
             .findById(ContactEnquiryCode.valueOf(UNABLE_TO_ATTEND));
 
+        ContactCode contactCode = new ContactCode(
+            IContactCode.UNABLE_TO_ATTEND.getCode(),
+            IContactCode.UNABLE_TO_ATTEND.getDescription());
+        Mockito.when(contactCodeRepository.findById(
+            IContactCode.UNABLE_TO_ATTEND.getCode())).thenReturn(Optional.of(contactCode));
+
         deceasedResponseService.markAsDeceased(buildPayload(owner), markAsDeceasedDto);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(Mockito.any(), Mockito.anyBoolean());
         Mockito.verify(jurorPoolRepository, Mockito.times(1)).save(Mockito.any());
-        Mockito.verify(contactEnquiryTypeRepository, Mockito.times(1)).findById(Mockito.any());
+        Mockito.verify(contactCodeRepository, Mockito.times(1)).findById(Mockito.any());
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).save(Mockito.any());
         Mockito.verify(contactLogRepository, Mockito.times(1)).saveAndFlush(Mockito.any());
     }
@@ -166,12 +177,18 @@ public class DeceasedResponseServiceTest {
         Mockito.doReturn(enquiryTypeOpt).when(contactEnquiryTypeRepository)
             .findById(ContactEnquiryCode.valueOf(UNABLE_TO_ATTEND));
 
+        ContactCode contactCode = new ContactCode(
+            IContactCode.UNABLE_TO_ATTEND.getCode(),
+            IContactCode.UNABLE_TO_ATTEND.getDescription());
+        Mockito.when(contactCodeRepository.findById(
+            IContactCode.UNABLE_TO_ATTEND.getCode())).thenReturn(Optional.of(contactCode));
+
         deceasedResponseService.markAsDeceased(buildPayload(owner), markAsDeceasedDto);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(Mockito.any(), Mockito.anyBoolean());
         Mockito.verify(jurorPoolRepository, Mockito.times(1)).save(Mockito.any());
-        Mockito.verify(contactEnquiryTypeRepository, Mockito.times(1)).findById(Mockito.any());
+        Mockito.verify(contactCodeRepository, Mockito.times(1)).findById(Mockito.any());
         Mockito.verify(contactLogRepository, Mockito.times(1)).saveAndFlush(Mockito.any());
     }
 

@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.validation.ValidationHelper;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -84,6 +85,6 @@ public class ResponseDeferralController {
 
         @Future
         @Schema(description = "Future date to defer to when accepting", requiredMode = Schema.RequiredMode.REQUIRED)
-        private Date deferralDate;
+        private LocalDate deferralDate;
     }
 }

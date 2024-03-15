@@ -6,7 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @Builder
@@ -32,13 +33,13 @@ public class BureauResponseSummaryDto {
     @Schema(description = "court code")
     private String processingStatus;
     @Schema(description = "Juror residency")
-    private String residency;
+    private Boolean residency;
     @Schema(description = "Mental Health Act option selected")
-    private String mentalHealthAct;
+    private Boolean mentalHealthAct;
     @Schema(description = "Bail option selected")
-    private String bail;
+    private Boolean bail;
     @Schema(description = "Conviction option selected")
-    private String convictions;
+    private Boolean convictions;
     @Schema(description = "Reason about deferring jury duties")
     private String deferralDate;
     @Schema(description = "Details about jury duty excusal")
@@ -52,12 +53,12 @@ public class BureauResponseSummaryDto {
     @Schema(description = "SLA is expired")
     private Boolean slaOverdue;
     @Schema(description = "Response received date")
-    private Date dateReceived;
+    private LocalDate dateReceived;
     @Schema(description = "Assigned staff member")
     private StaffDto assignedStaffMember;
     @Schema(description = "Optimistic locking version.", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer version;
     @Schema(description = "The time that processing was completed at")
-    private Date completedAt;
+    private LocalDateTime completedAt;
 
 }

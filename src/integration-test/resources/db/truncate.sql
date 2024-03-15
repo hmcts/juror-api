@@ -37,5 +37,17 @@ DELETE FROM JUROR_DIGITAL.STATS_UNPROCESSED_RESPONSES;
 DELETE FROM JUROR_DIGITAL.STATS_WELSH_ONLINE_RESPONSES;
 DELETE FROM JUROR_DIGITAL.STATS_AUTO_PROCESSED;
 DELETE FROM JUROR_DIGITAL.STATS_THIRDPARTY_ONLINE;
+
+
+
+DELETE FROM juror_mod.appearance;
+DELETE FROM juror_mod.appearance_audit;
+DELETE FROM JUROR_MOD.financial_audit_details_appearances;
+DELETE FROM JUROR_MOD.financial_audit_details;
+DELETE FROM JUROR_MOD.user_roles;
+DELETE FROM JUROR_MOD.user_courts;
 DELETE FROM JUROR_MOD.users;
+DELETE FROM juror_mod.app_setting;
+DELETE FROM juror_mod.notify_template_field;
+DELETE FROM juror_mod.notify_template_mapping;
 -- Reset the sequences as part of the begin step.  See README.md database setup for details.

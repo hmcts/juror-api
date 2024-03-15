@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.domain.jurorresponse;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,7 +52,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
 
     @Column(name = "date_received")
     @NotNull
-    private LocalDate dateReceived;
+    private LocalDateTime dateReceived;
 
     @Column(name = "title")
     @Length(max = 10)
@@ -116,6 +118,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
     @Length(max = 1000)
     private String thirdPartyReason;
 
+
     @Column(name = "reasonable_adjustments_arrangements")
     @Length(max = 1000)
     @Pattern(regexp = NO_PIPES_REGEX)
@@ -125,7 +128,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
     private Boolean processingComplete = Boolean.FALSE;
 
     @Column(name = "completed_at")
-    private LocalDate completedAt;
+    private LocalDateTime completedAt;
 
     @Column(name = "relationship")
     @Length(max = 50)

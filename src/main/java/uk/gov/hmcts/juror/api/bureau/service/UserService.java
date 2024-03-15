@@ -4,8 +4,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.request.AssignmentsMultiRequestD
 import uk.gov.hmcts.juror.api.bureau.controller.request.MultipleStaffAssignmentDto;
 import uk.gov.hmcts.juror.api.bureau.controller.request.ReassignResponsesDto;
 import uk.gov.hmcts.juror.api.bureau.controller.request.StaffAssignmentRequestDto;
-import uk.gov.hmcts.juror.api.bureau.controller.request.StaffMemberCrudRequestDto;
-import uk.gov.hmcts.juror.api.bureau.controller.request.StaffMemberCrudResponseDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.AssignmentsListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.OperationFailureListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffAssignmentResponseDto;
@@ -14,6 +12,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 
 /**
  * Operations for modifying the staff assignment of juror responses.
@@ -56,7 +55,7 @@ public interface UserService {
      *
      * @param urgentJurorResponse Previously persisted juror response entity
      */
-    void assignUrgentResponse(JurorResponse urgentJurorResponse);
+    void assignUrgentResponse(DigitalResponse urgentJurorResponse);
 
     User findByUsername(String activeLogin);
 
@@ -95,23 +94,4 @@ public interface UserService {
      * responses to specified staff member.
      */
     void reassignResponses(String auditorUsername, ReassignResponsesDto reassignResponsesDto);
-
-    /**
-     * Create a new staff member.
-     *
-     * @param requestDto  Staff member details.
-     * @param currentUser User performing this action
-     * @return Newly created staff member.
-     */
-    StaffMemberCrudResponseDto createNewStaffMember(StaffMemberCrudRequestDto requestDto, String currentUser);
-
-    /**
-     * Update an existing staff member.
-     *
-     * @param login       the login of the staff member account being updated
-     * @param requestDto  Updated contents to me applied.
-     * @param currentUser User performing this action
-     * @return Updated staff member.
-     */
-    StaffMemberCrudResponseDto updateStaffMember(String login, StaffMemberCrudRequestDto requestDto, String currentUser);
 }

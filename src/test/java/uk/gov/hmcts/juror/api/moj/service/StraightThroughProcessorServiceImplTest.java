@@ -44,6 +44,7 @@ import java.util.Set;
 import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(SpringRunner.class)
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class StraightThroughProcessorServiceImplTest {
 
     @Mock

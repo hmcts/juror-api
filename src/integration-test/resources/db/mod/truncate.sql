@@ -1,6 +1,6 @@
 --DELETE FROM juror_mod.accused;
 DELETE FROM juror_mod.payment_data;
-DELETE FROM juror_mod.app_settings;
+DELETE FROM juror_mod.app_setting;
 DELETE FROM juror_mod.appearance;
 DELETE FROM juror_mod.appearance_audit;
 DELETE FROM juror_mod.financial_audit_details_appearances;
@@ -36,6 +36,9 @@ DELETE FROM juror_mod.juror;
 --DELETE FROM juror_mod.payment_data;
 
 --DELETE FROM juror_mod.region_notify_template;
+
+DELETE FROM juror_mod.user_roles;
+DELETE FROM juror_mod.user_courts;
 DELETE FROM juror_mod.users;
 
 DELETE FROM juror_mod.rev_info;
@@ -46,6 +49,9 @@ DELETE FROM juror_mod.rev_info;
 DELETE FROM juror_mod.juror_trial;
 DELETE FROM juror_mod.trial;
 DELETE FROM juror_mod.judge;
+
+UPDATE juror_mod.court_location set assembly_room = null;
 DELETE FROM juror_mod.courtroom;
 DELETE FROM juror_mod.pending_juror;
+DELETE FROM juror_mod.welsh_court_location where loc_code in ('001', '002', '003');
 DELETE FROM juror_mod.court_location where loc_code in ('001', '002', '003');

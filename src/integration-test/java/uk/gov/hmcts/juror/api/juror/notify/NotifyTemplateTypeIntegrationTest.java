@@ -60,7 +60,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
         final NotifyTemplateType type = DISQUALIFICATION_AGE;
 
         final Set<Object> settings =
-            jdbcTemplate.queryForList("SELECT SETTING FROM JUROR_DIGITAL.APP_SETTINGS").stream().map(s -> s.get(
+            jdbcTemplate.queryForList("SELECT SETTING FROM juror_mod.app_setting").stream().map(s -> s.get(
                 "SETTING")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
@@ -107,7 +107,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
         final NotifyTemplateType type = EXCUSAL_DECEASED;
 
         final Set<Object> settings =
-            jdbcTemplate.queryForList("SELECT SETTING FROM JUROR_DIGITAL.APP_SETTINGS").stream().map(s -> s.get(
+            jdbcTemplate.queryForList("SELECT SETTING FROM juror_mod.app_setting").stream().map(s -> s.get(
                 "SETTING")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
@@ -154,7 +154,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
         final NotifyTemplateType type = EXCUSAL;
 
         final Set<Object> settings =
-            jdbcTemplate.queryForList("SELECT SETTING FROM JUROR_DIGITAL.APP_SETTINGS").stream().map(s -> s.get(
+            jdbcTemplate.queryForList("SELECT SETTING FROM juror_mod.app_setting").stream().map(s -> s.get(
                 "SETTING")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
@@ -202,7 +202,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
         final NotifyTemplateType type = STRAIGHT_THROUGH;
 
         final Set<Object> settings =
-            jdbcTemplate.queryForList("SELECT SETTING FROM JUROR_DIGITAL.APP_SETTINGS").stream().map(s -> s.get(
+            jdbcTemplate.queryForList("SELECT SETTING FROM juror_mod.app_setting").stream().map(s -> s.get(
                 "SETTING")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
@@ -249,7 +249,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
         final NotifyTemplateType type = DEFERRAL;
 
         final Set<Object> settings =
-            jdbcTemplate.queryForList("SELECT SETTING FROM JUROR_DIGITAL.APP_SETTINGS").stream().map(s -> s.get(
+            jdbcTemplate.queryForList("SELECT SETTING FROM juror_mod.app_setting").stream().map(s -> s.get(
                 "SETTING")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
@@ -296,7 +296,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
         final NotifyTemplateType type = DISQUALIFICATION_AGE;
 
         final Set<Object> settings =
-            jdbcTemplate.queryForList("SELECT SETTING FROM JUROR_DIGITAL.APP_SETTINGS").stream().map(s -> s.get(
+            jdbcTemplate.queryForList("SELECT SETTING FROM juror_mod.app_setting").stream().map(s -> s.get(
                 "SETTING")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
@@ -343,7 +343,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
         final NotifyTemplateType type = EXCUSAL_DECEASED;
 
         final Set<Object> settings =
-            jdbcTemplate.queryForList("SELECT SETTING FROM JUROR_DIGITAL.APP_SETTINGS").stream().map(s -> s.get(
+            jdbcTemplate.queryForList("SELECT SETTING FROM juror_mod.app_setting").stream().map(s -> s.get(
                 "SETTING")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
@@ -390,7 +390,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
         final NotifyTemplateType type = EXCUSAL;
 
         final Set<Object> settings =
-            jdbcTemplate.queryForList("SELECT SETTING FROM JUROR_DIGITAL.APP_SETTINGS").stream().map(s -> s.get(
+            jdbcTemplate.queryForList("SELECT SETTING FROM juror_mod.app_setting").stream().map(s -> s.get(
                 "SETTING")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
@@ -437,7 +437,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
         final NotifyTemplateType type = STRAIGHT_THROUGH;
 
         final Set<Object> settings =
-            jdbcTemplate.queryForList("SELECT SETTING FROM JUROR_DIGITAL.APP_SETTINGS").stream().map(s -> s.get(
+            jdbcTemplate.queryForList("SELECT SETTING FROM juror_mod.app_setting").stream().map(s -> s.get(
                 "SETTING")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
@@ -484,7 +484,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
         final NotifyTemplateType type = DEFERRAL;
 
         final Set<Object> settings =
-            jdbcTemplate.queryForList("SELECT SETTING FROM JUROR_DIGITAL.APP_SETTINGS").stream().map(s -> s.get(
+            jdbcTemplate.queryForList("SELECT SETTING FROM juror_mod.app_setting").stream().map(s -> s.get(
                 "SETTING")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();

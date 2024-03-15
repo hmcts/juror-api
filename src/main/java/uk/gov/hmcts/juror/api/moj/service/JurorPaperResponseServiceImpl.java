@@ -45,6 +45,7 @@ import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -113,7 +114,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         JurorPaperResponseDetailDto jurorPaperResponseDetailDto = new JurorPaperResponseDetailDto();
 
         jurorPaperResponseDetailDto.setJurorNumber(jurorPaperResponse.getJurorNumber());
-        jurorPaperResponseDetailDto.setDateReceived(jurorPaperResponse.getDateReceived());
+        jurorPaperResponseDetailDto.setDateReceived(jurorPaperResponse.getDateReceived().toLocalDate());
 
         Juror juror = jurorPool.getJuror();
 
@@ -354,7 +355,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         jurorPaperResponse.setJurorNumber(paperResponseDto.getJurorNumber());
 
         // setting the received date to now
-        jurorPaperResponse.setDateReceived(LocalDate.now());
+        jurorPaperResponse.setDateReceived(LocalDateTime.now());
 
         // set up Juror personal details
         jurorPaperResponse.setTitle(paperResponseDto.getTitle());

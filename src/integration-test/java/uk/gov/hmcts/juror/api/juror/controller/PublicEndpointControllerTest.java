@@ -25,6 +25,7 @@ import uk.gov.hmcts.juror.api.config.public_.PublicJWTPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.service.JurorPersistenceService;
 import uk.gov.hmcts.juror.api.juror.service.JurorServiceImpl.JurorResponseAlreadyExistsException;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 
 import java.net.URI;
 import java.time.Instant;
@@ -54,7 +55,7 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
     @Value("${jwt.secret.public}")
     private String publicSecret;
 
-    private Date DOB_40_YEARS_OLD;
+    private LocalDate DOB_40_YEARS_OLD;
     private JurorResponseDto.Qualify VALID_QUALIFY;
 
     @SuppressWarnings("Duplicates")
@@ -66,7 +67,7 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         //create a valid DOB
-        DOB_40_YEARS_OLD = Date.from(LocalDate.now().minusYears(40L).atStartOfDay().toInstant(ZoneOffset.UTC));
+        DOB_40_YEARS_OLD = LocalDate.now().minusYears(40L);
 
         //create a valid Qualify
         VALID_QUALIFY = JurorResponseDto.Qualify.builder()
@@ -79,6 +80,7 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_constraintViolationException() throws Exception {
@@ -97,7 +99,7 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
                 "Grimsby",
                 "Town Centre",
                 "G6 1AB", DOB_40_YEARS_OLD,
-                "012341234567", "joe@smith.dev", VALID_QUALIFY, null)
+                "012341234567", "joe@smith.dev", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
             .title("Mr")
             .build();
 

@@ -1,8 +1,12 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
+
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
+
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,21 +16,21 @@ import java.util.List;
  */
 public interface UrgencyService {
     /**
-     * Performs {@link #flagSlaOverdueForResponse(BureauJurorDetail)} on a list of {@link BureauJurorDetail}.
+     * Performs {@link #flagSlaOverdueForResponse(uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail)} on a list of {@link ModJurorDetail}.
      *
      * @param details details to flag
      * @return List of details with SLA overdue flagged
      */
-    List<BureauJurorDetail> flagSlaOverdueFromList(List<BureauJurorDetail> details);
+    List<ModJurorDetail> flagSlaOverdueFromList(List<ModJurorDetail> details);
 
     /**
-     * Set the SLA overdue flag on a {@link BureauJurorDetail}.
+     * Set the SLA overdue flag on a {@link ModJurorDetail}.
      *
-     * @param bureauJurorDetail Juror response to set SLA overdue flag on
+     * @param modJurorDetail Juror response to set SLA overdue flag on
      * @return Updated juror response
      * @throws UrgencyServiceImpl.AppSettingException Failed to retrieve required constants for urgency thresholds
      */
-    BureauJurorDetail flagSlaOverdueForResponse(BureauJurorDetail bureauJurorDetail);
+    ModJurorDetail flagSlaOverdueForResponse(ModJurorDetail modJurorDetail);
 
     /**
      * The friday before the friday before a date.  (The 2nd friday before the date).
@@ -58,27 +62,27 @@ public interface UrgencyService {
      * Set urgent / superUrgent flags on a juror response.
      *
      * @param response    response to set flags on
-     * @param poolDetails pool details the response relates to
+     * @param jurorDetails pool details the response relates to
      */
-    void setUrgencyFlags(JurorResponse response, Pool poolDetails);
+    void setUrgencyFlags(DigitalResponse response, JurorPool jurorDetails);
 
     /**
      * get super urgent based on current date, added for scheduler.
      *
      * @param response
-     * @param poolDetails
+     * @param jurorDetails
      * @return
      */
-    boolean isUrgent(JurorResponse response, Pool poolDetails);
+    boolean isUrgent(DigitalResponse  response, JurorPool jurorDetails);
 
     /**
      * get super urgent based on current date, added for scheduler.
      *
      * @param response
-     * @param poolDetails
+     * @param jurorDetails
      * @return
      */
-    boolean isSuperUrgent(JurorResponse response, Pool poolDetails);
+    boolean isSuperUrgent(DigitalResponse response, JurorPool jurorDetails);
 
 
 }

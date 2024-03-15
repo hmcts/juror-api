@@ -1,7 +1,8 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 
 import java.util.Map;
 
@@ -16,10 +17,10 @@ public interface JurorCommsNotifyPayLoadService {
      *
      * @param templateId template for which the payload is to be assembled for.
      * @param detailData source of data.
-     * @param pool       pool details for juror.
+     * @param juror       pool details for juror.
      * @return Map of key values pairs of data elements for the template.
      */
-    Map<String, String> generatePayLoadData(String templateId, String detailData, Pool pool);
+    Map<String, String> generatePayLoadData(String templateId, String detailData, JurorPool juror);
 
     /**
      * Generates a Map containing key:value pairs of data elements to be supplied to the Notify Service.
@@ -27,7 +28,7 @@ public interface JurorCommsNotifyPayLoadService {
      * @param templateId template for which the payload is to be assembled for.
      * @return Map of key values pairs of data elements for the template.
      */
-    Map<String, String> generatePayLoadData(String templateId, Pool pool);
+    Map<String, String> generatePayLoadData(String templateId, JurorPool juror);
 
     WelshCourtLocation getWelshCourtLocation(String locationCode);
 

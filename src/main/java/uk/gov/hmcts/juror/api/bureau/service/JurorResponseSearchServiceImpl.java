@@ -18,6 +18,9 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.JurorResponseSearchResu
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetailQueries;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetailRepository;
+import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
+import uk.gov.hmcts.juror.api.moj.repository.JurorDetailRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -31,15 +34,15 @@ import java.util.List;
 public class JurorResponseSearchServiceImpl implements JurorResponseSearchService {
 
     private final AppSettingService appSettingService;
-    private final BureauJurorDetailRepository bureauJurorDetailRepository;
+    private final JurorDetailRepositoryMod bureauJurorDetailRepository;
     private final BureauTransformsService bureauTransformsService;
 
     @Autowired
     public JurorResponseSearchServiceImpl(final AppSettingService appSettingService,
-                                          final BureauJurorDetailRepository bureauJurorDetailRepository,
+                                          final JurorDetailRepositoryMod bureauJurorDetailRepository,
                                           final BureauTransformsService bureauTransformsService) {
         Assert.notNull(appSettingService, "AppSettingService cannot be null.");
-        Assert.notNull(bureauJurorDetailRepository, "BureauJurorDetailRepository cannot be null.");
+        Assert.notNull(bureauJurorDetailRepository, "JurorDetailRepositoryMod cannot be null.");
         Assert.notNull(bureauTransformsService, "BureauTransformsService cannot be null.");
         this.appSettingService = appSettingService;
         this.bureauJurorDetailRepository = bureauJurorDetailRepository;
@@ -71,7 +74,7 @@ public class JurorResponseSearchServiceImpl implements JurorResponseSearchServic
         final int resultsLimit = getResultsLimit(isTeamLeader);
 
         final Predicate queryPredicate = toQueryPredicate(searchRequest, isTeamLeader);
-        final Page<BureauJurorDetail> bureauJurorDetails = bureauJurorDetailRepository.findAll(
+        final Page<ModJurorDetail> bureauJurorDetails = bureauJurorDetailRepository.findAll(
             queryPredicate,
             PageRequest.of(
                 0,
@@ -220,7 +223,7 @@ public class JurorResponseSearchServiceImpl implements JurorResponseSearchServic
     @Builder
     @Data
     private static class SearchResults {
-        private final List<BureauJurorDetail> results;
+        private final List<ModJurorDetail> results;
         private final Integer maximumNumberOfMatches;
         private final Long totalNumberOfMatches;
     }

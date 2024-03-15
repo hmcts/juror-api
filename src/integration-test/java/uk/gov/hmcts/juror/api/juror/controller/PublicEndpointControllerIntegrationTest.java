@@ -32,15 +32,14 @@ import uk.gov.hmcts.juror.api.config.public_.PublicJWTPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.service.StraightThroughType;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.service.notify.NotificationClientApi;
 
 import java.net.URI;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Date;
@@ -75,7 +74,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Value("${jwt.secret.public}")
     private String publicSecret;
 
-    private Date DOB_40_YEARS_OLD;
+    private LocalDate DOB_40_YEARS_OLD;
     private JurorResponseDto.Qualify VALID_QUALIFY;
 
     private int youngestJurorAgeAllowed;
@@ -89,7 +88,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         //create a valid DOB
-        DOB_40_YEARS_OLD = Date.from(LocalDate.now().minusYears(40L).atStartOfDay().toInstant(ZoneOffset.UTC));
+        DOB_40_YEARS_OLD = LocalDate.now().minusYears(40L);
 
         //create a valid Qualify
         VALID_QUALIFY = JurorResponseDto.Qualify.builder()
@@ -167,6 +166,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/PublicEndpointControllerTest_retrieveJurorById.sql")
     public void retrieveJurorById_RequestWithValidNumber_ReturnsJurorDetails() throws Exception {
 
@@ -193,6 +193,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/PublicEndpointControllerTest_retrieveJurorById_poolAttendTime.sql")
     public void retrieveJurorById_alternatePath_poolAttendTime() throws Exception {
 
@@ -210,12 +211,16 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         assertThat(exchange.getBody()).extracting("jurorNumber", "title", "firstName", "lastName", "postcode")
             .contains("209092530", "Dr", "Jane", "CASTILLO", "AB39RY");
 
-        final String courtAttendTime = jdbcTemplate.queryForObject("SELECT LOC_ATTEND_TIME FROM JUROR_MOD.COURT_LOCATION WHERE LOC_CODE='407'",String.class);
-        final String poolAttendTime = jdbcTemplate.queryForObject("SELECT ATTEND_TIME FROM JUROR.UNIQUE_POOL",String.class);
+        final LocalDateTime courtAttendTime =
+            jdbcTemplate.queryForObject("SELECT LOC_ATTEND_TIME FROM JUROR_MOD.COURT_LOCATION WHERE LOC_CODE='407'",
+                LocalDateTime.class);
+        final LocalDateTime poolAttendTime =
+            jdbcTemplate.queryForObject("SELECT ATTEND_TIME FROM juror_mod.pool", LocalDateTime.class);
 
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
         assertThat(exchange.getBody().getCourtAttendTime()).isNotNull();
-        assertThat(exchange.getBody().getCourtAttendTime()).isNotEqualTo(courtAttendTime);
-        assertThat(exchange.getBody().getCourtAttendTime()).isEqualTo(poolAttendTime);
+        assertThat(exchange.getBody().getCourtAttendTime()).isNotEqualTo(dateTimeFormatter.format(courtAttendTime));
+        assertThat(exchange.getBody().getCourtAttendTime()).isEqualTo(dateTimeFormatter.format(poolAttendTime));
 
         assertThat(exchange.getBody().getCourtAttendTime()).contains("10:30").doesNotContain("09:30");
     }
@@ -242,6 +247,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_happy() throws Exception {
@@ -260,9 +266,9 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Cube Four",
                 "Block 871",
                 "M1 1AB", DOB_40_YEARS_OLD,
-                "012341234567", "dredd@megaone.web", VALID_QUALIFY, null)
+                "012341234567", "dredd@megaone.web", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
             .title("Judge")
-            .specialNeeds(Collections.singletonList(JurorResponseDto.SpecialNeed.builder()
+            .reasonableAdjustments(Collections.singletonList(JurorResponseDto.ReasonableAdjustment.builder()
                 .assistanceType("V")
                 .assistanceTypeDetails("Helmet visor tinted and cannot remove even indoors")
                 .build())
@@ -276,11 +282,11 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         //assert response tables are in known state
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(0);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
@@ -291,16 +297,22 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         //assert database has response
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
 
-        assertThat(jdbcTemplate.queryForObject("select LAST_NAME from JUROR_DIGITAL.JUROR_RESPONSE WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("Dredd");
-        assertThat(jdbcTemplate.queryForObject("select CJS_EMPLOYER from JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT WHERE JUROR_NUMBER = '644892530'", String.class)).contains("Mega City 1");
-        assertThat(jdbcTemplate.queryForObject("select SPEC_NEED from JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("V");
+        assertThat(jdbcTemplate.queryForObject(
+            "select LAST_NAME from juror_mod.juror_response WHERE JUROR_NUMBER = '644892530'",
+            String.class)).isEqualTo("Dredd");
+        assertThat(jdbcTemplate.queryForObject(
+            "select CJS_EMPLOYER from juror_mod.juror_response_CJS_EMPLOYMENT WHERE JUROR_NUMBER = '644892530'",
+            String.class)).contains("Mega City 1");
+        assertThat(jdbcTemplate.queryForObject(
+            "select reasonable_adjustment from juror_mod.juror_reasonable_adjustment WHERE JUROR_NUMBER = '644892530'",
+            String.class)).isEqualTo("V");
     }
 
     /**
@@ -310,22 +322,24 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
+    @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_unhappy_tooOld() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
-            .jurorNumber("352004504")
-            .postcode("AC3M 2NY")
-            .surname("RIVERA")
+            .jurorNumber("644892530")
+            .postcode("AB39RY")
+            .surname("CASTILLO")
             .roles(new String[]{"juror"})
             .id("")
             .build())
         );
 
-        Date dob = Date.from(LocalDateTime.now().minusYears(90).atZone(ZoneId.systemDefault()).toInstant());
+        LocalDate dob = LocalDate.now().minusYears(90);
 
         final JurorResponseDto dto = JurorResponseDto.realBuilder()
-            .jurorNumber("352004504")
+            .jurorNumber("644892530")
             .firstName("Jose")
             .lastName("Rivera")
             .title("Rev")
@@ -343,7 +357,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         //assert response tables are in known state
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
@@ -355,6 +369,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_straightThroughTooYoung_unhappy.sql")
     public void respondToSummons_unhappy_failedAgeCheckOnStraightThrough() throws Exception {
@@ -368,20 +383,20 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        Date dob = Date.from(LocalDateTime.now().minusYears(17).atZone(ZoneId.systemDefault()).toInstant());
+        LocalDate dob = LocalDate.now().minusYears(17);
 
         final JurorResponseDto dto = JurorResponseDto.builder(
                 "644892530", "JANE", "CASTILLO", "4 Knutson Trail",
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null)
+                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
         //assert response tables are in known state
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
@@ -392,17 +407,20 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         //assert database has response
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from JUROR_DIGITAL.JUROR_RESPONSE",
+        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("N");
-        assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE POOL_NO= '644892530'", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
+        assertThat(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number= '644892530'",
+                Integer.class)).isEqualTo(0);
     }
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_isSuperUrgentFailedStraightThrough_unhappy.sql")
     public void respondToSummons_unhappy_failedSuperUrgentCheckOnStraightThrough() throws Exception {
@@ -417,36 +435,39 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        Date dob = Date.from(LocalDateTime.now().minusYears(36).atZone(ZoneId.systemDefault()).toInstant());
+        LocalDate dob = LocalDate.now().minusYears(36);
 
         final JurorResponseDto dto = JurorResponseDto.builder(
                 "644892530", "JANE", "CASTILLO", "4 Knutson Trail",
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null)
+                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         template.exchange(requestEntity, String.class);
 
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from JUROR_DIGITAL.JUROR_RESPONSE",
+        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("N");
-        assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE POOL_NO='644892530'", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
+        assertThat(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
+                Integer.class)).isEqualTo(0);
     }
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_unhappy_noEmailOrPhoneNumber() throws Exception {
@@ -465,17 +486,17 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Cube Four",
                 "Block 871",
                 "M1 1AB", DOB_40_YEARS_OLD,
-                null, null, VALID_QUALIFY, null)
+                null, null, VALID_QUALIFY, null, ReplyMethod.DIGITAL)
             .title("Judge")
             .build();
 
         //assert response tables are in known state
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(0);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
@@ -485,16 +506,17 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         //assert no changes made to response tables
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(0);
     }
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
@@ -510,23 +532,23 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        Date dob = Date.from(LocalDateTime.now().minusYears(36).atZone(ZoneId.systemDefault()).toInstant());
+        LocalDate dob = LocalDate.now().minusYears(36);
 
         final JurorResponseDto dto = JurorResponseDto.builder(
                 "644892530", "JANE", "CASTILLO", "4 Knutson Trail",
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null)
+                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.APP_SETTINGS where SETTING='" +
-            StraightThroughType.ACCEPTANCE.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.app_setting where SETTING='"
+            + StraightThroughType.ACCEPTANCE.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
@@ -534,19 +556,32 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from JUROR_DIGITAL.JUROR_RESPONSE",
+        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("CLOSED");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("Y");
-        assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE OTHER_INFORMATION='Responded' and PART_NO='644892530'", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select HISTORY_CODE from JUROR.PART_HIST WHERE OTHER_INFORMATION='Responded' and PART_NO='644892530'", String.class)).isEqualTo("RESP");
-        assertThat(jdbcTemplate.queryForObject("select USER_ID from JUROR.PART_HIST WHERE OTHER_INFORMATION='Responded' and PART_NO='644892530'", String.class)).isEqualTo(JurorDigitalApplication.AUTO_USER);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_AUD", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).as("Only the DOB audits a change.").isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(true);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(2);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_CJS_EMPLOYMENT",
+            Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_reasonable_adjustment",
+            Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
+                + "juror_number='644892530'",
+            Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+            "select HISTORY_CODE from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
+                + "juror_number='644892530'",
+            String.class)).isEqualTo("RESP");
+        assertThat(jdbcTemplate.queryForObject(
+            "select USER_ID from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
+                + "juror_number='644892530'",
+            String.class)).isEqualTo(JurorDigitalApplication.AUTO_USER);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
+            Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).as(
+            "Only the DOB audits a change.").isEqualTo(1);
         assertNullExcusalDate();
 
         Mockito.verify(this.notificationClientApi).sendEmail(anyString(), anyString(), anyMap(), anyString());
@@ -554,6 +589,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/straight_through_acceptance_disabled.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
@@ -569,39 +605,40 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        Date dob = Date.from(LocalDateTime.now().minusYears(36).atZone(ZoneId.systemDefault()).toInstant());
+        LocalDate dob = LocalDate.now().minusYears(36);
 
         final JurorResponseDto dto = JurorResponseDto.builder(
                 "644892530", "JANE", "CASTILLO", "4 Knutson Trail",
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null)
+                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
             .title("DR")
             .qualify(JurorResponseDto.Qualify.builder()
                 .livedConsecutive(JurorResponseDto.Answerable.builder().answer(true).build()).build())
             .build();
 
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.APP_SETTINGS where SETTING='" +
-            StraightThroughType.ACCEPTANCE.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.app_setting where SETTING='"
+            + StraightThroughType.ACCEPTANCE.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(1);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         template.exchange(requestEntity, String.class);
 
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from JUROR_DIGITAL.JUROR_RESPONSE",
+        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("N");
-        assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
+        assertThat(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
     }
 
@@ -612,11 +649,14 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
      * @since JDB-1902
      */
     private void assertNullExcusalDate() {
-        assertThat(jdbcTemplate.queryForObject("select DATE_EXCUS FROM JUROR.POOL WHERE PART_NO='644892530'", Date.class)).isNull();
+        assertThat(
+            jdbcTemplate.queryForObject("select date_excused from juror_mod.juror WHERE juror_number='644892530'",
+                Date.class)).isNull();
     }
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_unhappy_straightThroughAcceptance_cjsEmployed() throws Exception {
@@ -631,14 +671,14 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        Date dob = Date.from(LocalDateTime.now().minusYears(36).atZone(ZoneId.systemDefault()).toInstant());
+        LocalDate dob = LocalDate.now().minusYears(36);
 
         final JurorResponseDto dto = JurorResponseDto.builder(
                 "644892530", "JANE", "CASTILLO", "4 Knutson Trail",
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null)
+                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
             .title("DR")
             .cjsEmployment(Collections.singletonList(
                     JurorResponseDto.CJSEmployment.builder()
@@ -648,38 +688,52 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 )
             ).build();
 
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.APP_SETTINGS where SETTING='" +
-            StraightThroughType.ACCEPTANCE.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select count(*) FROM juror_mod.app_setting where SETTING='"
+            + StraightThroughType.ACCEPTANCE.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(1);//summoned
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("N");
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(
+            1);//summoned
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<String> exchange = template.exchange(requestEntity, String.class);
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from JUROR_DIGITAL.JUROR_RESPONSE",
+        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("N");
-        assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(1);//summoned
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE OTHER_INFORMATION='Responded' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(HISTORY_CODE) from JUROR.PART_HIST WHERE OTHER_INFORMATION='Responded' and PART_NO='644892530'", Integer.class))
-                .describedAs("No code history audit as straight through did not happen").isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(USER_ID) from JUROR.PART_HIST WHERE OTHER_INFORMATION='Responded' and PART_NO='644892530'", Integer.class))
-                .describedAs("No user id history audit as straight through did not happen").isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_AUD", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(
+            1);//summoned
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_CJS_EMPLOYMENT",
+            Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
+                + "juror_number='644892530'",
+            Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(HISTORY_CODE) from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
+                + "juror_number='644892530'",
+            Integer.class))
+            .describedAs("No code history audit as straight through did not happen").isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(USER_ID) from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
+                + "juror_number='644892530'",
+            Integer.class))
+            .describedAs("No user id history audit as straight through did not happen").isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
+            Integer.class)).isEqualTo(0);
     }
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_unhappy_straightThroughAcceptance_specialNeed() throws Exception {
@@ -694,110 +748,69 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        Date dob = Date.from(LocalDateTime.now().minusYears(36).atZone(ZoneId.systemDefault()).toInstant());
+        LocalDate dob = LocalDate.now().minusYears(36);
 
         final JurorResponseDto dto = JurorResponseDto.builder(
                 "644892530", "JANE", "CASTILLO", "4 Knutson Trail",
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null)
+                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
             .title("DR")
-            .specialNeeds(Collections.singletonList(
-                JurorResponseDto.SpecialNeed.builder()
+            .reasonableAdjustments(Collections.singletonList(
+                JurorResponseDto.ReasonableAdjustment.builder()
                     .assistanceType("I")
                     .assistanceTypeDetails("I have a nut allergy")
                     .build()
             ))
             .build();
 
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.APP_SETTINGS where SETTING='" +
-            StraightThroughType.ACCEPTANCE.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.app_setting where SETTING='"
+            + StraightThroughType.ACCEPTANCE.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(1);//summoned
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("N");
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
+        //summoned
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<String> exchange = template.exchange(requestEntity, String.class);
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from JUROR_DIGITAL.JUROR_RESPONSE",
+        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("N");
-        assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(1);//summoned
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE OTHER_INFORMATION='Responded' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(HISTORY_CODE) from JUROR.PART_HIST WHERE OTHER_INFORMATION='Responded' and PART_NO='644892530'", Integer.class))
-                .describedAs("No code history audit as straight through did not happen").isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(USER_ID) from JUROR.PART_HIST WHERE OTHER_INFORMATION='Responded' and PART_NO='644892530'", Integer.class))
-                .describedAs("No user id history audit as straight through did not happen").isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_AUD", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(
+            1);//summoned
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_reasonable_adjustment",
+            Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
+                + "juror_number='644892530'",
+            Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(HISTORY_CODE) from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
+                + "juror_number='644892530'",
+            Integer.class))
+            .describedAs("No code history audit as straight through did not happen").isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(USER_ID) from juror_mod.juror_history WHERE OTHER_INFORMATION='Responded' and "
+                + "juror_number='644892530'",
+            Integer.class))
+            .describedAs("No user id history audit as straight through did not happen").isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
+            Integer.class)).isEqualTo(0);
     }
-
-//     @Test
-//     @Sql("/db/truncate.sql")
-//     @Sql("/db/standing_data.sql")
-//     @Sql("/db/app_settings.sql")
-//     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
-//     public void respondToSummons_happy_thirdPartyDeceased_successfulStraightThrough() throws Exception {
-
-//         final URI uri = URI.create("/api/v1/public/juror/respond");
-//         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
-//                 .jurorNumber("644892530")
-//                 .postcode("AB39RY")
-//                 .surname("CASTILLO")
-//                 .roles(new String[]{"juror"})
-//                 .id("")
-//                 .build())
-//         );
-
-//         JurorResponseDto.ThirdParty thirdParty = new JurorResponseDto.ThirdParty();
-
-//         // note the contact preference fields are absent in a deceased flow
-//         thirdParty.setThirdPartyFName("Joe");
-//         thirdParty.setThirdPartyLName("Bloggs");
-//         thirdParty.setRelationship("Brother");
-//         thirdParty.setThirdPartyReason("Deceased");
-//         thirdParty.setThirdPartyOtherReason("");
-//         thirdParty.setMainPhone("01234123456");
-//         thirdParty.setOtherPhone("07890654321");
-//         thirdParty.setEmailAddress("thirdparty@deceased.flow");
-
-//         final JurorResponseDto dto = JurorResponseDto.builderThirdPartyDeceased("644892530", thirdParty)
-//                 .build();
-
-//         assertThat(jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)
-//         ).isEqualTo(0);
-
-//         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
-//         ResponseEntity<String> exchange = template.exchange(requestEntity, String.class);
-
-//         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-//         assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)
-//         ).isEqualTo(1);
-//         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from JUROR_DIGITAL.JUROR_RESPONSE",
-//         String.class)).isEqualTo("CLOSED");
-//         assertThat(jdbcTemplate.queryForObject("select THIRDPARTY_REASON from JUROR_DIGITAL.JUROR_RESPONSE",
-//         String.class)).isEqualToIgnoringCase("deceased");
-//         assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("Y");
-//         assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(5);
-//         assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE PART_NO='644892530'", Integer.class)).isEqualTo(1);
-//         assertThat(jdbcTemplate.queryForObject("select r.ZIP from JUROR_DIGITAL.JUROR_RESPONSE r WHERE JUROR_NUMBER=644892530", String.class))
-//                 .describedAs("(JDB-1879)Postcode was loaded correctly from POOL during response persistence")
-//                 .isEqualTo("AB3 9RY");
-
-//         Mockito.verify(this.notificationClientApi).sendEmail(anyString(), anyString(), anyMap(), anyString());
-//     }
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/straight_through_acceptance_disabled.sql")
     @Sql("/db/straight_through_deceased_excusal_disabled.sql")
@@ -829,7 +842,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         final JurorResponseDto dto = JurorResponseDto.builderThirdPartyDeceased("644892530", thirdParty).build();
 
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
@@ -837,23 +850,27 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
         // there is no straight through enabled, so expect TO-DO
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from JUROR_DIGITAL.JUROR_RESPONSE",
+        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select THIRDPARTY_REASON from JUROR_DIGITAL.JUROR_RESPONSE",
+        assertThat(jdbcTemplate.queryForObject("select THIRDPARTY_REASON from juror_mod.juror_response",
             String.class)).isEqualToIgnoringCase("deceased");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("N");
-        assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE POOL_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select r.ZIP from JUROR_DIGITAL.JUROR_RESPONSE r WHERE JUROR_NUMBER='644892530'", String.class))
-                .describedAs("(JDB-1879)Postcode was loaded correctly from POOL during response persistence")
-                .isEqualTo("AB3 9RY");
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
+        assertThat(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
+                Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject(
+            "select r.postcode from juror_mod.juror_response r WHERE JUROR_NUMBER='644892530'", String.class))
+            .describedAs("(JDB-1879)Postcode was loaded correctly from POOL during response persistence")
+            .isEqualTo("AB3 9RY");
     }
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_unhappy_thirdPartyDeceased_validationFail() throws Exception {
@@ -883,7 +900,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         final JurorResponseDto dto = JurorResponseDto.builderThirdPartyDeceased("644892530", thirdParty).build();
 
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
@@ -897,15 +914,18 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .containsExactlyInAnyOrder("thirdParty.thirdPartyFName", "thirdParty.thirdPartyLName", "thirdParty",
                 "thirdParty.relationship");
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("N");
-        assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE POOL_NO='644892530'", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
+        assertThat(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
+                Integer.class)).isEqualTo(0);
     }
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.ExcusalDeceasedStraightThrough_unhappy_superurgent.sql")
     public void respondToSummons_unhappy_thirdPartyDeceased_validationFail_superUrgent() throws Exception {
@@ -933,25 +953,30 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         final JurorResponseDto dto = JurorResponseDto.builderThirdPartyDeceased("644892530", thirdParty).build();
 
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<String> exchange = template.exchange(requestEntity, String.class);
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from JUROR_DIGITAL.JUROR_RESPONSE",
+        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("N");
-        assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE OTHER_INFORMATION='ADD Excuse - D' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from juror_mod.juror_history WHERE OTHER_INFORMATION='ADD Excuse - D' and "
+                + "juror_number='644892530'",
+            Integer.class)).isEqualTo(0);
     }
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
+    @Sql("/db/app_settings.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_ageExcusal.sql")
     public void respondToSummons_happy_ageExcusal_successfulStraightThrough_young() throws Exception {
 
@@ -972,44 +997,63 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         String youngestJurorAgeAllowedString = systemParameterRepository.findOne(
             QSystemParameter.systemParameter.spId.eq(101)).get().getSpValue();
         youngestJurorAgeAllowed = Integer.parseInt(youngestJurorAgeAllowedString);
-        Date dob =
-            Date.from(hearingDate.minusYears(youngestJurorAgeAllowed - 1L).minusDays(364).atZone(ZoneId.systemDefault())
-                .toInstant());
+        LocalDate dob = hearingDate.minusYears(youngestJurorAgeAllowed - 1L).minusDays(364).toLocalDate();
 
         final JurorResponseDto dto = JurorResponseDto.builder(
                 "644892530", "JANE", "CASTILLO", "4 Knutson Trail",
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null)
+                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.APP_SETTINGS where SETTING='" +
-            StraightThroughType.AGE_EXCUSAL.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.app_setting where SETTING='"
+            + StraightThroughType.AGE_EXCUSAL.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<String> exchange = template.exchange(requestEntity, String.class);
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from JUROR_DIGITAL.JUROR_RESPONSE", String.class)).isEqualTo("CLOSED");
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.POOL WHERE RESPONDED='Y' and PART_NO='644892530'", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.POOL WHERE DISQ_CODE='A' and PART_NO='644892530'", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.POOL WHERE STATUS='6' and PART_NO='644892530'", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify Code A' and PART_NO='644892530'", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify Letter Code A' and PART_NO='644892530'", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'", Integer.class)).isEqualTo(1);
+        assertThat(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
+            1);
+        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
+            String.class)).isEqualTo("CLOSED");
+        assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from juror_mod.juror WHERE RESPONDED='Y' and juror_number='644892530'",
+                Integer.class)).isEqualTo(1);
+        assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from juror_mod.juror WHERE DISQ_CODE='A' and juror_number='644892530'",
+                Integer.class)).isEqualTo(1);
+        assertThat(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_pool WHERE STATUS='6' and "
+                    + "juror_number='644892530'",
+                Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify"
+                + " Code A' and juror_number='644892530'",
+            Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify"
+                + " Letter Code A' and juror_number='644892530'",
+            Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'",
+            Integer.class)).isEqualTo(1);
     }
 
     @Test
     @Ignore
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_ageExcusal.sql")
@@ -1034,44 +1078,67 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             QSystemParameter.systemParameter.spId.eq(100)).get().getSpValue();
 
         tooOldJurorAge = Integer.parseInt(tooOldJurorAgeString);
-        Date dob =
-            Date.from(hearingDate.minusYears(tooOldJurorAge).minusDays(0).atZone(ZoneId.systemDefault()).toInstant());
+        LocalDate dob =
+            hearingDate.minusYears(tooOldJurorAge).minusDays(0).toLocalDate();
 
         final JurorResponseDto dto = JurorResponseDto.builder(
                 "644892530", "JANE", "CASTILLO", "4 Knutson Trail",
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null)
+                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.APP_SETTINGS where SETTING='" +
-            StraightThroughType.AGE_EXCUSAL.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.app_setting where SETTING='"
+            + StraightThroughType.AGE_EXCUSAL.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<String> exchange = template.exchange(requestEntity, String.class);
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from JUROR_DIGITAL.JUROR_RESPONSE", String.class)).isEqualTo("CLOSED");
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.POOL WHERE RESPONDED='Y' and PART_NO='644892530'", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.POOL WHERE DISQ_CODE='A' and PART_NO='644892530'", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.POOL WHERE STATUS='6' and PART_NO='644892530'", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify Code A' and PART_NO='644892530'", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify Letter Code A' and PART_NO='644892530'", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'", Integer.class)).isEqualTo(1);
+        assertThat(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
+            1);
+        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
+            String.class)).isEqualTo("CLOSED");
+        assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from juror_mod.juror WHERE RESPONDED='Y' and juror_number='644892530'",
+                Integer.class)).isEqualTo(1);
+        assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from juror_mod.juror WHERE DISQ_CODE='A' and juror_number='644892530'",
+                Integer.class)).isEqualTo(1);
+        assertThat(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_pool WHERE STATUS='6' and "
+                    + "juror_number='644892530'",
+                Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify"
+                + " Code A'"
+                + " and juror_number='644892530'",
+            Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify"
+                + " Letter "
+                + "Code A' and juror_number='644892530'",
+            Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'",
+            Integer.class)).isEqualTo(1);
 
         Mockito.verify(this.notificationClientApi).sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/straight_through_acceptance_disabled.sql")
     @Sql("/db/straight_through_deceased_excusal_disabled.sql")
@@ -1096,25 +1163,24 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         String youngestJurorAgeAllowedString = systemParameterRepository.findOne(
             QSystemParameter.systemParameter.spId.eq(101)).get().getSpValue();
         youngestJurorAgeAllowed = Integer.parseInt(youngestJurorAgeAllowedString);
-        Date dob =
-            Date.from(hearingDate.minusYears(youngestJurorAgeAllowed - 1L).minusDays(0).atZone(ZoneId.systemDefault())
-                .toInstant());
+        LocalDate dob =
+            hearingDate.minusYears(youngestJurorAgeAllowed - 1L).minusDays(0).toLocalDate();
 
         final JurorResponseDto dto = JurorResponseDto.builder(
                 "644892530", "JANE", "CASTILLO", "4 Knutson Trail",
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null)
+                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.APP_SETTINGS where SETTING='" +
-            StraightThroughType.AGE_EXCUSAL.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.app_setting where SETTING='"
+            + StraightThroughType.AGE_EXCUSAL.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
@@ -1122,23 +1188,46 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("N");
-        assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE POOL_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from JUROR_DIGITAL.JUROR_RESPONSE", String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.POOL WHERE RESPONDED='Y' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.POOL WHERE EXC_CODE='A' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.POOL WHERE STATUS='6' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify Code A' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify Letter Code A' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
+        assertThat(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
+                Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
+            String.class)).isEqualTo("TODO");
+        assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from juror_mod.juror WHERE RESPONDED='Y' and juror_number='644892530'",
+                Integer.class)).isEqualTo(0);
+        assertThat(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror WHERE excusal_code='A' and "
+                    + "juror_number='644892530'",
+                Integer.class)).isEqualTo(0);
+        assertThat(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_pool WHERE STATUS='6' and "
+                    + "juror_number='644892530'",
+                Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify"
+                + " Code A'"
+                + " and juror_number='644892530'",
+            Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify"
+                + " Letter "
+                + "Code A' and juror_number='644892530'",
+            Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'",
+            Integer.class)).isEqualTo(0);
     }
 
     @Test
     @Ignore
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/straight_through_acceptance_disabled.sql")
     @Sql("/db/straight_through_deceased_excusal_disabled.sql")
@@ -1162,25 +1251,24 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         String youngestJurorAgeAllowedString = systemParameterRepository.findOne(
             QSystemParameter.systemParameter.spId.eq(101)).get().getSpValue();
         youngestJurorAgeAllowed = Integer.parseInt(youngestJurorAgeAllowedString);
-        Date dob =
-            Date.from(hearingDate.minusYears(youngestJurorAgeAllowed).minusDays(0).atZone(ZoneId.systemDefault())
-                .toInstant());
+        LocalDate dob =
+            hearingDate.minusYears(youngestJurorAgeAllowed).minusDays(0).toLocalDate();
 
         final JurorResponseDto dto = JurorResponseDto.builder(
                 "644892530", "JANE", "CASTILLO", "4 Knutson Trail",
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null)
+                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.APP_SETTINGS where SETTING='" +
-            StraightThroughType.AGE_EXCUSAL.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.app_setting where SETTING='"
+            + StraightThroughType.AGE_EXCUSAL.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
@@ -1188,22 +1276,44 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("N");
-        assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE POOL_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from JUROR_DIGITAL.JUROR_RESPONSE", String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.POOL WHERE RESPONDED='Y' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.POOL WHERE EXC_CODE='A' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.POOL WHERE STATUS='6' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify Code A' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify Letter Code A' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
+            Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
+            String.class)).isEqualTo("TODO");
+        assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from juror_mod.juror WHERE RESPONDED='Y' and juror_number='644892530'",
+                Integer.class)).isEqualTo(0);
+        assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from juror_mod.juror WHERE excusal_code='A' and juror_number='644892530'",
+                Integer.class)).isEqualTo(0);
+        assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from juror_mod.juror_pool WHERE STATUS='6' and juror_number='644892530'",
+                Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify"
+                + " Code A'"
+                + " and juror_number='644892530'",
+            Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify"
+                + " Letter "
+                + "Code A' and juror_number='644892530'",
+            Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'",
+            Integer.class)).isEqualTo(0);
     }
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/straight_through_acceptance_disabled.sql")
     @Sql("/db/straight_through_deceased_excusal_disabled.sql")
@@ -1228,25 +1338,24 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         String tooOldJurorAgeString = systemParameterRepository.findOne(
             QSystemParameter.systemParameter.spId.eq(100)).get().getSpValue();
         tooOldJurorAge = Integer.parseInt(tooOldJurorAgeString);
-        Date dob =
-            Date.from(
-                hearingDate.minusYears(tooOldJurorAge - 1L).minusDays(364).atZone(ZoneId.systemDefault()).toInstant());
+        LocalDate dob =
+            hearingDate.minusYears(tooOldJurorAge - 1L).minusDays(364).toLocalDate();
 
         final JurorResponseDto dto = JurorResponseDto.builder(
                 "644892530", "JANE", "CASTILLO", "4 Knutson Trail",
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null)
+                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.APP_SETTINGS where SETTING='" +
-            StraightThroughType.AGE_EXCUSAL.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.app_setting where SETTING='"
+            + StraightThroughType.AGE_EXCUSAL.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
@@ -1254,22 +1363,44 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("N");
-        assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE POOL_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from JUROR_DIGITAL.JUROR_RESPONSE", String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.POOL WHERE RESPONDED='Y' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.POOL WHERE EXC_CODE='A' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.POOL WHERE STATUS='6' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify Code A' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify Letter Code A' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
-     }
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
+            Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
+            String.class)).isEqualTo("TODO");
+        assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from juror_mod.juror WHERE RESPONDED='Y' and juror_number='644892530'",
+                Integer.class)).isEqualTo(0);
+        assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from juror_mod.juror WHERE excusal_code='A' and juror_number='644892530'",
+                Integer.class)).isEqualTo(0);
+        assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from juror_mod.juror_pool WHERE STATUS='6' and juror_number='644892530'",
+                Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='PDIS' and OTHER_INFORMATION='Disqualify"
+                + " Code A'"
+                + " and juror_number='644892530'",
+            Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from juror_mod.juror_history WHERE HISTORY_CODE='RDIS' and OTHER_INFORMATION='Disqualify"
+                + " Letter "
+                + "Code A' and juror_number='644892530'",
+            Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from JUROR.DISQ_LETT WHERE DISQ_CODE='A' and PART_NO='644892530'",
+            Integer.class)).isEqualTo(0);
+    }
 
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_EmploymentsValidation() throws Exception {
@@ -1284,14 +1415,14 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        Date dob = Date.from(LocalDateTime.now().minusYears(36).atZone(ZoneId.systemDefault()).toInstant());
+        LocalDate dob = LocalDate.now().minusYears(36);
 
         final JurorResponseDto dto = JurorResponseDto.builder(
                 "644892530", "JANE", "CASTILLO", "4 Knutson Trail",
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null)
+                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
             .title("DR")
             .cjsEmployment(Collections.singletonList(JurorResponseDto.CJSEmployment.builder()
                 .cjsEmployer("Mega City 1 Hall of Justice")
@@ -1302,20 +1433,23 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build();
 
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<String> exchange = template.exchange(requestEntity, String.class);
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from JUROR_DIGITAL.JUROR_RESPONSE",
+        assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from JUROR.POOL", String.class)).isEqualTo("N");
-        assertThat(jdbcTemplate.queryForObject("select STATUS from JUROR.POOL", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from JUROR.PART_HIST WHERE OTHER_INFORMATION='ADD Excuse - D' and PART_NO='644892530'", Integer.class)).isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+            "select count(*) from juror_mod.juror_history WHERE OTHER_INFORMATION='ADD Excuse - D' and "
+                + "juror_number='644892530'",
+            Integer.class)).isEqualTo(0);
     }
 
     /**
@@ -1326,6 +1460,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappy_noPhoneNumbersProvided() throws Exception {
@@ -1341,7 +1476,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         final JurorResponseDto jurorResponse =
             JurorResponseDto.realBuilder().jurorNumber("644892530").addressPostcode("AB39RY")
-                .dateOfBirth(new SimpleDateFormat("d-MM-yyyy").parse("24-07-1984"))
+                .dateOfBirth(LocalDate.of(1984, 7, 24))
                 .firstName("Jane")
                 .lastName("Castillo")
                 .addressLineOne("3 Some Street")
@@ -1368,6 +1503,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_useThirdPartyPhoneNumberButNoneSupplied() throws Exception {
@@ -1383,7 +1519,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         final JurorResponseDto jurorResponse =
             JurorResponseDto.realBuilder().jurorNumber("644892530").addressPostcode("AB39RY")
-                .dateOfBirth(new SimpleDateFormat("d-MM-yyyy").parse("24-07-1984"))
+                .dateOfBirth(LocalDate.of(1984, 7, 24))
                 .firstName("Jane")
                 .lastName("Castillo")
                 .primaryPhone("01234567890")
@@ -1413,6 +1549,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_happyPath_useJurorPhoneNumber() throws Exception {
@@ -1428,7 +1565,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         final JurorResponseDto jurorResponse =
             JurorResponseDto.realBuilder().jurorNumber("644892530").addressPostcode("AB39RY")
-                .dateOfBirth(new SimpleDateFormat("d-MM-yyyy").parse("24-07-1984"))
+                .dateOfBirth(LocalDate.of(1984, 7, 24))
                 .firstName("Jane")
                 .lastName("Castillo")
                 .primaryPhone("01234567890")
@@ -1460,6 +1597,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappyPath_useJurorPhoneNumberButNoneProvided() throws Exception {
@@ -1476,7 +1614,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         JurorResponseDto.Qualify qualify = new JurorResponseDto.Qualify(); // juror must not be age disqualified
         final JurorResponseDto jurorResponse =
             JurorResponseDto.realBuilder().jurorNumber("644892530").addressPostcode("AB39RY")
-                .dateOfBirth(new SimpleDateFormat("d-MM-yyyy").parse("24-07-1984"))
+                .dateOfBirth(LocalDate.of(1984, 7, 24))
                 .firstName("Jane")
                 .lastName("Castillo")
                 .primaryPhone(null)
@@ -1508,6 +1646,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappy_invalidJurorPhoneNumber() throws Exception {
@@ -1523,7 +1662,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         final JurorResponseDto jurorResponse =
             JurorResponseDto.realBuilder().jurorNumber("644892530").addressPostcode("AB39RY")
-                .dateOfBirth(new SimpleDateFormat("d-MM-yyyy").parse("24-07-1984"))
+                .dateOfBirth(LocalDate.of(1984, 7, 24))
                 .firstName("Jane")
                 .lastName("Castillo")
                 .addressLineOne("3 Some Street")
@@ -1543,7 +1682,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         final ResponseEntity<Void> exchange = template.exchange(requestEntity, Void.class);
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
     }
 
@@ -1554,6 +1693,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappy_noEmailsProvided() throws Exception {
@@ -1569,7 +1709,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         final JurorResponseDto jurorResponse =
             JurorResponseDto.realBuilder().jurorNumber("644892530").addressPostcode("AB39RY")
-                .dateOfBirth(new SimpleDateFormat("d-MM-yyyy").parse("24-07-1984"))
+                .dateOfBirth(LocalDate.of(1984, 7, 24))
                 .firstName("Jane")
                 .lastName("Castillo")
                 .addressLineOne("3 Some Street")
@@ -1595,6 +1735,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappyPath_useThirdPartyEmailButNoneSupplied() throws Exception {
@@ -1610,7 +1751,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         final JurorResponseDto jurorResponse =
             JurorResponseDto.realBuilder().jurorNumber("644892530").addressPostcode("AB39RY")
-                .dateOfBirth(new SimpleDateFormat("d-MM-yyyy").parse("24-07-1984"))
+                .dateOfBirth(LocalDate.of(1984, 7, 24))
                 .firstName("Jane")
                 .lastName("Castillo")
                 .primaryPhone("01234567890")
@@ -1639,6 +1780,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_happyPath_useJurorEmail() throws Exception {
@@ -1654,7 +1796,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         final JurorResponseDto jurorResponse =
             JurorResponseDto.realBuilder().jurorNumber("644892530").addressPostcode("AB39RY")
-                .dateOfBirth(new SimpleDateFormat("d-MM-yyyy").parse("24-07-1984"))
+                .dateOfBirth(LocalDate.of(1984, 7, 24))
                 .firstName("Jane")
                 .lastName("Castillo")
                 .primaryPhone("01234567890")
@@ -1684,6 +1826,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappyPath_useJurorEmailButNoneProvided() throws Exception {
@@ -1700,7 +1843,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         JurorResponseDto.Qualify qualify = new JurorResponseDto.Qualify(); // juror must not be age disqualified
         final JurorResponseDto jurorResponse =
             JurorResponseDto.realBuilder().jurorNumber("644892530").addressPostcode("AB39RY")
-                .dateOfBirth(new SimpleDateFormat("d-MM-yyyy").parse("24-07-1984"))
+                .dateOfBirth(LocalDate.of(1984, 7, 24))
                 .firstName("Jane")
                 .lastName("Castillo")
                 .primaryPhone("0123456789")
@@ -1731,6 +1874,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
      */
     @Test
     @Sql("/db/truncate.sql")
+    @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappy_invalidJurorEmail() throws Exception {
@@ -1746,7 +1890,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         final JurorResponseDto jurorResponse =
             JurorResponseDto.realBuilder().jurorNumber("644892530").addressPostcode("AB39RY")
-                .dateOfBirth(new SimpleDateFormat("d-MM-yyyy").parse("24-07-1984"))
+                .dateOfBirth(LocalDate.of(1984, 7, 24))
                 .firstName("Jane")
                 .lastName("Castillo")
                 .addressLineOne("3 Some Street")
@@ -1766,7 +1910,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         final ResponseEntity<Void> exchange = template.exchange(requestEntity, Void.class);
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
             0);
     }
 

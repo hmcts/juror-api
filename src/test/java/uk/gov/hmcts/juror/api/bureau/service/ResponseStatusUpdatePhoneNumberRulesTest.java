@@ -7,17 +7,20 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeed;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeedsRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
+import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.bureau.domain.PartAmendmentRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.PartHistRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.TSpecial;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
-import uk.gov.hmcts.juror.api.juror.domain.Pool;
-import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,15 +40,15 @@ public class ResponseStatusUpdatePhoneNumberRulesTest {
     private static final String WORK_NUMBER = "01000000123";
 
     @Mock
-    private JurorResponseRepository jurorResponseRepository;
+    private JurorDigitalResponseRepositoryMod jurorResponseRepository;
     @Mock
-    private JurorResponseAuditRepository auditRepository;
+    private JurorResponseAuditRepositoryMod auditRepository;
     @Mock
-    private PoolRepository poolDetailsRepository;
+    private JurorPoolRepository poolDetailsRepository;
     @Mock
     private PartAmendmentRepository amendmentRepository;
     @Mock
-    private PartHistRepository historyRepository;
+    private JurorHistoryRepository historyRepository;
     @Mock
     private UrgencyService urgencyService;
     @Mock
@@ -54,7 +57,7 @@ public class ResponseStatusUpdatePhoneNumberRulesTest {
     private AssignOnUpdateService assignOnUpdateService;
 
     @Mock
-    private BureauJurorSpecialNeedsRepository specialNeedsRepository;
+    private JurorReasonableAdjustmentRepository specialNeedsRepository;
 
     @Mock
     private WelshCourtLocationRepository welshCourtLocationRepository;
@@ -62,19 +65,24 @@ public class ResponseStatusUpdatePhoneNumberRulesTest {
     @InjectMocks
     private ResponseStatusUpdateServiceImpl statusUpdateService;
 
-    private JurorResponse jurorResponse;
-    private Pool poolDetails;
+    private DigitalResponse jurorResponse;
+    private JurorPool poolDetails;
 
     @Before
     public void setup() {
-        jurorResponse = new JurorResponse();
+        jurorResponse = new DigitalResponse();
         jurorResponse.setJurorNumber(JUROR_NUMBER);
         jurorResponse.setProcessingComplete(false);
 
-        poolDetails = new Pool();
-        poolDetails.setJurorNumber(JUROR_NUMBER);
+        Juror juror = new Juror();
+        poolDetails = new JurorPool();
+        poolDetails.setJuror(juror);
 
-        doReturn(poolDetails).when(poolDetailsRepository).findByJurorNumber(JUROR_NUMBER);
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
+        poolDetails.setPool(poolRequest);
+        doReturn(poolDetails).when(poolDetailsRepository).findByJurorJurorNumber(JUROR_NUMBER);
+
     }
 
     @Test
@@ -84,18 +92,17 @@ public class ResponseStatusUpdatePhoneNumberRulesTest {
 
 
         statusUpdateService.mergeResponse(jurorResponse, AUDITOR_USERNAME);
-
-        assertThat(poolDetails.getPhoneNumber()).isNull();
+        assertThat(poolDetails.getJuror().getPhoneNumber()).isNull();
 
         /*
         if the Main phone number starts with an 07 then it should be allocated to the mobile phone number
          */
-        assertThat(poolDetails.getAltPhoneNumber()).isEqualTo(MOBILE_NUMBER);
+        assertThat(poolDetails.getJuror().getAltPhoneNumber()).isEqualTo(MOBILE_NUMBER);
 
         /*
         if the Another phone has not been allocated to the mobile number it should be allocated to the Work number
          */
-        assertThat(poolDetails.getWorkPhone()).isEqualTo(WORK_NUMBER);
+        assertThat(poolDetails.getJuror().getWorkPhone()).isEqualTo(WORK_NUMBER);
     }
 
     @Test
@@ -108,15 +115,15 @@ public class ResponseStatusUpdatePhoneNumberRulesTest {
         /*
         if the Main phone number has not been allocated to the mobile number it should be allocated to the Home number
          */
-        assertThat(poolDetails.getPhoneNumber()).isEqualTo(HOME_NUMBER);
+        assertThat(poolDetails.getJuror().getPhoneNumber()).isEqualTo(HOME_NUMBER);
 
         /*
         if the Main phone number does not start with an 07 but the Another one does then the Another phone will be
         allocated to the mobile phone number
          */
-        assertThat(poolDetails.getAltPhoneNumber()).isEqualTo(MOBILE_NUMBER);
+        assertThat(poolDetails.getJuror().getAltPhoneNumber()).isEqualTo(MOBILE_NUMBER);
 
-        assertThat(poolDetails.getWorkPhone()).isNull();
+        assertThat(poolDetails.getJuror().getWorkPhone()).isNull();
     }
 
     @Test
@@ -129,39 +136,39 @@ public class ResponseStatusUpdatePhoneNumberRulesTest {
         /*
         if the Main phone number has not been allocated to the mobile number it should be allocated to the Home number
          */
-        assertThat(poolDetails.getPhoneNumber()).isEqualTo(HOME_NUMBER);
+        assertThat(poolDetails.getJuror().getPhoneNumber()).isEqualTo(HOME_NUMBER);
 
         /*
         if the Another phone has not been allocated to the mobile number it should be allocated to the Work number
          */
-        assertThat(poolDetails.getWorkPhone()).isEqualTo(WORK_NUMBER);
+        assertThat(poolDetails.getJuror().getWorkPhone()).isEqualTo(WORK_NUMBER);
 
-        assertThat(poolDetails.getAltPhoneNumber()).isNull();
+        assertThat(poolDetails.getJuror().getAltPhoneNumber()).isNull();
     }
 
     @Test
     public void mergeResponse_SingleSpecialNeeds() {
 
-        TSpecial special = new TSpecial("D", "DIET");
+        ReasonableAdjustments special = new ReasonableAdjustments("D", "DIET");
 
         //set single special need
-        BureauJurorSpecialNeed specialNeed = new BureauJurorSpecialNeed();
+        JurorReasonableAdjustment specialNeed = new JurorReasonableAdjustment();
         specialNeed.setJurorNumber("209092530");
-        specialNeed.setSpecialNeed(special);
-        specialNeed.setDetail("Some Details");
+        specialNeed.setReasonableAdjustment(special);
+        specialNeed.setReasonableAdjustmentDetail("Some Details");
 
-        List<BureauJurorSpecialNeed> jurorNeeds = new ArrayList<>();
+        List<JurorReasonableAdjustment> jurorNeeds = new ArrayList<>();
 
         jurorNeeds.add(specialNeed);
 
-        jurorResponse.setSpecialNeeds(jurorNeeds);
+        jurorResponse.setReasonableAdjustments(jurorNeeds);
 
         doReturn(jurorNeeds).when(specialNeedsRepository).findByJurorNumber(JUROR_NUMBER);
 
         statusUpdateService.mergeResponse(jurorResponse, AUDITOR_USERNAME);
 
         //verify the details have been saved to pool
-        assertThat(poolDetails.getSpecialNeed()).isEqualTo("D");
+        assertThat(poolDetails.getJuror().getReasonableAdjustmentCode()).isEqualTo("D");
 
 
     }
@@ -169,34 +176,33 @@ public class ResponseStatusUpdatePhoneNumberRulesTest {
     @Test
     public void mergeResponse_MultipleSpecialNeeds() {
 
-        TSpecial specialOne = new TSpecial("D", "DIET");
+        ReasonableAdjustments specialOne = new ReasonableAdjustments("D", "DIET");
 
-
-        BureauJurorSpecialNeed specialNeedOne = new BureauJurorSpecialNeed();
+        JurorReasonableAdjustment specialNeedOne = new JurorReasonableAdjustment();
         specialNeedOne.setJurorNumber("209092530");
-        specialNeedOne.setSpecialNeed(specialOne);
-        specialNeedOne.setDetail("Some Details");
+        specialNeedOne.setReasonableAdjustment(specialOne);
+        specialNeedOne.setReasonableAdjustmentDetail("Some Details");
 
-        TSpecial specialTwo = new TSpecial("L", "LIMITED MOBILITY");
-        BureauJurorSpecialNeed specialNeedTwo = new BureauJurorSpecialNeed();
+        ReasonableAdjustments specialTwo = new ReasonableAdjustments("L", "LIMITED MOBILITY");
+        JurorReasonableAdjustment specialNeedTwo = new JurorReasonableAdjustment();
         specialNeedTwo.setJurorNumber("209092530");
-        specialNeedTwo.setSpecialNeed(specialTwo);
-        specialNeedTwo.setDetail("Some Details");
+        specialNeedTwo.setReasonableAdjustment(specialTwo);
+        specialNeedTwo.setReasonableAdjustmentDetail("Some Details");
 
 
-        List<BureauJurorSpecialNeed> jurorNeeds = new ArrayList<>();
+        List<JurorReasonableAdjustment> jurorNeeds = new ArrayList<>();
 
         jurorNeeds.add(specialNeedOne);
         jurorNeeds.add(specialNeedTwo);
 
-        jurorResponse.setSpecialNeeds(jurorNeeds);
+        jurorResponse.setReasonableAdjustments(jurorNeeds);
 
         doReturn(jurorNeeds).when(specialNeedsRepository).findByJurorNumber(JUROR_NUMBER);
 
         statusUpdateService.mergeResponse(jurorResponse, AUDITOR_USERNAME);
 
         //verify the details have been saved to pool
-        assertThat(poolDetails.getSpecialNeed()).isEqualTo("M");
+        assertThat(poolDetails.getJuror().getReasonableAdjustmentCode()).isEqualTo("M");
 
 
     }

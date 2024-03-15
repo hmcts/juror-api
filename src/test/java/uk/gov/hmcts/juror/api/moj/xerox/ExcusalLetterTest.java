@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
-import uk.gov.hmcts.juror.api.moj.exception.PoolRequestException;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalLetter;
 
 import java.time.LocalDate;
@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @ExtendWith(SpringExtension.class)
+@SuppressWarnings("PMD.LawOfDemeter")
 public class ExcusalLetterTest extends AbstractLetterTest {
     @Override
     protected void setupEnglishExpectedResult() {
@@ -85,7 +86,7 @@ public class ExcusalLetterTest extends AbstractLetterTest {
 
         int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
         if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(PoolRequestException.PoolRequestDateInvalid.class)
+            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
                 .isThrownBy(excusalLetter::getLetterString);
         } else {
             assertThat(excusalLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
@@ -113,7 +114,7 @@ public class ExcusalLetterTest extends AbstractLetterTest {
 
         int dayOfTheWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
         if (dayOfTheWeek == Calendar.SATURDAY || dayOfTheWeek == Calendar.SUNDAY) {
-            assertThatExceptionOfType(PoolRequestException.PoolRequestDateInvalid.class)
+            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
                 .isThrownBy(excusalLetter::getLetterString);
         } else {
             assertThat(excusalLetter.getLetterString()).isEqualTo(getExpectedWelshResult());

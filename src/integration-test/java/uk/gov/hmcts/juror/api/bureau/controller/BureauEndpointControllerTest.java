@@ -31,10 +31,8 @@ import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 
 import java.net.URI;
-import java.time.Instant;
-import java.time.ZoneId;
+import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
@@ -72,8 +70,8 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             URI.create("/api/v1/bureau/settings")), String.class);
         assertThat(exchange).describedAs(description).isNotNull();
         assertThat(exchange.getStatusCode()).describedAs(description).isNotEqualTo(HttpStatus.OK);
-        assertThat(exchange.getBody()).describedAs(description).asString().isNotEmpty().doesNotContain("Hello Bureau " +
-            "JWT!");
+        assertThat(exchange.getBody()).describedAs(description).asString().isNotEmpty()
+            .doesNotContain("Hello Bureau JWT!");
     }
 
     @Test
@@ -85,8 +83,8 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             URI.create("/api/v1/bureau/settings")), String.class);
         assertThat(exchange).describedAs(description).isNotNull();
         assertThat(exchange.getStatusCode()).describedAs(description).isNotEqualTo(HttpStatus.OK);
-        assertThat(exchange.getBody()).describedAs(description).asString().isNotEmpty().doesNotContain("Hello Bureau " +
-            "JWT!");
+        assertThat(exchange.getBody()).describedAs(description).asString().isNotEmpty()
+            .doesNotContain("Hello Bureau JWT!");
     }
 
     @Test
@@ -109,8 +107,8 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             URI.create("/api/v1/bureau/settings")), String.class);
         assertThat(exchange).describedAs(description).isNotNull();
         assertThat(exchange.getStatusCode()).describedAs(description).isNotEqualTo(HttpStatus.OK);
-        assertThat(exchange.getBody()).describedAs(description).asString().isNotEmpty().doesNotContain("Hello Bureau " +
-            "JWT!");
+        assertThat(exchange.getBody()).describedAs(description).asString().isNotEmpty()
+            .doesNotContain("Hello Bureau JWT!");
     }
 
     @Test
@@ -135,8 +133,9 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody()).isInstanceOf(BureauJurorDetailDto.class);
-        assertThat(responseEntity.getBody()).extracting("jurorNumber", "firstName", "lastName", "version",
-            "useJurorPhoneDetails", "useJurorEmailDetails").contains("209092530", "Jane", "CASTILLO", 555, true, true);
+        assertThat(responseEntity.getBody()).extracting(
+            "jurorNumber", "firstName", "lastName", "version", "useJurorPhoneDetails", "useJurorEmailDetails")
+            .contains("209092530", "Jane", "CASTILLO", 555, true, true);
         assertThat(responseEntity.getBody().getChangeLog()).hasSize(1);
         assertThat(responseEntity.getBody().getChangeLog().get(0).getItems()).hasSize(2);
         assertThat(responseEntity.getBody().getPhoneLogs()).hasSize(1);
@@ -160,9 +159,9 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         ;
         softly.assertAll();
 
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PHONE_LOG", Integer.class))
-            .as("There is a redundant phone log entry that is not from Juror Digital that is not " +
-                "returned by the API").isEqualTo(2);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.contact_log", Integer.class))
+            .as("There is a redundant phone log entry that is not from Juror Digital that is not "
+                + "returned by the API").isEqualTo(2);
     }
 
     @Test
@@ -199,7 +198,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     @Sql("/db/BureauEndpointControllerTest.updateResponseStatus_happy.sql")
     public void updateResponseStatus_happy_closed() throws Exception {
 
-        final Date beforeTest = Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant());
+        final LocalDateTime beforeTest = LocalDateTime.now();
         final String description = "Update juror response status happy path.";
 
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
@@ -213,18 +212,19 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             .build());
 
         // assert db state before merge.
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class))
+            .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             1);
 
         final BureauResponseStatusUpdateDto dto = BureauResponseStatusUpdateDto.builder()
@@ -241,29 +241,30 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         assertThat(exchange.getBody()).isNullOrEmpty();
 
         // assert db state after merge.
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertCompletedAtFix(beforeTest);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(3);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class))
+            .isEqualTo(3);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             2);
 
         // assert the change to DOB was applied and audited
-        assertThat(jdbcTemplate.queryForObject("SELECT LNAME FROM JUROR.POOL WHERE PART_NO = '644892530'",
+        assertThat(jdbcTemplate.queryForObject("SELECT last_name FROM juror_mod.juror WHERE juror_number = '644892530'",
             String.class)).isEqualTo("DOE");
 
-        assertThat(jdbcTemplate.queryForObject("SELECT NEW_PROCESSING_STATUS FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD " +
-            "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("CLOSED");
-        assertThat(jdbcTemplate.queryForObject("SELECT OLD_PROCESSING_STATUS FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD " +
-            "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
+        assertThat(jdbcTemplate.queryForObject("SELECT NEW_PROCESSING_STATUS FROM juror_mod.juror_response_aud "
+            + "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("CLOSED");
+        assertThat(jdbcTemplate.queryForObject("SELECT OLD_PROCESSING_STATUS FROM juror_mod.juror_response_aud "
+            + "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
     }
 
     /**
@@ -272,10 +273,10 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
      * @param beforeTest the time the test started at (the completedAt value should be after this)
      * @since JDB-2139
      */
-    private void assertCompletedAtFix(Date beforeTest) {
-        assertThat(jdbcTemplate.queryForObject("SELECT COMPLETED_AT FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE " +
-            "JUROR_NUMBER='644892530'", Date.class)).isNotNull().isAfter(beforeTest)
-            .isBefore(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
+    private void assertCompletedAtFix(LocalDateTime beforeTest) {
+        assertThat(jdbcTemplate.queryForObject("SELECT COMPLETED_AT FROM juror_mod.juror_response WHERE "
+            + "JUROR_NUMBER='644892530'", LocalDateTime.class)).isNotNull().isAfter(beforeTest)
+            .isBefore(LocalDateTime.now());
     }
 
     @Test
@@ -298,26 +299,27 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             .build());
 
         // assert db state before merge.
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT VERSION FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT VERSION FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             2);// initial version
-        assertThat(jdbcTemplate.queryForObject("SELECT PROCESSING_COMPLETE FROM JUROR_DIGITAL.JUROR_RESPONSE",
+        assertThat(jdbcTemplate.queryForObject("SELECT PROCESSING_COMPLETE FROM juror_mod.juror_response",
             String.class)).isEqualTo("Y");// processing complete
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
+        assertThat(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM JUROR_DIGITAL.JUROR_RESPONSE " +
-            "WHERE JUROR_NUMBER='644892530'", String.class)).isNull();
+        assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.juror_response "
+            + "WHERE JUROR_NUMBER='644892530'", String.class)).isNull();
 
         final BureauResponseStatusUpdateDto dto = BureauResponseStatusUpdateDto.builder()
             .status(ProcessingStatus.AWAITING_COURT_REPLY)
@@ -334,26 +336,27 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);// custom response code from controller
 
         // assert db state after is the same
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT VERSION FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT VERSION FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             2);// initial version
-        assertThat(jdbcTemplate.queryForObject("SELECT PROCESSING_COMPLETE FROM JUROR_DIGITAL.JUROR_RESPONSE",
+        assertThat(jdbcTemplate.queryForObject("SELECT PROCESSING_COMPLETE FROM juror_mod.juror_response",
             String.class)).isEqualTo("Y");// processing complete
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
+        assertThat(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM JUROR_DIGITAL.JUROR_RESPONSE " +
-            "WHERE JUROR_NUMBER='644892530'", String.class)).isNull();
+        assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.juror_response "
+            + "WHERE JUROR_NUMBER='644892530'", String.class)).isNull();
     }
 
     @Test
@@ -375,21 +378,22 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             .build());
 
         // assert db state before merge.
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT VERSION FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT VERSION FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             2);// initial version
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
+        assertThat(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             1);
 
         final BureauResponseStatusUpdateDto dto = BureauResponseStatusUpdateDto.builder()
@@ -408,26 +412,27 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         assertThat(exchange.getBody().getException()).isEqualTo(BureauOptimisticLockingException.class.getName());
 
         // assert db state after merge, entries should NOT be present!
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT VERSION FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT VERSION FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             2);// unchanged initial version
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
+        assertThat(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             1);
 
         // assert the change to DOB was not applied
-        assertThat(jdbcTemplate.queryForObject("SELECT LNAME FROM JUROR.POOL WHERE PART_NO = '644892530' AND " +
-            "IS_ACTIVE = 'Y'", String.class)).isEqualTo("CASTILLO");// unchanged
+        assertThat(jdbcTemplate.queryForObject("SELECT last_name FROM juror_mod.juror WHERE juror_number = '644892530'",
+            String.class)).isEqualTo("CASTILLO");// unchanged
     }
 
     /**
@@ -456,18 +461,19 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             .build());
 
         // assert db state before status change
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
+        assertThat(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             1);
 
         final BureauResponseStatusUpdateDto dto = BureauResponseStatusUpdateDto.builder()
@@ -484,29 +490,30 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         assertThat(exchange.getBody()).isNullOrEmpty();
 
         // assert db state after status change.
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
+        assertThat(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             1);
 
         // assert the changes to pool were not applied
-        assertThat(jdbcTemplate.queryForObject("SELECT LNAME FROM JUROR.POOL WHERE PART_NO = '644892530'",
+        assertThat(jdbcTemplate.queryForObject("SELECT last_name FROM juror_mod.juror WHERE juror_number = '644892530'",
             String.class)).isEqualTo("CASTILLO");
 
         // assert change to processing status was audited
-        assertThat(jdbcTemplate.queryForObject("SELECT NEW_PROCESSING_STATUS FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD " +
-            "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo(newProcessingStatus.toString());
-        assertThat(jdbcTemplate.queryForObject("SELECT OLD_PROCESSING_STATUS FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD " +
-            "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
+        assertThat(jdbcTemplate.queryForObject("SELECT NEW_PROCESSING_STATUS FROM juror_mod.juror_response_aud "
+            + "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo(newProcessingStatus.toString());
+        assertThat(jdbcTemplate.queryForObject("SELECT OLD_PROCESSING_STATUS FROM juror_mod.juror_response_aud "
+            + "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
     }
 
     /**
@@ -535,18 +542,19 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             .build());
 
         // assert db state before status change
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
+        assertThat(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             1);
 
         final BureauResponseStatusUpdateDto dto = BureauResponseStatusUpdateDto.builder()
@@ -563,29 +571,30 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         assertThat(exchange.getBody()).isNullOrEmpty();
 
         // assert db state after status change.
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
+        assertThat(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             1);
 
         // assert the changes to pool were not applied
-        assertThat(jdbcTemplate.queryForObject("SELECT LNAME FROM JUROR.POOL WHERE PART_NO = '644892530'",
+        assertThat(jdbcTemplate.queryForObject("SELECT last_name FROM juror_mod.juror WHERE juror_number = '644892530'",
             String.class)).isEqualTo("CASTILLO");
 
         // assert change to processing status was audited
-        assertThat(jdbcTemplate.queryForObject("SELECT NEW_PROCESSING_STATUS FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD " +
-            "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo(newProcessingStatus.toString());
-        assertThat(jdbcTemplate.queryForObject("SELECT OLD_PROCESSING_STATUS FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD " +
-            "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
+        assertThat(jdbcTemplate.queryForObject("SELECT NEW_PROCESSING_STATUS FROM juror_mod.juror_response_aud "
+            + "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo(newProcessingStatus.toString());
+        assertThat(jdbcTemplate.queryForObject("SELECT OLD_PROCESSING_STATUS FROM juror_mod.juror_response_aud "
+            + "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
     }
 
     /**
@@ -614,18 +623,19 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             .build());
 
         // assert db state before status change
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
+        assertThat(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             1);
 
         final BureauResponseStatusUpdateDto dto = BureauResponseStatusUpdateDto.builder()
@@ -642,28 +652,29 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         assertThat(exchange.getBody()).isNullOrEmpty();
 
         // assert db state after status change.
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
+        assertThat(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             1);
 
         // assert the changes to pool were not applied
-        assertThat(jdbcTemplate.queryForObject("SELECT LNAME FROM JUROR.POOL WHERE PART_NO = '644892530'",
+        assertThat(jdbcTemplate.queryForObject("SELECT last_name FROM juror_mod.juror WHERE juror_number = '644892530'",
             String.class)).isEqualTo("CASTILLO");
 
         // assert change to processing status was audited
-        assertThat(jdbcTemplate.queryForObject("SELECT NEW_PROCESSING_STATUS FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD " +
+        assertThat(jdbcTemplate.queryForObject("SELECT NEW_PROCESSING_STATUS FROM juror_mod.juror_response_aud " +
             "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo(newProcessingStatus.toString());
-        assertThat(jdbcTemplate.queryForObject("SELECT OLD_PROCESSING_STATUS FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD " +
+        assertThat(jdbcTemplate.queryForObject("SELECT OLD_PROCESSING_STATUS FROM juror_mod.juror_response_aud " +
             "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
     }
 
@@ -693,19 +704,20 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             .build());
 
         // assert db state before status change
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
-            1);
+        assertThat(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class))
+            .isEqualTo(1);
 
         final BureauResponseStatusUpdateDto dto = BureauResponseStatusUpdateDto.builder()
             .status(newProcessingStatus)
@@ -721,29 +733,30 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         assertThat(exchange.getBody()).isNullOrEmpty();
 
         // assert db state after status change.
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
+        assertThat(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             1);
 
         // assert the changes to pool were not applied
-        assertThat(jdbcTemplate.queryForObject("SELECT LNAME FROM JUROR.POOL WHERE PART_NO = '644892530'",
+        assertThat(jdbcTemplate.queryForObject("SELECT last_name FROM juror_mod.juror WHERE juror_number = '644892530'",
             String.class)).isEqualTo("CASTILLO");
 
         // assert change to processing status was audited
-        assertThat(jdbcTemplate.queryForObject("SELECT NEW_PROCESSING_STATUS FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD " +
-            "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo(newProcessingStatus.toString());
-        assertThat(jdbcTemplate.queryForObject("SELECT OLD_PROCESSING_STATUS FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD " +
-            "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
+        assertThat(jdbcTemplate.queryForObject("SELECT NEW_PROCESSING_STATUS FROM juror_mod.juror_response_aud "
+            + "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo(newProcessingStatus.toString());
+        assertThat(jdbcTemplate.queryForObject("SELECT OLD_PROCESSING_STATUS FROM juror_mod.juror_response_aud "
+            + "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
     }
 
     /**
@@ -773,21 +786,22 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             .build());
 
         // assert db state before status change
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
+        assertThat(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM JUROR_DIGITAL.JUROR_RESPONSE " +
-            "WHERE JUROR_NUMBER='644892530'", String.class)).isNull();
+        assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.juror_response "
+            + "WHERE JUROR_NUMBER='644892530'", String.class)).isNull();
 
         final BureauResponseStatusUpdateDto dto = BureauResponseStatusUpdateDto.builder()
             .status(newProcessingStatus)
@@ -803,37 +817,38 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         assertThat(exchange.getBody()).isNullOrEmpty();
 
         // assert db state after status change.
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.POOL", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE", Integer.class)).isEqualTo(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
             1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_aud",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_SPECIAL_NEEDS",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_reasonable_adjustment",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.JUROR_RESPONSE_CJS_EMPLOYMENT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT",
             Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_HIST", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR.PART_AMENDMENTS", Integer.class)).isEqualTo(
+        assertThat(
+            jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_audit", Integer.class)).isEqualTo(
             1);
 
         // assert the changes to pool were not applied
-        assertThat(jdbcTemplate.queryForObject("SELECT LNAME FROM JUROR.POOL WHERE PART_NO = '644892530'",
+        assertThat(jdbcTemplate.queryForObject("SELECT last_name FROM juror_mod.juror WHERE juror_number = '644892530'",
             String.class)).isEqualTo("CASTILLO");
 
         // assert change to processing status was audited
-        assertThat(jdbcTemplate.queryForObject("SELECT NEW_PROCESSING_STATUS FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD " +
-            "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo(newProcessingStatus.toString());
-        assertThat(jdbcTemplate.queryForObject("SELECT OLD_PROCESSING_STATUS FROM JUROR_DIGITAL.JUROR_RESPONSE_AUD " +
-            "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
+        assertThat(jdbcTemplate.queryForObject("SELECT NEW_PROCESSING_STATUS FROM juror_mod.juror_response_aud "
+            + "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo(newProcessingStatus.toString());
+        assertThat(jdbcTemplate.queryForObject("SELECT OLD_PROCESSING_STATUS FROM juror_mod.juror_response_aud "
+            + "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
 
         // assert staff assignment on response has changed and been audited
-        assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM JUROR_DIGITAL.JUROR_RESPONSE", String.class))
+        assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.juror_response", String.class))
             .isEqualTo("testlogin");
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.STAFF_JUROR_RESPONSE_AUDIT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
             Integer.class))
             .isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM JUROR_DIGITAL.STAFF_JUROR_RESPONSE_AUDIT",
+        assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.staff_juror_response_audit",
             String.class))
             .isEqualTo("testlogin");
     }

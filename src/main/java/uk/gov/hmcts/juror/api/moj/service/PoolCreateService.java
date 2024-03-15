@@ -34,6 +34,8 @@ public interface PoolCreateService {
 
     PaginatedList<FilterPoolMember> getJurorPoolsList(BureauJWTPayload payload, PoolMemberFilterRequestQuery search);
 
+    List<String> getThinJurorPoolsList(String poolNumber, String owner);
+
     List<VotersLocPostcodeTotals.CourtCatchmentSummaryItem> getAvailableVotersByLocation(String areaCode,
                                                                                          boolean isCoronersPool);
 

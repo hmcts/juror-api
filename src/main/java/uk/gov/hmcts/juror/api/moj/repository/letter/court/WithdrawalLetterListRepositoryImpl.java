@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.court.WithdrawalLetterList;
 
 import java.util.List;
 
+@SuppressWarnings("PMD.LawOfDemeter")
 public class WithdrawalLetterListRepositoryImpl implements IWithdrawalLetterListRepository {
 
     @PersistenceContext

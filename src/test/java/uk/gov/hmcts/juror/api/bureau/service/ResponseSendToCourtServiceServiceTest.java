@@ -8,11 +8,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseSendToCourtController;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -24,10 +24,10 @@ import static org.mockito.Mockito.verify;
 public class ResponseSendToCourtServiceServiceTest {
 
     @Mock
-    private JurorResponseAuditRepository jurorResponseAuditRepository;
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     @Mock
-    private JurorResponseRepository jurorResponseRepository;
+    private JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
     @InjectMocks
     private ResponseSendToCourtServiceImpl sendToCourtService;
@@ -46,7 +46,7 @@ public class ResponseSendToCourtServiceServiceTest {
 
 
         // Configure mocks
-        JurorResponse mockJurorResponse = mock(JurorResponse.class);
+        DigitalResponse mockJurorResponse = mock(DigitalResponse.class);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(mockJurorResponse);
         given(mockJurorResponse.getProcessingStatus()).willReturn(currentProcessingStatus);
         given(mockJurorResponse.getStaff()).willReturn(null);
@@ -60,12 +60,12 @@ public class ResponseSendToCourtServiceServiceTest {
 
         // Verify mock interactions
         verify(entityManager).detach(mockJurorResponse);
-        verify(assignOnUpdateService).assignToCurrentLogin(any(JurorResponse.class), eq(currentUser));
+        verify(assignOnUpdateService).assignToCurrentLogin(any(DigitalResponse.class), eq(currentUser));
         verify(mockJurorResponse).setVersion(1);
         verify(mockJurorResponse).setProcessingStatus(ProcessingStatus.CLOSED);
         verify(mockJurorResponse).setProcessingComplete(Boolean.TRUE);
         verify(jurorResponseRepository).save(mockJurorResponse);
-        verify(jurorResponseAuditRepository).save(any(JurorResponseAudit.class));
+        verify(jurorResponseAuditRepository).save(any(JurorResponseAuditMod.class));
 
 
     }
@@ -77,7 +77,7 @@ public class ResponseSendToCourtServiceServiceTest {
         String auditorUsername = "testuser";
 
         // Configure mocks
-        JurorResponse mockJurorResponse = mock(JurorResponse.class);
+        DigitalResponse mockJurorResponse = mock(DigitalResponse.class);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(mockJurorResponse);
         given(mockJurorResponse.getProcessingComplete()).willReturn(Boolean.TRUE);
 

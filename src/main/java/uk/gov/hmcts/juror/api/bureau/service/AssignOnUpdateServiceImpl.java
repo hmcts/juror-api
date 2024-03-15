@@ -7,15 +7,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAuditRepository;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
+import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
+
 
 /**
  * Implementation of service to assign backlog responses when an officer makes changes.
@@ -27,19 +28,19 @@ import java.util.Date;
 public class AssignOnUpdateServiceImpl implements AssignOnUpdateService {
 
     private final UserRepository userRepository;
-    private final StaffJurorResponseAuditRepository auditRepository;
+    private final StaffJurorResponseAuditRepositoryMod auditRepository;
 
 
     @Override
     @Transactional(propagation = Propagation.MANDATORY)
-    public void assignToCurrentLogin(JurorResponse jurorResponse, String auditorUsername) {
+    public void assignToCurrentLogin(DigitalResponse jurorResponse, String auditorUsername) {
         final User staffToAssign = userRepository.findByUsername(auditorUsername);
         if (ObjectUtils.isEmpty(staffToAssign)) {
             log.warn("Assigning user '{}' Staff record does not exist!", auditorUsername);
             throw new StaffAssignmentException("Assigning staff record does not exist!");
         }
 
-        final Date assignmentDate = Date.from(Instant.now().truncatedTo(ChronoUnit.DAYS));
+        final LocalDate assignmentDate = LocalDate.now();
         if (log.isTraceEnabled()) {
             log.trace("Assignment date: {}", assignmentDate);
         }
@@ -49,7 +50,7 @@ public class AssignOnUpdateServiceImpl implements AssignOnUpdateService {
         jurorResponse.setStaffAssignmentDate(assignmentDate);
 
         // 2. create audit entity for assignment update
-        final StaffJurorResponseAudit staffJurorResponseAudit = StaffJurorResponseAudit.realBuilder()
+        final StaffJurorResponseAuditMod staffJurorResponseAudit = StaffJurorResponseAuditMod.realBuilder()
             .teamLeaderLogin(auditorUsername)
             .staffLogin(auditorUsername)
             .jurorNumber(jurorResponse.getJurorNumber())

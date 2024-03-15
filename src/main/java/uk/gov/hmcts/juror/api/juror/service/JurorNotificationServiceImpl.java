@@ -4,9 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSetting;
-import uk.gov.hmcts.juror.api.bureau.domain.AppSettingRepository;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
+import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyAdapter;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyApiException;
@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,7 +26,7 @@ public class JurorNotificationServiceImpl implements JurorNotificationService {
     /**
      * Key applied to the juror number value in Notify template payload.
      */
-    String KEY_JUROR_NUMBER = "jurorNumber";
+    static final String KEY_JUROR_NUMBER = "jurorNumber";
 
     private final NotifyAdapter notifyAdapter;
     private final ResponseInspector responseInspector;
@@ -45,9 +46,9 @@ public class JurorNotificationServiceImpl implements JurorNotificationService {
 
 
     @Override
-    public void sendResponseReceipt(final JurorResponse jurorResponse, final NotifyTemplateType notifyTemplateType)
+    public void sendResponseReceipt(final DigitalResponse digitalResponse, final NotifyTemplateType notifyTemplateType)
         throws NotificationServiceException {
-        final EmailNotification emailNotification = createEmailNotification(jurorResponse, notifyTemplateType);
+        final EmailNotification emailNotification = createEmailNotification(digitalResponse, notifyTemplateType);
 
         try {
             notifyAdapter.sendEmail(emailNotification);
@@ -66,34 +67,32 @@ public class JurorNotificationServiceImpl implements JurorNotificationService {
     /**
      * Create a notification email payload from a juror response.
      *
-     * @param jurorResponse juror response extract notification payload from
+     * @param digitalResponse juror response extract notification payload from
      * @return Email notification payload
      */
     @Override
-    public EmailNotification createEmailNotification(final JurorResponse jurorResponse,
+    public EmailNotification createEmailNotification(final DigitalResponse digitalResponse,
                                                      final NotifyTemplateType notifyTemplateType) {
         try {
             log.info("Creating response receipt email");
-            final Map<String, String> payload = extractMessageValues(jurorResponse);
+            final Map<String, String> payload = extractMessageValues(digitalResponse);
 
             final String templateKey = notifyTemplateType.getAppSettingKey(
-                responseInspector.hasAdjustments(jurorResponse),
-                responseInspector.isThirdPartyResponse(jurorResponse),
-                responseInspector.isWelshCourt(jurorResponse),   //welsh response or not.
-                responseInspector.isIneligible(jurorResponse)
+                responseInspector.hasAdjustments(digitalResponse),
+                responseInspector.isThirdPartyResponse(digitalResponse),
+                responseInspector.isWelshCourt(digitalResponse),   //welsh response or not.
+                responseInspector.isIneligible(digitalResponse)
             );
             log.trace("Creating mail using template {}", templateKey);
-            //final AppSetting template = appSettingRepository.findOne(QAppSetting.appSetting.setting.eq(templateKey)
-            // ).get();
-            final AppSetting template = appSettingRepository.findById(templateKey).get();
+            final Optional<AppSetting> template = appSettingRepository.findById(templateKey);
 
-            if (template != null) {
+            if (template.isPresent()) {
                 final EmailNotification emailNotification = new EmailNotification(
-                    template.getValue(),
-                    responseInspector.activeContactEmail(jurorResponse),
+                    template.get().getValue(),
+                    responseInspector.activeContactEmail(digitalResponse),
                     payload
                 );
-                emailNotification.setReferenceNumber(jurorResponse.getJurorNumber());
+                emailNotification.setReferenceNumber(digitalResponse.getJurorNumber());
                 return emailNotification;
             } else {
                 log.error("Missing Notify template in DB: {}", templateKey);
@@ -108,13 +107,13 @@ public class JurorNotificationServiceImpl implements JurorNotificationService {
     /**
      * Extracts relevant data (names and juror number) from a juror response to a map of key/value pairs.
      *
-     * @param jurorResponse Entity to extract message payload from.
+     * @param digitalResponse Entity to extract message payload from.
      * @return Notification message payload
      * @since 2.0
      */
-    private Map<String, String> extractMessageValues(final JurorResponse jurorResponse) {
+    private Map<String, String> extractMessageValues(final DigitalResponse digitalResponse) {
         final Map<String, String> map = new HashMap<>();
-        map.put(KEY_JUROR_NUMBER, jurorResponse.getJurorNumber());
+        map.put(KEY_JUROR_NUMBER, digitalResponse.getJurorNumber());
 
         //strip null values
         map.values().removeIf(Objects::isNull);

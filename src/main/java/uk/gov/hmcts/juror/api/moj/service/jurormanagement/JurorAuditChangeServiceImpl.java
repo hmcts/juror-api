@@ -8,13 +8,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
+import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
+import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactEnquiryTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -30,6 +33,7 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
+    private final ContactCodeRepository contactCodeRepository;
 
     private static final String EMPTY_STRING = "";
     private static final String TITLE = "title";
@@ -43,8 +47,6 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
     private final JurorHistoryRepository jurorHistoryRepository;
     @NonNull
     private final ContactLogRepository contactLogRepository;
-    @NonNull
-    private final ContactEnquiryTypeRepository contactEnquiryTypeRepository;
 
     /**
      * Create a Map containing property names as keys and a boolean result indicating whether the value provided in the
@@ -57,10 +59,9 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      *
      * @param juror               the original juror record, to reference the existing juror details
      * @param jurorNameDetailsDto the request DTO containing the changed/updated data values
-     *
      * @return a Map containing property names as keys and a Boolean result indicating whether the
-     *     property values differ between the original juror record and the newly provided juror name details,
-     *     true means there is a difference, false means there is no difference
+     * property values differ between the original juror record and the newly provided juror name details,
+     * true means there is a difference, false means there is no difference
      */
     @Override
     public Map<String, Boolean> initChangedPropertyMap(Juror juror,
@@ -91,11 +92,10 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      * @param juror         the original juror record, to reference the existing juror details
      * @param jurorResponse the juror response (Paper/Digital), to reference the newly provided juror
      *                      details from a summons reply
-     *
      * @return a Map containing juror response property names as keys and a Boolean result indicating whether the
-     *     property values differ between the original juror record and the new juror summons reply, true means there
-     *     is a
-     *     difference, false means there is no difference
+     * property values differ between the original juror record and the new juror summons reply, true means there
+     * is a
+     * difference, false means there is no difference
      */
     @Override
     public Map<String, Boolean> initChangedPropertyMap(Juror juror,
@@ -106,7 +106,7 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
         // new title value CAN be null
         changedPropertiesMap.put(TITLE, hasTitleChanged(juror.getTitle(), jurorResponse.getTitle())
             && !hasNameChanged(jurorResponse.getFirstName(), juror.getFirstName(),
-                jurorResponse.getLastName(), juror.getLastName()));
+            jurorResponse.getLastName(), juror.getLastName()));
 
         LocalDate originalDate = setOriginalDateOfBirth(juror.getDateOfBirth());
         changedPropertiesMap.put(DATE_OF_BIRTH, hasPropertyChanged(jurorResponse.getDateOfBirth(),
@@ -125,7 +125,6 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      *
      * @param updatedTitle  newly provided value to check
      * @param originalTitle existing value on the juror record
-     *
      * @return true if the title value has changed, false if it is the same
      */
     @Override
@@ -142,7 +141,6 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      * @param originalFirstname existing first name value on the juror record
      * @param updatedLastName   newly provided last name value to check
      * @param originalLastname  existing last name value on the juror record
-     *
      * @return true if either part of the juror's name has changed, false if it is the same
      */
     @Override
@@ -180,8 +178,9 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
             .username(auditorUsername)
             .jurorNumber(juror.getJurorNumber())
             .startCall(LocalDateTime.now())
-            .enquiryType(RepositoryUtils.retrieveFromDatabase(ContactEnquiryCode.valueOf(contactEnquiryCode),
-                contactEnquiryTypeRepository))
+            .enquiryType(RepositoryUtils.retrieveFromDatabase(
+                IContactCode.fromCode(contactEnquiryCode).getCode(),
+                contactCodeRepository))
             .notes(notes)
             .repeatEnquiry(false)
             .build();
@@ -218,7 +217,6 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      *
      * @param updatedDetails Newly requested juror details supplied via digital or paper summons replies
      * @param juror          existing pool member record to check changes against
-     *
      * @return true if any part of the juror's address has changed, false if it is the same
      */
 
@@ -245,7 +243,7 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      * comparison (to avoid a null pointer exception).
      *
      * @return LocalDate object with either the Juror's date of birth or a default date value to use for change
-     *     comparison
+     * comparison
      */
     private LocalDate setOriginalDateOfBirth(LocalDate jurorDob) {
         final LocalDate defaultNullReplacementDob = LocalDate.of(1901, 1, 1);

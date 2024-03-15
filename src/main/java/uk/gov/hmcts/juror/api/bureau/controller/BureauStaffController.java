@@ -14,15 +14,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.bureau.controller.request.AssignmentsMultiRequestDto;
 import uk.gov.hmcts.juror.api.bureau.controller.request.MultipleStaffAssignmentDto;
 import uk.gov.hmcts.juror.api.bureau.controller.request.StaffAssignmentRequestDto;
-import uk.gov.hmcts.juror.api.bureau.controller.request.StaffMemberCrudRequestDto;
-import uk.gov.hmcts.juror.api.bureau.controller.request.StaffMemberCrudResponseDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.AssignmentsListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.OperationFailureListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffAssignmentResponseDto;
@@ -31,12 +28,9 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.bureau.service.BureauAuthenticationService;
-import uk.gov.hmcts.juror.api.bureau.service.JurorAccountLockedException;
-import uk.gov.hmcts.juror.api.bureau.service.StaffMemberCrudException;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
-import uk.gov.hmcts.juror.api.config.bureau.IsTeamLeader;
 
 import java.util.stream.Collectors;
 
@@ -181,73 +175,5 @@ public class BureauStaffController {
         log.debug("Retrieving staff assignments for responses: {}", requestDto);
         AssignmentsListDto assignmentsListDto = userService.getStaffAssignments(requestDto, jwtPayload.getLogin());
         return ResponseEntity.ok(assignmentsListDto);
-    }
-
-    /**
-     * Create a new staff member.
-     *
-     * @param requestDto Staff member values
-     * @return Created staff member
-     * @throws StaffMemberCrudException Failed to create the staff member.
-     */
-    @PostMapping
-    @Operation(summary = "Create a staff member profile",
-        description = "Create a staff member profile")
-    @IsTeamLeader
-    public ResponseEntity<StaffMemberCrudResponseDto> createStaffMember(
-        @RequestBody @Validated(StaffMemberCrudRequestDto.CreationOnlyValidationGroup.class)
-        StaffMemberCrudRequestDto requestDto,
-        @Parameter(hidden = true) BureauJwtAuthentication principal) {
-        if (log.isDebugEnabled()) {
-            log.debug("Creating new staff member from {}", requestDto);
-        }
-        try {
-            final BureauJWTPayload jwtPayload = (BureauJWTPayload) principal.getPrincipal();
-            final StaffMemberCrudResponseDto newStaff =
-                userService.createNewStaffMember(requestDto, jwtPayload.getLogin());
-            log.info("Created new staff member {}", newStaff);
-            return ResponseEntity.accepted().body(newStaff);
-        } catch (StaffMemberCrudException smce) {
-            log.warn("Failed to create staff member: {}", smce.getMessage());
-            throw smce;
-        }
-    }
-
-    /**
-     * Update a staff member profile.
-     *
-     * @param login      Login of the staff being updated
-     * @param requestDto Updated values.
-     * @return Updated staff member
-     * @throws StaffMemberCrudException         Failed to perform the update.
-     * @throws BureauOptimisticLockingException Version field mismatch.
-     */
-    @PutMapping("/{login}")
-    @Operation(summary = "Update a staff member profile",
-        description = "Update a staff member profile")
-    @IsTeamLeader
-    public ResponseEntity<StaffMemberCrudResponseDto> updateStaffMember(
-        @PathVariable String login,
-        @RequestBody @Validated StaffMemberCrudRequestDto requestDto,
-        @Parameter(hidden = true) BureauJwtAuthentication principal) {
-        if (log.isDebugEnabled()) {
-            log.debug("Updating staff member from {}", requestDto);
-        }
-        try {
-            final BureauJWTPayload jwtPayload = (BureauJWTPayload) principal.getPrincipal();
-            final StaffMemberCrudResponseDto newStaff = userService.updateStaffMember(
-                login,
-                requestDto,
-                jwtPayload.getLogin()
-            );
-            log.info("Updated staff member {}", newStaff);
-            return ResponseEntity.accepted().body(newStaff);
-        } catch (JurorAccountLockedException | StaffMemberCrudException jurorAccountLocked) {
-            log.warn("Failed to update staff member: {}", jurorAccountLocked.getMessage());
-            throw jurorAccountLocked;
-        } catch (OptimisticLockingFailureException olfe) {
-            log.warn("Failed to update staff member: {}.  Updated by another user!", olfe.getMessage());
-            throw new BureauOptimisticLockingException(olfe);
-        }
     }
 }

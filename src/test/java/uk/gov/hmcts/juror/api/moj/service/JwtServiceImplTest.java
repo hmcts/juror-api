@@ -18,8 +18,10 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.utils.TestConstants;
 
 import java.security.Key;
@@ -28,12 +30,16 @@ import java.util.Date;
 import java.util.Map;
 import javax.crypto.SecretKey;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.anyMap;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -47,6 +53,10 @@ import static org.mockito.Mockito.when;
 )
 @DisplayName("JwtServiceImpl")
 @SuppressWarnings({"unchecked", "PMD.ExcessiveImports"})
+@TestPropertySource(properties = {
+    "jwt.secret.bureau=" + TestConstants.JWT_SECRET,
+    "jwt.expiry.bureau=" + TestConstants.JWT_EXPIRY
+})
 class JwtServiceImplTest {
 
     @Autowired
@@ -240,6 +250,42 @@ class JwtServiceImplTest {
                 "Exception message should be match");
             assertEquals(exception, unauthorisedException.getCause(),
                 "Exception cause should be match");
+        }
+    }
+
+    @DisplayName("public String generateBureauJwtToken(String id, BureauJWTPayload payload)")
+    @Nested
+    class GenerateBureauJwtToken {
+        @Test
+        @SuppressWarnings("unchecked")
+        void positiveTypical() {
+            jwtService = spy(jwtService);
+
+            doReturn(TestConstants.JWT)
+                .when(jwtService)
+                .generateJwtToken(any(), any(), any(), anyLong(), any(), any());
+
+
+            Map<String, Object> claims = mock(Map.class);
+            BureauJWTPayload bureauJwtPayload = mock(BureauJWTPayload.class);
+            when(bureauJwtPayload.toClaims()).thenReturn(claims);
+
+            SecretKey secretKey = mock(SecretKey.class);
+            doReturn(secretKey).when(jwtService).getSigningKey(TestConstants.JWT_SECRET);
+
+            assertThat(jwtService.generateBureauJwtToken("SomeId", bureauJwtPayload))
+                .isEqualTo(TestConstants.JWT);
+
+            verify(jwtService, times(1)).generateJwtToken(
+                "SomeId",
+                "juror",
+                null,
+                TestConstants.JWT_EXPIRY,
+                secretKey,
+                claims
+            );
+            verify(jwtService, times(1)).getSigningKey(TestConstants.JWT_SECRET);
+            verify(bureauJwtPayload, times(1)).toClaims();
         }
     }
 }
