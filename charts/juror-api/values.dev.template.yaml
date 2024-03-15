@@ -9,7 +9,10 @@ java:
   environment:
     RUN_DB_MIGRATION_ON_STARTUP: true
     DB_URL: "jdbc:postgresql://juror-dev.postgres.database.azure.com:5432/pr-${CHANGE_ID}-juror-api"
+    DB_HOST: "juror-dev.postgres.database.azure.com"
+    DB_USER_NAME: "hmcts"
     DB_USERNAME: "hmcts"
+    DB_NAME: "pr-${CHANGE_ID}-juror-api"
     SCHEDULER_SERVICE_HOST: juror-scheduler-api.staging.platform.hmcts.net
     PNC_CHECK_SERVICE_HOST: juror-scheduler-execution.staging.platform.hmcts.net
   secrets:
