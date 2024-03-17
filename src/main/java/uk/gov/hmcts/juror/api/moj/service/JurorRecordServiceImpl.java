@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.text.WordUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.history.Revision;
 import org.springframework.stereotype.Service;
@@ -48,7 +47,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseD
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
-import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
@@ -841,22 +839,9 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         JurorPoolUtils.checkMultipleRecordReadAccess(jurorPoolRepository, jurorNumber, owner);
 
-        Optional<ModJurorDetail> jurorDetailsOpt = jurorDetailRepositoryMod.findById(jurorNumber);
-
-        if (jurorDetailsOpt.isEmpty()) {
-            throw new MojException.NotFound(String.format("Could not find juror details for %s", jurorDetailsOpt),
-                null);
-        }
-
-        final ModJurorDetail jurorDetails = jurorDetailsOpt.get();
-        final BureauJurorDetail bureauJurorDetails = new BureauJurorDetail();
-        BeanUtils.copyProperties(jurorDetails, bureauJurorDetails);
-
-
-        // This part is temporary until a single approach for serving up juror response data is implemented across
-        // the whole codebase
-        setBureauDetailCjsEmployment(jurorDetails, bureauJurorDetails);
-        setBureauDetailReasonableAdjustments(jurorDetails, bureauJurorDetails);
+        ModJurorDetail jurorDetails = jurorDetailRepositoryMod.findById(jurorNumber)
+            .orElseThrow( () -> new MojException.NotFound(String.format("Could not find juror details for %s",
+                jurorNumber), null));
 
         BureauJurorDetailDto responseDto = bureauService.mapJurorDetailsToDto(jurorDetails);
         responseDto.setWelshCourt(jurorDetails.isWelshCourt());

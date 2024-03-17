@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -75,6 +74,9 @@ public class ModJurorDetail implements Serializable {
 
     @Column(name = "new_last_name")
     private String newLastName;
+
+    @Column(name = "reply_type")
+    private String replyType;
 
     @Column(name = "processing_status")
     private String processingStatus;
