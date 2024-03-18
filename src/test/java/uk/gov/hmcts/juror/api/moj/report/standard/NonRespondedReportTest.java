@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
+import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
@@ -23,6 +24,7 @@ class NonRespondedReportTest extends AbstractReportTestSupport<NonRespondedRepor
 
     public NonRespondedReportTest() {
         super(QJurorPool.jurorPool,
+            NonRespondedReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
@@ -38,10 +40,15 @@ class NonRespondedReportTest extends AbstractReportTestSupport<NonRespondedRepor
 
     @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+        request.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
         report.preProcessQuery(query, request);
+        verify(query, times(1))
+            .where(QJurorPool.jurorPool.pool.poolNumber.eq(TestConstants.VALID_POOL_NUMBER));
         verify(query, times(1))
             .where(QJuror.juror.responded.isNull()
                 .or(QJuror.juror.responded.eq(false)));
+        verify(query,times(1))
+            .orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override
@@ -58,7 +65,7 @@ class NonRespondedReportTest extends AbstractReportTestSupport<NonRespondedRepor
                 "total_non_responded",
                 StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total non-responded")
-                    .dataType(Integer.class.getSimpleName())
+                    .dataType(Long.class.getSimpleName())
                     .value(2)
                     .build()
             ));

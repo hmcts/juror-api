@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 public class CurrentPoolStatusReportTest extends AbstractReportTestSupport<CurrentPoolStatusReport> {
     public CurrentPoolStatusReportTest() {
         super(QJurorPool.jurorPool,
+            CurrentPoolStatusReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
@@ -76,7 +77,7 @@ public class CurrentPoolStatusReportTest extends AbstractReportTestSupport<Curre
                 "total_pool_members",
                 StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total Pool Members")
-                    .dataType(Integer.class.getSimpleName())
+                    .dataType(Long.class.getSimpleName())
                     .value(2)
                     .build()
             ));

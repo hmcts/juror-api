@@ -33,17 +33,20 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
 
     private final EntityPath<?> from;
     private final DataType[] dataTypes;
+    private final Class<?> validatorClass;
     protected R report;
     private PoolRequestRepository poolRequestRepository;
 
     public abstract R createReport(PoolRequestRepository poolRequestRepository);
 
 
-    public AbstractReportTestSupport(EntityPath<?> from, DataType... dataTypes) {
+    public AbstractReportTestSupport(EntityPath<?> from,
+                                     Class<?> validatorClass, DataType... dataTypes) {
         this.poolRequestRepository = mock(PoolRequestRepository.class);
         this.report = createReport(poolRequestRepository);
         this.from = from;
         this.dataTypes = dataTypes;
+        this.validatorClass = validatorClass;
     }
 
     @BeforeEach
@@ -72,6 +75,11 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
             withSettings().defaultAnswer(RETURNS_SELF));
         StandardReportRequest request = new StandardReportRequest();
         positivePreProcessQueryTypical(query, request);
+    }
+
+    @Test
+    void positiveGetRequestValidatorClass() {
+        assertThat(report.getRequestValidatorClass()).isEqualTo(validatorClass);
     }
 
     public abstract Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
@@ -109,7 +117,7 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
                     .build(),
                 "service_start_date", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Service Start Date")
-                    .dataType("Date")
+                    .dataType("LocalDate")
                     .value(DateTimeFormatter.ISO_DATE.format(LocalDate.of(2023, 1, 1)))
                     .build(),
                 "court_name", StandardReportResponse.DataTypeValue.builder()

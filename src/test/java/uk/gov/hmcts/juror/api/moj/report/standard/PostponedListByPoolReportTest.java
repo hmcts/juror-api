@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
+import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
@@ -22,6 +23,7 @@ public class PostponedListByPoolReportTest  extends AbstractReportTestSupport<Po
 
     public PostponedListByPoolReportTest() {
         super( QJurorPool.jurorPool,
+            PostponedListByPoolReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
@@ -37,9 +39,11 @@ public class PostponedListByPoolReportTest  extends AbstractReportTestSupport<Po
 
     @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+        request.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
         report.preProcessQuery(query, request);
         verify(query, times(1))
-            .where(QJurorPool.jurorPool.deferralDate.isNotNull()
+            .where(QJurorPool.jurorPool.pool.poolNumber.eq(TestConstants.VALID_POOL_NUMBER)
+                .and(QJurorPool.jurorPool.deferralDate.isNotNull())
                 .and(QJurorPool.jurorPool.deferralCode.eq(ExcusalCodeEnum.P.getCode())));
     }
 
@@ -57,7 +61,7 @@ public class PostponedListByPoolReportTest  extends AbstractReportTestSupport<Po
                 "total_postponed",
                 StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total postponed")
-                    .dataType(Integer.class.getSimpleName())
+                    .dataType(Long.class.getSimpleName())
                     .value(2)
                     .build()
             ));
