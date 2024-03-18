@@ -1228,8 +1228,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .as("Expect the excusal code to be 'C'")
             .isEqualTo("C");
         assertThat(commonResponseDto.getExcusalDescription())
-            .as("Expect the excusal reason description to be 'CHILD CARE'")
-            .isEqualTo("CHILD CARE");
+            .as("Expect the excusal reason description to be 'Childcare'")
+            .isEqualTo("Childcare");
     }
 
     @Test
@@ -1270,8 +1270,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .as("Expect the excusal code to be 'C'")
             .isEqualTo("C");
         assertThat(jurorSummonsReply.getCommonDetails().getExcusalDescription())
-            .as("Expect the excusal reason description to be 'CHILD CARE'")
-            .isEqualTo("CHILD CARE");
+            .as("Expect the excusal reason description to be 'Childcare'")
+            .isEqualTo("Childcare");
     }
 
     @Test
