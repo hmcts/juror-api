@@ -2,7 +2,7 @@ buildscript {
     ext {
         springBootVersion = '3.2.3'
         notifyVersion = '5.0.0-RELEASE'
-        springDocVersion = '2.3.0'
+        springDocVersion = '2.4.0'
         queryDslVersion = '5.1.0'
         flywayVersion = '10.10.0'
         postgresVersion = '42.7.3'
