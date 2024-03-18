@@ -101,7 +101,7 @@ public class JurorDetailsCommonResponseDto {
     @Schema(name = "Deferral date", description = "Deferral date")
     private LocalDate deferralDate;
 
-    @JsonProperty("deferralCode")
+    @JsonProperty("deferral_code")
     @Schema(name = "Deferral Code", description = "Code indicating deferral reason selected by the user")
     private String deferralCode;
 
@@ -153,11 +153,12 @@ public class JurorDetailsCommonResponseDto {
         this.courtName = jurorPool.getCourt().getLocCourtName();
 
         if (this.excusalCode != null) {
-            this.excusalDescription =  ExcusalCodeEnum.valueOf(this.excusalCode).getDescription();
+            this.excusalDescription =  ExcusalCodeEnum.fromCode(this.excusalCode).getDescription();
         }
-        // set the excusal description as front end needs it to display the deferral reason
+
         if (this.deferralCode != null) {
-            this.excusalDescription =  ExcusalCodeEnum.valueOf(this.deferralCode).getDescription();
+            // set the excusal description as front end needs it to display the deferral reason
+            this.excusalDescription =  ExcusalCodeEnum.fromCode(this.deferralCode).getDescription();
         }
 
         if (jurorPool.getCourt() != null) {
