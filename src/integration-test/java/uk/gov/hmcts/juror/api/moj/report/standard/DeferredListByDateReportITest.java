@@ -18,7 +18,8 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/DeferredListByDateReportITest_typical.sql"
 })
-public class DeferredListByDateReportITest extends AbstractReportControllerITest {
+@SuppressWarnings("PMD.LawOfDemeter")
+class DeferredListByDateReportITest extends AbstractReportControllerITest {
 
     @Autowired
     public DeferredListByDateReportITest(TestRestTemplate template) {
@@ -37,6 +38,7 @@ public class DeferredListByDateReportITest extends AbstractReportControllerITest
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -46,6 +48,7 @@ public class DeferredListByDateReportITest extends AbstractReportControllerITest
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -56,6 +59,7 @@ public class DeferredListByDateReportITest extends AbstractReportControllerITest
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveNotFound() {
         testBuilder()
             .jwt(getCourtJwt("414"))

@@ -28,7 +28,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.withSettings;
 
-public class DeferredListByDateReportTest extends AbstractReportTestSupport<DeferredListByDateReport> {
+@SuppressWarnings("PMD.LawOfDemeter")
+class DeferredListByDateReportTest extends AbstractReportTestSupport<DeferredListByDateReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
@@ -43,6 +44,7 @@ public class DeferredListByDateReportTest extends AbstractReportTestSupport<Defe
     void beforeEach() {
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
     }
+
     @AfterEach
     void afterEach() {
         securityUtilMockedStatic.close();
@@ -95,10 +97,11 @@ public class DeferredListByDateReportTest extends AbstractReportTestSupport<Defe
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(StandardReportRequest request,
-                                                                                        StandardReportResponse.TableData tableData,
-                                                                                        List<LinkedHashMap<String,
-                                                                                            Object>> data) {
+    public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
+        StandardReportRequest request,
+        StandardReportResponse.TableData tableData,
+        List<LinkedHashMap<String, Object>> data) {
+
         data.add(new LinkedHashMap<>(Map.of(
             DataType.DEFERRED_TO.getId(), "2024-03-15",
             DataType.NUMBER_DEFERRED.getId(), 1L

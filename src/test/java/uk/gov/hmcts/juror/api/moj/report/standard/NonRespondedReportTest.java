@@ -10,7 +10,6 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
-import uk.gov.hmcts.juror.api.moj.report.standard.NonRespondedReport;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
 import java.util.LinkedHashMap;
@@ -21,6 +20,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("PMD.LawOfDemeter")
 class NonRespondedReportTest extends AbstractReportTestSupport<NonRespondedReport> {
 
     public NonRespondedReportTest() {
@@ -48,15 +48,16 @@ class NonRespondedReportTest extends AbstractReportTestSupport<NonRespondedRepor
         verify(query, times(1))
             .where(QJuror.juror.responded.isNull()
                 .or(QJuror.juror.responded.eq(false)));
-        verify(query,times(1))
+        verify(query, times(1))
             .orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(StandardReportRequest request,
-                                                                                        StandardReportResponse.TableData tableData,
-                                                                                        List<LinkedHashMap<String,
-                                                                                            Object>> data) {
+    public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
+        StandardReportRequest request,
+        StandardReportResponse.TableData tableData,
+        List<LinkedHashMap<String, Object>> data) {
+        
         when(data.size()).thenReturn(2);
         Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);
         assertHeadingContains(map,
@@ -74,6 +75,7 @@ class NonRespondedReportTest extends AbstractReportTestSupport<NonRespondedRepor
         verify(data, times(1)).size();
         return map;
     }
+
     @Override
     protected StandardReportRequest getValidRequest() {
         return StandardReportRequest.builder()
@@ -86,6 +88,7 @@ class NonRespondedReportTest extends AbstractReportTestSupport<NonRespondedRepor
     protected Class<?> getValidatorClass() {
         return NonRespondedReport.RequestValidator.class;
     }
+
     @Test
     void negativeMissingPoolNumber() {
         StandardReportRequest request = getValidRequest();

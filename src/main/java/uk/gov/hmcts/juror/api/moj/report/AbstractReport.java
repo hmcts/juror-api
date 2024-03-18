@@ -26,29 +26,32 @@ import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Getter
+@SuppressWarnings({
+    "PMD.LawOfDemeter",
+    "PMD.TooManyMethods"
+})
 public abstract class AbstractReport {
-    static final Map<EntityPath<?>, Map<EntityPath<?>, Predicate[]>>
-        classToJoin;
+    static final Map<EntityPath<?>, Map<EntityPath<?>, Predicate[]>> CLASS_TO_JOIN;
 
     static {
-        classToJoin = new HashMap<>();
-        classToJoin.put(QJuror.juror, Map.of(
+        CLASS_TO_JOIN = new ConcurrentHashMap<>();
+        CLASS_TO_JOIN.put(QJuror.juror, Map.of(
             QJurorPool.jurorPool, new Predicate[]{QJuror.juror.eq(QJurorPool.jurorPool.juror)},
             QAppearance.appearance, new Predicate[]{QJuror.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber)}
         ));
-        classToJoin.put(QJurorPool.jurorPool, Map.of(
+        CLASS_TO_JOIN.put(QJurorPool.jurorPool, Map.of(
             QJuror.juror, new Predicate[]{QJurorPool.jurorPool.juror.eq(QJuror.juror)}
         ));
-        classToJoin.put(QAppearance.appearance, Map.of(
+        CLASS_TO_JOIN.put(QAppearance.appearance, Map.of(
             QJuror.juror, new Predicate[]{QAppearance.appearance.jurorNumber.eq(QJuror.juror.jurorNumber)},
             QJurorPool.jurorPool, new Predicate[]{
                 QJurorPool.jurorPool.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber),
@@ -56,6 +59,7 @@ public abstract class AbstractReport {
             }
         ));
     }
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -90,7 +94,8 @@ public abstract class AbstractReport {
         StandardReportResponse.TableData tableData = tupleToTableData(data);
 
         StandardReportResponse standardReportResponse = new StandardReportResponse();
-        Map<String, StandardReportResponse.DataTypeValue> headings = new HashMap<>(getHeadings(request, tableData));
+        Map<String, StandardReportResponse.DataTypeValue> headings =
+            new ConcurrentHashMap<>(getHeadings(request, tableData));
         headings.put("report_created", StandardReportResponse.DataTypeValue.builder()
             .value(DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()))
             .dataType(LocalDateTime.class.getSimpleName())
@@ -140,11 +145,9 @@ public abstract class AbstractReport {
             if (value != null) {
                 if (value instanceof LocalDate localDate) {
                     value = DateTimeFormatter.ISO_DATE.format(localDate);
-                }
-                else if (value instanceof LocalTime localTime) {
+                } else if (value instanceof LocalTime localTime) {
                     value = DateTimeFormatter.ISO_TIME.format(localTime);
-                }
-                else if (value instanceof LocalDateTime localDateTime) {
+                } else if (value instanceof LocalDateTime localDateTime) {
                     value = DateTimeFormatter.ISO_DATE_TIME.format(localDateTime);
                 }
             }
@@ -181,10 +184,10 @@ public abstract class AbstractReport {
             if (from.equals(requiredTable)) {
                 return;
             }
-            if (!classToJoin.containsKey(requiredTable)) {
+            if (!CLASS_TO_JOIN.containsKey(requiredTable)) {
                 throw new MojException.InternalServerError("No join found for " + requiredTable, null);
             }
-            Map<EntityPath<?>, Predicate[]> joinOptions = classToJoin.get(requiredTable);
+            Map<EntityPath<?>, Predicate[]> joinOptions = CLASS_TO_JOIN.get(requiredTable);
 
             if (joinOptions.containsKey(from)) {
                 query.join(requiredTable).on(joinOptions.get(from));
@@ -232,13 +235,13 @@ public abstract class AbstractReport {
         }
     }
 
-    protected HashMap<String, StandardReportResponse.DataTypeValue> loadStandardPoolHeaders(
+    protected ConcurrentHashMap<String, StandardReportResponse.DataTypeValue> loadStandardPoolHeaders(
         StandardReportRequest request, boolean ownerMustMatch, boolean allowBureau) {
         PoolRequest poolRequest = getPoolRequest(request.getPoolNumber());
         if (ownerMustMatch) {
             checkOwnership(poolRequest, allowBureau);
         }
-        return new HashMap<>(Map.of(
+        return new ConcurrentHashMap<>(Map.of(
             "pool_number", StandardReportResponse.DataTypeValue.builder()
                 .displayName("Pool Number")
                 .dataType(String.class.getSimpleName())

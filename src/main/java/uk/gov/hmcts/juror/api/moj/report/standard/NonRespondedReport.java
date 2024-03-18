@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,6 +16,7 @@ import java.util.Map;
 
 
 @Component
+@SuppressWarnings("PMD.LawOfDemeter")
 public class NonRespondedReport extends AbstractReport {
     @Autowired
     public NonRespondedReport(PoolRequestRepository poolRequestRepository) {

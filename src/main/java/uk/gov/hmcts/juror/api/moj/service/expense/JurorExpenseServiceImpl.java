@@ -724,14 +724,12 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Transactional(readOnly = true)
     @SneakyThrows
     public CombinedExpenseDetailsDto<ExpenseDetailsForTotals> calculateTotals(CalculateTotalExpenseRequestDto dto) {
-        System.out.println(dto);
         CombinedExpenseDetailsDto<ExpenseDetailsForTotals> responseDto = new CombinedExpenseDetailsDto<>(true);
         dto.getExpenseList().stream().map(dailyExpense -> {
             Appearance appearance =
                 getAppearance(dto.getJurorNumber(), dto.getPoolNumber(), dailyExpense.getDateOfExpense());
             entityManager.detach(appearance);//Detach from session to avoid updating the appearance
 
-            System.out.println(dailyExpense.shouldPullFromDatabase());
             if (dailyExpense.shouldPullFromDatabase()) {
                 return new ExpenseDetailsForTotals(appearance);
             }

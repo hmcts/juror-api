@@ -9,7 +9,6 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResp
 import uk.gov.hmcts.juror.api.moj.report.AbstractReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
-import uk.gov.hmcts.juror.api.moj.report.TmpSupport;
 
 import java.util.List;
 
@@ -19,6 +18,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/CurrentPoolStatusReportControllerITest_typical.sql"
 })
+@SuppressWarnings("PMD.LawOfDemeter")
 class CurrentPoolStatusReportControllerITest extends AbstractReportControllerITest {
 
     @Autowired
@@ -40,6 +40,7 @@ class CurrentPoolStatusReportControllerITest extends AbstractReportControllerITe
 
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -49,19 +50,18 @@ class CurrentPoolStatusReportControllerITest extends AbstractReportControllerITe
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getBureauJwt())
             .triggerValid()
             .printResponse()
-            .responseConsumer(response -> {
-                System.out.println(TmpSupport.asString(response));
-            })
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setPoolNumber(null);
@@ -73,6 +73,7 @@ class CurrentPoolStatusReportControllerITest extends AbstractReportControllerITe
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getCourtJwt("414"))

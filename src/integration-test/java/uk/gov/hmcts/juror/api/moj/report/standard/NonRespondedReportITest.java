@@ -9,7 +9,6 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResp
 import uk.gov.hmcts.juror.api.moj.report.AbstractReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
-import uk.gov.hmcts.juror.api.moj.report.TmpSupport;
 
 import java.util.List;
 
@@ -19,7 +18,8 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/NonRespondedReportITest_typical.sql"
 })
-public class NonRespondedReportITest extends AbstractReportControllerITest {
+@SuppressWarnings("PMD.LawOfDemeter")
+class NonRespondedReportITest extends AbstractReportControllerITest {
     @Autowired
     public NonRespondedReportITest(TestRestTemplate template) {
         super(template, NonRespondedReport.class);
@@ -38,16 +38,17 @@ public class NonRespondedReportITest extends AbstractReportControllerITest {
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
             .printResponse()
-            .responseConsumer(response -> System.out.println(TmpSupport.asString(response)))
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -59,6 +60,7 @@ public class NonRespondedReportITest extends AbstractReportControllerITest {
 
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setPoolNumber(null);
@@ -70,6 +72,7 @@ public class NonRespondedReportITest extends AbstractReportControllerITest {
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getCourtJwt("414"))

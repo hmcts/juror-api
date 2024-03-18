@@ -12,10 +12,11 @@ import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
+@SuppressWarnings("PMD.LawOfDemeter")
 public class DeferredListByDateReport extends AbstractReport {
 
     @Autowired
@@ -41,7 +42,7 @@ public class DeferredListByDateReport extends AbstractReport {
     @Override
     public Map<String, StandardReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
                                                                          StandardReportResponse.TableData tableData) {
-        Map<String, StandardReportResponse.DataTypeValue> map = new HashMap<>();
+        Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
         map.put("total_deferred", StandardReportResponse.DataTypeValue.builder()
             .displayName("Total deferred")
             .dataType(Long.class.getSimpleName())

@@ -10,10 +10,8 @@ import jakarta.validation.ValidatorFactory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
@@ -26,7 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -39,6 +37,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.withSettings;
 
+@SuppressWarnings({
+    "PMD.LawOfDemeter",
+    "PMD.TooManyMethods"
+})
 public abstract class AbstractReportTestSupport<R extends AbstractReport> {
 
     private final EntityPath<?> from;
@@ -60,7 +62,7 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
         this.poolRequestRepository = mock(PoolRequestRepository.class);
         this.report = createReport(poolRequestRepository);
         this.from = from;
-        this.dataTypes = dataTypes;
+        this.dataTypes = dataTypes.clone();
         this.validatorClass = validatorClass;
     }
 
@@ -86,11 +88,6 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
         return new ArrayList<>(validator.validate(request, getValidatorClass()));
     }
 
-    @Test
-    void positiveRequestIsValid() {
-
-    }
-
 
     @Test
     void positiveConstructor() {
@@ -104,7 +101,10 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
     public abstract void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request);
 
     @Test
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({
+        "unchecked",
+        "PMD.JUnitTestsShouldIncludeAssert",
+    })
     final void positivePreProcessQueryTypical() {
         JPAQuery<Tuple> query = mock(JPAQuery.class,
             withSettings().defaultAnswer(RETURNS_SELF));
@@ -138,7 +138,7 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
     }
 
     protected final Map<String, StandardReportResponse.DataTypeValue> getStandardPoolHeaders() {
-        return new HashMap<>(
+        return new ConcurrentHashMap<>(
             Map.of(
                 "pool_number", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Pool Number")

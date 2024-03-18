@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
 public class ReportController {
 
     private final ReportService reportService;
+
     @PostMapping("/standard")
     @Operation(summary = "View a give report")
     @ResponseStatus(HttpStatus.OK)

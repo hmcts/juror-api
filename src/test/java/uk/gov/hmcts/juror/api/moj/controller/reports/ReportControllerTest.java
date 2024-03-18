@@ -40,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     }
 )
 @DisplayName("Controller: " + ReportControllerTest.BASE_URL)
+@SuppressWarnings("PMD.LawOfDemeter")
 class ReportControllerTest {
     public static final String BASE_URL = "/api/v1/moj/reports";
     @Autowired
@@ -52,20 +53,23 @@ class ReportControllerTest {
     @DisplayName("POST (GET) " + ViewReportStandard.URL)
     class ViewReportStandard {
         public static final String URL = BASE_URL + "/standard";
+
         private StandardReportRequest getValidPayload() {
             return StandardReportRequest.builder()
                 .reportType("ReportType")
                 .build();
         }
+
         private StandardReportResponse getValidResponse() {
             return StandardReportResponse.builder()
                 .headings(Map.of("total_deferred", StandardReportResponse.DataTypeValue.builder()
-                        .displayName("Total deferred")
-                        .dataType("Long")
-                        .value(7)
-                        .build()))
+                    .displayName("Total deferred")
+                    .dataType("Long")
+                    .value(7)
+                    .build()))
                 .build();
         }
+
         @Test
         void positiveTypical() throws Exception {
             StandardReportRequest request = getValidPayload();

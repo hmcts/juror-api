@@ -41,6 +41,7 @@ public abstract class AbstractReportControllerITest
         return request;
     }
 
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
     public void verifyAndRemoveReportCreated(StandardReportResponse response) {
         assertThat(response).isNotNull();
         assertThat(response.getHeadings()).isNotNull();

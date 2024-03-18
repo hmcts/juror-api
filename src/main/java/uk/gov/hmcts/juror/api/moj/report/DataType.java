@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Locale;
 
 @Getter
+@SuppressWarnings("PMD.ArrayIsStoredDirectly")
 public enum DataType {
     JUROR_NUMBER("Juror Number", String.class, QJuror.juror.jurorNumber, QJuror.juror),
     FIRST_NAME("First Name", String.class, QJuror.juror.firstName, QJuror.juror),
@@ -45,16 +46,16 @@ public enum DataType {
     NUMBER_DEFERRED("Number Deferred", Long.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
 
 
-    REASONABLE_ADJUSTMENT_CODE("Reasonable Adjustment Code", String.class, QJuror.juror.reasonableAdjustmentCode,
-        QJuror.juror),
+    REASONABLE_ADJUSTMENT_CODE("Reasonable Adjustment Code", String.class,
+        QJuror.juror.reasonableAdjustmentCode, QJuror.juror),
     REASONABLE_ADJUSTMENT_MESSAGE("Reasonable Adjustment Message", String.class,
         QJuror.juror.reasonableAdjustmentMessage, QJuror.juror),
     REASONABLE_ADJUSTMENT("Reasonable Adjustment", List.class, REASONABLE_ADJUSTMENT_CODE,
         REASONABLE_ADJUSTMENT_MESSAGE),
 
     ON_CALL("On Call", Boolean.class, QJurorPool.jurorPool.onCall, QJurorPool.jurorPool),
-    SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate, QPoolRequest.poolRequest),
-
+    SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate,
+        QPoolRequest.poolRequest),
     ;
 
 

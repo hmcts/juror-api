@@ -9,7 +9,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import uk.gov.hmcts.juror.api.TestConstants;
-import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.domain.QBureauJurorCJS;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
@@ -36,18 +34,16 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.xml.crypto.Data;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.BDDAssertions.within;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -66,7 +62,12 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({
+    "unchecked",
+    "PMD.LawOfDemeter",
+    "PMD.ExcessiveImports",
+    "PMD.CouplingBetweenObjects"
+})
 class AbstractReportTest {
 
     private PoolRequestRepository poolRequestRepository;
@@ -88,9 +89,10 @@ class AbstractReportTest {
     @Nested
     class ClassToJoinTest {
         @Test
+        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void jurorToJurorPool() {
-            assertThat(AbstractReport.classToJoin.containsKey(QJuror.juror)).isTrue();
-            Map<EntityPath<?>, Predicate[]> map = AbstractReport.classToJoin.get(QJuror.juror);
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJuror.juror)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QJuror.juror);
 
             assertThat(map.containsKey(QJurorPool.jurorPool)).isTrue();
             assertThat(map.get(QJurorPool.jurorPool)).isEqualTo(
@@ -99,9 +101,10 @@ class AbstractReportTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void jurorToAppearance() {
-            assertThat(AbstractReport.classToJoin.containsKey(QJuror.juror)).isTrue();
-            Map<EntityPath<?>, Predicate[]> map = AbstractReport.classToJoin.get(QJuror.juror);
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJuror.juror)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QJuror.juror);
 
             assertThat(map.containsKey(QJurorPool.jurorPool)).isTrue();
             assertThat(map.get(QAppearance.appearance)).isEqualTo(
@@ -111,8 +114,8 @@ class AbstractReportTest {
 
         @Test
         void jurorPoolToJuror() {
-            assertThat(AbstractReport.classToJoin.containsKey(QJurorPool.jurorPool)).isTrue();
-            Map<EntityPath<?>, Predicate[]> map = AbstractReport.classToJoin.get(QJurorPool.jurorPool);
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJurorPool.jurorPool)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QJurorPool.jurorPool);
 
             assertThat(map.containsKey(QJuror.juror)).isTrue();
             assertThat(map.get(QJuror.juror)).isEqualTo(
@@ -122,8 +125,8 @@ class AbstractReportTest {
 
         @Test
         void appearanceToJuror() {
-            assertThat(AbstractReport.classToJoin.containsKey(QAppearance.appearance)).isTrue();
-            Map<EntityPath<?>, Predicate[]> map = AbstractReport.classToJoin.get(QAppearance.appearance);
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QAppearance.appearance)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QAppearance.appearance);
 
             assertThat(map.containsKey(QJuror.juror)).isTrue();
             assertThat(map.get(QJuror.juror)).isEqualTo(
@@ -133,8 +136,8 @@ class AbstractReportTest {
 
         @Test
         void appearanceToJurorPool() {
-            assertThat(AbstractReport.classToJoin.containsKey(QAppearance.appearance)).isTrue();
-            Map<EntityPath<?>, Predicate[]> map = AbstractReport.classToJoin.get(QAppearance.appearance);
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QAppearance.appearance)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QAppearance.appearance);
 
             assertThat(map.containsKey(QJurorPool.jurorPool)).isTrue();
             assertThat(map.get(QJurorPool.jurorPool)).isEqualTo(
@@ -146,6 +149,7 @@ class AbstractReportTest {
 
 
     @Test
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveConstructorTest() {
         AbstractReport report = new AbstractReportTestImpl(
             poolRequestRepository, QJuror.juror, DataType.JUROR_NUMBER, DataType.FIRST_NAME,
@@ -174,6 +178,7 @@ class AbstractReportTest {
     @DisplayName("public StandardReportResponse getStandardReportResponse(StandardReportRequest request)")
     class GetStandardReportResponse {
         @Test
+        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypical() {
             AbstractReport report = createReport();
             StandardReportRequest request = mock(StandardReportRequest.class);
@@ -601,12 +606,12 @@ class AbstractReportTest {
         DataType dataType;
         Expression<?> expression;
         Tuple tuple;
-        private static final String id = "SomeId";
+        private static final String ID = "SomeId";
 
         <T> void setupNoReturnTypes(T value) {
             dataType = mock(DataType.class);
             when(dataType.getReturnTypes()).thenReturn(null);
-            when(dataType.getId()).thenReturn(id);
+            when(dataType.getId()).thenReturn(ID);
             expression = mock(Expression.class);
             doReturn(expression).when(dataType).getExpression();
             tuple = mock(Tuple.class);
@@ -617,42 +622,42 @@ class AbstractReportTest {
         void positiveNoReturnTypesString() {
             setupNoReturnTypes("SomeValue");
             assertThat(createReport().getDataFromReturnType(tuple, dataType))
-                .isEqualTo(Map.entry(id, "SomeValue"));
+                .isEqualTo(Map.entry(ID, "SomeValue"));
         }
 
         @Test
         void positiveNoReturnTypesLong() {
             setupNoReturnTypes(123L);
             assertThat(createReport().getDataFromReturnType(tuple, dataType))
-                .isEqualTo(Map.entry(id, 123L));
+                .isEqualTo(Map.entry(ID, 123L));
         }
 
         @Test
         void positiveNoReturnTypesLocalDate() {
             setupNoReturnTypes(LocalDate.of(2023, 1, 2));
             assertThat(createReport().getDataFromReturnType(tuple, dataType))
-                .isEqualTo(Map.entry(id, "2023-01-02"));
+                .isEqualTo(Map.entry(ID, "2023-01-02"));
         }
 
         @Test
         void positiveNoReturnTypesLocalTime() {
             setupNoReturnTypes(LocalTime.of(11, 2));
             assertThat(createReport().getDataFromReturnType(tuple, dataType))
-                .isEqualTo(Map.entry(id, "11:02:00"));
+                .isEqualTo(Map.entry(ID, "11:02:00"));
         }
 
         @Test
         void positiveNoReturnTypesLocalDateTime() {
             setupNoReturnTypes(LocalDateTime.of(2023, 1, 2, 11, 2));
             assertThat(createReport().getDataFromReturnType(tuple, dataType))
-                .isEqualTo(Map.entry(id, "2023-01-02T11:02:00"));
+                .isEqualTo(Map.entry(ID, "2023-01-02T11:02:00"));
         }
 
         @Test
         void positiveHasReturnTypes() {
             tuple = mock(Tuple.class);
             dataType = mock(DataType.class);
-            when(dataType.getId()).thenReturn(id);
+            when(dataType.getId()).thenReturn(ID);
 
             DataType subDataType1 = mock(DataType.class);
             doReturn("subDataTypeId1").when(subDataType1).getId();
@@ -678,7 +683,7 @@ class AbstractReportTest {
 
 
             assertThat(createReport().getDataFromReturnType(tuple, dataType))
-                .isEqualTo(Map.entry(id, Map.of(
+                .isEqualTo(Map.entry(ID, Map.of(
                     subDataType1.getId(), "Value1",
                     subDataType2.getId(), 123L,
                     subDataType3.getId(), "Value3"
@@ -858,7 +863,10 @@ class AbstractReportTest {
             when(poolRequest.getOwner()).thenReturn("415");
             securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn("415");
             securityUtilMockedStatic.when(SecurityUtil::isBureau).thenReturn(false);
-            createReport().checkOwnership(poolRequest, false);
+
+
+            assertDoesNotThrow(() -> createReport().checkOwnership(poolRequest, false),
+                "No exception should be thrown when same owner");
         }
 
         @Test
@@ -883,7 +891,8 @@ class AbstractReportTest {
             securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn("400");
             securityUtilMockedStatic.when(SecurityUtil::isBureau).thenReturn(true);
 
-            createReport().checkOwnership(poolRequest, true);
+            assertDoesNotThrow(() -> createReport().checkOwnership(poolRequest, true),
+                "No exception should be thrown when different owner with bureau flag");
         }
 
         @Test
@@ -1084,8 +1093,9 @@ class AbstractReportTest {
         }
 
         @Override
-        public Map<String, StandardReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                                                             StandardReportResponse.TableData tableData) {
+        public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
+            StandardReportRequest request,
+            StandardReportResponse.TableData tableData) {
             return new HashMap<>();
         }
     }

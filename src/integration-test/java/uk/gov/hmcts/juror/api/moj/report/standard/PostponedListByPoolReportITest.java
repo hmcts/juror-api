@@ -18,7 +18,8 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PostponedListByPoolReportITest_typical.sql"
 })
-public class PostponedListByPoolReportITest extends AbstractReportControllerITest {
+@SuppressWarnings("PMD.LawOfDemeter")
+class PostponedListByPoolReportITest extends AbstractReportControllerITest {
     @Autowired
     public PostponedListByPoolReportITest(TestRestTemplate template) {
         super(template, PostponedListByPoolReport.class);
@@ -37,6 +38,7 @@ public class PostponedListByPoolReportITest extends AbstractReportControllerITes
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -46,6 +48,7 @@ public class PostponedListByPoolReportITest extends AbstractReportControllerITes
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -56,6 +59,7 @@ public class PostponedListByPoolReportITest extends AbstractReportControllerITes
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setPoolNumber(null);
@@ -67,6 +71,7 @@ public class PostponedListByPoolReportITest extends AbstractReportControllerITes
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getCourtJwt("414"))

@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import java.util.Map;
 
 @Component
+@SuppressWarnings("PMD.LawOfDemeter")
 public class CurrentPoolStatusReport extends AbstractReport {
 
     @Autowired

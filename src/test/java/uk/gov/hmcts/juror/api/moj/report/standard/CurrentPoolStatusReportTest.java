@@ -2,10 +2,7 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
@@ -21,11 +18,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("PMD.LawOfDemeter")
 class CurrentPoolStatusReportTest extends AbstractReportTestSupport<CurrentPoolStatusReport> {
     public CurrentPoolStatusReportTest() {
         super(QJurorPool.jurorPool,

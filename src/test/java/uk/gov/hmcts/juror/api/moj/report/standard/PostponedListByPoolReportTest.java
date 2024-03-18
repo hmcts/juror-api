@@ -20,10 +20,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class PostponedListByPoolReportTest  extends AbstractReportTestSupport<PostponedListByPoolReport> {
+@SuppressWarnings("PMD.LawOfDemeter")
+class PostponedListByPoolReportTest extends AbstractReportTestSupport<PostponedListByPoolReport> {
 
     public PostponedListByPoolReportTest() {
-        super( QJurorPool.jurorPool,
+        super(QJurorPool.jurorPool,
             PostponedListByPoolReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
@@ -49,10 +50,11 @@ public class PostponedListByPoolReportTest  extends AbstractReportTestSupport<Po
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(StandardReportRequest request,
-                                                                                        StandardReportResponse.TableData tableData,
-                                                                                        List<LinkedHashMap<String,
-                                                                                            Object>> data) {
+    public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
+        StandardReportRequest request,
+        StandardReportResponse.TableData tableData,
+        List<LinkedHashMap<String, Object>> data) {
+
         when(data.size()).thenReturn(2);
         Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);
         assertHeadingContains(map,
@@ -70,6 +72,7 @@ public class PostponedListByPoolReportTest  extends AbstractReportTestSupport<Po
         verify(data, times(1)).size();
         return map;
     }
+
     @Override
     protected StandardReportRequest getValidRequest() {
         return StandardReportRequest.builder()
