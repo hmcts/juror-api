@@ -5,7 +5,7 @@ buildscript {
         springDocVersion = '2.3.0'
         queryDslVersion = '5.1.0'
         flywayVersion = '10.9.1'
-        postgresVersion = '42.7.2'
+        postgresVersion = '42.7.3'
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
