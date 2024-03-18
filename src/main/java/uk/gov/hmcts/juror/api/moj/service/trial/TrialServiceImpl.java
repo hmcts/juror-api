@@ -261,7 +261,7 @@ public class TrialServiceImpl implements TrialService {
         TrialListDto dto = new TrialListDto();
         dto.setCourtroom(trial.getCourtroom().getDescription());
         dto.setTrialNumber(trial.getTrialNumber());
-        dto.setJudge(trial.getJudge().getDescription());
+        dto.setJudge(trial.getJudge().getName());
         dto.setDefendants(trial.getDescription());
         dto.setStartDate(trial.getTrialStartDate());
         dto.setIsActive(trial.getTrialEndDate() == null);
@@ -298,7 +298,7 @@ public class TrialServiceImpl implements TrialService {
         JudgeDto dto = new JudgeDto();
         dto.setCode(judge.getCode());
         dto.setId(judge.getId());
-        dto.setDescription(judge.getDescription());
+        dto.setDescription(judge.getName());
         return dto;
     }
 

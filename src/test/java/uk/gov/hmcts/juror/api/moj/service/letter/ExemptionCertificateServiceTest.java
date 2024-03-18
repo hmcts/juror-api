@@ -119,7 +119,7 @@ public class ExemptionCertificateServiceTest {
 
         Judge judge = new Judge();
         judge.setOwner("415");
-        judge.setDescription("SIR DREDD");
+        judge.setName("SIR DREDD");
 
         Courtroom courtroom = new Courtroom();
         courtroom.setDescription("Test room");

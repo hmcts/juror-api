@@ -2,10 +2,10 @@ buildscript {
     ext {
         springBootVersion = '3.2.3'
         notifyVersion = '5.0.0-RELEASE'
-        springDocVersion = '2.3.0'
+        springDocVersion = '2.4.0'
         queryDslVersion = '5.1.0'
-        flywayVersion = '10.9.1'
-        postgresVersion = '42.7.2'
+        flywayVersion = '10.10.0'
+        postgresVersion = '42.7.3'
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -106,7 +106,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
 
-    implementation('com.google.guava:guava:33.0.0-jre')
+    implementation('com.google.guava:guava:33.1.0-jre')
 
     implementation('org.hibernate.orm:hibernate-core:6.3.0.CR1')
 
@@ -128,7 +128,7 @@ dependencies {
     implementation('org.apache.commons:commons-text:1.11.0')
     implementation("uk.gov.service.notify:notifications-java-client:${notifyVersion}")
 
-    runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.4.19')
+    runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.5.1')
 
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
     implementation group: 'io.rest-assured', name: 'rest-assured'
@@ -147,9 +147,9 @@ dependencies {
 
     testImplementation('net.bytebuddy:byte-buddy:1.14.12')
     testImplementation('junit:junit:4.13.2')
-    testImplementation "org.testcontainers:testcontainers:1.19.6"
-    testImplementation "org.testcontainers:junit-jupiter:1.19.6"
-    testImplementation 'org.testcontainers:postgresql:1.19.6'
+    testImplementation "org.testcontainers:testcontainers:1.19.7"
+    testImplementation "org.testcontainers:junit-jupiter:1.19.7"
+    testImplementation 'org.testcontainers:postgresql:1.19.7'
 
     // Validation
     testImplementation 'org.wiremock:wiremock-standalone:3.4.2'
