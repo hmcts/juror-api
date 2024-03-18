@@ -100,7 +100,7 @@ public abstract class AbstractReport {
         return standardReportResponse;
     }
 
-    private StandardReportResponse.TableData tupleToTableData(List<Tuple> data) {
+    StandardReportResponse.TableData tupleToTableData(List<Tuple> data) {
         StandardReportResponse.TableData tableData = new StandardReportResponse.TableData();
 
         tableData.setHeadings(dataTypes.stream()
@@ -178,7 +178,7 @@ public abstract class AbstractReport {
 
     void addJoins(JPAQuery<Tuple> query) {
         requiredTables.forEach(requiredTable -> {
-            if (requiredTable.equals(from)) {
+            if (from.equals(requiredTable)) {
                 return;
             }
             if (!classToJoin.containsKey(requiredTable)) {
