@@ -4,18 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.text.WordUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.history.Revision;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorCJS;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeed;
 import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
-import uk.gov.hmcts.juror.api.bureau.domain.TSpecial;
 import uk.gov.hmcts.juror.api.bureau.service.BureauService;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
@@ -48,7 +43,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseD
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
-import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
@@ -65,7 +59,6 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
@@ -841,54 +834,13 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         JurorPoolUtils.checkMultipleRecordReadAccess(jurorPoolRepository, jurorNumber, owner);
 
-        Optional<ModJurorDetail> jurorDetailsOpt = jurorDetailRepositoryMod.findById(jurorNumber);
-
-        if (jurorDetailsOpt.isEmpty()) {
-            throw new MojException.NotFound(String.format("Could not find juror details for %s", jurorDetailsOpt),
-                null);
-        }
-
-        final ModJurorDetail jurorDetails = jurorDetailsOpt.get();
-        final BureauJurorDetail bureauJurorDetails = new BureauJurorDetail();
-        BeanUtils.copyProperties(jurorDetails, bureauJurorDetails);
-
-
-        // This part is temporary until a single approach for serving up juror response data is implemented across
-        // the whole codebase
-        setBureauDetailCjsEmployment(jurorDetails, bureauJurorDetails);
-        setBureauDetailReasonableAdjustments(jurorDetails, bureauJurorDetails);
+        ModJurorDetail jurorDetails = jurorDetailRepositoryMod.findById(jurorNumber)
+            .orElseThrow( () -> new MojException.NotFound(String.format("Could not find juror details for %s",
+                jurorNumber), null));
 
         BureauJurorDetailDto responseDto = bureauService.mapJurorDetailsToDto(jurorDetails);
         responseDto.setWelshCourt(jurorDetails.isWelshCourt());
         return responseDto;
-    }
-
-    private void setBureauDetailReasonableAdjustments(ModJurorDetail jurorDetail, BureauJurorDetail bureauJurorDetail) {
-        List<BureauJurorSpecialNeed> bureauReasonableAdjustments = new ArrayList<>();
-        for (JurorReasonableAdjustment adjustment :
-            jurorDetail.getReasonableAdjustments()) {
-            BureauJurorSpecialNeed bureauReasonableAdjustment = new BureauJurorSpecialNeed();
-            bureauReasonableAdjustment.setDetail(adjustment.getReasonableAdjustmentDetail());
-            TSpecial bureauReasonableAdjustmentType = new TSpecial();
-            bureauReasonableAdjustmentType.setCode(adjustment.getReasonableAdjustment().getCode());
-            bureauReasonableAdjustmentType.setDescription(adjustment.getReasonableAdjustment().getDescription());
-            bureauReasonableAdjustment.setSpecialNeed(bureauReasonableAdjustmentType);
-            bureauReasonableAdjustments.add(bureauReasonableAdjustment);
-        }
-        bureauJurorDetail.setSpecialNeeds(bureauReasonableAdjustments);
-        bureauJurorDetail.setSpecialNeedsArrangements(jurorDetail.getReasonableAdjustmentsArrangements());
-    }
-
-    private void setBureauDetailCjsEmployment(ModJurorDetail jurorDetail, BureauJurorDetail bureauJurorDetail) {
-        List<BureauJurorCJS> bureauJurorCjs = new ArrayList<>();
-        for (JurorResponseCjsEmployment cjs :
-            jurorDetail.getCjsEmployments()) {
-            BureauJurorCJS temp = new BureauJurorCJS();
-            temp.setEmployer(cjs.getCjsEmployer());
-            temp.setDetails(cjs.getCjsEmployerDetails());
-            bureauJurorCjs.add(temp);
-        }
-        bureauJurorDetail.setCjsEmployments(bureauJurorCjs);
     }
 
     @Override
