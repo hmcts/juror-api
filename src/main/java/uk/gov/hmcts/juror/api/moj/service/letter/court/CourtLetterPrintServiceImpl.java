@@ -287,7 +287,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
                 if (exemptionRequestDto.getJudge() != null) {
                     builder.judgeName(exemptionRequestDto.getJudge());
                 } else {
-                    builder.judgeName(data.get(TRIAL.judge.description));
+                    builder.judgeName(data.get(TRIAL.judge.name));
                 }
                 builder.periodOfExemption(exemptionRequestDto.getExemptionPeriod());
                 builder.defendant(data.get(TRIAL.description));

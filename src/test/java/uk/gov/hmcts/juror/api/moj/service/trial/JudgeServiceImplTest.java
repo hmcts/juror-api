@@ -59,12 +59,12 @@ public class JudgeServiceImplTest {
         Judge judge1 = new Judge();
         judge1.setOwner("415");
         judge1.setCode("DRED");
-        judge1.setDescription("DREDD");
+        judge1.setName("DREDD");
 
         Judge judge2 = new Judge();
         judge2.setOwner("415");
         judge2.setCode("JUDD");
-        judge2.setDescription("LAWSON");
+        judge2.setName("LAWSON");
 
         List<Judge> judges = new ArrayList<>();
         judges.add(judge1);

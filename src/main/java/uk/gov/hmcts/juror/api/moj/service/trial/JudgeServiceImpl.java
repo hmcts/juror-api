@@ -24,7 +24,7 @@ public class JudgeServiceImpl implements JudgeService {
         List<Judge> judges = judgeRepository.findByOwner(owner);
         List<JudgeDto> judgeDtos = new ArrayList<>();
         for (Judge judge : judges) {
-            judgeDtos.add(createJudgeDto(judge.getId(), judge.getCode(), judge.getDescription()));
+            judgeDtos.add(createJudgeDto(judge.getId(), judge.getCode(), judge.getName()));
         }
         JudgeListDto judgeListDto = new JudgeListDto();
         judgeListDto.setJudges(judgeDtos);
