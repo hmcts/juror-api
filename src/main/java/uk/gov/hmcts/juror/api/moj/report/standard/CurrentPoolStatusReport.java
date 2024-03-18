@@ -35,6 +35,7 @@ public class CurrentPoolStatusReport extends AbstractReport {
             DataType.WARNING);
     }
 
+
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber()))
@@ -55,12 +56,21 @@ public class CurrentPoolStatusReport extends AbstractReport {
     @Override
     public Map<String, StandardReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
                                                                          StandardReportResponse.TableData tableData) {
-        Map<String, StandardReportResponse.DataTypeValue> map = loadStandardPoolHeaders(request,true,true);
+        Map<String, StandardReportResponse.DataTypeValue> map = loadStandardPoolHeaders(request, true, true);
         map.put("total_pool_members", StandardReportResponse.DataTypeValue.builder()
             .displayName("Total Pool Members")
-            .dataType(Integer.class.getSimpleName())
+            .dataType(Long.class.getSimpleName())
             .value(tableData.getData().size())
             .build());
         return map;
+    }
+
+    @Override
+    public Class<?> getRequestValidatorClass() {
+        return RequestValidator.class;
+    }
+
+    public interface RequestValidator extends AbstractRequestValidator {
+
     }
 }

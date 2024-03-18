@@ -16,8 +16,6 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import java.util.Map;
 
 
-
-
 @Component
 public class NonRespondedReport extends AbstractReport {
     @Autowired
@@ -35,19 +33,31 @@ public class NonRespondedReport extends AbstractReport {
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
+        query.where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber()));
         query.where(QJuror.juror.responded.isNull()
             .or(QJuror.juror.responded.eq(false)));
+
+        query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override
     public Map<String, StandardReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
                                                                          StandardReportResponse.TableData tableData) {
-        Map<String, StandardReportResponse.DataTypeValue> map = loadStandardPoolHeaders(request,true,true);
+        Map<String, StandardReportResponse.DataTypeValue> map = loadStandardPoolHeaders(request, true, true);
         map.put("total_non_responded", StandardReportResponse.DataTypeValue.builder()
             .displayName("Total non-responded")
-            .dataType(Integer.class.getSimpleName())
+            .dataType(Long.class.getSimpleName())
             .value(tableData.getData().size())
             .build());
         return map;
+    }
+
+    @Override
+    public Class<?> getRequestValidatorClass() {
+        return NonRespondedReport.RequestValidator.class;
+    }
+
+    public interface RequestValidator extends AbstractRequestValidator {
+
     }
 }

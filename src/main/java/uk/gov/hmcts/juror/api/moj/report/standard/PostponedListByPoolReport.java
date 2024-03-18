@@ -34,9 +34,12 @@ public class PostponedListByPoolReport extends AbstractReport {
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        query.where(QJurorPool.jurorPool.deferralDate.isNotNull()
-            .and(QJurorPool.jurorPool.deferralCode.eq(ExcusalCodeEnum.P.getCode()))
+        query.where(
+            QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber())
+                .and(QJurorPool.jurorPool.deferralDate.isNotNull())
+                .and(QJurorPool.jurorPool.deferralCode.eq(ExcusalCodeEnum.P.getCode()))
         );
+        query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override
@@ -46,9 +49,18 @@ public class PostponedListByPoolReport extends AbstractReport {
         Map<String, StandardReportResponse.DataTypeValue> map = loadStandardPoolHeaders(request, true, true);
         map.put("total_postponed", StandardReportResponse.DataTypeValue.builder()
             .displayName("Total postponed")
-            .dataType(Integer.class.getSimpleName())
+            .dataType(Long.class.getSimpleName())
             .value(tableData.getData().size())
             .build());
         return map;
+    }
+
+    @Override
+    public Class<?> getRequestValidatorClass() {
+        return PostponedListByPoolReport.RequestValidator.class;
+    }
+
+    public interface RequestValidator extends AbstractRequestValidator {
+
     }
 }
