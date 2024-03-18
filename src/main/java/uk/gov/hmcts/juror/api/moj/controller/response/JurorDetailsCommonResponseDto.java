@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
+import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
 
@@ -100,6 +101,10 @@ public class JurorDetailsCommonResponseDto {
     @Schema(name = "Deferral date", description = "Deferral date")
     private LocalDate deferralDate;
 
+    @JsonProperty("deferral_code")
+    @Schema(name = "Deferral Code", description = "Code indicating deferral reason selected by the user")
+    private String deferralCode;
+
     @JsonProperty("policeCheck")
     @Schema(name = "Police Check Status")
     private String policeCheck;
@@ -140,22 +145,20 @@ public class JurorDetailsCommonResponseDto {
         this.excusalRejected = juror.getExcusalRejected();
         this.excusalCode = juror.getExcusalCode();
         this.noDeferrals = juror.getNoDefPos();
-
         this.poolNumber = jurorPool.getPoolNumber();
         this.startDate = jurorPool.getReturnDate();
         this.deferralDate = jurorPool.getDeferralDate();
         this.deferredTo = jurorPool.getDeferralDate() != null ? jurorPool.getDeferralDate() : null;
+        this.deferralCode = jurorPool.getDeferralCode();
         this.courtName = jurorPool.getCourt().getLocCourtName();
 
         if (this.excusalCode != null) {
-            List<ResponseExcusalController.ExcusalCodeDto> excusalCodeDtoList =
-                responseExcusalService.getExcusalReasons();
+            this.excusalDescription =  ExcusalCodeEnum.fromCode(this.excusalCode).getDescription();
+        }
 
-            Optional<ResponseExcusalController.ExcusalCodeDto> excusalCodeReasonOpt = excusalCodeDtoList.stream()
-                .filter(code -> code.getExcusalCode().equals(this.excusalCode)).findFirst();
-
-            this.excusalDescription =
-                excusalCodeReasonOpt.map(ResponseExcusalController.ExcusalCodeDto::getDescription).orElse(null);
+        if (this.deferralCode != null) {
+            // set the excusal description as front end needs it to display the deferral reason
+            this.excusalDescription =  ExcusalCodeEnum.fromCode(this.deferralCode).getDescription();
         }
 
         if (jurorPool.getCourt() != null) {

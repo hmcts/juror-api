@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.enumeration;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 /**
  * Excusal codes (reasons), mapped to the database table t_exc_code.
@@ -41,5 +42,14 @@ public enum ExcusalCodeEnum {
 
     private final String code;
     private final String description;
+
+    public static ExcusalCodeEnum fromCode(String code) throws MojException {
+        for (ExcusalCodeEnum excusalCodeEnum : ExcusalCodeEnum.values()) {
+            if (excusalCodeEnum.getCode().equals(code)) {
+                return excusalCodeEnum;
+            }
+        }
+        throw new MojException.InternalServerError("Invalid excusal code: " + code, null);
+    }
 
 }

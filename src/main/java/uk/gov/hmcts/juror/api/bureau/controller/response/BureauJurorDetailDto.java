@@ -238,54 +238,41 @@ public class BureauJurorDetailDto implements Serializable {
     @Schema(description = "Third party other reason")
     private String thirdPartyOtherReason;
 
-
     @Schema(description = "Third party main phone number")
     private String thirdPartyMainPhoneNumber;
-
 
     @Schema(description = "Third party alternate phone number")
     private String thirdPartyAlternatePhoneNumber;
 
-
     @Schema(description = "Third party email address")
     private String thirdPartyEmailAddress;
-
 
     @Schema(description = "Third party's relationship to juror")
     private String thirdPartyRelationship;
 
-
     @Schema(description = "Juror residency")
     private Boolean residency;
-
 
     @Schema(description = "Juror residency description")
     private String residencyDetail;
 
-
     @Schema(description = "Mental Health Act option selected")
     private Boolean mentalHealthAct;
-
 
     @Schema(description = "Description about mental health act")
     private String mentalHealthActDetails;
 
-
     @Schema(description = "Bail option selected")
     private Boolean bail;
-
 
     @Schema(description = "Details about bail")
     private String bailDetails;
 
-
     @Schema(description = "Conviction option selected")
     private Boolean convictions;
 
-
     @Schema(description = "Details about convictions")
     private String convictionsDetails;
-
 
     @Schema(description = "Reason about deferring jury duties")
     private String deferralReason;
