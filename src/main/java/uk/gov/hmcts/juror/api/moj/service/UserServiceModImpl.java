@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.domain.authentication.UpdateUserDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserCourtDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserSearchDto;
+import uk.gov.hmcts.juror.api.moj.domain.authentication.UsernameDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
@@ -37,7 +38,7 @@ public class UserServiceModImpl implements UserService {
 
     @Override
     @Transactional
-    public void createUser(CreateUserDto createUserDto) {
+    public UsernameDto createUser(CreateUserDto createUserDto) {
         if (doesUserExistWithEmail(createUserDto.getEmail())) {
             throw new MojException.BusinessRuleViolation("Email is already in use",
                 MojException.BusinessRuleViolation.ErrorCode.EMAIL_IN_USE);
@@ -57,8 +58,8 @@ public class UserServiceModImpl implements UserService {
             createUserDto.getUserType())) {
             user.addCourt(getCourtLocation(SecurityUtil.BUREAU_OWNER));
         }
-
         userRepository.save(user);
+        return new UsernameDto(user.getUsername());
     }
 
     @Override

@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.domain.authentication.CreateUserDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UpdateUserDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserSearchDto;
+import uk.gov.hmcts.juror.api.moj.domain.authentication.UsernameDto;
 import uk.gov.hmcts.juror.api.moj.service.UserService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
@@ -54,11 +55,10 @@ public class UserController {
     @PostMapping("/create")
     @Operation(summary = "Create a new user")
     @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR)
-    public ResponseEntity<Void> createUser(
+    public ResponseEntity<UsernameDto> createUser(
         @RequestBody @Valid CreateUserDto createUserDto
     ) {
-        userService.createUser(createUserDto);
-        return ResponseEntity.accepted().build();
+        return ResponseEntity.accepted().body(userService.createUser(createUserDto));
     }
 
     @GetMapping("/{username}")
