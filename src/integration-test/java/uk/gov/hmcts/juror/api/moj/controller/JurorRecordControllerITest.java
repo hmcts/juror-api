@@ -57,7 +57,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseD
 import uk.gov.hmcts.juror.api.moj.controller.response.NameDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PaymentDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
-import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
@@ -76,6 +75,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.ContactEnquiryTypeRepository;
@@ -2954,6 +2954,10 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .isEqualTo(jurorPool.getStatus().getStatus());
         assertThat(dto.getNotes()).as("Expect Notes property to be mapped from the Juror record")
             .isEqualToIgnoringCase(juror.getNotes());
+
+        // verify reply method
+        assertThat(dto.getReplyMethod()).as("Expect Reply Method property to be Digital")
+            .isEqualTo(ReplyMethod.DIGITAL);
     }
 
     private void validateCourtDetails(BureauJurorDetailDto dto, String expectedLocCode) {

@@ -848,34 +848,6 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         return responseDto;
     }
 
-    private void setBureauDetailReasonableAdjustments(ModJurorDetail jurorDetail, BureauJurorDetail bureauJurorDetail) {
-        List<BureauJurorSpecialNeed> bureauReasonableAdjustments = new ArrayList<>();
-        for (JurorReasonableAdjustment adjustment :
-            jurorDetail.getReasonableAdjustments()) {
-            BureauJurorSpecialNeed bureauReasonableAdjustment = new BureauJurorSpecialNeed();
-            bureauReasonableAdjustment.setDetail(adjustment.getReasonableAdjustmentDetail());
-            TSpecial bureauReasonableAdjustmentType = new TSpecial();
-            bureauReasonableAdjustmentType.setCode(adjustment.getReasonableAdjustment().getCode());
-            bureauReasonableAdjustmentType.setDescription(adjustment.getReasonableAdjustment().getDescription());
-            bureauReasonableAdjustment.setSpecialNeed(bureauReasonableAdjustmentType);
-            bureauReasonableAdjustments.add(bureauReasonableAdjustment);
-        }
-        bureauJurorDetail.setSpecialNeeds(bureauReasonableAdjustments);
-        bureauJurorDetail.setSpecialNeedsArrangements(jurorDetail.getReasonableAdjustmentsArrangements());
-    }
-
-    private void setBureauDetailCjsEmployment(ModJurorDetail jurorDetail, BureauJurorDetail bureauJurorDetail) {
-        List<BureauJurorCJS> bureauJurorCjs = new ArrayList<>();
-        for (JurorResponseCjsEmployment cjs :
-            jurorDetail.getCjsEmployments()) {
-            BureauJurorCJS temp = new BureauJurorCJS();
-            temp.setEmployer(cjs.getCjsEmployer());
-            temp.setDetails(cjs.getCjsEmployerDetails());
-            bureauJurorCjs.add(temp);
-        }
-        bureauJurorDetail.setCjsEmployments(bureauJurorCjs);
-    }
-
     @Override
     @Transactional
     public JurorSummonsReplyResponseDto getJurorSummonsReply(BureauJWTPayload payload, String jurorNumber,
