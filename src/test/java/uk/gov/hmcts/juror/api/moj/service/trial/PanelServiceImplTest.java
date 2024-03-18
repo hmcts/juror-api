@@ -560,7 +560,7 @@ class PanelServiceImplTest {
         judge.setId(21L);
         judge.setOwner("415");
         judge.setCode("1234");
-        judge.setDescription("Mr Judge");
+        judge.setName("Mr Judge");
 
         return judge;
     }

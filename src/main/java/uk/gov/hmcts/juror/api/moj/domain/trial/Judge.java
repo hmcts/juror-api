@@ -42,16 +42,12 @@ public class Judge implements Serializable {
     @Length(max = 4)
     private String code;
 
-    @Column(name = "name")
-    @Length(max = 30)
-    private String name;
-
     @Column(name = "is_active")
     private boolean isActive;
 
     @Column(name = "description")
     @Length(max = 30)
-    private String description;
+    private String name;
 
     @Column(name = "last_used")
     private LocalDateTime lastUsed;
