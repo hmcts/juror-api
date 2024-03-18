@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.bureau.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +13,7 @@ import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogItem;
 import uk.gov.hmcts.juror.api.bureau.domain.PhoneLog;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -55,6 +57,11 @@ public class BureauJurorDetailDto implements Serializable {
 
     @Schema(description = "Juror lastname updated")
     private String newLastName;
+
+    @Schema(name = "Reply method", description = "Reply method is either PAPER or DIGITAL", requiredMode =
+        Schema.RequiredMode.REQUIRED)
+    @NotNull
+    private ReplyMethod replyMethod;
 
     @Schema(description = "Processing status of response")
     private String processingStatus;
@@ -386,6 +393,7 @@ public class BureauJurorDetailDto implements Serializable {
         this.newFirstName = jurorDetails.getNewFirstName();
         this.lastName = jurorDetails.getLastName();
         this.newLastName = jurorDetails.getNewLastName();
+        this.replyMethod = jurorDetails.getReplyType().equals("Paper") ? ReplyMethod.PAPER : ReplyMethod.DIGITAL;
         this.processingStatus = jurorDetails.getProcessingStatus();
         this.completedAt = jurorDetails.getCompletedAt();
         this.status = jurorDetails.getStatus();
