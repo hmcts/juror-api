@@ -54,5 +54,5 @@ java:
     SCHEDULER_SERVICE_HOST: juror-scheduler-api.{{ .Values.global.environment }}.platform.hmcts.net
     SCHEDULER_SERVICE_PORT: 443
     PNC_CHECK_SERVICE_SUBJECT: juror-back-end
-    PNC_CHECK_SERVICE_HOST: juror-scheduler-execution.{{ .Values.global.environment }}.platform.hmcts.net
+    PNC_CHECK_SERVICE_HOST: juror-pnc.{{ .Values.global.environment }}.platform.hmcts.net
     PNC_CHECK_SERVICE_PORT: 443
