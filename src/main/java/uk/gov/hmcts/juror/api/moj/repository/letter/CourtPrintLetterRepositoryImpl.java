@@ -142,7 +142,7 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
             }
             case FAILED_TO_ATTEND -> expressions.add(APPEARANCE.attendanceDate);
             case CERTIFICATE_OF_EXEMPTION -> {
-                expressions.add(TRIAL.judge.description);
+                expressions.add(TRIAL.judge.name);
                 expressions.add(TRIAL.description);
             }
             case CERTIFICATE_OF_ATTENDANCE -> {

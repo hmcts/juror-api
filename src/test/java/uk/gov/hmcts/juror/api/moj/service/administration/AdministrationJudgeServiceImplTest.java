@@ -35,6 +35,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @DisplayName("AdministrationJudgeServiceImpl")
 class AdministrationJudgeServiceImplTest {
@@ -152,6 +153,29 @@ class AdministrationJudgeServiceImplTest {
         @Test
         void positiveTypical() {
             Judge judge = mock(Judge.class);
+            when(judge.getCode()).thenReturn("code");
+            doReturn(judge).when(administrationJudgeService).getJudge(321L);
+            JudgeUpdateDto judgeUpdateDto = JudgeUpdateDto.builder()
+                .judgeCode("code")
+                .judgeName("name")
+                .isActive(true)
+                .build();
+            administrationJudgeService.updateJudge(321L, judgeUpdateDto);
+
+            verify(administrationJudgeService, times(1)).getJudge(321L);
+            verify(judgeRepository, times(1)).save(judge);
+            verify(administrationJudgeService, never()).verifyCodeDoesNotExist(any(),any());
+            verify(judge, times(1)).setCode("code");
+            verify(judge, times(1)).setName("name");
+            verify(judge, times(1)).setActive(true);
+            verify(judge, times(1)).getCode();
+            verifyNoMoreInteractions(judge);
+        }
+
+        @Test
+        void positiveCodeChanged() {
+            Judge judge = mock(Judge.class);
+            when(judge.getCode()).thenReturn("newCode");
             doNothing().when(administrationJudgeService).verifyCodeDoesNotExist(any(), any());
             doReturn(judge).when(administrationJudgeService).getJudge(321L);
             doReturn(TestConstants.VALID_COURT_LOCATION).when(judge).getOwner();
@@ -170,6 +194,7 @@ class AdministrationJudgeServiceImplTest {
             verify(judge, times(1)).setName("name");
             verify(judge, times(1)).setActive(true);
             verify(judge, times(1)).getOwner();
+            verify(judge, times(1)).getCode();
             verifyNoMoreInteractions(judge);
         }
     }

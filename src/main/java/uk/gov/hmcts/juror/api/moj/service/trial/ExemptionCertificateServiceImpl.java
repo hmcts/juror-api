@@ -40,7 +40,7 @@ public class ExemptionCertificateServiceImpl implements ExemptionCertificateServ
 
         for (Trial trial : trials) {
             TrialExemptionListDto.TrialExemptionListDtoBuilder builder = TrialExemptionListDto.builder();
-            builder.judge(trial.getJudge().getDescription());
+            builder.judge(trial.getJudge().getName());
             builder.trialNumber(trial.getTrialNumber());
             builder.trialType(trial.getTrialType().getDescription());
             builder.defendants(trial.getDescription());

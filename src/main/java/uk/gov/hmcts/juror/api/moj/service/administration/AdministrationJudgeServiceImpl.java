@@ -31,7 +31,9 @@ public class AdministrationJudgeServiceImpl implements AdministrationJudgeServic
     @Transactional
     public void updateJudge(Long judgeId, JudgeUpdateDto judgeUpdateDto) {
         Judge judge = getJudge(judgeId);
-        verifyCodeDoesNotExist(judge.getOwner(), judgeUpdateDto.getJudgeCode());
+        if(!judge.getCode().equals(judgeUpdateDto.getJudgeCode())) {
+            verifyCodeDoesNotExist(judge.getOwner(), judgeUpdateDto.getJudgeCode());
+        }
         judge.setCode(judgeUpdateDto.getJudgeCode());
         judge.setName(judgeUpdateDto.getJudgeName());
         judge.setActive(judgeUpdateDto.getIsActive());

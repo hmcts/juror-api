@@ -1727,7 +1727,7 @@ public class CourtLetterPrintServiceTest {
         } else {
             data = createPrintLetterTupleEnglish("435");
         }
-        when(data.get(TRIAL.judge.description)).thenReturn("SIR DREDD");
+        when(data.get(TRIAL.judge.name)).thenReturn("SIR DREDD");
         when(data.get(TRIAL.description)).thenReturn("TEST DEFENDANT");
         return data;
     }
