@@ -34,6 +34,7 @@ public class StandardReportResponse {
         private String dataType;
         private Object value;
     }
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -42,6 +43,7 @@ public class StandardReportResponse {
         private List<Heading> headings;
 
         private List<LinkedHashMap<String, Object>> data;
+
 
         @Data
         @Builder
@@ -54,5 +56,4 @@ public class StandardReportResponse {
             private List<Heading> headings;
         }
     }
-
 }

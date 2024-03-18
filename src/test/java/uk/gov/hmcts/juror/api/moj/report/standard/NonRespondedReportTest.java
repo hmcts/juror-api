@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
+import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
@@ -72,5 +73,30 @@ class NonRespondedReportTest extends AbstractReportTestSupport<NonRespondedRepor
         verify(tableData, times(1)).getData();
         verify(data, times(1)).size();
         return map;
+    }
+    @Override
+    protected StandardReportRequest getValidRequest() {
+        return StandardReportRequest.builder()
+            .reportType(report.getName())
+            .poolNumber(TestConstants.VALID_POOL_NUMBER)
+            .build();
+    }
+
+    @Override
+    protected Class<?> getValidatorClass() {
+        return NonRespondedReport.RequestValidator.class;
+    }
+    @Test
+    void negativeMissingPoolNumber() {
+        StandardReportRequest request = getValidRequest();
+        request.setPoolNumber(null);
+        assertValidationFails(request, new ValidationFailure("poolNumber", "must not be null"));
+    }
+
+    @Test
+    void negativeInvalidPoolNumber() {
+        StandardReportRequest request = getValidRequest();
+        request.setPoolNumber(TestConstants.INVALID_POOL_NUMBER);
+        assertValidationFails(request, new ValidationFailure("poolNumber", "must match \"^\\d{9}$\""));
     }
 }

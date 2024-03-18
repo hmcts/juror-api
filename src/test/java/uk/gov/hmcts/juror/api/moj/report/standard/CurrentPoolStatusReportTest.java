@@ -2,6 +2,10 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
@@ -17,11 +21,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class CurrentPoolStatusReportTest extends AbstractReportTestSupport<CurrentPoolStatusReport> {
+class CurrentPoolStatusReportTest extends AbstractReportTestSupport<CurrentPoolStatusReport> {
     public CurrentPoolStatusReportTest() {
         super(QJurorPool.jurorPool,
             CurrentPoolStatusReport.RequestValidator.class,
@@ -41,8 +46,21 @@ public class CurrentPoolStatusReportTest extends AbstractReportTestSupport<Curre
     }
 
     @Override
+    protected StandardReportRequest getValidRequest() {
+        return StandardReportRequest.builder()
+            .reportType(report.getName())
+            .poolNumber(TestConstants.VALID_POOL_NUMBER)
+            .build();
+    }
+
+    @Override
+    protected Class<?> getValidatorClass() {
+        return CurrentPoolStatusReport.RequestValidator.class;
+    }
+
+
+    @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
-        request.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
         report.preProcessQuery(query, request);
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.poolNumber.eq(TestConstants.VALID_POOL_NUMBER));
@@ -84,5 +102,19 @@ public class CurrentPoolStatusReportTest extends AbstractReportTestSupport<Curre
         verify(tableData, times(1)).getData();
         verify(data, times(1)).size();
         return map;
+    }
+
+    @Test
+    void negativeMissingPoolNumber() {
+        StandardReportRequest request = getValidRequest();
+        request.setPoolNumber(null);
+        assertValidationFails(request, new ValidationFailure("poolNumber", "must not be null"));
+    }
+
+    @Test
+    void negativeInvalidPoolNumber() {
+        StandardReportRequest request = getValidRequest();
+        request.setPoolNumber(TestConstants.INVALID_POOL_NUMBER);
+        assertValidationFails(request, new ValidationFailure("poolNumber", "must match \"^\\d{9}$\""));
     }
 }

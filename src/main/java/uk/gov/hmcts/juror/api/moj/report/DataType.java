@@ -4,7 +4,6 @@ import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import lombok.Getter;
-import uk.gov.hmcts.juror.api.juror.domain.QPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
@@ -23,11 +22,11 @@ public enum DataType {
     LAST_NAME("Last Name", String.class, QJuror.juror.lastName, QJuror.juror),
     STATUS("Status", String.class, QJurorPool.jurorPool.status.statusDesc, QJurorPool.jurorPool),
     DEFERRALS("Deferrals", String.class, QJuror.juror.noDefPos, QJuror.juror),
-    ABSENCES("Juror Number", Integer.class,
+    ABSENCES("Absences", Long.class,
         QAppearance.appearance.attendanceType.eq(AttendanceType.ABSENT).count()),
     MAIN_PHONE("Main Phone", String.class, QJuror.juror.phoneNumber, QJuror.juror),
     MOBILE_PHONE("Mobile Phone", String.class, QJuror.juror.altPhoneNumber, QJuror.juror),
-    HOME_PHONE("Mobile Phone", String.class, QJuror.juror.phoneNumber, QJuror.juror),
+    HOME_PHONE("Home Phone", String.class, QJuror.juror.phoneNumber, QJuror.juror),
 
     OTHER_PHONE("Other Phone", String.class, QJuror.juror.altPhoneNumber, QJuror.juror),
     WORK_PHONE("Work Phone", String.class, QJuror.juror.workPhone, QJuror.juror),
@@ -43,7 +42,7 @@ public enum DataType {
     POSTPONED_TO("Postcode", LocalDate.class, QJurorPool.jurorPool.deferralDate, QJuror.juror),
 
     DEFERRED_TO("Deferred To", LocalDate.class, QJurorPool.jurorPool.deferralDate, QJuror.juror),
-    NUMBER_DEFERRED("Number Deferred", Integer.class, QJuror.juror.count()),
+    NUMBER_DEFERRED("Number Deferred", Long.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
 
 
     REASONABLE_ADJUSTMENT_CODE("Reasonable Adjustment Code", String.class, QJuror.juror.reasonableAdjustmentCode,
@@ -54,7 +53,7 @@ public enum DataType {
         REASONABLE_ADJUSTMENT_MESSAGE),
 
     ON_CALL("On Call", Boolean.class, QJurorPool.jurorPool.onCall, QJurorPool.jurorPool),
-    SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate, QPool.pool),
+    SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate, QPoolRequest.poolRequest),
 
     ;
 
@@ -70,19 +69,19 @@ public enum DataType {
         this.displayName = displayName;
         this.dataType = dataType;
         this.expression = expression;
-        this.requiredTables = List.of(requiredTables);
         this.returnTypes = null;
+        this.requiredTables = List.of(requiredTables);
     }
 
     DataType(String displayName, Class<?> dataType, DataType... dataTypes) {
-        this.returnTypes = dataTypes;
         this.displayName = displayName;
         this.dataType = dataType;
+        this.returnTypes = dataTypes;
         this.expression = null;
         this.requiredTables = null;
     }
 
-    public String getId() {
+    public final String getId() {
         return this.name().toLowerCase(Locale.ROOT);
     }
 }

@@ -3,8 +3,17 @@ package uk.gov.hmcts.juror.api.moj.report;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.jpa.impl.JPAQuery;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
@@ -17,6 +26,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,11 +47,16 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
     protected R report;
     private PoolRequestRepository poolRequestRepository;
 
+    private final Validator validator;
+
     public abstract R createReport(PoolRequestRepository poolRequestRepository);
 
 
     public AbstractReportTestSupport(EntityPath<?> from,
                                      Class<?> validatorClass, DataType... dataTypes) {
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        this.validator = validatorFactory.getValidator();
+        validatorFactory.close();
         this.poolRequestRepository = mock(PoolRequestRepository.class);
         this.report = createReport(poolRequestRepository);
         this.from = from;
@@ -54,6 +69,26 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
         this.poolRequestRepository = mock(PoolRequestRepository.class);
         this.report = spy(createReport(poolRequestRepository));
         doNothing().when(report).addGroupBy(any(), any());
+    }
+
+    protected abstract StandardReportRequest getValidRequest();
+
+    protected abstract Class<?> getValidatorClass();
+
+    @Test
+    void negativeRequestMissingReportType() {
+        StandardReportRequest request = getValidRequest();
+        request.setReportType(null);
+        assertValidationFails(request, new ValidationFailure("reportType", "must not be blank"));
+    }
+
+    protected final List<ConstraintViolation<StandardReportRequest>> validateRequest(StandardReportRequest request) {
+        return new ArrayList<>(validator.validate(request, getValidatorClass()));
+    }
+
+    @Test
+    void positiveRequestIsValid() {
+
     }
 
 
@@ -73,7 +108,7 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
     final void positivePreProcessQueryTypical() {
         JPAQuery<Tuple> query = mock(JPAQuery.class,
             withSettings().defaultAnswer(RETURNS_SELF));
-        StandardReportRequest request = new StandardReportRequest();
+        StandardReportRequest request = getValidRequest();
         positivePreProcessQueryTypical(query, request);
     }
 
@@ -145,6 +180,28 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
         assertThat(actualMap).isEqualTo(standardPoolMappings);
         if (hasStandardPoolHeaders) {
             verify(report, times(1)).loadStandardPoolHeaders(request, true, true);
+        }
+    }
+
+    protected void assertValidationFails(StandardReportRequest request, ValidationFailure... validationFailures) {
+        List<ConstraintViolation<StandardReportRequest>> violations = validateRequest(request);
+        assertThat(violations).hasSize(validationFailures.length);
+        assertThat(violations.stream()
+            .map(ValidationFailure::new)
+            .toList())
+            .isEqualTo(List.of(validationFailures));
+    }
+
+    @Data
+    @AllArgsConstructor
+    @Builder
+    public static class ValidationFailure {
+        private final String property;
+        private final String message;
+
+        public ValidationFailure(ConstraintViolation<StandardReportRequest> standardReportRequestConstraintViolation) {
+            this.property = standardReportRequestConstraintViolation.getPropertyPath().toString();
+            this.message = standardReportRequestConstraintViolation.getMessage();
         }
     }
 }

@@ -57,7 +57,9 @@ public class NonRespondedReport extends AbstractReport {
         return NonRespondedReport.RequestValidator.class;
     }
 
-    public interface RequestValidator extends AbstractRequestValidator {
+    public interface RequestValidator extends
+        AbstractReport.Validators.AbstractRequestValidator,
+        AbstractReport.Validators.RequirePoolNumber {
 
     }
 }

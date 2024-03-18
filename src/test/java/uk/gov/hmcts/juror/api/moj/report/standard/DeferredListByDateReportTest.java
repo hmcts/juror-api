@@ -128,4 +128,16 @@ public class DeferredListByDateReportTest extends AbstractReportTestSupport<Defe
         verify(tableData, times(1)).getData();
         return map;
     }
+
+    @Override
+    protected StandardReportRequest getValidRequest() {
+        return StandardReportRequest.builder()
+            .reportType(report.getName())
+            .build();
+    }
+
+    @Override
+    protected Class<?> getValidatorClass() {
+        return DeferredListByDateReport.RequestValidator.class;
+    }
 }

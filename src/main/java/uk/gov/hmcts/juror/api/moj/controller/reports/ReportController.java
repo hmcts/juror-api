@@ -26,10 +26,10 @@ import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
 public class ReportController {
 
     private final ReportService reportService;
-    @PostMapping("/juror")
+    @PostMapping("/standard")
     @Operation(summary = "View a give report")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<StandardReportResponse> viewReportByJurorNumber(
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<StandardReportResponse> viewReportStandard(
         @RequestBody
         @Valid StandardReportRequest standardReportRequest
     ) {

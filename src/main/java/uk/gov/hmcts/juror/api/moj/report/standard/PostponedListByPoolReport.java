@@ -60,7 +60,9 @@ public class PostponedListByPoolReport extends AbstractReport {
         return PostponedListByPoolReport.RequestValidator.class;
     }
 
-    public interface RequestValidator extends AbstractRequestValidator {
+    public interface RequestValidator extends
+        AbstractReport.Validators.AbstractRequestValidator,
+        AbstractReport.Validators.RequirePoolNumber {
 
     }
 }

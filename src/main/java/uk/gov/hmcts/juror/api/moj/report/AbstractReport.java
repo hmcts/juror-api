@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 
 @Getter
 public abstract class AbstractReport {
-    private static final Map<EntityPath<?>, Map<EntityPath<?>, Predicate[]>>
+    static final Map<EntityPath<?>, Map<EntityPath<?>, Predicate[]>>
         classToJoin;
 
     static {
@@ -56,15 +56,14 @@ public abstract class AbstractReport {
             }
         ));
     }
-
-    private final PoolRequestRepository poolRequestRepository;
-
     @PersistenceContext
     private EntityManager entityManager;
-    private final List<DataType> dataTypes;
-    private final Set<EntityPath<?>> requiredTables;
-    private final List<DataType> effectiveDataTypes;
-    private final EntityPath<?> from;
+
+    final PoolRequestRepository poolRequestRepository;
+    final List<DataType> dataTypes;
+    final Set<EntityPath<?>> requiredTables;
+    final List<DataType> effectiveDataTypes;
+    final EntityPath<?> from;
 
     public AbstractReport(PoolRequestRepository poolRequestRepository, EntityPath<?> from, DataType... dataType) {
         this.poolRequestRepository = poolRequestRepository;
@@ -79,6 +78,8 @@ public abstract class AbstractReport {
             .flatMap(List::stream)
             .collect(Collectors.toSet());
     }
+
+    public abstract Class<?> getRequestValidatorClass();
 
     public final String getName() {
         return getClass().getSimpleName();
@@ -117,7 +118,7 @@ public abstract class AbstractReport {
         return tableData;
     }
 
-    private StandardReportResponse.TableData.Heading getHeading(DataType dataType) {
+    StandardReportResponse.TableData.Heading getHeading(DataType dataType) {
         StandardReportResponse.TableData.Heading heading = StandardReportResponse.TableData.Heading.builder()
             .id(dataType.getId())
             .name(dataType.getDisplayName())
@@ -140,10 +141,10 @@ public abstract class AbstractReport {
                 if (value instanceof LocalDate localDate) {
                     value = DateTimeFormatter.ISO_DATE.format(localDate);
                 }
-                if (value instanceof LocalTime localTime) {
+                else if (value instanceof LocalTime localTime) {
                     value = DateTimeFormatter.ISO_TIME.format(localTime);
                 }
-                if (value instanceof LocalDateTime localDateTime) {
+                else if (value instanceof LocalDateTime localDateTime) {
                     value = DateTimeFormatter.ISO_DATE_TIME.format(localDateTime);
                 }
             }
@@ -160,7 +161,7 @@ public abstract class AbstractReport {
         return new AbstractMap.SimpleEntry<>(dataType.getId(), value);
     }
 
-    protected List<Tuple> getData(StandardReportRequest request) {
+    List<Tuple> getData(StandardReportRequest request) {
         JPAQuery<Tuple> query = getQuery();
         addJoins(query);
         preProcessQuery(query, request);
@@ -168,14 +169,14 @@ public abstract class AbstractReport {
     }
 
 
-    protected JPAQuery<Tuple> getQuery() {
+    JPAQuery<Tuple> getQuery() {
         return getQueryFactory()
             .select(effectiveDataTypes.stream()
                 .map(DataType::getExpression)
                 .toArray(Expression[]::new)).from(from);
     }
 
-    protected void addJoins(JPAQuery<Tuple> query) {
+    void addJoins(JPAQuery<Tuple> query) {
         requiredTables.forEach(requiredTable -> {
             if (requiredTable.equals(from)) {
                 return;
@@ -194,7 +195,7 @@ public abstract class AbstractReport {
         });
     }
 
-    protected List<DataType> getDataType(DataType dataType) {
+    List<DataType> getDataType(DataType dataType) {
         List<DataType> data = new ArrayList<>();
         if (dataType.getReturnTypes() == null) {
             data.add(dataType);
@@ -224,7 +225,7 @@ public abstract class AbstractReport {
         StandardReportRequest request,
         StandardReportResponse.TableData tableData);
 
-    protected void checkOwnership(PoolRequest poolRequest, boolean allowBureau) {
+    void checkOwnership(PoolRequest poolRequest, boolean allowBureau) {
         if (!poolRequest.getOwner().equals(SecurityUtil.getActiveOwner())
             && !(SecurityUtil.isBureau() && allowBureau)) {
             throw new MojException.Forbidden("User not allowed to access this pool", null);
@@ -240,33 +241,44 @@ public abstract class AbstractReport {
         return new HashMap<>(Map.of(
             "pool_number", StandardReportResponse.DataTypeValue.builder()
                 .displayName("Pool Number")
-                .dataType("String")
+                .dataType(String.class.getSimpleName())
                 .value(request.getPoolNumber())
                 .build(),
             "pool_type", StandardReportResponse.DataTypeValue.builder()
                 .displayName("Pool Type")
-                .dataType("String")
+                .dataType(String.class.getSimpleName())
                 .value(poolRequest.getPoolType().getDescription())
                 .build(),
             "service_start_date", StandardReportResponse.DataTypeValue.builder()
                 .displayName("Service Start Date")
-                .dataType("Date")
+                .dataType(LocalDate.class.getSimpleName())
                 .value(DateTimeFormatter.ISO_DATE.format(poolRequest.getReturnDate()))
                 .build(),
             "court_name", StandardReportResponse.DataTypeValue.builder()
                 .displayName("Court Name")
-                .dataType("String")
+                .dataType(String.class.getSimpleName())
                 .value(
                     poolRequest.getCourtLocation().getName() + " (" + poolRequest.getCourtLocation().getLocCode() + ")")
                 .build()
         ));
     }
 
-    private PoolRequest getPoolRequest(String poolNumber) {
+    PoolRequest getPoolRequest(String poolNumber) {
         Optional<PoolRequest> poolRequest = poolRequestRepository.findByPoolNumber(poolNumber);
         if (poolRequest.isEmpty()) {
             throw new MojException.NotFound("Pool not found", null);
         }
         return poolRequest.get();
     }
+
+    public static class Validators {
+        public interface AbstractRequestValidator {
+
+        }
+
+        public interface RequirePoolNumber {
+
+        }
+    }
+
 }

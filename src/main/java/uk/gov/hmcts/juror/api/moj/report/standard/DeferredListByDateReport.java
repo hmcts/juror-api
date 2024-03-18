@@ -59,7 +59,7 @@ public class DeferredListByDateReport extends AbstractReport {
         return DeferredListByDateReport.RequestValidator.class;
     }
 
-    public interface RequestValidator extends AbstractRequestValidator {
+    public interface RequestValidator extends AbstractReport.Validators.AbstractRequestValidator {
 
     }
 }
