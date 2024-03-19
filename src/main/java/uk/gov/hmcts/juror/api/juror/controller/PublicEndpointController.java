@@ -43,6 +43,7 @@ import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService
 @RestController
 @RequestMapping(value = "/api/v1/public", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Public API", description = "Public Interface API")
+@SuppressWarnings("PMD")
 public class PublicEndpointController {
     private final JurorPersistenceService jurorPersistenceService;
     private final JurorService jurorService;
