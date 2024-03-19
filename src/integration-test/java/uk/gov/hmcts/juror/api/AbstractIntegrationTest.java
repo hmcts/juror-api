@@ -242,6 +242,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
             MojException.InternalServerError.class,
             expectedError);
     }
+
     protected void assertInternalServerErrorViolation(ResponseEntity<String> response, String url,
                                                       Class<? extends Exception> expectedException,
                                                       String expectedError) {
@@ -321,5 +322,15 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
             this.status = status.value();
             this.error = status.getReasonPhrase();
         }
+    }
+
+    public String getBureauJwt() {
+        return createBureauJwt("test_bureau_standard", "400",
+            UserType.BUREAU, Set.of(), "400");
+    }
+
+    public String getCourtJwt(String number) {
+        return createBureauJwt("test_court_standard", number,
+            UserType.COURT, Set.of(), number);
     }
 }

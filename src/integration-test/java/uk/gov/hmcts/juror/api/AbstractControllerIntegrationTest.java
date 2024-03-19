@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public abstract class AbstractControllerIntegrationTest<P, R> {
+public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIntegrationTest {
 
 
     private final TestRestTemplate template;
@@ -46,6 +46,13 @@ public abstract class AbstractControllerIntegrationTest<P, R> {
         this.template = template;
         this.validStatus = validStatus;
         this.returnType = ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+    }
+    protected AbstractControllerIntegrationTest(HttpMethod method, TestRestTemplate template,
+                                                HttpStatus validStatus, Type returnType) {
+        this.method = method;
+        this.template = template;
+        this.validStatus = validStatus;
+        this.returnType = returnType;
     }
 
     @BeforeEach
@@ -90,10 +97,12 @@ public abstract class AbstractControllerIntegrationTest<P, R> {
         @Accessors(chain = true, fluent = true)
         public class ControllerTestResponse<T> extends AbstractIntegrationTest {
             protected final ResponseEntity<T> responseEntity;
+            protected final T body;
 
             public ControllerTestResponse(ResponseEntity<T> responseEntity) {
                 super();
                 this.responseEntity = responseEntity;
+                this.body = responseEntity.getBody();
             }
 
             void assertValidStatusCode() {
@@ -103,25 +112,24 @@ public abstract class AbstractControllerIntegrationTest<P, R> {
 
             public void assertValidNoBody() {
                 assertValidStatusCode();
-                assertThat(responseEntity.getBody()).isNull();
+                assertThat(body).isNull();
             }
 
             public void assertValid(BiConsumer<ControllerTest<P1, R1>, T> responseValidator) {
                 assertValidStatusCode();
-                responseValidator.accept(ControllerTest.this, responseEntity.getBody());
+                responseValidator.accept(ControllerTest.this, body);
             }
 
             @SuppressWarnings("unchecked")
             public void assertValidCollectionExactOrder(Object... responseItems) {
                 assertValidStatusCode();
-                T response = responseEntity.getBody();
-                assertThat(response).isInstanceOf(Collection.class);
-                assertThat((Collection<Object>) response).containsExactly(responseItems);
+                assertThat(body).isInstanceOf(Collection.class);
+                assertThat((Collection<Object>) body).containsExactly(responseItems);
             }
 
             public void assertEquals(Object object) {
                 assertValidStatusCode();
-                assertThat(responseEntity.getBody()).isEqualTo(object);
+                assertThat(body).isEqualTo(object);
             }
 
             public ControllerTestResponse<T> printResponse() {
@@ -130,7 +138,7 @@ public abstract class AbstractControllerIntegrationTest<P, R> {
             }
 
             public ControllerTestResponse<T> responseConsumer(Consumer<T> consumer) {
-                consumer.accept(responseEntity.getBody());
+                consumer.accept(body);
                 return this;
             }
         }
@@ -153,7 +161,8 @@ public abstract class AbstractControllerIntegrationTest<P, R> {
                 assertInvalidPayload(responseEntity, fieldErrors);
             }
 
-            public void assertBusinessRuleViolation(MojException.BusinessRuleViolation.ErrorCode errorCode, String message) {
+            public void assertBusinessRuleViolation(MojException.BusinessRuleViolation.ErrorCode errorCode,
+                                                    String message) {
                 assertBusinessRuleViolation(responseEntity, message, errorCode);
             }
 
