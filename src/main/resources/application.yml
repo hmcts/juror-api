@@ -212,6 +212,7 @@ uk:
               subject: ${PNC_CHECK_SERVICE_SUBJECT}
             host: localhost
             port: 8090
+            scheme: http
 ---
 spring:
   config:
