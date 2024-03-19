@@ -1,7 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.querydsl.core.types.dsl.ComparableExpressionBase;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.Expressions;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
@@ -91,9 +91,9 @@ public class PoolMemberFilterRequestQuery implements IsPageable {
         CHECKED_IN(Expressions.booleanPath("checked_in_today")),
         STATUS(QJurorStatus.jurorStatus.statusDesc);
 
-        private final ComparableExpressionBase<?> comparableExpression;
+        private final Expression<? extends Comparable<?>> comparableExpression;
 
-        SortField(ComparableExpressionBase<?> comparableExpression) {
+        SortField(Expression<? extends Comparable<?>> comparableExpression) {
             this.comparableExpression = comparableExpression;
         }
     }

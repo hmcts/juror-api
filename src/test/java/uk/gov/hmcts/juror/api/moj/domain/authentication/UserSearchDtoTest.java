@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.domain.authentication;
 
+import com.querydsl.core.types.ExpressionUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
@@ -81,6 +82,18 @@ class UserSearchDtoTest extends AbstractValidatorTest<UserSearchDto> {
         void activeTest() {
             assertThat(UserSearchDto.SortField.ACTIVE.getComparableExpression())
                 .isEqualTo(QUser.user.active);
+        }
+
+        @Test
+        void managerTest() {
+            assertThat(UserSearchDto.SortField.MANAGER.getComparableExpression())
+                .isEqualTo(ExpressionUtils.path(Boolean.class, "is_manager"));
+        }
+
+        @Test
+        void seniorJurorOfficerTest() {
+            assertThat(UserSearchDto.SortField.SENIOR_JUROR_OFFICER.getComparableExpression())
+                .isEqualTo(ExpressionUtils.path(Boolean.class, "is_senior_juror_officer"));
         }
     }
 }
