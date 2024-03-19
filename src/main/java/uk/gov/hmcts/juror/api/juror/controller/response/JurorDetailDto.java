@@ -1,12 +1,12 @@
 package uk.gov.hmcts.juror.api.juror.controller.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 
 import java.time.LocalDate;
 
@@ -80,6 +80,7 @@ public class JurorDetailDto {
      */
     @Schema(description = "The date of the hearing the juror has been summoned to")
     @JsonProperty("hearingDate")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate hearingDate;
 
     @Schema(description = "Court location code")

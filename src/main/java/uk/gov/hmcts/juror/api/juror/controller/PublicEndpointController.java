@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.juror.controller.response.JurorHolidaysResponseDto
 import uk.gov.hmcts.juror.api.juror.service.HolidaysService;
 import uk.gov.hmcts.juror.api.juror.service.JurorPersistenceService;
 import uk.gov.hmcts.juror.api.juror.service.JurorService;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 
 /**
@@ -42,6 +43,7 @@ import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService
 @RestController
 @RequestMapping(value = "/api/v1/public", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Public API", description = "Public Interface API")
+@SuppressWarnings("PMD")
 public class PublicEndpointController {
     private final JurorPersistenceService jurorPersistenceService;
     private final JurorService jurorService;
@@ -136,6 +138,7 @@ public class PublicEndpointController {
 
         // BEGIN - custom validation
         Class<?> validationGroup = null;
+        responseDto.setReplyMethod(ReplyMethod.DIGITAL);
         if (!ObjectUtils.isEmpty(responseDto.getThirdParty())
             && !ObjectUtils.isEmpty(responseDto.getThirdParty().getThirdPartyReason())) {
             if ("deceased".equalsIgnoreCase(responseDto.getThirdParty().getThirdPartyReason().trim())) {
