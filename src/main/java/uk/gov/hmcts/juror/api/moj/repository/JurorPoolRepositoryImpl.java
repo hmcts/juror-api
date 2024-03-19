@@ -13,8 +13,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
-import uk.gov.hmcts.juror.api.juror.domain.QPool;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolMemberFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -33,7 +31,6 @@ import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -235,12 +232,12 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             .where(QPoolRequest.poolRequest.poolNumber.eq(poolNumber))
             .fetch();
 
-        if (results.size() == 0) {
+        if (results.isEmpty()) {
             throw new MojException.NotFound("Pool number not found", null);
         }
 
-        if (owner.equals(SecurityUtil.BUREAU_OWNER) || results.contains(SecurityUtil.BUREAU_OWNER) ||
-            results.contains(owner)) {
+        if (SecurityUtil.BUREAU_OWNER.equals(owner) || results.contains(SecurityUtil.BUREAU_OWNER)
+            || results.contains(owner)) {
 
             return queryFactory.select(QJurorPool.jurorPool.juror.jurorNumber)
                 .from(QJurorPool.jurorPool)

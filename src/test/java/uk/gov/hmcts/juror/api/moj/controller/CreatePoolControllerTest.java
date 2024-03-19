@@ -52,9 +52,6 @@ class CreatePoolControllerTest {
     class GetThinPoolMembers {
         private static final String URL = BASE_URL + "/members/{poolNumber}";
 
-        GetThinPoolMembers() {
-        }
-
         @BeforeEach
         void beforeEach() {
             securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
