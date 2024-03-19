@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.domain.authentication.CreateUserDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UpdateUserDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserSearchDto;
+import uk.gov.hmcts.juror.api.moj.domain.authentication.UsernameDto;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.UserService;
 
@@ -120,12 +121,15 @@ class UserControllerTest {
                 .name("name")
                 .build();
 
+            UsernameDto usernameDto = new UsernameDto("username");
+            when(userService.createUser(request))
+                .thenReturn(usernameDto);
             mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(TestUtils.asJsonString(request)))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isAccepted())
-                .andExpect(content().string(""));
+                .andExpect(content().json(TestUtils.asJsonString(usernameDto)));
 
             verify(userService, times(1))
                 .createUser(request);

@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.moj.domain.authentication.UpdateUserDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserCourtDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserSearchDto;
+import uk.gov.hmcts.juror.api.moj.domain.authentication.UsernameDto;
 import uk.gov.hmcts.juror.api.moj.enumeration.CourtType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
@@ -761,7 +762,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("POST " + CreateUser.URL)
-    class CreateUser extends AbstractControllerIntegrationTest<CreateUserDto, Void> {
+    class CreateUser extends AbstractControllerIntegrationTest<CreateUserDto, UsernameDto> {
         private static final String URL = BASE_URL + "/create";
 
         protected CreateUser() {
@@ -822,7 +823,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 testBuilder()
                     .payload(userDto)
                     .triggerValid()
-                    .assertValidNoBody();
+                    .assertEquals(new UsernameDto("test_new_user"));
                 assertUserCreated(userDto, "test_new_user");
             }
 
@@ -833,7 +834,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 testBuilder()
                     .payload(userDto)
                     .triggerValid()
-                    .assertValidNoBody();
+                    .assertEquals(new UsernameDto("test_new_user"));
                 assertUserCreated(userDto, "test_new_user", "400");
             }
 
@@ -844,7 +845,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 testBuilder()
                     .payload(userDto)
                     .triggerValid()
-                    .assertValidNoBody();
+                    .assertEquals(new UsernameDto("test_new_user"));
                 assertUserCreated(userDto, "test_new_user", "400");
             }
 
@@ -857,7 +858,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 testBuilder()
                     .payload(userDto)
                     .triggerValid()
-                    .assertValidNoBody();
+                    .assertEquals(new UsernameDto("test_court_sjo1"));
                 assertUserCreated(userDto, "test_court_sjo1");
             }
         }

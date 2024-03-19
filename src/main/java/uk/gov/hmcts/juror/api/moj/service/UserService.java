@@ -9,11 +9,12 @@ import uk.gov.hmcts.juror.api.moj.domain.authentication.JwtDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UpdateUserDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserSearchDto;
+import uk.gov.hmcts.juror.api.moj.domain.authentication.UsernameDto;
 
 import java.util.List;
 
 public interface UserService {
-    void createUser(CreateUserDto createUserDto);
+    UsernameDto createUser(CreateUserDto createUserDto);
 
     List<CourtDto> getCourts(String email);
 
