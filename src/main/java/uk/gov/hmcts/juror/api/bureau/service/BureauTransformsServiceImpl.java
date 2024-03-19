@@ -62,6 +62,7 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
             .deferralDate(detail.getDeferralDate())
             .excusalReason(detail.getExcusalReason())
             .poolNumber(detail.getPoolNumber())
+            .replyMethod(detail.getReplyType())
             .urgent(detail.getUrgent())
             .superUrgent(detail.getSuperUrgent())
             .slaOverdue(detail.getSlaOverdue())
