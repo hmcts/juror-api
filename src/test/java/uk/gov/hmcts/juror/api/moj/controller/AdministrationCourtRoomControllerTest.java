@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.moj.domain.administration.CourtRoomDto;
+import uk.gov.hmcts.juror.api.moj.domain.administration.CourtRoomWithIdDto;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.administration.AdministrationCourtRoomService;
 
@@ -65,6 +66,14 @@ public class AdministrationCourtRoomControllerTest {
             .build();
     }
 
+    private CourtRoomWithIdDto getValidCourtRoomWithIdDto() {
+        return CourtRoomWithIdDto.builder()
+            .id(1L)
+            .roomName(TestConstants.VALID_COURT_ROOM_NAME)
+            .roomDescription(TestConstants.VALID_COURT_ROOM_DESC)
+            .build();
+    }
+
     @Nested
     @DisplayName("GET " + ViewCourtRoomsDetails.URL)
     class ViewCourtRoomsDetails {
@@ -77,7 +86,7 @@ public class AdministrationCourtRoomControllerTest {
 
         @Test
         void positiveTypical() throws Exception {
-            CourtRoomDto courtRoomDto = getValidCourtRoomDto();
+            CourtRoomWithIdDto courtRoomDto = getValidCourtRoomWithIdDto();
             doReturn(List.of(courtRoomDto)).when(administrationCourtRoomService).viewCourtRooms(any());
 
             mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION)))
@@ -162,7 +171,7 @@ public class AdministrationCourtRoomControllerTest {
 
         @Test
         void positiveTypical() throws Exception {
-            CourtRoomDto courtRoomDto = getValidCourtRoomDto();
+            CourtRoomWithIdDto courtRoomDto = getValidCourtRoomWithIdDto();
             doReturn(courtRoomDto).when(administrationCourtRoomService).viewCourtRoom(any(), any());
 
             mockMvc.perform(get(toUrl(TestConstants.VALID_COURT_LOCATION, "1")))

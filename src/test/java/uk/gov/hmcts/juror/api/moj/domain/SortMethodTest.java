@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
-import com.querydsl.core.types.dsl.ComparableExpressionBase;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
 
@@ -10,34 +12,34 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SortMethodTest {
 
 
-    private static final ComparableExpressionBase<?> COMPARABLE_EXPRESSION_BASE =
+    private static final Expression<? extends Comparable<?>> COMPARABLE_EXPRESSION_BASE =
         QJuror.juror.jurorNumber.eq(TestConstants.VALID_JUROR_NUMBER);
 
     @Test
     void positiveHasComparableExpressionSortAsc() {
         assertThat(SortMethod.ASC.from(new SortMethodTestClass())).isEqualTo(
-            COMPARABLE_EXPRESSION_BASE.asc()
+            new OrderSpecifier<>(Order.ASC, COMPARABLE_EXPRESSION_BASE)
         );
     }
 
     @Test
     void positiveHasComparableExpressionSortDesc() {
         assertThat(SortMethod.DESC.from(new SortMethodTestClass())).isEqualTo(
-            COMPARABLE_EXPRESSION_BASE.desc()
+            new OrderSpecifier<>(Order.DESC, COMPARABLE_EXPRESSION_BASE)
         );
     }
 
     @Test
     void positiveComparableExpressionBaseSortAsc() {
         assertThat(SortMethod.ASC.from(COMPARABLE_EXPRESSION_BASE)).isEqualTo(
-            COMPARABLE_EXPRESSION_BASE.asc()
+            new OrderSpecifier<>(Order.ASC, COMPARABLE_EXPRESSION_BASE)
         );
     }
 
     @Test
     void positiveComparableExpressionBaseSortDesc() {
         assertThat(SortMethod.DESC.from(COMPARABLE_EXPRESSION_BASE)).isEqualTo(
-            COMPARABLE_EXPRESSION_BASE.desc()
+            new OrderSpecifier<>(Order.DESC, COMPARABLE_EXPRESSION_BASE)
         );
     }
 
@@ -45,7 +47,7 @@ class SortMethodTest {
     static class SortMethodTestClass implements SortMethod.HasComparableExpression {
 
         @Override
-        public ComparableExpressionBase<?> getComparableExpression() {
+        public Expression<? extends Comparable<?>> getComparableExpression() {
             return COMPARABLE_EXPRESSION_BASE;
         }
     }

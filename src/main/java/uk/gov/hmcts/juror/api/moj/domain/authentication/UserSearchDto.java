@@ -3,7 +3,8 @@ package uk.gov.hmcts.juror.api.moj.domain.authentication;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.querydsl.core.types.dsl.ComparableExpressionBase;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.ExpressionUtils;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -48,11 +49,13 @@ public class UserSearchDto implements IsPageable {
         USER_TYPE(QUser.user.userType),
         COURT(QUser.user.courts.any().owner),
         LAST_SIGNED_IN(QUser.user.lastLoggedIn),
-        ACTIVE(QUser.user.active);
+        ACTIVE(QUser.user.active),
+        MANAGER(ExpressionUtils.path(Boolean.class, "is_manager")),
+        SENIOR_JUROR_OFFICER(ExpressionUtils.path(Boolean.class, "is_senior_juror_officer"));
 
-        private final ComparableExpressionBase<?> comparableExpression;
+        private final Expression<? extends Comparable<?>> comparableExpression;
 
-        SortField(ComparableExpressionBase<?> comparableExpression) {
+        SortField(Expression<? extends Comparable<?>> comparableExpression) {
             this.comparableExpression = comparableExpression;
         }
     }

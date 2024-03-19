@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.administration.CourtRoomDto;
+import uk.gov.hmcts.juror.api.moj.domain.administration.CourtRoomWithIdDto;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.trial.CourtroomRepository;
@@ -68,6 +69,13 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             .roomDescription("Test: Courtroom " + id)
             .build();
     }
+    static CourtRoomWithIdDto getValidCourtRoomWithIdDto(int id, Long dbId) {
+        return CourtRoomWithIdDto.builder()
+            .id(dbId)
+            .roomName("TST" + id)
+            .roomDescription("Test: Courtroom " + id)
+            .build();
+    }
 
     @Nested
     @DisplayName("GET " + ViewCourtRoomsDetails.URL)
@@ -84,12 +92,12 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
         @Nested
         @DisplayName("Positive")
         class Positive {
-            void assertValid(String locCode, CourtRoomDto... expectedResponse) {
+            void assertValid(String locCode, CourtRoomWithIdDto... expectedResponse) {
                 final String jwt =
                     createBureauJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-                ResponseEntity<List<CourtRoomDto>> response = template.exchange(
+                ResponseEntity<List<CourtRoomWithIdDto>> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
                         URI.create(toUrl(locCode))),
                     new ParameterizedTypeReference<>() {
@@ -97,6 +105,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
                 assertThat(response.getStatusCode())
                     .as("Expect the HTTP GET request to be successful")
                     .isEqualTo(HttpStatus.OK);
+                System.out.println(response);
                 assertThat(response.getBody()).isNotNull();
                 assertThat(response.getBody()).isEqualTo(List.of(expectedResponse));
             }
@@ -104,17 +113,17 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             @Test
             void typicalCourt1() {
                 assertValid("415",
-                    getValidCourtRoomDto(1),
-                    getValidCourtRoomDto(2),
-                    getValidCourtRoomDto(5)
+                    getValidCourtRoomWithIdDto(1,99_991L),
+                    getValidCourtRoomWithIdDto(2,99_992L),
+                    getValidCourtRoomWithIdDto(5,99_995L)
                 );
             }
 
             @Test
             void typicalCourt2() {
                 assertValid("416",
-                    getValidCourtRoomDto(3),
-                    getValidCourtRoomDto(4)
+                    getValidCourtRoomWithIdDto(3,99_993L),
+                    getValidCourtRoomWithIdDto(4,99_994L)
                 );
             }
 
@@ -294,15 +303,15 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
         @Nested
         @DisplayName("Positive")
         class Positive {
-            void assertValid(String locCode, Long id, CourtRoomDto expectedResponse) {
+            void assertValid(String locCode, Long id, CourtRoomWithIdDto expectedResponse) {
                 final String jwt =
                     createBureauJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-                ResponseEntity<CourtRoomDto> response = template.exchange(
+                ResponseEntity<CourtRoomWithIdDto> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
                         URI.create(toUrl(locCode, id))),
-                    CourtRoomDto.class);
+                    CourtRoomWithIdDto.class);
                 assertThat(response.getStatusCode())
                     .as("Expect the HTTP GET request to be successful")
                     .isEqualTo(HttpStatus.OK);
@@ -312,12 +321,12 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
 
             @Test
             void typicalCourt1() {
-                assertValid("415", 99_991L, getValidCourtRoomDto(1));
+                assertValid("415", 99_991L, getValidCourtRoomWithIdDto(1,99_991L));
             }
 
             @Test
             void typicalCourt2() {
-                assertValid("416", 99_994L, getValidCourtRoomDto(4));
+                assertValid("416", 99_994L, getValidCourtRoomWithIdDto(4,99_994L));
             }
 
         }
