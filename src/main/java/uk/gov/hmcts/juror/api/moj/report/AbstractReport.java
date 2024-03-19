@@ -193,7 +193,7 @@ public abstract class AbstractReport {
                 query.join(requiredTable).on(joinOptions.get(from));
             } else {
                 throw new MojException.InternalServerError(
-                    "No Implemented yet: " + requiredTable + " from " + from.getClass(), null);
+                    "Not Implemented yet: " + requiredTable + " from " + from.getClass(), null);
             }
         });
     }

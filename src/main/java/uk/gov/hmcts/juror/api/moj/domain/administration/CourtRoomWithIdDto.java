@@ -2,28 +2,27 @@ package uk.gov.hmcts.juror.api.moj.domain.administration;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class CourtRoomDto {
-    @NotBlank
-    @Length(min = 1, max = 6)
-    private String roomName;
-    @NotBlank
-    @Length(min = 1, max = 30)
-    private String roomDescription;
+public class CourtRoomWithIdDto extends CourtRoomDto {
 
-    public CourtRoomDto(Courtroom courtRoom) {
-        this(courtRoom.getRoomNumber(), courtRoom.getDescription());
+    @NotNull
+    private Long id;
+
+    public CourtRoomWithIdDto(Courtroom courtRoom) {
+        super(courtRoom);
+        this.id = courtRoom.getId();
     }
 }
