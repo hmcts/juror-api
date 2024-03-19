@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.administration.CourtRoomDto;
+import uk.gov.hmcts.juror.api.moj.domain.administration.CourtRoomWithIdDto;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -73,14 +74,17 @@ class AdministrationCourtRoomServiceImplTest {
         void positiveTypical() {
             doReturn(List.of(
                 Courtroom.builder()
+                    .id(1L)
                     .roomNumber(TestConstants.VALID_COURT_ROOM_NAME + "1")
                     .description(TestConstants.VALID_COURT_ROOM_DESC + " 1")
                     .build(),
                 Courtroom.builder()
+                    .id(2L)
                     .roomNumber(TestConstants.VALID_COURT_ROOM_NAME + "2")
                     .description(TestConstants.VALID_COURT_ROOM_DESC + " 2")
                     .build(),
                 Courtroom.builder()
+                    .id(3L)
                     .roomNumber(TestConstants.VALID_COURT_ROOM_NAME + "3")
                     .description(TestConstants.VALID_COURT_ROOM_DESC + " 3")
                     .build()
@@ -88,15 +92,18 @@ class AdministrationCourtRoomServiceImplTest {
 
             assertThat(administrationCourtRoomService.viewCourtRooms(TestConstants.VALID_COURT_LOCATION))
                 .containsExactlyInAnyOrder(
-                    CourtRoomDto.builder()
+                    CourtRoomWithIdDto.builder()
+                        .id(1L)
                         .roomName(TestConstants.VALID_COURT_ROOM_NAME + "1")
                         .roomDescription(TestConstants.VALID_COURT_ROOM_DESC + " 1")
                         .build(),
-                    CourtRoomDto.builder()
+                    CourtRoomWithIdDto.builder()
+                        .id(2L)
                         .roomName(TestConstants.VALID_COURT_ROOM_NAME + "2")
                         .roomDescription(TestConstants.VALID_COURT_ROOM_DESC + " 2")
                         .build(),
-                    CourtRoomDto.builder()
+                    CourtRoomWithIdDto.builder()
+                        .id(3L)
                         .roomName(TestConstants.VALID_COURT_ROOM_NAME + "3")
                         .roomDescription(TestConstants.VALID_COURT_ROOM_DESC + " 3")
                         .build()
@@ -122,15 +129,17 @@ class AdministrationCourtRoomServiceImplTest {
 
         @Test
         void positiveTypical() {
+            long id = 123L;
             Courtroom courtroom = Courtroom.builder()
+                .id(id)
                 .roomNumber(TestConstants.VALID_COURT_ROOM_NAME)
                 .description(TestConstants.VALID_COURT_ROOM_DESC)
                 .build();
-            long id = 123L;
             doReturn(courtroom).when(administrationCourtRoomService)
                 .getCourtRoom(TestConstants.VALID_COURT_LOCATION, id);
             assertThat(administrationCourtRoomService.viewCourtRoom(TestConstants.VALID_COURT_LOCATION, id))
-                .isEqualTo(CourtRoomDto.builder()
+                .isEqualTo(CourtRoomWithIdDto.builder()
+                    .id(id)
                     .roomName(TestConstants.VALID_COURT_ROOM_NAME)
                     .roomDescription(TestConstants.VALID_COURT_ROOM_DESC)
                     .build());

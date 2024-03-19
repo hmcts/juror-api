@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.QueryResults;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -74,10 +75,13 @@ class UserRepositoryImplTest {
 
         @Test
         void positiveNoFilter() {
-            JPAQuery<User> jpaQuery = mock(JPAQuery.class,
+            JPAQuery<Tuple> jpaQuery = mock(JPAQuery.class,
                 withSettings().defaultAnswer(RETURNS_SELF).verboseLogging());
 
-            when(queryFactory.select(QUser.user)).thenReturn(jpaQuery);
+            when(queryFactory.select(QUser.user,
+                QUser.user.roles.contains(Role.MANAGER).as("is_manager"),
+                QUser.user.roles.contains(Role.SENIOR_JUROR_OFFICER).as("is_senior_juror_officer"))).thenReturn(
+                jpaQuery);
 
             QueryResults<User> queryResult = mock(QueryResults.class);
             doReturn(queryResult).when(jpaQuery).fetchResults();
@@ -129,7 +133,13 @@ class UserRepositoryImplTest {
                     )
                 )
                 .build();
-            doReturn(List.of(user1, user2, user3)).when(queryResult).getResults();
+            Tuple tuple1 = mock(Tuple.class);
+            when(tuple1.get(QUser.user)).thenReturn(user1);
+            Tuple tuple2 = mock(Tuple.class);
+            when(tuple2.get(QUser.user)).thenReturn(user2);
+            Tuple tuple3 = mock(Tuple.class);
+            when(tuple3.get(QUser.user)).thenReturn(user3);
+            doReturn(List.of(tuple1, tuple2, tuple3)).when(queryResult).getResults();
 
             doReturn(3L).when(queryResult).getTotal();
 
@@ -190,7 +200,9 @@ class UserRepositoryImplTest {
             verify(userRepository, times(3)).getCourtsByOwner("400");
             verify(userRepository, times(1)).getCourtsByOwner("403");
 
-            verify(queryFactory, times(1)).select(QUser.user);
+            verify(queryFactory, times(1)).select(QUser.user,
+                QUser.user.roles.contains(Role.MANAGER).as("is_manager"),
+                QUser.user.roles.contains(Role.SENIOR_JUROR_OFFICER).as("is_senior_juror_officer"));
             verify(jpaQuery, times(1)).from(QUser.user);
             verify(jpaQuery, times(1)).fetchResults();
             verify(jpaQuery, times(1)).limit(25);
@@ -201,11 +213,11 @@ class UserRepositoryImplTest {
             verifyNoMoreInteractions(queryFactory, jpaQuery);
         }
 
-        private JPAQuery<User> standardSetup() {
-            JPAQuery<User> jpaQuery = mock(JPAQuery.class,
+        private JPAQuery<Tuple> standardSetup() {
+            JPAQuery<Tuple> jpaQuery = mock(JPAQuery.class,
                 withSettings().defaultAnswer(RETURNS_SELF).verboseLogging());
 
-            when(queryFactory.select(any(Expression.class))).thenReturn(jpaQuery);
+            when(queryFactory.select(any(Expression[].class))).thenReturn(jpaQuery);
 
             QueryResults<User> queryResult = mock(QueryResults.class);
             doReturn(queryResult).when(jpaQuery).fetchResults();
@@ -225,13 +237,15 @@ class UserRepositoryImplTest {
                     )
                 )
                 .build();
-            doReturn(List.of(user1)).when(queryResult).getResults();
+            Tuple tuple = mock(Tuple.class);
+            when(tuple.get(QUser.user)).thenReturn(user1);
+            doReturn(List.of(tuple)).when(queryResult).getResults();
 
             doReturn(3L).when(queryResult).getTotal();
             return jpaQuery;
         }
 
-        private void standardValidation(JPAQuery<User> jpaQuery, PaginatedList<UserDetailsDto> results) {
+        private void standardValidation(JPAQuery<Tuple> jpaQuery, PaginatedList<UserDetailsDto> results) {
             PaginatedList<UserDetailsDto> expectedResponse = new PaginatedList<>();
             expectedResponse.setCurrentPage(1L);
             expectedResponse.setTotalItems(3L);
@@ -255,7 +269,9 @@ class UserRepositoryImplTest {
             verify(userRepository, times(1)).getQueryFactory();
             verify(userRepository, times(1)).getCourtsByOwner("403");
 
-            verify(queryFactory, times(1)).select(QUser.user);
+            verify(queryFactory, times(1)).select(QUser.user,
+                QUser.user.roles.contains(Role.MANAGER).as("is_manager"),
+                QUser.user.roles.contains(Role.SENIOR_JUROR_OFFICER).as("is_senior_juror_officer"));
             verify(jpaQuery, times(1)).from(QUser.user);
             verify(jpaQuery, times(1)).fetchResults();
             verify(jpaQuery, times(1)).limit(25);
@@ -264,7 +280,7 @@ class UserRepositoryImplTest {
 
         @Test
         void positiveUserNameFilter() {
-            JPAQuery<User> jpaQuery = standardSetup();
+            JPAQuery<Tuple> jpaQuery = standardSetup();
 
             standardValidation(jpaQuery, userRepository.messageSearch(
                 UserSearchDto.builder()
@@ -283,7 +299,7 @@ class UserRepositoryImplTest {
 
         @Test
         void positiveCourtFilter() {
-            JPAQuery<User> jpaQuery = standardSetup();
+            JPAQuery<Tuple> jpaQuery = standardSetup();
 
             standardValidation(jpaQuery, userRepository.messageSearch(
                 UserSearchDto.builder()
@@ -302,7 +318,7 @@ class UserRepositoryImplTest {
 
         @Test
         void positiveUserTypeFilter() {
-            JPAQuery<User> jpaQuery = standardSetup();
+            JPAQuery<Tuple> jpaQuery = standardSetup();
 
             standardValidation(jpaQuery, userRepository.messageSearch(
                 UserSearchDto.builder()
@@ -322,7 +338,7 @@ class UserRepositoryImplTest {
 
         @Test
         void positiveIsOnlyActiveFilter() {
-            JPAQuery<User> jpaQuery = standardSetup();
+            JPAQuery<Tuple> jpaQuery = standardSetup();
 
             standardValidation(jpaQuery, userRepository.messageSearch(
                 UserSearchDto.builder()
@@ -342,7 +358,7 @@ class UserRepositoryImplTest {
 
         @Test
         void positiveSortMethodChange() {
-            JPAQuery<User> jpaQuery = standardSetup();
+            JPAQuery<Tuple> jpaQuery = standardSetup();
 
             standardValidation(jpaQuery, userRepository.messageSearch(
                 UserSearchDto.builder()
@@ -360,7 +376,7 @@ class UserRepositoryImplTest {
 
         @Test
         void positiveSortFieldChange() {
-            JPAQuery<User> jpaQuery = standardSetup();
+            JPAQuery<Tuple> jpaQuery = standardSetup();
 
             standardValidation(jpaQuery, userRepository.messageSearch(
                 UserSearchDto.builder()

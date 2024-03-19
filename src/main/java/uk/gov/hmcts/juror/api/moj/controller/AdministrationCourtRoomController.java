@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.moj.domain.administration.CourtRoomDto;
+import uk.gov.hmcts.juror.api.moj.domain.administration.CourtRoomWithIdDto;
 import uk.gov.hmcts.juror.api.moj.service.administration.AdministrationCourtRoomService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
@@ -41,7 +42,7 @@ public class AdministrationCourtRoomController {
     @Operation(summary = "View a court room")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize(SecurityUtil.LOC_CODE_AUTH + " && " + SecurityUtil.IS_MANAGER)
-    public ResponseEntity<List<CourtRoomDto>> viewCourtRoomsDetails(
+    public ResponseEntity<List<CourtRoomWithIdDto>> viewCourtRoomsDetails(
         @P("loc_code")
         @PathVariable("loc_code")
         @CourtLocationCode
@@ -69,7 +70,7 @@ public class AdministrationCourtRoomController {
     @Operation(summary = "View a court room")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize(SecurityUtil.LOC_CODE_AUTH + " && " + SecurityUtil.IS_MANAGER)
-    public ResponseEntity<CourtRoomDto> viewCourtRoomDetails(
+    public ResponseEntity<CourtRoomWithIdDto> viewCourtRoomDetails(
         @P("loc_code")
         @PathVariable("loc_code")
         @CourtLocationCode

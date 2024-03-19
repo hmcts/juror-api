@@ -1,7 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.querydsl.core.types.dsl.ComparableExpressionBase;
+import com.querydsl.core.types.Expression;
 import jakarta.validation.constraints.Min;
 import lombok.Builder;
 import lombok.Data;
@@ -77,9 +77,9 @@ public class JurorPoolSearch implements IsPageable {
         POSTCODE(QJuror.juror.postcode),
         COMPLETION_DATE(QJuror.juror.completionDate);
 
-        private final ComparableExpressionBase<?> comparableExpression;
+        private final Expression<? extends Comparable<?>> comparableExpression;
 
-        SortField(ComparableExpressionBase<?> comparableExpression) {
+        SortField(Expression<? extends Comparable<?>> comparableExpression) {
             this.comparableExpression = comparableExpression;
         }
     }

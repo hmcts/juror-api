@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.administration.CourtRoomDto;
+import uk.gov.hmcts.juror.api.moj.domain.administration.CourtRoomWithIdDto;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -36,16 +37,16 @@ public class AdministrationCourtRoomServiceImpl implements AdministrationCourtRo
 
     @Override
     @Transactional(readOnly = true)
-    public List<CourtRoomDto> viewCourtRooms(String locCode) {
+    public List<CourtRoomWithIdDto> viewCourtRooms(String locCode) {
         return courtroomRepository.findByCourtLocationLocCode(locCode).stream()
-            .map(CourtRoomDto::new)
+            .map(CourtRoomWithIdDto::new)
             .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public CourtRoomDto viewCourtRoom(String locCode, Long id) {
-        return new CourtRoomDto(getCourtRoom(locCode, id));
+    public CourtRoomWithIdDto viewCourtRoom(String locCode, Long id) {
+        return new CourtRoomWithIdDto(getCourtRoom(locCode, id));
     }
 
     @Override

@@ -1,7 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.ComparableExpressionBase;
 
 @SuppressWarnings("PMD.LawOfDemeter")
 public enum SortMethod {
@@ -12,15 +13,15 @@ public enum SortMethod {
         return from(expressionObject.getComparableExpression());
     }
 
-    public OrderSpecifier<?> from(ComparableExpressionBase<?> expressionObject) {
+    public OrderSpecifier<?> from(Expression<? extends Comparable<?>> expressionObject) {
         if (SortMethod.ASC.equals(this)) {
-            return expressionObject.asc();
+            return new OrderSpecifier<>(Order.ASC, expressionObject);
         } else {
-            return expressionObject.desc();
+            return new OrderSpecifier<>(Order.DESC, expressionObject);
         }
     }
 
     public interface HasComparableExpression {
-        ComparableExpressionBase<?> getComparableExpression();
+        Expression<? extends Comparable<?>> getComparableExpression();
     }
 }

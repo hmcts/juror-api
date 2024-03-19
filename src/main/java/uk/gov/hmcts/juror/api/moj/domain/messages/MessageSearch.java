@@ -3,8 +3,8 @@ package uk.gov.hmcts.juror.api.moj.domain.messages;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.ComparableExpressionBase;
 import com.querydsl.jpa.JPQLQuery;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -160,9 +160,9 @@ public class MessageSearch implements IsPageable {
         COMPLETION_DATE(QJuror.juror.completionDate),
         WELSH_LANGUAGE(QJuror.juror.welsh);
 
-        private final ComparableExpressionBase<?> comparableExpression;
+        private final Expression<? extends Comparable<?>> comparableExpression;
 
-        SortField(ComparableExpressionBase<?> comparableExpression) {
+        SortField(Expression<? extends Comparable<?>> comparableExpression) {
             this.comparableExpression = comparableExpression;
         }
     }

@@ -32,7 +32,6 @@ import uk.gov.hmcts.juror.api.moj.domain.authentication.CreateUserDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UpdateUserDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserCourtDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsDto;
-import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserSearchDto;
 import uk.gov.hmcts.juror.api.moj.enumeration.CourtType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -644,6 +643,84 @@ public class UserControllerITest extends AbstractIntegrationTest {
                         .build());
             }
 
+            @Test
+            void managerSort() {
+                UserSearchDto payload = getValidPayload();
+                payload.setSortMethod(SortMethod.DESC);
+                payload.setSortField(UserSearchDto.SortField.MANAGER);
+                payload.setPageLimit(3);
+                payload.setPageNumber(1);
+                testBuilder()
+                    .payload(payload)
+                    .jwt(createBureauJwt("test_admin_standard", "400",
+                        UserType.ADMINISTRATOR, Set.of(), "400"))
+                    .triggerValid()
+                    .printResponse()
+                    .assertEquals(PaginatedList.builder()
+                        .currentPage(1L)
+                        .totalPages(5L)
+                        .totalItems(14L)
+                        .data(List.of(UserDetailsDto.builder()
+                                .username("test_court_manager")
+                                .email("test_court_manager@email.gov.uk")
+                                .name("Court Manager")
+                                .isActive(true)
+                                .lastSignIn(null)
+                                .userType(UserType.COURT)
+                                .roles(Set.of(Role.MANAGER))
+                                .courts(List.of(UserCourtDto.builder()
+                                    .primaryCourt(CourtDto.builder()
+                                        .name("CHESTER")
+                                        .locCode("415")
+                                        .courtType(CourtType.MAIN).build())
+                                    .satelliteCourts(List.of(CourtDto.builder()
+                                            .name("WARRINGTON")
+                                            .locCode("462")
+                                            .courtType(CourtType.SATELLITE).build(),
+                                        CourtDto.builder()
+                                            .name("KNUTSFORD")
+                                            .locCode("767")
+                                            .courtType(CourtType.SATELLITE).build())).build()))
+                                .build(),
+                            UserDetailsDto.builder()
+                                .username("test_court_sjo_mangr")
+                                .email("test_court_sjo_mangr@email.gov.uk")
+                                .name("Court SJO & Manager")
+                                .isActive(true)
+                                .lastSignIn(null)
+                                .userType(UserType.COURT)
+                                .roles(Set.of(Role.MANAGER,Role.SENIOR_JUROR_OFFICER))
+                                .courts(List.of(UserCourtDto.builder()
+                                    .primaryCourt(CourtDto.builder()
+                                        .name("CHESTER")
+                                        .locCode("415")
+                                        .courtType(CourtType.MAIN).build())
+                                    .satelliteCourts(List.of(CourtDto.builder()
+                                            .name("WARRINGTON")
+                                            .locCode("462")
+                                            .courtType(CourtType.SATELLITE).build(),
+                                        CourtDto.builder()
+                                            .name("KNUTSFORD")
+                                            .locCode("767")
+                                            .courtType(CourtType.SATELLITE).build())).build()))
+                                .build(),
+                            UserDetailsDto.builder()
+                                .username("test_admin_inactive")
+                                .email("test_admin_inactive@email.gov.uk")
+                                .name("Admin Inactive")
+                                .isActive(false)
+                                .lastSignIn(null)
+                                .userType(UserType.ADMINISTRATOR)
+                                .roles(Set.of())
+                                .courts(List.of(UserCourtDto.builder()
+                                    .primaryCourt(CourtDto.builder()
+                                        .name("Jury Central Summoning Bureau")
+                                        .locCode("400")
+                                        .courtType(CourtType.MAIN).build())
+                                    .satelliteCourts(List.of()).build()))
+                                .build()))
+                        .build());
+            }
         }
 
         @DisplayName("Negative")
