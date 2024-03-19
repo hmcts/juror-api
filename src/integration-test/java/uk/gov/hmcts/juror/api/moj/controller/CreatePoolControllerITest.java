@@ -589,7 +589,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(response.getBody().indexOf("111111111")).isEqualTo(-1);
         assertThat(response.getBody().indexOf("777777777")).isEqualTo(-1);
     }
-    
+
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getThinPoolMembersMissingPool() throws Exception {
@@ -606,11 +606,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         RequestEntity<PoolMemberFilterRequestQuery> requestEntity = new RequestEntity<>(httpHeaders,
                                                                                         HttpMethod.GET, uri);
-        ResponseEntity<List<String>> response = template.exchange(requestEntity, new ParameterizedTypeReference<>() {
+        ResponseEntity<?> response = template.exchange(requestEntity, new ParameterizedTypeReference<>() {
         });
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
-        assertThat(response.getBody()).hasSize(0);
     }
 
     @Test
@@ -632,8 +631,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         ResponseEntity<?> response = template.exchange(requestEntity, new ParameterizedTypeReference<>() {
         });
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-
-        assertThat(response.getBody());
     }
 
     @Test
@@ -657,6 +654,28 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         assertThat(response.getBody()).hasSize(0);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
+    public void getThinPoolMembersUnauthorised() throws Exception {
+        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+                                                   .userLevel("1")
+                                                   .login("COURT_USER")
+                                                   .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+                                                   .daysToExpire(89)
+                                                   .owner("414")
+                                                   .build());
+
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/members/415230104");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolMemberFilterRequestQuery> requestEntity = new RequestEntity<>(httpHeaders,
+                                                                                        HttpMethod.GET, uri);
+        ResponseEntity<?> response = template.exchange(requestEntity, new ParameterizedTypeReference<>() {
+        });
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Test

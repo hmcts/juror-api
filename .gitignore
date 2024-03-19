@@ -18,6 +18,7 @@
 .scannerwork
 .settings
 .springBeans
+.vscode
 /bin/
 /build/
 /classes/

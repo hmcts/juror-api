@@ -8,6 +8,7 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -52,24 +54,91 @@ class JurorPoolRepositoryImplTest {
         Mockito.when(jpaQuery.where(Mockito.any(Predicate.class))).thenReturn(jpaQuery);
     }
 
-    @Test
-    void fetchThinPoolMembers() {
-        final String poolNumber = "12345678";
-        final String owner = "415";
+    @Nested
+    class FetchThinPoolMembers {
+        @BeforeEach
+        void beforeEach() {
+            Mockito.when(queryFactory.select(Mockito.any(Expression.class))).thenReturn(jpaQuery);
+            Mockito.when(jpaQuery.from(Mockito.any(EntityPath.class))).thenReturn(jpaQuery);
+        }
 
-        Mockito.when(queryFactory.select(Mockito.any(Expression.class))).thenReturn(jpaQuery);
-        Mockito.when(jpaQuery.from(Mockito.any(EntityPath.class))).thenReturn(jpaQuery);
+        @Test
+        void happyPath() {
+            final String poolNumber = "12345678";
+            final String owner = "415";
 
-        jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner);
+            Mockito.when(jpaQuery.fetch()).thenReturn(Arrays.asList("415"));
 
-        Mockito.verify(queryFactory, Mockito.times(1)).select(QJurorPool.jurorPool.juror.jurorNumber);
-        Mockito.verify(jpaQuery, Mockito.times(1)).from(QJurorPool.jurorPool);
-        Mockito.verify(jpaQuery, Mockito.times(1)).where(QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber)
-                                                             .and(QJurorPool.jurorPool.owner.eq(owner))
-                                                             .and(QJurorPool.jurorPool.isActive.isTrue()));
-        Mockito.verify(jpaQuery, Mockito.times(1)).fetch();
-        Mockito.verifyNoMoreInteractions(jpaQuery);
+            jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner);
+
+            Mockito.verify(queryFactory, Mockito.times(1)).select(QJurorPool.jurorPool.juror.jurorNumber);
+            Mockito.verify(jpaQuery, Mockito.times(1)).from(QJurorPool.jurorPool);
+            Mockito.verify(jpaQuery, Mockito.times(1)).where(QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber)
+                                                                 .and(QJurorPool.jurorPool.owner.eq(owner))
+                                                                 .and(QJurorPool.jurorPool.isActive.isTrue()));
+            Mockito.verify(jpaQuery, Mockito.times(2)).fetch();
+            Mockito.verifyNoMoreInteractions(jpaQuery);
+        }
+
+        @Test
+        void happyPathForBureauPool() {
+            final String poolNumber = "12345678";
+            final String owner = "415";
+
+            Mockito.when(jpaQuery.fetch()).thenReturn(Arrays.asList(SecurityUtil.BUREAU_OWNER));
+
+            jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner);
+
+            Mockito.verify(queryFactory, Mockito.times(1)).select(QJurorPool.jurorPool.juror.jurorNumber);
+            Mockito.verify(jpaQuery, Mockito.times(1)).from(QJurorPool.jurorPool);
+            Mockito.verify(jpaQuery, Mockito.times(1)).where(QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber)
+                                                                 .and(QJurorPool.jurorPool.owner.eq(owner))
+                                                                 .and(QJurorPool.jurorPool.isActive.isTrue()));
+            Mockito.verify(jpaQuery, Mockito.times(2)).fetch();
+            Mockito.verifyNoMoreInteractions(jpaQuery);
+        }
+
+        @Test
+        void happyPathForBureauUser() {
+            final String poolNumber = "12345678";
+            final String owner = SecurityUtil.BUREAU_OWNER;
+
+            Mockito.when(jpaQuery.fetch()).thenReturn(Arrays.asList("415"));
+
+            jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner);
+
+            Mockito.verify(queryFactory, Mockito.times(1)).select(QJurorPool.jurorPool.juror.jurorNumber);
+            Mockito.verify(jpaQuery, Mockito.times(1)).from(QJurorPool.jurorPool);
+            Mockito.verify(jpaQuery, Mockito.times(1)).where(QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber)
+                                                                 .and(QJurorPool.jurorPool.owner.eq(owner))
+                                                                 .and(QJurorPool.jurorPool.isActive.isTrue()));
+            Mockito.verify(jpaQuery, Mockito.times(2)).fetch();
+            Mockito.verifyNoMoreInteractions(jpaQuery);
+        }
+
+        @Test
+        void poolNotFound() {
+            final String poolNumber = "12345678";
+            final String owner = "415";
+
+            Mockito.when(jpaQuery.fetch()).thenReturn(Arrays.asList());
+
+            Assertions.assertThatExceptionOfType(MojException.NotFound.class)
+                .isThrownBy(() -> jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner));
+        }
+
+        @Test
+        void poolNotAllowed() {
+            final String poolNumber = "12345678";
+            final String owner = "415";
+
+            Mockito.when(jpaQuery.fetch()).thenReturn(Arrays.asList("416"));
+
+            Assertions.assertThatExceptionOfType(MojException.Forbidden.class)
+                .isThrownBy(() -> jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner));
+        }
     }
+
 
     @Nested
     class FetchFilteredPoolMembers {
@@ -83,7 +152,7 @@ class JurorPoolRepositoryImplTest {
         }
 
         @Test
-        void coreFunctionality() {
+        void happyPath() {
             final String ownerId = "415";
             final LocalDate today = LocalDate.now();
             jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().build(), ownerId);
