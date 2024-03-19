@@ -12,21 +12,24 @@ import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseMergeService;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
-import uk.gov.hmcts.juror.api.moj.domain.*;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.letter.DisqualificationLetterMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
-import uk.gov.hmcts.juror.api.moj.repository.*;
+import uk.gov.hmcts.juror.api.moj.repository.DisqualifyLetterModRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.time.LocalDate;
 
 import static uk.gov.hmcts.juror.api.JurorDigitalApplication.AUTO_USER;

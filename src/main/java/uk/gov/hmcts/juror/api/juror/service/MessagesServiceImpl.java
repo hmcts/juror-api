@@ -9,6 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
+import uk.gov.hmcts.juror.api.bureau.service.BureauProcessService;
+import uk.gov.hmcts.juror.api.config.NotifyConfigurationProperties;
+import uk.gov.hmcts.juror.api.config.NotifyRegionsConfigurationProperties;
+import uk.gov.hmcts.juror.api.juror.domain.RegionNotifyTemplateQueries;
 import uk.gov.hmcts.juror.api.moj.domain.CourtRegionMod;
 import uk.gov.hmcts.juror.api.moj.domain.RegionNotifyTemplateMod;
 import uk.gov.hmcts.juror.api.moj.domain.messages.Message;
@@ -17,12 +21,6 @@ import uk.gov.hmcts.juror.api.moj.repository.MessageQueries;
 import uk.gov.hmcts.juror.api.moj.repository.MessageRepository;
 import uk.gov.hmcts.juror.api.moj.repository.RegionNotifyTemplateRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
-import uk.gov.hmcts.juror.api.bureau.service.BureauProcessService;
-import uk.gov.hmcts.juror.api.config.NotifyConfigurationProperties;
-import uk.gov.hmcts.juror.api.config.NotifyRegionsConfigurationProperties;
-
-import uk.gov.hmcts.juror.api.juror.domain.RegionNotifyTemplateQueries;
-
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;

@@ -570,8 +570,8 @@ public class CourtLetterPrintServiceTest {
             final String courtOwner = "457";
             mockCurrentUser(courtOwner);
 
-            List<String> jurorNumbers = new ArrayList<>();
-            List<String> courtNames = new ArrayList<>();
+            final List<String> jurorNumbers = new ArrayList<>();
+            final List<String> courtNames = new ArrayList<>();
 
             courtNames.add("BOURT NAME");
             courtNames.add("MOURT NAME");
@@ -2077,7 +2077,7 @@ public class CourtLetterPrintServiceTest {
             final String courtOwner = "457";
             mockCurrentUser(courtOwner);
 
-            List<String> jurorNumbers = new ArrayList<>();
+            final List<String> jurorNumbers = new ArrayList<>();
             List<String> courtNames = new ArrayList<>();
 
             courtNames.add("BOURT NAME");
