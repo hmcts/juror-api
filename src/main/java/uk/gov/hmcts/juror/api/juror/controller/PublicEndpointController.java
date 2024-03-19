@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.juror.controller.response.JurorHolidaysResponseDto
 import uk.gov.hmcts.juror.api.juror.service.HolidaysService;
 import uk.gov.hmcts.juror.api.juror.service.JurorPersistenceService;
 import uk.gov.hmcts.juror.api.juror.service.JurorService;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 
 /**
@@ -136,6 +137,7 @@ public class PublicEndpointController {
 
         // BEGIN - custom validation
         Class<?> validationGroup = null;
+        responseDto.setReplyMethod(ReplyMethod.DIGITAL);
         if (!ObjectUtils.isEmpty(responseDto.getThirdParty())
             && !ObjectUtils.isEmpty(responseDto.getThirdParty().getThirdPartyReason())) {
             if ("deceased".equalsIgnoreCase(responseDto.getThirdParty().getThirdPartyReason().trim())) {
