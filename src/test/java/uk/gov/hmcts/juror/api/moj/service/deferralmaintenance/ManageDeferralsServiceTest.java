@@ -1831,10 +1831,10 @@ class ManageDeferralsServiceTest {
         dto.setJurors(jurorNumbers);
         dto.setPoolNumber(poolNumber);
 
-        List<JurorPool> poolMembers = createJurorPools(jurorNumbers, poolNumber, payload.getOwner(),
+        final List<JurorPool> poolMembers = createJurorPools(jurorNumbers, poolNumber, payload.getOwner(),
             courtLocationCode);
 
-        List<CurrentlyDeferred> deferrals = createDeferrals(payload.getOwner(), courtLocationCode, jurorNumbers,
+        final List<CurrentlyDeferred> deferrals = createDeferrals(payload.getOwner(), courtLocationCode, jurorNumbers,
             LocalDate.now().plusWeeks(5));
         PoolRequest poolRequest = new PoolRequest();
         poolRequest.setPoolNumber(poolNumber);
@@ -1934,9 +1934,9 @@ class ManageDeferralsServiceTest {
         dto.setJurors(jurorNumbers);
         dto.setPoolNumber(poolNumber);
 
-        List<JurorPool> poolMembers = createJurorPools(jurorNumbers, poolNumber, payload.getOwner(),
+        final List<JurorPool> poolMembers = createJurorPools(jurorNumbers, poolNumber, payload.getOwner(),
             courtLocationCode);
-        List<CurrentlyDeferred> deferrals = createDeferrals(payload.getOwner(), courtLocationCode, jurorNumbers,
+        final List<CurrentlyDeferred> deferrals = createDeferrals(payload.getOwner(), courtLocationCode, jurorNumbers,
             LocalDate.now().plusWeeks(6));
         PoolRequest poolRequest = new PoolRequest();
         poolRequest.setPoolNumber("987654321");

@@ -6,12 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
+import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
 import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
-import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
-import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
-import uk.gov.hmcts.juror.api.moj.service.StraightThroughProcessorService;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.util.Optional;

@@ -146,7 +146,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         response.setProcessingComplete(false);
         response.setProcessingStatus(ProcessingStatus.TODO);
 
-        BureauJWTPayload payload = buildPayload();
+        final BureauJWTPayload payload = buildPayload();
 
         Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
