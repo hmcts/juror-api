@@ -594,12 +594,12 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getThinPoolMembersMissingPool() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
-                                                   .userLevel("1")
-                                                   .login("COURT_USER")
-                                                   .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
-                                                   .daysToExpire(89)
-                                                   .owner("415")
-                                                   .build());
+            .userLevel("1")
+            .login("COURT_USER")
+            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .daysToExpire(89)
+            .owner("415")
+            .build());
 
         final URI uri = URI.create("/api/v1/moj/pool-create/members/123456789");
 
@@ -660,12 +660,12 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getThinPoolMembersUnauthorised() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
-                                                   .userLevel("1")
-                                                   .login("COURT_USER")
-                                                   .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
-                                                   .daysToExpire(89)
-                                                   .owner("414")
-                                                   .build());
+            .userLevel("1")
+            .login("COURT_USER")
+            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .daysToExpire(89)
+            .owner("414")
+            .build());
 
 
         final URI uri = URI.create("/api/v1/moj/pool-create/members/415230104");
