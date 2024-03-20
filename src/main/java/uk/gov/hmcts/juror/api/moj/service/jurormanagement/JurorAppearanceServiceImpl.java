@@ -81,7 +81,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         }
 
         JurorAppearanceDto appearanceDto = dto.getJurorAppearanceDto();
-        processAppearance(payload, appearanceDto);
+        processAppearance(payload, appearanceDto, true);
 
         UpdateAttendanceDto.CommonData commonData = dto.getUpdateAttendanceDtoCommonData();
         updateConfirmAttendance(commonData);

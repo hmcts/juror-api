@@ -109,7 +109,37 @@ class JurorAppearanceServiceTest {
     private static final String LOC_415 = "415";
 
     @Test
-    void addAttendanceDateHappyPath() {
+    void addAttendanceDayHappyPath() {
+        jurorAppearanceService = spy(jurorAppearanceService);
+
+        doReturn(null).when(jurorAppearanceService).processAppearance(any(), any());
+        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any());
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_123456789);
+        CourtLocation courtLocation = getCourtLocation();
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("123456789");
+
+        JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
+        jurorPool.setPool(poolRequest);
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndPoolPoolNumber(
+                JUROR_123456789, "123456789");
+
+        doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
+        doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
+
+        AddAttendanceDayDto dto = buildAddAttendanceDayDto();
+        jurorAppearanceService.addAttendanceDay(buildPayload(OWNER_415, Arrays.asList("415", "462", "767")),
+            dto);
+
+    }
+
+    @Test
+    void addAttendanceDayWrongAccess() {
         jurorAppearanceService = spy(jurorAppearanceService);
 
         doReturn(null).when(jurorAppearanceService).processAppearance(any(), any());
@@ -129,8 +159,41 @@ class JurorAppearanceServiceTest {
                 JUROR_123456789, "123456789");
 
         AddAttendanceDayDto dto = buildAddAttendanceDayDto();
-        jurorAppearanceService.addAttendanceDay(buildPayload(OWNER_415, Arrays.asList("415", "462", "767")),
-            dto);
+
+        assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+                jurorAppearanceService.addAttendanceDay(buildPayload("400", List.of("400")),
+                    dto)).as("Invalid access to juror pool")
+            .withMessageContaining("Invalid access to juror pool");
+
+    }
+
+    @Test
+    void addAttendanceDayNotFound() {
+        jurorAppearanceService = spy(jurorAppearanceService);
+
+        doReturn(null).when(jurorAppearanceService).processAppearance(any(), any());
+        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any());
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_123456789);
+        CourtLocation courtLocation = getCourtLocation();
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("123456789");
+
+        JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
+        jurorPool.setPool(poolRequest);
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndPoolPoolNumber(
+                JUROR_123456789, "111111111");
+
+        AddAttendanceDayDto dto = buildAddAttendanceDayDto();
+
+        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+                jurorAppearanceService.addAttendanceDay(buildPayload("417", List.of("417")),
+                    dto)).as("No valid juror pool found")
+            .withMessageContaining("No valid juror pool found");
 
     }
 
