@@ -48,6 +48,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -1505,7 +1506,11 @@ public class JurorManagementServiceImplTest {
             .findByLocCode(sourceCourtLocCode);
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
-                anyBoolean(), anyString(),
+                eq(true), anyString(),
+                any(CourtLocation.class));
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
+                eq(false), anyString(),
                 any(CourtLocation.class));
 
         Assertions.assertThat(responseDto)
@@ -1555,7 +1560,12 @@ public class JurorManagementServiceImplTest {
             .findByLocCode(sourceCourtLocCode);
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
-                anyBoolean(), anyString(), any(CourtLocation.class));
+                eq(true), anyString(),
+                any(CourtLocation.class));
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
+                eq(false), anyString(),
+                any(CourtLocation.class));
 
         Assertions.assertThat(responseDto)
             .as("Expect response DTO to exist")
@@ -1603,7 +1613,12 @@ public class JurorManagementServiceImplTest {
             .findByLocCode(sourceCourtLocCode);
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
-                anyBoolean(), anyString(), any(CourtLocation.class));
+                eq(true), anyString(),
+                any(CourtLocation.class));
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
+                eq(false), anyString(),
+                any(CourtLocation.class));
 
         Assertions.assertThat(responseDto)
             .as("Expect response DTO to exist")
@@ -1661,7 +1676,11 @@ public class JurorManagementServiceImplTest {
             .findByLocCode(sourceCourtLocCode);
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
-                anyBoolean(), anyString(),
+                eq(true), anyString(),
+                any(CourtLocation.class));
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
+                eq(false), anyString(),
                 any(CourtLocation.class));
 
         Assertions.assertThat(responseDto)
@@ -1688,6 +1707,8 @@ public class JurorManagementServiceImplTest {
             .isNotNull();
         Assertions.assertThat(JurorManagementConstants.ABOVE_AGE_LIMIT_MESSAGE)
             .isEqualTo(validationFailure1.getFailureReason());
+        Assertions.assertThat(validationFailure1.getFirstName()).isEqualTo("Test222222222");
+        Assertions.assertThat(validationFailure1.getLastName()).isEqualTo("Person222222222");
 
         JurorManagementResponseDto.ValidationFailure validationFailure2 = validationFailures.stream()
             .filter(unavailable -> "333333333".equalsIgnoreCase(unavailable.getJurorNumber()))
@@ -1697,6 +1718,8 @@ public class JurorManagementServiceImplTest {
             .isNotNull();
         Assertions.assertThat(validationFailure2.getFailureReason())
             .isEqualTo(String.format(JurorManagementConstants.INVALID_STATUS_MESSAGE, "Transferred"));
+        Assertions.assertThat(validationFailure2.getFirstName()).isEqualTo("Test333333333");
+        Assertions.assertThat(validationFailure2.getLastName()).isEqualTo("Person333333333");
 
         JurorManagementResponseDto.ValidationFailure validationFailure3 = validationFailures.stream()
             .filter(unavailable -> "555555555".equalsIgnoreCase(unavailable.getJurorNumber()))
@@ -1706,6 +1729,8 @@ public class JurorManagementServiceImplTest {
             .isNotNull();
         Assertions.assertThat(JurorManagementConstants.NO_ACTIVE_RECORD_MESSAGE)
             .isEqualTo(validationFailure3.getFailureReason());
+        Assertions.assertThat(validationFailure3.getFirstName()).isEqualTo("");
+        Assertions.assertThat(validationFailure3.getLastName()).isEqualTo("");
     }
 
     @Test
@@ -1739,7 +1764,11 @@ public class JurorManagementServiceImplTest {
             .findByLocCode(sourceCourtLocCode);
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
-                anyBoolean(), anyString(),
+                eq(true), anyString(),
+                any(CourtLocation.class));
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(anyList(),
+                eq(false), anyString(),
                 any(CourtLocation.class));
 
         Assertions.assertThat(responseDto)
@@ -1764,6 +1793,8 @@ public class JurorManagementServiceImplTest {
             .isNotNull();
         Assertions.assertThat(validationFailure.getFailureReason())
             .isEqualTo(JurorManagementConstants.BELOW_AGE_LIMIT_MESSAGE);
+        Assertions.assertThat(validationFailure.getFirstName()).isEqualTo("Test111111111");
+        Assertions.assertThat(validationFailure.getLastName()).isEqualTo("Person111111111");
     }
 
     @Test
@@ -1869,8 +1900,8 @@ public class JurorManagementServiceImplTest {
 
     private void setPersonalDetails(Juror juror) {
         juror.setTitle("Mr");
-        juror.setFirstName("Test");
-        juror.setLastName("Person");
+        juror.setFirstName("Test" + juror.getJurorNumber());
+        juror.setLastName("Person" + juror.getJurorNumber());
 
         juror.setAddressLine1("Address Line 1");
         juror.setAddressLine2("Address Line 2");
