@@ -115,7 +115,7 @@ public enum LetterType {
         tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)
             .and(QJuror.juror.responded.eq(false))
         )),
-    POSTPONEMENT(List.of(FormCode.ENG_POSTPONE, FormCode.BI_POSTPONE), List.of(
+    POSTPONED(List.of(FormCode.ENG_POSTPONE, FormCode.BI_POSTPONE), List.of(
         ReissueLetterService.DataType.JUROR_NUMBER,
         ReissueLetterService.DataType.JUROR_FIRST_NAME,
         ReissueLetterService.DataType.JUROR_LAST_NAME,

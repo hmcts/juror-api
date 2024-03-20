@@ -226,13 +226,13 @@ public class ReissueLetterServiceTest {
 
             final ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
                 .jurorNumber(jurorNumber)
-                .letterType(LetterType.POSTPONEMENT)
+                .letterType(LetterType.POSTPONED)
                 .build();
 
             final List<Tuple> postponementLetters = getPostponementLetters(jurorNumber, formCode);
 
             doReturn(postponementLetters).when(bulkPrintDataRepository)
-                .findLetters(reissueLetterListRequestDto, LetterType.POSTPONEMENT.getLetterQueryConsumer());
+                .findLetters(reissueLetterListRequestDto, LetterType.POSTPONED.getLetterQueryConsumer());
 
             final ReissueLetterListResponseDto responseDto =
                 reissueLetterService.reissueLetterList(reissueLetterListRequestDto);
@@ -249,7 +249,7 @@ public class ReissueLetterServiceTest {
                 .isEqualTo("Postponed");
 
             verify(bulkPrintDataRepository, times(1))
-                .findLetters(reissueLetterListRequestDto, LetterType.POSTPONEMENT.getLetterQueryConsumer());
+                .findLetters(reissueLetterListRequestDto, LetterType.POSTPONED.getLetterQueryConsumer());
         }
 
         @Test
