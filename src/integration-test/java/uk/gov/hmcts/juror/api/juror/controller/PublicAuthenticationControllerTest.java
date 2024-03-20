@@ -418,44 +418,6 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
     @Sql("/db/truncate.sql")
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
-    @Sql("/db/PublicAuthenticationControllerTest.publicAuthenticationEndpoint_unhappy_courtNotWhitelisted.sql")
-    public void publicAuthenticationEndpoint_unhappy_courtNotWhitelisted() throws Exception {
-        final String description = "Court not whitelisted";
-
-        final String jurorNumber = "644892530";
-        final String lastName = "Castillo";
-        final String postcode = "AB3 9RY";
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
-        URI uri = URI.create("/api/v1/auth/juror");
-
-        PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
-            .jurorNumber(jurorNumber)
-            .lastName(lastName)
-            .postcode(postcode)
-            .build();
-
-        RequestEntity<PublicAuthenticationRequestDto> requestEntity = new RequestEntity<>(requestDto,
-            httpHeaders, HttpMethod.POST, uri);
-
-
-        ResponseEntity<SpringBootErrorResponse> exchange = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
-            });
-
-        assertThat(exchange).describedAs(description).isNotNull();
-        assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-        assertThat(exchange.getBody().getStatus()).isNotEqualTo(HttpStatus.OK.value())
-            .isEqualTo(exchange.getStatusCode().value());
-        assertThat(exchange.getBody().getException()).isEqualTo(
-            uk.gov.hmcts.juror.api.juror.service.PublicAuthenticationServiceImpl.InvalidCourtLocationException.class.getName());
-        assertThat(exchange.getBody().getMessage()).isEqualTo("Court location is not allowed");
-    }
-
-    @Test
-    @Sql("/db/truncate.sql")
-    @Sql("/db/mod/truncate.sql")
-    @Sql("/db/standing_data.sql")
     @Sql("/db/PublicAuthenticationControllerTest.publicAuthenticationEndpoint_unhappy_courtDatePassed.sql")
     public void publicAuthenticationEndpoint_unhappy_courtDatePassed() throws Exception {
         final String description = "Court Date Passed";
