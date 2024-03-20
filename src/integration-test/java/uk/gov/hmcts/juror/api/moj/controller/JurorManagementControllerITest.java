@@ -18,7 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
@@ -140,6 +141,40 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 JurorAppearanceResponseDto.JurorAppearanceResponseData.class);
 
         validateAppearanceRecord(response);
+    }
+
+    @Test
+    @DisplayName("POST addAttendanceDay() - happy path")
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql"})
+    void addAttendanceDayHappyPath() {
+        AddAttendanceDayDto requestDto = AddAttendanceDayDto.builder()
+            .jurorNumber(JUROR1)
+            .poolNumber("415230101")
+            .locationCode("415")
+            .attendanceDate(now())
+            .checkInTime(LocalTime.of(9, 30))
+            .checkOutTime(LocalTime.of(17, 30))
+            .build();
+
+
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                URI.create("/api/v1/moj/juror-management/add-attendance-day")), String.class);
+
+        assertThat(response.getStatusCode()).as("HTTP status created expected").isEqualTo(CREATED);
+
+        // verify attendance record has been added
+        Optional<Appearance> appearanceOpt =
+            appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(requestDto.getJurorNumber(),
+                requestDto.getPoolNumber(), requestDto.getAttendanceDate());
+        assertThat(appearanceOpt).isNotEmpty();
+        Appearance appearance = appearanceOpt.get();
+        assertThat(appearance.getJurorNumber()).isEqualTo(requestDto.getJurorNumber());
+        assertThat(appearance.getAttendanceDate()).isEqualTo(requestDto.getAttendanceDate());
+        assertThat(appearance.getPoolNumber()).isEqualTo(requestDto.getPoolNumber());
+        assertThat(appearance.getCourtLocation().getLocCode()).isEqualTo(requestDto.getLocationCode());
+        assertThat(appearance.getTimeIn()).isEqualTo(requestDto.getCheckInTime());
+        assertThat(appearance.getTimeOut()).isEqualTo(requestDto.getCheckOutTime());
     }
 
     @Test

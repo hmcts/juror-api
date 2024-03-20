@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
@@ -66,6 +67,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -105,6 +107,32 @@ class JurorAppearanceServiceTest {
 
     private static final String OWNER_415 = "415";
     private static final String LOC_415 = "415";
+
+    @Test
+    void addAttendanceDateHappyPath() {
+        jurorAppearanceService = spy(jurorAppearanceService);
+
+        doReturn(null).when(jurorAppearanceService).processAppearance(any(), any());
+        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any());
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_123456789);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("123456789");
+
+        JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
+        jurorPool.setPool(poolRequest);
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndPoolPoolNumber(
+                JUROR_123456789, "123456789");
+
+        AddAttendanceDayDto dto = buildAddAttendanceDayDto();
+        jurorAppearanceService.addAttendanceDay(buildPayload(OWNER_415, Arrays.asList("415", "462", "767")),
+            dto);
+
+    }
 
     @Test
     void testCheckInJurorHappy() {
@@ -1762,8 +1790,19 @@ class JurorAppearanceServiceTest {
             .build();
     }
 
-    private BureauJwtPayload buildPayload(String owner, List<String> courts) {
-        return BureauJwtPayload.builder()
+    private AddAttendanceDayDto buildAddAttendanceDayDto() {
+        return AddAttendanceDayDto.builder()
+            .jurorNumber(JUROR_123456789)
+            .poolNumber("123456789")
+            .locationCode(OWNER_415)
+            .attendanceDate(now())
+            .checkInTime(LocalTime.of(9, 30))
+            .checkOutTime(LocalTime.of(17, 0))
+            .build();
+    }
+
+    private BureauJWTPayload buildPayload(String owner, List<String> courts) {
+        return BureauJWTPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("COURT_USER")
