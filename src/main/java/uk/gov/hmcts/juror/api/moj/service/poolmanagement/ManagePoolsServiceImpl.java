@@ -6,11 +6,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -40,7 +42,9 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
     @NonNull
     PoolStatisticsRepository poolStatisticsRepository;
 
+
     @Override
+    @Transactional(readOnly = true)
     public AvailablePoolsInCourtLocationDto findAvailablePools(String locCode, BureauJWTPayload payload) {
         log.trace("Location code: {}: Enter method findAvailablePools", locCode);
 
@@ -51,27 +55,63 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
         if (owner.equals(JurorDigitalApplication.JUROR_OWNER)) {
             RepositoryUtils.retrieveFromDatabase(locCode, courtLocationRepository);
         } else {
-            List<CourtLocation> courtLocations = courtLocationRepository.findByOwner(owner);
-            if (courtLocations.isEmpty()) {
-                throw new MojException.NotFound(String.format(
-                    "Juror record owner: %s - No records found for the given owner",
-                    owner
-                ), null);
-            }
-            if (courtLocations.stream().noneMatch(courtLocation -> courtLocation.getLocCode().equals(locCode))) {
-                throw new MojException.NotFound(String.format(
-                    "Court location: %s - No records found for the given location code",
-                    locCode
-                ), null);
-            }
+            validateCourtLocationAndOwnership(locCode, owner);
         }
 
         log.debug("Court location code {}: Find available pools for user {}", locCode, payload.getLogin());
         AvailablePoolsInCourtLocationDto availablePools = new AvailablePoolsInCourtLocationDto();
         availablePools.setAvailablePools(populateAvailablePoolsDto(locCode, owner));
 
-        log.trace("Court location code {}: Exit method findActivePoolsForDates", locCode);
+        log.trace("Court location code {}: Exit method findAvailablePools", locCode);
         return availablePools;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AvailablePoolsInCourtLocationDto findAvailablePoolsCourtOwned(String locCode, BureauJWTPayload payload) {
+        log.trace("Location code: {}: Enter method findAvailablePoolsCourtOwned", locCode);
+
+        String owner = payload.getOwner();
+
+        validateCourtLocationAndOwnership(locCode, owner);
+
+        log.debug("Court location code {}: Find available pools for user {}", locCode, payload.getLogin());
+
+        List<AvailablePoolsInCourtLocationDto.AvailablePoolsDto> availablePoolsDtos =
+            populateAvailablePoolsDto(locCode, owner);
+
+        List<String> poolNumbers = availablePoolsDtos.stream().map(pool -> pool.getPoolNumber()).toList();
+
+        List<PoolRequest> poolRequests = poolRequestRepository.findByOwnerAndPoolNumberIn(owner, poolNumbers);
+
+        List<String> courtOwnedPoolNumbers = poolRequests.stream()
+            .map(poolRequest -> poolRequest.getPoolNumber()).toList();
+
+        List<AvailablePoolsInCourtLocationDto.AvailablePoolsDto> availablePoolsDtosCourtOwned =
+            availablePoolsDtos.stream()
+                .filter(pool -> courtOwnedPoolNumbers.contains(pool.getPoolNumber())).toList();
+
+        AvailablePoolsInCourtLocationDto availablePools = new AvailablePoolsInCourtLocationDto();
+        availablePools.setAvailablePools(availablePoolsDtosCourtOwned);
+
+        log.trace("Court location code {}: Exit method findAvailablePoolsCourtOwned", locCode);
+        return availablePools;
+    }
+
+    private void validateCourtLocationAndOwnership(String locCode, String owner) {
+        List<CourtLocation> courtLocations = courtLocationRepository.findByOwner(owner);
+        if (courtLocations.isEmpty()) {
+            throw new MojException.NotFound(String.format(
+                "Juror record owner: %s - No records found for the given owner",
+                owner
+            ), null);
+        }
+        if (courtLocations.stream().noneMatch(courtLocation -> courtLocation.getLocCode().equals(locCode))) {
+            throw new MojException.NotFound(String.format(
+                "Court location: %s - No records found for the given location code",
+                locCode
+            ), null);
+        }
     }
 
     @Override

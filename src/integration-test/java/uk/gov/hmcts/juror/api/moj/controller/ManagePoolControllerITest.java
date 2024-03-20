@@ -54,6 +54,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -1383,9 +1384,9 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     //Tests related to controller operation: getAvailablePoolsInCourtLocation
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
-    public void test_getAvailablePoolsInCourtLocation_CourtUser_Happy() throws NullPointerException {
-        final URI uri = URI.create(String.format(URI_AVAILABLE_POOLS, "404"));
-        httpHeaders = initialiseHeaders("1", false, COURT_USER, 89, "404");
+    public void getAvailablePoolsInCourtLocationCourtUserHappy() throws NullPointerException {
+        final URI uri = URI.create(String.format(URI_AVAILABLE_POOLS, "416"));
+        httpHeaders = initialiseHeaders("1", false, COURT_USER, 89, "416");
 
         ResponseEntity<AvailablePoolsInCourtLocationDto> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET, uri),
@@ -1394,17 +1395,38 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<AvailablePoolsInCourtLocationDto.AvailablePoolsDto> availablePoolsList =
             responseEntity.getBody().getAvailablePools();
-        assertThat(availablePoolsList.size()).isEqualTo(1);
-        assertThat(availablePoolsList.get(0).getPoolNumber()).isEqualTo("404220506");
-        assertThat(availablePoolsList.get(0).getServiceStartDate()).isEqualTo(LocalDate.of(2023, 7, 4));
-        assertThat(availablePoolsList.get(0).getUtilisation()).isEqualTo(1L);
+
+        // this endpoint should return 4 available pools as it does not filter by court owner
+        assertThat(availablePoolsList.size()).isEqualTo(4);
+
+        availablePoolsList.sort(Comparator.comparing(AvailablePoolsInCourtLocationDto
+            .AvailablePoolsDto::getPoolNumber));
+
+        assertThat(availablePoolsList.get(0).getPoolNumber()).isEqualTo("416220502");
+        assertThat(availablePoolsList.get(0).getServiceStartDate()).isEqualTo(LocalDate.now().plusDays(10));
+        assertThat(availablePoolsList.get(0).getUtilisation()).isEqualTo(0L);
         assertThat(availablePoolsList.get(0).getUtilisationDescription()).isEqualTo(
+            PoolUtilisationDescription.CONFIRMED);
+        assertThat(availablePoolsList.get(1).getPoolNumber()).isEqualTo("416220503");
+        assertThat(availablePoolsList.get(1).getServiceStartDate()).isEqualTo(LocalDate.now().plusDays(12));
+        assertThat(availablePoolsList.get(1).getUtilisation()).isEqualTo(0L);
+        assertThat(availablePoolsList.get(1).getUtilisationDescription()).isEqualTo(
+            PoolUtilisationDescription.CONFIRMED);
+        assertThat(availablePoolsList.get(2).getPoolNumber()).isEqualTo("416220504");
+        assertThat(availablePoolsList.get(2).getServiceStartDate()).isEqualTo(LocalDate.now().plusDays(12));
+        assertThat(availablePoolsList.get(2).getUtilisation()).isEqualTo(0L);
+        assertThat(availablePoolsList.get(2).getUtilisationDescription()).isEqualTo(
+            PoolUtilisationDescription.CONFIRMED);
+        assertThat(availablePoolsList.get(3).getPoolNumber()).isEqualTo("416220505");
+        assertThat(availablePoolsList.get(3).getServiceStartDate()).isEqualTo(LocalDate.now().plusDays(12));
+        assertThat(availablePoolsList.get(3).getUtilisation()).isEqualTo(0L);
+        assertThat(availablePoolsList.get(3).getUtilisationDescription()).isEqualTo(
             PoolUtilisationDescription.CONFIRMED);
     }
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
-    public void test_getAvailablePoolsInCourtLocation_CourtUser_Owner_NotFoundException() throws NullPointerException {
+    public void getAvailablePoolsInCourtLocationCourtUserOwnerNotFoundException() throws NullPointerException {
         final URI uri = URI.create(String.format(URI_AVAILABLE_POOLS, "404"));
         httpHeaders = initialiseHeaders("1", false, COURT_USER, 89, "505");
 
@@ -1453,6 +1475,37 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
             PoolUtilisationDescription.NEEDED);
         verifyAvailablePool(availablePoolsDtoList, serviceStartDate, "415220503", 4,
             PoolUtilisationDescription.NEEDED);
+    }
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
+    public void getAvailablePoolsInCourtLocationCourtOwnedCourtUserHappy() {
+        httpHeaders = initialiseHeaders("1", false, COURT_USER, 89, "416");
+        ResponseEntity<AvailablePoolsInCourtLocationDto> responseEntity =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                URI.create("/api/v1/moj/manage-pool/available-pools-court-owned/416")),
+                AvailablePoolsInCourtLocationDto.class);
+
+        assertThat(responseEntity.getStatusCode()).as(EXPECT_HTTP_RESPONSE_SUCCESSFUL).isEqualTo(HttpStatus.OK);
+
+        AvailablePoolsInCourtLocationDto responseBody = responseEntity.getBody();
+        assertThat(responseBody).isNotNull();
+
+        List<AvailablePoolsInCourtLocationDto.AvailablePoolsDto> availablePoolsDtoList =
+            responseBody.getAvailablePools();
+
+        assertThat(availablePoolsDtoList).isNotNull();
+
+        assertThat(availablePoolsDtoList.size())
+            .as("There should be 1 available pool")
+            .isEqualTo(1);
+
+        // database has service start date 12 days in the future
+        LocalDate serviceStartDate = LocalDate.now().plusDays(12);
+
+        verifyAvailablePool(availablePoolsDtoList, serviceStartDate, "416220504", 0,
+            PoolUtilisationDescription.CONFIRMED);
     }
 
     @Test
