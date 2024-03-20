@@ -69,7 +69,7 @@ public class AdministrationCourtRoomController {
     @GetMapping("/{loc_code}/{id}")
     @Operation(summary = "View a court room")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH + " && " + SecurityUtil.IS_MANAGER)
+    @PreAuthorize("(" +SecurityUtil.LOC_CODE_AUTH + " && " + SecurityUtil.IS_MANAGER + ") or " + SecurityUtil.USER_TYPE_ADMINISTRATOR)
     public ResponseEntity<CourtRoomWithIdDto> viewCourtRoomDetails(
         @P("loc_code")
         @PathVariable("loc_code")
