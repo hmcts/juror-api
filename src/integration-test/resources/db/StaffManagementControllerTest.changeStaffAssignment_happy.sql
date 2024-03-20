@@ -4,8 +4,6 @@ VALUES ('400','jmcbob','jmcbob@email.gov.uk','Joe McBob',true,1,0),
        ('400','smcbob','smcbob@email.gov.uk','Sarah McBob',true,2,0);
 INSERT INTO juror_mod.user_roles (username, role)
 VALUES ('smcbob', 'TEAM_LEADER');
--- enable court
-INSERT INTO JUROR_DIGITAL.COURT_WHITELIST (LOC_CODE) VALUES ('448');
 
 
 INSERT INTO juror_mod.pool (pool_no,"owner",return_date,no_requested,pool_type,loc_code,new_request,last_update,additional_summons,attend_time,nil_pool,total_no_required,date_created) VALUES

@@ -11,7 +11,6 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.gov.hmcts.juror.api.juror.controller.PublicAuthenticationController.PublicAuthenticationRequestDto;
 import uk.gov.hmcts.juror.api.juror.controller.PublicAuthenticationController.PublicAuthenticationResponseDto;
-import uk.gov.hmcts.juror.api.juror.domain.CourtWhitelistRepository;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
@@ -38,7 +37,6 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
     private static final String JUROR_ROLE = "juror";
     private static final String JUROR_ALREADY_RESPONDED = "Juror already responded";
     private static final Integer MAX_FAILED_LOGIN_ATTEMPTS = 3;
-    private final CourtWhitelistRepository courtWhitelistRepository;
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
 
@@ -48,16 +46,13 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
 
 
     @Autowired
-    public PublicAuthenticationServiceImpl(final CourtWhitelistRepository courtWhitelistRepository,
-                                           final JurorDigitalResponseRepositoryMod jurorResponseRepository,
+    public PublicAuthenticationServiceImpl(final JurorDigitalResponseRepositoryMod jurorResponseRepository,
                                            final JurorPoolRepository jurorPoolRepository,
                                            final JurorRepository jurorRepository) {
 
-        Assert.notNull(courtWhitelistRepository, "CourtWhitelistRepository cannot be null");
         Assert.notNull(jurorResponseRepository, "JurorDigitalResponseRepositoryMod cannot be null");
         Assert.notNull(jurorPoolRepository, "JurorPoolRepository cannot be null");
         Assert.notNull(jurorRepository, "JurorRepository cannot be null");
-        this.courtWhitelistRepository = courtWhitelistRepository;
         this.jurorResponseRepository = jurorResponseRepository;
         this.jurorPoolRepository = jurorPoolRepository;
         this.jurorRepository = jurorRepository;
@@ -104,9 +99,6 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
             } else if (!isFutureHearingDate(jurorAuthentication)) {
                 log.debug("Court Date {} has passed", jurorAuthentication.getNextDate());
                 throw new CourtDateLapsedException("Not allowed. Court Date has already passed");
-            } else if (courtWhitelistRepository.findByLocCode(locCode) == null) {
-                log.debug("Court location {} is not whitelisted as allowing responses", locCode);
-                throw new InvalidCourtLocationException("Court location is not allowed");
             } else {
                 log.info("Juror {} is valid for authentication", jurorAuthentication.getJurorNumber());
                 clearFailedLoginAttempts(jurorAuthentication.getJurorNumber());

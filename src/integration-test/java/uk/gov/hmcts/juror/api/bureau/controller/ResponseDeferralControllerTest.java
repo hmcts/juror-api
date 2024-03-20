@@ -97,9 +97,6 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
         // assert db state before merge.
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.COURT_WHITELIST", Integer.class)).isEqualTo(
-            1);
-        assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE", Integer.class)).isEqualTo(
             1);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE_AUD",
@@ -144,8 +141,6 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class))
             .isEqualTo(1);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.COURT_WHITELIST",
-            Integer.class)).isEqualTo(1);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE",
             Integer.class)).isEqualTo(1);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE_AUD",
@@ -311,9 +306,6 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
         // assert db state before merge.
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.COURT_WHITELIST", Integer.class)).isEqualTo(
-            1);
-        assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE", Integer.class)).isEqualTo(
             1);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE_AUD",
@@ -358,9 +350,6 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         // assert db state after merge.
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.COURT_WHITELIST", Integer.class)).isEqualTo(
-            1);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE", Integer.class)).isEqualTo(
             1);
@@ -417,9 +406,6 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
         // assert db state before merge.
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.COURT_WHITELIST", Integer.class)).isEqualTo(
-            1);
-        assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE", Integer.class)).isEqualTo(
             1);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE_AUD",
@@ -463,9 +449,6 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         // assert db state after merge.
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.COURT_WHITELIST", Integer.class)).isEqualTo(
-            1);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE", Integer.class)).isEqualTo(
             1);
@@ -516,9 +499,6 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
         // assert db state before merge.
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.COURT_WHITELIST", Integer.class)).isEqualTo(
-            1);
-        assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE", Integer.class)).isEqualTo(
             1);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE_AUD",
@@ -561,8 +541,6 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class))
             .isEqualTo(1);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.COURT_WHITELIST",
-            Integer.class)).isEqualTo(1);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE",
             Integer.class)).isEqualTo(1);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE_AUD",
@@ -705,9 +683,6 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
         // assert db state before merge.
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.COURT_WHITELIST", Integer.class)).isEqualTo(
-            1);
-        assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE", Integer.class)).isEqualTo(
             1);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE_AUD",
@@ -751,9 +726,6 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         // assert db state after merge.
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
-        assertThat(
-            jdbcTemplate.queryForObject("SELECT count(*) FROM JUROR_DIGITAL.COURT_WHITELIST", Integer.class)).isEqualTo(
-            1);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE", Integer.class)).isEqualTo(
             1);
