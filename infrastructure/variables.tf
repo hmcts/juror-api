@@ -34,6 +34,10 @@ variable "common_tags" {
 
 # Variables with default values or values specified in an {env}.tfvars file
 
+variable "location" {
+  default = "UK South"
+}
+
 variable "pgsql_sku" {
   description = "The PGSql flexible server instance sku"
   default     = "GP_Standard_D2s_v3"
