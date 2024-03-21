@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.bureau.scheduler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import uk.gov.hmcts.juror.api.bureau.service.ScheduledService;
@@ -27,11 +28,13 @@ public class BureauBatchScheduler {
         Assert.notNull(bureauBatchProcessFactory, "BureauBatchProcessFactory cannot be null.");
         this.bureauBatchProcessFactory = bureauBatchProcessFactory;
         this.schedulerServiceClient = schedulerServiceClient;
+
     }
 
     /**
      * General Entry point for externally hosted cron jobs. ( server crontab and not via springboot).
      */
+    @Async("threadPoolTaskExecutor")
     public void processBatchJobServices(final String[] types, String jobKey, Long taskId) {
         try {
             SchedulerServiceClient.Result result = null;

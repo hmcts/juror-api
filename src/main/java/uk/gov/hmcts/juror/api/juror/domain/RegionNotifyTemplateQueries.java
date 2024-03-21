@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.juror.domain;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
+import uk.gov.hmcts.juror.api.moj.domain.QRegionNotifyTemplateMod;
 
 /**
  * QueryDSL queries for {@Link messages}.
@@ -19,8 +20,7 @@ public class RegionNotifyTemplateQueries {
     private RegionNotifyTemplateQueries() {
 
     }
-
-    private static final QRegionNotifyTemplate regionNotifyTemplateDetail = QRegionNotifyTemplate.regionNotifyTemplate;
+    private static final QRegionNotifyTemplateMod regionNotifyTemplateDetail = QRegionNotifyTemplateMod.regionNotifyTemplateMod;
 
     /**
      * Matches RegionalNotifyTemplates by REGION_ID AND LEGACY_TEMPLATE_ID where MESSAGE_FORMAT is equal to 'SMS' .
