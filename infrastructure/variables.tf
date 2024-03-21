@@ -37,7 +37,3 @@ variable "common_tags" {
 variable "location" {
   default = "UK South"
 }
-
-variable "db_size" {
-  default = "65536"
-}
