@@ -66,7 +66,7 @@ import static uk.gov.hmcts.juror.api.TestUtil.getValuesInJsonObject;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings({"PMD.LawOfDemeter", "PMD.TooManyMethods", "PMD.ExcessiveImports"})
 public class ManagePoolControllerITest extends AbstractIntegrationTest {
     private static final String URI_AVAILABLE_POOLS = "/api/v1/moj/manage-pool/available-pools/%s";
     private static final String URI_MANAGE_POOL_SUMMARY = "/api/v1/moj/manage-pool/summary?poolNumber=%s";
@@ -1391,7 +1391,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     //Tests related to controller operation: getAvailablePoolsInCourtLocation
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
-    public void getAvailablePoolsInCourtLocationCourtUserHappy() throws NullPointerException {
+    public void availablePoolsInCourtLocationCourtUserHappy() throws NullPointerException {
         final URI uri = URI.create(String.format(URI_AVAILABLE_POOLS, "416"));
         httpHeaders = initialiseHeaders("1", false, COURT_USER, 89, "416");
 
@@ -1422,7 +1422,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
-    public void getAvailablePoolsInCourtLocationCourtUserOwnerNotFoundException() throws NullPointerException {
+    public void availablePoolsInCourtLocationCourtUserOwnerNotFoundException() throws NullPointerException {
         final URI uri = URI.create(String.format(URI_AVAILABLE_POOLS, "404"));
         httpHeaders = initialiseHeaders("1", false, COURT_USER, 89, "505");
 
@@ -1443,7 +1443,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools.sql"})
-    public void test_getAvailablePoolsInCourtLocation_BureauUser_Happy() {
+    public void availablePoolsInCourtLocationBureauUserHappy() {
         ResponseEntity<AvailablePoolsInCourtLocationDto> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/manage-pool/available-pools/415")), AvailablePoolsInCourtLocationDto.class);
@@ -1476,7 +1476,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
-    public void getAvailablePoolsInCourtLocationCourtOwnedCourtUserHappy() {
+    public void availablePoolsInCourtLocationCourtOwnedCourtUserHappy() {
         httpHeaders = initialiseHeaders("1", false, COURT_USER, 89, "416");
         ResponseEntity<AvailablePoolsInCourtLocationDto> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
@@ -1505,7 +1505,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void getAvailablePoolsInCourtLocationCourtOwnedBureauUserNoAccess() {
+    public void availablePoolsInCourtLocationCourtOwnedBureauUserNoAccess() {
         RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/moj/manage-pool/available-pools-court-owned/416"));
         ResponseEntity<SummoningProgressResponseDto> response = restTemplate.exchange(requestEntity,
