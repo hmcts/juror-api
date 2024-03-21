@@ -12,13 +12,13 @@ import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceExce
 import uk.gov.hmcts.juror.api.bureau.service.BureauProcessService;
 import uk.gov.hmcts.juror.api.config.NotifyConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.NotifyRegionsConfigurationProperties;
-import uk.gov.hmcts.juror.api.juror.domain.RegionNotifyTemplateQueries;
 import uk.gov.hmcts.juror.api.moj.domain.CourtRegionMod;
 import uk.gov.hmcts.juror.api.moj.domain.RegionNotifyTemplateMod;
 import uk.gov.hmcts.juror.api.moj.domain.messages.Message;
 import uk.gov.hmcts.juror.api.moj.repository.CourtRegionModRepository;
 import uk.gov.hmcts.juror.api.moj.repository.MessageQueries;
 import uk.gov.hmcts.juror.api.moj.repository.MessageRepository;
+import uk.gov.hmcts.juror.api.moj.repository.RegionNotifyTemplateQueriesMod;
 import uk.gov.hmcts.juror.api.moj.repository.RegionNotifyTemplateRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 import uk.gov.service.notify.NotificationClient;
@@ -135,22 +135,22 @@ public class MessagesServiceImpl implements BureauProcessService {
 
                 //Queries to filter on Region_id ,Legacy_Template_id,Message_Format and Welsh_Language
                 BooleanExpression regionNotifyTemplateSmsFilter =
-                    RegionNotifyTemplateQueries.regionNotifyTemplateByIdAndSms(
+                    RegionNotifyTemplateQueriesMod.regionNotifyTemplateByIdAndSms(
                         regionIdSms,
                         legacyTemplateIdSms
                     );
                 BooleanExpression regionNotifyTemplateEmailFilter =
-                    RegionNotifyTemplateQueries.regionNotifyTemplateByIdAndEmail(
+                    RegionNotifyTemplateQueriesMod.regionNotifyTemplateByIdAndEmail(
                         regionIdEmail,
                         legacyTemplateIdEmail
                     );
                 BooleanExpression regionNotifyTemplateSmsFilterWelsh =
-                    RegionNotifyTemplateQueries.regionNotifyTemplateByIdAndSmsWelsh(
+                    RegionNotifyTemplateQueriesMod.regionNotifyTemplateByIdAndSmsWelsh(
                         regionIdSmsWelsh,
                         legacyTemplateIdSmsWelsh
                     );
                 BooleanExpression regionNotifyTemplateEmailFilterWelsh =
-                    RegionNotifyTemplateQueries.regionNotifyTemplateByIdAndEmailWelsh(
+                    RegionNotifyTemplateQueriesMod.regionNotifyTemplateByIdAndEmailWelsh(
                         regionIdEmailWelsh,
                         legacyTemplateIdEmailWelsh
                     );

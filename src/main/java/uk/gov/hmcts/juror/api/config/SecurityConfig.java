@@ -20,7 +20,6 @@ import uk.gov.hmcts.juror.api.config.public_.PublicJwtAuthenticationProvider;
  * Spring security configuration.
  */
 @Configuration
-@EnableScheduling
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
 @AllArgsConstructor(onConstructor = @__(@Autowired))

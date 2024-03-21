@@ -3,11 +3,13 @@ package uk.gov.hmcts.juror.api.config;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.Executor;
 
 @Configuration
 public class ApplicationBeans {
@@ -34,5 +36,9 @@ public class ApplicationBeans {
             Instant.now().truncatedTo(ChronoUnit.SECONDS),
             ZoneId.of("UCT")
         );
+    }
+    @Bean(name = "threadPoolTaskExecutor")
+    public Executor threadPoolTaskExecutor() {
+        return new ThreadPoolTaskExecutor();
     }
 }
