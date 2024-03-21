@@ -147,7 +147,7 @@ public class LetterController {
 
     @GetMapping(path = "/court-letter-list/{letter_type}/{include_printed}")
     @Operation(summary = "GET - Court letter list", description = "Request a list of "
-        + "jurors eligible for absent letters to be issued/re-issued.")
+        + "jurors eligible for absent letters to be issued/re-issued. Basic search for absent jurors")
     @IsCourtUser
     public ResponseEntity<LetterListResponseDto> courtLetterListAbsentJurors(
         @PathVariable(name = "letter_type") CourtLetterType letterType,

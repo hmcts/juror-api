@@ -1,5 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service.letter.court;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.querydsl.core.Tuple;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
@@ -36,6 +39,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.CERTIFICATE_OF_EXEMPTION;
@@ -78,22 +82,17 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
     private static final String ROYAL_COURTS_OF_JUSTICE = "626";
     private static final String NEW_LINE = "\n";
 
-
     @Override
     public List<PrintLetterDataResponseDto> getPrintLettersData(PrintLettersRequestDto printLettersRequestDto,
                                                                 String login) {
+        Multimap<String, LocalDate> lettersDataMap = transposeListToMap(printLettersRequestDto);
 
         List<PrintLetterDataResponseDto> letters = new ArrayList<>();
 
-        // de-duplicate list of juror numbers, so we only print one letter per juror
-        List<String> jurorNumbers =
-            printLettersRequestDto.getJurorNumbers()
-                .stream()
-                .distinct()
-                .toList();
-
         String owner = SecurityUtil.getActiveOwner();
-        for (String jurorNumber : jurorNumbers) {
+
+        for (Map.Entry<String, LocalDate> entry : lettersDataMap.entries()) {
+            String jurorNumber = entry.getKey();
 
             Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
             if (juror == null) {
@@ -112,6 +111,10 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
                 data = courtPrintLetterRepository.retrievePrintInformation(jurorNumber,
                     printLettersRequestDto.getLetterType(), welsh, owner,
                     exemptionRequestDto.getTrialNumber());
+            } else if (CourtLetterType.SHOW_CAUSE.equals(printLettersRequestDto.getLetterType())
+                || CourtLetterType.FAILED_TO_ATTEND.equals(printLettersRequestDto.getLetterType())) {
+                data = courtPrintLetterRepository.retrievePrintInformationBasedOnLetterSpecificDate(jurorNumber,
+                    printLettersRequestDto.getLetterType(), welsh, owner, entry.getValue());
             } else {
                 data = courtPrintLetterRepository.retrievePrintInformation(jurorNumber,
                     printLettersRequestDto.getLetterType(), welsh, owner);
@@ -139,7 +142,24 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             }
             letters.add(dto);
         }
-        return letters;
+            return letters;
+    }
+
+    private Multimap<String, LocalDate> transposeListToMap(PrintLettersRequestDto printLettersRequestDto) {
+        Multimap<String, LocalDate> map = ArrayListMultimap.create();
+
+        if (CourtLetterType.SHOW_CAUSE.equals(printLettersRequestDto.getLetterType())
+            || CourtLetterType.FAILED_TO_ATTEND.equals(printLettersRequestDto.getLetterType())) {
+            // can print multiple letters for each juror if absent from jury service on more than one day - need to
+            // filter based on the given date, e.g. attendanceDate (absentDate)
+            printLettersRequestDto.getDetailsPerLetter()
+                .forEach(key -> map.put(key.getJurorNumber(), key.getLetterDate()));
+        } else {
+            // de-duplicate list of juror numbers, so we only print one letter per juror
+            List<String> jurorNumbersList = printLettersRequestDto.getJurorNumbers().stream().distinct().toList();
+            jurorNumbersList.forEach(details -> map.put(details, null));
+        }
+        return map;
     }
 
     private void addHistoryItem(PrintLettersRequestDto printLettersRequestDto, String login, String jurorNumber,
