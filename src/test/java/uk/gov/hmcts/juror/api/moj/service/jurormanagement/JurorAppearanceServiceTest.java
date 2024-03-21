@@ -197,7 +197,7 @@ class JurorAppearanceServiceTest {
     }
 
     @Test
-    void addAttendanceDayNotFound() {
+    void addAttendanceDayJurorPoolNotFound() {
         Juror juror = new Juror();
         juror.setJurorNumber(JUROR_123456789);
 

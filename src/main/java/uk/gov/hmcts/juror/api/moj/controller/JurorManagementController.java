@@ -99,6 +99,7 @@ public class JurorManagementController {
     @PostMapping("/add-attendance-day")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(description = "Manually add attendance day for a juror")
+    @IsCourtUser
     public void addAttendanceDay(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
         @RequestBody @Valid AddAttendanceDayDto addAttendanceDayDto) {

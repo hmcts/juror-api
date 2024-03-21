@@ -17,6 +17,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
+import uk.gov.hmcts.juror.api.validation.JurorNumber;
 import uk.gov.hmcts.juror.api.validation.NumericString;
 import uk.gov.hmcts.juror.api.validation.PoolNumber;
 
@@ -36,10 +38,12 @@ public class AddAttendanceDayDto {
 
     @JsonProperty("juror_number")
     @Pattern(regexp = JUROR_NUMBER)
+    @JurorNumber
     @Schema(description = "Juror number", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotEmpty
     private String jurorNumber;
 
+    @JsonProperty("pool_number")
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The unique number for a pool request")
     @NotBlank(message = "Request should contain a valid pool number")
     private @PoolNumber String poolNumber;
@@ -48,6 +52,7 @@ public class AddAttendanceDayDto {
     @NotBlank
     @Size(min = 3, max = 3)
     @NumericString
+    @CourtLocationCode
     @Schema(description = "Unique 3 digit code to identify a court location")
     private String locationCode;
 
@@ -58,16 +63,18 @@ public class AddAttendanceDayDto {
     private LocalDate attendanceDate;
 
     @JsonProperty("check_in_time")
+    @JsonFormat(pattern = "HH:mm")
     @Schema(description = "Check in time of the juror", implementation = String.class, pattern = "HH24:mm")
     private LocalTime checkInTime;
 
     @JsonProperty("check_out_time")
+    @JsonFormat(pattern = "HH:mm")
     @Schema(description = "Check out time of the juror", implementation = String.class, pattern = "HH24:mm")
     private LocalTime checkOutTime;
 
 
     @JsonIgnore
-    public  JurorAppearanceDto getJurorAppearanceDto() {
+    public JurorAppearanceDto getJurorAppearanceDto() {
         JurorAppearanceDto appearanceDto = new JurorAppearanceDto();
         appearanceDto.setJurorNumber(this.getJurorNumber());
         appearanceDto.setAttendanceDate(this.getAttendanceDate());
@@ -76,8 +83,10 @@ public class AddAttendanceDayDto {
         appearanceDto.setLocationCode(this.getLocationCode());
         appearanceDto.setAppearanceStage(AppearanceStage.CHECKED_OUT);
         return appearanceDto;
-    }    @JsonIgnore
-    public  UpdateAttendanceDto.CommonData getUpdateAttendanceDtoCommonData() {
+    }
+
+    @JsonIgnore
+    public UpdateAttendanceDto.CommonData getUpdateAttendanceDtoCommonData() {
         UpdateAttendanceDto.CommonData commonData = new UpdateAttendanceDto.CommonData();
         commonData.setAttendanceDate(this.getAttendanceDate());
         commonData.setCheckInTime(this.getCheckInTime());

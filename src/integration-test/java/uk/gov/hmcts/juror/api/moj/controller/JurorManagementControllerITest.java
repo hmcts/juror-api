@@ -57,6 +57,7 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.CHECKED_IN;
@@ -175,6 +176,94 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         assertThat(appearance.getCourtLocation().getLocCode()).isEqualTo(requestDto.getLocationCode());
         assertThat(appearance.getTimeIn()).isEqualTo(requestDto.getCheckInTime());
         assertThat(appearance.getTimeOut()).isEqualTo(requestDto.getCheckOutTime());
+    }
+
+    @Test
+    @DisplayName("POST addAttendanceDay() - happy path")
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    void addAttendanceBadPayloadJurorNumber() {
+        AddAttendanceDayDto requestDto = AddAttendanceDayDto.builder()
+            .jurorNumber("1234567890")
+            .poolNumber("415230101")
+            .locationCode("415")
+            .attendanceDate(now())
+            .checkInTime(LocalTime.of(9, 30))
+            .checkOutTime(LocalTime.of(17, 30))
+            .build();
+
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                URI.create("/api/v1/moj/juror-management/add-attendance-day")), String.class);
+
+        assertThat(response.getStatusCode()).as(HTTP_STATUS_BAD_REQUEST_MESSAGE).isEqualTo(BAD_REQUEST);
+
+    }
+
+    @Test
+    @DisplayName("POST addAttendanceDay() - happy path")
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    void addAttendanceBadPayloadMissingAttendanceDate() {
+        AddAttendanceDayDto requestDto = AddAttendanceDayDto.builder()
+            .jurorNumber(JUROR1)
+            .poolNumber("415230101")
+            .locationCode("400")
+            .attendanceDate(null)
+            .checkInTime(LocalTime.of(9, 30))
+            .checkOutTime(LocalTime.of(17, 30))
+            .build();
+
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                URI.create("/api/v1/moj/juror-management/add-attendance-day")), String.class);
+
+        assertThat(response.getStatusCode()).as(HTTP_STATUS_BAD_REQUEST_MESSAGE).isEqualTo(BAD_REQUEST);
+
+    }
+
+    @Test
+    @DisplayName("POST addAttendanceDay() - happy path")
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    void addAttendanceForbiddenAccess() {
+        AddAttendanceDayDto requestDto = AddAttendanceDayDto.builder()
+            .jurorNumber(JUROR1)
+            .poolNumber("415230101")
+            .locationCode("400")
+            .attendanceDate(now())
+            .checkInTime(LocalTime.of(9, 30))
+            .checkOutTime(LocalTime.of(17, 30))
+            .build();
+
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                URI.create("/api/v1/moj/juror-management/add-attendance-day")), String.class);
+
+        assertThat(response.getStatusCode()).as("FORBIDDEN").isEqualTo(FORBIDDEN);
+
+    }
+
+    @Test
+    @DisplayName("POST addAttendanceDay() - happy path")
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    void addAttendancePoolNumberNotFound() {
+        AddAttendanceDayDto requestDto = AddAttendanceDayDto.builder()
+            .jurorNumber(JUROR1)
+            .poolNumber("123456789")
+            .locationCode("400")
+            .attendanceDate(now())
+            .checkInTime(LocalTime.of(9, 30))
+            .checkOutTime(LocalTime.of(17, 30))
+            .build();
+
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                URI.create("/api/v1/moj/juror-management/add-attendance-day")), String.class);
+
+        assertThat(response.getStatusCode()).as("NOT_FOUND").isEqualTo(NOT_FOUND);
+
     }
 
     @Test
