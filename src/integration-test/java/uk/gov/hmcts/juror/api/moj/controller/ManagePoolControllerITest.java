@@ -1409,26 +1409,15 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         availablePoolsList.sort(Comparator.comparing(AvailablePoolsInCourtLocationDto
             .AvailablePoolsDto::getPoolNumber));
 
-        assertThat(availablePoolsList.get(0).getPoolNumber()).isEqualTo("416220502");
-        assertThat(availablePoolsList.get(0).getServiceStartDate()).isEqualTo(LocalDate.now().plusDays(10));
-        assertThat(availablePoolsList.get(0).getUtilisation()).isEqualTo(0L);
-        assertThat(availablePoolsList.get(0).getUtilisationDescription()).isEqualTo(
+        verifyAvailablePool(availablePoolsList, LocalDate.now().plusDays(10), "416220502", 0,
             PoolUtilisationDescription.CONFIRMED);
-        assertThat(availablePoolsList.get(1).getPoolNumber()).isEqualTo("416220503");
-        assertThat(availablePoolsList.get(1).getServiceStartDate()).isEqualTo(LocalDate.now().plusDays(12));
-        assertThat(availablePoolsList.get(1).getUtilisation()).isEqualTo(0L);
-        assertThat(availablePoolsList.get(1).getUtilisationDescription()).isEqualTo(
+        verifyAvailablePool(availablePoolsList, LocalDate.now().plusDays(12), "416220503", 0,
             PoolUtilisationDescription.CONFIRMED);
-        assertThat(availablePoolsList.get(2).getPoolNumber()).isEqualTo("416220504");
-        assertThat(availablePoolsList.get(2).getServiceStartDate()).isEqualTo(LocalDate.now().plusDays(12));
-        assertThat(availablePoolsList.get(2).getUtilisation()).isEqualTo(0L);
-        assertThat(availablePoolsList.get(2).getUtilisationDescription()).isEqualTo(
+        verifyAvailablePool(availablePoolsList, LocalDate.now().plusDays(12), "416220504", 0,
             PoolUtilisationDescription.CONFIRMED);
-        assertThat(availablePoolsList.get(3).getPoolNumber()).isEqualTo("416220505");
-        assertThat(availablePoolsList.get(3).getServiceStartDate()).isEqualTo(LocalDate.now().plusDays(12));
-        assertThat(availablePoolsList.get(3).getUtilisation()).isEqualTo(0L);
-        assertThat(availablePoolsList.get(3).getUtilisationDescription()).isEqualTo(
+        verifyAvailablePool(availablePoolsList, LocalDate.now().plusDays(12), "416220505", 0,
             PoolUtilisationDescription.CONFIRMED);
+
     }
 
     @Test
@@ -1513,6 +1502,15 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         verifyAvailablePool(availablePoolsDtoList, serviceStartDate, "416220504", 0,
             PoolUtilisationDescription.CONFIRMED);
+    }
+
+    @Test
+    public void getAvailablePoolsInCourtLocationCourtOwnedBureauUserNoAccess() {
+        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders,
+            HttpMethod.GET, URI.create("/api/v1/moj/manage-pool/available-pools-court-owned/416"));
+        ResponseEntity<SummoningProgressResponseDto> response = restTemplate.exchange(requestEntity,
+            SummoningProgressResponseDto.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Test
