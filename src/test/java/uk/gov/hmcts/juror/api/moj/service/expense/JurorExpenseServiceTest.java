@@ -1693,7 +1693,7 @@ class JurorExpenseServiceTest {
             doReturn(halfDayLongLimit).when(expenseRates).getLimitFinancialLossHalfDayLongTrial();
             doReturn(fullDayStandardLimit).when(expenseRates).getLimitFinancialLossFullDay();
             doReturn(fullDayLongLimit).when(expenseRates).getLimitFinancialLossFullDayLongTrial();
-            doReturn(expenseRates).when(jurorExpenseService).getCurrentExpenseRates();
+            doReturn(expenseRates).when(jurorExpenseService).getCurrentExpenseRates(false);
         }
 
         private Appearance createAppearanceMock(Double lossOfEarnings, Double extraCareCost,
@@ -1741,7 +1741,7 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("10.00"));
             verify(appearance, times(1)).setChildcareDue(BigDecimal.ZERO);
             verify(appearance, times(1)).setMiscAmountDue(BigDecimal.ZERO);
-            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates(false);
 
         }
 
@@ -1766,7 +1766,7 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("15.00"));
             verify(appearance, times(1)).setChildcareDue(BigDecimal.ZERO);
             verify(appearance, times(1)).setMiscAmountDue(BigDecimal.ZERO);
-            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates(false);
         }
 
         @Test
@@ -1790,7 +1790,7 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("20.00"));
             verify(appearance, times(1)).setChildcareDue(BigDecimal.ZERO);
             verify(appearance, times(1)).setMiscAmountDue(BigDecimal.ZERO);
-            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates(false);
         }
 
         @Test
@@ -1814,7 +1814,7 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("25.00"));
             verify(appearance, times(1)).setChildcareDue(BigDecimal.ZERO);
             verify(appearance, times(1)).setMiscAmountDue(BigDecimal.ZERO);
-            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates(false);
         }
 
         @Test
@@ -1834,7 +1834,7 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).getChildcareDue();
             verify(appearance, times(1)).getMiscAmountDue();
             verifyNoMoreInteractions(appearance);
-            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates(false);
         }
 
         @Test
@@ -1858,7 +1858,7 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("14.00"));
             verify(appearance, times(1)).setChildcareDue(new BigDecimal("5.00"));
             verify(appearance, times(1)).setMiscAmountDue(new BigDecimal("6.00"));
-            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates(false);
         }
 
         @Test
@@ -1882,7 +1882,7 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("22.00"));
             verify(appearance, times(1)).setChildcareDue(new BigDecimal("3.00"));
             verify(appearance, times(1)).setMiscAmountDue(BigDecimal.ZERO);
-            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates(false);
         }
 
         @Test
@@ -1906,7 +1906,7 @@ class JurorExpenseServiceTest {
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("25.00"));
             verify(appearance, times(1)).setChildcareDue(BigDecimal.ZERO);
             verify(appearance, times(1)).setMiscAmountDue(BigDecimal.ZERO);
-            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates(false);
         }
     }
 
@@ -2007,7 +2007,7 @@ class JurorExpenseServiceTest {
         void setupStandard(TravelMethod travelMethod) {
             this.appearance = spy(new Appearance());
             this.expenseRates = mock(ExpenseRates.class);
-            doReturn(expenseRates).when(jurorExpenseService).getCurrentExpenseRates();
+            doReturn(expenseRates).when(jurorExpenseService).getCurrentExpenseRates(false);
 
             DailyExpenseTravel.DailyExpenseTravelBuilder builder = DailyExpenseTravel.builder()
                 .milesTraveled(3)
@@ -2034,7 +2034,7 @@ class JurorExpenseServiceTest {
         }
 
         void verifyStandard(TravelMethod travelMethod) {
-            verify(jurorExpenseService, times(1)).getCurrentExpenseRates();
+            verify(jurorExpenseService, times(1)).getCurrentExpenseRates(false);
             verify(appearance, times(1)).setMilesTraveled(3);
             verify(appearance, times(1)).setParkingDue(parking);
             verify(appearance, times(1)).setPublicTransportDue(publicTransport);
@@ -2148,7 +2148,7 @@ class JurorExpenseServiceTest {
         void positiveNullMilesTraveled() {
             this.appearance = spy(new Appearance());
             this.expenseRates = mock(ExpenseRates.class);
-            doReturn(expenseRates).when(jurorExpenseService).getCurrentExpenseRates();
+            doReturn(expenseRates).when(jurorExpenseService).getCurrentExpenseRates(false);
             when(expenseRates.getCarMileageRatePerMile2OrMorePassengers()).thenReturn(travelCost);
 
             this.travel = spy(DailyExpenseTravel.builder()
@@ -2214,7 +2214,7 @@ class JurorExpenseServiceTest {
             BigDecimal rate = new BigDecimal("12.22");
             ExpenseRates expenseRates = mock(ExpenseRates.class);
             Appearance appearance = mock(Appearance.class);
-            doReturn(expenseRates).when(jurorExpenseService).getCurrentExpenseRates();
+            doReturn(expenseRates).when(jurorExpenseService).getCurrentExpenseRates(false);
             FoodDrinkClaimType foodDrinkClaimType = mock(FoodDrinkClaimType.class);
             when(foodDrinkClaimType.getRate(expenseRates)).thenReturn(rate);
 
@@ -5702,6 +5702,53 @@ class JurorExpenseServiceTest {
         assertThat(expenseRates.getSubsistenceRateLongDay()).isEqualTo(new BigDecimal("1.12"));
         assertThat(expenseRates.getRatesEffectiveFrom()).isNotNull();
 
+    }
+
+    @Nested
+    @DisplayName("public ExpenseRates getCurrentExpenseRates()")
+    class GetCurrentExpenseRates {
+
+        ExpenseRates getExpenseRates() {
+            return ExpenseRates.builder()
+                .carMileageRatePerMile0Passengers(new BigDecimal("1.01"))
+                .carMileageRatePerMile1Passengers(new BigDecimal("1.02"))
+                .carMileageRatePerMile2OrMorePassengers(new BigDecimal("1.03"))
+                .motorcycleMileageRatePerMile0Passengers(new BigDecimal("1.04"))
+                .motorcycleMileageRatePerMile1Passengers(new BigDecimal("1.05"))
+                .bikeRate(new BigDecimal("1.06"))
+                .limitFinancialLossHalfDay(new BigDecimal("1.07"))
+                .limitFinancialLossFullDay(new BigDecimal("1.08"))
+                .limitFinancialLossHalfDayLongTrial(new BigDecimal("1.09"))
+                .limitFinancialLossFullDayLongTrial(new BigDecimal("1.10"))
+                .subsistenceRateStandard(new BigDecimal("1.11"))
+                .subsistenceRateLongDay(new BigDecimal("1.12"))
+                .build();
+        }
+
+        @Test
+        void positiveAll() {
+            ExpenseRates expenseRates = getExpenseRates();
+            when(expenseRatesRepository.getCurrentRates()).thenReturn(expenseRates);
+
+            assertThat(jurorExpenseService.getCurrentExpenseRates(false))
+                .isEqualTo(expenseRates);
+            verify(expenseRatesRepository, times(1)).getCurrentRates();
+        }
+
+        @Test
+        void positiveOnlyFinancialLoss() {
+            ExpenseRates expenseRates = getExpenseRates();
+            when(expenseRatesRepository.getCurrentRates()).thenReturn(expenseRates);
+
+            assertThat(jurorExpenseService.getCurrentExpenseRates(true))
+                .isEqualTo(ExpenseRates.builder()
+                    .limitFinancialLossHalfDay(new BigDecimal("1.07"))
+                    .limitFinancialLossFullDay(new BigDecimal("1.08"))
+                    .limitFinancialLossHalfDayLongTrial(new BigDecimal("1.09"))
+                    .limitFinancialLossFullDayLongTrial(new BigDecimal("1.10"))
+                    .build());
+            verify(expenseRatesRepository, times(1)).getCurrentRates();
+        }
     }
 }
 

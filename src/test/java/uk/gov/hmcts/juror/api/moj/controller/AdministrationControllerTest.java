@@ -1,11 +1,14 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
 import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.MockedStatic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -28,14 +31,17 @@ import uk.gov.hmcts.juror.api.moj.domain.UpdateCourtDetailsDto;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.AdministrationService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -295,10 +301,22 @@ public class AdministrationControllerTest {
     @DisplayName("GET " + ViewExpenseDetails.URL)
     class ViewExpenseDetails {
         public static final String URL = BASE_URL + "/expenses/rates";
+        private MockedStatic<SecurityUtil> securityUtilMockedStatic;
+        @BeforeEach
+        void mockCurrentUser() {
+            securityUtilMockedStatic = mockStatic(SecurityUtil.class);
+        }
 
+        @AfterEach
+        void afterEach() {
+            if (securityUtilMockedStatic != null) {
+                securityUtilMockedStatic.close();
+            }
+        }
 
         @Test
-        void positiveTypical() throws Exception {
+        void positiveNotCourt() throws Exception {
+            securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(false);
             CourtDetailsDto courtDetailsDto = new CourtDetailsDto();
             courtDetailsDto.setCourtCode(TestConstants.VALID_COURT_LOCATION);
 
@@ -315,7 +333,7 @@ public class AdministrationControllerTest {
                 .limitFinancialLossFullDayLongTrial(new BigDecimal("1.10"))
                 .subsistenceRateStandard(new BigDecimal("1.11"))
                 .subsistenceRateLongDay(new BigDecimal("1.12"))
-                .build()).when(jurorExpenseService).getCurrentExpenseRates();
+                .build()).when(jurorExpenseService).getCurrentExpenseRates(anyBoolean());
 
 
             mockMvc.perform(get(URL))
@@ -337,7 +355,37 @@ public class AdministrationControllerTest {
                     .build())));
 
             verify(jurorExpenseService, times(1))
-                .getCurrentExpenseRates();
+                .getCurrentExpenseRates(false);
+            verifyNoMoreInteractions(jurorExpenseService);
+            verifyNoInteractions(administrationService);
+        }
+
+        @Test
+        void positiveCourt() throws Exception {
+            securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
+            CourtDetailsDto courtDetailsDto = new CourtDetailsDto();
+            courtDetailsDto.setCourtCode(TestConstants.VALID_COURT_LOCATION);
+
+            doReturn(ExpenseRates.builder()
+                .limitFinancialLossHalfDay(new BigDecimal("1.07"))
+                .limitFinancialLossFullDay(new BigDecimal("1.08"))
+                .limitFinancialLossHalfDayLongTrial(new BigDecimal("1.09"))
+                .limitFinancialLossFullDayLongTrial(new BigDecimal("1.10"))
+                .build()).when(jurorExpenseService).getCurrentExpenseRates(anyBoolean());
+
+
+            mockMvc.perform(get(URL))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(content().json(TestUtils.asJsonString(ExpenseRatesDto.builder()
+                    .limitFinancialLossHalfDay(new BigDecimal("1.07"))
+                    .limitFinancialLossFullDay(new BigDecimal("1.08"))
+                    .limitFinancialLossHalfDayLongTrial(new BigDecimal("1.09"))
+                    .limitFinancialLossFullDayLongTrial(new BigDecimal("1.10"))
+                    .build())));
+
+            verify(jurorExpenseService, times(1))
+                .getCurrentExpenseRates(true);
             verifyNoMoreInteractions(jurorExpenseService);
             verifyNoInteractions(administrationService);
         }

@@ -81,7 +81,7 @@ public final class SecurityUtil {
     }
 
     public static boolean isCourt() {
-        return !isBureau();
+        return UserType.COURT.equals(getUserType());
     }
 
     public static void validateCanAccessOwner(String owner) {
