@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service.letter.court;
 
-import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.querydsl.core.Tuple;
 import lombok.NonNull;
@@ -146,7 +146,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
     }
 
     private Multimap<String, LocalDate> transposeListToMap(PrintLettersRequestDto printLettersRequestDto) {
-        Multimap<String, LocalDate> map = ArrayListMultimap.create();
+        Multimap<String, LocalDate> map = LinkedListMultimap.create();
 
         if (CourtLetterType.SHOW_CAUSE.equals(printLettersRequestDto.getLetterType())
             || CourtLetterType.FAILED_TO_ATTEND.equals(printLettersRequestDto.getLetterType())) {
@@ -157,7 +157,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
         } else {
             // de-duplicate list of juror numbers, so we only print one letter per juror
             List<String> jurorNumbersList = printLettersRequestDto.getJurorNumbers().stream().distinct().toList();
-            jurorNumbersList.forEach(details -> map.put(details, null));
+            jurorNumbersList.forEach(jurorNumber -> map.put(jurorNumber, null));
         }
         return map;
     }
