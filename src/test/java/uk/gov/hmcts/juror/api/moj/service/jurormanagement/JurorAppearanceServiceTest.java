@@ -133,15 +133,42 @@ class JurorAppearanceServiceTest {
         jurorAppearanceService.addAttendanceDay(buildPayload(OWNER_415, Arrays.asList("415", "462", "767")),
             dto);
 
+        ArgumentCaptor<JurorAppearanceDto> appearanceDtoCaptor = ArgumentCaptor.forClass(JurorAppearanceDto.class);
+        ArgumentCaptor<UpdateAttendanceDto.CommonData> attendanceDtoCaptor =
+            ArgumentCaptor.forClass(UpdateAttendanceDto.CommonData.class);
+        ArgumentCaptor<BureauJWTPayload> payloadArgumentCaptor = ArgumentCaptor.forClass(BureauJWTPayload.class);
 
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndPoolPoolNumber(JUROR_123456789, "123456789");
-        verify(jurorAppearanceService, times(1)).processAppearance(any(), any(), anyBoolean());
-        verify(jurorAppearanceService, times(1)).updateConfirmAttendance(any());
+        verify(jurorAppearanceService, times(1)).processAppearance(payloadArgumentCaptor.capture(),
+            appearanceDtoCaptor.capture(), eq(true));
+        verify(jurorAppearanceService, times(1)).updateConfirmAttendance(attendanceDtoCaptor.capture());
+
+        JurorAppearanceDto appearanceDto = appearanceDtoCaptor.getValue();
+
+        assertThat(appearanceDto).isNotNull();
+        assertThat(appearanceDto.getAttendanceDate()).isEqualTo(dto.getAttendanceDate());
+        assertThat(appearanceDto.getJurorNumber()).isEqualTo(dto.getJurorNumber());
+        assertThat(appearanceDto.getCheckInTime()).isEqualTo(dto.getCheckInTime());
+        assertThat(appearanceDto.getCheckOutTime()).isEqualTo(dto.getCheckOutTime());
+        assertThat(appearanceDto.getLocationCode()).isEqualTo(dto.getLocationCode());
+
+        UpdateAttendanceDto.CommonData commonData = attendanceDtoCaptor.getValue();
+
+        assertThat(commonData).isNotNull();
+        assertThat(commonData.getAttendanceDate()).isEqualTo(dto.getAttendanceDate());
+        assertThat(commonData.getCheckInTime()).isEqualTo(dto.getCheckInTime());
+        assertThat(commonData.getCheckOutTime()).isEqualTo(dto.getCheckOutTime());
+        assertThat(commonData.getLocationCode()).isEqualTo(dto.getLocationCode());
+
     }
 
     @Test
     void addAttendanceDayWrongAccess() {
+        jurorAppearanceService = spy(jurorAppearanceService);
+
+        doReturn(null).when(jurorAppearanceService).processAppearance(any(), any(), anyBoolean());
+        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any());
 
         Juror juror = new Juror();
         juror.setJurorNumber(JUROR_123456789);
@@ -162,6 +189,11 @@ class JurorAppearanceServiceTest {
                 jurorAppearanceService.addAttendanceDay(buildPayload("400", List.of("400")),
                     dto)).as("Invalid access to juror pool")
             .withMessageContaining("Invalid access to juror pool");
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorJurorNumberAndPoolPoolNumber(any(), anyString());
+        verify(jurorAppearanceService, never()).processAppearance(any(), any(), anyBoolean());
+        verify(jurorAppearanceService, never()).updateConfirmAttendance(any());
 
     }
 
