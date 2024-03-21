@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service.poolmanagement;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.antlr.v4.runtime.misc.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -247,7 +248,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
     }
 
     private JurorManagementResponseDto mapValidationResultsToDto(List<String> requestedJurorPools, Map<String,
-        String> validationFailures) {
+        Triple<String, String, String>> validationFailures) {
         log.trace("Enter mapValidationResultsToDto");
         JurorManagementResponseDto responseDto = new JurorManagementResponseDto();
 
@@ -256,12 +257,14 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         } else {
             List<JurorManagementResponseDto.ValidationFailure> failureList = new ArrayList<>();
 
-            for (Map.Entry<String, String> entry : validationFailures.entrySet()) {
+            for (Map.Entry<String, Triple<String, String, String>> entry : validationFailures.entrySet()) {
                 JurorManagementResponseDto.ValidationFailure validationFailure =
                     new JurorManagementResponseDto.ValidationFailure();
 
                 validationFailure.setJurorNumber(entry.getKey());
-                validationFailure.setFailureReason(entry.getValue());
+                validationFailure.setFailureReason(entry.getValue().a);
+                validationFailure.setFirstName(entry.getValue().b);
+                validationFailure.setLastName(entry.getValue().c);
 
                 failureList.add(validationFailure);
             }
@@ -358,12 +361,16 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                                                           JurorManagementRequestDto requestDto) {
         log.trace("Enter validatePoolMembers");
         int requestedJurorCount = (int) requestDto.getJurorNumbers().stream().distinct().count();
-        final Map<String, String> failedTransfers = new HashMap<>();
+        final Map<String, Triple<String, String, String>> failedTransfers = new HashMap<>();
 
         CourtLocation sendingCourtLocation = getSendingCourtLocation(requestDto.getSendingCourtLocCode());
 
         List<JurorPool> sourceJurorPools = jurorPoolRepository
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(requestDto.getJurorNumbers(), true,
+                requestDto.getSourcePoolNumber(), sendingCourtLocation);
+
+        List<JurorPool> inactiveJurorPools = jurorPoolRepository
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(requestDto.getJurorNumbers(), false,
                 requestDto.getSourcePoolNumber(), sendingCourtLocation);
 
         log.debug("{} Pool Members found for the {} juror numbers provided", sourceJurorPools.size(),
@@ -375,17 +382,26 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             requestDto.getJurorNumbers().stream()
                 .filter(jurorNumber ->
                     !foundJurorNumbers.contains(jurorNumber))
-                .forEach(jurorNumber ->
-                    failedTransfers.put(jurorNumber, JurorManagementConstants.NO_ACTIVE_RECORD_MESSAGE));
+                .forEach(jurorNumber -> {
+                    Optional<JurorPool> inactiveJuror = inactiveJurorPools.stream().filter(
+                        jurorPool -> jurorNumber.equals(jurorPool.getJurorNumber())).findFirst();
+                    if (inactiveJuror.isPresent()) {
+                        failedTransfers.put(jurorNumber, new Triple<>(JurorManagementConstants.NO_ACTIVE_RECORD_MESSAGE,
+                                                                      inactiveJuror.get().getJuror().getFirstName(),
+                                                                      inactiveJuror.get().getJuror().getLastName()));
+                    } else {
+                        failedTransfers.put(jurorNumber, new Triple<>(JurorManagementConstants.NO_ACTIVE_RECORD_MESSAGE,
+                                                                      "", ""));
+                    }
+                });
         }
 
         sourceJurorPools.forEach(jurorPool -> {
             // status validation (acceptable status values are 1 (summoned) or 2 (responded)
             if (jurorPool.getStatus().getStatus() > 2) {
                 failedTransfers.put(jurorPool.getJurorNumber(),
-                    String.format(
-                        JurorManagementConstants.INVALID_STATUS_MESSAGE,
-                        jurorPool.getStatus().getStatusDesc()));
+                    new Triple<>(String.format(JurorManagementConstants.INVALID_STATUS_MESSAGE, jurorPool.getStatus()
+                        .getStatusDesc()), jurorPool.getJuror().getFirstName(), jurorPool.getJuror().getLastName()));
                 return;
             }
 
@@ -396,9 +412,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             if (dateOfBirth == null) {
                 log.info("Juror {} has no date of birth on record so cannot validate", juror.getJurorNumber());
             } else {
-                validateJurorAge(jurorPool.getJurorNumber(), dateOfBirth, requestDto.getServiceStartDate(),
-                    failedTransfers
-                );
+                validateJurorAge(jurorPool, dateOfBirth, requestDto.getServiceStartDate(), failedTransfers);
             }
         });
 
@@ -499,17 +513,21 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         }
     }
 
-    private void validateJurorAge(String jurorNumber, LocalDate dateOfBirth, LocalDate serviceStartDate,
-                                  Map<String, String> validationFailures) {
+    private void validateJurorAge(JurorPool jurorPool, LocalDate dateOfBirth, LocalDate serviceStartDate,
+                                  Map<String, Triple<String, String, String>> validationFailures) {
         int age = JurorUtils.getJurorAgeAtHearingDate(dateOfBirth, serviceStartDate);
 
         int lowerAgeLimit = responseInspector.getYoungestJurorAgeAllowed();
         int upperAgeLimit = responseInspector.getTooOldJurorAge();
 
         if (age < lowerAgeLimit) {
-            validationFailures.put(jurorNumber, JurorManagementConstants.BELOW_AGE_LIMIT_MESSAGE);
+            validationFailures.put(jurorPool.getJurorNumber(), new Triple<>(
+                JurorManagementConstants.BELOW_AGE_LIMIT_MESSAGE, jurorPool.getJuror().getFirstName(),
+                    jurorPool.getJuror().getLastName()));
         } else if (age >= upperAgeLimit) {
-            validationFailures.put(jurorNumber, JurorManagementConstants.ABOVE_AGE_LIMIT_MESSAGE);
+            validationFailures.put(jurorPool.getJurorNumber(), new Triple<>(
+                JurorManagementConstants.ABOVE_AGE_LIMIT_MESSAGE, jurorPool.getJuror().getFirstName(),
+                    jurorPool.getJuror().getLastName()));
         }
     }
 

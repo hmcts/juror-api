@@ -710,6 +710,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(validationFailure1).isNotNull();
         assertThat(validationFailure1.getFailureReason())
             .isEqualToIgnoringCase(JurorManagementConstants.ABOVE_AGE_LIMIT_MESSAGE);
+        assertThat(validationFailure1.getFirstName()).isEqualToIgnoringCase("FNAMETWOS");
+        assertThat(validationFailure1.getLastName()).isEqualToIgnoringCase("LNAMETWOS");
 
         JurorManagementResponseDto.ValidationFailure validationFailure2 = validationFailuresList.stream()
             .filter(failure -> failure.getJurorNumber().equalsIgnoreCase("333333333"))
@@ -717,6 +719,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(validationFailure2).isNotNull();
         assertThat(validationFailure2.getFailureReason())
             .isEqualToIgnoringCase(String.format(JurorManagementConstants.INVALID_STATUS_MESSAGE, "Transferred"));
+        assertThat(validationFailure2.getFirstName()).isEqualToIgnoringCase("FNAMETHREES");
+        assertThat(validationFailure2.getLastName()).isEqualToIgnoringCase("LNAMETHREES");
 
         JurorManagementResponseDto.ValidationFailure validationFailure3 = validationFailuresList.stream()
             .filter(failure -> failure.getJurorNumber().equalsIgnoreCase("444444444"))
@@ -724,6 +728,9 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(validationFailure3).isNotNull();
         assertThat(validationFailure3.getFailureReason())
             .isEqualToIgnoringCase(JurorManagementConstants.NO_ACTIVE_RECORD_MESSAGE);
+        assertThat(validationFailure3.getFirstName()).isEqualToIgnoringCase("");
+        assertThat(validationFailure3.getLastName()).isEqualToIgnoringCase("");
+
     }
 
     @Test
