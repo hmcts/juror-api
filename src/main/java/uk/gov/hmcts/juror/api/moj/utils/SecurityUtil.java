@@ -31,6 +31,7 @@ public final class SecurityUtil {
     public static final String IS_MANAGER = "hasRole('ROLE_MANAGER')";
 
     public static final String USER_TYPE_ADMINISTRATOR = "principal.userType.name() == 'ADMINISTRATOR'";
+    public static final String USER_TYPE_COURT = "principal.userType.name() == 'COURT'";
 
 
     private SecurityUtil() {

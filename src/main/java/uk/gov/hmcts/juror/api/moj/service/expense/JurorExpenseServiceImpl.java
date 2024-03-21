@@ -1176,7 +1176,16 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Override
     @Transactional(readOnly = true)
     public ExpenseRates getCurrentExpenseRates() {
-        return expenseRatesRepository.getCurrentRates();
+        ExpenseRates expenseRates = expenseRatesRepository.getCurrentRates();
+        if(SecurityUtil.isCourt()){
+            expenseRates = ExpenseRates.builder()
+                .limitFinancialLossFullDay(expenseRates.getLimitFinancialLossFullDay())
+                .limitFinancialLossHalfDay(expenseRates.getLimitFinancialLossHalfDay())
+                .limitFinancialLossFullDayLongTrial(expenseRates.getLimitFinancialLossFullDayLongTrial())
+                .limitFinancialLossHalfDayLongTrial(expenseRates.getLimitFinancialLossHalfDayLongTrial())
+                .build();
+        }
+        return expenseRates;
     }
 
     @Override

@@ -114,7 +114,7 @@ public class AdministrationController {
     @GetMapping("/expenses/rates")
     @Operation(summary = "View global expense rates")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR)
+    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR + " or " + SecurityUtil.USER_TYPE_COURT)
     public ResponseEntity<ExpenseRatesDto> viewExpenseDetails() {
         return ResponseEntity.ok(new ExpenseRatesDto(jurorExpenseService.getCurrentExpenseRates()));
     }
