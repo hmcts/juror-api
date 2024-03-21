@@ -54,6 +54,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,7 +66,7 @@ import static uk.gov.hmcts.juror.api.TestUtil.getValuesInJsonObject;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings({"PMD.LawOfDemeter", "PMD.TooManyMethods", "PMD.ExcessiveImports"})
 public class ManagePoolControllerITest extends AbstractIntegrationTest {
     private static final String URI_AVAILABLE_POOLS = "/api/v1/moj/manage-pool/available-pools/%s";
     private static final String URI_MANAGE_POOL_SUMMARY = "/api/v1/moj/manage-pool/summary?poolNumber=%s";
@@ -1390,9 +1391,9 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     //Tests related to controller operation: getAvailablePoolsInCourtLocation
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
-    public void test_getAvailablePoolsInCourtLocation_CourtUser_Happy() throws NullPointerException {
-        final URI uri = URI.create(String.format(URI_AVAILABLE_POOLS, "404"));
-        httpHeaders = initialiseHeaders("1", false, COURT_USER, 89, "404");
+    public void availablePoolsInCourtLocationCourtUserHappy() throws NullPointerException {
+        final URI uri = URI.create(String.format(URI_AVAILABLE_POOLS, "416"));
+        httpHeaders = initialiseHeaders("1", false, COURT_USER, 89, "416");
 
         ResponseEntity<AvailablePoolsInCourtLocationDto> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET, uri),
@@ -1401,17 +1402,27 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<AvailablePoolsInCourtLocationDto.AvailablePoolsDto> availablePoolsList =
             responseEntity.getBody().getAvailablePools();
-        assertThat(availablePoolsList.size()).isEqualTo(1);
-        assertThat(availablePoolsList.get(0).getPoolNumber()).isEqualTo("404220506");
-        assertThat(availablePoolsList.get(0).getServiceStartDate()).isEqualTo(LocalDate.of(2023, 7, 4));
-        assertThat(availablePoolsList.get(0).getUtilisation()).isEqualTo(1L);
-        assertThat(availablePoolsList.get(0).getUtilisationDescription()).isEqualTo(
+
+        // this endpoint should return 4 available pools as it does not filter by court owner
+        assertThat(availablePoolsList.size()).isEqualTo(4);
+
+        availablePoolsList.sort(Comparator.comparing(AvailablePoolsInCourtLocationDto
+            .AvailablePoolsDto::getPoolNumber));
+
+        verifyAvailablePool(availablePoolsList, LocalDate.now().plusDays(10), "416220502", 0,
             PoolUtilisationDescription.CONFIRMED);
+        verifyAvailablePool(availablePoolsList, LocalDate.now().plusDays(12), "416220503", 0,
+            PoolUtilisationDescription.CONFIRMED);
+        verifyAvailablePool(availablePoolsList, LocalDate.now().plusDays(12), "416220504", 0,
+            PoolUtilisationDescription.CONFIRMED);
+        verifyAvailablePool(availablePoolsList, LocalDate.now().plusDays(12), "416220505", 0,
+            PoolUtilisationDescription.CONFIRMED);
+
     }
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
-    public void test_getAvailablePoolsInCourtLocation_CourtUser_Owner_NotFoundException() throws NullPointerException {
+    public void availablePoolsInCourtLocationCourtUserOwnerNotFoundException() throws NullPointerException {
         final URI uri = URI.create(String.format(URI_AVAILABLE_POOLS, "404"));
         httpHeaders = initialiseHeaders("1", false, COURT_USER, 89, "505");
 
@@ -1432,7 +1443,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools.sql"})
-    public void test_getAvailablePoolsInCourtLocation_BureauUser_Happy() {
+    public void availablePoolsInCourtLocationBureauUserHappy() {
         ResponseEntity<AvailablePoolsInCourtLocationDto> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/moj/manage-pool/available-pools/415")), AvailablePoolsInCourtLocationDto.class);
@@ -1460,6 +1471,46 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
             PoolUtilisationDescription.NEEDED);
         verifyAvailablePool(availablePoolsDtoList, serviceStartDate, "415220503", 4,
             PoolUtilisationDescription.NEEDED);
+    }
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
+    public void availablePoolsInCourtLocationCourtOwnedCourtUserHappy() {
+        httpHeaders = initialiseHeaders("1", false, COURT_USER, 89, "416");
+        ResponseEntity<AvailablePoolsInCourtLocationDto> responseEntity =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                URI.create("/api/v1/moj/manage-pool/available-pools-court-owned/416")),
+                AvailablePoolsInCourtLocationDto.class);
+
+        assertThat(responseEntity.getStatusCode()).as(EXPECT_HTTP_RESPONSE_SUCCESSFUL).isEqualTo(HttpStatus.OK);
+
+        AvailablePoolsInCourtLocationDto responseBody = responseEntity.getBody();
+        assertThat(responseBody).isNotNull();
+
+        List<AvailablePoolsInCourtLocationDto.AvailablePoolsDto> availablePoolsDtoList =
+            responseBody.getAvailablePools();
+
+        assertThat(availablePoolsDtoList).isNotNull();
+
+        assertThat(availablePoolsDtoList.size())
+            .as("There should be 1 available pool")
+            .isEqualTo(1);
+
+        // database has service start date 12 days in the future
+        LocalDate serviceStartDate = LocalDate.now().plusDays(12);
+
+        verifyAvailablePool(availablePoolsDtoList, serviceStartDate, "416220504", 0,
+            PoolUtilisationDescription.CONFIRMED);
+    }
+
+    @Test
+    public void availablePoolsInCourtLocationCourtOwnedBureauUserNoAccess() {
+        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders,
+            HttpMethod.GET, URI.create("/api/v1/moj/manage-pool/available-pools-court-owned/416"));
+        ResponseEntity<SummoningProgressResponseDto> response = restTemplate.exchange(requestEntity,
+            SummoningProgressResponseDto.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Test

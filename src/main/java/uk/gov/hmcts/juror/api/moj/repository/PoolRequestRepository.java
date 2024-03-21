@@ -17,6 +17,8 @@ public interface PoolRequestRepository extends IPoolRequestRepository, JpaReposi
 
     Optional<PoolRequest> findByPoolNumber(String poolNumber);
 
+    List<PoolRequest> findByOwnerAndPoolNumberIn(String owner, List<String> poolNumber);
+
     Optional<PoolRequest> findByOwnerAndPoolNumber(String owner, String poolNumber);
 
     /**
