@@ -2,8 +2,7 @@ INSERT INTO juror_mod.users (owner, username,email, name, active)
 VALUES ('448','STAFF1','STAFF1@email.gov.uk','Staff One',true);
 
 INSERT INTO juror_mod.user_roles (username, role)
-VALUES ('STAFF1', 'TEAM_LEADER');-- enable court
-INSERT INTO JUROR_DIGITAL.COURT_WHITELIST (LOC_CODE) VALUES ('448');
+VALUES ('STAFF1', 'TEAM_LEADER');
 
 INSERT INTO juror_mod.pool (pool_no,"owner",return_date,no_requested,pool_type,loc_code,new_request,last_update,additional_summons,attend_time,nil_pool,total_no_required,date_created) VALUES
     ('555','400','2022-05-03',5,'CRO','448','N',NULL,NULL,NULL,false,5,NULL);

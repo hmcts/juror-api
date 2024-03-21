@@ -71,11 +71,11 @@ public class UserServiceModImpl implements UserService {
             throw new MojException.Forbidden("User not part of court", null);
         }
         if (SecurityUtil.isAdministration()) {
-            user.setActive(updateUserDto.getIsActive());
             user.setEmail(updateUserDto.getEmail());
             user.setName(updateUserDto.getName());
             user.setApprovalLimit(BigDecimalUtils.getOrZero(updateUserDto.getApprovalLimit()));
         }
+        user.setActive(updateUserDto.getIsActive());
         user.setRoles(updateUserDto.getRoles());
         userRepository.save(user);
     }
