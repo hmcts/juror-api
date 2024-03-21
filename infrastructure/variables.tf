@@ -38,6 +38,13 @@ variable "location" {
   default = "UK South"
 }
 
-variable "db_size" {
-  default = "65536"
+variable "pgsql_sku" {
+  description = "The PGSql flexible server instance sku"
+  default     = "GP_Standard_D2s_v3"
+}
+
+variable "pgsql_storage_mb" {
+  description = "Max storage allowed for the PGSql Flexibile instance"
+  type        = number
+  default     = 65536
 }
