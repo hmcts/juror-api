@@ -30,7 +30,7 @@ import java.util.List;
 
 @ConditionalDtoValidation(
     conditionalProperty = "letterType", values = {"DEFERRAL_GRANTED", "DEFERRAL_REFUSED", "EXCUSAL_GRANTED",
-    "EXCUSAL_REFUSED", "POSTPONED", "WITHDRAWAL", "CERTIFICATE_OF_ATTENDANCE", "CERTIFICATE_OF_EXEMPTION"},
+        "EXCUSAL_REFUSED", "POSTPONED", "WITHDRAWAL", "CERTIFICATE_OF_ATTENDANCE", "CERTIFICATE_OF_EXEMPTION"},
     requiredProperties = {"jurorNumbers"},
     message = "jurorNumbers required for letter type")
 

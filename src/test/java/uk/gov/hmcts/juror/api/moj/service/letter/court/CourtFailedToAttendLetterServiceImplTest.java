@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service.letter.court;
 
-import com.querydsl.jpa.impl.JPAQuery;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

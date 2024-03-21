@@ -142,7 +142,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             }
             letters.add(dto);
         }
-            return letters;
+        return letters;
     }
 
     private Multimap<String, LocalDate> transposeListToMap(PrintLettersRequestDto printLettersRequestDto) {

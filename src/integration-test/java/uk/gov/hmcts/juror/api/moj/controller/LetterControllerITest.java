@@ -37,7 +37,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.DeferralLette
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ExcusalLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.FailedToAttendLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterResponseData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.NonDeferralLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PostponeLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDataResponseDto;

@@ -19,15 +19,15 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
-import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.FAILED_TO_ATTEND;
-import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.SHOW_CAUSE;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.FAILED_TO_ATTEND;
 import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.POSTPONED;
+import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.SHOW_CAUSE;
 
 @Component
 @SuppressWarnings("PMD.LawOfDemeter")
@@ -54,8 +54,27 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
     }
 
     @Override
-    public Tuple retrievePrintInformationBasedOnLetterSpecificDate(String jurorNumber, CourtLetterType letterType, boolean welsh,
-                                                     String owner, LocalDate letterDate) {
+    public Tuple retrievePrintInformation(String jurorNumber, CourtLetterType courtLetterType, boolean welsh,
+                                          String owner, String trialNumber) {
+        List<Expression<?>> expressions = fetchCommonPrintData(welsh);
+
+        buildExpresionsBasedOnLetterType(courtLetterType, expressions);
+
+        JPAQuery<Tuple> query = selectData(expressions, welsh);
+
+        filterDataBasedOnLetterType(courtLetterType, query, trialNumber);
+
+        filterDataForAllLetterTypes(query, jurorNumber, owner);
+
+        orderResultsBasedOnLetterType(query, courtLetterType);
+
+        return query.fetchOne();
+    }
+
+    @Override
+    public Tuple retrievePrintInformationBasedOnLetterSpecificDate(String jurorNumber, CourtLetterType letterType,
+                                                                   boolean welsh,
+                                                                   String owner, LocalDate letterDate) {
         // Note: letterDate is specific to a letterType e.g. attendanceDate/absentDate, excusalDate, deferralDate, etc
 
         List<Expression<?>> expressions = fetchCommonPrintData(welsh);
@@ -83,24 +102,6 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
         return query.fetchOne();
     }
 
-    @Override
-    public Tuple retrievePrintInformation(String jurorNumber, CourtLetterType courtLetterType, boolean welsh,
-                                          String owner, String trialNumber) {
-        List<Expression<?>> expressions = fetchCommonPrintData(welsh);
-
-        buildExpresionsBasedOnLetterType(courtLetterType, expressions);
-
-        JPAQuery<Tuple> query = selectData(expressions, welsh);
-
-        filterDataBasedOnLetterType(courtLetterType, query, trialNumber);
-
-        filterDataForAllLetterTypes(query, jurorNumber, owner);
-
-        orderResultsBasedOnLetterType(query, courtLetterType);
-
-        return query.fetchOne();
-    }
-
     private void orderResultsBasedOnLetterType(JPAQuery<Tuple> query, CourtLetterType courtLetterType) {
         switch (courtLetterType) {
             case DEFERRAL_GRANTED, POSTPONED -> query.orderBy(JUROR_POOL.deferralDate.desc());
@@ -120,7 +121,8 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
         query.where(JUROR_POOL.owner.eq(owner));
     }
 
-    private void filterDataBasedOnLetterType(CourtLetterType courtLetterType, JPAQuery<Tuple> query, String trialNumber) {
+    private void filterDataBasedOnLetterType(CourtLetterType courtLetterType,
+                                             JPAQuery<Tuple> query, String trialNumber) {
         switch (courtLetterType) {
             case DEFERRAL_GRANTED, POSTPONED -> {
                 if (POSTPONED.equals(courtLetterType)) {
