@@ -117,7 +117,6 @@ class JurorAppearanceServiceTest {
 
         Juror juror = new Juror();
         juror.setJurorNumber(JUROR_123456789);
-        CourtLocation courtLocation = getCourtLocation();
 
         PoolRequest poolRequest = new PoolRequest();
         poolRequest.setPoolNumber("123456789");
@@ -201,7 +200,6 @@ class JurorAppearanceServiceTest {
     void addAttendanceDayNotFound() {
         Juror juror = new Juror();
         juror.setJurorNumber(JUROR_123456789);
-        CourtLocation courtLocation = getCourtLocation();
 
         PoolRequest poolRequest = new PoolRequest();
         poolRequest.setPoolNumber("123456789");
@@ -2377,7 +2375,7 @@ class JurorAppearanceServiceTest {
             assertThat(appearanceSaved.getCourtLocation()).isEqualTo(courtLocation);
             assertThat(appearanceSaved.getNonAttendanceDay()).isTrue();
             assertThat(appearanceSaved.getAttendanceType()).isEqualTo(AttendanceType.NON_ATTENDANCE);
-            assertThat(appearanceSaved.getAppearanceStage()).isEqualTo(AppearanceStage.EXPENSE_ENTERED);
+            assertThat(appearanceSaved.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(appearanceSaved.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
             assertThat(appearanceSaved.getCreatedBy()).isEqualTo(username);
 
@@ -2554,7 +2552,7 @@ class JurorAppearanceServiceTest {
             when(appearance.getNoShow()).thenReturn(noShow);
             when(appearance.getAttendanceType()).thenReturn(attendanceType);
 
-            LocalDate localDate = LocalDate.now();
+            LocalDate localDate = now();
             when(appearance.getJurorNumber()).thenReturn(TestConstants.VALID_JUROR_NUMBER);
             when(appearance.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
             when(appearance.getAttendanceDate()).thenReturn(localDate);
