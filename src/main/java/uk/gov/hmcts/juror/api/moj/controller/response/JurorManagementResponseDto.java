@@ -42,6 +42,16 @@ public class JurorManagementResponseDto implements Serializable {
             + "(transfer/reassign)")
         private String failureReason;
 
+        @JsonProperty("first_name")
+        @Schema(name = "First Name", description = "Juror's first name for display purposes"
+            + "(transfer/reassign)")
+        private String firstName;
+
+        @JsonProperty("last_name")
+        @Schema(name = "Last Name", description = "Juror's last name for display purposes"
+            + "(transfer/reassign)")
+        private String lastName;
+
     }
 
 }

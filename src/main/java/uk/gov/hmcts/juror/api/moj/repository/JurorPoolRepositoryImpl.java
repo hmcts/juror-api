@@ -26,7 +26,9 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -226,14 +228,26 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
     public List<String> fetchThinPoolMembers(String poolNumber, String owner) {
         JPAQueryFactory queryFactory = getQueryFactory();
 
-        return queryFactory.select(QJurorPool.jurorPool.juror.jurorNumber)
-            .from(QJurorPool.jurorPool)
-            .where(QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber)
-                       .and(QJurorPool.jurorPool.owner.eq(owner))
-                       .and(QJurorPool.jurorPool.isActive.isTrue()))
-            .fetch()
-            .stream()
-            .toList();
+        List<?> results = queryFactory.select(QPoolRequest.poolRequest.owner).from(QPoolRequest.poolRequest)
+            .where(QPoolRequest.poolRequest.poolNumber.eq(poolNumber))
+            .fetch();
+
+        if (results.isEmpty()) {
+            throw new MojException.NotFound("Pool number not found", null);
+        }
+
+        if (SecurityUtil.BUREAU_OWNER.equals(owner) || results.contains(SecurityUtil.BUREAU_OWNER)
+            || results.contains(owner)) {
+
+            return queryFactory.select(QJurorPool.jurorPool.juror.jurorNumber)
+                .from(QJurorPool.jurorPool)
+                .where(QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber)
+                           .and(QJurorPool.jurorPool.owner.eq(owner))
+                           .and(QJurorPool.jurorPool.isActive.isTrue()))
+                .fetch();
+        }
+
+        throw new MojException.Forbidden("You do not have access to this pool", null);
     }
 
     @Override

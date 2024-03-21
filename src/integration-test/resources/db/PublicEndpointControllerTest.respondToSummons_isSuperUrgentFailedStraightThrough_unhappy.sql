@@ -4,6 +4,3 @@ INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name
     ('644892530','21112','DR','CASTILLO','JANE',TO_DATE('1984-07-24 16:04:09', 'YYYY-MM-DD HH24:MI:SS'),'4 Knutson Trail','Scotland','Aberdeen',NULL,NULL,'AB3 9RY','07032096993','01095495625',NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,'2024-03-12 16:31:44',NULL,'01455252390','jcastillo0@ed.gov',0,0,'2024-03-12 16:31:44',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,0,false);
 INSERT INTO juror_mod.juror_pool (juror_number,pool_number,"owner",user_edtq,is_active,status,times_sel,def_date,"location",no_attendances,no_attended,no_fta,no_awol,pool_seq,edit_tag,next_date,on_call,smart_card,was_deferred,deferral_code,id_checked,postpone,paid_cash,scan_code,last_update,reminder_sent,transfer_date,date_created) VALUES
     ('644892530','555','400',NULL,true,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL, (SELECT CURRENT_DATE+5),false,NULL,false,NULL,NULL,false,false,NULL,'2024-03-12 16:31:44',false,NULL,NULL);
-
--- enable court
-INSERT INTO JUROR_DIGITAL.COURT_WHITELIST (LOC_CODE) VALUES ('448');

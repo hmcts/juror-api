@@ -1902,7 +1902,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
                 .jurorNumber(jurorNumber)
-                .letterType(LetterType.POSTPONEMENT)
+                .letterType(LetterType.POSTPONED)
                 .build();
 
             RequestEntity<ReissueLetterListRequestDto> request = new RequestEntity<>(reissueLetterListRequestDto,

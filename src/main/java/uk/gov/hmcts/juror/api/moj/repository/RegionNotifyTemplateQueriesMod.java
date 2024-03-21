@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
-import uk.gov.hmcts.juror.api.juror.domain.QRegionNotifyTemplate;
 import uk.gov.hmcts.juror.api.moj.domain.QRegionNotifyTemplateMod;
 
 /**
@@ -17,10 +16,12 @@ public class RegionNotifyTemplateQueriesMod {
     private static final String TRIGGERED_TEMPLATE_EXCUSAL_ID = "EXCUSAL";
     private static final String TRIGGERED_TEMPLATE_COMPLETE_ID = "SVC_COMPLETE";
 
-    private RegionNotifyTemplateQueriesMod(){
+    private RegionNotifyTemplateQueriesMod() {
 
     }
-    private static final QRegionNotifyTemplateMod regionNotifyTemplateDetail = QRegionNotifyTemplateMod.regionNotifyTemplateMod;
+
+    private static final QRegionNotifyTemplateMod regionNotifyTemplateDetail =
+        QRegionNotifyTemplateMod.regionNotifyTemplateMod;
 
     /**
      * Matches RegionalNotifyTemplates by REGION_ID AND LEGACY_TEMPLATE_ID where MESSAGE_FORMAT is equal to 'SMS' .
@@ -213,7 +214,4 @@ public class RegionNotifyTemplateQueriesMod {
 
 
     }
-
-
-
 }

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolEditRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto;
@@ -136,6 +137,19 @@ public class ManagePoolController {
         @Parameter(description = "3-digit numeric string to identify the court") @PathVariable(name = "locCode")
         @Size(min = 3, max = 3) @Valid String locCode) {
         AvailablePoolsInCourtLocationDto responseBody = managePoolsService.findAvailablePools(locCode, payload);
+        return ResponseEntity.ok().body(responseBody);
+    }
+
+    @GetMapping("/available-pools-court-owned/{locCode}")
+    @Operation(summary =
+        "Retrieve active pools, including required Jurors, for a given court location and owned by the court")
+    @IsCourtUser
+    public ResponseEntity<AvailablePoolsInCourtLocationDto> getAvailablePoolsInCourtLocationCourtOwned(
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(description = "3-digit numeric string to identify the court") @PathVariable(name = "locCode")
+        @Size(min = 3, max = 3) @Valid String locCode) {
+        AvailablePoolsInCourtLocationDto responseBody = managePoolsService.findAvailablePoolsCourtOwned(locCode,
+            payload);
         return ResponseEntity.ok().body(responseBody);
     }
 

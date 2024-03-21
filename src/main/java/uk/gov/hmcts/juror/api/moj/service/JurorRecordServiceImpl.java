@@ -1042,6 +1042,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     }
 
     @Override
+    @Transactional
     public void updatePncStatus(final String jurorNumber, final PoliceCheck policeCheck) {
         log.info("Attempting to update PNC check status for juror {} to be {}", jurorNumber, policeCheck);
         final JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);

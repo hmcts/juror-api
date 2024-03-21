@@ -10,4 +10,6 @@ public interface ManagePoolsService {
 
     SummoningProgressResponseDto getPoolMonitoringStats(BureauJWTPayload payload, String courtLocationCode,
                                                         String poolType);
+
+    AvailablePoolsInCourtLocationDto findAvailablePoolsCourtOwned(String locCode, BureauJWTPayload payload);
 }

@@ -5,5 +5,3 @@ INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name
 INSERT INTO juror_mod.juror_pool (juror_number,pool_number,"owner",user_edtq,is_active,status,times_sel,def_date,"location",no_attendances,no_attended,no_fta,no_awol,pool_seq,edit_tag,next_date,on_call,smart_card,was_deferred,deferral_code,id_checked,postpone,paid_cash,scan_code,last_update,reminder_sent,transfer_date,date_created) VALUES
     ('644892530','555','400',NULL,true,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL, date_trunc('day', CURRENT_DATE+60),false,NULL,false,NULL,NULL,false,false,NULL,'2024-03-12 16:31:44',false,NULL,NULL);
 
--- enable court
-INSERT INTO JUROR_DIGITAL.COURT_WHITELIST (LOC_CODE) VALUES ('448');

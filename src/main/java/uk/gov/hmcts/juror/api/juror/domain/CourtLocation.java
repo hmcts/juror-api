@@ -17,6 +17,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
+import uk.gov.hmcts.juror.api.moj.domain.CourtRegionMod;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.enumeration.CourtType;
@@ -151,13 +152,11 @@ public class CourtLocation implements Serializable {
     @NotAudited
     private Integer votersLock;
 
-    /**
-     * Foreign Key to JUROR_DIGITAL.COURT_REGION.
-     */
+
     @ManyToOne
     @JoinColumn(name = "region_id")
     @NotAudited
-    private CourtRegion courtRegion;
+    private CourtRegionMod courtRegion;
 
     @Column(name = "term_of_service")
     @NotAudited
