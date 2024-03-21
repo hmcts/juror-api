@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +59,6 @@ import java.util.List;
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class CreatePoolController {
 
-    @NonNull
     private final PoolCreateService poolCreateService;
 
     @GetMapping("/pool")
@@ -91,11 +89,10 @@ public class CreatePoolController {
     @GetMapping("/members/{poolNumber}")
     @Operation(summary = "Retrieve a list of all juror numbers for a specific pool, ie: ['123456789', '987654321'].")
     public ResponseEntity<List<String>> getThinPoolMembers(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
         @PathVariable @PoolNumber
         @Parameter(description = "Pool number", required = true)
         @Valid String poolNumber) {
-        List<String> poolMembers = poolCreateService.getThinJurorPoolsList(poolNumber, payload.getOwner());
+        List<String> poolMembers = poolCreateService.getThinJurorPoolsList(poolNumber, SecurityUtil.getActiveOwner());
         if (poolMembers == null) {
             return ResponseEntity.ok().body(new ArrayList<>());
         }
