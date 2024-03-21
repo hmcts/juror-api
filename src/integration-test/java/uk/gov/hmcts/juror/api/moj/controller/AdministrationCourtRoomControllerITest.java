@@ -94,8 +94,13 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
         @DisplayName("Positive")
         class Positive {
             void assertValid(String locCode, CourtRoomWithIdDto... expectedResponse) {
+                assertValid(locCode, UserType.COURT, Set.of(Role.MANAGER), expectedResponse);
+            }
+
+            void assertValid(String locCode, UserType userType, Set<Role> roles,
+                             CourtRoomWithIdDto... expectedResponse) {
                 final String jwt =
-                    createBureauJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
+                    createBureauJwt(COURT_USER, locCode, userType, roles, locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 ResponseEntity<List<CourtRoomWithIdDto>> response = template.exchange(
@@ -123,6 +128,15 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             @Test
             void typicalCourt2() {
                 assertValid("416",
+                    getValidCourtRoomWithIdDto(3, 99_993L),
+                    getValidCourtRoomWithIdDto(4, 99_994L)
+                );
+            }
+
+            @Test
+            void typicalAdmin() {
+                assertValid("416",
+                    UserType.ADMINISTRATOR, Set.of(),
                     getValidCourtRoomWithIdDto(3, 99_993L),
                     getValidCourtRoomWithIdDto(4, 99_994L)
                 );
@@ -306,13 +320,8 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
         class Positive {
 
             void assertValid(String locCode, Long id, CourtRoomWithIdDto expectedResponse) {
-                assertValid(locCode, id, UserType.COURT, Set.of(Role.MANAGER), expectedResponse);
-            }
-
-            void assertValid(String locCode, Long id, UserType userType,
-                             Set<Role> roles, CourtRoomWithIdDto expectedResponse) {
                 final String jwt =
-                    createBureauJwt(COURT_USER, locCode, userType, roles, locCode);
+                    createBureauJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 ResponseEntity<CourtRoomWithIdDto> response = template.exchange(
@@ -335,12 +344,6 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             void typicalCourt2() {
                 assertValid("416", 99_994L, getValidCourtRoomWithIdDto(4, 99_994L));
             }
-
-            @Test
-            void typicalAdmin() {
-                assertValid("416", 99_994L, UserType.ADMINISTRATOR, Set.of(), getValidCourtRoomWithIdDto(4, 99_994L));
-            }
-
         }
 
         @Nested
