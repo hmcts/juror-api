@@ -112,7 +112,7 @@ class JurorAppearanceServiceTest {
     void addAttendanceDayHappyPath() {
         jurorAppearanceService = spy(jurorAppearanceService);
 
-        doReturn(null).when(jurorAppearanceService).processAppearance(any(), any());
+        doReturn(null).when(jurorAppearanceService).processAppearance(any(), any(), anyBoolean());
         doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any());
 
         Juror juror = new Juror();
@@ -129,21 +129,19 @@ class JurorAppearanceServiceTest {
             .findByJurorJurorNumberAndPoolPoolNumber(
                 JUROR_123456789, "123456789");
 
-        doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
-        doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
-
         AddAttendanceDayDto dto = buildAddAttendanceDayDto();
         jurorAppearanceService.addAttendanceDay(buildPayload(OWNER_415, Arrays.asList("415", "462", "767")),
             dto);
 
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorJurorNumberAndPoolPoolNumber(JUROR_123456789, "123456789");
+        verify(jurorAppearanceService, times(1)).processAppearance(any(), any(), anyBoolean());
+        verify(jurorAppearanceService, times(1)).updateConfirmAttendance(any());
     }
 
     @Test
     void addAttendanceDayWrongAccess() {
-        jurorAppearanceService = spy(jurorAppearanceService);
-
-        doReturn(null).when(jurorAppearanceService).processAppearance(any(), any());
-        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any());
 
         Juror juror = new Juror();
         juror.setJurorNumber(JUROR_123456789);
@@ -169,11 +167,6 @@ class JurorAppearanceServiceTest {
 
     @Test
     void addAttendanceDayNotFound() {
-        jurorAppearanceService = spy(jurorAppearanceService);
-
-        doReturn(null).when(jurorAppearanceService).processAppearance(any(), any());
-        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any());
-
         Juror juror = new Juror();
         juror.setJurorNumber(JUROR_123456789);
         CourtLocation courtLocation = getCourtLocation();

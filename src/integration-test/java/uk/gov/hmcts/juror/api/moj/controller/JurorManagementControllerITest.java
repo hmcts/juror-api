@@ -145,7 +145,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("POST addAttendanceDay() - happy path")
-    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
     void addAttendanceDayHappyPath() {
         AddAttendanceDayDto requestDto = AddAttendanceDayDto.builder()
             .jurorNumber(JUROR1)
@@ -155,7 +156,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             .checkInTime(LocalTime.of(9, 30))
             .checkOutTime(LocalTime.of(17, 30))
             .build();
-
 
         ResponseEntity<String> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,

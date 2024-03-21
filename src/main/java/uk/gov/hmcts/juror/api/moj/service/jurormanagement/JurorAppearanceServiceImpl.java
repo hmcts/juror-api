@@ -96,7 +96,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         BureauJWTPayload payload, JurorAppearanceDto jurorAppearanceDto) {
         return processAppearance(payload,jurorAppearanceDto, false);
     }
-    private JurorAppearanceResponseDto.JurorAppearanceResponseData processAppearance(
+     JurorAppearanceResponseDto.JurorAppearanceResponseData processAppearance(
         BureauJWTPayload payload, JurorAppearanceDto jurorAppearanceDto , boolean allowBothCheckInAndOut) {
 
         final String jurorNumber = jurorAppearanceDto.getJurorNumber();

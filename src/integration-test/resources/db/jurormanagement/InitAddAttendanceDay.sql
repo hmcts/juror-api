@@ -10,3 +10,11 @@ VALUES ('111111111', 'LASTNAME', 'TEST',  NULL,  '540 STREET NAME',  'ANYTOWN', 
 
 INSERT INTO JUROR_MOD.JUROR_POOL (OWNER, JUROR_NUMBER, POOL_NUMBER, NEXT_DATE, DEF_DATE, STATUS, IS_ACTIVE, WAS_DEFERRED)
 VALUES ('415', '111111111', '415230101', current_date - interval '2 weeks', NULL, 2, TRUE, FALSE);
+
+INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,non_attendance,appearance_stage,pool_number) VALUES
+    (current_date - interval '1 day','111111111','415','09:30:00',false,'CHECKED_OUT','415230101');
+
+INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,non_attendance,appearance_stage,pool_number) VALUES
+    (current_date - interval '2 days','111111111','415','09:30:00',false,'CHECKED_OUT','415230101');
+
+
