@@ -302,6 +302,7 @@ public class AdministrationControllerTest {
     class ViewExpenseDetails {
         public static final String URL = BASE_URL + "/expenses/rates";
         private MockedStatic<SecurityUtil> securityUtilMockedStatic;
+
         @BeforeEach
         void mockCurrentUser() {
             securityUtilMockedStatic = mockStatic(SecurityUtil.class);
