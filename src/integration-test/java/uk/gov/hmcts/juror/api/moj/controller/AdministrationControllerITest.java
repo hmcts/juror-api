@@ -647,7 +647,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             @Test
             void unauthorisedBureauOfficer() {
                 assertForbiddenResponse(triggerInvalid("400", "415", getValidPayload(),
-                        UserType.BUREAU,Set.of()),
+                        UserType.BUREAU, Set.of()),
                     toUrl("415"));
             }
 
@@ -805,7 +805,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
         class Positive {
 
             @Test
-            void typical() {
+            void typicalAdmin() {
                 final String jwt = createBureauJwt(COURT_USER, TestConstants.VALID_COURT_LOCATION,
                     UserType.ADMINISTRATOR, Set.of(),
                     TestConstants.VALID_COURT_LOCATION);
@@ -822,27 +822,27 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
                 );
             }
 
-
-        }
-
-        @Nested
-        @DisplayName("Negative")
-        class Negative {
-
-
-            private ResponseEntity<String> triggerInvalid(UserType userType, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, TestConstants.VALID_COURT_LOCATION, userType, roles,
+            @Test
+            void typicalCourt() {
+                final String jwt = createBureauJwt(COURT_USER, TestConstants.VALID_COURT_LOCATION,
+                    UserType.COURT, Set.of(),
                     TestConstants.VALID_COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-                return template.exchange(
+                ResponseEntity<ExpenseRatesDto> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
                         URI.create(URL)),
-                    String.class);
-            }
-
-            @Test
-            void unauthorisedNotAdminUser() {
-                assertForbiddenResponse(triggerInvalid(UserType.COURT, Set.of()), URL);
+                    ExpenseRatesDto.class);
+                assertThat(response.getStatusCode())
+                    .as("Expect the HTTP GET request to be successful")
+                    .isEqualTo(HttpStatus.OK);
+                ExpenseRatesDto expected = getBaseExpenseRates();
+                assertThat(response.getBody()).isEqualTo(
+                    ExpenseRatesDto.builder()
+                        .limitFinancialLossFullDay(expected.getLimitFinancialLossFullDay())
+                        .limitFinancialLossHalfDay(expected.getLimitFinancialLossHalfDay())
+                        .limitFinancialLossFullDayLongTrial(expected.getLimitFinancialLossFullDayLongTrial())
+                        .limitFinancialLossHalfDayLongTrial(expected.getLimitFinancialLossHalfDayLongTrial())
+                        .build());
             }
         }
     }

@@ -32,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorSearch;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.messages.DataType;
 import uk.gov.hmcts.juror.api.moj.domain.messages.Message;
 import uk.gov.hmcts.juror.api.moj.domain.messages.MessageSearch;
@@ -50,6 +51,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -1182,7 +1184,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             private ResponseEntity<PaginatedList<JurorToSendMessageCourt>> triggerValidCourt(
                 String owner, String locCode, MessageSearch search) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, owner, locCode);
+                final String jwt = createBureauJwt(COURT_USER, owner, UserType.COURT, Set.of(), locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = template.exchange(
