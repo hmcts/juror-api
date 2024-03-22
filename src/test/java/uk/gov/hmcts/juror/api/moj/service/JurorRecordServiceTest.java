@@ -18,6 +18,7 @@ import org.mockito.MockedStatic;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.history.Revision;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.util.SerializationUtils;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
@@ -3147,10 +3148,59 @@ class JurorRecordServiceTest {
                 anyString());
             verify(appearanceRepository, times(1))
                 .findAllByJurorNumberAndPoolNumber(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
-
-
         }
 
+        @Test
+        void jurorAttendanceDetailsExcludeCheckInAndCheckOutFromFilter() {
+            String owner = "415";
+
+            final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
+
+            doReturn(jurorPool).when(jurorPoolRepository)
+                .findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
+                    TestConstants.VALID_POOL_NUMBER);
+
+            List<Appearance> appearances = new ArrayList<>();
+            Appearance appearance1 = buildAppearance();
+            appearances.add(appearance1);
+
+            Appearance appearance2 = SerializationUtils.clone(appearance1);
+            appearance2.setAppearanceStage(AppearanceStage.CHECKED_IN);
+            appearances.add(appearance2);
+
+            Appearance appearance3 = SerializationUtils.clone(appearance1);
+            appearance3.setAppearanceStage(AppearanceStage.CHECKED_IN);
+            appearances.add(appearance3);
+
+            doReturn(appearances).when(appearanceRepository).findAllByJurorNumberAndPoolNumber(
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
+
+            JurorAttendanceDetailsResponseDto jurorAttendanceDetailsResponseDto =
+                jurorRecordService.getJurorAttendanceDetails(TestConstants.VALID_JUROR_NUMBER,
+                    TestConstants.VALID_POOL_NUMBER, buildPayload(owner));
+
+            assertEquals(1, jurorAttendanceDetailsResponseDto.getData().size(),
+                "One attendance record should be returned");
+
+            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
+
+            verify(appearanceRepository, times(1))
+                .findAllByJurorNumberAndPoolNumber(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
+        }
+
+        private Appearance buildAppearance() {
+            return Appearance.builder()
+                .attendanceDate(LocalDate.now())
+                .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                .timeIn(LocalTime.of(9, 0))
+                .timeOut(LocalTime.of(17, 0))
+                .attendanceType(AttendanceType.FULL_DAY)
+                .travelTime(LocalTime.of(1, 30))
+                .appearanceStage(AppearanceStage.EXPENSE_ENTERED)
+                .build();
+        }
     }
 
     @Nested
