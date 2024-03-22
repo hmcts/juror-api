@@ -6593,226 +6593,71 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         static final URI uri = URI.create("/api/v1/moj/letter/print-court-letter");
 
+        static final String JUROR_NUMBER = "5555555";
+        static final String COURT_USER = "COURT_USER";
+        static final String OWNER_415 = "415";
+
+        static final String RESPONSE_OK_MESSAGE = "Expect HTTP Response to be OK";
+        static final String RESPONSE_ENTITY_NOT_NULL_MESSAGE = "Response entity is not null";
+        static final String RESPONSE_BODY_NOT_NULL_MESSAGE = "Response body is not null";
+        static final String NUMBER_OF_LETTERS_MESSAGE = "Expect %s letters";
+
         @Test
         @SneakyThrows
         @DisplayName("Issue Certificate of Attendance Letter - Happy path - English")
         void englishLetter() {
-            final String jurorNumber = "555555562";
-            final String courtOwner = "415";
-            final String payload = createBureauJwt("COURT_USER", courtOwner);
+            String jurorNumber = "555555561";
+
+            final String payload = createBureauJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
-            PrintLettersRequestDto requestDto = PrintLettersRequestDto
-                .builder()
-                .jurorNumbers(List.of(jurorNumber))
+            PrintLettersRequestDto request = PrintLettersRequestDto.builder()
+                .jurorNumbers(Collections.singletonList(jurorNumber))
                 .letterType(CourtLetterType.CERTIFICATE_OF_ATTENDANCE)
                 .build();
 
-            RequestEntity<PrintLettersRequestDto> request =
-                new RequestEntity<>(requestDto, httpHeaders, POST, uri);
-            ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(request,
+            RequestEntity<PrintLettersRequestDto> requestEntity = new RequestEntity<>(request, httpHeaders, POST, uri);
+            ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(requestEntity,
                 PrintLetterDataResponseDto[].class);
 
-            assertThat(response).isNotNull();
-            assertThat(response.getStatusCode())
-                .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
-                .isEqualTo(OK);
+            assertThat(response).as(RESPONSE_ENTITY_NOT_NULL_MESSAGE).isNotNull();
+            assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
+            assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
 
-            assertThat(response.getBody()).isNotNull();
+            PrintLetterDataResponseDto[] data = response.getBody();
+            assertThat(data.length).as(String.format(NUMBER_OF_LETTERS_MESSAGE, 1)).isEqualTo(1);
 
-            for (PrintLetterDataResponseDto dto : response.getBody()) {
-                assertThat(dto.getCourtName())
-                    .as("Expect court name to be " + "The Crown Court\nat CHESTER")
-                    .isEqualTo("The Crown Court\nat CHESTER");
-                assertThat(dto.getCourtAddressLine1())
-                    .as("Expect address line 1 to be 'THE CASTLE'")
-                    .isEqualTo("THE CASTLE");
-                assertThat(dto.getCourtAddressLine2())
-                    .as("Expect address line 2 to be 'CHESTER'")
-                    .isEqualTo("CHESTER");
-                assertThat(dto.getCourtAddressLine3())
-                    .as("Expect address line 3 to be null")
-                    .isNull();
-                assertThat(dto.getCourtAddressLine4())
-                    .as("Expect address line 4 to be null")
-                    .isNull();
-                assertThat(dto.getCourtAddressLine5())
-                    .as("Expect address line 5 to be null")
-                    .isNull();
-                assertThat(dto.getCourtAddressLine6())
-                    .as("Expect address line 6 to be null")
-                    .isNull();
-                assertThat(dto.getCourtPostCode())
-                    .as("Expect post code to be 'CH1 2AN'")
-                    .isEqualTo("CH1 2AN");
-                assertThat(dto.getCourtPhoneNumber())
-                    .as("Expect court number to be 01244 356726")
-                    .isEqualTo("01244 356726");
-
-                assertThat(dto.getUrl())
-                    .as("Expect URL to be www.gov.uk/jury-service")
-                    .isEqualTo("www.gov.uk/jury-service");
-                assertThat(dto.getSignature())
-                    .as("Expect signatory to be Jury Manager")
-                    .isEqualTo("Jury Manager\n\nAn Officer of the Crown Court");
-
-                assertThat(dto.getJurorFirstName())
-                    .as("Expect first name to be TEST_SIX")
-                    .isEqualTo("TEST_SIX");
-                assertThat(dto.getJurorLastName())
-                    .as("Expect last name to be PERSON")
-                    .isEqualTo("PERSON");
-                assertThat(dto.getJurorAddressLine1())
-                    .as("Expect address line 1 to be Address Line 1")
-                    .isEqualTo("Address Line 1");
-                assertThat(dto.getJurorAddressLine2())
-                    .as("Expect address line 2 to be Address  Line 2")
-                    .isEqualTo("Address  Line 2");
-                assertThat(dto.getJurorAddressLine3())
-                    .as("Expect address line 3 to be Address Line 3")
-                    .isEqualTo("Address Line 3");
-                assertThat(dto.getJurorAddressLine4())
-                    .as("Expect address line 4 to be CARDIFF")
-                    .isEqualTo("CARDIFF");
-                assertThat(dto.getJurorAddressLine5())
-                    .as("Expect address line 5 to be Some County")
-                    .isEqualTo("Some County");
-                assertThat(dto.getJurorPostcode())
-                    .as("Expect post code to be CH1 2AN")
-                    .isEqualTo("CH1 2AN");
-                assertThat(dto.getJurorNumber())
-                    .as("Expect juror number to be " + jurorNumber)
-                    .isEqualTo(jurorNumber);
-                assertThat(dto.getAttendTime())
-                    .as("Expect Attend Time to be 09:00")
-                    .isEqualTo(LocalTime.of(9, 0));
-                assertThat(dto.getWelsh())
-                    .as("Expect welsh to be false")
-                    .isFalse();
-                assertThat(dto.getNonAttendance())
-                    .as("Expect to be Non Attendance")
-                    .isEqualTo("Non Attendance");
-                assertThat(dto.getLossOfEarnings())
-                    .as("Expect to be 40")
-                    .isEqualTo(BigDecimal.valueOf(40));
-                assertThat(dto.getChildCare())
-                    .as("Expect to be 10")
-                    .isEqualTo(BigDecimal.valueOf(10));
-                assertThat(dto.getMisc())
-                    .as("Expect to be 10")
-                    .isEqualTo(BigDecimal.valueOf(10));
-            }
+            verifyDataEnglish(data[0], LocalDate.now().minusDays(10), "61");
         }
 
         @Test
         @SneakyThrows
         @DisplayName("Issue Certificate of Attendance Letter - Happy path - Welsh")
         void welshLetter() {
-            List<String> jurorNumbers = new ArrayList<>();
-            final String jurorNumber = "555555560";
-            jurorNumbers.add(jurorNumber);
-            final String payload = createBureauJwt("COURT_USER", "457");
+            String jurorNumber = "555555562";
+
+            final String payload = createBureauJwt(COURT_USER, "457");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
-            PrintLettersRequestDto requestDto = PrintLettersRequestDto.builder()
-                .jurorNumbers(jurorNumbers)
+            PrintLettersRequestDto request = PrintLettersRequestDto.builder()
+                .jurorNumbers(Collections.singletonList(jurorNumber))
                 .letterType(CourtLetterType.CERTIFICATE_OF_ATTENDANCE)
                 .build();
 
-            RequestEntity<PrintLettersRequestDto> request = new RequestEntity<>(requestDto, httpHeaders, POST, uri);
-            ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(request,
+            RequestEntity<PrintLettersRequestDto> requestEntity = new RequestEntity<>(request, httpHeaders, POST, uri);
+            ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(requestEntity,
                 PrintLetterDataResponseDto[].class);
 
-            assertThat(response).isNotNull();
-            assertThat(response.getStatusCode())
-                .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
-                .isEqualTo(OK);
+            assertThat(response).as(RESPONSE_ENTITY_NOT_NULL_MESSAGE).isNotNull();
+            assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
+            assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
 
-            assertThat(response.getBody()).isNotNull();
-            for (PrintLetterDataResponseDto dto : response.getBody()) {
-                assertThat(dto.getCourtName())
-                    .as("Expect court name to be " + "Llys y Goron\nynAbertawe")
-                    .isEqualTo("Llys y Goron\nynAbertawe");
-                assertThat(dto.getCourtAddressLine1())
-                    .as("Expect address line 1 to be 'Y LLYSOEDD BARN'")
-                    .isEqualTo("Y LLYSOEDD BARN");
-                assertThat(dto.getCourtAddressLine2())
-                    .as("Expect address line 2 to be 'LON SAN HELEN'")
-                    .isEqualTo("LON SAN HELEN");
-                assertThat(dto.getCourtAddressLine3())
-                    .as("Expect address line 3 to be ABERTAWE")
-                    .isEqualTo("ABERTAWE");
-                assertThat(dto.getCourtAddressLine4())
-                    .as("Expect address line 4 to be null")
-                    .isNull();
-                assertThat(dto.getCourtAddressLine5())
-                    .as("Expect address line 5 to be null")
-                    .isNull();
-                assertThat(dto.getCourtAddressLine6())
-                    .as("Expect address line 6 to be null")
-                    .isNull();
-                assertThat(dto.getCourtPostCode())
-                    .as("Expect post code to be 'SA1 4PF'")
-                    .isEqualTo("SA1 4PF");
-                assertThat(dto.getCourtPhoneNumber())
-                    .as("Expect court number to be 01792 637067")
-                    .isEqualTo("01792 637067");
+            PrintLetterDataResponseDto[] data = response.getBody();
+            assertThat(data.length).as(String.format(NUMBER_OF_LETTERS_MESSAGE, 1)).isEqualTo(1);
 
-                assertThat(dto.getUrl())
-                    .as("Expect URL to be www.gov.uk/jury-service")
-                    .isEqualTo("www.gov.uk/jury-service");
-                assertThat(dto.getSignature())
-                    .as("Expect signatory to be Jury Manager")
-                    .isEqualTo("Jury Manager\n\nSwyddog Llys");
-
-                assertThat(dto.getJurorFirstName())
-                    .as("Expect first name to be TEST_SEVEN")
-                    .isEqualTo("TEST_SEVEN");
-                assertThat(dto.getJurorLastName())
-                    .as("Expect last name to be PERSON")
-                    .isEqualTo("PERSON");
-                assertThat(dto.getJurorAddressLine1())
-                    .as("Expect address line 1 to be Address Line 1")
-                    .isEqualTo("Address Line 1");
-                assertThat(dto.getJurorAddressLine2())
-                    .as("Expect address line 2 to be Address  Line 2")
-                    .isEqualTo("Address  Line 2");
-                assertThat(dto.getJurorAddressLine3())
-                    .as("Expect address line 3 to be Address Line 3")
-                    .isEqualTo("Address Line 3");
-                assertThat(dto.getJurorAddressLine4())
-                    .as("Expect address line 4 to be CARDIFF")
-                    .isEqualTo("CARDIFF");
-                assertThat(dto.getJurorAddressLine5())
-                    .as("Expect address line 5 to be Some County")
-                    .isEqualTo("Some County");
-                assertThat(dto.getJurorPostcode())
-                    .as("Expect post code to be CH1 2AN")
-                    .isEqualTo("CH1 2AN");
-                assertThat(dto.getJurorNumber())
-                    .as("Expect juror number to be " + jurorNumber)
-                    .isEqualTo(jurorNumber);
-                assertThat(dto.getAttendTime())
-                    .as("Expect Attend Time to be 09:30")
-                    .isEqualTo(LocalTime.of(9, 30));
-                assertThat(dto.getWelsh())
-                    .as("Expect welsh to be true")
-                    .isTrue();
-                assertThat(dto.getNonAttendance())
-                    .as("Expect to be Non Attendance")
-                    .isEqualTo("Non Attendance");
-                assertThat(dto.getLossOfEarnings())
-                    .as("Expect to be 40")
-                    .isEqualTo(BigDecimal.valueOf(10));
-                assertThat(dto.getChildCare())
-                    .as("Expect to be 10")
-                    .isEqualTo(BigDecimal.valueOf(30));
-                assertThat(dto.getMisc())
-                    .as("Expect to be 10")
-                    .isEqualTo(BigDecimal.valueOf(10));
-            }
+            verifyDataWelsh(data[0], "62");
         }
 
         @Test
@@ -6881,14 +6726,19 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getJurorNumber()).as("Expect juror number to be 5555555" + jurorPostfix)
                 .isEqualTo(JUROR_NUMBER + jurorPostfix);
 
-            assertThat(response.getAttendanceDate())
-                .as("Expect the attendance date the juror was no show for to be " + attendanceDate)
-                .isEqualTo(attendanceDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
-            assertThat(response.getReplyByDate())
-                .as("Expect reply by date to be " + LocalDate.now()
-                    .plusDays(7)
-                    .format(DateTimeFormatter.ofPattern("dd MMMM yyyy")))
-                .isEqualTo(LocalDate.now().plusDays(7).format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
+            assertThat(response.getNonAttendance())
+                .as("Expect non attendance to be Non Attendance")
+                .isEqualTo("Non Attendance");
+            assertThat(response.getLossOfEarnings())
+                .as("Expect loss of earnings to be 40.00")
+                .isEqualTo(new BigDecimal("40.00"));
+            assertThat(response.getChildCare())
+                .as("Expect child care to be 10.00")
+                .isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getMisc())
+                .as("Expect misc to be 10.00")
+                .isEqualTo(new BigDecimal("10.00"));
+
         }
 
         void verifyDataWelsh(PrintLetterDataResponseDto response,
