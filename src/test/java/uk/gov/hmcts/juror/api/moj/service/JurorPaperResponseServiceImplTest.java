@@ -142,7 +142,7 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber("123456789");
         Mockito.when(poolRequestRepository.findByPoolNumber(any()))
             .thenReturn(Optional.of(mockPoolRequest("12345678", "415")));
-        
+
         JurorPaperResponseDetailDto responseDto = jurorPaperResponseService
             .getJurorPaperResponse(VALID_JUROR_NUMBER_BUREAU, payload);
 
