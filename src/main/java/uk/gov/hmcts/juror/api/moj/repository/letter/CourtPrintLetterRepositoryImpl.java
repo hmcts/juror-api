@@ -58,7 +58,7 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                                           String owner, String trialNumber) {
         List<Expression<?>> expressions = fetchCommonPrintData(welsh);
 
-        buildExpresionsBasedOnLetterType(courtLetterType, expressions);
+        buildExpressionsBasedOnLetterType(courtLetterType, expressions);
 
         JPAQuery<Tuple> query = selectData(expressions, welsh);
 
@@ -72,15 +72,14 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
     }
 
     @Override
+    // Note: letterDate is specific to a letterType e.g. attendanceDate/absentDate, excusalDate, deferralDate, etc
     public Tuple retrievePrintInformationBasedOnLetterSpecificDate(String jurorNumber, CourtLetterType letterType,
                                                                    boolean welsh,
                                                                    String owner, LocalDate letterDate) {
-        // Note: letterDate is specific to a letterType e.g. attendanceDate/absentDate, excusalDate, deferralDate, etc
-
         List<Expression<?>> expressions = fetchCommonPrintData(welsh);
 
         // start building the sql expressions based on letter type
-        buildExpresionsBasedOnLetterType(letterType, expressions);
+        buildExpressionsBasedOnLetterType(letterType, expressions);
 
         // select data from relevant tables
         JPAQuery<Tuple> query = selectData(expressions, welsh);
@@ -177,9 +176,8 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
     }
 
     @SuppressWarnings("PMD.CyclomaticComplexity")
-    private static void buildExpresionsBasedOnLetterType(CourtLetterType courtLetterType,
-                                                         List<Expression<?>> expressions) {
-        // Add switch/if statements for separate letter types e.g. certificate of attendance
+    private static void buildExpressionsBasedOnLetterType(CourtLetterType courtLetterType,
+                                                          List<Expression<?>> expressions) {
         switch (courtLetterType) {
             case DEFERRAL_GRANTED, POSTPONED -> {
                 expressions.add(JUROR_POOL.deferralDate);
