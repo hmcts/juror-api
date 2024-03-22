@@ -439,8 +439,8 @@ class AppearanceTest {
             doReturn(new BigDecimal("0.12")).when(appearance).getTotalDue();
             doReturn(new BigDecimal("1.12")).when(appearance).getTotalPaid();
             doReturn(stage).when(appearance).getAppearanceStage();
-            doReturn(new BigDecimal("0.13")).when(appearance).getSmartCardAmountDue();
-            doReturn(new BigDecimal("1.13")).when(appearance).getSmartCardAmountPaid();
+            doReturn(new BigDecimal("1.13")).when(appearance).getSmartCardAmountDue();
+            doReturn(new BigDecimal("0.13")).when(appearance).getSmartCardAmountPaid();
             return appearance;
         }
 
@@ -494,7 +494,7 @@ class AppearanceTest {
             names = {"EXPENSE_EDITED", "EXPENSE_AUTHORISED"})
         void positiveWithSmartCardFailed(AppearanceStage stage) {
             Map<String, Object> errors = Map.of(
-                "smartCardAmount", "Must be at most £1.13"
+                "smartCardAmount", "Must be at most £0.13"
             );
             Appearance appearance = mockAppearance(stage);
             doNothing().when(appearance).addExpenseToErrors(any(), any(), any(), any());
@@ -544,8 +544,8 @@ class AppearanceTest {
         void positiveWithSmartCardPassed(AppearanceStage stage) {
             Map<String, Object> errors = Map.of();
             Appearance appearance = mockAppearance(stage);
-            doReturn(new BigDecimal("1.13")).when(appearance).getSmartCardAmountDue();
-            doReturn(new BigDecimal("0.13")).when(appearance).getSmartCardAmountPaid();
+            doReturn(new BigDecimal("0.13")).when(appearance).getSmartCardAmountDue();
+            doReturn(new BigDecimal("1.13")).when(appearance).getSmartCardAmountPaid();
 
             doNothing().when(appearance).addExpenseToErrors(any(), any(), any(), any());
             assertThat(appearance.getExpensesWhereDueIsLessThenPaid()).isEqualTo(errors);

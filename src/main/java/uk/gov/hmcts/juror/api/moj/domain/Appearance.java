@@ -381,7 +381,7 @@ public class Appearance implements Serializable {
         addExpenseToErrors(errors, "total", this.getTotalDue(), this.getTotalPaid());
         if ((AppearanceStage.EXPENSE_EDITED.equals(this.getAppearanceStage())
             || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage()))) {
-            if (BigDecimalUtils.isGreaterThan(this.getSmartCardAmountPaid(), this.getSmartCardAmountDue())) {
+            if (BigDecimalUtils.isLessThan(this.getSmartCardAmountPaid(), this.getSmartCardAmountDue())) {
                 errors.put("smartCardAmount",
                     "Must be at most " + BigDecimalUtils.currencyFormat(this.getSmartCardAmountPaid()));
             }
