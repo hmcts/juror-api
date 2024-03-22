@@ -1176,13 +1176,14 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
 
-        return appearances.stream()
-            .filter(appearance ->
-                Set.of(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_AUTHORISED,
-                        AppearanceStage.EXPENSE_EDITED)
-                    .contains(appearance.getAppearanceStage()))
+        List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> collect = appearances.stream()
+            .filter(appearance -> appearance.getAppearanceStage() != null)
+            .filter(appearance -> !Set.of(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
+                .contains(appearance.getAppearanceStage()))
             .map(JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData::new)
             .collect(Collectors.toList());
+
+        return collect;
     }
 
     @Override

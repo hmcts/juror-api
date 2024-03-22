@@ -5556,7 +5556,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("GET /api/v1/moj/letter/court-letter-list/{letter_type}/{include_printed}")
     class CourtLetterListAbsentJurors {
-
         static final String JUROR_5555555 = "5555555";
         static final String COURT_USER = "COURT_USER";
         static final String OWNER_415 = "415";
@@ -5571,33 +5570,36 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @DisplayName("Failed To Attend List")
         @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_FailedToAttend.sql"})
         class CourtLetterListFailedToAttend {
-
             static final URI URL = URI.create(GET_LETTER_LIST_URI + "/" + CourtLetterType.FAILED_TO_ATTEND);
 
             @Test
             @SneakyThrows
-            @DisplayName("Failed To Attend letter - include printed letters")
+            @DisplayName("Failed To Attend List - include printed letters")
             void includePrinted() {
                 List<?> responseBody = invokeApiHappy(true, OWNER_415, URL);
-                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 6)).isEqualTo(6);
+                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 8)).isEqualTo(8);
 
                 verifyResponse("67", (FailedToAttendLetterData) responseBody.get(0), null,
                     LOCAL_DATE_NOW.minusDays(5));
+                verifyResponse("70", (FailedToAttendLetterData) responseBody.get(5),
+                    LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW.minusDays(9));
                 verifyResponse("63", (FailedToAttendLetterData) responseBody.get(1), null,
                     LOCAL_DATE_NOW.minusDays(10));
                 verifyResponse("69", (FailedToAttendLetterData) responseBody.get(2), null,
                     LOCAL_DATE_NOW.minusDays(10));
+                verifyResponse("70", (FailedToAttendLetterData) responseBody.get(7),
+                    LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW.minusDays(10));
                 verifyResponse("62", (FailedToAttendLetterData) responseBody.get(3),
                     LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW);
                 verifyResponse("65", (FailedToAttendLetterData) responseBody.get(4),
                     LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW.minusDays(3));
-                verifyResponse("61", (FailedToAttendLetterData) responseBody.get(5),
+                verifyResponse("61", (FailedToAttendLetterData) responseBody.get(6),
                     LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW.minusDays(10));
             }
 
             @Test
             @SneakyThrows
-            @DisplayName("Failed To Attend letter - exclude printed letters")
+            @DisplayName("Failed To Attend List - exclude printed letters")
             void excludePrinted() {
                 List<?> responseBody = invokeApiHappy(false, OWNER_415, URL);
                 assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 3)).isEqualTo(3);
@@ -5612,7 +5614,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             @Test
             @SneakyThrows
-            @DisplayName("Failed To Attend letter - court owner 457")
+            @DisplayName("Failed To Attend List - court owner 457")
             void courtOwner457() {
                 List<?> responseBody = invokeApiHappy(true, "457", URL);
                 assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 1)).isEqualTo(1);
@@ -5634,19 +5636,23 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @DisplayName("Show Cause letter - include printed letters")
             void includePrinted() {
                 List<?> responseBody = invokeApiHappy(true, OWNER_415, URL);
-                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 6)).isEqualTo(6);
+                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 8)).isEqualTo(8);
 
-                verifyResponse("63", (FailedToAttendLetterData) responseBody.get(0), null,
+                verifyResponse("72", (FailedToAttendLetterData) responseBody.get(0), null,
+                    LOCAL_DATE_NOW.minusDays(6));
+                verifyResponse("72", (FailedToAttendLetterData) responseBody.get(1), null,
+                    LOCAL_DATE_NOW.minusDays(8));
+                verifyResponse("63", (FailedToAttendLetterData) responseBody.get(2), null,
                     LOCAL_DATE_NOW.minusDays(10));
-                verifyResponse("69", (FailedToAttendLetterData) responseBody.get(1), null,
+                verifyResponse("69", (FailedToAttendLetterData) responseBody.get(3), null,
                     LOCAL_DATE_NOW.minusDays(10));
-                verifyResponse("70", (FailedToAttendLetterData) responseBody.get(2), null,
+                verifyResponse("70", (FailedToAttendLetterData) responseBody.get(4), null,
                     LOCAL_DATE_NOW.minusDays(10));
-                verifyResponse("62", (FailedToAttendLetterData) responseBody.get(3),
+                verifyResponse("62", (FailedToAttendLetterData) responseBody.get(5),
                     LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW);
-                verifyResponse("65", (FailedToAttendLetterData) responseBody.get(4),
+                verifyResponse("65", (FailedToAttendLetterData) responseBody.get(6),
                     LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW.minusDays(3));
-                verifyResponse("61", (FailedToAttendLetterData) responseBody.get(5),
+                verifyResponse("61", (FailedToAttendLetterData) responseBody.get(7),
                     LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW.minusDays(10));
             }
 
@@ -5655,13 +5661,17 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @DisplayName("Show Cause letter - exclude printed letters")
             void excludePrinted() {
                 List<?> responseBody = invokeApiHappy(false, OWNER_415, URL);
-                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 3)).isEqualTo(3);
+                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 5)).isEqualTo(5);
 
-                verifyResponse("63", (FailedToAttendLetterData) responseBody.get(0), null,
+                verifyResponse("72", (FailedToAttendLetterData) responseBody.get(0), null,
+                    LOCAL_DATE_NOW.minusDays(6));
+                verifyResponse("72", (FailedToAttendLetterData) responseBody.get(1), null,
+                    LOCAL_DATE_NOW.minusDays(8));
+                verifyResponse("63", (FailedToAttendLetterData) responseBody.get(2), null,
                     LOCAL_DATE_NOW.minusDays(10));
-                verifyResponse("69", (FailedToAttendLetterData) responseBody.get(1), null,
+                verifyResponse("69", (FailedToAttendLetterData) responseBody.get(3), null,
                     LOCAL_DATE_NOW.minusDays(10));
-                verifyResponse("70", (FailedToAttendLetterData) responseBody.get(2), null,
+                verifyResponse("70", (FailedToAttendLetterData) responseBody.get(4), null,
                     LOCAL_DATE_NOW.minusDays(10));
             }
 
@@ -5751,7 +5761,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         static final String MESSAGE = "message";
         static final String FIELD = "field";
 
-        static final String DATE_TIME_REQUIRED = "Show cause date and time are required for Show Cause letter";
+        static final String MANDATORY_DATA_MISSING_FOR_LETTER_TYPE = "Mandatory data missing for letter type";
         static final String RESPONSE_OK_MESSAGE = "Expect HTTP Response to be OK";
         static final String RESPONSE_ENTITY_NOT_NULL_MESSAGE = "Response entity is not null";
         static final String RESPONSE_BODY_NOT_NULL_MESSAGE = "Response body is not null";
@@ -5763,20 +5773,12 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - Happy path - English")
         void printCourtLettersShowCauseHappyEnglish() {
-            List<String> jurorNumbers = new ArrayList<>();
-            jurorNumbers.add(JUROR_NUMBER + "61");
-            jurorNumbers.add(JUROR_NUMBER + "62");
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt(COURT_USER, OWNER_415));
 
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
-
-            PrintLettersRequestDto request = PrintLettersRequestDto.builder()
-                .jurorNumbers(jurorNumbers)
-                .letterType(CourtLetterType.SHOW_CAUSE)
-                .showCauseDate(LocalDate.now())
-                .showCauseTime(LocalTime.parse(LocalTime.now().format(formatter)))
-                .build();
+            List<PrintLettersRequestDto.DetailsPerLetter> detailsPerLetter = new ArrayList<>();
+            detailsPerLetter.add(createDetailsPerLetter("61", 10));
+            detailsPerLetter.add(createDetailsPerLetter("62", 0));
+            PrintLettersRequestDto request = buildPrintLettersRequestDto(detailsPerLetter);
 
             RequestEntity<PrintLettersRequestDto> requestEntity = new RequestEntity<>(request, httpHeaders, POST, URL);
             ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(requestEntity,
@@ -5797,18 +5799,11 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - Happy path - Welsh")
         void printCourtLettersShowCauseHappyWelsh() {
-            List<String> jurorNumbers = new ArrayList<>();
-            jurorNumbers.add(JUROR_NUMBER + "68");
-            final String payload = createBureauJwt(COURT_USER, "457");
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt(COURT_USER, "457"));
 
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
-
-            PrintLettersRequestDto request = PrintLettersRequestDto.builder()
-                .jurorNumbers(jurorNumbers)
-                .letterType(CourtLetterType.SHOW_CAUSE)
-                .showCauseDate(LocalDate.now())
-                .showCauseTime(LocalTime.parse(LocalTime.now().format(formatter)))
-                .build();
+            List<PrintLettersRequestDto.DetailsPerLetter> detailsPerLetter = new ArrayList<>();
+            detailsPerLetter.add(createDetailsPerLetter("68", 0));
+            PrintLettersRequestDto request = buildPrintLettersRequestDto(detailsPerLetter);
 
             RequestEntity<PrintLettersRequestDto> requestEntity = new RequestEntity<>(request, httpHeaders, POST, URL);
             ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(requestEntity,
@@ -5828,15 +5823,12 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         @Test
         @SneakyThrows
-        @DisplayName("Reissue Show Cause letter - invalid request - missing showCauseDate and showCauseTime")
+        @DisplayName("Reissue Show Cause letter - invalid request - missing mandatory data for letter type")
         void printCourtLettersShowCauseInvalidRequestMissingShowCauseDateAndTime() {
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt(COURT_USER, OWNER_415));
+
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "61");
-
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
-
             PrintLettersRequestDto request = PrintLettersRequestDto.builder()
                 .jurorNumbers(jurorNumbers)
                 .letterType(CourtLetterType.SHOW_CAUSE)
@@ -5852,23 +5844,21 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             List<String> messageValues = getValuesInJsonObject(exceptionDetails, MESSAGE);
             List<String> fieldValues = getValuesInJsonObject(exceptionDetails, FIELD);
-            assertThat(messageValues).as("Validation message is: " + DATE_TIME_REQUIRED)
-                .containsExactlyInAnyOrder(DATE_TIME_REQUIRED, DATE_TIME_REQUIRED);
-            assertThat(fieldValues).as("Validated fields are showCauseTime and showCauseDate")
-                .containsExactlyInAnyOrder("showCauseTime", "showCauseDate");
+            assertThat(messageValues).as("Validation message is: " + MANDATORY_DATA_MISSING_FOR_LETTER_TYPE)
+                .containsAnyOf(MANDATORY_DATA_MISSING_FOR_LETTER_TYPE);
+            assertThat(fieldValues).as("Validated fields are showCauseTime, showCauseDate and "
+                    + "detailsPerLetter")
+                .containsExactlyInAnyOrder("showCauseTime", "showCauseDate", "detailsPerLetter");
         }
 
         @Test
         @SneakyThrows
-        @DisplayName("Reissue Show Cause letter - invalid request - missing showCauseDate")
+        @DisplayName("Reissue Show Cause letter - invalid request - missing mandatory data: showCauseDate")
         void printCourtLettersShowCauseInvalidRequestMissingShowCauseDate() {
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("COURT_USER", "415"));
+
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "61");
-
-            final String payload = createBureauJwt("COURT_USER", "415");
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
-
             PrintLettersRequestDto requestDto = PrintLettersRequestDto.builder()
                 .jurorNumbers(jurorNumbers)
                 .letterType(CourtLetterType.SHOW_CAUSE)
@@ -5885,15 +5875,15 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             List<String> messageValues = getValuesInJsonObject(exceptionDetails, MESSAGE);
             List<String> fieldValues = getValuesInJsonObject(exceptionDetails, FIELD);
-            assertThat(messageValues).as("Validation message is: " + DATE_TIME_REQUIRED)
-                .containsExactly(DATE_TIME_REQUIRED);
+            assertThat(messageValues).as("Validation message is: " + MANDATORY_DATA_MISSING_FOR_LETTER_TYPE)
+                .containsAnyOf(MANDATORY_DATA_MISSING_FOR_LETTER_TYPE);
             assertThat(fieldValues).as("Validated fields is showCauseDate")
-                .containsExactly("showCauseDate");
+                .containsExactlyInAnyOrder("showCauseDate", "detailsPerLetter");
         }
 
         @Test
         @SneakyThrows
-        @DisplayName("Reissue Show Cause letter - invalid request - missing showCauseTime")
+        @DisplayName("Reissue Show Cause letter - invalid request - missing mandatory data: showCauseTime")
         void printCourtLettersShowCauseInvalidRequestMissingShowCauseTime() {
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "61");
@@ -5918,10 +5908,55 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             List<String> messageValues = getValuesInJsonObject(exceptionDetails, MESSAGE);
             List<String> fieldValues = getValuesInJsonObject(exceptionDetails, FIELD);
-            assertThat(messageValues).as("Validation message is: " + DATE_TIME_REQUIRED)
-                .containsExactly(DATE_TIME_REQUIRED);
-            assertThat(fieldValues).as("Validated fields is showCauseTime")
-                .containsExactly("showCauseTime");
+            assertThat(messageValues).as("Validation message is: " + MANDATORY_DATA_MISSING_FOR_LETTER_TYPE)
+                .containsAnyOf(MANDATORY_DATA_MISSING_FOR_LETTER_TYPE);
+            assertThat(fieldValues).as("Validated fields are detailsPerLetter and showCauseTime ")
+                .containsExactlyInAnyOrder("detailsPerLetter", "showCauseTime");
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Show Cause letter - juror with multiple absences")
+        void failedToAttendLetterJurorWithMultipleAbsences() {
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt(COURT_USER, OWNER_415));
+
+            List<PrintLettersRequestDto.DetailsPerLetter> detailsPerLetter = new ArrayList<>();
+            detailsPerLetter.add(createDetailsPerLetter("72", 8));
+            detailsPerLetter.add(createDetailsPerLetter("72", 6));
+            PrintLettersRequestDto request = buildPrintLettersRequestDto(detailsPerLetter);
+
+            RequestEntity<PrintLettersRequestDto> requestEntity = new RequestEntity<>(request, httpHeaders, POST, URL);
+            ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(requestEntity,
+                PrintLetterDataResponseDto[].class);
+
+            assertThat(response).as(RESPONSE_ENTITY_NOT_NULL_MESSAGE).isNotNull();
+            assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
+            assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
+
+            PrintLetterDataResponseDto[] data = response.getBody();
+            assertThat(data.length).as(String.format(NUMBER_OF_LETTERS_MESSAGE, 2)).isEqualTo(2);
+
+            verifyDataEnglish(data[0], request, LocalDate.now().minusDays(8), "72");
+            verifyDataEnglish(data[1], request, LocalDate.now().minusDays(6), "72");
+        }
+
+        private PrintLettersRequestDto.DetailsPerLetter createDetailsPerLetter(String jurorPostfix, int adjustDays) {
+            PrintLettersRequestDto.DetailsPerLetter detailsPerLetter = new PrintLettersRequestDto.DetailsPerLetter();
+            detailsPerLetter.setJurorNumber(JUROR_NUMBER + jurorPostfix);
+            detailsPerLetter.setLetterDate(LocalDate.now().minusDays(adjustDays));
+
+            return detailsPerLetter;
+        }
+
+        private PrintLettersRequestDto buildPrintLettersRequestDto(
+            List<PrintLettersRequestDto.DetailsPerLetter> detailsPerLetter) {
+
+            return PrintLettersRequestDto.builder()
+                .showCauseDate(LocalDate.now())
+                .showCauseTime(LocalTime.parse(LocalTime.now().format(formatter)))
+                .detailsPerLetter(detailsPerLetter)
+                .letterType(CourtLetterType.SHOW_CAUSE)
+                .build();
         }
 
         private void verifyDataEnglish(PrintLetterDataResponseDto response,
@@ -6391,7 +6426,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         @Test
         @SneakyThrows
-        @DisplayName("Failed To Attend letter - juror number and include printed letters")
+        @DisplayName("Failed To Attend list - juror number and include printed letters")
         void courtLetterListFailedToAttendJurorNumberSearchIncludePrinted() {
             final String payload = createBureauJwt(COURT_USER, OWNER_415);
 
@@ -6424,7 +6459,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         @Test
         @SneakyThrows
-        @DisplayName("Failed To Attend letter - juror number and exclude printed letters")
+        @DisplayName("Failed To Attend list - juror number and exclude printed letters")
         void courtLetterListFailedToAttendJurorNumberSearchExcludePrinted() {
             final String payload = createBureauJwt(COURT_USER, OWNER_415);
 
@@ -6451,7 +6486,37 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         @Test
         @SneakyThrows
-        @DisplayName("Failed To Attend letter - pool number and exclude printed letters")
+        @DisplayName("Failed To Attend list - juror number and has multiple absences")
+        void courtLetterListFailedToAttendJurorNumberHasMultipleAbsences() {
+            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            CourtLetterListRequestDto requestDto = CourtLetterListRequestDto
+                .builder()
+                .jurorNumber(JUROR_5555555 + "70")
+                .includePrinted(true)
+                .letterType(CourtLetterType.FAILED_TO_ATTEND)
+                .build();
+
+            RequestEntity<CourtLetterListRequestDto> request = new RequestEntity<>(requestDto, httpHeaders, POST, URL);
+            ResponseEntity<LetterListResponseDto> response = template.exchange(request, LetterListResponseDto.class);
+
+            assertThat(response).as(RESPONSE_ENTITY_NOT_NULL_MESSAGE).isNotNull();
+            assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
+            assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
+            List<?> responseBody = response.getBody().getData();
+            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 2)).isEqualTo(2);
+
+            verifyResponse("70", (FailedToAttendLetterData) responseBody.get(0),
+                LocalDate.now().minusDays(1), LocalDate.now().minusDays(9));
+            verifyResponse("70", (FailedToAttendLetterData) responseBody.get(1),
+                LocalDate.now().minusDays(1), LocalDate.now().minusDays(10));
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Failed To Attend list - pool number and exclude printed letters")
         void courtLetterListFailedToAttendPoolNumberSearchExcludePrinted() {
             final String payload = createBureauJwt(COURT_USER, OWNER_415);
 
@@ -6487,7 +6552,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         @Test
         @SneakyThrows
-        @DisplayName("Failed To Attend letter - pool number and include printed letters")
+        @DisplayName("Failed To Attend list - pool number and include printed letters")
         void courtLetterListFailedToAttendPoolNumber() {
             final String payload = createBureauJwt(COURT_USER, OWNER_415);
 
@@ -6518,7 +6583,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         @Test
         @SneakyThrows
-        @DisplayName("Failed To Attend letter - no_show is null (turned up for jury service")
+        @DisplayName("Failed To Attend list - no_show is null (turned up for jury service")
         void courtLetterListFailedToAttendJurorNumberSearchAndNoShowIsNull() {
             final String payload = createBureauJwt(COURT_USER, OWNER_415);
 
@@ -6543,7 +6608,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         @Test
         @SneakyThrows
-        @DisplayName("Failed To Attend letter criteria not met - bureau owner")
+        @DisplayName("Failed To Attend list criteria not met - bureau owner")
         void courtLetterListFailedToAttendBureauOwner() {
             final String payload = createBureauJwt(COURT_USER, OWNER_415);
 
@@ -6794,7 +6859,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
     @DisplayName("POST - /api/v1/moj/letter/print-court-letter (Failed To Attend)")
     @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_FailedToAttend.sql"})
     class PrintCourtLetterFailedToAttend {
-        private static final String HTTP_STATUS_BAD_REQUEST_MESSAGE = "Expect the HTTP status to be BAD_REQUEST";
         static final URI URL = URI.create("/api/v1/moj/letter/print-court-letter");
 
         static final String JUROR_NUMBER = "5555555";
@@ -6806,24 +6870,16 @@ class LetterControllerITest extends AbstractIntegrationTest {
         static final String RESPONSE_BODY_NOT_NULL_MESSAGE = "Response body is not null";
         static final String NUMBER_OF_LETTERS_MESSAGE = "Expect %s letters";
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
-
         @Test
         @SneakyThrows
         @DisplayName("Failed To Attend letter - Happy path - English")
         void failedToAttendLetterHappyEnglish() {
-            List<String> jurorNumbers = new ArrayList<>();
-            jurorNumbers.add(JUROR_NUMBER + "61");
-            jurorNumbers.add(JUROR_NUMBER + "62");
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt(COURT_USER, OWNER_415));
 
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
-
-            PrintLettersRequestDto request = PrintLettersRequestDto.builder()
-                .jurorNumbers(jurorNumbers)
-                .letterType(CourtLetterType.FAILED_TO_ATTEND)
-                .build();
+            List<PrintLettersRequestDto.DetailsPerLetter> detailsPerLetter = new ArrayList<>();
+            detailsPerLetter.add(createDetailsPerLetter("61", 10));
+            detailsPerLetter.add(createDetailsPerLetter("62", 0));
+            PrintLettersRequestDto request = buildPrintLettersRequestDto(detailsPerLetter);
 
             RequestEntity<PrintLettersRequestDto> requestEntity = new RequestEntity<>(request, httpHeaders, POST, URL);
             ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(requestEntity,
@@ -6842,18 +6898,39 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         @Test
         @SneakyThrows
+        @DisplayName("Failed To Attend letter - juror with multiple absences")
+        void failedToAttendLetterJurorWithMultipleAbsences() {
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt(COURT_USER, OWNER_415));
+
+            List<PrintLettersRequestDto.DetailsPerLetter> detailsPerLetter = new ArrayList<>();
+            detailsPerLetter.add(createDetailsPerLetter("70", 9));
+            detailsPerLetter.add(createDetailsPerLetter("70", 10));
+            PrintLettersRequestDto request = buildPrintLettersRequestDto(detailsPerLetter);
+
+            RequestEntity<PrintLettersRequestDto> requestEntity = new RequestEntity<>(request, httpHeaders, POST, URL);
+            ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(requestEntity,
+                PrintLetterDataResponseDto[].class);
+
+            assertThat(response).as(RESPONSE_ENTITY_NOT_NULL_MESSAGE).isNotNull();
+            assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
+            assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
+
+            PrintLetterDataResponseDto[] data = response.getBody();
+            assertThat(data.length).as(String.format(NUMBER_OF_LETTERS_MESSAGE, 2)).isEqualTo(2);
+
+            verifyDataEnglish(data[0], LocalDate.now().minusDays(9), "70");
+            verifyDataEnglish(data[1], LocalDate.now().minusDays(10), "70");
+        }
+
+        @Test
+        @SneakyThrows
         @DisplayName("Failed To Attend letter - Happy path - Welsh")
         void failedToAttendLetterHappyWelsh() {
-            List<String> jurorNumbers = new ArrayList<>();
-            jurorNumbers.add(JUROR_NUMBER + "68");
-            final String payload = createBureauJwt(COURT_USER, "457");
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt(COURT_USER, "457"));
 
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
-
-            PrintLettersRequestDto request = PrintLettersRequestDto.builder()
-                .jurorNumbers(jurorNumbers)
-                .letterType(CourtLetterType.FAILED_TO_ATTEND)
-                .build();
+            List<PrintLettersRequestDto.DetailsPerLetter> detailsPerLetter = new ArrayList<>();
+            detailsPerLetter.add(createDetailsPerLetter("68", 0));
+            PrintLettersRequestDto request = buildPrintLettersRequestDto(detailsPerLetter);
 
             RequestEntity<PrintLettersRequestDto> requestEntity = new RequestEntity<>(request, httpHeaders, POST, URL);
             ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(requestEntity,
@@ -6869,6 +6946,23 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
 
             verifyDataWelsh(data[0], "68");
+        }
+
+        private PrintLettersRequestDto.DetailsPerLetter createDetailsPerLetter(String jurorPostfix, int adjustDays) {
+            PrintLettersRequestDto.DetailsPerLetter detailsPerLetter = new PrintLettersRequestDto.DetailsPerLetter();
+            detailsPerLetter.setJurorNumber(JUROR_NUMBER + jurorPostfix);
+            detailsPerLetter.setLetterDate(LocalDate.now().minusDays(adjustDays));
+
+            return detailsPerLetter;
+        }
+
+        private PrintLettersRequestDto buildPrintLettersRequestDto(
+            List<PrintLettersRequestDto.DetailsPerLetter> detailsPerLetter) {
+
+            return PrintLettersRequestDto.builder()
+                .detailsPerLetter(detailsPerLetter)
+                .letterType(CourtLetterType.FAILED_TO_ATTEND)
+                .build();
         }
 
         private void verifyDataEnglish(PrintLetterDataResponseDto response,
