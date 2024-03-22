@@ -391,7 +391,7 @@ public class Appearance implements Serializable {
 
     void addExpenseToErrors(Map<String, Object> errors, String expenseName,
                             BigDecimal actualAmount, BigDecimal minAmount) {
-        if (BigDecimalUtils.isLessThan(actualAmount, minAmount)) {
+        if (BigDecimalUtils.isLessThan(getOrZero(actualAmount), getOrZero(minAmount))) {
             errors.put(expenseName, "Must be at least " + BigDecimalUtils.currencyFormat(minAmount));
         }
     }
