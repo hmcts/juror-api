@@ -11,11 +11,17 @@ import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @SuppressWarnings("PMD.TooManyMethods")
 class AppearanceTest {
@@ -404,153 +410,206 @@ class AppearanceTest {
             .isEqualTo(new BigDecimal("8.00"));
     }
 
-
     @Nested
-    @DisplayName("isExpenseDetailsValid()")
-    class IsExpenseDetailsValid {
-
-        private Appearance mockAppearance() {
+    @DisplayName("public Map<String, Object> getExpensesWhereDueIsLessThenPaid()")
+    class GetExpensesWhereDueIsLessThenPaid {
+        private Appearance mockAppearance(AppearanceStage stage) {
             Appearance appearance = spy(new Appearance());
 
-            doReturn(BigDecimal.ZERO).when(appearance).getPublicTransportDue();
-            doReturn(BigDecimal.ZERO).when(appearance).getPublicTransportPaid();
-            doReturn(BigDecimal.ZERO).when(appearance).getHiredVehicleDue();
-            doReturn(BigDecimal.ZERO).when(appearance).getHiredVehiclePaid();
-            doReturn(BigDecimal.ZERO).when(appearance).getMotorcycleDue();
-            doReturn(BigDecimal.ZERO).when(appearance).getMotorcyclePaid();
-            doReturn(BigDecimal.ZERO).when(appearance).getCarDue();
-            doReturn(BigDecimal.ZERO).when(appearance).getCarPaid();
-            doReturn(BigDecimal.ZERO).when(appearance).getBicycleDue();
-            doReturn(BigDecimal.ZERO).when(appearance).getBicyclePaid();
-            doReturn(BigDecimal.ZERO).when(appearance).getParkingDue();
-            doReturn(BigDecimal.ZERO).when(appearance).getParkingPaid();
-            doReturn(BigDecimal.ZERO).when(appearance).getSubsistenceDue();
-            doReturn(BigDecimal.ZERO).when(appearance).getSubsistencePaid();
-            doReturn(BigDecimal.ZERO).when(appearance).getLossOfEarningsDue();
-            doReturn(BigDecimal.ZERO).when(appearance).getLossOfEarningsPaid();
-            doReturn(BigDecimal.ZERO).when(appearance).getChildcareDue();
-            doReturn(BigDecimal.ZERO).when(appearance).getChildcarePaid();
-            doReturn(BigDecimal.ZERO).when(appearance).getMiscAmountDue();
-            doReturn(BigDecimal.ZERO).when(appearance).getMiscAmountPaid();
-            doReturn(BigDecimal.ZERO).when(appearance).getTotalDue();
-            doReturn(BigDecimal.ZERO).when(appearance).getTotalPaid();
-            doReturn(AppearanceStage.EXPENSE_EDITED).when(appearance).getAppearanceStage();
-            doReturn(BigDecimal.ZERO).when(appearance).getSmartCardAmountDue();
-            doReturn(BigDecimal.ZERO).when(appearance).getSmartCardAmountPaid();
+            doReturn(new BigDecimal("0.01")).when(appearance).getPublicTransportDue();
+            doReturn(new BigDecimal("1.01")).when(appearance).getPublicTransportPaid();
+            doReturn(new BigDecimal("0.02")).when(appearance).getHiredVehicleDue();
+            doReturn(new BigDecimal("1.02")).when(appearance).getHiredVehiclePaid();
+            doReturn(new BigDecimal("0.03")).when(appearance).getMotorcycleDue();
+            doReturn(new BigDecimal("1.03")).when(appearance).getMotorcyclePaid();
+            doReturn(new BigDecimal("0.04")).when(appearance).getCarDue();
+            doReturn(new BigDecimal("1.04")).when(appearance).getCarPaid();
+            doReturn(new BigDecimal("0.05")).when(appearance).getBicycleDue();
+            doReturn(new BigDecimal("1.05")).when(appearance).getBicyclePaid();
+            doReturn(new BigDecimal("0.06")).when(appearance).getParkingDue();
+            doReturn(new BigDecimal("1.06")).when(appearance).getParkingPaid();
+            doReturn(new BigDecimal("0.07")).when(appearance).getSubsistenceDue();
+            doReturn(new BigDecimal("1.07")).when(appearance).getSubsistencePaid();
+            doReturn(new BigDecimal("0.08")).when(appearance).getLossOfEarningsDue();
+            doReturn(new BigDecimal("1.09")).when(appearance).getLossOfEarningsPaid();
+            doReturn(new BigDecimal("0.10")).when(appearance).getChildcareDue();
+            doReturn(new BigDecimal("1.10")).when(appearance).getChildcarePaid();
+            doReturn(new BigDecimal("0.11")).when(appearance).getMiscAmountDue();
+            doReturn(new BigDecimal("1.11")).when(appearance).getMiscAmountPaid();
+            doReturn(new BigDecimal("0.12")).when(appearance).getTotalDue();
+            doReturn(new BigDecimal("1.12")).when(appearance).getTotalPaid();
+            doReturn(stage).when(appearance).getAppearanceStage();
+            doReturn(new BigDecimal("0.13")).when(appearance).getSmartCardAmountDue();
+            doReturn(new BigDecimal("1.13")).when(appearance).getSmartCardAmountPaid();
             return appearance;
-        }
-
-        @Test
-        void positiveTypical() {
-            Appearance appearance = mockAppearance();
-            assertThat(appearance.isExpenseDetailsValid()).isTrue();
-        }
-
-        @Test
-        void negativePublicTransport() {
-            Appearance appearance = mockAppearance();
-            doReturn(new BigDecimal("0.01")).when(appearance).getPublicTransportPaid();
-            assertThat(appearance.isExpenseDetailsValid()).isFalse();
-        }
-
-        @Test
-        void negativeHiredVehicle() {
-            Appearance appearance = mockAppearance();
-            doReturn(new BigDecimal("0.01")).when(appearance).getHiredVehiclePaid();
-            assertThat(appearance.isExpenseDetailsValid()).isFalse();
-        }
-
-        @Test
-        void negativeMotorcycle() {
-            Appearance appearance = mockAppearance();
-            doReturn(new BigDecimal("0.01")).when(appearance).getMotorcyclePaid();
-            assertThat(appearance.isExpenseDetailsValid()).isFalse();
-        }
-
-        @Test
-        void negativeCar() {
-            Appearance appearance = mockAppearance();
-            doReturn(new BigDecimal("0.01")).when(appearance).getCarPaid();
-            assertThat(appearance.isExpenseDetailsValid()).isFalse();
-        }
-
-        @Test
-        void negativeBicycle() {
-            Appearance appearance = mockAppearance();
-            doReturn(new BigDecimal("0.01")).when(appearance).getBicyclePaid();
-            assertThat(appearance.isExpenseDetailsValid()).isFalse();
-        }
-
-        @Test
-        void negativeParking() {
-            Appearance appearance = mockAppearance();
-            doReturn(new BigDecimal("0.01")).when(appearance).getParkingPaid();
-            assertThat(appearance.isExpenseDetailsValid()).isFalse();
-        }
-
-        @Test
-        void negativeSubsistence() {
-            Appearance appearance = mockAppearance();
-            doReturn(new BigDecimal("0.01")).when(appearance).getSubsistencePaid();
-            assertThat(appearance.isExpenseDetailsValid()).isFalse();
-        }
-
-        @Test
-        void negativeLossOfEarnings() {
-            Appearance appearance = mockAppearance();
-            doReturn(new BigDecimal("0.01")).when(appearance).getLossOfEarningsPaid();
-            assertThat(appearance.isExpenseDetailsValid()).isFalse();
-        }
-
-        @Test
-        void negativeChildcare() {
-            Appearance appearance = mockAppearance();
-            doReturn(new BigDecimal("0.01")).when(appearance).getChildcarePaid();
-            assertThat(appearance.isExpenseDetailsValid()).isFalse();
-        }
-
-        @Test
-        void negativeMiscAmount() {
-            Appearance appearance = mockAppearance();
-            doReturn(new BigDecimal("0.01")).when(appearance).getMiscAmountPaid();
-            assertThat(appearance.isExpenseDetailsValid()).isFalse();
-        }
-
-        @Test
-        void negativeTotalPaid() {
-            Appearance appearance = mockAppearance();
-            doReturn(new BigDecimal("0.01")).when(appearance).getTotalPaid();
-            assertThat(appearance.isExpenseDetailsValid()).isFalse();
-        }
-
-        @Test
-        void negativeSmartCardAmountEdited() {
-            Appearance appearance = mockAppearance();
-            doReturn(AppearanceStage.EXPENSE_EDITED).when(appearance).getAppearanceStage();
-            doReturn(new BigDecimal("1.0")).when(appearance).getSmartCardAmountDue();
-            doReturn(new BigDecimal("0.9")).when(appearance).getSmartCardAmountPaid();
-            assertThat(appearance.isExpenseDetailsValid()).isFalse();
-        }
-
-        @Test
-        void negativeSmartCardAmountAuthorised() {
-            Appearance appearance = mockAppearance();
-            doReturn(AppearanceStage.EXPENSE_AUTHORISED).when(appearance).getAppearanceStage();
-            doReturn(new BigDecimal("1.0")).when(appearance).getSmartCardAmountDue();
-            doReturn(new BigDecimal("0.9")).when(appearance).getSmartCardAmountPaid();
-            assertThat(appearance.isExpenseDetailsValid()).isFalse();
         }
 
         @ParameterizedTest
         @EnumSource(value = AppearanceStage.class, mode = EnumSource.Mode.EXCLUDE,
             names = {"EXPENSE_EDITED", "EXPENSE_AUTHORISED"})
-        void positiveSmartCardAmountNotEditedOrAuthorised(AppearanceStage stage) {
-            Appearance appearance = mockAppearance();
-            doReturn(stage).when(appearance).getAppearanceStage();
-            doReturn(new BigDecimal("1.0")).when(appearance).getSmartCardAmountDue();
-            doReturn(new BigDecimal("0.0")).when(appearance).getSmartCardAmountPaid();
-            assertThat(appearance.isExpenseDetailsValid()).isTrue();
+        void positiveNoSmartCard(AppearanceStage stage) {
+            Map<String, Object> errors = Map.of();
+            Appearance appearance = mockAppearance(stage);
+            doNothing().when(appearance).addExpenseToErrors(any(), any(), any(), any());
+            assertThat(appearance.getExpensesWhereDueIsLessThenPaid()).isEmpty();
+            verify(appearance)
+                .addExpenseToErrors(errors, "publicTransport",
+                    new BigDecimal("0.01"), new BigDecimal("1.01"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "hiredVehicle",
+                    new BigDecimal("0.02"), new BigDecimal("1.02"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "motorcycle",
+                    new BigDecimal("0.03"), new BigDecimal("1.03"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "car",
+                    new BigDecimal("0.04"), new BigDecimal("1.04"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "bicycle",
+                    new BigDecimal("0.05"), new BigDecimal("1.05"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "parking",
+                    new BigDecimal("0.06"), new BigDecimal("1.06"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "subsistence",
+                    new BigDecimal("0.07"), new BigDecimal("1.07"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "lossOfEarnings",
+                    new BigDecimal("0.08"), new BigDecimal("1.09"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "childcare",
+                    new BigDecimal("0.10"), new BigDecimal("1.10"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "miscAmount",
+                    new BigDecimal("0.11"), new BigDecimal("1.11"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "total",
+                    new BigDecimal("0.12"), new BigDecimal("1.12"));
+            verify(appearance, times(11))
+                .addExpenseToErrors(any(), any(), any(), any());
         }
+
+        @ParameterizedTest
+        @EnumSource(value = AppearanceStage.class, mode = EnumSource.Mode.INCLUDE,
+            names = {"EXPENSE_EDITED", "EXPENSE_AUTHORISED"})
+        void positiveWithSmartCardFailed(AppearanceStage stage) {
+            Map<String, Object> errors = Map.of(
+                "smartCardAmount", "Must be at most £1.13"
+            );
+            Appearance appearance = mockAppearance(stage);
+            doNothing().when(appearance).addExpenseToErrors(any(), any(), any(), any());
+            assertThat(appearance.getExpensesWhereDueIsLessThenPaid()).isEqualTo(
+                errors
+            );
+            verify(appearance)
+                .addExpenseToErrors(errors, "publicTransport",
+                    new BigDecimal("0.01"), new BigDecimal("1.01"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "hiredVehicle",
+                    new BigDecimal("0.02"), new BigDecimal("1.02"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "motorcycle",
+                    new BigDecimal("0.03"), new BigDecimal("1.03"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "car",
+                    new BigDecimal("0.04"), new BigDecimal("1.04"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "bicycle",
+                    new BigDecimal("0.05"), new BigDecimal("1.05"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "parking",
+                    new BigDecimal("0.06"), new BigDecimal("1.06"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "subsistence",
+                    new BigDecimal("0.07"), new BigDecimal("1.07"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "lossOfEarnings",
+                    new BigDecimal("0.08"), new BigDecimal("1.09"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "childcare",
+                    new BigDecimal("0.10"), new BigDecimal("1.10"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "miscAmount",
+                    new BigDecimal("0.11"), new BigDecimal("1.11"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "total",
+                    new BigDecimal("0.12"), new BigDecimal("1.12"));
+            verify(appearance, times(11))
+                .addExpenseToErrors(any(), any(), any(), any());
+        }
+
+        @ParameterizedTest
+        @EnumSource(value = AppearanceStage.class, mode = EnumSource.Mode.INCLUDE,
+            names = {"EXPENSE_EDITED", "EXPENSE_AUTHORISED"})
+        void positiveWithSmartCardPassed(AppearanceStage stage) {
+            Map<String, Object> errors = Map.of();
+            Appearance appearance = mockAppearance(stage);
+            doReturn(new BigDecimal("1.13")).when(appearance).getSmartCardAmountDue();
+            doReturn(new BigDecimal("0.13")).when(appearance).getSmartCardAmountPaid();
+
+            doNothing().when(appearance).addExpenseToErrors(any(), any(), any(), any());
+            assertThat(appearance.getExpensesWhereDueIsLessThenPaid()).isEqualTo(errors);
+            verify(appearance)
+                .addExpenseToErrors(errors, "publicTransport",
+                    new BigDecimal("0.01"), new BigDecimal("1.01"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "hiredVehicle",
+                    new BigDecimal("0.02"), new BigDecimal("1.02"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "motorcycle",
+                    new BigDecimal("0.03"), new BigDecimal("1.03"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "car",
+                    new BigDecimal("0.04"), new BigDecimal("1.04"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "bicycle",
+                    new BigDecimal("0.05"), new BigDecimal("1.05"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "parking",
+                    new BigDecimal("0.06"), new BigDecimal("1.06"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "subsistence",
+                    new BigDecimal("0.07"), new BigDecimal("1.07"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "lossOfEarnings",
+                    new BigDecimal("0.08"), new BigDecimal("1.09"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "childcare",
+                    new BigDecimal("0.10"), new BigDecimal("1.10"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "miscAmount",
+                    new BigDecimal("0.11"), new BigDecimal("1.11"));
+            verify(appearance)
+                .addExpenseToErrors(errors, "total",
+                    new BigDecimal("0.12"), new BigDecimal("1.12"));
+            verify(appearance, times(11))
+                .addExpenseToErrors(any(), any(), any(), any());
+        }
+    }
+
+    @Test
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
+    void addExpenseToErrorsIsLessThan() {
+        Appearance appearance = new Appearance();
+        Map<String, Object> errors = new ConcurrentHashMap<>();
+        appearance.addExpenseToErrors(errors, "publicTransport", new BigDecimal("1.00"), new BigDecimal("1.01"));
+        assertThat(errors).containsEntry("publicTransport", "Must be at least £1.01");
+    }
+
+    @Test
+    void addExpenseToErrorsIsEqualTo() {
+        Appearance appearance = new Appearance();
+        Map<String, Object> errors = new ConcurrentHashMap<>();
+        appearance.addExpenseToErrors(errors, "publicTransport", new BigDecimal("1.01"), new BigDecimal("1.01"));
+        assertThat(errors).isEmpty();
+    }
+
+    @Test
+    void addExpenseToErrorsIsGreaterThan() {
+        Appearance appearance = new Appearance();
+        Map<String, Object> errors = new ConcurrentHashMap<>();
+        appearance.addExpenseToErrors(errors, "publicTransport", new BigDecimal("1.02"), new BigDecimal("1.01"));
+        assertThat(errors).isEmpty();
     }
 
     @Nested
