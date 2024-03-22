@@ -336,7 +336,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
 
     boolean isAttendanceDay(Appearance appearance) {
-        return !AttendanceType.NON_ATTENDANCE.equals(appearance.getAttendanceType());
+        return !AttendanceType.NON_ATTENDANCE.equals(appearance.getAttendanceType())
+            && !AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance.getAttendanceType());
     }
 
     @Transactional
@@ -440,7 +441,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Override
     @Transactional
     public FinancialLossWarning validateAndUpdateFinancialLossExpenseLimit(Appearance appearance) {
-        ExpenseRates expenseRates = getCurrentExpenseRates();
+        ExpenseRates expenseRates = getCurrentExpenseRates(false);
         PayAttendanceType attendanceType = appearance.getPayAttendanceType();
         boolean isLongTrial = Boolean.TRUE.equals(appearance.isLongTrialDay());
         BigDecimal financialLossLimit = switch (attendanceType) {
@@ -618,7 +619,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         appearance.setMilesTraveled(milesTraveled);
         final Integer jurorsByCar = appearance.getJurorsTakenCar();
         final Integer jurorsByMotorcycle = appearance.getJurorsTakenMotorcycle();
-        final ExpenseRates expenseRates = getCurrentExpenseRates();
+        final ExpenseRates expenseRates = getCurrentExpenseRates(false);
 
         BiFunction<TravelMethod, Boolean, BigDecimal> calculateTravelCost = (travelMethod, traveledBy) -> {
             if (traveledBy == null || !traveledBy) {
@@ -636,7 +637,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     void updateFoodDrinkClaimType(Appearance appearance, FoodDrinkClaimType claimType) {
-        final ExpenseRates expenseRates = getCurrentExpenseRates();
+        final ExpenseRates expenseRates = getCurrentExpenseRates(false);
         BigDecimal substanceRate =
             Optional.ofNullable(claimType).orElse(FoodDrinkClaimType.NONE).getRate(expenseRates);
         appearance.setSubsistenceDue(substanceRate);
@@ -1169,15 +1170,24 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     void saveAppearancesWithExpenseRateIdUpdate(Collection<Appearance> appearances) {
-        ExpenseRates expenseRates = getCurrentExpenseRates();
+        ExpenseRates expenseRates = getCurrentExpenseRates(false);
         appearances.forEach(appearance -> appearance.setExpenseRates(expenseRates));
         appearanceRepository.saveAll(appearances);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ExpenseRates getCurrentExpenseRates() {
-        return expenseRatesRepository.getCurrentRates();
+    public ExpenseRates getCurrentExpenseRates(boolean onlyFinancialLossLimit) {
+        ExpenseRates expenseRates = expenseRatesRepository.getCurrentRates();
+        if(onlyFinancialLossLimit){
+            expenseRates = ExpenseRates.builder()
+                .limitFinancialLossFullDay(expenseRates.getLimitFinancialLossFullDay())
+                .limitFinancialLossHalfDay(expenseRates.getLimitFinancialLossHalfDay())
+                .limitFinancialLossFullDayLongTrial(expenseRates.getLimitFinancialLossFullDayLongTrial())
+                .limitFinancialLossHalfDayLongTrial(expenseRates.getLimitFinancialLossHalfDayLongTrial())
+                .build();
+        }
+        return expenseRates;
     }
 
     @Override
