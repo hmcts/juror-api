@@ -142,7 +142,7 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber("123456789");
         Mockito.when(poolRequestRepository.findByPoolNumber(any()))
             .thenReturn(Optional.of(mockPoolRequest("12345678", "415")));
-
+        
         JurorPaperResponseDetailDto responseDto = jurorPaperResponseService
             .getJurorPaperResponse(VALID_JUROR_NUMBER_BUREAU, payload);
 
@@ -1505,6 +1505,8 @@ public class JurorPaperResponseServiceImplTest {
 
         response.setSigned(true);
         response.setProcessingStatus(ProcessingStatus.TODO);
+
+        response.setStaff(User.builder().username("SOME_USER").build());
 
         return response;
     }

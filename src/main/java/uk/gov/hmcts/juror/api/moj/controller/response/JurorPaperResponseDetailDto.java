@@ -11,7 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
-import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsDto;
 import uk.gov.hmcts.juror.api.validation.LocalDateOfBirth;
 
 import java.time.LocalDate;
@@ -256,7 +256,7 @@ public class JurorPaperResponseDetailDto {
 
     @JsonProperty("assignedStaffMember")
     @Schema(description = "Assigned staff member")
-    private User assignedStaffMember;
+    private UserDetailsDto assignedStaffMember;
 
     @JsonProperty("contactLog")
     @Schema(description = "Juror contact log")

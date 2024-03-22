@@ -169,7 +169,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
     public void respondToSummons_courtUser_superUrgent_happyPath_notStraightThroughAcceptance() throws Exception {
-        final String bureauJwt = createBureauJwt("COURT_USER", "415");
+        final String bureauJwt = createBureauJwt("MODTESTCOURT", "415");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -204,7 +204,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
     public void respondToSummons_courtUser_superUrgent_happyPath_straightThroughAcceptance() throws Exception {
-        final String bureauJwt = createBureauJwt("COURT_USER", "415");
+        final String bureauJwt = createBureauJwt("MODTESTCOURT", "415");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -239,7 +239,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
     public void respondToSummons_courtUser_notSuperUrgent_happyPath() throws Exception {
-        final String bureauJwt = createBureauJwt("COURT_USER", "415");
+        final String bureauJwt = createBureauJwt("MODTESTCOURT", "415");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -570,7 +570,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPaperResponse.sql"})
     public void retrieveJurorById_bureauUser_happyPath() throws Exception {
         final String owner = "400";
-        final String bureauJwt = createBureauJwt("BUREAU_USER", owner);
+        final String bureauJwt = createBureauJwt("MODTESTBUREAU", owner);
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/juror/123456789");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -590,7 +590,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPaperResponse_summonsSnapshot.sql"})
     public void retrieveJurorById_bureauUser_happyPath_summonsSnapshot() throws Exception {
         final String owner = "400";
-        final String bureauJwt = createBureauJwt("BUREAU_USER", owner);
+        final String bureauJwt = createBureauJwt("MODTESTBUREAU", owner);
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/juror/222222222");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -610,7 +610,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPaperResponse_summonsSnapshot.sql"})
     public void retrieveJurorById_bureauUser_happyPath_summonsSnapshot_welsh() throws Exception {
         final String owner = "400";
-        final String bureauJwt = createBureauJwt("BUREAU_USER", owner);
+        final String bureauJwt = createBureauJwt("MODTESTBUREAU", owner);
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/juror/444444444");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -630,7 +630,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPaperResponse.sql"})
     public void retrieveJurorById_courtUser_happyPath() throws Exception {
         final String owner = "415";
-        final String bureauJwt = createBureauJwt("COURT_USER", owner);
+        final String bureauJwt = createBureauJwt("MODTESTCOURT", owner);
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/juror/987654321");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -650,7 +650,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPaperResponse_summonsSnapshot.sql"})
     public void retrieveJurorById_courtUser_happyPath_summonsSnapshot() throws Exception {
         final String owner = "435";
-        final String bureauJwt = createBureauJwt("COURT_USER", owner);
+        final String bureauJwt = createBureauJwt("MODTESTCOURT", owner);
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/juror/333333333");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);

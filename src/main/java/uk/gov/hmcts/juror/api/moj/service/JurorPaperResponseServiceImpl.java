@@ -25,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.SpecialNeeds;
 import uk.gov.hmcts.juror.api.moj.domain.SummonsSnapshot;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
@@ -156,7 +157,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         jurorPaperResponseDetailDto.setEmailAddress(jurorPaperResponse.getEmail());
 
         // set the assignee
-        jurorPaperResponseDetailDto.setAssignedStaffMember(jurorPaperResponse.getStaff());
+        jurorPaperResponseDetailDto.setAssignedStaffMember(new UserDetailsDto(jurorPaperResponse.getStaff()));
 
         // set the contact log
         List<ContactLogListDto.ContactLogDataDto> contactLogList = new ArrayList<>();

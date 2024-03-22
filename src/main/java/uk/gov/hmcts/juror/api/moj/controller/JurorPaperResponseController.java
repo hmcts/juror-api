@@ -71,14 +71,11 @@ public class JurorPaperResponseController {
         description = "The Juror Paper response details")
     public ResponseEntity<JurorPaperResponseDetailDto> retrieveJurorById(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
-        @Parameter(description = "Juror number",
-            required = true)
+        @Parameter(description = "Juror number", required = true)
         @PathVariable String jurorNumber) {
         final JurorPaperResponseDetailDto jurorPaperResponseDto = jurorPaperResponseService.getJurorPaperResponse(
-            jurorNumber,
-            payload
-        );
-        return ResponseEntity.ok(jurorPaperResponseDto);
+            jurorNumber, payload);
+        return ResponseEntity.status(HttpStatus.OK).body(jurorPaperResponseDto);
     }
 
     /**

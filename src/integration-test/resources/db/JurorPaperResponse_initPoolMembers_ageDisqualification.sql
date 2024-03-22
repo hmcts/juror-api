@@ -1,14 +1,3 @@
-delete from juror_digital.paper_response_cjs_employment;
-delete from juror_digital.paper_response_special_needs;
-delete from juror_digital.paper_response;
-
-delete from juror.disq_lett;
-
-DELETE FROM juror_mod.juror_history;
-DELETE FROM juror_mod.juror_audit;
-delete from juror_mod.juror_pool;
-delete from juror_mod.juror;
-delete from juror_mod.pool;
 
 INSERT INTO juror_mod.pool (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE, LOC_CODE, NEW_REQUEST, LAST_UPDATE)
 VALUES ('400', '411220502','2022-05-03 00:00:00', 4, 4, 'CRO', '411', 'N', TIMESTAMP'2022-03-02 09:22:09.0');

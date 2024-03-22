@@ -68,10 +68,7 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
             .slaOverdue(detail.getSlaOverdue())
             .dateReceived(detail.getDateReceived())
             .assignedStaffMember(detail.getAssignedStaffMember() != null
-                ?
-                toStaffDto(detail.getAssignedStaffMember())
-                :
-                null)
+                ? toStaffDto(detail.getAssignedStaffMember()) : null)
             .completedAt(detail.getCompletedAt())
             .version(detail.getVersion())
             .build();
