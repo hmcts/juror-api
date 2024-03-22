@@ -1,9 +1,13 @@
+INSERT INTO juror_mod.users (owner, user_type, username, email, name, active, version)
+VALUES ('400', 'BUREAU', 'MODTESTBUREAU', 'MODTESTBUREAU@email.gov.uk', 'MODTESTBUREAU', true, 1),
+       ('415', 'COURT', 'MODTESTCOURT', 'MODTESTCOURT@email.gov.uk', 'MODTESTCOURT', true, 1);
 
-delete from juror_mod.juror_audit;
-delete from juror_mod.juror_history;
-delete from juror_mod.juror_pool;
-delete from juror_mod.juror;
-delete from juror_mod.pool;
+INSERT INTO juror_mod.user_roles (username, role)
+VALUES ('MODTESTBUREAU', 'TEAM_LEADER');
+
+INSERT INTO juror_mod.user_courts (username, loc_code)
+VALUES ('MODTESTBUREAU', '400'),
+       ('MODTESTCOURT', '415');
 
 -- Pool 415220502 requested 4 jurors for 2023-06-01, 2 already supplied (2 needed) - active with the bureau
 INSERT INTO juror_mod.pool (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE, LOC_CODE, NEW_REQUEST, LAST_UPDATE)

@@ -1506,6 +1506,8 @@ public class JurorPaperResponseServiceImplTest {
         response.setSigned(true);
         response.setProcessingStatus(ProcessingStatus.TODO);
 
+        response.setStaff(User.builder().username("SOME_USER").build());
+
         return response;
     }
 

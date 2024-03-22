@@ -12,7 +12,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * DTO for {@link uk.gov.hmcts.juror.api.bureau.domain.Staff}.
+ * DTO for legacy Staff object for backwards compatibility.
  */
 @AllArgsConstructor
 @NoArgsConstructor
@@ -49,11 +49,7 @@ public class StaffDto implements Serializable {
         if (!Objects.isNull(user)) {
             this.login = user.getUsername();
             this.name = user.getName();
-            this.team = !Objects.isNull(user.getTeam())
-                ?
-                new TeamDto(user.getTeam())
-                :
-                null;
+            this.team = !Objects.isNull(user.getTeam()) ? new TeamDto(user.getTeam()) : null;
             this.isTeamLeader = user.isTeamLeader();
             this.isActive = user.isActive();
             this.version = user.getVersion();
