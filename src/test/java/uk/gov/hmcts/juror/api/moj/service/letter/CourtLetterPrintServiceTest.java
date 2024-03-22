@@ -1757,88 +1757,88 @@ public class CourtLetterPrintServiceTest {
                     CourtLetterType.CERTIFICATE_OF_ATTENDANCE), "TEST_COURTUSER");
 
             assertThat(response.size()).as("Expect size to be 1").isEqualTo(1);
-
-            assertThat(response.get(0).getCourtName())
+            PrintLetterDataResponseDto dto = response.get(0);
+            assertThat(dto.getCourtName())
                 .as("Expect court name to be " + "The Crown Court\n"
                     + "at COURT NAME")
                 .isEqualTo("The Crown Court\n"
                     + "at COURT NAME");
-            assertThat(response.get(0).getCourtAddressLine1())
+            assertThat(dto.getCourtAddressLine1())
                 .as("Expect address line 1 to be 'ADDRESS 1'")
                 .isEqualTo("ADDRESS 1");
-            assertThat(response.get(0).getCourtAddressLine2())
+            assertThat(dto.getCourtAddressLine2())
                 .as("Expect address line 2 to be 'ADDRESS 2'")
                 .isEqualTo("ADDRESS 2");
-            assertThat(response.get(0).getCourtAddressLine3())
+            assertThat(dto.getCourtAddressLine3())
                 .as("Expect address line 3 to be 'ADDRESS 3'")
                 .isEqualTo("ADDRESS 3");
-            assertThat(response.get(0).getCourtAddressLine4())
+            assertThat(dto.getCourtAddressLine4())
                 .as("Expect address line 4 to be 'ADDRESS 4'")
                 .isEqualTo("ADDRESS 4");
-            assertThat(response.get(0).getCourtAddressLine5())
+            assertThat(dto.getCourtAddressLine5())
                 .as("Expect address line 5 to be 'ADDRESS 5'")
                 .isEqualTo("ADDRESS 5");
-            assertThat(response.get(0).getCourtAddressLine6())
+            assertThat(dto.getCourtAddressLine6())
                 .as("Expect address line 6 to be 'ADDRESS 6'")
                 .isEqualTo("ADDRESS 6");
-            assertThat(response.get(0).getCourtPostCode())
+            assertThat(dto.getCourtPostCode())
                 .as("Expect post code to be 'PST CODE'")
                 .isEqualTo("PST CODE");
-            assertThat(response.get(0).getCourtPhoneNumber())
+            assertThat(dto.getCourtPhoneNumber())
                 .as("Expect court number to be 0123456789")
                 .isEqualTo("0123456789");
 
-            assertThat(response.get(0).getUrl())
+            assertThat(dto.getUrl())
                 .as("Expect URL to be ENGLISH_URL")
                 .isEqualTo("ENGLISH_URL");
-            assertThat(response.get(0).getSignature())
+            assertThat(dto.getSignature())
                 .as("Expect signatory to be ")
                 .isEqualTo("TEST SIGNATURE\n\nAn Officer of the Crown Court");
 
-            assertThat(response.get(0).getJurorFirstName())
+            assertThat(dto.getJurorFirstName())
                 .as("Expect first name to be FNAME")
                 .isEqualTo("FNAME");
-            assertThat(response.get(0).getJurorLastName())
+            assertThat(dto.getJurorLastName())
                 .as("Expect last name to be LNAME")
                 .isEqualTo("LNAME");
-            assertThat(response.get(0).getJurorAddressLine1())
+            assertThat(dto.getJurorAddressLine1())
                 .as("Expect address line 1 to be ADDRESS LINE 1")
                 .isEqualTo("ADDRESS LINE 1");
-            assertThat(response.get(0).getJurorAddressLine2())
+            assertThat(dto.getJurorAddressLine2())
                 .as("Expect address line 2 to be ADDRESS LINE 2")
                 .isEqualTo("ADDRESS LINE 2");
-            assertThat(response.get(0).getJurorAddressLine3())
+            assertThat(dto.getJurorAddressLine3())
                 .as("Expect address line 3 to be ADDRESS LINE 3")
                 .isEqualTo("ADDRESS LINE 3");
-            assertThat(response.get(0).getJurorAddressLine4())
+            assertThat(dto.getJurorAddressLine4())
                 .as("Expect address line 4 to be ADDRESS LINE 4")
                 .isEqualTo("ADDRESS LINE 4");
-            assertThat(response.get(0).getJurorAddressLine5())
+            assertThat(dto.getJurorAddressLine5())
                 .as("Expect address line 5 to be ADDRESS LINE 5")
                 .isEqualTo("ADDRESS LINE 5");
-            assertThat(response.get(0).getJurorPostcode())
+            assertThat(dto.getJurorPostcode())
                 .as("Expect post code to be JUROR POST CODE")
                 .isEqualTo("JUROR POST CODE");
-            assertThat(response.get(0).getJurorNumber())
+            assertThat(dto.getJurorNumber())
                 .as("Expect juror number to be " + jurorNumber)
                 .isEqualTo(jurorNumber);
-            assertThat(response.get(0).getAttendTime())
+            assertThat(dto.getAttendTime())
                 .as("Expect attend time to be 09:00")
                 .isEqualTo(LocalTime.of(9, 0));
-            assertThat(response.get(0).getWelsh())
+            assertThat(dto.getWelsh())
                 .as("Expect welsh to be false")
                 .isFalse();
 
-            assertThat(response.get(0).getNonAttendance())
+            assertThat(dto.getNonAttendance())
                 .as("Expect non attendance to be Non Attendance")
                 .isEqualTo("Non Attendance");
-            assertThat(response.get(0).getLossOfEarnings())
+            assertThat(dto.getLossOfEarnings())
                 .as("Expect loss of earnings to be 40")
                 .isEqualTo(new BigDecimal(40));
-            assertThat(response.get(0).getChildCare())
+            assertThat(dto.getChildCare())
                 .as("Expect child care to be 10")
                 .isEqualTo(new BigDecimal(10));
-            assertThat(response.get(0).getMisc())
+            assertThat(dto.getMisc())
                 .as("Expect misc to be 10")
                 .isEqualTo(new BigDecimal(10));
 
