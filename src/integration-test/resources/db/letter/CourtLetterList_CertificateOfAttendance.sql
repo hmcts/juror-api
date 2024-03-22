@@ -1,6 +1,6 @@
 INSERT INTO juror_mod.pool (pool_no,"owner",return_date,no_requested,pool_type,loc_code,new_request,attend_time,nil_pool,total_no_required) VALUES
 ('415220401','415',current_date + 10,2,'CRO','415','N',(current_date + 10 || ' ' || '09:00')::timestamp,false,2),
-('415220504','457',current_date + 14,4,'CRO','475','N',(current_date + 14 || ' ' || '09:00')::timestamp,false,4);
+('415220504','457',current_date + 14,4,'CRO','457','N',(current_date + 14 || ' ' || '09:00')::timestamp,false,4);
 
 INSERT INTO juror_mod.juror (juror_number,poll_number,title,last_name,first_name,dob,address_line_1,address_line_2,address_line_3,address_line_4,address_line_5,postcode,h_phone,w_phone,w_ph_local,responded,date_excused,excusal_code,acc_exc,date_disq,disq_code,user_edtq,notes,no_def_pos,perm_disqual,reasonable_adj_code,reasonable_adj_msg,completion_date,sort_code,bank_acct_name,bank_acct_no,bldg_soc_roll_no,welsh,police_check,last_update,summons_file,m_phone,h_email,contact_preference,notifications,date_created,optic_reference,bureau_transfer_date) VALUES
 ('555555561','540',NULL,'JurorSurname61','JurorForename61','1998-03-08 00:00:00.000','Address Line 1','Address Line 2','Address Line 3','CARDIFF','Some County','CH1 2AN',NULL,NULL,NULL,true,NULL,NULL,NULL,NULL,NULL,'COURT_USER',NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'NOT_CHECKED','2024-01-16 12:07:42.000',NULL,NULL,NULL,0,0,NULL,'12345678', current_date - interval '9 weeks'),
