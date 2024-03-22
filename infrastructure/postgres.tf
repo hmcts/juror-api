@@ -18,7 +18,7 @@ module "postgresql_flexible" {
   location            = var.location
   pgsql_sku           = "GP_Standard_D2s_v3"
   pgsql_storage_mb    = var.pgsql_storage_mb
-  psql_storage_tier   = var.psql_storage_tier
+  pgsql_storage_tier  = var.pgsql_storage_tier
 
   common_tags          = var.common_tags
   admin_user_object_id = var.jenkins_AAD_objectId
