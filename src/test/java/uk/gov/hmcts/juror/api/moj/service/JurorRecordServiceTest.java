@@ -183,7 +183,7 @@ class JurorRecordServiceTest {
     @Mock
     private JurorAuditChangeService jurorAuditChangeService;
     @Mock
-    private LetterServiceMod letterServiceMod;
+    private PrintDataService printDataService;
     @Mock
     private JurorHistoryService jurorHistoryService;
     @Mock
@@ -2431,12 +2431,13 @@ class JurorRecordServiceTest {
                 "Police status must be " + policeCheck);
             verifyNoInteractions(
                 jurorHistoryService,
-                letterServiceMod
+                printDataService
             );
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
         }
 
         @ParameterizedTest(name = "None-Straight forward max retries exceeded")
@@ -2451,14 +2452,14 @@ class JurorRecordServiceTest {
 
             verify(jurorHistoryService, times(1))
                 .createPoliceCheckQualifyHistory(jurorPool, false);
-            verifyNoMoreInteractions(jurorHistoryService);
-            verifyNoInteractions(letterServiceMod);
-
 
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verify(printDataService,times(1)).printConfirmationLetter(jurorPool);
+            verify(jurorHistoryService,times(1)).createConfirmServiceHistory(jurorPool, "Confirmation Letter Auto");
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
         }
 
         @Test
@@ -2471,14 +2472,31 @@ class JurorRecordServiceTest {
 
             verify(jurorHistoryService, times(1))
                 .createPoliceCheckQualifyHistory(jurorPool, true);
-            verifyNoMoreInteractions(jurorHistoryService);
-            verifyNoInteractions(letterServiceMod);
-
-
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verify(printDataService,times(1)).printConfirmationLetter(jurorPool);
+            verify(jurorHistoryService,times(1)).createConfirmServiceHistory(jurorPool, "Confirmation Letter Auto");
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
+        }
+
+        @Test
+        @DisplayName("ELIGIBLE - Court")
+        void positiveEligibleCourt() {
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+            jurorPool.setOwner(TestConstants.VALID_COURT_LOCATION);
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.ELIGIBLE);
+            assertEquals(PoliceCheck.ELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
+                "Police status be ELIGIBLE.");
+
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckQualifyHistory(jurorPool, true);
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
         }
 
         @Test
@@ -2501,15 +2519,44 @@ class JurorRecordServiceTest {
 
             verify(jurorHistoryService, times(1))
                 .createPoliceCheckDisqualifyHistory(jurorPool);
-            verifyNoMoreInteractions(jurorHistoryService);
-            verify(letterServiceMod, times(1))
-                .createDisqualificationLetter(jurorPool.getJuror());
-            verifyNoMoreInteractions(letterServiceMod);
+            verify(printDataService,times(1)).printWithdrawalLetter(jurorPool);
+            verify(jurorHistoryService,times(1)).createWithdrawHistory(jurorPool, "Withdrawal Letter Auto");
 
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
+        }
+        @Test
+        @DisplayName("INELIGIBLE - Court")
+        void positiveInEligibleCourt() {
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(6);
+            when(jurorStatusRepository.findById(6)).thenReturn(Optional.of(jurorStatus));
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+            jurorPool.setOwner(TestConstants.VALID_COURT_LOCATION);
+
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.INELIGIBLE);
+            assertEquals(PoliceCheck.INELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
+                "Police status be INELIGIBLE.");
+
+            assertEquals(6, jurorPool.getStatus().getStatus(),
+                "Juror pool status must be '6'");
+            assertEquals("E", jurorPool.getJuror().getDisqualifyCode(),
+                "Juror disqualify code must be 'E'");
+            assertEquals(LocalDate.now(clock), jurorPool.getJuror().getDisqualifyDate(),
+                "Just disqualify date must be today");
+
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckDisqualifyHistory(jurorPool);
+            verifyNoMoreInteractions(printDataService);
+
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
         }
 
         @Test
@@ -2520,11 +2567,11 @@ class JurorRecordServiceTest {
             assertEquals(PoliceCheck.ELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
                 "Police status be ELIGIBLE.");
             verifyNoInteractions(jurorHistoryService);
-            verifyNoInteractions(letterServiceMod);
+            verifyNoInteractions(printDataService);
 
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
-            verifyNoMoreInteractions(jurorPoolRepository);
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
             verifyNoInteractions(jurorRepository);
         }
 
@@ -2537,7 +2584,7 @@ class JurorRecordServiceTest {
             assertEquals(PoliceCheck.IN_PROGRESS, jurorPool.getJuror().getPoliceCheck(),
                 "Police status must be IN_PROGRESS");
             verifyNoInteractions(
-                letterServiceMod
+                printDataService
             );
             verify(jurorHistoryService, times(1))
                 .createPoliceCheckInProgressHistory(jurorPool);
@@ -2546,6 +2593,7 @@ class JurorRecordServiceTest {
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
         }
 
         @Test
@@ -2557,7 +2605,7 @@ class JurorRecordServiceTest {
             assertEquals(PoliceCheck.INSUFFICIENT_INFORMATION, jurorPool.getJuror().getPoliceCheck(),
                 "Police status must be INSUFFICIENT_INFORMATION");
             verifyNoInteractions(
-                letterServiceMod
+                printDataService
             );
             verify(jurorHistoryService, times(1))
                 .createPoliceCheckInsufficientInformationHistory(jurorPool);
@@ -2566,6 +2614,7 @@ class JurorRecordServiceTest {
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(TestConstants.VALID_JUROR_NUMBER, true);
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
         }
     }
 

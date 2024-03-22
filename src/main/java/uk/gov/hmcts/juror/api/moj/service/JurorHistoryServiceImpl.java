@@ -207,6 +207,16 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
         registerHistorySystem(jurorPool, HistoryCodeMod.NON_RESPONDED_LETTER, "Reminder letter printed");
     }
 
+    @Override
+    public void createConfirmServiceHistory(JurorPool jurorPool, String otherInfo) {
+        registerHistorySystem(jurorPool, HistoryCodeMod.RESPONDED_LETTER, otherInfo);
+    }
+
+    @Override
+    public void createWithdrawHistory(JurorPool jurorPool, String otherInfo) {
+        registerHistorySystem(jurorPool, HistoryCodeMod.WITHDRAWAL_LETTER, otherInfo);
+    }
+
     private void save(JurorHistory jurorHistory) {
         jurorHistoryRepository.save(jurorHistory);
     }
