@@ -27,4 +27,6 @@ public interface BulkPrintDataRepository extends IReissueLetterRepository, JpaRe
     List<BulkPrintData> findByJurorNoAndIdAndCreationDate(
         String jurorNo, Long id, LocalDate creationDate);
 
+    List<BulkPrintData> findByJurorNo(String jurorNo);
+
 }
