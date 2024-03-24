@@ -17,7 +17,6 @@ import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
-import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
@@ -234,15 +233,17 @@ public class JurorServiceImpl implements JurorService {
 
         //convert the dto to the entity type
         final List<JurorReasonableAdjustment> reasonableAdjustmentsEntities = new ArrayList<>();
-        if (dto.getReasonableAdjustments() != null) {
-            dto.getReasonableAdjustments().forEach(reasonableAdjustment ->
+        if (dto.getSpecialNeeds() != null) {
+            dto.getSpecialNeeds().forEach(reasonableAdjustment ->
                 reasonableAdjustmentsEntities.add(
+                    jurorReasonableAdjustmentRepository.save(
                     JurorReasonableAdjustment.builder()
                         .jurorNumber(jurorNumber)
                         .reasonableAdjustment(
                             reasonableAdjustmentsRepository.findByCode(reasonableAdjustment.getAssistanceType()))
                         .reasonableAdjustmentDetail(reasonableAdjustment.getAssistanceTypeDetails())
                         .build()
+                    )
                 )
             );
         }
@@ -251,11 +252,13 @@ public class JurorServiceImpl implements JurorService {
         if (dto.getCjsEmployment() != null) {
             dto.getCjsEmployment().forEach(cjsEmployment ->
                 cjsEmployerEntities.add(
+                    jurorResponseCjsEmploymentRepository.save(
                     JurorResponseCjsEmployment.builder()
                         .jurorNumber(jurorNumber)
                         .cjsEmployer(cjsEmployment.getCjsEmployer())
                         .cjsEmployerDetails(cjsEmployment.getCjsEmployerDetails())
                         .build()
+                    )
                 )
 
             );
@@ -303,7 +306,8 @@ public class JurorServiceImpl implements JurorService {
 
         // If the DTO is a third party response, add third party details to entity
         if (dto.getThirdParty() != null) {
-            builder.thirdPartyFName(dto.getThirdParty().getThirdPartyFName())
+            builder = builder
+                .thirdPartyFName(dto.getThirdParty().getThirdPartyFName())
                 .thirdPartyLName(dto.getThirdParty().getThirdPartyLName())
                 .relationship(dto.getThirdParty().getRelationship())
                 .mainPhone(dto.getThirdParty().getMainPhone())
@@ -320,15 +324,15 @@ public class JurorServiceImpl implements JurorService {
 
         // call the build method after the optional third party field are added.
 
-        DigitalResponse digitalResponse = builder.build();
+       final DigitalResponse entity = builder.build();
         // add urgency flags to the response if required
-        urgencyService.setUrgencyFlags(digitalResponse, jurorDetails);
+        urgencyService.setUrgencyFlags(entity, jurorDetails);
 
         if (log.isTraceEnabled()) {
-            log.trace("Produced: {}", digitalResponse);
+            log.trace("Produced: {}", entity);
         }
 
-        return digitalResponse;
+        return entity;
     }
 
 
