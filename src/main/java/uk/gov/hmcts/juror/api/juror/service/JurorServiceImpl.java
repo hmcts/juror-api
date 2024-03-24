@@ -236,14 +236,12 @@ public class JurorServiceImpl implements JurorService {
         if (dto.getSpecialNeeds() != null) {
             dto.getSpecialNeeds().forEach(reasonableAdjustment ->
                 reasonableAdjustmentsEntities.add(
-                    jurorReasonableAdjustmentRepository.save(
                     JurorReasonableAdjustment.builder()
                         .jurorNumber(jurorNumber)
                         .reasonableAdjustment(
                             reasonableAdjustmentsRepository.findByCode(reasonableAdjustment.getAssistanceType()))
                         .reasonableAdjustmentDetail(reasonableAdjustment.getAssistanceTypeDetails())
                         .build()
-                    )
                 )
             );
         }
@@ -252,13 +250,11 @@ public class JurorServiceImpl implements JurorService {
         if (dto.getCjsEmployment() != null) {
             dto.getCjsEmployment().forEach(cjsEmployment ->
                 cjsEmployerEntities.add(
-                    jurorResponseCjsEmploymentRepository.save(
                     JurorResponseCjsEmployment.builder()
                         .jurorNumber(jurorNumber)
                         .cjsEmployer(cjsEmployment.getCjsEmployer())
                         .cjsEmployerDetails(cjsEmployment.getCjsEmployerDetails())
                         .build()
-                    )
                 )
 
             );
