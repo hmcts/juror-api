@@ -9,7 +9,6 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResp
 import uk.gov.hmcts.juror.api.moj.report.AbstractReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
-import uk.gov.hmcts.juror.api.moj.report.TmpSupport;
 
 import java.util.List;
 
@@ -36,6 +35,7 @@ public class NextDayNonAttendanceReportITest extends AbstractReportControllerITe
             .poolNumber("415230103")
             .build());
     }
+
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalCourt() {
@@ -76,7 +76,7 @@ public class NextDayNonAttendanceReportITest extends AbstractReportControllerITe
     }
 
     private StandardReportResponse getTypicalResponse() {
-       return StandardReportResponse.builder()
+        return StandardReportResponse.builder()
             .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
                 .add("service_start_date", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Service Start Date")
