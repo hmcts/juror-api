@@ -284,8 +284,10 @@ class JurorAppearanceServiceTest {
 
         jurorAppearanceService.validateTimeAndAppearanceStage(timeIn, timeOut, CHECKED_IN, true);
 
-        verify(jurorAppearanceService, times(1)).validateTimeAndAppearanceStage(timeIn, timeOut,
-            CHECKED_IN, true);
+        verify(jurorAppearanceService, times(1)).validateCheckInNotNull(timeIn);
+        verify(jurorAppearanceService, times(1)).validateCheckOutNotNull(timeOut);
+        verify(jurorAppearanceService, times(1)).validateBothCheckInAndOutTimeNotNull(timeIn, timeOut);
+        verify(jurorAppearanceService, never()).validateBothCheckInAndOutTimeNotSet(any(), any());
     }
 
     @Test

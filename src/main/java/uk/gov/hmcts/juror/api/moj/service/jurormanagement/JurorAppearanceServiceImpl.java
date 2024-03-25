@@ -812,28 +812,28 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         return activeJurorRecord;
     }
 
-    private void validateBothCheckInAndOutTimeNotNull(LocalTime checkInTime, LocalTime checkOutTime) {
+     void validateBothCheckInAndOutTimeNotNull(LocalTime checkInTime, LocalTime checkOutTime) {
         if (checkInTime == null && checkOutTime == null) {
             throw new MojException.BadRequest("Must provide a Check-in or Check-out time",
                 null);
         }
     }
 
-    private void validateBothCheckInAndOutTimeNotSet(LocalTime checkInTime, LocalTime checkOutTime) {
+     void validateBothCheckInAndOutTimeNotSet(LocalTime checkInTime, LocalTime checkOutTime) {
         if (checkInTime != null && checkOutTime != null) {
             throw new MojException.BadRequest("Cannot have both Check-in and Check-out time",
                 null);
         }
     }
 
-    private void validateCheckInNotNull(LocalTime checkInTime) {
+     void validateCheckInNotNull(LocalTime checkInTime) {
         if (checkInTime == null) {
             throw new MojException.BadRequest("Check-in time cannot be null",
                 null);
         }
     }
 
-    private void validateCheckOutNotNull(LocalTime checkOutTime) {
+     void validateCheckOutNotNull(LocalTime checkOutTime) {
         if (checkOutTime == null) {
             throw new MojException.BadRequest("Check-out time cannot be null",
                 null);
