@@ -14,8 +14,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
@@ -27,11 +30,14 @@ import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService
 import uk.gov.hmcts.juror.api.utils.CustomArgumentResolver;
 import uk.gov.hmcts.juror.api.utils.CustomArgumentResolverBureau;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.time.LocalDate.now;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.LOCAL_DATE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -68,6 +74,32 @@ class JurorManagementControllerTest {
             .standaloneSetup(new JurorManagementController(jurorAppearanceService))
             .setCustomArgumentResolvers(new CustomArgumentResolver())
             .build();
+    }
+
+    @Test
+    void addAttendanceDayHappyPath() throws Exception {
+        BureauJWTPayload payload = TestUtils.createJwt("415", "COURT_USER");
+        AddAttendanceDayDto request = buildAddAttendanceDayDto();
+
+
+        mockMvc.perform(post("/api/v1/moj/juror-management/add-attendance-day")
+                .principal(mock(BureauJwtAuthentication.class))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(request)))
+            .andExpect(status().isCreated());
+
+        verify(jurorAppearanceService, times(1)).addAttendanceDay(payload, request);
+    }
+
+    AddAttendanceDayDto buildAddAttendanceDayDto () {
+        AddAttendanceDayDto dto = new AddAttendanceDayDto();
+        dto.setAttendanceDate(LocalDate.now());
+        dto.setJurorNumber("123456789");
+        dto.setPoolNumber("123456789");
+        dto.setLocationCode("415");
+        dto.setCheckInTime(LocalTime.of(9,30));
+        dto.setCheckOutTime(LocalTime.of(17,30));
+        return dto;
     }
 
     @Test
