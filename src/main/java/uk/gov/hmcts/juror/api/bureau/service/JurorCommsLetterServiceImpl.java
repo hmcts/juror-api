@@ -8,10 +8,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
-import uk.gov.hmcts.juror.api.moj.domain.*;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintDataNotifyComms;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintDataNotifyCommsRepository;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -26,7 +29,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
 
     private final JurorCommsNotificationService jurorCommsNotificationService;
     private final BulkPrintDataNotifyCommsRepository bulkPrintDataNotifyCommsRepository;
-    private final BulkPrintDataRepository bulkPrintDataRepository ;
+    private final BulkPrintDataRepository bulkPrintDataRepository;
     private final JurorPoolRepository jurorRepository;
 
     @Autowired
@@ -34,10 +37,9 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         final JurorCommsNotificationService jurorCommsNotificationService,
         final BulkPrintDataNotifyCommsRepository bulkPrintDataNotifyCommsRepository,
         final BulkPrintDataRepository bulkPrintDataRepository,
-        final JurorPoolRepository jurorRepository)
-        {
+        final JurorPoolRepository jurorRepository) {
         Assert.notNull(jurorCommsNotificationService, "JurorCommsNotificationService cannot be null.");
-        Assert.notNull(bulkPrintDataRepository,"BulkPrintDataRepository cannot be null.");
+        Assert.notNull(bulkPrintDataRepository, "BulkPrintDataRepository cannot be null.");
         Assert.notNull(bulkPrintDataNotifyCommsRepository, "BulkPrintDataNotifyCommsRepository cannot be null.");
         Assert.notNull(jurorRepository, "JurorRepository cannot be null.");
 
@@ -113,9 +115,8 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         log.info("Letter Comms Processing : Finished - {}", dateFormat.format(new Date()));
     }
 
-    /***
+    /**
      * Updates the digital_comms flag after comms has been sent to Notify.
-     * @param bulkPrintDataNotifyComms
      */
     private void updatePrintFiles(BulkPrintDataNotifyComms bulkPrintDataNotifyComms) {
 

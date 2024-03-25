@@ -20,7 +20,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.controller.request.AdditionalInformationDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
@@ -85,7 +85,7 @@ public class LetterControllerTest {
 
     @Test
     public void test_post_requestInformation_bureauUser_happyPath() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -113,7 +113,7 @@ public class LetterControllerTest {
 
     @Test
     public void test_post_requestInformation_courtUser() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -139,7 +139,7 @@ public class LetterControllerTest {
 
     @Test
     public void test_post_requestInformation_bureauUser_noJurorNumber() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -164,7 +164,7 @@ public class LetterControllerTest {
 
     @Test
     public void test_post_requestInformation_bureauUser_invalidJurorNumber_tooLong() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -190,7 +190,7 @@ public class LetterControllerTest {
 
     @Test
     public void test_post_requestInformation_bureauUser_invalidJurorNumber_tooShort() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -216,7 +216,7 @@ public class LetterControllerTest {
 
     @Test
     public void test_post_requestInformation_bureauUser_invalidJurorNumber_alphaNumeric() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -242,7 +242,7 @@ public class LetterControllerTest {
 
     @Test
     public void test_post_requestInformation_bureauUser_noReplyMethod() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -267,7 +267,7 @@ public class LetterControllerTest {
 
     @Test
     public void test_post_requestInformation_bureauUser_emptyMissingInfoList() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -290,7 +290,7 @@ public class LetterControllerTest {
 
     @Test
     public void testReissueLetterListInvalidRequestJurorNumberPoolNumber() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -312,7 +312,7 @@ public class LetterControllerTest {
 
     @Test
     public void testReissueLetterListInvalidRequestShowAllJurorNumber() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -334,7 +334,7 @@ public class LetterControllerTest {
 
     @Test
     public void testReissueLetterListInvalidRequestShowAllPoolNumber() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -356,7 +356,7 @@ public class LetterControllerTest {
 
     @Test
     public void testReissueLetterInvalidRequestJurorNumberPoolNumber() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -377,7 +377,7 @@ public class LetterControllerTest {
 
     @Test
     public void testDeleteLetterInvalidRequestEmpty() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -399,7 +399,7 @@ public class LetterControllerTest {
     @SneakyThrows
     @DisplayName("Invalid request - juror number and pool number")
     public void courtLetter_getEligibleList_invalidRequestJurorNumberPoolNumber() {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -423,7 +423,7 @@ public class LetterControllerTest {
     @SneakyThrows
     @DisplayName("Invalid request - juror name and pool number")
     public void courtLetter_getEligibleList_invalidRequestJurorNamePoolNumber() {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -447,7 +447,7 @@ public class LetterControllerTest {
     @SneakyThrows
     @DisplayName("Invalid request - juror postcode and pool number")
     public void courtLetter_getEligibleList_invalidRequestJurorPostcodePoolNumber() {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -471,7 +471,7 @@ public class LetterControllerTest {
     @SneakyThrows
     @DisplayName("Invalid request - include printed only")
     public void courtLetter_getEligibleList_invalidRequestIncludePrintedOnly() {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -494,7 +494,7 @@ public class LetterControllerTest {
     @SneakyThrows
     @DisplayName("Valid request")
     public void courtLetter_getEligibleList_validRequest() {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 

@@ -16,21 +16,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
 /**
- * Tests for {@link BureauJurorCJSRepository}.
+ * Tests for {@link BureauJurorCjsRepository}.
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BureauJurorCjsRepositoryTest extends AbstractIntegrationTest {
     @Autowired
-    private BureauJurorCJSRepository cjsRepository;
+    private BureauJurorCjsRepository cjsRepository;
 
-    private BureauJurorCJS bureauJurorCjs;
+    private BureauJurorCjs bureauJurorCjs;
 
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        bureauJurorCjs = new BureauJurorCJS();
+        bureauJurorCjs = new BureauJurorCjs();
         bureauJurorCjs.setJurorNumber("209092530");
         bureauJurorCjs.setEmployer("HMP");
         bureauJurorCjs.setDetails("Prison guard");
@@ -41,7 +41,7 @@ public class BureauJurorCjsRepositoryTest extends AbstractIntegrationTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/BureauJurorCJSRepository_findByCjsKey.sql")
     public void findByCjsKeyWithValidCjsCompositeKeyReturnsCorrectCjSEmploymentDetails() {
-        List<BureauJurorCJS> actualBureauJurorCjs = cjsRepository.findByJurorNumber(bureauJurorCjs.getJurorNumber());
+        List<BureauJurorCjs> actualBureauJurorCjs = cjsRepository.findByJurorNumber(bureauJurorCjs.getJurorNumber());
         assertThat(actualBureauJurorCjs).hasSize(1);
         assertThat(actualBureauJurorCjs).extracting("jurorNumber", "employer", "details")
             .contains(tuple(bureauJurorCjs.getJurorNumber(), bureauJurorCjs.getEmployer(),

@@ -18,7 +18,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.bureau.controller.request.BureauBacklogAllocateRequestDto;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -63,13 +63,13 @@ public class BureauBacklogAllocateControllerTest extends AbstractIntegrationTest
     @Sql("/db/BureauBacklogAllocateController_allocateRepliesPost.sql")
     public void backlogAllocateReplies_post_happyPath() throws Exception {
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ksalazar")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -96,13 +96,13 @@ public class BureauBacklogAllocateControllerTest extends AbstractIntegrationTest
     @Sql("/db/BureauBacklogAllocateController_allocateRepliesPost.sql")
     public void backlogAllocateReplies_post_errorPath_noRequestingUser() throws Exception {
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login(null)
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
             .build());
 
 
@@ -132,13 +132,13 @@ public class BureauBacklogAllocateControllerTest extends AbstractIntegrationTest
     @Sql("/db/BureauBacklogAllocateController_allocateRepliesPost.sql")
     public void backlogAllocateReplies_post_missingAllocations() throws Exception {
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ksalazar")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);

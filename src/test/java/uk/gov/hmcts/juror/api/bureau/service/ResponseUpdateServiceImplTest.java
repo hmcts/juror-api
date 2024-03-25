@@ -130,8 +130,8 @@ public class ResponseUpdateServiceImplTest {
 
         User staff = mock(User.class);
 
-        ResponseUpdateController.CJSEmploymentDetailsDto dto =
-            mock(ResponseUpdateController.CJSEmploymentDetailsDto.class);
+        ResponseUpdateController.CjsEmploymentDetailsDto dto =
+            mock(ResponseUpdateController.CjsEmploymentDetailsDto.class);
         given(dto.getVersion()).willReturn(version);
         given(dto.getPoliceForceDetails()).willReturn(null); // we want the entry to be deleted
         given(dto.getPrisonServiceDetails()).willReturn("Prison details");

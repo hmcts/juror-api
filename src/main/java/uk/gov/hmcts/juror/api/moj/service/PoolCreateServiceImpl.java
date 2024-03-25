@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolAddCitizenRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
@@ -204,7 +204,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
      */
     @Transactional
     @Override
-    public void lockVotersAndCreatePool(BureauJWTPayload payload, PoolCreateRequestDto poolCreateRequestDto) {
+    public void lockVotersAndCreatePool(BureauJwtPayload payload, PoolCreateRequestDto poolCreateRequestDto) {
         log.info("Processing pool creation for pool number {}", poolCreateRequestDto.getPoolNumber());
 
         validateCreatePoolRequest(poolCreateRequestDto);
@@ -251,7 +251,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
      * - Update the Bulk Print Data table for summons letters for selected voters
      */
     @Override
-    public void lockVotersAndSummonAdditionalCitizens(BureauJWTPayload payload,
+    public void lockVotersAndSummonAdditionalCitizens(BureauJwtPayload payload,
                                                       PoolAdditionalSummonsDto poolAdditionalSummonsDto) {
 
         log.info("Processing additional summons for pool number {}", poolAdditionalSummonsDto.getPoolNumber());
@@ -273,7 +273,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
     @Transactional
     @Override
-    public void createPool(BureauJWTPayload payload, PoolCreateRequestDto poolCreateRequestDto) {
+    public void createPool(BureauJwtPayload payload, PoolCreateRequestDto poolCreateRequestDto) {
 
         // Get a list of Pool members from voters table
         List<JurorPool> jurorPools = getJurorPools(payload.getLogin(), payload.getOwner(), poolCreateRequestDto);
@@ -295,7 +295,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     }
 
     @Transactional
-    public void summonAdditionalCitizens(BureauJWTPayload payload, PoolAdditionalSummonsDto poolAdditionalSummonsDto) {
+    public void summonAdditionalCitizens(BureauJwtPayload payload, PoolAdditionalSummonsDto poolAdditionalSummonsDto) {
 
         //populate the PoolCreateRequestDto object from poolAdditionalSummonsDto
         PoolCreateRequestDto poolCreateRequestDto = setupPoolRequestDto(poolAdditionalSummonsDto);
@@ -546,7 +546,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     }
 
     @Override
-    public PaginatedList<FilterPoolMember> getJurorPoolsList(BureauJWTPayload payload,
+    public PaginatedList<FilterPoolMember> getJurorPoolsList(BureauJwtPayload payload,
                                                              PoolMemberFilterRequestQuery search) {
         return PaginationUtil.toPaginatedList(
             jurorPoolRepository.fetchFilteredPoolMembers(search, payload.getOwner()),
@@ -714,7 +714,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
     @Transactional
     @Override
-    public void convertNilPool(PoolRequestDto poolRequestDto, BureauJWTPayload payload) {
+    public void convertNilPool(PoolRequestDto poolRequestDto, BureauJwtPayload payload) {
 
         String poolNumber = poolRequestDto.getPoolNumber();
         log.debug("Converting Nil Pool record {}", poolNumber);

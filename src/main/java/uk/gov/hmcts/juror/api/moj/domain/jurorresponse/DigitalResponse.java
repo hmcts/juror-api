@@ -109,7 +109,7 @@ public class DigitalResponse extends AbstractJurorResponse {
 
 
     /**
-     * @implNote Holder for switching fields during a merge operation.
+     * Holder for switching fields during a merge operation.
      */
     @Transient
     private String workPhone;

@@ -18,7 +18,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -95,22 +95,22 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     protected HttpHeaders initialiseHeaders(String userLevel, Boolean passwordWarning,
                                             String loginUser, int daysToExpire, String owner) {
 
-        BureauJWTPayload payload = buildJwtPayload(userLevel, passwordWarning, loginUser, daysToExpire, owner);
+        BureauJwtPayload payload = buildJwtPayload(userLevel, passwordWarning, loginUser, daysToExpire, owner);
         return buildHttpHeaders(payload);
     }
 
     protected HttpHeaders initialiseHeaders(String userLevel, Boolean passwordWarning,
                                             String loginUser, int daysToExpire, String owner,
-                                            BureauJWTPayload.Staff staff) {
+                                            BureauJwtPayload.Staff staff) {
 
-        BureauJWTPayload payload = buildJwtPayload(userLevel, passwordWarning, loginUser, daysToExpire, owner);
+        BureauJwtPayload payload = buildJwtPayload(userLevel, passwordWarning, loginUser, daysToExpire, owner);
         payload.setStaff(staff);
         return buildHttpHeaders(payload);
     }
 
-    private BureauJWTPayload buildJwtPayload(String userLevel, Boolean passwordWarning, String loginUser,
+    private BureauJwtPayload buildJwtPayload(String userLevel, Boolean passwordWarning, String loginUser,
                                              int daysToExpire, String owner) {
-        return BureauJWTPayload.builder()
+        return BureauJwtPayload.builder()
             .userLevel(userLevel)
             .passwordWarning(passwordWarning)
             .login(loginUser)
@@ -119,7 +119,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
             .build();
     }
 
-    private HttpHeaders buildHttpHeaders(BureauJWTPayload payload) {
+    private HttpHeaders buildHttpHeaders(BureauJwtPayload payload) {
         final String bureauJwt = TestUtil.mintBureauJwt(payload, SignatureAlgorithm.HS256, bureauSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
 
@@ -130,7 +130,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
         return httpHeaders;
     }
 
-    protected String mintBureauJwt(final BureauJWTPayload payload) {
+    protected String mintBureauJwt(final BureauJwtPayload payload) {
         return TestUtil.mintBureauJwt(payload, SignatureAlgorithm.HS256, bureauSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }
@@ -150,10 +150,10 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
 
     protected String createBureauJwt(String login, String owner, UserType userType, Collection<Role> roles,
                                      String... courts) {
-        return mintBureauJwt(BureauJWTPayload.builder()
+        return mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login(login)
-            .staff(BureauJWTPayload.Staff.builder()
+            .staff(BureauJwtPayload.Staff.builder()
                 .name("Test User")
                 .active(1)
                 .rank(1)
@@ -167,10 +167,10 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     }
 
     protected String createBureauJwt(String login, String owner, int rank) {
-        return mintBureauJwt(BureauJWTPayload.builder()
+        return mintBureauJwt(BureauJwtPayload.builder()
             .userLevel(String.valueOf(rank))
             .login(login)
-            .staff(BureauJWTPayload.Staff.builder()
+            .staff(BureauJwtPayload.Staff.builder()
                 .name("Test User")
                 .active(1)
                 .rank(rank)

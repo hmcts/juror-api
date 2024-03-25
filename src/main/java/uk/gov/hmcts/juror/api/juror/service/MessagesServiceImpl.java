@@ -39,14 +39,14 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class MessagesServiceImpl implements BureauProcessService {
-    private final static String MESSAGE_PLACEHOLDER_MESSAGE = "MESSAGETEXT";
-    private final static String MESSAGE_PLACEHOLDER_JUROR = "JURORNUMBER";
-    private final static String MESSAGE_READ = "SN";
-    private final static String MESSAGE_READ_APP_ERROR = "NS";
-    private final static String MESSAGE_NOT_READ = "NR";
-    private final static int CHECK_NUM = 1;
+    private static final String MESSAGE_PLACEHOLDER_MESSAGE = "MESSAGETEXT";
+    private static final String MESSAGE_PLACEHOLDER_JUROR = "JURORNUMBER";
+    private static final String MESSAGE_READ = "SN";
+    private static final String MESSAGE_READ_APP_ERROR = "NS";
+    private static final String MESSAGE_NOT_READ = "NR";
+    private static final int CHECK_NUM = 1;
 
-    private final static String LOG_ERROR_MESSAGE_TEMPLATE_ID = " Missing templateId. Cannot send notify "
+    private static final String LOG_ERROR_MESSAGE_TEMPLATE_ID = " Missing templateId. Cannot send notify "
         + "communication:";
     private final AppSettingService appSetting;
     private final MessageRepository messageRepository;
@@ -122,15 +122,15 @@ public class MessagesServiceImpl implements BureauProcessService {
             log.info("messagesDetail  PART_NO : {}", messagesDetail.getJurorNumber());
 
             try {
-                String welshSubjectText = messagesDetail.getSubject();
-                String regionIdSms = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
-                Integer legacyTemplateIdSms = messagesDetail.getMessageId();
-                String regionIdEmail = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
-                Integer legacyTemplateIdEmail = messagesDetail.getMessageId();
-                String regionIdSmsWelsh = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
-                Integer legacyTemplateIdSmsWelsh = messagesDetail.getMessageId();
-                String regionIdEmailWelsh = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
-                Integer legacyTemplateIdEmailWelsh = messagesDetail.getMessageId();
+                final String welshSubjectText = messagesDetail.getSubject();
+                final String regionIdSms = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
+                final Integer legacyTemplateIdSms = messagesDetail.getMessageId();
+                final String regionIdEmail = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
+                final Integer legacyTemplateIdEmail = messagesDetail.getMessageId();
+                final String regionIdSmsWelsh = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
+                final Integer legacyTemplateIdSmsWelsh = messagesDetail.getMessageId();
+                final String regionIdEmailWelsh = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
+                final Integer legacyTemplateIdEmailWelsh = messagesDetail.getMessageId();
 
 
                 //Queries to filter on Region_id ,Legacy_Template_id,Message_Format and Welsh_Language
@@ -175,17 +175,17 @@ public class MessagesServiceImpl implements BureauProcessService {
                 );
 
 
-                String jurorNumber = messagesDetail.getJurorNumber();
-                String phoneNumber = messagesDetail.getPhone();
-                String email = messagesDetail.getEmail();
-                String textMessage = messagesDetail.getMessageText();
-                String reference = (messagesDetail.getJurorNumber());
+                final String jurorNumber = messagesDetail.getJurorNumber();
+                final String phoneNumber = messagesDetail.getPhone();
+                final String email = messagesDetail.getEmail();
+                final String textMessage = messagesDetail.getMessageText();
+                final String reference = (messagesDetail.getJurorNumber());
 
 
                 //     String apiKey = (messagesDetail != null ? messagesDetail.getLocationCode().getCourtRegion()
                 //     .getNotifyAccountKey() : null);
-                String regionId = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
-                String regionApikey = myRegionMap.get(regionId);
+                final String regionId = messagesDetail.getLocationCode().getCourtRegion().getRegionId();
+                final String regionApikey = myRegionMap.get(regionId);
                 log.debug("regionApikey {} ", regionApikey);
 
 
@@ -210,7 +210,8 @@ public class MessagesServiceImpl implements BureauProcessService {
                     if (Objects.equals(welshTempComparisonText, welshSubjectText)) {
 
                         NotificationClient clientSendSms = new NotificationClient(regionApikey, gotProxy);
-                        for (RegionNotifyTemplateMod regionNotifyTemplateSmsListWelsh : regionNotifyTemplateListSmsWelsh) {
+                        for (RegionNotifyTemplateMod regionNotifyTemplateSmsListWelsh :
+                            regionNotifyTemplateListSmsWelsh) {
                             String smsTemplateIdWelsh = (regionNotifyTemplateSmsListWelsh != null
                                 ? regionNotifyTemplateSmsListWelsh.getNotifyTemplateId()
                                 : null);
@@ -354,10 +355,10 @@ public class MessagesServiceImpl implements BureauProcessService {
                                List<RegionNotifyTemplateMod> regionNotifyTemplateListSms,
                                List<RegionNotifyTemplateMod> regionNotifyTemplateListEmailWelsh,
                                List<RegionNotifyTemplateMod> regionNotifyTemplateListSmsWelsh) {
-        int missingEmailTemplateCheck = regionNotifyTemplateListEmail.size();
-        int missingSmsTemplateCheck = regionNotifyTemplateListSms.size();
-        int missingWelshEmailTemplateCheck = regionNotifyTemplateListEmailWelsh.size();
-        int missingWelshSmsTemplateCheck = regionNotifyTemplateListSmsWelsh.size();
+        final int missingEmailTemplateCheck = regionNotifyTemplateListEmail.size();
+        final int missingSmsTemplateCheck = regionNotifyTemplateListSms.size();
+        final int missingWelshEmailTemplateCheck = regionNotifyTemplateListEmailWelsh.size();
+        final int missingWelshSmsTemplateCheck = regionNotifyTemplateListSmsWelsh.size();
 
         if (missingEmailTemplateCheck < CHECK_NUM) {
             messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);

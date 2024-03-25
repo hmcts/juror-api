@@ -25,7 +25,7 @@ import uk.gov.hmcts.juror.api.bureau.domain.PartHist;
 import uk.gov.hmcts.juror.api.bureau.domain.THistoryCode;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseDeferralServiceImpl;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.net.URI;
 import java.time.DayOfWeek;
@@ -86,7 +86,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/juror/defer/" + jurorNumber);
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(staffLogin)
@@ -295,7 +295,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/juror/defer/" + jurorNumber);
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(staffLogin)
@@ -395,7 +395,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/juror/defer/" + jurorNumber);
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(staffLogin)
@@ -488,7 +488,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/juror/defer/" + jurorNumber);
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(staffLogin)
@@ -672,7 +672,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/juror/defer/" + jurorNumber);
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(staffLogin)

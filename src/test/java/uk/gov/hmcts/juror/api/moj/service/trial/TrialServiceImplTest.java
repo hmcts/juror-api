@@ -12,7 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
@@ -92,7 +92,7 @@ class TrialServiceImplTest {
     @InjectMocks
     TrialServiceImpl trialService;
 
-    BureauJWTPayload payload = createJwtPayload("415", "COURT_USER");
+    BureauJwtPayload payload = createJwtPayload("415", "COURT_USER");
 
     @Test
     void testCreateTrial() {
@@ -502,8 +502,8 @@ class TrialServiceImplTest {
         return courts;
     }
 
-    private BureauJWTPayload createJwtPayload(String owner, String userType) {
-        BureauJWTPayload bureauJwtPayload = new BureauJWTPayload();
+    private BureauJwtPayload createJwtPayload(String owner, String userType) {
+        BureauJwtPayload bureauJwtPayload = new BureauJwtPayload();
 
         List<String> courtList = createCourtList();
         bureauJwtPayload.setStaff(staffBuilder("Ms Bean", 1, courtList));

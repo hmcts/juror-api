@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
@@ -746,13 +746,13 @@ public class TrialControllerITest extends AbstractIntegrationTest {
     }
 
     private void initialiseHeader(List<String> courts, String owner, String loginUserType) {
-        BureauJWTPayload.Staff staff = createStaff(courts, "MsCourt");
+        BureauJwtPayload.Staff staff = createStaff(courts, "MsCourt");
 
         httpHeaders = initialiseHeaders("99", false, loginUserType, 89,
             owner, staff);
     }
 
-    private BureauJWTPayload.Staff createStaff(List<String> courts, String staffName) {
+    private BureauJwtPayload.Staff createStaff(List<String> courts, String staffName) {
         return staffBuilder(staffName, 1, courts);
     }
 

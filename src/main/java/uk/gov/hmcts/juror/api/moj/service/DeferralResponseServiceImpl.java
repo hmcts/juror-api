@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.DeferralDecision;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -58,7 +58,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
 
     @Override
     @Transactional
-    public void respondToDeferralRequest(BureauJWTPayload payload, DeferralRequestDto deferralRequestDto) {
+    public void respondToDeferralRequest(BureauJwtPayload payload, DeferralRequestDto deferralRequestDto) {
 
         final String jurorNumber = deferralRequestDto.getJurorNumber();
         final String owner = payload.getOwner();
@@ -90,7 +90,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
     }
 
     @SuppressWarnings("java:S125")
-    private void declineDeferralForJurorPool(BureauJWTPayload payload, DeferralRequestDto deferralRequestDto,
+    private void declineDeferralForJurorPool(BureauJwtPayload payload, DeferralRequestDto deferralRequestDto,
                                              JurorPool jurorPool) {
 
         String username = payload.getLogin();
@@ -140,7 +140,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         }
     }
 
-    private void grantDeferralForJurorPool(BureauJWTPayload payload, DeferralRequestDto deferralRequestDto,
+    private void grantDeferralForJurorPool(BureauJwtPayload payload, DeferralRequestDto deferralRequestDto,
                                            JurorPool jurorPool) {
 
         final String username = payload.getLogin();

@@ -8,8 +8,8 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.SneakyThrows;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
-import uk.gov.hmcts.juror.api.config.public_.PublicJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -60,7 +60,7 @@ public class TestUtil {
      * @param expires     Expiry date
      * @return Json Web Token
      */
-    public static String mintPublicJwt(final PublicJWTPayload dataPayload,
+    public static String mintPublicJwt(final PublicJwtPayload dataPayload,
                                        final SignatureAlgorithm algorithm, final String base64Key,
                                        final Instant expires) {
 
@@ -84,7 +84,7 @@ public class TestUtil {
      * @param expires   Expiry date
      * @return Json Web Token
      */
-    public static String mintBureauJwt(final BureauJWTPayload payload,
+    public static String mintBureauJwt(final BureauJwtPayload payload,
                                        final SignatureAlgorithm algorithm, final String base64Key,
                                        final Instant expires) {
 

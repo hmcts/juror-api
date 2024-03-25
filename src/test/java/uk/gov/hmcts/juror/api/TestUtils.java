@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 
 import java.time.LocalDate;
@@ -37,12 +37,12 @@ public final class TestUtils {
         return stringBuilder.toString();
     }
 
-    public static BureauJWTPayload createJwt(String owner, String username) {
+    public static BureauJwtPayload createJwt(String owner, String username) {
         return createJwt(owner, username, "99");
     }
 
-    public static BureauJWTPayload createJwt(String owner, String username, String userLevel) {
-        return BureauJWTPayload.builder()
+    public static BureauJwtPayload createJwt(String owner, String username, String userLevel) {
+        return BureauJwtPayload.builder()
             .owner(owner)
             .login(username)
             .staff(staffBuilder(username, Integer.valueOf(userLevel), List.of("415", "400")))
@@ -52,8 +52,8 @@ public final class TestUtils {
             .build();
     }
 
-    public static BureauJWTPayload createJwt(String owner, String username, String userLevel, List<String> courts) {
-        return BureauJWTPayload.builder()
+    public static BureauJwtPayload createJwt(String owner, String username, String userLevel, List<String> courts) {
+        return BureauJwtPayload.builder()
             .owner(owner)
             .login(username)
             .staff(staffBuilder(username, Integer.valueOf(userLevel), courts))
@@ -64,8 +64,8 @@ public final class TestUtils {
     }
 
     @SuppressWarnings("PMD.LawOfDemeter")
-    public static BureauJWTPayload.Staff staffBuilder(String staffName, Integer rank, List<String> courts) {
-        return BureauJWTPayload.Staff.builder()
+    public static BureauJwtPayload.Staff staffBuilder(String staffName, Integer rank, List<String> courts) {
+        return BureauJwtPayload.Staff.builder()
             .name(staffName)
             .rank(rank)
             .courts(courts)
@@ -112,7 +112,7 @@ public final class TestUtils {
      * @param level    the level of the current user
      */
     public static void setupAuthentication(String owner, String username, String level) {
-        BureauJWTPayload bureauJwtPayload = createJwt(owner, username, level);
+        BureauJwtPayload bureauJwtPayload = createJwt(owner, username, level);
         BureauJwtAuthentication bureauJwtAuthentication = mock(BureauJwtAuthentication.class);
         when(bureauJwtAuthentication.getPrincipal()).thenReturn(bureauJwtPayload);
         SecurityContextHolder.getContext().setAuthentication(bureauJwtAuthentication);

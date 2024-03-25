@@ -26,9 +26,8 @@ public class RegionNotifyTemplateQueriesMod {
     /**
      * Matches RegionalNotifyTemplates by REGION_ID AND LEGACY_TEMPLATE_ID where MESSAGE_FORMAT is equal to 'SMS' .
      *
-     * @param legacyTemplateIdSms
-     * @param regionIdSms
-     * @return
+     
+     
      */
 
     public static BooleanExpression regionNotifyTemplateByIdAndSms(final String regionIdSms,
@@ -41,9 +40,8 @@ public class RegionNotifyTemplateQueriesMod {
     /**
      * Matches RegionalNotifyTemplates by REGION_ID AND LEGACY_TEMPLATE_ID where MESSAGE_FORMAT is equal to 'EMAIL' .
      *
-     * @param legacyTemplateIdEmail
-     * @param regionIdEmail
-     * @return
+     
+     
      */
 
     public static BooleanExpression regionNotifyTemplateByIdAndEmail(final String regionIdEmail,
@@ -57,9 +55,8 @@ public class RegionNotifyTemplateQueriesMod {
      * Matches RegionalNotifyTemplates by REGION_ID AND LEGACY_TEMPLATE_ID where MESSAGE_FORMAT is equal to 'SMS' and
      * WELSH_LANGUAGE is equal to 'Y' .
      *
-     * @param legacyTemplateIdSmsWelsh
-     * @param regionIdSmsWelsh
-     * @return
+     
+     
      */
     public static BooleanExpression regionNotifyTemplateByIdAndSmsWelsh(final String regionIdSmsWelsh,
                                                                         Integer legacyTemplateIdSmsWelsh) {
@@ -73,9 +70,8 @@ public class RegionNotifyTemplateQueriesMod {
      * Matches RegionalNotifyTemplates by REGION_ID AND LEGACY_TEMPLATE_ID where MESSAGE_FORMAT is equal to 'EMAIL'
      * and WELSH_LANGUAGE is equal to 'Y' .
      *
-     * @param legacyTemplateIdEmailWelsh
-     * @param regionIdEmailWelsh
-     * @return
+     
+     
      */
     public static BooleanExpression regionNotifyTemplateByIdAndEmailWelsh(final String regionIdEmailWelsh,
                                                                           Integer legacyTemplateIdEmailWelsh) {
@@ -90,8 +86,6 @@ public class RegionNotifyTemplateQueriesMod {
     /**
      * Matches RegionalNotifyTemplates by REGION_ID where TRIGGERED_TEMPLATE_ID = EXCUSAL and MESSAGE_FORMAT = 'SMS' .
      *
-     * @param regionIdExcusalSms
-     * @return
      */
     public static BooleanExpression regionNotifyTriggeredExcusalTemplateSmsId(final String regionIdExcusalSms) {
         return regionNotifyTemplateDetail.regionId.eq(regionIdExcusalSms).and(
@@ -105,8 +99,6 @@ public class RegionNotifyTemplateQueriesMod {
     /**
      * Matches RegionalNotifyTemplates by REGION_ID where TRIGGERED_TEMPLATE_ID = EXCUSAL and MESSAGE_FORMAT = 'EMAIL' .
      *
-     * @param regionIdExcusalEmail
-     * @return
      */
     public static BooleanExpression regionNotifyTriggeredExcusalTemplateEmailId(final String regionIdExcusalEmail) {
         return regionNotifyTemplateDetail.regionId.eq(regionIdExcusalEmail).and(
@@ -121,8 +113,6 @@ public class RegionNotifyTemplateQueriesMod {
      * Matches RegionalNotifyTemplates by REGION_ID where TRIGGERED_TEMPLATE_ID = SVC_COMPLETE and MESSAGE_FORMAT =
      * 'SMS' .
      *
-     * @param regionIdCompletedSms
-     * @return
      */
     public static BooleanExpression regionNotifyTriggeredCompletedTemplateSmsId(final String regionIdCompletedSms) {
         return regionNotifyTemplateDetail.regionId.eq(regionIdCompletedSms).and(
@@ -136,8 +126,6 @@ public class RegionNotifyTemplateQueriesMod {
     /**
      * Matches RegionalNotifyTemplates by REGION_ID where TRIGGERED_TEMPLATE_ID = EXCUSAL and MESSAGE_FORMAT = 'EMAIL' .
      *
-     * @param regionIdCompletedEmail
-     * @return
      */
     public static BooleanExpression regionNotifyTriggeredCompletedTemplateEmailId(final String regionIdCompletedEmail) {
         return regionNotifyTemplateDetail.regionId.eq(regionIdCompletedEmail).and(
@@ -153,8 +141,6 @@ public class RegionNotifyTemplateQueriesMod {
      * 'EMAIL' .
      * and Welsh = Y.
      *
-     * @param welshRegionIdCompletedEmail
-     * @return
      */
     public static BooleanExpression welshRegionNotifyTriggeredCompletedTemplateEmailId(
         final String welshRegionIdCompletedEmail, String isCompletedEmailWelsh) {
@@ -171,8 +157,6 @@ public class RegionNotifyTemplateQueriesMod {
      * 'SMS' .
      * and welsh = Y.
      *
-     * @param welshRegionIdCompletedSms
-     * @return
      */
     public static BooleanExpression welshRegionNotifyTriggeredCompletedTemplateSmsId(
         final String welshRegionIdCompletedSms, String isCompletedSmsWelsh) {
@@ -187,8 +171,6 @@ public class RegionNotifyTemplateQueriesMod {
      * Matches RegionalNotifyTemplates by REGION_ID where TRIGGERED_TEMPLATE_ID = EXCUSAL and MESSAGE_FORMAT = 'EMAIL'
      * and welsh = Y .
      *
-     * @param welshRegionIdExcusalEmail
-     * @return
      */
     public static BooleanExpression welshRegionNotifyTriggeredExcusalTemplateEmailId(
         final String welshRegionIdExcusalEmail, String isExcusalEmailWelsh) {
@@ -202,8 +184,6 @@ public class RegionNotifyTemplateQueriesMod {
      * Matches RegionalNotifyTemplates by REGION_ID where TRIGGERED_TEMPLATE_ID = EXCUSAL and MESSAGE_FORMAT = 'SMS'
      * and welsh = Y .
      *
-     * @param welshRegionIdExcusalSms
-     * @return
      */
     public static BooleanExpression welshRegionNotifyTriggeredExcusalTemplateSmsId(final String welshRegionIdExcusalSms,
                                                                                    String isExcusalSmsWelsh) {

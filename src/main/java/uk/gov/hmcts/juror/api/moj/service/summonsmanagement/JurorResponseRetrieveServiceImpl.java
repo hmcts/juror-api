@@ -6,14 +6,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.JurorResponseRetrieveRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.JurorResponseRetrieveResponseDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,7 @@ public class JurorResponseRetrieveServiceImpl implements JurorResponseRetrieveSe
     @Override
     @Transactional(readOnly = true)
     public JurorResponseRetrieveResponseDto retrieveJurorResponse(JurorResponseRetrieveRequestDto request,
-                                                                  BureauJWTPayload payload) {
+                                                                  BureauJwtPayload payload) {
         boolean isBureauUser = payload.getOwner().equalsIgnoreCase(JUROR_OWNER);
         boolean isTeamLeader = payload.getStaff().getRank().equals(TEAM_LEADER_LEVEL);
 

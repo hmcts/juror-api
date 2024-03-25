@@ -19,7 +19,7 @@ import org.springframework.security.web.authentication.preauth.AbstractPreAuthen
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import uk.gov.hmcts.juror.api.config.bureau.BureauPreAuthenticationTokenFilter;
 import uk.gov.hmcts.juror.api.config.hmac.HmacPreAuthenticationTokenFilter;
-import uk.gov.hmcts.juror.api.config.public_.PublicPreAuthenticationTokenFilter;
+import uk.gov.hmcts.juror.api.config.public1.PublicPreAuthenticationTokenFilter;
 
 @Configuration
 @AllArgsConstructor(onConstructor = @__(@Autowired))

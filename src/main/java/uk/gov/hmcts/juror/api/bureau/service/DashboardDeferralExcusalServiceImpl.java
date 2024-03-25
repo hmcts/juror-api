@@ -30,14 +30,14 @@ public class DashboardDeferralExcusalServiceImpl implements DashboardDeferralExc
     public DashboardDeferralExcusalResponseDto.DeferralExcusalValues getDeferralExcusalValues(
         DashboardDeferralExcusalRequestDto requestDto) {
         log.info("Called Service : DashboardDeferralExcusalServiceImpl.getDeferralExcusalValues() ");
-        String startYearWeek = requestDto.getStartYearWeek();
-        String endYearWeek = requestDto.getEndYearWeek();
-        String deferralSelection = requestDto.getDeferral();
-        String excusalSelection = requestDto.getExcusal();
-        String bureauSelection = requestDto.getBureau();
-        String courtSelection = requestDto.getCourt();
-        String excusalBureauSelection = requestDto.getBureau();
-        String excusalCourtSelection = requestDto.getCourt();
+        final String startYearWeek = requestDto.getStartYearWeek();
+        final String endYearWeek = requestDto.getEndYearWeek();
+        final String deferralSelection = requestDto.getDeferral();
+        final String excusalSelection = requestDto.getExcusal();
+        final String bureauSelection = requestDto.getBureau();
+        final String courtSelection = requestDto.getCourt();
+        final String excusalBureauSelection = requestDto.getBureau();
+        final String excusalCourtSelection = requestDto.getCourt();
 
 
         log.info("Start Year Week  {}: ", startYearWeek);
@@ -53,10 +53,7 @@ public class DashboardDeferralExcusalServiceImpl implements DashboardDeferralExc
 
 
         if (deferralSelection.equals("Y")) {
-
-            /**
-             * Gets all records from juror.digital.STATS_DEFERRALS
-             */
+            //Gets all records from juror.digital.STATS_DEFERRALS
             final List<StatsDeferrals> statsDeferrals = new ArrayList<>();
 
             if ("Y".equals(bureauSelection) & courtSelection.equals("Y")) {
@@ -65,20 +62,15 @@ public class DashboardDeferralExcusalServiceImpl implements DashboardDeferralExc
                     endYearWeek
                 ));
                 deferralExcusalValues.setDeferralStats(statsDeferrals);
-                /**
-                 * Gets all COURT records from juror.digital.STATS_DEFERRALS
-                 */
+                //Gets all COURT records from juror.digital.STATS_DEFERRALS
             } else if (courtSelection.equals("Y")) {
                 statsDeferrals.addAll(dashboardDeferralExcusalDataService.getStatsCourtDeferrals(
                     startYearWeek,
                     endYearWeek
                 ));
                 deferralExcusalValues.setDeferralStats(statsDeferrals);
-                /**
-                 * Gets all BUREAU records from juror.digital.STATS_DEFERRALS
-                 */
-            } else if
-            (bureauSelection.equals("Y")) {
+                //Gets all BUREAU records from juror.digital.STATS_DEFERRALS
+            } else if (bureauSelection.equals("Y")) {
                 statsDeferrals.addAll(dashboardDeferralExcusalDataService.getStatsBureauDeferrals(
                     startYearWeek,
                     endYearWeek
@@ -89,30 +81,21 @@ public class DashboardDeferralExcusalServiceImpl implements DashboardDeferralExc
 
 
         if (excusalSelection.equals("Y")) {
-            /**
-             * Gets all records from juror.digital.STATS_EXCUSALS
-             */
+            //Gets all records from juror.digital.STATS_EXCUSALS
             final List<StatsExcusals> statsExcusals = new ArrayList<>();
-
 
             if (excusalBureauSelection.equals("Y") & excusalCourtSelection.equals("Y")) {
                 statsExcusals.addAll(dashboardDeferralExcusalDataService.getStatsExcusals(startYearWeek, endYearWeek));
                 deferralExcusalValues.setExcusalStats(statsExcusals);
-                /**
-                 * Gets all COURT records from juror.digital.STATS_EXCUSALS
-                 */
-            } else if
-            (courtSelection.equals("Y")) {
+                //Gets all COURT records from juror.digital.STATS_EXCUSALS
+            } else if (courtSelection.equals("Y")) {
                 statsExcusals.addAll(dashboardDeferralExcusalDataService.getStatsCourtExcusals(
                     startYearWeek,
                     endYearWeek
                 ));
                 deferralExcusalValues.setExcusalStats(statsExcusals);
-                /**
-                 * Gets all BUREAU records from juror.digital.STATS_EXCUSALS
-                 */
-            } else if
-            (bureauSelection.equals("Y")) {
+                //Gets all BUREAU records from juror.digital.STATS_EXCUSALS
+            } else if (bureauSelection.equals("Y")) {
                 statsExcusals.addAll(dashboardDeferralExcusalDataService.getStatsBureauExcusals(
                     startYearWeek,
                     endYearWeek

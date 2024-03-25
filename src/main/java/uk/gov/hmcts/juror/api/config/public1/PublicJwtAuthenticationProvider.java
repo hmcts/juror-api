@@ -1,4 +1,4 @@
-package uk.gov.hmcts.juror.api.config.public_;
+package uk.gov.hmcts.juror.api.config.public1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
@@ -45,7 +45,7 @@ public class PublicJwtAuthenticationProvider implements AuthenticationProvider {
 
                 ObjectMapper mapper = new ObjectMapper();
                 Object data = jwt.get("data");
-                final PublicJWTPayload payload = mapper.convertValue(data, PublicJWTPayload.class);
+                final PublicJwtPayload payload = mapper.convertValue(data, PublicJwtPayload.class);
                 final String[] roles = payload.getRoles();
                 final List<GrantedAuthority> grantedAuthorities = AuthorityUtils.commaSeparatedStringToAuthorityList(
                     String.join(",", roles));

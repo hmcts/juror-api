@@ -26,4 +26,8 @@ public class JurorDigitalApplication {
     public static void main(String[] args) {
         SpringApplication.run(JurorDigitalApplication.class, args);
     }
+
+    private JurorDigitalApplication() {
+
+    }
 }

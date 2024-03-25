@@ -12,7 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JudgeListDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.trial.JudgeService;
@@ -36,7 +36,7 @@ public class JudgeController {
     @GetMapping("/list")
     @Operation(summary = "Retrieves a list of judges for court location(s)")
     public ResponseEntity<JudgeListDto> getJudgesForCourtLocations(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload) {
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
         if (BUREAU_USER.equals(payload.getOwner())) {
             throw new MojException.Forbidden("Bureau users are not allowed to use this service", null);
         }

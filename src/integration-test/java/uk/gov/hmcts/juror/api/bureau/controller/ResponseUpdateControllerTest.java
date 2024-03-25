@@ -28,7 +28,7 @@ import uk.gov.hmcts.juror.api.bureau.service.ResponseNotesService;
 import uk.gov.hmcts.juror.api.bureau.service.ResponsePhoneLogService;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseUpdateServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseUpdateServiceImpl.CjsEmployment;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 
 import java.net.URI;
@@ -66,7 +66,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void jurorNoteByJurorNumber_happy() throws Exception {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner("400").build()));
 
         ResponseEntity<ResponseUpdateController.JurorNoteDto> responseEntity = template.exchange(
@@ -87,7 +87,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void jurorNoteByJurorNumber_unhappyNonExistentJuror() throws Exception {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner("400").build()));
 
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(
@@ -107,8 +107,8 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
-                .owner("400").staff(BureauJWTPayload.Staff.builder().active(1).rank(1).name(loginName)
+            BureauJwtPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
+                .owner("400").staff(BureauJwtPayload.Staff.builder().active(1).rank(1).name(loginName)
                     .courts(Collections.singletonList("123")).build()).build());
 
         // assert db state before merge.
@@ -161,9 +161,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner("400").staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(loginName + " Mc" + loginName)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(loginName + " Mc" + loginName)
                         .courts(Collections.singletonList("123")).build()).build());
 
         // assert db state before merge.
@@ -207,9 +207,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner("400").staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(loginName + " Mc" + loginName)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(loginName + " Mc" + loginName)
                         .courts(Collections.singletonList("123")).build()).build());
 
         // assert db state before merge.
@@ -254,8 +254,8 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String jurorNumber = "644892530";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
-                .owner("400").staff(BureauJWTPayload.Staff.builder().active(1).rank(1).name(loginName)
+            BureauJwtPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
+                .owner("400").staff(BureauJwtPayload.Staff.builder().active(1).rank(1).name(loginName)
                     .courts(Collections.singletonList("123")).build()).build());
 
         // assert db state before merge.
@@ -355,9 +355,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -535,9 +535,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -674,7 +674,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt =
-            mintBureauJwt(BureauJWTPayload.builder().userLevel("1").login(loginName).daysToExpire(89).build());
+            mintBureauJwt(BureauJwtPayload.builder().userLevel("1").login(loginName).daysToExpire(89).build());
 
         // assert db state before merge.
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
@@ -800,9 +800,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -918,9 +918,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1038,9 +1038,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1161,9 +1161,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1283,9 +1283,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1378,9 +1378,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1508,9 +1508,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1602,9 +1602,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1756,9 +1756,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1897,9 +1897,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1937,8 +1937,8 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final Boolean hmctsEmployment = true;
         final String otherDetails = "I wear a fake sheriffs badge on the weekends and hassle loiterers by the KFC";
 
-        final ResponseUpdateController.CJSEmploymentDetailsDto dto =
-            ResponseUpdateController.CJSEmploymentDetailsDto.builder().policeForceDetails(policeDetails)
+        final ResponseUpdateController.CjsEmploymentDetailsDto dto =
+            ResponseUpdateController.CjsEmploymentDetailsDto.builder().policeForceDetails(policeDetails)
                 .prisonServiceDetails(prisonDetails).ncaEmployment(ncaEmployment)
                 .judiciaryEmployment(judiciaryEmployment).hmctsEmployment(hmctsEmployment).otherDetails(otherDetails)
                 .jurorNumber(jurorNumber).notes(changeLogNotes).version(0).build();
@@ -1946,7 +1946,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         // expecting an accepted response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/cjs");
-        final RequestEntity<ResponseUpdateController.CJSEmploymentDetailsDto> requestEntity =
+        final RequestEntity<ResponseUpdateController.CjsEmploymentDetailsDto> requestEntity =
             new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<Void> exchange = template.exchange(requestEntity, Void.class);
 
@@ -2044,9 +2044,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -2081,8 +2081,8 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final Boolean hmctsEmployment = false;
         final String otherDetails = "I wear a fake sheriffs badge on the weekends and hassle loiterers by the KFC";
 
-        final ResponseUpdateController.CJSEmploymentDetailsDto dto =
-            ResponseUpdateController.CJSEmploymentDetailsDto.builder().policeForceDetails(policeDetails)
+        final ResponseUpdateController.CjsEmploymentDetailsDto dto =
+            ResponseUpdateController.CjsEmploymentDetailsDto.builder().policeForceDetails(policeDetails)
                 .prisonServiceDetails(prisonDetails).ncaEmployment(ncaEmployment)
                 .judiciaryEmployment(judiciaryEmployment).hmctsEmployment(hmctsEmployment).otherDetails(otherDetails)
                 .jurorNumber(jurorNumber).notes(changeLogNotes).version(0).build();
@@ -2090,7 +2090,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         // expecting an accepted response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/cjs");
-        final RequestEntity<ResponseUpdateController.CJSEmploymentDetailsDto> requestEntity =
+        final RequestEntity<ResponseUpdateController.CjsEmploymentDetailsDto> requestEntity =
             new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<Void> exchange = template.exchange(requestEntity, Void.class);
 
@@ -2175,9 +2175,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -2212,8 +2212,8 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final Boolean hmctsEmployment = false;
         final String otherDetails = null;
 
-        final ResponseUpdateController.CJSEmploymentDetailsDto dto =
-            ResponseUpdateController.CJSEmploymentDetailsDto.builder().policeForceDetails(policeDetails)
+        final ResponseUpdateController.CjsEmploymentDetailsDto dto =
+            ResponseUpdateController.CjsEmploymentDetailsDto.builder().policeForceDetails(policeDetails)
                 .prisonServiceDetails(prisonDetails).ncaEmployment(ncaEmployment)
                 .judiciaryEmployment(judiciaryEmployment).hmctsEmployment(hmctsEmployment).otherDetails(otherDetails)
                 .jurorNumber(jurorNumber).notes(changeLogNotes).version(0).build();
@@ -2221,7 +2221,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         // expecting an accepted response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/cjs");
-        final RequestEntity<ResponseUpdateController.CJSEmploymentDetailsDto> requestEntity =
+        final RequestEntity<ResponseUpdateController.CjsEmploymentDetailsDto> requestEntity =
             new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<Void> exchange = template.exchange(requestEntity, Void.class);
 
@@ -2306,9 +2306,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final Integer invalidVersion = -1;
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -2343,8 +2343,8 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final Boolean hmctsEmployment = true;
         final String otherDetails = "I wear a fake sheriffs badge on the weekends and hassle loiterers by the KFC";
 
-        final ResponseUpdateController.CJSEmploymentDetailsDto dto =
-            ResponseUpdateController.CJSEmploymentDetailsDto.builder().policeForceDetails(policeDetails)
+        final ResponseUpdateController.CjsEmploymentDetailsDto dto =
+            ResponseUpdateController.CjsEmploymentDetailsDto.builder().policeForceDetails(policeDetails)
                 .prisonServiceDetails(prisonDetails).ncaEmployment(ncaEmployment)
                 .judiciaryEmployment(judiciaryEmployment).hmctsEmployment(hmctsEmployment).otherDetails(otherDetails)
                 .jurorNumber(jurorNumber).notes(changeLogNotes).version(invalidVersion).build();
@@ -2352,7 +2352,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         // expecting a conflict response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/cjs");
-        final RequestEntity<ResponseUpdateController.CJSEmploymentDetailsDto> requestEntity =
+        final RequestEntity<ResponseUpdateController.CjsEmploymentDetailsDto> requestEntity =
             new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<SpringBootErrorResponse> exchange =
             template.exchange(requestEntity, SpringBootErrorResponse.class);
@@ -2422,7 +2422,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/juror/644892530/response/status");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("testlogin").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("testlogin").daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).build());
 
         // assert db state before merge.
@@ -2484,7 +2484,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/juror/644892530/response/status");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("testlogin").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("testlogin").daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).build());
 
         // assert db state before merge.

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 
 /**

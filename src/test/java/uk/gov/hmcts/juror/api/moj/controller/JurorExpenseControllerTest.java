@@ -21,7 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
@@ -116,7 +116,7 @@ class JurorExpenseControllerTest {
         @Test
         @DisplayName("Valid court user - with date range filter")
         void happyPathForValidCourtUserWithDates() throws Exception {
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
                 Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -159,7 +159,7 @@ class JurorExpenseControllerTest {
         @Test
         @DisplayName("Valid court user - without date range filter")
         void happyPathForValidCourtUserWithoutDate() throws Exception {
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
                 Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -200,7 +200,7 @@ class JurorExpenseControllerTest {
         @Test
         @DisplayName("Invalid court location")
         void invalidCourtLocation() throws Exception {
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(
                 TestUtils.staffBuilder("Court User", 1, Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -234,7 +234,7 @@ class JurorExpenseControllerTest {
         @Test
         @DisplayName("Missing court location")
         void missingCourtLocation() throws Exception {
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(
                 TestUtils.staffBuilder("Court User", 1, Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -268,7 +268,7 @@ class JurorExpenseControllerTest {
         @Test
         @DisplayName("Missing page number")
         void missingPageNumber() throws Exception {
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(
                 TestUtils.staffBuilder("Court User", 1, Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -301,7 +301,7 @@ class JurorExpenseControllerTest {
         @Test
         @DisplayName("Missing sort by")
         void missingSortBy() throws Exception {
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(
                 TestUtils.staffBuilder("Court User", 1, Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -334,7 +334,7 @@ class JurorExpenseControllerTest {
         @Test
         @DisplayName("Missing sort order")
         void missingSortOrder() throws Exception {
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(
                 TestUtils.staffBuilder("Court User", 1, Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -386,7 +386,7 @@ class JurorExpenseControllerTest {
         void happyPathForGetDefaultExpenses() throws Exception {
             String jurorNumber = "111111111";
 
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(
                 TestUtils.staffBuilder("Court User", 1, Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);

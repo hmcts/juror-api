@@ -13,7 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.CreatePanelDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
@@ -57,7 +57,7 @@ import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 class PanelControllerTest {
     private static final String BASE_URL = "/api/v1/moj/trial/panel";
 
-    private BureauJWTPayload jwtPayload;
+    private BureauJwtPayload jwtPayload;
     private MockMvc mockMvc;
 
     @MockBean

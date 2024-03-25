@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
@@ -59,7 +59,7 @@ public class TrialController {
     @Operation(summary = "Enable the officer to create a trial")
     @PreAuthorize(SecurityUtil.COURT_AUTH)
     public ResponseEntity<TrialSummaryDto> createTrial(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid TrialDto trialDto) {
         TrialSummaryDto trialSummaryDto = trialService.createTrial(payload, trialDto);
         return ResponseEntity.ok().body(trialSummaryDto);
@@ -69,7 +69,7 @@ public class TrialController {
     @Operation(summary = "Get a list of all trials")
     @PreAuthorize(SecurityUtil.COURT_AUTH)
     public ResponseEntity<PageDto<TrialListDto>> getTrials(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam("page_number") @PathVariable("pageNumber") @Valid int pageNumber,
         @RequestParam("sort_by") @PathVariable("sortBy") @Valid String sortBy,
         @RequestParam("sort_order") @PathVariable("sortOrder") @Valid String sortOrder,
@@ -85,7 +85,7 @@ public class TrialController {
     @Operation(summary = "Get summary details for a trial")
     @PreAuthorize(SecurityUtil.COURT_AUTH)
     public ResponseEntity<TrialSummaryDto> getTrialSummary(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam(name = "trial_number") @PathVariable(name = "trialNumber") String trialNumber,
         @RequestParam(name = "location_code") @PathVariable(name = "locationCode") String locationCode) {
         return ResponseEntity.ok().body(trialService.getTrialSummary(payload, trialNumber, locationCode));
@@ -95,7 +95,7 @@ public class TrialController {
     @Operation(summary = "Return panel members back to jurors in waiting")
     @PreAuthorize(SecurityUtil.COURT_AUTH)
     public ResponseEntity<Void> returnPanel(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam(name = "trial_number") @PathVariable(name = "trialNumber") String trialNumber,
         @RequestParam(name = "location_code") @PathVariable(name = "locationCode") String locationCode,
         @RequestBody @Valid List<JurorDetailRequestDto> jurorDetailRequestDto
@@ -108,7 +108,7 @@ public class TrialController {
     @Operation(summary = "Return jury members back to jurors in waiting")
     @PreAuthorize(SecurityUtil.COURT_AUTH)
     public ResponseEntity<Void> returnJury(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam(name = "trial_number") @PathVariable(name = "trialNumber") String trialNumber,
         @RequestParam(name = "location_code") @PathVariable(name = "locationCode") String locationCode,
         @RequestBody @Valid ReturnJuryDto returnJuryDto

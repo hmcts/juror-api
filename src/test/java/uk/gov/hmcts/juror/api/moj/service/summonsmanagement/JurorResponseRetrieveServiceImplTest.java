@@ -9,7 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.JurorResponseRetrieveRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.JurorResponseRetrieveResponseDto;
@@ -79,7 +79,7 @@ class JurorResponseRetrieveServiceImplTest {
                 request, false, 100);
 
             // mock jwt payload
-            BureauJWTPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
+            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
 
             // invoke service
             JurorResponseRetrieveResponseDto response =
@@ -99,7 +99,7 @@ class JurorResponseRetrieveServiceImplTest {
             request.setProcessingStatus(Collections.singletonList(ProcessingStatus.TODO));
 
             // mock jwt payload
-            BureauJWTPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
+            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
 
             MojException.Forbidden exception =
                 assertThrows(MojException.Forbidden.class, () ->
@@ -129,7 +129,7 @@ class JurorResponseRetrieveServiceImplTest {
                 request, false, 100);
 
             // mock jwt payload
-            BureauJWTPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
+            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
 
             // invoke service
             JurorResponseRetrieveResponseDto response =
@@ -149,7 +149,7 @@ class JurorResponseRetrieveServiceImplTest {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setIsUrgent(Boolean.FALSE);
 
-            BureauJWTPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
+            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
 
             MojException.BadRequest exception =
                 assertThrows(MojException.BadRequest.class, () ->
@@ -169,7 +169,7 @@ class JurorResponseRetrieveServiceImplTest {
             request.setProcessingStatus(Collections.singletonList(ProcessingStatus.TODO));
 
             // mock jwt payload
-            BureauJWTPayload payload = mockJwt(COURT_OWNER, COURT_USER, COURT_STAFF_NAME, 0);
+            BureauJwtPayload payload = mockJwt(COURT_OWNER, COURT_USER, COURT_STAFF_NAME, 0);
 
             MojException.Forbidden exception =
                 assertThrows(MojException.Forbidden.class, () ->
@@ -189,7 +189,7 @@ class JurorResponseRetrieveServiceImplTest {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
 
             // mock jwt payload
-            BureauJWTPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
+            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
 
             MojException.BadRequest exception =
                 assertThrows(MojException.BadRequest.class, () ->
@@ -219,8 +219,8 @@ class JurorResponseRetrieveServiceImplTest {
             assertThat(records.get(listIndex).getDateReceived()).isEqualTo(DATE_RECEIVED.plusDays(postfixId));
         }
 
-        private BureauJWTPayload mockJwt(String owner, String username, String staffName, int rank) {
-            BureauJWTPayload payload = TestUtils.createJwt(owner, username, String.valueOf(rank));
+        private BureauJwtPayload mockJwt(String owner, String username, String staffName, int rank) {
+            BureauJwtPayload payload = TestUtils.createJwt(owner, username, String.valueOf(rank));
             payload.setStaff(TestUtils.staffBuilder(staffName, rank, null));
 
             return payload;

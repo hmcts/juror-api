@@ -2,14 +2,11 @@ package uk.gov.hmcts.juror.api.bureau.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import uk.gov.hmcts.juror.api.bureau.controller.request.JurorExpensesCalcRequestDto;
 
 /**
  * Exception type thrown when Payment Expenses Calculator calculation fails.
  *
- * @see uk.gov.hmcts.juror.api.bureau.service.JurorExpenseCalcService#getExpensesCalcResults(JurorExpensesCalcRequestDto)
  */
-
 public class JurorExpenseCalcException extends RuntimeException {
 
     private JurorExpenseCalcException(String message) {

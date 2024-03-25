@@ -248,7 +248,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @SuppressWarnings("checkstyle:LineLength")
     public void setDefaultExpensesForJuror(RequestDefaultExpensesDto dto) {
 
-        String owner = SecurityUtil.getActiveOwner();
+        final String owner = SecurityUtil.getActiveOwner();
 
         Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, dto.getJurorNumber());
 
@@ -1178,7 +1178,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Transactional(readOnly = true)
     public ExpenseRates getCurrentExpenseRates(boolean onlyFinancialLossLimit) {
         ExpenseRates expenseRates = expenseRatesRepository.getCurrentRates();
-        if(onlyFinancialLossLimit){
+        if (onlyFinancialLossLimit) {
             expenseRates = ExpenseRates.builder()
                 .limitFinancialLossFullDay(expenseRates.getLimitFinancialLossFullDay())
                 .limitFinancialLossHalfDay(expenseRates.getLimitFinancialLossHalfDay())

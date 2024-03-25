@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
@@ -31,7 +31,7 @@ public class UndeliverableResponseServiceImpl implements UndeliverableResponseSe
 
     @Override
     @Transactional
-    public void markAsUndeliverable(BureauJWTPayload payload, String jurorNumber) {
+    public void markAsUndeliverable(BureauJwtPayload payload, String jurorNumber) {
         final String owner = payload.getOwner();
 
         log.debug("Begin processing mark as undeliverable for juror {} by user {}", jurorNumber, payload.getLogin());

@@ -16,7 +16,6 @@ public class CourtCatchmentEntityQueries {
     /**
      * Matches Court Codes  in CourtCatchment Table where postcodes = 'postcode'.
      *
-     * @param postCode
      * @return courtCode
      */
 

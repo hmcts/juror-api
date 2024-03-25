@@ -7,10 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorCJS;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeed;
 import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogItem;
-import uk.gov.hmcts.juror.api.bureau.domain.PhoneLog;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
@@ -317,21 +314,12 @@ public class BureauJurorDetailDto implements Serializable {
     @Schema(description = "Should the user be allowed to re-assign this response.")
     private Boolean assignmentAllowed = Boolean.FALSE;
 
-    /**
-     * @see PhoneLog .
-     */
     @Schema(description = "List of phone logs")
     private List<PhoneLogDto> phoneLogs;
 
-    /**
-     * @see BureauJurorCJS .
-     */
     @Schema(description = "List of Jurors CJS Employments")
-    private List<CJSEmploymentDto> cjsEmployments;
+    private List<CjsEmploymentDto> cjsEmployments;
 
-    /**
-     * @see BureauJurorSpecialNeed .
-     */
     @Schema(description = "List of Jurors special needs")
     private List<SpecialNeedDto> specialNeeds;
 
@@ -447,7 +435,7 @@ public class BureauJurorDetailDto implements Serializable {
         this.assignmentAllowed = jurorDetails.getAssignmentAllowed();
         this.phoneLogs = jurorDetails.getPhoneLogs().stream().map(PhoneLogDto::new).collect(Collectors.toList());
         this.cjsEmployments =
-            jurorDetails.getCjsEmployments().stream().map(CJSEmploymentDto::new).collect(Collectors.toList());
+            jurorDetails.getCjsEmployments().stream().map(CjsEmploymentDto::new).collect(Collectors.toList());
         this.specialNeeds =
             jurorDetails.getReasonableAdjustments().stream().map(SpecialNeedDto::new).collect(Collectors.toList());
         this.urgent = jurorDetails.getUrgent();

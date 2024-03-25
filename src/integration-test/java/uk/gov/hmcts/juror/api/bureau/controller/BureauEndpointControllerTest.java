@@ -26,7 +26,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
 import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogType;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 
@@ -91,7 +91,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     public void bureauAuthenticationEndpoint_unhappy_header3() throws Exception {
         final String description = "Authentication header is invalid";
 
-        final String publicJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String publicJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -118,7 +118,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     @Sql("/db/BureauRepository_findByJurorNumber.sql")
     public void retrieveBureauJurorDetailsById_WithValidJurorNumberAsParam_ReturnCorrectJurorDetails() {
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login("testlogin")
@@ -171,7 +171,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     @Sql("/db/BureauRepository_findByJurorNumber.sql")
     public void filterBureauDetailsByStatus_WithValidCategoryFilter_ReturnsResponsesForStatusAndCount() {
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login("testlogin")
@@ -203,7 +203,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -290,7 +290,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -369,7 +369,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -447,7 +447,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final String description = "Update juror response status happy path.";
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -523,7 +523,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final String description = "Update juror response status happy path.";
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -599,7 +599,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final String description = "Update juror response status happy path.";
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -675,7 +675,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final String description = "Update juror response status happy path.";
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -751,7 +751,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final String description = "Update juror response status happy path.";
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")

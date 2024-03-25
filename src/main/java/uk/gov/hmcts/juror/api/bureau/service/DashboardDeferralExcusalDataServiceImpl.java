@@ -38,8 +38,7 @@ public class DashboardDeferralExcusalDataServiceImpl implements DashboardDeferra
     /**
      * Get all Deferral records from the StatsDeferrals table between given parameters.
      *
-     * @param startYearWeek
-     * @param endYearWeek
+     
      * @return statsDeferrals
      */
     @Override
@@ -67,8 +66,7 @@ public class DashboardDeferralExcusalDataServiceImpl implements DashboardDeferra
     /**
      * Get all Deferral Court records from the StatsDeferrals table between given parameters.
      *
-     * @param startYearWeek
-     * @param endYearWeek
+     
      * @return statsDeferralsCourt
      */
 
@@ -93,8 +91,7 @@ public class DashboardDeferralExcusalDataServiceImpl implements DashboardDeferra
     /**
      * Get all Deferral Bureau records from the StatsDeferrals table between given parameters.
      *
-     * @param startYearWeek
-     * @param endYearWeek
+     
      * @return statsDeferralsBureau
      */
 
@@ -120,8 +117,7 @@ public class DashboardDeferralExcusalDataServiceImpl implements DashboardDeferra
     /**
      * Get all Excusal records from the StatsExcusal table between given parameters.
      *
-     * @param startYearWeek
-     * @param endYearWeek
+     
      * @return statsExcusals
      */
 
@@ -147,8 +143,7 @@ public class DashboardDeferralExcusalDataServiceImpl implements DashboardDeferra
     /**
      * Get all Excusal Court records from the StatsExcusal table between given parameters.
      *
-     * @param startYearWeek
-     * @param endYearWeek
+     
      * @return statsExcusalsCourt
      */
 
@@ -174,8 +169,7 @@ public class DashboardDeferralExcusalDataServiceImpl implements DashboardDeferra
     /**
      * Get all Excusal Bureau records from the StatsExcusal table between given parameters.
      *
-     * @param startYearWeek
-     * @param endYearWeek
+     
      * @return statsExcusalsBureau
      */
 

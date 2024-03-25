@@ -5,7 +5,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 
 /**
  * QueryDSL queries for {@Link Messages}.
-*/
+ */
 
 
 public class MessagesQueries {
@@ -22,7 +22,6 @@ public class MessagesQueries {
     /**
      * Matches Messages records where message_read is equal 'NR' NOT READ.
      *
-     * @return
      */
 
     public static BooleanExpression messageReadStatus() {

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 
 /**
- * DTO for the 'single staff member detail' endpoint
+ * DTO for the 'single staff member detail' endpoint.
  *
  * @see uk.gov.hmcts.juror.api.bureau.controller.BureauStaffController#getOne(String, BureauJwtAuthentication)
  */

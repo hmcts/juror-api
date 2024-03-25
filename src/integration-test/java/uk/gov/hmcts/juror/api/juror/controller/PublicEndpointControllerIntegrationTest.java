@@ -28,7 +28,7 @@ import uk.gov.hmcts.juror.api.TestUtil;
 import uk.gov.hmcts.juror.api.bureau.domain.QSystemParameter;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
-import uk.gov.hmcts.juror.api.config.public_.PublicJWTPayload;
+import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.service.StraightThroughType;
@@ -139,7 +139,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void retrieveJurorById_unhappy_header3() throws Exception {
         final String description = "Authentication header is invalid";
 
-        final String publicJwt = mintPublicJwt(PublicJWTPayload.builder()
+        final String publicJwt = mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("123456789")
             .postcode("")
             .surname("")
@@ -170,7 +170,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest_retrieveJurorById.sql")
     public void retrieveJurorById_RequestWithValidNumber_ReturnsJurorDetails() throws Exception {
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("209092530")
             .postcode("AB3 9RY")
             .surname("CASTILLO")
@@ -197,7 +197,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest_retrieveJurorById_poolAttendTime.sql")
     public void retrieveJurorById_alternatePath_poolAttendTime() throws Exception {
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("209092530")
             .postcode("AB3 9RY")
             .surname("CASTILLO")
@@ -228,7 +228,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Test
     public void retrieveJurorById_InvalidNumberRequest_ReturnsUnauthorizedErrorMessage() throws Exception {
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("209092530")
             .postcode("AB3 9RY")
             .surname("CASTILLO")
@@ -252,7 +252,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_happy() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -273,7 +273,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 .assistanceTypeDetails("Helmet visor tinted and cannot remove even indoors")
                 .build())
             )
-            .cjsEmployment(Collections.singletonList(JurorResponseDto.CJSEmployment.builder()
+            .cjsEmployment(Collections.singletonList(JurorResponseDto.CjsEmployment.builder()
                 .cjsEmployer("Mega City 1 Hall of Justice")
                 .cjsEmployerDetails("I am the law.")
                 .build())
@@ -327,7 +327,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_unhappy_tooOld() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -374,7 +374,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_straightThroughTooYoung_unhappy.sql")
     public void respondToSummons_unhappy_failedAgeCheckOnStraightThrough() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -427,7 +427,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_unhappy_failedSuperUrgentCheckOnStraightThrough() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -474,7 +474,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_unhappy_noEmailOrPhoneNumber() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -525,7 +525,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_happy_successfulStraightThroughAcceptance() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -598,7 +598,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_happy_disabledStraightThroughAcceptance() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -665,7 +665,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_unhappy_straightThroughAcceptance_cjsEmployed() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -684,7 +684,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .cjsEmployment(Collections.singletonList(
-                    JurorResponseDto.CJSEmployment.builder()
+                    JurorResponseDto.CjsEmployment.builder()
                         .cjsEmployer("police")
                         .cjsEmployerDetails("I am invalid because I am a forensic examiner")
                         .build()
@@ -744,7 +744,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_unhappy_straightThroughAcceptance_specialNeed() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -826,7 +826,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_happy_thirdPartyDeceased_disabledStraightThrough() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -885,7 +885,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_unhappy_thirdPartyDeceased_validationFail() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -941,7 +941,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_unhappy_thirdPartyDeceased_validationFail_superUrgent() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -992,7 +992,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_happy_ageExcusal_successfulStraightThrough_young() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1071,7 +1071,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_happy_ageExcusal_successfulStraightThrough_old() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1158,7 +1158,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_happy_ageExcusal_straightThroughDisabled() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1248,7 +1248,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_unhappy_ageExcusal_notExcused_exactlyMinimumAge() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1338,7 +1338,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1425,7 +1425,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_EmploymentsValidation() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1443,7 +1443,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "AB39RY", dob,
                 "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
-            .cjsEmployment(Collections.singletonList(JurorResponseDto.CJSEmployment.builder()
+            .cjsEmployment(Collections.singletonList(JurorResponseDto.CjsEmployment.builder()
                 .cjsEmployer("Mega City 1 Hall of Justice")
                 .cjsEmployerDetails("I am the law.")
                 .cjsEmployer("Police Force")
@@ -1485,7 +1485,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappy_noPhoneNumbersProvided() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1528,7 +1528,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_useThirdPartyPhoneNumberButNoneSupplied() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1574,7 +1574,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_happyPath_useJurorPhoneNumber() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1622,7 +1622,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappyPath_useJurorPhoneNumberButNoneProvided() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1671,7 +1671,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappy_invalidJurorPhoneNumber() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1718,7 +1718,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappy_noEmailsProvided() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1760,7 +1760,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappyPath_useThirdPartyEmailButNoneSupplied() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1805,7 +1805,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_happyPath_useJurorEmail() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1851,7 +1851,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappyPath_useJurorEmailButNoneProvided() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1899,7 +1899,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappy_invalidJurorEmail() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1934,7 +1934,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             0);
     }
 
-    private String mintPublicJwt(final PublicJWTPayload payload) throws Exception {
+    private String mintPublicJwt(final PublicJwtPayload payload) throws Exception {
         return TestUtil.mintPublicJwt(payload, SignatureAlgorithm.HS256, publicSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }

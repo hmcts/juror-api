@@ -21,7 +21,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JudgeDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JudgeListDto;
@@ -57,7 +57,7 @@ import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 class JudgeControllerTest {
     private static final String BASE_URL = "/api/v1/moj/trial/judge";
 
-    private BureauJWTPayload jwtPayload;
+    private BureauJwtPayload jwtPayload;
     private MockMvc mockMvc;
 
     @MockBean
@@ -149,7 +149,7 @@ class JudgeControllerTest {
     private class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
         @Override
         public boolean supportsParameter(MethodParameter parameter) {
-            return parameter.getParameterType().isAssignableFrom(BureauJWTPayload.class);
+            return parameter.getParameterType().isAssignableFrom(BureauJwtPayload.class);
         }
 
         @Override

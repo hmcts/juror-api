@@ -23,7 +23,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.Excusa
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeEntity;
 import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
 import uk.gov.hmcts.juror.api.bureau.domain.PartHist;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.net.URI;
 import java.sql.Timestamp;
@@ -59,7 +59,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     public void getExcusalReasons_happy() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -91,7 +91,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void excuseJuror_happy() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -220,7 +220,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void excuseJuror_happy_deceasedExcusal() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -342,7 +342,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void excuseJuror_unhappy_invalidExcusalCode() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -435,7 +435,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void excuseJuror_unhappy_JurorNotFound() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -493,7 +493,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void excuseJuror_unhappy_incorrectVersion() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -579,7 +579,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void excuseJuror_unhappy_nullVersion() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -665,7 +665,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void rejectExcusalRequest_happy() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -806,7 +806,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void rejectExcusalRequest_unhappy_invalidExcusalCode() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -877,7 +877,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void rejectExcusalRequest_unhappy_JurorNotFound() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)

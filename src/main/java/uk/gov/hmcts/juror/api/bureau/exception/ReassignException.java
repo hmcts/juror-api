@@ -5,9 +5,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * Exception type thrown when re-assignment of a group of responses and deactivation of officer fails.
- *
- * @see uk.gov.hmcts.juror.api.bureau.service.StaffService#disableStaffAndReassignResponses
- * (String, String, ReassignResponsesDto)
  */
 public class ReassignException extends RuntimeException {
 

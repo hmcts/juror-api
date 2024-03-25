@@ -21,7 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.SpringBootErrorResponse;
 import uk.gov.hmcts.juror.api.TestUtil;
-import uk.gov.hmcts.juror.api.config.public_.PublicJWTPayload;
+import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.service.JurorPersistenceService;
 import uk.gov.hmcts.juror.api.juror.service.JurorServiceImpl.JurorResponseAlreadyExistsException;
@@ -83,7 +83,7 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_constraintViolationException() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("789456123")
             .postcode("G6 1AB")
             .surname("SMITH")
@@ -115,7 +115,7 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
         verify(mockJurorPersistenceService).persistJurorResponse(any(JurorResponseDto.class));
     }
 
-    public String mintPublicJwt(final PublicJWTPayload payload) {
+    public String mintPublicJwt(final PublicJwtPayload payload) {
         return TestUtil.mintPublicJwt(payload, SignatureAlgorithm.HS256, publicSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }

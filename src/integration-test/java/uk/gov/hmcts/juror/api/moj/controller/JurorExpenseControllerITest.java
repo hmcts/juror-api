@@ -20,7 +20,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestConstants;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
@@ -311,16 +311,16 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
 
         private String createBureauJwt(String login, String owner) throws Exception {
-            return mintBureauJwt(BureauJWTPayload.builder()
+            return mintBureauJwt(BureauJwtPayload.builder()
                 .userLevel("1")
                 .login(login)
-                .staff(BureauJWTPayload.Staff.builder()
+                .staff(BureauJwtPayload.Staff.builder()
                     .name("Test User")
                     .active(1)
                     .rank(1)
                     .build())
                 .daysToExpire(89)
-                .owner(owner).staff(BureauJWTPayload.Staff.builder()
+                .owner(owner).staff(BureauJwtPayload.Staff.builder()
                     .courts(Collections.singletonList(owner))
                     .build())
                 .build());
