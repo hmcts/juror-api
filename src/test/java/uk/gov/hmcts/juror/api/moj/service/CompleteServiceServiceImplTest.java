@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -150,6 +149,7 @@ class CompleteServiceServiceImplTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void positiveTypicalSingle() {
             testValidStatus(IJurorStatus.RESPONDED);
         }
@@ -220,26 +220,31 @@ class CompleteServiceServiceImplTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void negativeNotInTransferredStatus() {
             testInvalidStatus(IJurorStatus.TRANSFERRED);
         }
 
         @Test
+        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void negativeNotInFailedToAttendStatus() {
             testInvalidStatus(IJurorStatus.FAILED_TO_ATTEND);
         }
 
         @Test
+        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void negativeNotInSummonedStatus() {
             testInvalidStatus(IJurorStatus.SUMMONED);
         }
 
         @Test
+        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void samplePositiveCompletedStatus() {
             testValidStatus(IJurorStatus.COMPLETED);
         }
 
         @Test
+        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void samplePositiveExcusedStatus() {
             testValidStatus(IJurorStatus.EXCUSED);
         }
@@ -352,7 +357,7 @@ class CompleteServiceServiceImplTest {
 
         @Test
         @SuppressWarnings({
-            "PMD.JUnitTestsShouldIncludeAssert"//False positive
+            "PMD.PMD.JUnitTestsShouldIncludeAssert"//False positive
         })
         void positiveTypicalMultiple() {
 
