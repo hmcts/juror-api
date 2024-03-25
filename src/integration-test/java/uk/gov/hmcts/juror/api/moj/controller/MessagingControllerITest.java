@@ -2275,6 +2275,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 ResponseEntity<String> response = template.exchange(
                     new RequestEntity<>(request, httpHeaders, POST, toUri(messageType, locCode)),
                     String.class);
+                System.out.println(response);
                 assertThat(response.getStatusCode())
                     .as("Expect the HTTP GET request to be successful")
                     .isEqualTo(HttpStatus.NO_CONTENT);
