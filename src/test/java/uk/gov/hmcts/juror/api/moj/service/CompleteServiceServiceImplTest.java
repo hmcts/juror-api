@@ -82,19 +82,56 @@ class CompleteServiceServiceImplTest {
                 .thenReturn(Optional.ofNullable(completedStatus));
         }
 
-        @Test
-        void positiveTypicalSingle() {
+
+        void testInvalidStatus(int poolStatus) {
             LocalDate localDate = LocalDate.of(2023, 11, 22);
 
             final String firstName = RandomStringUtils.randomAlphabetic(20);
             final String lastName = RandomStringUtils.randomAlphabetic(20);
-            final int poolStatus = IJurorStatus.RESPONDED;
 
             Juror juror = mock(Juror.class);
             JurorPool jurorPool = mock(JurorPool.class);
 
             createJurorPoolMock(TestConstants.VALID_POOL_NUMBER, poolStatus, TestConstants.VALID_JUROR_NUMBER,
-                firstName, lastName, jurorPool, juror);
+                                firstName, lastName, jurorPool, juror);
+
+            CompleteServiceJurorNumberListDto completeServiceJurorNumberListDto =
+                createCompleteServiceJurorNumberListDto(localDate, TestConstants.VALID_JUROR_NUMBER);
+
+            MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
+                () -> completeServiceService
+                    .completeService(TestConstants.VALID_POOL_NUMBER, completeServiceJurorNumberListDto),
+                        "Expected exception to be thrown when juror pool not in resolved status");
+
+            assertEquals("Juror number " + TestConstants.VALID_JUROR_NUMBER
+                    + " is not in a valid state to complete service",
+                exception.getMessage(),
+                "Expected exception message to be " + "Juror number " + TestConstants.VALID_JUROR_NUMBER
+                    + " is not in a valid state to complete service");
+
+
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
+                                                         TestConstants.VALID_POOL_NUMBER);
+
+            verify(jurorPool, times(1)).getStatus();
+
+
+            verifyNoMoreInteractions(jurorPoolRepository, jurorPoolRepository, jurorRepository, jurorHistoryService,
+                                     juror, jurorPool);
+        }
+
+        void testValidStatus(int poolStatus) {
+            LocalDate localDate = LocalDate.of(2023, 11, 22);
+
+            final String firstName = RandomStringUtils.randomAlphabetic(20);
+            final String lastName = RandomStringUtils.randomAlphabetic(20);
+
+            Juror juror = mock(Juror.class);
+            JurorPool jurorPool = mock(JurorPool.class);
+
+            createJurorPoolMock(TestConstants.VALID_POOL_NUMBER, poolStatus, TestConstants.VALID_JUROR_NUMBER,
+                                firstName, lastName, jurorPool, juror);
 
             CompleteServiceJurorNumberListDto completeServiceJurorNumberListDto =
                 createCompleteServiceJurorNumberListDto(localDate, TestConstants.VALID_JUROR_NUMBER);
@@ -104,11 +141,17 @@ class CompleteServiceServiceImplTest {
 
             verify(jurorPoolRepository, times(1))
                 .findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
-                    TestConstants.VALID_POOL_NUMBER);
+                                                         TestConstants.VALID_POOL_NUMBER);
 
             validateCompleteWasSuccess(jurorPool, juror, localDate);
 
             verifyNoMoreInteractions(jurorPoolRepository, jurorPoolRepository, jurorRepository, jurorHistoryService);
+
+        }
+
+        @Test
+        void positiveTypicalSingle() {
+            testValidStatus(IJurorStatus.RESPONDED);
         }
 
         @Test
@@ -177,43 +220,28 @@ class CompleteServiceServiceImplTest {
         }
 
         @Test
-        void negativeNotInRespondedStatus() {
-            LocalDate localDate = LocalDate.of(2023, 11, 22);
+        void negativeNotInTransferredStatus() {
+            testInvalidStatus(IJurorStatus.TRANSFERRED);
+        }
 
-            final String firstName = RandomStringUtils.randomAlphabetic(20);
-            final String lastName = RandomStringUtils.randomAlphabetic(20);
-            final int poolStatus = IJurorStatus.JUROR;
+        @Test
+        void negativeNotInFailedToAttendStatus() {
+            testInvalidStatus(IJurorStatus.FAILED_TO_ATTEND);
+        }
 
-            Juror juror = mock(Juror.class);
-            JurorPool jurorPool = mock(JurorPool.class);
+        @Test
+        void negativeNotInSummonedStatus() {
+            testInvalidStatus(IJurorStatus.SUMMONED);
+        }
 
-            createJurorPoolMock(TestConstants.VALID_POOL_NUMBER, poolStatus, TestConstants.VALID_JUROR_NUMBER,
-                firstName, lastName, jurorPool, juror);
+        @Test
+        void samplePositiveCompletedStatus() {
+            testValidStatus(IJurorStatus.COMPLETED);
+        }
 
-            CompleteServiceJurorNumberListDto completeServiceJurorNumberListDto =
-                createCompleteServiceJurorNumberListDto(localDate, TestConstants.VALID_JUROR_NUMBER);
-
-            MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
-                () -> completeServiceService
-                    .completeService(TestConstants.VALID_POOL_NUMBER, completeServiceJurorNumberListDto),
-                "Expected exception to be thrown when juror pool not in resolved status");
-
-            assertEquals("Juror number " + TestConstants.VALID_JUROR_NUMBER
-                    + " is not in a valid state to complete service",
-                exception.getMessage(),
-                "Expected exception message to be " + "Juror number " + TestConstants.VALID_JUROR_NUMBER
-                    + " is not in a valid state to complete service");
-
-
-            verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
-                    TestConstants.VALID_POOL_NUMBER);
-
-            verify(jurorPool, times(1)).getStatus();
-
-
-            verifyNoMoreInteractions(jurorPoolRepository, jurorPoolRepository, jurorRepository, jurorHistoryService,
-                juror, jurorPool);
+        @Test
+        void samplePositiveExcusedStatus() {
+            testValidStatus(IJurorStatus.EXCUSED);
         }
 
         @Test
@@ -486,15 +514,15 @@ class CompleteServiceServiceImplTest {
         void positiveValidateCanCompleteServiceMultipleAllInvalid() {
             final String firstName1 = RandomStringUtils.randomAlphabetic(20);
             final String lastName1 = RandomStringUtils.randomAlphabetic(20);
-            final int poolStatus1 = 1;
+            final int poolStatus1 = IJurorStatus.TRANSFERRED;
 
             final String firstName2 = RandomStringUtils.randomAlphabetic(20);
             final String lastName2 = RandomStringUtils.randomAlphabetic(20);
-            final int poolStatus2 = RandomUtils.nextInt(3, 12);
+            final int poolStatus2 = IJurorStatus.FAILED_TO_ATTEND;
 
             final String firstName3 = RandomStringUtils.randomAlphabetic(20);
             final String lastName3 = RandomStringUtils.randomAlphabetic(20);
-            final int poolStatus3 = RandomUtils.nextInt(3, 12);
+            final int poolStatus3 = IJurorStatus.SUMMONED;
 
 
             createJurorPoolMock(TestConstants.VALID_POOL_NUMBER, poolStatus1, "123456789",
@@ -547,7 +575,7 @@ class CompleteServiceServiceImplTest {
             final String poolNumber = "012345678";
             final String firstName1 = RandomStringUtils.randomAlphabetic(20);
             final String lastName1 = RandomStringUtils.randomAlphabetic(20);
-            final int poolStatus1 = 1;
+            final int poolStatus1 = IJurorStatus.SUMMONED;
 
             final String firstName2 = RandomStringUtils.randomAlphabetic(20);
             final String lastName2 = RandomStringUtils.randomAlphabetic(20);
@@ -555,7 +583,7 @@ class CompleteServiceServiceImplTest {
 
             final String firstName3 = RandomStringUtils.randomAlphabetic(20);
             final String lastName3 = RandomStringUtils.randomAlphabetic(20);
-            final int poolStatus3 = RandomUtils.nextInt(3, 12);
+            final int poolStatus3 = IJurorStatus.TRANSFERRED;
 
 
             createJurorPoolMock(poolNumber, poolStatus1, "123456789",
