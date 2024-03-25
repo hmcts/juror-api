@@ -18,7 +18,8 @@ import java.util.Map;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class NextDayNonAttendanceReportTest extends AbstractReportTestSupport<NextDayNonAttendanceReport> {
+@SuppressWarnings("PMD.LawOfDemeter")
+class NextDayNonAttendanceReportTest extends AbstractReportTestSupport<NextDayNonAttendanceReport> {
     public NextDayNonAttendanceReportTest() {
         super(QJurorPool.jurorPool,
             NextDayNonAttendanceReport.RequestValidator.class,
