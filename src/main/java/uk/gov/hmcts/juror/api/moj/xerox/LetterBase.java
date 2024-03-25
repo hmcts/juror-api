@@ -112,12 +112,13 @@ public class LetterBase {
             case Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY:
                 cal.add(Calendar.DAY_OF_MONTH, processDays);
                 break;
-            case Calendar.THURSDAY, Calendar.FRIDAY:
+//            case Calendar.THURSDAY, Calendar.FRIDAY:
+            default:
                 cal.add(Calendar.DAY_OF_MONTH, processDaysOverWeekend);
                 break;
-            default:
-                throw new MojException.BusinessRuleViolation("cannot generate a letter on a weekend",
-                    LETTER_CANNOT_GENERATE_ON_WEEKEND);
+//            default:
+//                throw new MojException.BusinessRuleViolation("cannot generate a letter on a weekend",
+//                    LETTER_CANNOT_GENERATE_ON_WEEKEND);
         }
 
         return formatter.format(cal.getTime()).toUpperCase();
