@@ -39,13 +39,13 @@ variable "location" {
 }
 
 variable "pgsql_storage_mb" {
-  description = "Max storage allowed for the PGSql Flexibile instance"
+  description = "Max storage allowed for the PGSql Flexible instance"
   type        = number
   default     = 65536
 }
 
 variable "pgsql_storage_tier" {
-  description = "Storage tier for the PGSql Flexibile instance. Should be left as null unless required."
+  description = "Storage tier for the PGSql Flexible instance. Should be left as null unless required."
   type        = string
   default     = null
 }
