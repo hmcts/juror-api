@@ -18,7 +18,8 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/NextDayNonAttendanceReportITest_typical.sql"
 })
-public class NextDayNonAttendanceReportITest extends AbstractReportControllerITest {
+@SuppressWarnings("PMD.LawOfDemeter")
+class NextDayNonAttendanceReportITest extends AbstractReportControllerITest {
     @Autowired
     public NextDayNonAttendanceReportITest(TestRestTemplate template) {
         super(template, NextDayNonAttendanceReport.class);
