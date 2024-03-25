@@ -53,10 +53,10 @@ public class NextDayNonAttendanceReportTest extends AbstractReportTestSupport<Ne
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(StandardReportRequest request,
-                                                                                        StandardReportResponse.TableData tableData,
-                                                                                        List<LinkedHashMap<String,
-                                                                                            Object>> data) {
+    public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
+        StandardReportRequest request,
+        StandardReportResponse.TableData tableData,
+        List<LinkedHashMap<String, Object>> data) {
 
         Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);
         assertHeadingContains(map, request, true, Map.of());
