@@ -221,7 +221,7 @@ class JurorAppearanceServiceTest {
     }
 
     @Test
-    void processAppearanceBooleanTrue(){
+    void processAppearanceBooleanTrue() {
         Juror juror = new Juror();
         juror.setJurorNumber(JUROR_123456789);
 
@@ -266,6 +266,7 @@ class JurorAppearanceServiceTest {
             .findById(LOC_415);
         verify(appearanceRepository, times(1)).saveAndFlush(any());
     }
+
     @Test
     void testCheckInJurorHappy() {
         Juror juror = new Juror();
