@@ -75,8 +75,6 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
 
     protected abstract StandardReportRequest getValidRequest();
 
-    protected abstract Class<?> getValidatorClass();
-
     @Test
     void negativeRequestMissingReportType() {
         StandardReportRequest request = getValidRequest();
@@ -85,7 +83,7 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
     }
 
     protected final List<ConstraintViolation<StandardReportRequest>> validateRequest(StandardReportRequest request) {
-        return new ArrayList<>(validator.validate(request, getValidatorClass()));
+        return new ArrayList<>(validator.validate(request, validatorClass));
     }
 
 

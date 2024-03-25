@@ -138,9 +138,4 @@ class DeferredListByDateReportTest extends AbstractReportTestSupport<DeferredLis
             .reportType(report.getName())
             .build();
     }
-
-    @Override
-    protected Class<?> getValidatorClass() {
-        return DeferredListByDateReport.RequestValidator.class;
-    }
 }

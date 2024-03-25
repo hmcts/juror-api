@@ -51,12 +51,6 @@ class CurrentPoolStatusReportTest extends AbstractReportTestSupport<CurrentPoolS
     }
 
     @Override
-    protected Class<?> getValidatorClass() {
-        return CurrentPoolStatusReport.RequestValidator.class;
-    }
-
-
-    @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         report.preProcessQuery(query, request);
         verify(query, times(1))
