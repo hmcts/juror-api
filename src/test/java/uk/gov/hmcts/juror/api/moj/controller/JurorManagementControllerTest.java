@@ -91,17 +91,6 @@ class JurorManagementControllerTest {
         verify(jurorAppearanceService, times(1)).addAttendanceDay(payload, request);
     }
 
-    AddAttendanceDayDto buildAddAttendanceDayDto () {
-        AddAttendanceDayDto dto = new AddAttendanceDayDto();
-        dto.setAttendanceDate(LocalDate.now());
-        dto.setJurorNumber("123456789");
-        dto.setPoolNumber("123456789");
-        dto.setLocationCode("415");
-        dto.setCheckInTime(LocalTime.of(9,30));
-        dto.setCheckOutTime(LocalTime.of(17,30));
-        return dto;
-    }
-
     @Test
     void retrieveAttendanceDetailsOkay() throws Exception {
         List<String> jurors = new ArrayList<>();
@@ -331,6 +320,17 @@ class JurorManagementControllerTest {
             .commonData(commonData)
             .juror(jurors)
             .build();
+    }
+
+    AddAttendanceDayDto buildAddAttendanceDayDto() {
+        AddAttendanceDayDto dto = new AddAttendanceDayDto();
+        dto.setAttendanceDate(LocalDate.now());
+        dto.setJurorNumber("123456789");
+        dto.setPoolNumber("123456789");
+        dto.setLocationCode("415");
+        dto.setCheckInTime(LocalTime.of(9, 30));
+        dto.setCheckOutTime(LocalTime.of(17, 30));
+        return dto;
     }
 
     private void buildMockMvcBureau() {
