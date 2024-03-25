@@ -119,6 +119,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     private final CoronerPoolDetailRepository coronerPoolDetailRepository;
     @NonNull
     private final CoronerPoolRepository coronerPoolRepository;
+    @NonNull
+    private final JurorHistoryService jurorHistoryService;
 
     @Override
     public PoolRequestItemDto getPoolRequest(String poolNumber, String owner) {
@@ -283,8 +285,6 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 IJurorStatus.DISQUALIFIED) ? 0 : 1)
             .sum();
 
-        printDataService.bulkPrintSummonsLetter(jurorPools);
-
         String owner = payload.getOwner();
         String userId = payload.getLogin();
         updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, numSelected,
@@ -370,8 +370,6 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 jurorHistBuilder.otherInformation(HistoryCodeMod.DISQUALIFY_POOL_MEMBER.getDescription());
             } else {
                 jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
-                //Todo need to see what would go into the history info for bulk print data (used to be print files name)
-                //jurorHistBuilder.info("File -" + printFileName);
             }
             jurorHistoryRepository.save(jurorHistBuilder.build());
         });
@@ -417,8 +415,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 sequenceNumber++;
 
                 if (!Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)) {
-                    // update confirmation letter for juror
-                    printDataService.printConfirmationLetter(jurorPool);
+                    // create a summons letter for juror
+                    printDataService.printSummonsLetter(jurorPool);
+                    jurorHistoryService.createSummonsLetterHistory(jurorPool, "Summons Letter");
                 }
 
                 if (jurorsFound == poolCreateRequestDto.getCitizensToSummon()) {

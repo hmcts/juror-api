@@ -114,6 +114,8 @@ public class PoolCreateServiceTest {
     private CoronerPoolDetailRepository coronerPoolDetailRepository;
     @Mock
     private CoronerPoolRepository coronerPoolRepository;
+    @Mock
+    private JurorHistoryService jurorHistoryService;
     private MockedStatic<PaginationUtil> mockStaticPaginationUtil;
     @InjectMocks
     PoolCreateServiceImpl poolCreateService;
@@ -254,7 +256,6 @@ public class PoolCreateServiceTest {
         Mockito.verify(jurorStatusRepository, Mockito.times(jurorNumber.size())).findById(1);
         Mockito.verify(jurorPoolRepository, Mockito.times(jurorNumber.size())).saveAndFlush(Mockito.any());
         Mockito.verify(poolRequestRepository, Mockito.times(1)).saveAndFlush(Mockito.any());
-        Mockito.verify(printDataService, Mockito.times(1)).bulkPrintSummonsLetter(Mockito.any());
         Mockito.verify(poolHistoryRepository, Mockito.times(1)).save(Mockito.any());
         Mockito.verify(jurorHistoryRepository, Mockito.times(1)).save(Mockito.any());
     }

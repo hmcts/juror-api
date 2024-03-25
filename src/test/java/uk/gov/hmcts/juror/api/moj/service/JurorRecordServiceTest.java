@@ -2440,7 +2440,7 @@ class JurorRecordServiceTest {
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
             verify(printDataService, times(1)).printConfirmationLetter(jurorPool);
-            verify(jurorHistoryService, times(1)).createConfirmServiceHistory(jurorPool, "Confirmation Letter Auto");
+            verify(jurorHistoryService, times(1)).createConfirmationLetterHistory(jurorPool, "Confirmation Letter Auto");
             verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
         }
 
@@ -2459,7 +2459,7 @@ class JurorRecordServiceTest {
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
             verify(printDataService, times(1)).printConfirmationLetter(jurorPool);
-            verify(jurorHistoryService, times(1)).createConfirmServiceHistory(jurorPool, "Confirmation Letter Auto");
+            verify(jurorHistoryService, times(1)).createConfirmationLetterHistory(jurorPool, "Confirmation Letter Auto");
             verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
         }
 

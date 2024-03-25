@@ -1067,7 +1067,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             jurorHistoryService.createPoliceCheckQualifyHistory(jurorPool, newPoliceCheckValue.isChecked());
             if (jurorPool.getOwner().equals(SecurityUtil.BUREAU_OWNER)) {
                 printDataService.printConfirmationLetter(jurorPool);
-                jurorHistoryService.createConfirmServiceHistory(jurorPool, "Confirmation Letter Auto");
+                jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Confirmation Letter Auto");
             }
         } else if (newPoliceCheckValue == PoliceCheck.INELIGIBLE) {
             log.debug("Juror {} is ineligible disqualifying for police check", jurorNumber);
