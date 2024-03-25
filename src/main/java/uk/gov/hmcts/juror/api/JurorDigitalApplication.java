@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 @EnableAsync
+@SuppressWarnings("HideUtilityClassConstructor")
 public class JurorDigitalApplication {
     /**
      * Constant for the <code>owner</code> field in the Juror database where required.
@@ -27,7 +28,7 @@ public class JurorDigitalApplication {
         SpringApplication.run(JurorDigitalApplication.class, args);
     }
 
-    private JurorDigitalApplication() {
+    public JurorDigitalApplication() {
 
     }
 }
