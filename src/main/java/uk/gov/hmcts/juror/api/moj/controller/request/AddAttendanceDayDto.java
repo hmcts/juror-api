@@ -7,8 +7,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -19,13 +17,10 @@ import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAtten
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
-import uk.gov.hmcts.juror.api.validation.NumericString;
 import uk.gov.hmcts.juror.api.validation.PoolNumber;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-
-import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -49,7 +44,6 @@ public class AddAttendanceDayDto {
 
     @JsonProperty("location_code")
     @NotBlank
-    @NumericString
     @CourtLocationCode
     @Schema(description = "Unique 3 digit code to identify a court location")
     private String locationCode;

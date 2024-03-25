@@ -258,13 +258,34 @@ class JurorAppearanceServiceTest {
         jurorAppearanceService.processAppearance(buildPayload(OWNER_415, Arrays.asList("415", "462", "767")),
             jurorAppearanceDto, true);
 
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+
         verify(jurorRepository, times(1))
             .findById(JUROR_123456789);
         verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
         verify(courtLocationRepository, times(1))
             .findById(LOC_415);
-        verify(appearanceRepository, times(1)).saveAndFlush(any());
+        verify(appearanceRepository, times(1)).saveAndFlush(appearanceArgumentCaptor.capture());
+
+        Appearance appearance = appearanceArgumentCaptor.getValue();
+
+        assertThat(appearance.getTimeIn()).isEqualTo(jurorAppearanceDto.getCheckInTime());
+        assertThat(appearance.getTimeOut()).isEqualTo(jurorAppearanceDto.getCheckOutTime());
+        assertThat(appearance.getAppearanceStage()).isEqualTo(CHECKED_IN);
+    }
+
+    @Test
+    void validateTimeAndAppearanceStage() {
+        LocalTime timeIn = LocalTime.of(9, 30);
+        LocalTime timeOut = LocalTime.of(17, 30);
+
+        jurorAppearanceService = spy(jurorAppearanceService);
+
+        jurorAppearanceService.validateTimeAndAppearanceStage(timeIn, timeOut, CHECKED_IN, true);
+
+        verify(jurorAppearanceService, times(1)).validateTimeAndAppearanceStage(timeIn, timeOut,
+            CHECKED_IN, true);
     }
 
     @Test

@@ -440,7 +440,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         }
     }
 
-    private void validateTimeAndAppearanceStage(LocalTime checkInTime, LocalTime checkOutTime,
+     void validateTimeAndAppearanceStage(LocalTime checkInTime, LocalTime checkOutTime,
                                                 AppearanceStage appearanceStage, boolean allowCheckInAndOut) {
         if (allowCheckInAndOut) {
             validateCheckInNotNull(checkInTime);

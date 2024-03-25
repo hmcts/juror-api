@@ -91,6 +91,21 @@ class JurorManagementControllerTest {
     }
 
     @Test
+    void addAttendanceDayInvalidPayload() throws Exception {
+        BureauJWTPayload payload = TestUtils.createJwt("415", "COURT_USER");
+        AddAttendanceDayDto request = buildAddAttendanceDayDto();
+        request.setJurorNumber(null);
+
+        mockMvc.perform(post("/api/v1/moj/juror-management/add-attendance-day")
+                .principal(mock(BureauJwtAuthentication.class))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(request)))
+            .andExpect(status().isBadRequest());
+
+        verify(jurorAppearanceService, never()).addAttendanceDay(payload, request);
+    }
+
+    @Test
     void retrieveAttendanceDetailsOkay() throws Exception {
         List<String> jurors = new ArrayList<>();
         jurors.add("111111111");
