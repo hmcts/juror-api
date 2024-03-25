@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
@@ -74,7 +75,7 @@ class DeferredListByDateReportITest extends AbstractReportControllerITest {
                         .value(0)
                         .build()))
                 .tableData(
-                    StandardReportResponse.TableData.builder()
+                    StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
                         .headings(List.of(
                             StandardReportResponse.TableData.Heading.builder()
                                 .id("deferred_to")
@@ -102,7 +103,7 @@ class DeferredListByDateReportITest extends AbstractReportControllerITest {
                     .value(7)
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.builder()
+                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("deferred_to")
@@ -142,7 +143,7 @@ class DeferredListByDateReportITest extends AbstractReportControllerITest {
                     .value(4)
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.builder()
+                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("deferred_to")

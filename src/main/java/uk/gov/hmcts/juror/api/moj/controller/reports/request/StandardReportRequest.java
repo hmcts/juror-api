@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller.reports.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.constraints.NotBlank;
@@ -10,6 +11,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.validation.PoolNumber;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
+
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -25,4 +29,12 @@ public class StandardReportRequest {
     @PoolNumber(groups = AbstractReport.Validators.RequirePoolNumber.class)
     @NotNull(groups = AbstractReport.Validators.RequirePoolNumber.class)
     private String poolNumber;
+
+    @NotNull(groups = AbstractReport.Validators.RequireFromDate.class)
+    @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
+    private LocalDate fromDate;
+
+    @NotNull(groups = AbstractReport.Validators.RequireToDate.class)
+    @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
+    private LocalDate toDate;
 }

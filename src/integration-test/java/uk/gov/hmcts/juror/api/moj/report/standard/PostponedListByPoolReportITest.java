@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
@@ -110,7 +111,7 @@ class PostponedListByPoolReportITest extends AbstractReportControllerITest {
                     .value("CROWN COURT")
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.builder()
+                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")

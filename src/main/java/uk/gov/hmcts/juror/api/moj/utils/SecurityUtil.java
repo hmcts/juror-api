@@ -104,4 +104,8 @@ public final class SecurityUtil {
     public static UserType getUserType() {
         return getActiveUsersBureauPayload().getUserType();
     }
+
+    public static String getLocCode() {
+        return getActiveUsersBureauPayload().getLocCode();
+    }
 }

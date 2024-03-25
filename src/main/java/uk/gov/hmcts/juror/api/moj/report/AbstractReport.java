@@ -9,12 +9,15 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.Getter;
+import uk.gov.hmcts.juror.api.juror.domain.QPool;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -32,6 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Getter
@@ -39,7 +43,7 @@ import java.util.stream.Collectors;
     "PMD.LawOfDemeter",
     "PMD.TooManyMethods"
 })
-public abstract class AbstractReport {
+public abstract class AbstractReport<T> {
     static final Map<EntityPath<?>, Map<EntityPath<?>, Predicate[]>> CLASS_TO_JOIN;
 
     static {
@@ -50,6 +54,13 @@ public abstract class AbstractReport {
         ));
         CLASS_TO_JOIN.put(QJurorPool.jurorPool, Map.of(
             QJuror.juror, new Predicate[]{QJurorPool.jurorPool.juror.eq(QJuror.juror)}
+        ));
+        CLASS_TO_JOIN.put(QPool.pool, Map.of(
+            QJurorPool.jurorPool, new Predicate[]{QPool.pool.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber)}
+        ));
+        CLASS_TO_JOIN.put(QPoolRequest.poolRequest, Map.of(
+            QJurorPool.jurorPool,
+            new Predicate[]{QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber)}
         ));
         CLASS_TO_JOIN.put(QAppearance.appearance, Map.of(
             QJuror.juror, new Predicate[]{QAppearance.appearance.jurorNumber.eq(QJuror.juror.jurorNumber)},
@@ -69,6 +80,8 @@ public abstract class AbstractReport {
     final List<DataType> effectiveDataTypes;
     final EntityPath<?> from;
 
+    final List<Consumer<StandardReportRequest>> authenticationConsumers;
+
     public AbstractReport(PoolRequestRepository poolRequestRepository, EntityPath<?> from, DataType... dataType) {
         this.poolRequestRepository = poolRequestRepository;
         this.from = from;
@@ -81,6 +94,27 @@ public abstract class AbstractReport {
             .map(DataType::getRequiredTables)
             .flatMap(List::stream)
             .collect(Collectors.toSet());
+        this.authenticationConsumers = new ArrayList<>();
+    }
+
+    public void addAuthenticationConsumer(Consumer<StandardReportRequest> consumer) {
+        authenticationConsumers.add(consumer);
+    }
+
+    public void isCourtUserOnly() {
+        authenticationConsumers.add(request -> {
+            if (!SecurityUtil.isCourt()) {
+                throw new MojException.Forbidden("User not allowed to access this report", null);
+            }
+        });
+    }
+
+    public void isBureauUserOnly() {
+        authenticationConsumers.add(request -> {
+            if (!SecurityUtil.isBureau()) {
+                throw new MojException.Forbidden("User not allowed to access this report", null);
+            }
+        });
     }
 
     public abstract Class<?> getRequestValidatorClass();
@@ -89,39 +123,36 @@ public abstract class AbstractReport {
         return getClass().getSimpleName();
     }
 
-    public StandardReportResponse getStandardReportResponse(StandardReportRequest request) {
+    public AbstractReportResponse<T> getStandardReportResponse(StandardReportRequest request) {
+        authenticationConsumers.forEach(consumer -> consumer.accept(request));
         List<Tuple> data = getData(request);
-        StandardReportResponse.TableData tableData = tupleToTableData(data);
+        AbstractReportResponse.TableData<T> tableData = tupleToTableData(data);
 
-        StandardReportResponse standardReportResponse = new StandardReportResponse();
+        AbstractReportResponse<T> report = createBlankResponse();
         Map<String, StandardReportResponse.DataTypeValue> headings =
             new ConcurrentHashMap<>(getHeadings(request, tableData));
         headings.put("report_created", StandardReportResponse.DataTypeValue.builder()
             .value(DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()))
             .dataType(LocalDateTime.class.getSimpleName())
             .build());
-        standardReportResponse.setHeadings(headings);
-        standardReportResponse.setTableData(tableData);
-        return standardReportResponse;
+        report.setHeadings(headings);
+        report.setTableData(tableData);
+        return report;
     }
 
-    StandardReportResponse.TableData tupleToTableData(List<Tuple> data) {
-        StandardReportResponse.TableData tableData = new StandardReportResponse.TableData();
+    protected abstract AbstractReportResponse<T> createBlankResponse();
 
-        tableData.setHeadings(dataTypes.stream()
-            .map(this::getHeading).toList());
-        tableData.setData(data.stream()
-            .map(tuple -> dataTypes
-                .stream()
-                .map(dataType -> getDataFromReturnType(tuple, dataType))
-                .filter(entry -> {
-                    Object value = entry.getValue();
-                    return value != null && !(value instanceof Map && ((Map<?, ?>) value).isEmpty());
-                })
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> b, LinkedHashMap::new))
-            ).toList());
+    AbstractReportResponse.TableData<T> tupleToTableData(List<Tuple> data) {
+        StandardReportResponse.TableData<T> tableData =
+            new StandardReportResponse.TableData<>();
+        tableData.setHeadings(new ArrayList<>(dataTypes.stream()
+            .map(this::getHeading).toList()));
+        tableData.setData(getTableData(data));
         return tableData;
     }
+
+    protected abstract T getTableData(List<Tuple> data);
+
 
     StandardReportResponse.TableData.Heading getHeading(DataType dataType) {
         StandardReportResponse.TableData.Heading heading = StandardReportResponse.TableData.Heading.builder()
@@ -226,7 +257,7 @@ public abstract class AbstractReport {
 
     public abstract Map<String, StandardReportResponse.DataTypeValue> getHeadings(
         StandardReportRequest request,
-        StandardReportResponse.TableData tableData);
+        StandardReportResponse.TableData<T> tableData);
 
     void checkOwnership(PoolRequest poolRequest, boolean allowBureau) {
         if (!poolRequest.getOwner().equals(SecurityUtil.getActiveOwner())
@@ -274,6 +305,20 @@ public abstract class AbstractReport {
         return poolRequest.get();
     }
 
+
+    protected List<LinkedHashMap<String, Object>> getTableDataAsList(List<Tuple> data) {
+        return data.stream()
+            .map(tuple -> dataTypes
+                .stream()
+                .map(dataType -> getDataFromReturnType(tuple, dataType))
+                .filter(entry -> {
+                    Object value = entry.getValue();
+                    return value != null && !(value instanceof Map && ((Map<?, ?>) value).isEmpty());
+                })
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> b, LinkedHashMap::new))
+            ).toList();
+    }
+
     public static class Validators {
         public interface AbstractRequestValidator {
 
@@ -281,6 +326,12 @@ public abstract class AbstractReport {
 
         public interface RequirePoolNumber {
 
+        }
+
+        public interface RequireFromDate {
+        }
+
+        public interface RequireToDate {
         }
     }
 

@@ -6,9 +6,6 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +16,7 @@ import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.bureau.domain.QBureauJurorCJS;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolType;
@@ -35,7 +33,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -151,7 +148,7 @@ class AbstractReportTest {
     @Test
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveConstructorTest() {
-        AbstractReport report = new AbstractReportTestImpl(
+        AbstractReport<?> report = new AbstractReportTestImpl(
             poolRequestRepository, QJuror.juror, DataType.JUROR_NUMBER, DataType.FIRST_NAME,
             DataType.CONTACT_DETAILS, DataType.STATUS
         );
@@ -198,7 +195,7 @@ class AbstractReportTest {
             doReturn(headingsResponse).when(report).getHeadings(request, tableData);
 
 
-            StandardReportResponse response = report.getStandardReportResponse(request);
+            AbstractReportResponse<?> response = report.getStandardReportResponse(request);
 
             assertThat(response).isNotNull();
             assertThat(response.getTableData()).isEqualTo(tableData);
@@ -229,19 +226,12 @@ class AbstractReportTest {
     class TupleToTableData {
         @Test
         void positiveTypical() {
-            List<Tuple> data = List.of(
-                mock(Tuple.class),
-                mock(Tuple.class),
-                mock(Tuple.class)
-            );
-
-            AbstractReport report = createReport(
+            AbstractReport<Object> report = createReport(
                 QJuror.juror,
                 DataType.JUROR_NUMBER,
                 DataType.FIRST_NAME,
                 DataType.LAST_NAME
             );
-
 
             StandardReportResponse.TableData.Heading heading1 = StandardReportResponse.TableData.Heading.builder()
                 .dataType(String.class.getSimpleName())
@@ -266,25 +256,12 @@ class AbstractReportTest {
             doReturn(heading3)
                 .when(report)
                 .getHeading(DataType.LAST_NAME);
+            List<Tuple> data = mock(List.class);
+            Object expectedData = "some data";
+            doReturn(expectedData).when(report).getTableData(data);
 
-            doReturn(
-                new HelperEntry<>("testId1_1", "testValue1_1"),
-                new HelperEntry<>("testId1_2", "testValue1_2"),
-                new HelperEntry<>("testId1_3", "testValue1_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.JUROR_NUMBER));
-            doReturn(
-                new HelperEntry<>("testId2_1", "testValue2_1"),
-                new HelperEntry<>("testId2_2", "testValue2_2"),
-                new HelperEntry<>("testId2_3", "testValue2_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.FIRST_NAME));
 
-            doReturn(
-                new HelperEntry<>("testId3_1", "testValue3_1"),
-                new HelperEntry<>("testId3_2", "testValue3_2"),
-                new HelperEntry<>("testId3_3", "testValue3_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.LAST_NAME));
-
-            StandardReportResponse.TableData tableData = report.tupleToTableData(data);
+            StandardReportResponse.TableData<Object> tableData = report.tupleToTableData(data);
 
 
             assertThat(tableData).isNotNull();
@@ -292,23 +269,7 @@ class AbstractReportTest {
             assertThat(tableData.getHeadings()).containsAll(
                 List.of(heading1, heading2, heading3)
             );
-            assertThat(tableData.getData()).hasSize(3);
-            assertThat(tableData.getData()).containsAll(
-                List.of(
-                    new HelperMap()
-                        .add("testId1_1", "testValue1_1")
-                        .add("testId2_1", "testValue2_1")
-                        .add("testId3_1", "testValue3_1"),
-                    new HelperMap()
-                        .add("testId1_2", "testValue1_2")
-                        .add("testId2_2", "testValue2_2")
-                        .add("testId3_2", "testValue3_2"),
-                    new HelperMap()
-                        .add("testId1_3", "testValue1_3")
-                        .add("testId2_3", "testValue2_3")
-                        .add("testId3_3", "testValue3_3")
-                )
-            );
+
             verify(report, times(1))
                 .getHeading(DataType.JUROR_NUMBER);
             verify(report, times(1))
@@ -316,210 +277,7 @@ class AbstractReportTest {
             verify(report, times(1))
                 .getHeading(DataType.LAST_NAME);
             verify(report, times(1))
-                .getDataFromReturnType(data.get(0), DataType.JUROR_NUMBER);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(1), DataType.JUROR_NUMBER);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(2), DataType.JUROR_NUMBER);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(0), DataType.FIRST_NAME);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(1), DataType.FIRST_NAME);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(2), DataType.FIRST_NAME);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(0), DataType.LAST_NAME);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(1), DataType.LAST_NAME);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(2), DataType.LAST_NAME);
-        }
-
-        @Test
-        void positiveNullValue() {
-            List<Tuple> data = List.of(
-                mock(Tuple.class),
-                mock(Tuple.class),
-                mock(Tuple.class)
-            );
-
-            AbstractReport report = createReport(
-                QJuror.juror,
-                DataType.JUROR_NUMBER,
-                DataType.FIRST_NAME,
-                DataType.LAST_NAME
-            );
-
-
-            StandardReportResponse.TableData.Heading heading1 = StandardReportResponse.TableData.Heading.builder()
-                .dataType(String.class.getSimpleName())
-                .id("testId")
-                .build();
-            doReturn(heading1)
-                .when(report)
-                .getHeading(DataType.JUROR_NUMBER);
-
-            StandardReportResponse.TableData.Heading heading2 = StandardReportResponse.TableData.Heading.builder()
-                .dataType(String.class.getSimpleName())
-                .id("testId2")
-                .build();
-            doReturn(heading2)
-                .when(report)
-                .getHeading(DataType.FIRST_NAME);
-
-            StandardReportResponse.TableData.Heading heading3 = StandardReportResponse.TableData.Heading.builder()
-                .dataType(String.class.getSimpleName())
-                .id("testId3")
-                .build();
-            doReturn(heading3)
-                .when(report)
-                .getHeading(DataType.LAST_NAME);
-
-            doReturn(
-                new HelperEntry<>("testId1_1", null),
-                new HelperEntry<>("testId1_2", "testValue1_2"),
-                new HelperEntry<>("testId1_3", "testValue1_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.JUROR_NUMBER));
-            doReturn(
-                new HelperEntry<>("testId2_1", "testValue2_1"),
-                new HelperEntry<>("testId2_2", "testValue2_2"),
-                new HelperEntry<>("testId2_3", null))
-                .when(report).getDataFromReturnType(any(), eq(DataType.FIRST_NAME));
-
-            doReturn(
-                new HelperEntry<>("testId3_1", "testValue3_1"),
-                new HelperEntry<>("testId3_2", null),
-                new HelperEntry<>("testId3_3", "testValue3_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.LAST_NAME));
-
-            StandardReportResponse.TableData tableData = report.tupleToTableData(data);
-
-
-            assertThat(tableData).isNotNull();
-            assertThat(tableData.getHeadings()).hasSize(3);
-            assertThat(tableData.getHeadings()).containsAll(
-                List.of(heading1, heading2, heading3)
-            );
-            assertThat(tableData.getData()).hasSize(3);
-            assertThat(tableData.getData()).containsAll(
-                List.of(
-                    new HelperMap()
-                        .add("testId2_1", "testValue2_1")
-                        .add("testId3_1", "testValue3_1"),
-                    new HelperMap()
-                        .add("testId1_2", "testValue1_2")
-                        .add("testId2_2", "testValue2_2"),
-                    new HelperMap()
-                        .add("testId1_3", "testValue1_3")
-                        .add("testId3_3", "testValue3_3")
-                )
-            );
-        }
-
-        @Test
-        void positiveMapEmptyValue() {
-            List<Tuple> data = List.of(
-                mock(Tuple.class),
-                mock(Tuple.class),
-                mock(Tuple.class)
-            );
-
-            AbstractReport report = createReport(
-                QJuror.juror,
-                DataType.JUROR_NUMBER,
-                DataType.FIRST_NAME,
-                DataType.LAST_NAME
-            );
-
-
-            StandardReportResponse.TableData.Heading heading1 = StandardReportResponse.TableData.Heading.builder()
-                .dataType(String.class.getSimpleName())
-                .id("testId")
-                .build();
-            doReturn(heading1)
-                .when(report)
-                .getHeading(DataType.JUROR_NUMBER);
-
-            StandardReportResponse.TableData.Heading heading2 = StandardReportResponse.TableData.Heading.builder()
-                .dataType(String.class.getSimpleName())
-                .id("testId2")
-                .build();
-            doReturn(heading2)
-                .when(report)
-                .getHeading(DataType.FIRST_NAME);
-
-            StandardReportResponse.TableData.Heading heading3 = StandardReportResponse.TableData.Heading.builder()
-                .dataType(String.class.getSimpleName())
-                .id("testId3")
-                .build();
-            doReturn(heading3)
-                .when(report)
-                .getHeading(DataType.LAST_NAME);
-
-            doReturn(
-                new HelperEntry<>("testId1_1", Map.of()),
-                new HelperEntry<>("testId1_2", "testValue1_2"),
-                new HelperEntry<>("testId1_3", "testValue1_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.JUROR_NUMBER));
-            doReturn(
-                new HelperEntry<>("testId2_1", "testValue2_1"),
-                new HelperEntry<>("testId2_2", "testValue2_2"),
-                new HelperEntry<>("testId2_3", "testValue2_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.FIRST_NAME));
-
-            doReturn(
-                new HelperEntry<>("testId3_1", "testValue3_1"),
-                new HelperEntry<>("testId3_2", "testValue3_2"),
-                new HelperEntry<>("testId3_3", "testValue3_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.LAST_NAME));
-
-            StandardReportResponse.TableData tableData = report.tupleToTableData(data);
-
-
-            assertThat(tableData).isNotNull();
-            assertThat(tableData.getHeadings()).hasSize(3);
-            assertThat(tableData.getHeadings()).containsAll(
-                List.of(heading1, heading2, heading3)
-            );
-            assertThat(tableData.getData()).hasSize(3);
-            assertThat(tableData.getData()).containsAll(
-                List.of(
-                    new HelperMap()
-                        .add("testId2_1", "testValue2_1")
-                        .add("testId3_1", "testValue3_1"),
-                    new HelperMap()
-                        .add("testId1_2", "testValue1_2")
-                        .add("testId2_2", "testValue2_2")
-                        .add("testId3_2", "testValue3_2"),
-                    new HelperMap()
-                        .add("testId1_3", "testValue1_3")
-                        .add("testId2_3", "testValue2_3")
-                        .add("testId3_3", "testValue3_3")
-                )
-            );
-        }
-
-        static class HelperMap extends LinkedHashMap<String, Object> {
-
-            HelperMap add(String key, Object value) {
-                this.put(key, value);
-                return this;
-            }
-        }
-
-        @AllArgsConstructor
-        @Getter
-        @Setter
-        static class HelperEntry<K, V> implements Map.Entry<K, V> {
-
-            private K key;
-            private V value;
-
-            @Override
-            public V setValue(V value) {
-                this.value = value;
-                return value;
-            }
+                .getTableData(data);
         }
     }
 
@@ -920,7 +678,7 @@ class AbstractReportTest {
         void positiveTypical() {
             PoolRequest poolRequest = mock(PoolRequest.class);
 
-            AbstractReport report = createReport();
+            AbstractReport<Object> report = createReport();
             doReturn(poolRequest).when(report).getPoolRequest(any());
             PoolType poolType = mock(PoolType.class);
             when(poolType.getDescription()).thenReturn("Pool Type desc");
@@ -1066,16 +824,16 @@ class AbstractReportTest {
     }
 
 
-    private AbstractReport createReport(EntityPath<?> from, DataType... dataTypes) {
+    private AbstractReport<Object> createReport(EntityPath<?> from, DataType... dataTypes) {
         return spy(new AbstractReportTestImpl(poolRequestRepository,
             from, dataTypes));
     }
 
-    private AbstractReport createReport() {
+    private AbstractReport<Object> createReport() {
         return createReport(QJuror.juror, DataType.JUROR_NUMBER);
     }
 
-    private class AbstractReportTestImpl extends AbstractReport {
+    private static class AbstractReportTestImpl extends AbstractReport<Object> {
 
         public AbstractReportTestImpl(PoolRequestRepository poolRequestRepository,
                                       EntityPath<?> from, DataType... dataType) {
@@ -1084,7 +842,17 @@ class AbstractReportTest {
 
         @Override
         public Class<?> getRequestValidatorClass() {
-            throw new UnsupportedOperationException();//Only use don service layer
+            throw new UnsupportedOperationException();//Only used on service layer
+        }
+
+        @Override
+        protected AbstractReportResponse<Object> createBlankResponse() {
+            return new AbstractReportResponse<>();
+        }
+
+        @Override
+        protected Object getTableData(List<Tuple> data) {
+            throw new UnsupportedOperationException();//Only used on service layer
         }
 
         @Override
@@ -1095,7 +863,7 @@ class AbstractReportTest {
         @Override
         public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
             StandardReportRequest request,
-            StandardReportResponse.TableData tableData) {
+            StandardReportResponse.TableData<Object> tableData) {
             return new HashMap<>();
         }
     }
