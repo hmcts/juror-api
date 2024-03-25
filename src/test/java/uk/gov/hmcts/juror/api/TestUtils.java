@@ -5,8 +5,8 @@ import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
