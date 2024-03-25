@@ -100,7 +100,7 @@ public class JurorServiceImpl implements JurorService {
 
     /**
      * Gets the attendance time for a summons
-     * If the attend time in JUROR.UNIQUE_POOL is populated, this value will be returned. Otherwise the 'default' attend
+     * If the attend time in juror_mod.pool is populated, this value will be returned. Otherwise the 'default' attend
      * time for the court will be used.
      *
      * @param jurorDetails pool details to transform, not null
