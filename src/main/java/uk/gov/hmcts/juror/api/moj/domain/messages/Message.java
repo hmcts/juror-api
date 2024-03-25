@@ -20,7 +20,7 @@ import uk.gov.hmcts.juror.api.validation.JurorNumber;
 import uk.gov.hmcts.juror.api.validation.PoolNumber;
 
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * View of the JUROR Messages Table.
@@ -45,7 +45,7 @@ public class Message implements Serializable {
 
     @Id
     @Column(name = "file_datetime")
-    private LocalDate fileDatetime;
+    private LocalDateTime fileDatetime;
 
     @Id
     @Column(name = "username")
