@@ -119,8 +119,6 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     private final CoronerPoolDetailRepository coronerPoolDetailRepository;
     @NonNull
     private final CoronerPoolRepository coronerPoolRepository;
-    @NonNull
-    private final JurorHistoryService jurorHistoryService;
 
     @Override
     public PoolRequestItemDto getPoolRequest(String poolNumber, String owner) {
@@ -369,6 +367,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 jurorHistBuilder.historyCode(HistoryCodeMod.DISQUALIFY_POOL_MEMBER);
                 jurorHistBuilder.otherInformation(HistoryCodeMod.DISQUALIFY_POOL_MEMBER.getDescription());
             } else {
+                jurorHistBuilder.otherInformation(HistoryCodeMod.PRINT_SUMMONS.getDescription());
                 jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
             }
             jurorHistoryRepository.save(jurorHistBuilder.build());
@@ -417,7 +416,6 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 if (!Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)) {
                     // create a summons letter for juror
                     printDataService.printSummonsLetter(jurorPool);
-                    jurorHistoryService.createSummonsLetterHistory(jurorPool, "Summons Letter");
                 }
 
                 if (jurorsFound == poolCreateRequestDto.getCitizensToSummon()) {

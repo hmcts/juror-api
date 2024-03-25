@@ -114,8 +114,7 @@ public class PoolCreateServiceTest {
     private CoronerPoolDetailRepository coronerPoolDetailRepository;
     @Mock
     private CoronerPoolRepository coronerPoolRepository;
-    @Mock
-    private JurorHistoryService jurorHistoryService;
+
     private MockedStatic<PaginationUtil> mockStaticPaginationUtil;
     @InjectMocks
     PoolCreateServiceImpl poolCreateService;
