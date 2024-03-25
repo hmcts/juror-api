@@ -268,7 +268,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     }
 
     /**
-     * Tests that {@link JurorResponse#completedAt} is set correctly when a response is closed
+     * Tests that {@link JurorResponse# completedAt} is set correctly when a response is closed
      *
      * @param beforeTest the time the test started at (the completedAt value should be after this)
      * @since JDB-2139
