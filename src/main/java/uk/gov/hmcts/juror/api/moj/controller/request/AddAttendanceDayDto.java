@@ -37,7 +37,6 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 public class AddAttendanceDayDto {
 
     @JsonProperty("juror_number")
-    @Pattern(regexp = JUROR_NUMBER)
     @JurorNumber
     @Schema(description = "Juror number", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotEmpty
@@ -50,7 +49,6 @@ public class AddAttendanceDayDto {
 
     @JsonProperty("location_code")
     @NotBlank
-    @Size(min = 3, max = 3)
     @NumericString
     @CourtLocationCode
     @Schema(description = "Unique 3 digit code to identify a court location")

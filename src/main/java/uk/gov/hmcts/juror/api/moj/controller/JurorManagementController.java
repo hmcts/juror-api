@@ -103,7 +103,7 @@ public class JurorManagementController {
     public void addAttendanceDay(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
         @RequestBody @Valid AddAttendanceDayDto addAttendanceDayDto) {
-            jurorAppearanceService.addAttendanceDay(payload, addAttendanceDayDto);
+        jurorAppearanceService.addAttendanceDay(payload, addAttendanceDayDto);
     }
 
     @PatchMapping("/attendance/attendance-date")

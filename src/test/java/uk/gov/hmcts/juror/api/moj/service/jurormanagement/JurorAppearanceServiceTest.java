@@ -190,7 +190,7 @@ class JurorAppearanceServiceTest {
             .withMessageContaining("Invalid access to juror pool");
 
         verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndPoolPoolNumber(any(), anyString());
+            .findByJurorJurorNumberAndPoolPoolNumber(JUROR_123456789, "123456789");
         verify(jurorAppearanceService, never()).processAppearance(any(), any(), anyBoolean());
         verify(jurorAppearanceService, never()).updateConfirmAttendance(any());
 
@@ -220,6 +220,52 @@ class JurorAppearanceServiceTest {
 
     }
 
+    @Test
+    void processAppearanceBooleanTrue(){
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_123456789);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("123456789");
+        JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
+        jurorPool.setPool(poolRequest);
+        juror.setAssociatedPools(Collections.singleton(jurorPool));
+        CourtLocation courtLocation = getCourtLocation();
+
+        doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                JUROR_123456789, true);
+        doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
+
+        JurorAppearanceResponseDto.JurorAppearanceResponseData appearanceData = JurorAppearanceResponseDto
+            .JurorAppearanceResponseData.builder().jurorNumber(JUROR_123456789)
+            .lastName("LASTNAME")
+            .firstName("FIRSTNAME")
+            .checkInTime(LocalTime.of(9, 30))
+            .jurorStatus(IJurorStatus.RESPONDED)
+            .build();
+
+        List<JurorAppearanceResponseDto.JurorAppearanceResponseData> appearanceDataList = new ArrayList<>();
+        appearanceDataList.add(appearanceData);
+
+        when(appearanceRepository.getAppearanceRecords(anyString(), any(), anyString()))
+            .thenReturn(appearanceDataList);
+
+        JurorAppearanceDto jurorAppearanceDto = buildJurorAppearanceDto();
+        jurorAppearanceDto.setCheckOutTime(LocalTime.of(17, 30));
+
+        jurorAppearanceService.processAppearance(buildPayload(OWNER_415, Arrays.asList("415", "462", "767")),
+            jurorAppearanceDto, true);
+
+        verify(jurorRepository, times(1))
+            .findById(JUROR_123456789);
+        verify(jurorPoolRepository, times(1))
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+        verify(courtLocationRepository, times(1))
+            .findById(LOC_415);
+        verify(appearanceRepository, times(1)).saveAndFlush(any());
+    }
     @Test
     void testCheckInJurorHappy() {
         Juror juror = new Juror();

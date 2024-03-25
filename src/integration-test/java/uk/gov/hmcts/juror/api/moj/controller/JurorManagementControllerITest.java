@@ -248,6 +248,28 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     @DisplayName("POST addAttendanceDay() - happy path")
     @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    void addAttendanceForbiddenAccessToJurorPool() {
+        AddAttendanceDayDto requestDto = AddAttendanceDayDto.builder()
+            .jurorNumber(JUROR1)
+            .poolNumber("415230101")
+            .locationCode("475")
+            .attendanceDate(now())
+            .checkInTime(LocalTime.of(9, 30))
+            .checkOutTime(LocalTime.of(17, 30))
+            .build();
+
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                URI.create("/api/v1/moj/juror-management/add-attendance-day")), String.class);
+
+        assertThat(response.getStatusCode()).as("FORBIDDEN").isEqualTo(FORBIDDEN);
+
+    }
+
+    @Test
+    @DisplayName("POST addAttendanceDay() - happy path")
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
     void addAttendancePoolNumberNotFound() {
         AddAttendanceDayDto requestDto = AddAttendanceDayDto.builder()
             .jurorNumber(JUROR1)
