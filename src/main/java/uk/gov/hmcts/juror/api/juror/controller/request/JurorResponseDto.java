@@ -167,7 +167,7 @@ public class JurorResponseDto {
 
     @Null(groups = ThirdPartyDeceasedValidationGroup.class)
     @Schema(description = "Array of any special requirements of the Juror at the court location")
-    private List<ReasonableAdjustment> reasonableAdjustments;
+    private List<ReasonableAdjustment> specialNeeds;
 
     @Null(groups = ThirdPartyDeceasedValidationGroup.class)
     @Schema(description = "Juror text description of special arrangements required")
