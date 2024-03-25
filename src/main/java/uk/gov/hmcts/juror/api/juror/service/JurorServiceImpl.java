@@ -17,7 +17,6 @@ import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
-import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
@@ -101,7 +100,7 @@ public class JurorServiceImpl implements JurorService {
 
     /**
      * Gets the attendance time for a summons
-     * If the attend time in JUROR.UNIQUE_POOL is populated, this value will be returned. Otherwise the 'default' attend
+     * If the attend time in juror_mod.pool is populated, this value will be returned. Otherwise the 'default' attend
      * time for the court will be used.
      *
      * @param jurorDetails pool details to transform, not null
@@ -234,8 +233,8 @@ public class JurorServiceImpl implements JurorService {
 
         //convert the dto to the entity type
         final List<JurorReasonableAdjustment> reasonableAdjustmentsEntities = new ArrayList<>();
-        if (dto.getReasonableAdjustments() != null) {
-            dto.getReasonableAdjustments().forEach(reasonableAdjustment ->
+        if (dto.getSpecialNeeds() != null) {
+            dto.getSpecialNeeds().forEach(reasonableAdjustment ->
                 reasonableAdjustmentsEntities.add(
                     JurorReasonableAdjustment.builder()
                         .jurorNumber(jurorNumber)
@@ -303,7 +302,8 @@ public class JurorServiceImpl implements JurorService {
 
         // If the DTO is a third party response, add third party details to entity
         if (dto.getThirdParty() != null) {
-            builder.thirdPartyFName(dto.getThirdParty().getThirdPartyFName())
+            builder = builder
+                .thirdPartyFName(dto.getThirdParty().getThirdPartyFName())
                 .thirdPartyLName(dto.getThirdParty().getThirdPartyLName())
                 .relationship(dto.getThirdParty().getRelationship())
                 .mainPhone(dto.getThirdParty().getMainPhone())
@@ -320,15 +320,15 @@ public class JurorServiceImpl implements JurorService {
 
         // call the build method after the optional third party field are added.
 
-        DigitalResponse digitalResponse = builder.build();
+       final DigitalResponse entity = builder.build();
         // add urgency flags to the response if required
-        urgencyService.setUrgencyFlags(digitalResponse, jurorDetails);
+        urgencyService.setUrgencyFlags(entity, jurorDetails);
 
         if (log.isTraceEnabled()) {
-            log.trace("Produced: {}", digitalResponse);
+            log.trace("Produced: {}", entity);
         }
 
-        return digitalResponse;
+        return entity;
     }
 
 

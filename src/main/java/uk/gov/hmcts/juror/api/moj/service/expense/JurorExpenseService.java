@@ -72,7 +72,7 @@ public interface JurorExpenseService {
 
     void apportionSmartCard(ApportionSmartCardRequest request);
 
-    ExpenseRates getCurrentExpenseRates();
+    ExpenseRates getCurrentExpenseRates(boolean onlyFinancialLossLimit);
 
     void updateExpenseRates(ExpenseRatesDto expenseRatesDto);
 

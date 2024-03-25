@@ -57,8 +57,10 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseD
 import uk.gov.hmcts.juror.api.moj.controller.response.NameDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PaymentDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -78,6 +80,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
+import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactEnquiryTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -181,6 +184,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Autowired
     private PoolHistoryRepository poolHistoryRepository;
     @Autowired
+    private BulkPrintDataRepository bulkPrintDataRepository;
     private JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;
     private HttpHeaders httpHeaders;
 
@@ -3273,17 +3277,17 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(2, jurorPool.getStatus().getStatus(),
                 "Juror pool status should match");
 
-            List<JurorHistory> jurorHistoryList =
-                jurorHistoryRepository.findByJurorNumber(jurorNumber);
-            JurorHistory jurorHistory = jurorHistoryList.get(0);
-            verifyStandardJurorHistory(jurorPool, List.of(jurorHistory),
+            List<JurorHistory> jurorHistoryList = new ArrayList<>(
+                jurorHistoryRepository.findByJurorNumber(jurorNumber));
+            jurorHistoryList.sort(Comparator.comparing(JurorHistory::getHistoryCode));
+            verifyStandardJurorHistory(jurorPool, jurorHistoryList,
+                new JurorHistoryExpectedValues("RRES", "Confirmation Letter Auto"),
                 new JurorHistoryExpectedValues("POLG", "Passed")
             );
-            List<DisqualificationLetter> disqualificationLetters =
-                disqualificationLetterRepository.findByJurorNumber(jurorNumber);
-            assertEquals(0, disqualificationLetters.size(),
-                "As user is eligible no disqualification letters should be created");
+            verifyBulkPrintData(jurorNumber, FormCode.ENG_CONFIRMATION.getCode());
         }
+
+
 
         @ParameterizedTest
         @ValueSource(strings = {
@@ -3324,28 +3328,16 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(6, jurorPool.getStatus().getStatus(),
                 "Juror pool status should match");
 
-            List<JurorHistory> jurorHistoryList =
-                jurorHistoryRepository.findByJurorNumber(jurorNumber);
+            List<JurorHistory> jurorHistoryList = new ArrayList<>(
+                jurorHistoryRepository.findByJurorNumber(jurorNumber));
 
             verifyStandardJurorHistory(jurorPool,
-                List.of(
-                    jurorHistoryList.get(0),
-                    jurorHistoryList.get(1)
-                ),
+                jurorHistoryList,
                 new JurorHistoryExpectedValues("POLF", "Failed"),
-                new JurorHistoryExpectedValues("PDIS", "Disqualify - E")
+                new JurorHistoryExpectedValues("PDIS", "Disqualify - E"),
+                new JurorHistoryExpectedValues("RDIS", "Withdrawal Letter Auto")
             );
-            List<DisqualificationLetter> disqualificationLetters =
-                disqualificationLetterRepository.findByJurorNumber(jurorNumber);
-            assertEquals(1, disqualificationLetters.size(),
-                "As user is ineligible one disqualificaiton letter should be made");
-            DisqualificationLetter disqualificationLetter = disqualificationLetters.get(0);
-
-            assertEquals("400", disqualificationLetter.getOwner(), "Owner should match");
-            assertEquals(jurorNumber, disqualificationLetter.getJurorNumber(), "Juror number should match");
-            assertEquals("E", disqualificationLetter.getDisqCode(), "Disqualifed code should match");
-            assertEquals(Date.from(clock.instant()), disqualificationLetter.getDateDisq(),
-                "Date Disqualified should match");
+            verifyBulkPrintData(jurorNumber, FormCode.ENG_WITHDRAWAL.getCode());
         }
 
 
@@ -3384,16 +3376,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 "Disqualify date should be null");
             assertEquals(2, jurorPool.getStatus().getStatus(),
                 "Juror pool status should match");
-
-            List<JurorHistory> jurorHistoryList =
-                jurorHistoryRepository.findByJurorNumber(jurorNumber);
-            assertEquals(0, jurorHistoryList.size(),
-                "No part histories should be created as user retry attempts left");
-            List<DisqualificationLetter> disqualificationLetters =
-                disqualificationLetterRepository.findByJurorNumber(jurorNumber);
-            assertEquals(0, disqualificationLetters.size(),
-                "User should not be disqualified as user retry attempts left");
+            verifyNoBulkPrintData(jurorNumber);
         }
+
 
         @ParameterizedTest
         @ValueSource(strings = {
@@ -3436,11 +3421,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             verifyStandardJurorHistory(jurorPool, List.of(jurorHistory),
                 new JurorHistoryExpectedValues("POLG", "Unchecked - timed out")
             );
-            List<DisqualificationLetter> disqualificationLetters =
-                disqualificationLetterRepository.findByJurorNumber(jurorNumber);
-            assertEquals(0, disqualificationLetters.size(),
-                "As user is eligible no disqualification letters should be created");
-
+            verifyBulkPrintData(jurorNumber,FormCode.ENG_CONFIRMATION.getCode());
         }
     }
 
@@ -4744,7 +4725,16 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             return requestDto;
         }
     }
+    private void verifyBulkPrintData(String jurorNumber, String formCode) {
+        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
+        assertThat(bulkPrintData).hasSize(1);
+        assertThat(bulkPrintData.get(0).getFormAttribute().getFormType()).isEqualTo(formCode);
+    }
 
+    private void verifyNoBulkPrintData(String jurorNumber) {
+        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
+        assertThat(bulkPrintData).isEmpty();
+    }
 
     private void verifyStandardJurorHistory(JurorPool jurorPool,
                                             List<JurorHistory> jurorHistoryList,

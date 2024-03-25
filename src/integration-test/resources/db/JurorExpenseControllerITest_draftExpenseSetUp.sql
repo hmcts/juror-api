@@ -80,6 +80,9 @@ values
     ('2023-01-07', '641500021', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'NON_ATTENDANCE', true,
      null, 'EXPENSE_ENTERED'),
+    ('2023-01-08', '641500021', '415', null, null, false, null, true, '415230101',
+     false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'NON_ATTENDANCE_LONG_TRIAL', true,
+     null, 'EXPENSE_ENTERED'),
 
     -- expenses for 641500022
     --3 Draft

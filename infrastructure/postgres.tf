@@ -9,7 +9,7 @@ module "postgresql_flexible" {
     azurerm.postgres_network = azurerm.postgres_network
   }
 
-  source              = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=master"
+  source              = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=feat%2Fadd-storage-tier"
   env                 = var.env
   product             = var.product
   resource_group_name = local.rg_name
@@ -17,7 +17,8 @@ module "postgresql_flexible" {
   business_area       = "sds"
   location            = var.location
   pgsql_sku           = "GP_Standard_D2s_v3"
-  pgsql_storage_mb    = 65536
+  pgsql_storage_mb    = var.pgsql_storage_mb
+  pgsql_storage_tier  = var.pgsql_storage_tier
 
   common_tags          = var.common_tags
   admin_user_object_id = var.jenkins_AAD_objectId

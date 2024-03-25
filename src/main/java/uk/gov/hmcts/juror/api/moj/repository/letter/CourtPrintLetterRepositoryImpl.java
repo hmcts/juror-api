@@ -21,10 +21,13 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.FAILED_TO_ATTEND;
 import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.POSTPONED;
+import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.SHOW_CAUSE;
 
 @Component
 @SuppressWarnings("PMD.LawOfDemeter")
@@ -55,22 +58,70 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                                           String owner, String trialNumber) {
         List<Expression<?>> expressions = fetchCommonPrintData(welsh);
 
-        // start building the sql expressions based on the letter type
-        buildExpresionsBasedOnLetterType(courtLetterType, expressions);
+        buildExpressionsBasedOnLetterType(courtLetterType, expressions);
 
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-        JPAQuery<Tuple> query =
-            queryFactory
-                .select(expressions.toArray(new Expression<?>[0]))
-                .from(JUROR_POOL)
-                .join(JUROR).on(JUROR.eq(JUROR_POOL.juror))
-                .join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
-                .join(COURT_LOCATION).on(COURT_LOCATION.eq(POOL_REQUEST.courtLocation));
+        JPAQuery<Tuple> query = selectData(expressions, welsh);
 
-        if (welsh) {
-            query.join(WELSH_COURT_LOCATION).on(WELSH_COURT_LOCATION.locCode.eq(POOL_REQUEST.courtLocation.locCode));
+        filterDataBasedOnLetterType(courtLetterType, query, trialNumber);
+
+        filterDataForAllLetterTypes(query, jurorNumber, owner);
+
+        orderResultsBasedOnLetterType(query, courtLetterType);
+
+        return query.fetchOne();
+    }
+
+    @Override
+    // Note: letterDate is specific to a letterType e.g. attendanceDate/absentDate, excusalDate, deferralDate, etc
+    public Tuple retrievePrintInformationBasedOnLetterSpecificDate(String jurorNumber, CourtLetterType letterType,
+                                                                   boolean welsh,
+                                                                   String owner, LocalDate letterDate) {
+        List<Expression<?>> expressions = fetchCommonPrintData(welsh);
+
+        // start building the sql expressions based on letter type
+        buildExpressionsBasedOnLetterType(letterType, expressions);
+
+        // select data from relevant tables
+        JPAQuery<Tuple> query = selectData(expressions, welsh);
+
+        // filter data based on letter type
+        filterDataBasedOnLetterType(letterType, query, null);
+
+        // filter based on date
+        if (SHOW_CAUSE.equals(letterType) || FAILED_TO_ATTEND.equals(letterType)) {
+            query.where(APPEARANCE.attendanceDate.eq(letterDate));
         }
 
+        // filter data for all letter types
+        filterDataForAllLetterTypes(query, jurorNumber, owner);
+
+        // order results based on letter type
+        orderResultsBasedOnLetterType(query, letterType);
+
+        return query.fetchOne();
+    }
+
+    private void orderResultsBasedOnLetterType(JPAQuery<Tuple> query, CourtLetterType courtLetterType) {
+        switch (courtLetterType) {
+            case DEFERRAL_GRANTED, POSTPONED -> query.orderBy(JUROR_POOL.deferralDate.desc());
+            case EXCUSAL_GRANTED -> query.orderBy(JUROR_POOL.juror.excusalDate.desc());
+            case WITHDRAWAL -> query.orderBy(JUROR_POOL.juror.disqualifyDate.desc());
+            case SHOW_CAUSE, FAILED_TO_ATTEND -> query.orderBy(APPEARANCE.attendanceDate.desc());
+            case CERTIFICATE_OF_EXEMPTION -> query.orderBy(PANEL.trial.trialNumber.desc());
+            case DEFERRAL_REFUSED, EXCUSAL_REFUSED, CERTIFICATE_OF_ATTENDANCE -> {
+                // currently not ordered;
+            }
+            default -> throw new MojException.NotImplemented("letter type not implemented", null);
+        }
+    }
+
+    private void filterDataForAllLetterTypes(JPAQuery<Tuple> query, String jurorNumber, String owner) {
+        query.where(JUROR_POOL.juror.jurorNumber.eq(jurorNumber));
+        query.where(JUROR_POOL.owner.eq(owner));
+    }
+
+    private void filterDataBasedOnLetterType(CourtLetterType courtLetterType,
+                                             JPAQuery<Tuple> query, String trialNumber) {
         switch (courtLetterType) {
             case DEFERRAL_GRANTED, POSTPONED -> {
                 if (POSTPONED.equals(courtLetterType)) {
@@ -105,17 +156,28 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                 .where(APPEARANCE.attendanceDate.isNotNull());
             default -> throw new MojException.NotImplemented("letter type not implemented", null);
         }
+    }
 
-        query.where(JUROR_POOL.juror.jurorNumber.eq(jurorNumber));
-        query.where(JUROR_POOL.owner.eq(owner));
+    private JPAQuery<Tuple> selectData(List<Expression<?>> expressions, boolean welsh) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        JPAQuery<Tuple> query =
+            queryFactory
+                .select(expressions.toArray(new Expression<?>[0]))
+                .from(JUROR_POOL)
+                .join(JUROR).on(JUROR.eq(JUROR_POOL.juror))
+                .join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
+                .join(COURT_LOCATION).on(COURT_LOCATION.eq(POOL_REQUEST.courtLocation));
 
-        return query.fetchOne();
+        if (welsh) {
+            query.join(WELSH_COURT_LOCATION).on(WELSH_COURT_LOCATION.locCode.eq(POOL_REQUEST.courtLocation.locCode));
+        }
+
+        return query;
     }
 
     @SuppressWarnings("PMD.CyclomaticComplexity")
-    private static void buildExpresionsBasedOnLetterType(CourtLetterType courtLetterType,
-                                                         List<Expression<?>> expressions) {
-        // Add switch/if statements for separate letter types e.g. certificate of attendance
+    private static void buildExpressionsBasedOnLetterType(CourtLetterType courtLetterType,
+                                                          List<Expression<?>> expressions) {
         switch (courtLetterType) {
             case DEFERRAL_GRANTED, POSTPONED -> {
                 expressions.add(JUROR_POOL.deferralDate);
@@ -151,7 +213,6 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                 expressions.add(APPEARANCE.miscAmountDue);
                 expressions.add(APPEARANCE.lossOfEarningsDue);
             }
-
             default -> throw new MojException.NotImplemented("letter type not implemented", null);
         }
     }

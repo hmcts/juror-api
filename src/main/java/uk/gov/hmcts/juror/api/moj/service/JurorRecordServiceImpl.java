@@ -146,7 +146,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private final BureauService bureauService;
     private final ResponseExcusalService responseExcusalService;
     private final JurorAuditChangeService jurorAuditChangeService;
-    private final LetterServiceMod letterServiceMod;
+    private final PrintDataService printDataService;
     private final GeneratePoolNumberService generatePoolNumberService;
     private final CourtLocationRepository courtLocationRepository;
     private final PoolHistoryRepository poolHistoryRepository;
@@ -835,7 +835,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         JurorPoolUtils.checkMultipleRecordReadAccess(jurorPoolRepository, jurorNumber, owner);
 
         ModJurorDetail jurorDetails = jurorDetailRepositoryMod.findById(jurorNumber)
-            .orElseThrow( () -> new MojException.NotFound(String.format("Could not find juror details for %s",
+            .orElseThrow(() -> new MojException.NotFound(String.format("Could not find juror details for %s",
                 jurorNumber), null));
 
         BureauJurorDetailDto responseDto = bureauService.mapJurorDetailsToDto(jurorDetails);
@@ -1063,7 +1063,12 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             //These values are set to null to align to the oracle JUROR.phoenix_checking.finalise procedure
             juror.setDisqualifyCode(null);
             juror.setDisqualifyDate(null);
+
             jurorHistoryService.createPoliceCheckQualifyHistory(jurorPool, newPoliceCheckValue.isChecked());
+            if (jurorPool.getOwner().equals(SecurityUtil.BUREAU_OWNER)) {
+                printDataService.printConfirmationLetter(jurorPool);
+                jurorHistoryService.createConfirmServiceHistory(jurorPool, "Confirmation Letter Auto");
+            }
         } else if (newPoliceCheckValue == PoliceCheck.INELIGIBLE) {
             log.debug("Juror {} is ineligible disqualifying for police check", jurorNumber);
             jurorPool.setStatus(
@@ -1071,8 +1076,11 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             juror.setDisqualifyCode(DisCode.ELECTRONIC_POLICE_CHECK_FAILURE);
             juror.setDisqualifyDate(LocalDate.now(clock));
 
-            letterServiceMod.createDisqualificationLetter(juror);
             jurorHistoryService.createPoliceCheckDisqualifyHistory(jurorPool);
+            if (jurorPool.getOwner().equals(SecurityUtil.BUREAU_OWNER)) {
+                printDataService.printWithdrawalLetter(jurorPool);
+                jurorHistoryService.createWithdrawHistory(jurorPool, "Withdrawal Letter Auto");
+            }
         } else if (newPoliceCheckValue == PoliceCheck.IN_PROGRESS) {
             log.debug("Juror {} police check is in progress adding part history", jurorNumber);
             jurorHistoryService.createPoliceCheckInProgressHistory(jurorPool);
@@ -1168,13 +1176,14 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
 
-        return appearances.stream()
-            .filter(appearance ->
-                Set.of(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_AUTHORISED,
-                        AppearanceStage.EXPENSE_EDITED)
-                    .contains(appearance.getAppearanceStage()))
+        List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> collect = appearances.stream()
+            .filter(appearance -> appearance.getAppearanceStage() != null)
+            .filter(appearance -> !Set.of(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
+                .contains(appearance.getAppearanceStage()))
             .map(JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData::new)
             .collect(Collectors.toList());
+
+        return collect;
     }
 
     @Override
