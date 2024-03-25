@@ -89,15 +89,15 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
 
-
     @Override
     @Transactional
     public JurorAppearanceResponseDto.JurorAppearanceResponseData processAppearance(
         BureauJWTPayload payload, JurorAppearanceDto jurorAppearanceDto) {
-        return processAppearance(payload,jurorAppearanceDto, false);
+        return processAppearance(payload, jurorAppearanceDto, false);
     }
-     JurorAppearanceResponseDto.JurorAppearanceResponseData processAppearance(
-        BureauJWTPayload payload, JurorAppearanceDto jurorAppearanceDto , boolean allowBothCheckInAndOut) {
+
+    JurorAppearanceResponseDto.JurorAppearanceResponseData processAppearance(
+        BureauJWTPayload payload, JurorAppearanceDto jurorAppearanceDto, boolean allowBothCheckInAndOut) {
 
         final String jurorNumber = jurorAppearanceDto.getJurorNumber();
         final String locCode = jurorAppearanceDto.getLocationCode();
@@ -445,16 +445,16 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         if (allowCheckInAndOut) {
             validateCheckInNotNull(checkInTime);
             validateCheckOutNotNull(checkOutTime);
-        }  else if (appearanceStage == AppearanceStage.CHECKED_IN) {
+        } else if (appearanceStage == AppearanceStage.CHECKED_IN) {
             validateCheckInNotNull(checkInTime);
         } else if (appearanceStage == AppearanceStage.CHECKED_OUT) {
             validateCheckOutNotNull(checkOutTime);
-        }  else {
+        } else {
             throw new MojException.BadRequest("Invalid appearance stage and time combination supplied", null);
         }
         validateBothCheckInAndOutTimeNotNull(checkInTime, checkOutTime);
 
-        if (!allowCheckInAndOut){
+        if (!allowCheckInAndOut) {
             validateBothCheckInAndOutTimeNotSet(checkInTime, checkOutTime);
         }
 
@@ -569,7 +569,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         return AttendanceDetailsResponse.builder().details(details).summary(summary).build();
     }
 
-     AttendanceDetailsResponse updateConfirmAttendance(UpdateAttendanceDto.CommonData updateCommonData) {
+    AttendanceDetailsResponse updateConfirmAttendance(UpdateAttendanceDto.CommonData updateCommonData) {
         // 1. retrieve details of jurors who attended court for the given attendance date (checked-in)
         RetrieveAttendanceDetailsDto.CommonData retrieveCommonData = new RetrieveAttendanceDetailsDto.CommonData();
         retrieveCommonData.setAttendanceDate(updateCommonData.getAttendanceDate());
