@@ -19,10 +19,10 @@ import java.util.List;
     "/db/mod/reports/NextDayNonAttendanceReportITest_typical.sql"
 })
 @SuppressWarnings("PMD.LawOfDemeter")
-class NextDayNonAttendanceReportITest extends AbstractReportControllerITest {
+class NextAttendanceDayReportITest extends AbstractReportControllerITest {
     @Autowired
-    public NextDayNonAttendanceReportITest(TestRestTemplate template) {
-        super(template, NextDayNonAttendanceReport.class);
+    public NextAttendanceDayReportITest(TestRestTemplate template) {
+        super(template, NextAttendanceDayReport.class);
     }
 
     @Override

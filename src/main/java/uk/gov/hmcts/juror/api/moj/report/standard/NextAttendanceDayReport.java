@@ -14,9 +14,9 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import java.util.Map;
 
 @Component
-public class NextDayNonAttendanceReport extends AbstractReport {
+public class NextAttendanceDayReport extends AbstractReport {
     @Autowired
-    public NextDayNonAttendanceReport(PoolRequestRepository poolRequestRepository) {
+    public NextAttendanceDayReport(PoolRequestRepository poolRequestRepository) {
         super(poolRequestRepository,
             QJurorPool.jurorPool,
             DataType.JUROR_NUMBER,

@@ -19,10 +19,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @SuppressWarnings("PMD.LawOfDemeter")
-class NextDayNonAttendanceReportTest extends AbstractReportTestSupport<NextDayNonAttendanceReport> {
-    public NextDayNonAttendanceReportTest() {
+class NextAttendanceDayReportTest extends AbstractReportTestSupport<NextAttendanceDayReport> {
+    public NextAttendanceDayReportTest() {
         super(QJurorPool.jurorPool,
-            NextDayNonAttendanceReport.RequestValidator.class,
+            NextAttendanceDayReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
@@ -31,8 +31,8 @@ class NextDayNonAttendanceReportTest extends AbstractReportTestSupport<NextDayNo
     }
 
     @Override
-    public NextDayNonAttendanceReport createReport(PoolRequestRepository poolRequestRepository) {
-        return new NextDayNonAttendanceReport(poolRequestRepository);
+    public NextAttendanceDayReport createReport(PoolRequestRepository poolRequestRepository) {
+        return new NextAttendanceDayReport(poolRequestRepository);
     }
 
     @Override
