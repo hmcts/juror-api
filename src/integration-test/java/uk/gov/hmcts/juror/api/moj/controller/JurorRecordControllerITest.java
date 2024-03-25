@@ -27,7 +27,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetter;
 import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
@@ -107,7 +106,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -3288,7 +3286,6 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
 
 
-
         @ParameterizedTest
         @ValueSource(strings = {
             "111111111",
@@ -3421,7 +3418,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             verifyStandardJurorHistory(jurorPool, List.of(jurorHistory),
                 new JurorHistoryExpectedValues("POLG", "Unchecked - timed out")
             );
-            verifyBulkPrintData(jurorNumber,FormCode.ENG_CONFIRMATION.getCode());
+            verifyBulkPrintData(jurorNumber, FormCode.ENG_CONFIRMATION.getCode());
         }
     }
 
@@ -4725,6 +4722,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             return requestDto;
         }
     }
+
     private void verifyBulkPrintData(String jurorNumber, String formCode) {
         List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
         assertThat(bulkPrintData).hasSize(1);

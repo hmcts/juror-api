@@ -74,8 +74,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Value("${jwt.secret.public}")
     private String publicSecret;
 
-    private LocalDate DOB_40_YEARS_OLD;
-    private JurorResponseDto.Qualify VALID_QUALIFY;
+    private LocalDate dob40YearsOld;
+    private JurorResponseDto.Qualify validQualify;
 
     private int youngestJurorAgeAllowed;
     private int tooOldJurorAge;
@@ -88,10 +88,10 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         //create a valid DOB
-        DOB_40_YEARS_OLD = LocalDate.now().minusYears(40L);
+        dob40YearsOld = LocalDate.now().minusYears(40L);
 
         //create a valid Qualify
-        VALID_QUALIFY = JurorResponseDto.Qualify.builder()
+        validQualify = JurorResponseDto.Qualify.builder()
             .convicted(JurorResponseDto.Answerable.builder().answer(false).build())
             .livedConsecutive(JurorResponseDto.Answerable.builder().answer(true).build())
             .mentalHealthAct(JurorResponseDto.Answerable.builder().answer(false).build())
@@ -265,8 +265,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "644892530", "Joseph", "Dredd", "123456 Pleasant Walk",
                 "Cube Four",
                 "Block 871",
-                "M1 1AB", DOB_40_YEARS_OLD,
-                "012341234567", "dredd@megaone.web", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "M1 1AB", dob40YearsOld,
+                "012341234567", "dredd@megaone.web", validQualify, null, ReplyMethod.DIGITAL)
             .title("Judge")
             .specialNeeds(Collections.singletonList(JurorResponseDto.ReasonableAdjustment.builder()
                 .assistanceType("V")
@@ -316,7 +316,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     /**
-     * Backend test for the first-party aspect of the JDB-1937 bug
+     * Backend test for the first-party aspect of the JDB-1937 bug.
      *
      * @throws Exception if the test falls over
      */
@@ -390,7 +390,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -411,7 +411,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number= '644892530'",
@@ -442,7 +443,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -458,7 +459,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
@@ -485,8 +487,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "644892530", "Joseph", "Dredd", "123456 Pleasant Walk",
                 "Cube Four",
                 "Block 871",
-                "M1 1AB", DOB_40_YEARS_OLD,
-                null, null, VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "M1 1AB", dob40YearsOld,
+                null, null, validQualify, null, ReplyMethod.DIGITAL)
             .title("Judge")
             .build();
 
@@ -539,7 +541,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -612,7 +614,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .qualify(JurorResponseDto.Qualify.builder()
                 .livedConsecutive(JurorResponseDto.Answerable.builder().answer(true).build()).build())
@@ -634,7 +636,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history", Integer.class)).isEqualTo(0);
@@ -644,7 +647,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
 
     /**
-     * Asserts that the excusal date is null when there isn't an excusal
+     * Asserts that the excusal date is null when there isn't an excusal.
      *
      * @since JDB-1902
      */
@@ -678,7 +681,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .cjsEmployment(Collections.singletonList(
                     JurorResponseDto.CJSEmployment.builder()
@@ -691,13 +694,14 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         assertThat(jdbcTemplate.queryForObject("select count(*) FROM juror_mod.app_setting where SETTING='"
             + StraightThroughType.ACCEPTANCE.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            0);
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class))
+            .isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(
-            1);//summoned
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class))
+            .isEqualTo(1);//summoned
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<String> exchange = template.exchange(requestEntity, String.class);
@@ -708,7 +712,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(
             1);//summoned
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_CJS_EMPLOYMENT",
@@ -755,7 +760,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .specialNeeds(Collections.singletonList(
                 JurorResponseDto.ReasonableAdjustment.builder()
@@ -768,13 +773,15 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.app_setting where SETTING='"
             + StraightThroughType.ACCEPTANCE.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            0);
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class))
+            .isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class))
+            .isEqualTo(1);
         //summoned
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<String> exchange = template.exchange(requestEntity, String.class);
@@ -785,7 +792,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(
             1);//summoned
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_reasonable_adjustment",
@@ -857,7 +865,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             String.class)).isEqualTo("TODO");
         assertThat(jdbcTemplate.queryForObject("select THIRDPARTY_REASON from juror_mod.juror_response",
             String.class)).isEqualToIgnoringCase("deceased");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
@@ -914,9 +923,10 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .containsExactlyInAnyOrder("thirdParty.thirdPartyFName", "thirdParty.thirdPartyLName", "thirdParty",
                 "thirdParty.relationship");
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            0);
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class))
+            .isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
@@ -964,7 +974,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject(
             "select count(*) from juror_mod.juror_history WHERE OTHER_INFORMATION='ADD Excuse - D' and "
@@ -1004,7 +1015,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -1086,7 +1097,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -1171,7 +1182,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -1188,10 +1199,12 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            1);
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
-        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class))
+            .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class))
+            .isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
                 Integer.class)).isEqualTo(0);
@@ -1259,7 +1272,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -1276,11 +1289,14 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            1);
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
-        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class))
+            .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class))
+            .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history "
+                + "WHERE pool_number='644892530'",
             Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
@@ -1346,7 +1362,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -1363,11 +1379,14 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            1);
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
-        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class))
+            .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class))
+            .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history "
+                + "WHERE pool_number='644892530'",
             Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
@@ -1422,7 +1441,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .cjsEmployment(Collections.singletonList(JurorResponseDto.CJSEmployment.builder()
                 .cjsEmployer("Mega City 1 Hall of Justice")
@@ -1444,7 +1463,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject(
             "select count(*) from juror_mod.juror_history WHERE OTHER_INFORMATION='ADD Excuse - D' and "
@@ -1774,7 +1794,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     /**
-     * Should accept response if 'use juror email' is set and no third party email is provided
+     * Should accept response if 'use juror email' is set and no third party email is provided.
      *
      * @throws Exception if the test falls over
      */

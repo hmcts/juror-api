@@ -42,10 +42,12 @@ public class JurorReasonableAdjustmentRepositoryTest extends AbstractIntegration
     @Test
     @Sql("/db/truncate.sql")
     @Sql("/db/BureauJurorSpecialNeedsRepository_findByJurorNumber.sql")
-    public void findBYJurorNumber_WithValidJurorNumber_ReturnsJurorSpecialNeeds() {
-        List<JurorReasonableAdjustment> actualReasonableAdjustment = jurorReasonableAdjustmentRepository.findByJurorNumber("209092530");
+    public void findByJurorNumberWithValidJurorNumberReturnsJurorSpecialNeeds() {
+        List<JurorReasonableAdjustment> actualReasonableAdjustment = jurorReasonableAdjustmentRepository
+            .findByJurorNumber("209092530");
         assertThat(actualReasonableAdjustment).hasSize(1);
-        assertThat(actualReasonableAdjustment).extracting("jurorNumber", "reasonableAdjustment.code", "reasonableAdjustment.description", "reasonableAdjustmentDetail")
+        assertThat(actualReasonableAdjustment).extracting("jurorNumber", "reasonableAdjustment.code",
+                "reasonableAdjustment.description", "reasonableAdjustmentDetail")
             .contains(tuple(reasonableAdjustment.getJurorNumber(),
                 reasonableAdjustment.getReasonableAdjustment().getCode(),
                 reasonableAdjustment.getReasonableAdjustment().getDescription(),

@@ -59,9 +59,6 @@ public class CourtCatchmentControllerTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauResponseCourtCatchmentController.sql")
     public void courtCatchment_Changed() throws Exception {
-        final Integer VALID_VERSION = 555;
-
-
         final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
@@ -79,8 +76,8 @@ public class CourtCatchmentControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT ZIP FROM JUROR.POOL WHERE PART_NO = '209092530'",
             String.class)).isEqualTo("AB39RY");
 
-        assertThat(jdbcTemplate.queryForObject("SELECT ZIP FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE JUROR_NUMBER = " +
-            "'209092530'", String.class)).isEqualTo("RG16HA");
+        assertThat(jdbcTemplate.queryForObject("SELECT ZIP FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE JUROR_NUMBER = "
+            + "'209092530'", String.class)).isEqualTo("RG16HA");
 
 
         URI uri = URI.create("/api/v1/bureau/juror/court/catchment/209092530");
@@ -100,9 +97,6 @@ public class CourtCatchmentControllerTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauResponseCourtCatchmentController.sql")
     public void courtCatchment_Unchanged() throws Exception {
-        final Integer VALID_VERSION = 555;
-
-
         final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
@@ -120,8 +114,8 @@ public class CourtCatchmentControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT ZIP FROM JUROR.POOL WHERE PART_NO = '586856851'",
             String.class)).isEqualTo("CF62SW");
 
-        assertThat(jdbcTemplate.queryForObject("SELECT ZIP FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE JUROR_NUMBER = " +
-            "'586856851'", String.class)).isEqualTo("CF86HA");
+        assertThat(jdbcTemplate.queryForObject("SELECT ZIP FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE JUROR_NUMBER = "
+            + "'586856851'", String.class)).isEqualTo("CF86HA");
 
 
         URI uri = URI.create("/api/v1/bureau/juror/court/catchment/586856851");
@@ -141,7 +135,7 @@ public class CourtCatchmentControllerTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauResponseCourtCatchmentController_Unhappy.sql")
     public void courtCatchment_Loc_Code_Not_Found_Unhappy() throws Exception {
-        final Integer VALID_VERSION = 555;
+        final Integer validVersion = 555;
 
 
         final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
@@ -160,8 +154,8 @@ public class CourtCatchmentControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT ZIP FROM JUROR.POOL WHERE PART_NO = '586856851'",
             String.class)).isEqualTo("CF62SW");
 
-        assertThat(jdbcTemplate.queryForObject("SELECT ZIP FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE JUROR_NUMBER = " +
-            "'586856851'", String.class)).isEqualTo("CF86HA");
+        assertThat(jdbcTemplate.queryForObject("SELECT ZIP FROM JUROR_DIGITAL.JUROR_RESPONSE WHERE JUROR_NUMBER = "
+            + "'586856851'", String.class)).isEqualTo("CF86HA");
 
 
         URI uri = URI.create("/api/v1/bureau/juror/court/catchment/209092530");

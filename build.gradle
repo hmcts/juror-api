@@ -276,10 +276,6 @@ sourceSets {
 checkstyleMain {
     maxWarnings = 573
 }
-checkstyleIntegrationTest {
-
-    maxWarnings = 315
-}
 checkstyle {
     maxWarnings = 0
     toolVersion = '10.14.2'

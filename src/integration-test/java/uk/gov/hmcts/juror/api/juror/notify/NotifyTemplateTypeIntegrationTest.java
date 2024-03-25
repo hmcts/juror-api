@@ -56,7 +56,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKey_DISQUALIFICATION_AGE() {
+    public void getAppSettingKeyDisqualificationAge() {
         final NotifyTemplateType type = DISQUALIFICATION_AGE;
 
         final Set<Object> settings =
@@ -103,7 +103,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKey_EXCUSAL_DECEASED() {
+    public void getAppSettingKeyExcusalDeceased() {
         final NotifyTemplateType type = EXCUSAL_DECEASED;
 
         final Set<Object> settings =
@@ -150,7 +150,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKey_EXCUSAL() {
+    public void getAppSettingKeyExcusal() {
         final NotifyTemplateType type = EXCUSAL;
 
         final Set<Object> settings =
@@ -198,7 +198,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKey_STRAIGHT_THROUGH() {
+    public void getAppSettingKeyStraightThrough() {
         final NotifyTemplateType type = STRAIGHT_THROUGH;
 
         final Set<Object> settings =
@@ -245,7 +245,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKey_DEFERRAL() {
+    public void getAppSettingKeyDeferral() {
         final NotifyTemplateType type = DEFERRAL;
 
         final Set<Object> settings =
@@ -292,7 +292,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKey_DISQUALIFICATION_AGE_welshLanguage() {
+    public void getAppSettingKeyDisqualificationAgeWelshLanguage() {
         final NotifyTemplateType type = DISQUALIFICATION_AGE;
 
         final Set<Object> settings =
@@ -339,7 +339,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKey_EXCUSAL_DECEASED_welshLanguage() {
+    public void getAppSettingKeyExcusalDeceasedWelshLanguage() {
         final NotifyTemplateType type = EXCUSAL_DECEASED;
 
         final Set<Object> settings =
@@ -386,7 +386,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKey_EXCUSAL_welshLanguage() {
+    public void getAppSettingKeyExcusalWelshLanguage() {
         final NotifyTemplateType type = EXCUSAL;
 
         final Set<Object> settings =
@@ -433,7 +433,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKey_STRAIGHT_THROUGH_welshLanguage() {
+    public void getAppSettingKeyStraightThroughWelshLanguage() {
         final NotifyTemplateType type = STRAIGHT_THROUGH;
 
         final Set<Object> settings =
@@ -480,7 +480,7 @@ public class NotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getAppSettingKey_DEFERRAL_welshLanguage() {
+    public void getAppSettingKeyDeferralWelshLanguage() {
         final NotifyTemplateType type = DEFERRAL;
 
         final Set<Object> settings =

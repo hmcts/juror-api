@@ -37,7 +37,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration test for {@link ResponseSendToCourtController}.
- * <p> Updated By Baharak Askarikeya - 05/07/19 - Send email & sms to super urgent send to court - JDB-3996
+ *
+ * <p>Updated By Baharak Askarikeya - 05/07/19 - Send email & sms to super urgent send to court - JDB-3996
  */
 
 @RunWith(SpringRunner.class)
@@ -60,7 +61,7 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
     private JurorPoolRepository jurorPoolRepository;
 
     @Autowired
-    private JurorCommsNotificationService JurorCommsNotifiyService;
+    private JurorCommsNotificationService jurorCommsNotifiyService;
 
     private HttpHeaders httpHeaders;
 
@@ -80,7 +81,7 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
 
     private ResponseSendToCourtController.SendToCourtDto dto;
     private Map<String, String> payLoad;
-    private String templateUUID;
+    private String templateUuid;
     private JurorPool pool;
 
 
@@ -150,7 +151,7 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/juror-comms-notify.sql")
     @Test
-    public void processJurorToCourt_SMS_Null() throws Exception {
+    public void processJurorToCourtSmsNull() throws Exception {
         getDto();
         assertJurorCommsEmailNotification(JUROR_NUMBER_2, TEMPLATE_NAME_1,
             JurorCommsNotifyTemplateType.SU_SENT_TO_COURT);
@@ -170,7 +171,7 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/juror-comms-notify.sql")
     @Test
-    public void processJurorToCourt_SMS_And_Email_Null() throws Exception {
+    public void processJurorToCourtSmsAndEmailNull() throws Exception {
         getDto();
 
         assertJurorCommsEmailNotification(JUROR_NUMBER_3, TEMPLATE_NAME_1,
@@ -190,7 +191,7 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/juror-comms-notify.sql")
     @Test
-    public void send_SU_SEND_TO_COURT_SMS_AND_EMAIL_ENG_comms() throws Exception {
+    public void sendSuSendToCourtSmsAndEmailEngComms() throws Exception {
         getDto();
 
         assertJurorCommsEmailNotification(JUROR_NUMBER_4, TEMPLATE_NAME_1,
@@ -210,12 +211,12 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
 
         configureNotification(jurorNumber, expectedTemplateName);
 
-        final EmailNotification emailNotification = JurorCommsNotifiyService.createEmailNotification(
-            pool, expectedType, templateUUID, payLoad);
+        final EmailNotification emailNotification = jurorCommsNotifiyService.createEmailNotification(
+            pool, expectedType, templateUuid, payLoad);
 
         assertThat(emailNotification.getTemplateId())
             .as("Correct Email Notify template selected")
-            .isEqualTo(templateUUID);
+            .isEqualTo(templateUuid);
     }
 
     private void assertJurorCommsSmsNotification(final String jurorNumber, final String expectedTemplateName,
@@ -223,18 +224,18 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
 
         configureNotification(jurorNumber, expectedTemplateName);
 
-        final SmsNotification smsNotification = JurorCommsNotifiyService.createSmsNotification(
-            pool, expectedType, templateUUID, payLoad);
+        final SmsNotification smsNotification = jurorCommsNotifiyService.createSmsNotification(
+            pool, expectedType, templateUuid, payLoad);
 
         assertThat(smsNotification.getTemplateId())
             .as("Correct Sms Notify template selected")
-            .isEqualTo(templateUUID);
+            .isEqualTo(templateUuid);
     }
 
     private void configureNotification(final String jurorNumber, final String templateName) {
 
-        templateUUID = jdbcTemplate.queryForObject(NOTIFY_TEMPLATE_SQL, String.class, templateName);
-        assertThat(templateUUID).as("UUID value present")
+        templateUuid = jdbcTemplate.queryForObject(NOTIFY_TEMPLATE_SQL, String.class, templateName);
+        assertThat(templateUuid).as("UUID value present")
             .isNotBlank().containsPattern(UUID_REGEX);
 
         payLoad = new HashMap<>();

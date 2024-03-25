@@ -221,8 +221,8 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         RequestEntity<JurorResponseSearchRequest> requestEntity =
-            new RequestEntity<>(JurorResponseSearchRequest.builder().jurorNumber("Not a number").build(), httpHeaders
-                , HttpMethod.POST, uri);
+            new RequestEntity<>(JurorResponseSearchRequest.builder().jurorNumber("Not a number").build(), httpHeaders,
+                HttpMethod.POST, uri);
         ResponseEntity<JurorResponseSearchResults> response = template.exchange(requestEntity,
             JurorResponseSearchResults.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -565,7 +565,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     }
 
     /**
-     * The backend should return a 404 when the request specifies a capacity value for a non-existent bureau officer
+     * The backend should return a 404 when the request specifies a capacity value for a non-existent bureau officer.
      *
      * @throws Exception if the test falls over
      */
@@ -599,7 +599,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     }
 
     /**
-     * The backend should return a 403 when the request specifies a capacity value for an inactive bureau officer
+     * The backend should return a 403 when the request specifies a capacity value for an inactive bureau officer.
      *
      * @throws Exception if the test falls over
      */
@@ -633,7 +633,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     }
 
     /**
-     * The backend should return a 403 when the request specifies a capacity value for a team leader
+     * The backend should return a 403 when the request specifies a capacity value for a team leader.
      *
      * @throws Exception if the test falls over
      */

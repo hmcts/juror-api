@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.Data;
 import lombok.SneakyThrows;

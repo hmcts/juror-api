@@ -30,10 +30,8 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
-import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -55,8 +53,8 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
     @Value("${jwt.secret.public}")
     private String publicSecret;
 
-    private LocalDate DOB_40_YEARS_OLD;
-    private JurorResponseDto.Qualify VALID_QUALIFY;
+    private LocalDate dob40YearsOld;
+    private JurorResponseDto.Qualify validQualify;
 
     @SuppressWarnings("Duplicates")
     @Override
@@ -67,10 +65,10 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         //create a valid DOB
-        DOB_40_YEARS_OLD = LocalDate.now().minusYears(40L);
+        dob40YearsOld = LocalDate.now().minusYears(40L);
 
         //create a valid Qualify
-        VALID_QUALIFY = JurorResponseDto.Qualify.builder()
+        validQualify = JurorResponseDto.Qualify.builder()
             .convicted(JurorResponseDto.Answerable.builder().answer(false).build())
             .livedConsecutive(JurorResponseDto.Answerable.builder().answer(true).build())
             .mentalHealthAct(JurorResponseDto.Answerable.builder().answer(false).build())
@@ -98,8 +96,8 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
                 "789456123", "Joe", "Smith", "123456 Pleasant Walk",
                 "Grimsby",
                 "Town Centre",
-                "G6 1AB", DOB_40_YEARS_OLD,
-                "012341234567", "joe@smith.dev", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "G6 1AB", dob40YearsOld,
+                "012341234567", "joe@smith.dev", validQualify, null, ReplyMethod.DIGITAL)
             .title("Mr")
             .build();
 

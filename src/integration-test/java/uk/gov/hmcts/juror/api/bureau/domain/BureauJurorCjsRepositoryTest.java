@@ -24,27 +24,27 @@ public class BureauJurorCjsRepositoryTest extends AbstractIntegrationTest {
     @Autowired
     private BureauJurorCJSRepository cjsRepository;
 
-    private BureauJurorCJS bureauJurorCJS;
+    private BureauJurorCJS bureauJurorCjs;
 
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        bureauJurorCJS = new BureauJurorCJS();
-        bureauJurorCJS.setJurorNumber("209092530");
-        bureauJurorCJS.setEmployer("HMP");
-        bureauJurorCJS.setDetails("Prison guard");
+        bureauJurorCjs = new BureauJurorCJS();
+        bureauJurorCjs.setJurorNumber("209092530");
+        bureauJurorCjs.setEmployer("HMP");
+        bureauJurorCjs.setDetails("Prison guard");
     }
 
     @Ignore("Composite key removed")
     @Test
     @Sql("/db/truncate.sql")
     @Sql("/db/BureauJurorCJSRepository_findByCjsKey.sql")
-    public void findByCjsKey_WithValidCjsCompositeKey_ReturnsCorrectCjSEmploymentDetails() {
-        List<BureauJurorCJS> actualBureauJurorCJS = cjsRepository.findByJurorNumber(bureauJurorCJS.getJurorNumber());
-        assertThat(actualBureauJurorCJS).hasSize(1);
-        assertThat(actualBureauJurorCJS).extracting("jurorNumber", "employer", "details")
-            .contains(tuple(bureauJurorCJS.getJurorNumber(), bureauJurorCJS.getEmployer(),
-                bureauJurorCJS.getDetails()));
+    public void findByCjsKeyWithValidCjsCompositeKeyReturnsCorrectCjSEmploymentDetails() {
+        List<BureauJurorCJS> actualBureauJurorCjs = cjsRepository.findByJurorNumber(bureauJurorCjs.getJurorNumber());
+        assertThat(actualBureauJurorCjs).hasSize(1);
+        assertThat(actualBureauJurorCjs).extracting("jurorNumber", "employer", "details")
+            .contains(tuple(bureauJurorCjs.getJurorNumber(), bureauJurorCjs.getEmployer(),
+                bureauJurorCjs.getDetails()));
     }
 }

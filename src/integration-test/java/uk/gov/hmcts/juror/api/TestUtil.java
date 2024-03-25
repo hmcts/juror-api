@@ -23,6 +23,11 @@ import java.util.Map;
  * Testing utility methods.
  */
 public class TestUtil {
+
+    private TestUtil() {
+
+    }
+
     /**
      * Parse an Object to JSON byte array using Jackson.
      *
@@ -41,7 +46,7 @@ public class TestUtil {
      * @return JSON String
      */
     @SneakyThrows(JsonProcessingException.class)
-    public static String parseToJsonString(final Object object)  {
+    public static String parseToJsonString(final Object object) {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(object);
     }

@@ -1095,7 +1095,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
                                                                       int statusCode) {
         AbstractJurorResponse jurorResponse = createGenericJurorResponse(replyMethod, jurorNumber);
         JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
-        Juror juror = jurorPool.getJuror();
+        final Juror juror = jurorPool.getJuror();
 
         assertThat(jurorResponse.getProcessingComplete())
             .as("No automatic processing, so processing complete flag remains unset").isNotEqualTo(Boolean.TRUE);

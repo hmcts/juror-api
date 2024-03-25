@@ -2168,7 +2168,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     private void verifyStraightThrough_ageDisqualification_notProcessed(PaperResponse jurorPaperResponse,
                                                                         JurorPool jurorPool, int statusCode) {
-        Juror juror = jurorPool.getJuror();
+        final Juror juror = jurorPool.getJuror();
         assertThat(jurorPaperResponse.getProcessingComplete())
             .as("No automatic processing, so processing complete flag remains unset")
             .isNotEqualTo(Boolean.TRUE);
