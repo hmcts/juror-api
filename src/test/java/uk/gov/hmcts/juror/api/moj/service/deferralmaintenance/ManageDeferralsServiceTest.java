@@ -135,8 +135,6 @@ class ManageDeferralsServiceTest {
     private PrintDataService printDataService;
     @Mock
     private JurorHistoryService jurorHistoryService;
-    @Mock
-    private Juror juror;
 
     @InjectMocks
     ManageDeferralsServiceImpl manageDeferralsService;
