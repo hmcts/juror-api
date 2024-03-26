@@ -7,7 +7,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPaperResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPersonalDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -51,7 +51,7 @@ public class JurorResponseServiceImpl implements JurorResponseService {
 
     @Override
     @Transactional
-    public void updateJurorPersonalDetails(BureauJWTPayload payload, JurorPersonalDetailsDto jurorPersonalDetailsDto,
+    public void updateJurorPersonalDetails(BureauJwtPayload payload, JurorPersonalDetailsDto jurorPersonalDetailsDto,
                                            String jurorNumber) {
         log.info(String.format("Juror: %s. Start updating %s response personal details by user %s", jurorNumber,
             jurorPersonalDetailsDto.getReplyMethod().getDescription(), payload.getLogin()));
@@ -229,7 +229,7 @@ public class JurorResponseServiceImpl implements JurorResponseService {
     }
 
     private void processStraightThroughResponse(AbstractJurorResponse jurorResponse,
-        JurorPool jurorPool, BureauJWTPayload payload) {
+        JurorPool jurorPool, BureauJwtPayload payload) {
         log.debug(String.format("Juror: %s. Enter juror processStraightThroughResponse", jurorPool.getJurorNumber()));
         LocalDate poolRequestReturnDate = jurorPool.getPool().getReturnDate();
 

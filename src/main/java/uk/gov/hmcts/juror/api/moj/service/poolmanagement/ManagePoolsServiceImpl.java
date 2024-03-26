@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
@@ -45,7 +45,7 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
 
     @Override
     @Transactional(readOnly = true)
-    public AvailablePoolsInCourtLocationDto findAvailablePools(String locCode, BureauJWTPayload payload) {
+    public AvailablePoolsInCourtLocationDto findAvailablePools(String locCode, BureauJwtPayload payload) {
         log.trace("Location code: {}: Enter method findAvailablePools", locCode);
 
         String owner = payload.getOwner();
@@ -68,7 +68,7 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
 
     @Override
     @Transactional(readOnly = true)
-    public AvailablePoolsInCourtLocationDto findAvailablePoolsCourtOwned(String locCode, BureauJWTPayload payload) {
+    public AvailablePoolsInCourtLocationDto findAvailablePoolsCourtOwned(String locCode, BureauJwtPayload payload) {
         log.trace("Location code: {}: Enter method findAvailablePoolsCourtOwned", locCode);
 
         String owner = payload.getOwner();
@@ -115,7 +115,7 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
     }
 
     @Override
-    public SummoningProgressResponseDto getPoolMonitoringStats(BureauJWTPayload payload, String courtLocationCode,
+    public SummoningProgressResponseDto getPoolMonitoringStats(BureauJwtPayload payload, String courtLocationCode,
                                                                String poolType) {
         final int numberOfWeeks = 8;
 

@@ -41,7 +41,7 @@ public class CourtCatchmentController {
 
         log.info("Attempting to check court catchment details, by juror {}", jurorId);
         try {
-            return ResponseEntity.ok(courtCatchmentService.CourtCatchmentFinder(jurorId));
+            return ResponseEntity.ok(courtCatchmentService.courtCatchmentFinder(jurorId));
         } catch (Exception e) {
             log.error("Failed to retrieve court catchment details: {}", e.getMessage());
             throw e;

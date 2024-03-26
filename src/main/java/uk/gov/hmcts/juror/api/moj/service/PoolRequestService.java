@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolNumbersListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestActiveListDto;
@@ -9,14 +9,13 @@ import uk.gov.hmcts.juror.api.moj.controller.response.PoolsAtCourtLocationListDt
 import uk.gov.hmcts.juror.api.moj.domain.DayType;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public interface PoolRequestService {
 
-    PoolRequestListDto getFilteredPoolRequests(BureauJWTPayload payload, String courtLocation,
+    PoolRequestListDto getFilteredPoolRequests(BureauJwtPayload payload, String courtLocation,
                                                int offset, String sortBy, String sortOrder);
 
-    void savePoolRequest(PoolRequestDto poolRequestDto, BureauJWTPayload payload);
+    void savePoolRequest(PoolRequestDto poolRequestDto, BureauJwtPayload payload);
 
     long getCourtDeferrals(String locationCode, LocalDate deferredTo);
 
@@ -24,7 +23,7 @@ public interface PoolRequestService {
 
     PoolNumbersListDto getPoolNumbers(String poolNumberPrefix);
 
-    PoolRequestActiveListDto getActivePoolRequests(BureauJWTPayload payload, String locCode,
+    PoolRequestActiveListDto getActivePoolRequests(BureauJwtPayload payload, String locCode,
                                                    String tab, int offset, String sortBy, String sortOrder);
 
     PoolsAtCourtLocationListDto getActivePoolsAtCourtLocation(String locCode);

@@ -6,10 +6,7 @@ package uk.gov.hmcts.juror.api.bureau.service;
  */
 public interface BureauProcessService extends ScheduledService {
     /**
-     * Process a particular batch process
-     *
-     * @param
-     * @return
+     * Process a particular batch process.
      */
     @Override
     void process();

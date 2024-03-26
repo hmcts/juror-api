@@ -41,7 +41,7 @@ public class CourtCatchmentServiceImpl implements CourtCatchmentService {
 
     @Override
     @Transactional
-    public CourtCatchmentStatusDto CourtCatchmentFinder(String jurorNumber) {
+    public CourtCatchmentStatusDto courtCatchmentFinder(String jurorNumber) {
 
         Optional<Pool> optPool = poolRepository.findOne(QPool.pool.jurorNumber.eq(jurorNumber));
         Pool poolDetails = optPool.isPresent()

@@ -25,13 +25,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.bureau.exception.ExcusalException;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseDeferralService;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.validation.ValidationHelper;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Date;
 
 /**
  * API endpoints controller for manual deferral operations.
@@ -55,9 +54,10 @@ public class ResponseDeferralController {
     public ResponseEntity<Void> processJurorDeferral(
         @Parameter(description = "Valid juror number") @PathVariable String jurorId,
         @Parameter(hidden = true) BureauJwtAuthentication jwt,
-        @Parameter(description = "Deferral update details") @Validated @RequestBody DeferralDto deferralDto) throws ExcusalException {
+        @Parameter(description = "Deferral update details") @Validated
+        @RequestBody DeferralDto deferralDto) throws ExcusalException {
         ValidationHelper.validateJurorNumberPathVariable(jurorId);
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) jwt.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
 
         log.info("Deferral of {} by officer {} using {}", jurorId, jwtPayload.getLogin(), deferralDto);
         responseDeferralService.processDeferralDecision(jurorId, jwtPayload.getLogin(), deferralDto);

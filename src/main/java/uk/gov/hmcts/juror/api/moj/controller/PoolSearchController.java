@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolSearchRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestSearchListDto;
 import uk.gov.hmcts.juror.api.moj.exception.UserPermissionsException;
@@ -45,7 +45,7 @@ public class PoolSearchController {
         @Parameter(hidden = true) BureauJwtAuthentication auth,
         @RequestBody @Valid PoolSearchRequestDto poolSearchRequestDto) {
 
-        BureauJWTPayload payload = (BureauJWTPayload) auth.getPrincipal();
+        BureauJwtPayload payload = (BureauJwtPayload) auth.getPrincipal();
         List<String> courts = JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner())
             ? new ArrayList<>() : payload.getStaff().getCourts();
 
@@ -58,7 +58,7 @@ public class PoolSearchController {
         throw new UserPermissionsException.CourtUnavailable();
     }
 
-    private boolean validateCourtLocation(BureauJWTPayload payload, String locCode, List<String> courts) {
+    private boolean validateCourtLocation(BureauJwtPayload payload, String locCode, List<String> courts) {
         log.trace(String.format("User %s is searching for pools in court location: %s", payload.getLogin(), locCode));
         return locCode == null || locCode.isEmpty()
             || payload.getOwner().equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)

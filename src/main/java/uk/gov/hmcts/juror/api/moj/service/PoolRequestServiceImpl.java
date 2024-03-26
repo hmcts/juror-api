@@ -19,7 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.HolidaysRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
@@ -99,7 +99,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Transactional(readOnly = true)
-    public PoolRequestListDto getFilteredPoolRequests(BureauJWTPayload payload, String courtLocation,
+    public PoolRequestListDto getFilteredPoolRequests(BureauJwtPayload payload, String courtLocation,
                                                       int offset, String sortBy, String sortOrder) {
         PoolRequestListAndCount poolRequests;
 
@@ -146,7 +146,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
     @Override
     @Transactional(noRollbackFor = {PoolRequestException.PoolRequestNotFound.class,
         CurrentlyDeferredException.DeferredMemberNotFound.class})
-    public void savePoolRequest(PoolRequestDto poolRequestDto, BureauJWTPayload payload) {
+    public void savePoolRequest(PoolRequestDto poolRequestDto, BureauJwtPayload payload) {
         log.trace("Enter savePoolRequest");
 
         validateNewPoolRequest(poolRequestDto);
@@ -286,7 +286,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
      *
      * @return a new PoolRequest object
      */
-    private PoolRequest requestPoolFromBureau(PoolRequestDto poolRequestDto, BureauJWTPayload payload) {
+    private PoolRequest requestPoolFromBureau(PoolRequestDto poolRequestDto, BureauJwtPayload payload) {
         String login = payload.getLogin();
 
         PoolRequest poolRequest = convertFromDto(poolRequestDto, payload.getOwner(), payload.getLogin());
@@ -304,7 +304,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
      *
      * @return a new PoolRequest object
      */
-    private PoolRequest createPoolForCourtUse(PoolRequestDto poolRequestDto, BureauJWTPayload payload) {
+    private PoolRequest createPoolForCourtUse(PoolRequestDto poolRequestDto, BureauJwtPayload payload) {
         String owner = payload.getOwner();
 
         if (owner.equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)) {
@@ -372,7 +372,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
     }
 
     @Override
-    public PoolRequestActiveListDto getActivePoolRequests(BureauJWTPayload payload, String locCode, String tab,
+    public PoolRequestActiveListDto getActivePoolRequests(BureauJwtPayload payload, String locCode, String tab,
                                                           int offset, String sortBy, String sortOrder) {
 
         List<PoolRequestActiveListDto.PoolRequestActiveDataDto> data = new ArrayList<>();
@@ -530,7 +530,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
     @Transactional(readOnly = true)
     public PoolsAtCourtLocationListDto getActivePoolsAtCourtLocation(String locCode) {
 
-        BureauJWTPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         String userLogin = payload.getLogin();
 
         //check if user is allowed to query the locCode supplied

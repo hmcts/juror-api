@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolAddCitizenRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.NilPoolRequestDto;
@@ -102,7 +102,7 @@ public class CreatePoolController {
     @PostMapping("/members")
     @Operation(summary = "Retrieve a list of all pool members by pool number. Post to effect a GET with body")
     public ResponseEntity<PaginatedList<FilterPoolMember>> getPoolMembers(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Validated @RequestBody PoolMemberFilterRequestQuery query) {
         PaginatedList<FilterPoolMember> poolMembers = poolCreateService.getJurorPoolsList(payload, query);
         if (poolMembers == null) {
@@ -154,7 +154,7 @@ public class CreatePoolController {
     //Only a Bureau user is allowed to create a pool
     @PreAuthorize(SecurityUtil.BUREAU_AUTH)
     public ResponseEntity<String> createPoolRequest(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Validated @RequestBody PoolCreateRequestDto poolCreateRequestDto) {
         poolCreateService.lockVotersAndCreatePool(payload, poolCreateRequestDto);
         return new ResponseEntity<>(HttpStatus.CREATED);
@@ -171,7 +171,7 @@ public class CreatePoolController {
     @Operation(summary = "Summon additional citizens to a Pool")
     @PreAuthorize(SecurityUtil.BUREAU_AUTH)
     public ResponseEntity<String> additionalSummonsForPool(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Validated @RequestBody PoolAdditionalSummonsDto poolAdditionalSummonsDto) {
         poolCreateService.lockVotersAndSummonAdditionalCitizens(payload, poolAdditionalSummonsDto);
         return new ResponseEntity<>(HttpStatus.CREATED);
@@ -187,7 +187,7 @@ public class CreatePoolController {
     @Operation(summary = "GET With Body", description = "Check number of deferred jurors for this court/date")
     @PreAuthorize(SecurityUtil.COURT_AUTH)
     public ResponseEntity<NilPoolResponseDto> checkNilPoolRequest(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Validated @RequestBody NilPoolRequestDto nilPoolRequestDto) {
         NilPoolResponseDto nilPoolResponseDto = poolCreateService.checkForDeferrals(payload.getOwner(),
             nilPoolRequestDto);
@@ -209,7 +209,7 @@ public class CreatePoolController {
     @Operation(summary = "create a Nil Pool for this court/date")
     @PreAuthorize(SecurityUtil.COURT_AUTH)
     public ResponseEntity<String> createNilPool(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Validated @RequestBody NilPoolRequestDto nilPoolRequestDto) {
         poolCreateService.createNilPool(payload.getOwner(), nilPoolRequestDto);
         return new ResponseEntity<>(HttpStatus.CREATED);
@@ -225,7 +225,7 @@ public class CreatePoolController {
     @Operation(summary = "Convert an existing Nil pool")
     @PreAuthorize(SecurityUtil.BUREAU_AUTH)
     public ResponseEntity<String> convertNilPool(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid PoolRequestDto poolRequestDto) {
         poolCreateService.convertNilPool(poolRequestDto, payload);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -241,7 +241,7 @@ public class CreatePoolController {
     @Operation(summary = "create a Coroner Pool for this court/date")
     @PreAuthorize(SecurityUtil.BUREAU_AUTH)
     public ResponseEntity<?> createCoronerPool(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Validated @RequestBody CoronerPoolRequestDto coronerPoolRequestDto) {
 
         String poolNumber = poolCreateService.createCoronerPool(payload.getOwner(), coronerPoolRequestDto);
@@ -254,7 +254,7 @@ public class CreatePoolController {
     @PreAuthorize(SecurityUtil.BUREAU_AUTH
     )
     public ResponseEntity<CoronerPoolItemDto> getCoronerPoolRequest(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam() String poolNumber) {
         CoronerPoolItemDto coronerPool = poolCreateService.getCoronerPool(poolNumber);
         if (coronerPool == null) {
@@ -272,7 +272,7 @@ public class CreatePoolController {
     @Operation(summary = "Add citizens to coroner pool")
     @PreAuthorize(SecurityUtil.BUREAU_AUTH)
     public ResponseEntity<String> addCitizensToCoronerPool(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Validated @RequestBody CoronerPoolAddCitizenRequestDto coronerPoolAddCitizenRequestDto) {
         poolCreateService.addCitizensToCoronerPool(payload.getOwner(), coronerPoolAddCitizenRequestDto);
 

@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
-import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 
 import java.util.Map;

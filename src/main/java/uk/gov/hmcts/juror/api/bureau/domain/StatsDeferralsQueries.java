@@ -18,8 +18,6 @@ public class StatsDeferralsQueries {
 
     /**
      * Query to match all deferral records for BUREAU_OR_COURT where Bureau is selected.
-     *
-     * @return
      */
 
     public static BooleanExpression isBureau() {
@@ -29,8 +27,6 @@ public class StatsDeferralsQueries {
 
     /**
      * Query to match all STATSDEFERRALS records for BUREAU_OR_COURT where Court is selected.
-     *
-     * @return
      */
 
     public static BooleanExpression isCourt() {
@@ -40,10 +36,6 @@ public class StatsDeferralsQueries {
 
     /**
      * Query to match all deferral records from STATSDEFERRALS table in between week parameters.
-     *
-     * @param startYearWeek
-     * @param endYearWeek
-     * @return
      */
 
     public static BooleanExpression deferralRecordsBetween(String startYearWeek, String endYearWeek) {
@@ -52,20 +44,11 @@ public class StatsDeferralsQueries {
 
     /**
      * Query to match deferral court records where week is between week parameters.
-     *
-     * @param startYearWeek
-     * @param endYearWeek
-     * @return
      */
     public static BooleanExpression deferralCourtRecordsBetween(String startYearWeek, String endYearWeek) {
         return statsDeferralsDetail.week.between(startYearWeek, endYearWeek).and(isCourt());
     }
 
-    /**
-     * @param startYearWeek
-     * @param endYearWeek
-     * @return
-     */
     public static BooleanExpression deferralBureauRecordsBetween(String startYearWeek, String endYearWeek) {
         return statsDeferralsDetail.week.between(startYearWeek, endYearWeek).and(isBureau());
     }

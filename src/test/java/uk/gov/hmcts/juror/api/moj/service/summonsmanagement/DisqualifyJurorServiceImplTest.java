@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetter;
 import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetterRepository;
@@ -82,7 +82,7 @@ public class DisqualifyJurorServiceImplTest {
     // Tests related to service method: getDisqualifyReasons()
     @Test
     public void getDisqualifyReasons_court_happy() {
-        BureauJWTPayload courtPayload = buildBureauPayload();
+        BureauJwtPayload courtPayload = buildBureauPayload();
         courtPayload.setOwner("411");
         DisqualifyReasonsDto disqualifyReasonsExpect = getDisqualifyReasons();
 
@@ -103,7 +103,7 @@ public class DisqualifyJurorServiceImplTest {
 
     @Test
     public void getDisqualifyReasons_bureau_happy() {
-        BureauJWTPayload courtPayload = buildBureauPayload();
+        BureauJwtPayload courtPayload = buildBureauPayload();
         DisqualifyReasonsDto disqualifyReasonsExpect = getDisqualifyReasons();
 
         DisqualifyReasonsDto disqualifyReasonsActual = disqualifyJurorService.getDisqualifyReasons(courtPayload);
@@ -123,7 +123,7 @@ public class DisqualifyJurorServiceImplTest {
 
     @Test
     public void getDisqualifyReasons_manualVerification_happy() {
-        BureauJWTPayload courtPayload = buildBureauPayload();
+        BureauJwtPayload courtPayload = buildBureauPayload();
         courtPayload.setOwner("411");
 
         DisqualifyReasonsDto disqualifyReasonsActual = disqualifyJurorService.getDisqualifyReasons(courtPayload);
@@ -191,7 +191,7 @@ public class DisqualifyJurorServiceImplTest {
         final ArgumentCaptor<DisqualificationLetter> disqLetterEntityCaptor =
             ArgumentCaptor.forClass(DisqualificationLetter.class);
 
-        BureauJWTPayload courtPayload = buildBureauPayload();
+        BureauJwtPayload courtPayload = buildBureauPayload();
         final DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDtoPaperB();
         List<JurorPool> jurorPoolList = createJurorPoolList(jurorNumber, courtPayload.getOwner());
         PaperResponse paperResponse = createPaperResponse(jurorNumber);
@@ -267,7 +267,7 @@ public class DisqualifyJurorServiceImplTest {
         final ArgumentCaptor<DisqualificationLetter> disqLetterEntityCaptor =
             ArgumentCaptor.forClass(DisqualificationLetter.class);
 
-        BureauJWTPayload courtPayload = buildBureauPayload();
+        BureauJwtPayload courtPayload = buildBureauPayload();
         final DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDtoDigitalN();
         List<JurorPool> jurorPoolList = createJurorPoolList(jurorNumber, courtPayload.getOwner());
         DigitalResponse digitalResponse = createDigitalResponse(jurorNumber);
@@ -337,7 +337,7 @@ public class DisqualifyJurorServiceImplTest {
 
     @Test
     public void disqualifyJuror_noActivePoolRecord() {
-        BureauJWTPayload courtPayload = buildBureauPayload();
+        BureauJwtPayload courtPayload = buildBureauPayload();
         DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDtoDigitalN();
 
         doReturn(new ArrayList<JurorPool>()).when(jurorPoolRepository)
@@ -366,7 +366,7 @@ public class DisqualifyJurorServiceImplTest {
 
     @Test
     public void disqualifyJuror_noPaperResponse() {
-        BureauJWTPayload courtPayload = buildBureauPayload();
+        BureauJwtPayload courtPayload = buildBureauPayload();
         DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDtoPaperB();
         List<JurorPool> jurorPoolList = createJurorPoolList(JUROR_123456789, courtPayload.getOwner());
 
@@ -397,7 +397,7 @@ public class DisqualifyJurorServiceImplTest {
 
     @Test
     public void disqualifyJuror_noDigitalResponse() {
-        BureauJWTPayload courtPayload = buildBureauPayload();
+        BureauJwtPayload courtPayload = buildBureauPayload();
         DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDtoDigitalN();
         List<JurorPool> jurorPoolList = createJurorPoolList(JUROR_123456789, courtPayload.getOwner());
 
@@ -428,7 +428,7 @@ public class DisqualifyJurorServiceImplTest {
 
     @Test
     public void disqualifyJuror_existingProcessingStatusIsComplete() {
-        BureauJWTPayload courtPayload = buildBureauPayload();
+        BureauJwtPayload courtPayload = buildBureauPayload();
         final DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDtoDigitalN();
         List<JurorPool> jurorPoolList = createJurorPoolList(JUROR_123456789, courtPayload.getOwner());
 
@@ -535,8 +535,8 @@ public class DisqualifyJurorServiceImplTest {
         return response;
     }
 
-    private BureauJWTPayload buildBureauPayload() {
-        return BureauJWTPayload.builder()
+    private BureauJwtPayload buildBureauPayload() {
+        return BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login(BUREAU_USER)

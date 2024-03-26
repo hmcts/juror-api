@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.juror.api.bureau.domain.Team;
 
 /**
- * DTO for {@link uk.gov.hmcts.juror.api.bureau.domain.Team}
+ * DTO for {@link uk.gov.hmcts.juror.api.bureau.domain.Team}.
  */
 @AllArgsConstructor
 @NoArgsConstructor

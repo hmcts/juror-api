@@ -9,12 +9,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
-import uk.gov.hmcts.juror.api.moj.domain.*;
-import uk.gov.hmcts.juror.api.moj.repository.*;
-import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 import uk.gov.hmcts.juror.api.bureau.service.BureauProcessService;
 import uk.gov.hmcts.juror.api.config.NotifyConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.NotifyRegionsConfigurationProperties;
+import uk.gov.hmcts.juror.api.moj.domain.CourtRegionMod;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.RegionNotifyTemplateMod;
+import uk.gov.hmcts.juror.api.moj.repository.CourtRegionModRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolQueries;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.RegionNotifyTemplateQueriesMod;
+import uk.gov.hmcts.juror.api.moj.repository.RegionNotifyTemplateRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -33,7 +39,6 @@ import java.util.Map;
 @Slf4j
 @Service
 public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessService {
-
 
 
     private final JurorPoolRepository jurorRepository;
@@ -126,36 +131,31 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
             log.info("Excusal Date: {}", jurorCourtDetailExcusalList.getJuror().getExcusalDate());
 
 
-            String regionIdExcusalSms = jurorCourtDetailExcusalList.getCourt().getCourtRegion().getRegionId();
-            String regionIdExcusalEmail = jurorCourtDetailExcusalList.getCourt().getCourtRegion().getRegionId();
+            final String regionIdExcusalSms = jurorCourtDetailExcusalList.getCourt().getCourtRegion().getRegionId();
+            final String regionIdExcusalEmail = jurorCourtDetailExcusalList.getCourt().getCourtRegion().getRegionId();
 
-            String phone = jurorCourtDetailExcusalList.getJuror().getAltPhoneNumber();
+            final String phone = jurorCourtDetailExcusalList.getJuror().getAltPhoneNumber();
 
-            String email = jurorCourtDetailExcusalList.getJuror().getEmail();
+            final String email = jurorCourtDetailExcusalList.getJuror().getEmail();
 
-            int emailLength = (email != null
-                ?
-                email.length()
-                :
-                    0);
+            final int emailLength = (email != null ? email.length() : 0);
             if (emailLength == 1) {
-
                 jurorCourtDetailExcusalList.getJuror().setEmail(null);
                 updateCommsStatusFlagExcusal(jurorCourtDetailExcusalList);
             }
 
-            String locCode = jurorCourtDetailExcusalList.getCourt().getLocCode();
-            String firstName = jurorCourtDetailExcusalList.getJuror().getFirstName();
-            String lastName = jurorCourtDetailExcusalList.getJuror().getLastName();
-            String jurorNumber = jurorCourtDetailExcusalList.getJurorNumber();
-            String courtAddress = jurorCourtDetailExcusalList.getCourt().getLocationAddress();
-            String courtPhone = jurorCourtDetailExcusalList.getCourt().getLocPhone();
-            String courtName = jurorCourtDetailExcusalList.getCourt().getLocCourtName();
-            String reference = jurorCourtDetailExcusalList.getJurorNumber();
+            final String locCode = jurorCourtDetailExcusalList.getCourt().getLocCode();
+            final String firstName = jurorCourtDetailExcusalList.getJuror().getFirstName();
+            final String lastName = jurorCourtDetailExcusalList.getJuror().getLastName();
+            final String jurorNumber = jurorCourtDetailExcusalList.getJurorNumber();
+            final String courtAddress = jurorCourtDetailExcusalList.getCourt().getLocationAddress();
+            final String courtPhone = jurorCourtDetailExcusalList.getCourt().getLocPhone();
+            final String courtName = jurorCourtDetailExcusalList.getCourt().getLocCourtName();
+            final String reference = jurorCourtDetailExcusalList.getJurorNumber();
 
 
-            String regionId = jurorCourtDetailExcusalList.getCourt().getCourtRegion().getRegionId();
-            String regionApikey = myRegionMap.get(regionId);
+            final String regionId = jurorCourtDetailExcusalList.getCourt().getCourtRegion().getRegionId();
+            final String regionApikey = myRegionMap.get(regionId);
             log.debug("regionApikey {} ", regionApikey);
 
 
@@ -292,18 +292,15 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
 
             log.info("jurorCourtDetailListCompleted PART_NO {}", jurorCourtDetailCompletedList.getJurorNumber());
 
-            String regionIdCompleteEmail = jurorCourtDetailCompletedList.getCourt().getCourtRegion().getRegionId();
-            String regionIdCompleteSms = jurorCourtDetailCompletedList.getCourt().getCourtRegion().getRegionId();
+            final String regionIdCompleteEmail = jurorCourtDetailCompletedList.getCourt().getCourtRegion()
+                .getRegionId();
+            final String regionIdCompleteSms = jurorCourtDetailCompletedList.getCourt().getCourtRegion().getRegionId();
 
-            String phone = jurorCourtDetailCompletedList.getJuror().getAltPhoneNumber();
+            final String phone = jurorCourtDetailCompletedList.getJuror().getAltPhoneNumber();
 
-            String email = jurorCourtDetailCompletedList.getJuror().getEmail();
+            final String email = jurorCourtDetailCompletedList.getJuror().getEmail();
 
-            int emailLength = (email != null
-                ?
-                email.length()
-                :
-                    0);
+            final int emailLength = (email != null ? email.length() : 0);
             if (emailLength == 1) {
 
                 jurorCourtDetailCompletedList.getJuror().setEmail(null);
@@ -311,15 +308,15 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 updateCommsStatusFlagCompleted(jurorCourtDetailCompletedList);
 
             }
-            String locCode = jurorCourtDetailCompletedList.getCourt().getLocCode();
-            String jurorNumber = jurorCourtDetailCompletedList.getJurorNumber();
-            String reference = jurorCourtDetailCompletedList.getJurorNumber();
+            final String locCode = jurorCourtDetailCompletedList.getCourt().getLocCode();
+            final String jurorNumber = jurorCourtDetailCompletedList.getJurorNumber();
+            final String reference = jurorCourtDetailCompletedList.getJurorNumber();
 
 
             //  String apiKey = (poolCourtDetailCompletedList != null ? poolCourtDetailCompletedList.getCourt()
             //  .getCourtRegion().getNotifyAccountKey() : null);
-            String regionId = jurorCourtDetailCompletedList.getCourt().getCourtRegion().getRegionId();
-            String regionApikey = myRegionMap.get(regionId);
+            final String regionId = jurorCourtDetailCompletedList.getCourt().getCourtRegion().getRegionId();
+            final String regionApikey = myRegionMap.get(regionId);
             log.debug("regionApikey {} ", regionApikey);
 
 
@@ -456,19 +453,16 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
 
             log.info("welshJurorCourtDetailListExcusal PART_NO {}", welshJurorCourtDetailExcusalList.getJurorNumber());
 
-            String welshRegionIdExcusalSms = welshJurorCourtDetailExcusalList.getCourt().getCourtRegion().getRegionId();
-            String welshRegionIdExcusalEmail =
+            final String welshRegionIdExcusalSms = welshJurorCourtDetailExcusalList.getCourt().getCourtRegion()
+                .getRegionId();
+            final String welshRegionIdExcusalEmail =
                 welshJurorCourtDetailExcusalList.getCourt().getCourtRegion().getRegionId();
 
-            String phone = welshJurorCourtDetailExcusalList.getJuror().getAltPhoneNumber();
+            final String phone = welshJurorCourtDetailExcusalList.getJuror().getAltPhoneNumber();
 
-            String email = welshJurorCourtDetailExcusalList.getJuror().getEmail();
+            final String email = welshJurorCourtDetailExcusalList.getJuror().getEmail();
 
-            int emailLength = (email != null
-                ?
-                email.length()
-                :
-                    0);
+            final int emailLength = (email != null ? email.length() : 0);
             if (emailLength == 1) {
 
                 welshJurorCourtDetailExcusalList.getJuror().setEmail(null);
@@ -476,19 +470,19 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
             }
 
 
-            String locCode = welshJurorCourtDetailExcusalList.getCourt().getLocCode();
-            String firstName = welshJurorCourtDetailExcusalList.getJuror().getFirstName();
-            String lastName = welshJurorCourtDetailExcusalList.getJuror().getLastName();
-            String jurorNumber = welshJurorCourtDetailExcusalList.getJurorNumber();
-            String courtAddress = welshJurorCourtDetailExcusalList.getCourt().getLocationAddress();
-            String courtPhone = welshJurorCourtDetailExcusalList.getCourt().getLocPhone();
-            String courtName = welshJurorCourtDetailExcusalList.getCourt().getLocCourtName();
-            String reference = welshJurorCourtDetailExcusalList.getJurorNumber();
+            final String locCode = welshJurorCourtDetailExcusalList.getCourt().getLocCode();
+            final String firstName = welshJurorCourtDetailExcusalList.getJuror().getFirstName();
+            final String lastName = welshJurorCourtDetailExcusalList.getJuror().getLastName();
+            final String jurorNumber = welshJurorCourtDetailExcusalList.getJurorNumber();
+            final String courtAddress = welshJurorCourtDetailExcusalList.getCourt().getLocationAddress();
+            final String courtPhone = welshJurorCourtDetailExcusalList.getCourt().getLocPhone();
+            final String courtName = welshJurorCourtDetailExcusalList.getCourt().getLocCourtName();
+            final String reference = welshJurorCourtDetailExcusalList.getJurorNumber();
 
             //    String apiKey = (welshJurorCourtDetailExcusalList != null ? welshJurorCourtDetailExcusalList.getCourt
             //    ().getCourtRegion().getNotifyAccountKey() : null);
-            String regionId = welshJurorCourtDetailExcusalList.getCourt().getCourtRegion().getRegionId();
-            String regionApikey = myRegionMap.get(regionId);
+            final String regionId = welshJurorCourtDetailExcusalList.getCourt().getCourtRegion().getRegionId();
+            final String regionApikey = myRegionMap.get(regionId);
             log.info("regionApikey {} ", regionApikey);
 
 
@@ -533,8 +527,9 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
 
             final List<RegionNotifyTemplateMod> welshRegionNotifyTriggeredExcusalTemplateListSms = Lists.newLinkedList(
                 regionNotifyTemplateRepositoryMod.findAll(welshRegionNotifyTriggeredExcusalTemplateSmsFilter));
-            final List<RegionNotifyTemplateMod> welshRegionNotifyTriggeredExcusalTemplateListEmail = Lists.newLinkedList(
-                regionNotifyTemplateRepositoryMod.findAll(welshRegionNotifyTriggeredExcusalTemplateEmailFilter));
+            final List<RegionNotifyTemplateMod> welshRegionNotifyTriggeredExcusalTemplateListEmail =
+                Lists.newLinkedList(
+                    regionNotifyTemplateRepositoryMod.findAll(welshRegionNotifyTriggeredExcusalTemplateEmailFilter));
 
 
             try {
@@ -562,7 +557,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                         );
 
                         if (emailResponse.getNotificationId() != null) {
-                            welshJurorCourtDetailExcusalList.getJuror().setServiceCompCommsStatus(updateMessageStatusSent);
+                            welshJurorCourtDetailExcusalList.getJuror()
+                                .setServiceCompCommsStatus(updateMessageStatusSent);
                             updateCommsStatusFlagExcusalWelsh(welshJurorCourtDetailExcusalList);
                         }
 
@@ -596,7 +592,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                             reference
                         );
                         if (smsResponse.getNotificationId() != null) {
-                            welshJurorCourtDetailExcusalList.getJuror().setServiceCompCommsStatus(updateMessageStatusSent);
+                            welshJurorCourtDetailExcusalList.getJuror()
+                                .setServiceCompCommsStatus(updateMessageStatusSent);
                             updateCommsStatusFlagExcusalWelsh(welshJurorCourtDetailExcusalList);
                         }
 
@@ -643,15 +640,14 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 welshJurorCourtDetailCompletedList.getJurorNumber()
             );
 
-            String welshRegionIdCompleteEmail =
+            final String welshRegionIdCompleteEmail =
                 welshJurorCourtDetailCompletedList.getCourt().getCourtRegion().getRegionId();
-            String welshRegionIdCompleteSms =
+            final String welshRegionIdCompleteSms =
                 welshJurorCourtDetailCompletedList.getCourt().getCourtRegion().getRegionId();
 
-            String phone = welshJurorCourtDetailCompletedList.getJuror().getAltPhoneNumber();
+            final String phone = welshJurorCourtDetailCompletedList.getJuror().getAltPhoneNumber();
 
-
-            String email = welshJurorCourtDetailCompletedList.getJuror().getEmail();
+            final String email = welshJurorCourtDetailCompletedList.getJuror().getEmail();
 
             int emailLength = (email != null
                 ?
@@ -664,16 +660,16 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 updateCommsStatusFlagCompletedWelsh(welshJurorCourtDetailCompletedList);
 
             }
-            String locCode = welshJurorCourtDetailCompletedList.getCourt().getLocCode();
-            String jurorNumber = welshJurorCourtDetailCompletedList.getJurorNumber();
-            String reference = welshJurorCourtDetailCompletedList.getJurorNumber();
+            final String locCode = welshJurorCourtDetailCompletedList.getCourt().getLocCode();
+            final String jurorNumber = welshJurorCourtDetailCompletedList.getJurorNumber();
+            final String reference = welshJurorCourtDetailCompletedList.getJurorNumber();
 
 
             //  String apiKey = (welshJurorCourtDetailCompletedList != null ? welshJurorCourtDetailCompletedList
             //  .getCourt().getCourtRegion().getNotifyAccountKey() : null);
 
-            String regionId = welshJurorCourtDetailCompletedList.getCourt().getCourtRegion().getRegionId();
-            String regionApikey = myRegionMap.get(regionId);
+            final String regionId = welshJurorCourtDetailCompletedList.getCourt().getCourtRegion().getRegionId();
+            final String regionApikey = myRegionMap.get(regionId);
             log.debug("regionApikey {} ", regionApikey);
 
             if (regionApikey == null || regionApikey.isEmpty()) {
@@ -708,10 +704,12 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 );
 
 
-            final List<RegionNotifyTemplateMod> welshRegionNotifyTriggeredCompletedTemplateListEmail = Lists.newLinkedList(
-                regionNotifyTemplateRepositoryMod.findAll(welshRegionNotifyTriggeredCompleteTemplateEmailFilter));
-            final List<RegionNotifyTemplateMod> welshRegionNotifyTriggeredCompletedTemplateListSms = Lists.newLinkedList(
-                regionNotifyTemplateRepositoryMod.findAll(welshRegionNotifyTriggeredCompleteTemplateSmsFilter));
+            final List<RegionNotifyTemplateMod> welshRegionNotifyTriggeredCompletedTemplateListEmail =
+                Lists.newLinkedList(
+                    regionNotifyTemplateRepositoryMod.findAll(welshRegionNotifyTriggeredCompleteTemplateEmailFilter));
+            final List<RegionNotifyTemplateMod> welshRegionNotifyTriggeredCompletedTemplateListSms =
+                Lists.newLinkedList(
+                    regionNotifyTemplateRepositoryMod.findAll(welshRegionNotifyTriggeredCompleteTemplateSmsFilter));
 
 
             try {
@@ -737,7 +735,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                             reference
                         );
                         if (emailResponse.getNotificationId() != null) {
-                            welshJurorCourtDetailCompletedList.getJuror().setServiceCompCommsStatus(updateMessageStatusSent);
+                            welshJurorCourtDetailCompletedList.getJuror()
+                                .setServiceCompCommsStatus(updateMessageStatusSent);
                             updateCommsStatusFlagCompletedWelsh(welshJurorCourtDetailCompletedList);
                         }
 
@@ -770,7 +769,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                             reference
                         );
                         if (smsResponse.getNotificationId() != null) {
-                            welshJurorCourtDetailCompletedList.getJuror().setServiceCompCommsStatus(updateMessageStatusSent);
+                            welshJurorCourtDetailCompletedList.getJuror()
+                                .setServiceCompCommsStatus(updateMessageStatusSent);
                             updateCommsStatusFlagCompletedWelsh(welshJurorCourtDetailCompletedList);
                         }
 
@@ -884,7 +884,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 );
                 throw new JurorCommsNotificationServiceException(
                     "Failed to update db to "
-                        + poolCourtDetailCompletedList.getJuror().getServiceCompCommsStatus() + ". Manual update required. ",
+                        + poolCourtDetailCompletedList.getJuror().getServiceCompCommsStatus()
+                        + ". Manual update required. ",
                     cause
                 );
             }
@@ -921,7 +922,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 );
                 throw new JurorCommsNotificationServiceException(
                     "Failed to update db to "
-                        + welshJurorCourtDetailExcusalList.getJuror().getServiceCompCommsStatus() + ". Manual update required. ",
+                        + welshJurorCourtDetailExcusalList.getJuror().getServiceCompCommsStatus()
+                        + ". Manual update required. ",
                     cause
                 );
             }
@@ -958,7 +960,8 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
                 );
                 throw new JurorCommsNotificationServiceException(
                     "Failed to update db to "
-                        + welshJurorCourtDetailCompletedList.getJuror().getServiceCompCommsStatus() + ". Manual update required. ",
+                        + welshJurorCourtDetailCompletedList.getJuror().getServiceCompCommsStatus()
+                        + ". Manual update required. ",
                     cause
                 );
             }

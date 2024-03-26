@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class BureauSecurityDecisionBean {
+
     /**
      * Constant for team leader rank.
      */
@@ -18,9 +19,12 @@ public class BureauSecurityDecisionBean {
      * Is the current user principal a team leader?.
      *
      * @param principal Principal object (JWT payload)
-     * @return
      */
     public static boolean isTeamLeader(Object principal) {
-        return TEAM_LEADER_RANK.compareTo(((BureauJWTPayload) principal).getStaff().getRank()) == 0;
+        return TEAM_LEADER_RANK.compareTo(((BureauJwtPayload) principal).getStaff().getRank()) == 0;
+    }
+
+    private BureauSecurityDecisionBean() {
+
     }
 }

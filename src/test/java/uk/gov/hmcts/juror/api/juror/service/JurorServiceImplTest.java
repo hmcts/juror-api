@@ -230,7 +230,7 @@ public class JurorServiceImplTest {
                     .build())
                 .build()
             )
-            .cjsEmployment(Collections.singletonList(JurorResponseDto.CJSEmployment.builder()
+            .cjsEmployment(Collections.singletonList(JurorResponseDto.CjsEmployment.builder()
                 .cjsEmployer(cjsEmployer)
                 .cjsEmployerDetails(cjsEmployerDetails)
                 .build()))

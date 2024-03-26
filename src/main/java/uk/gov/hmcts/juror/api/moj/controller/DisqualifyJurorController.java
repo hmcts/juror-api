@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.DisqualifyJurorDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.DisqualifyReasonsDto;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
@@ -41,7 +41,7 @@ public class DisqualifyJurorController {
     @Operation(summary = "Disqualification reasons", description = "Returns a list of disqualification reasons")
     public ResponseEntity<DisqualifyReasonsDto> disqualifyReasons(
         @Parameter(hidden = true) BureauJwtAuthentication auth) {
-        final BureauJWTPayload payload = (BureauJWTPayload) auth.getPrincipal();
+        final BureauJwtPayload payload = (BureauJwtPayload) auth.getPrincipal();
         log.trace(
             "Api controller method disqualifyReasons() started by user {} to retrieve disqualification reasons",
             payload.getLogin()
@@ -59,7 +59,7 @@ public class DisqualifyJurorController {
         @Parameter(description = "9-digit numeric string to identify the juror")
         @PathVariable(name = "jurorNumber") @JurorNumber @Valid String jurorNumber,
         @Valid @RequestBody DisqualifyJurorDto disqualifyJuror) {
-        final BureauJWTPayload payload = (BureauJWTPayload) auth.getPrincipal();
+        final BureauJwtPayload payload = (BureauJwtPayload) auth.getPrincipal();
         log.trace(
             "Juror Number {} - Api controller method disqualifyJuror() started by user {} to disqualify juror with "
                 + "disqualification code {}",
@@ -87,7 +87,7 @@ public class DisqualifyJurorController {
         @Parameter(description = "9-digit numerical String which uniquely identifies the juror")
         @PathVariable(name = "jurorNumber") @JurorNumber @Valid String jurorNumber) {
 
-        final BureauJWTPayload payload = (BureauJWTPayload) bureauJwtAuthentication.getPrincipal();
+        final BureauJwtPayload payload = (BureauJwtPayload) bureauJwtAuthentication.getPrincipal();
         log.trace(
             "Juror Number {} - Api controller method disqualifyJurorDueToAge() started by user {} to disqualify juror "
                 + "with disqualification code A",

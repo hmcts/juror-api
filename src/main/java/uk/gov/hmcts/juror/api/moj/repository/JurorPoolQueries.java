@@ -20,7 +20,7 @@ public class JurorPoolQueries {
     private static final Boolean Y = true;
     private static final Boolean N = false;
 
-    private JurorPoolQueries(){
+    private JurorPoolQueries() {
 
     }
 
@@ -28,9 +28,7 @@ public class JurorPoolQueries {
     private static final QJurorPool jurorDetail = QJurorPool.jurorPool;
 
     /**
-     *
-     * Query to match Responded Juror instances
-     *
+     * Query to match Responded Juror instances.
      */
 
 
@@ -39,7 +37,7 @@ public class JurorPoolQueries {
     }
 
 
-    /**
+    /**ø
      * Matches Juror instances where notification flag indicates, sentToCourt comms has not been sent.
      */
     public static BooleanExpression sentToCourtCommsNotSent() {
@@ -52,20 +50,21 @@ public class JurorPoolQueries {
     public static BooleanExpression infoCommsNotSent() {
         return jurorDetail.juror.notifications.eq(INFO_COMMS_NOT_SENT);
     }
+
     /**
-     *
-     *Matches on all records owned by bureau
+     * Matches on all records owned by bureau.
      */
-    public static BooleanExpression jurorRecordWithBureau(){
+    public static BooleanExpression jurorRecordWithBureau() {
         return jurorDetail.owner.eq(OWNER_IS_BUREAU);
     }
 
     /**
      * Matches on all records not with bureau.
      */
-    public static BooleanExpression jurorRecordNotWithBureau(){
+    public static BooleanExpression jurorRecordNotWithBureau() {
         return jurorDetail.owner.ne(OWNER_IS_BUREAU);
     }
+
     /**
      * Query to match instance where an email exists.
      */
@@ -76,7 +75,6 @@ public class JurorPoolQueries {
     /**
      * Query to match all records where bureau_to_court_transfer date is between 6pm and midnight.
      *
-     * @return
      */
 
     public static BooleanExpression bureauToCourtTransferDate() {
@@ -108,11 +106,11 @@ public class JurorPoolQueries {
      * Identify all Pool Records for which a sent To Comms needs to be sent.
      */
     public static BooleanExpression awaitingSentToCourtComms() {
-    return jurorDetail.jurorPool.nextDate.after(LocalDateTime.now().toLocalDate())
-        .and(respondedStatus())
-        .and(jurorRecordWithBureau())
-        .and(sentToCourtCommsNotSent())
-        .and(bureauToCourtTransferDate());
+        return jurorDetail.jurorPool.nextDate.after(LocalDateTime.now().toLocalDate())
+            .and(respondedStatus())
+            .and(jurorRecordWithBureau())
+            .and(sentToCourtCommsNotSent())
+            .and(bureauToCourtTransferDate());
     }
 
 
@@ -134,7 +132,6 @@ public class JurorPoolQueries {
     /**
      * Query to match where SERVICE_COMP_COMMS_STATUS EQUALS NULL.
      *
-     * @return
      */
     public static BooleanExpression serviceCompCommsStatus() {
         return jurorDetail.juror.serviceCompCommsStatus.isNull();
@@ -185,7 +182,8 @@ public class JurorPoolQueries {
      * Query COMPLETION_DATE between now and now minus SERVICE COMPLETION PARAMETER.
      */
     public static BooleanExpression completionDateBetweenSysdateCompletionParameter() {
-        return jurorDetail.juror.completionDate.between(LocalDateTime.now().minusDays(2L).toLocalDate(),LocalDateTime.now().toLocalDate());
+        return jurorDetail.juror.completionDate.between(LocalDateTime.now().minusDays(2L).toLocalDate(),
+            LocalDateTime.now().toLocalDate());
     }
 
     /**
@@ -212,7 +210,7 @@ public class JurorPoolQueries {
     public static BooleanExpression recordsForServiceCompletedComms() {
         return completionDateBetweenSysdateCompletionParameter().and(respondedStatus().and(serviceCompCommsStatus().and(
                 completionDateNotNull())
-                                                                                               .and(notRespondedWelsh())));
+            .and(notRespondedWelsh())));
 
 
     }
@@ -222,8 +220,8 @@ public class JurorPoolQueries {
      */
     public static BooleanExpression welshRecordsForExcusalComms() {
         return excusalDateBetweenSysdateExcusalParameter().and(excusedStatus().and(serviceCompCommsStatus()
-                                                                                       .and(excusedCode().and(
-                                                                                           respondedWelsh()))));
+            .and(excusedCode().and(
+                respondedWelsh()))));
     }
 
     /**

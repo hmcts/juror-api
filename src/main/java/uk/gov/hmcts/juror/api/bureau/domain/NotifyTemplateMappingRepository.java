@@ -15,7 +15,6 @@ public interface NotifyTemplateMappingRepository extends CrudRepository<NotifyTe
     /**
      * Find template by templateName.
      *
-     * @param templateName
      * @return NotifyTemplateMapping for the given template name.
      */
     //List<NotifyTemplateMapping> findByTemplateName(String templateName);

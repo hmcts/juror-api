@@ -36,16 +36,13 @@ import uk.gov.hmcts.juror.api.bureau.controller.request.BureauResponseStatusUpda
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseAlreadyMergedException;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseUpdateService;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
-import uk.gov.hmcts.juror.api.validation.DateOfBirth;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.validation.LocalDateOfBirth;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.Date;
 
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.EMAIL_ADDRESS_REGEX;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REGEX;
@@ -89,7 +86,7 @@ public class ResponseUpdateController {
         @Validated @RequestBody JurorNoteDto noteDto) {
         validateJurorNumberPathVariable(jurorId);
 
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) jwt.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         responseUpdateService.updateNote(noteDto, jurorId, jwtPayload.getLogin());
         log.info("Updated notes for juror {}", jurorId);
         return ResponseEntity.noContent().build();
@@ -100,7 +97,7 @@ public class ResponseUpdateController {
         description = "Insert new phone log to a single juror response by their juror number")
     public ResponseEntity<Void> updatePhoneLogByJurorNumber(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Validated @RequestBody JurorPhoneLogDto phoneLogDto) {
         validateJurorNumberPathVariable(jurorId);
         responseUpdateService.updatePhoneLog(phoneLogDto, jurorId, payload.getLogin());
@@ -129,7 +126,7 @@ public class ResponseUpdateController {
         throws ResponseAlreadyMergedException {
         validateJurorNumberPathVariable(jurorId);
 
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) jwt.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         responseUpdateService.updateJurorDetailsFirstPerson(firstPersonJurorDetailsDto, jurorId, jwtPayload
             .getLogin());
         log.info("Updated first person juror details section for juror {}", jurorId);
@@ -157,7 +154,7 @@ public class ResponseUpdateController {
         throws ResponseAlreadyMergedException {
         validateJurorNumberPathVariable(jurorId);
 
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) jwt.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         responseUpdateService.updateJurorDetailsThirdParty(thirdPartyJurorDetailsDto, jurorId, jwtPayload.getLogin());
         log.info("Updated third party juror details section for juror {}", jurorId);
         return ResponseEntity.noContent().build();
@@ -183,7 +180,7 @@ public class ResponseUpdateController {
         @Validated @RequestBody JurorEligibilityDto jurorEligibilityDto) {
         validateJurorNumberPathVariable(jurorId);
 
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) jwt.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         responseUpdateService.updateJurorEligibility(jurorEligibilityDto, jurorId, jwtPayload.getLogin());
         log.info("Updated third party juror eligibility for juror {}", jurorId);
         return ResponseEntity.noContent().build();
@@ -199,7 +196,7 @@ public class ResponseUpdateController {
         throws ResponseAlreadyMergedException {
         validateJurorNumberPathVariable(jurorId);
 
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) jwt.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         responseUpdateService.updateExcusalDeferral(deferralExcusalDto, jurorId, jwtPayload.getLogin());
         log.info("Updated update excusal/deferral section for juror {}", jurorId);
         return ResponseEntity.noContent().build();
@@ -216,7 +213,7 @@ public class ResponseUpdateController {
         throws ResponseAlreadyMergedException {
         validateJurorNumberPathVariable(jurorId);
 
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) jwt.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         responseUpdateService.updateSpecialNeeds(reasonableAdjustmentsDto, jurorId, jwtPayload.getLogin());
         log.info("Updated update special needs section for juror {}", jurorId);
         return ResponseEntity.noContent().build();
@@ -229,11 +226,11 @@ public class ResponseUpdateController {
     public ResponseEntity<Void> updateCjs(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
         @Parameter(hidden = true) BureauJwtAuthentication jwt,
-        @Validated @RequestBody CJSEmploymentDetailsDto cjsEmploymentDetailsDto)
+        @Validated @RequestBody CjsEmploymentDetailsDto cjsEmploymentDetailsDto)
         throws ResponseAlreadyMergedException {
         validateJurorNumberPathVariable(jurorId);
 
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) jwt.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         responseUpdateService.updateCjs(cjsEmploymentDetailsDto, jurorId, jwtPayload.getLogin());
         log.info("Updated CJS employee section for juror {}", jurorId);
         return ResponseEntity.noContent().build();
@@ -252,13 +249,13 @@ public class ResponseUpdateController {
     @PostMapping("/response/status")
     @Operation(summary = "Update juror response if legacy status changed",
         description = "Update and process juror response")
-    public ResponseEntity<Object> updateResponseStatus(@Parameter(description = "Valid juror number",
-        required = true) @PathVariable String jurorId,
-                                                       @Parameter(description = "Status update details") @RequestBody BureauResponseStatusUpdateDto updateResponseDto,
-                                                       @Parameter(hidden = true) BureauJwtAuthentication principal)
+    public ResponseEntity<Object> updateResponseStatus(
+        @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
+        @Parameter(description = "Status update details") @RequestBody BureauResponseStatusUpdateDto updateResponseDto,
+        @Parameter(hidden = true) BureauJwtAuthentication principal)
         throws BureauOptimisticLockingException {
 
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) principal.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) principal.getPrincipal();
 
         try {
             responseUpdateService.updateResponseStatus(jurorId, updateResponseDto.getStatus(),
@@ -602,7 +599,7 @@ public class ResponseUpdateController {
         private String other;
 
         /**
-         * Maps to {@link uk.gov.hmcts.juror.api.juror.domain.JurorResponse# specialNeedsArrangements}.
+         * Maps to {@link uk.gov.hmcts.juror.api.juror.domain.JurorResponse#specialNeedsArrangements}.
          */
         @Length(max = 1000)
         @Schema(description = "Details about required special arrangements")
@@ -613,7 +610,7 @@ public class ResponseUpdateController {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class CJSEmploymentDetailsDto implements Serializable {
+    public static class CjsEmploymentDetailsDto implements Serializable {
         @NotNull
         @Schema(description = "Optimistic locking version", requiredMode = Schema.RequiredMode.REQUIRED)
         private Integer version;

@@ -12,7 +12,7 @@ import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeEntity;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.ExcusalDecisionDto;
@@ -114,7 +114,7 @@ public class ExcusalResponseServiceImplTest {
     @Test
     public void test_refuseExcusalRequest_happyPath_paperResponse_bureauUser_bureauOwner() {
         String jurorNumber = "123456789";
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
 
@@ -134,7 +134,7 @@ public class ExcusalResponseServiceImplTest {
     @Test
     public void test_refuseExcusalRequest_happyPath_paperResponse_courtUser_courtOwner() {
         String jurorNumber = "987654321";
-        BureauJWTPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
+        BureauJwtPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
 
@@ -175,7 +175,7 @@ public class ExcusalResponseServiceImplTest {
         Mockito.doReturn(List.of(jurorPool)).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_NUMBER, true);
 
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
         excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
@@ -188,7 +188,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_grantExcusalRequest_happyPath_paperResponse_courtUser_courtOwner() {
-        final BureauJWTPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
+        final BureauJwtPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
@@ -207,7 +207,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_refuseExcusalRequest_happyPath_digitalResponse_bureauUser_bureauOwner() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setReplyMethod(ReplyMethod.DIGITAL);
@@ -227,7 +227,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_refuseExcusalRequest_happyPath_digitalResponse_courtUser_courtOwner() {
-        final BureauJWTPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
+        final BureauJwtPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setReplyMethod(ReplyMethod.DIGITAL);
@@ -248,7 +248,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_grantExcusalRequest_happyPath_digitalResponse_bureauUser_bureauOwner() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setReplyMethod(ReplyMethod.DIGITAL);
@@ -281,7 +281,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_grantExcusalRequest_happyPath_digitalResponse_courtUser_courtOwner() {
-        final BureauJWTPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
+        final BureauJwtPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setReplyMethod(ReplyMethod.DIGITAL);
@@ -301,7 +301,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_grantExcusalRequest_happyPath_excusalCodeDeceased() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
@@ -334,7 +334,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_excusalRequest_paperResponse_bureauUser_courtOwner() {
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
 
@@ -353,7 +353,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_excusalRequest_paperResponse_courtUser_bureauOwner() {
-        BureauJWTPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
+        BureauJwtPayload courtPayload = TestUtils.createJwt("415", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
 
@@ -392,7 +392,7 @@ public class ExcusalResponseServiceImplTest {
         Mockito.doReturn(List.of(jurorPool)).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_NUMBER, true);
 
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
         excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
 
         Mockito.verify(jurorPoolRepository, Mockito.times(1))
@@ -405,7 +405,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_excusalRequest_digitalResponse_alreadyClosed() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setReplyMethod(ReplyMethod.DIGITAL);
@@ -439,7 +439,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_excusalRequest_invalidExcusalCode() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setExcusalReasonCode("E");
@@ -456,7 +456,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_excusalRequest_unableToRetrieveValidExcusalCodeList() {
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         List<ExcusalCodeEntity> emptyList = Collections.emptyList();
         Mockito.when(excusalCodeRepository.findAll()).thenReturn(emptyList);
@@ -476,7 +476,7 @@ public class ExcusalResponseServiceImplTest {
     @Test
     public void test_excusalRequest_noJurorRecord() {
         String jurorNumber = "111111111";
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
 
@@ -491,7 +491,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_excusalRequest_paperResponseDoesNotExist() {
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setExcusalReasonCode("A");
@@ -514,7 +514,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_excusalRequest_withoutResponse_grant_bureauUser_bureauOwner() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         final ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.GRANT);
 
@@ -541,7 +541,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_excusalRequest_withoutResponse_refuse_bureauUser_bureauOwner() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         final ExcusalDecisionDto excusalDecisionDto =
             createTestExcusalDecisionRequestNoResponse(ExcusalDecision.REFUSE);
@@ -557,7 +557,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_excusalRequest_withoutResponse_grant_courtUser_courtOwner() {
-        final BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER");
 
         final ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.GRANT);
 
@@ -583,7 +583,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_excusalRequest_withoutResponse_refuse_courtUser_courtOwner() {
-        final BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.REFUSE);
 
@@ -599,7 +599,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_excusalRequest_withoutResponse_grant_bureauUser_courtOwner() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.GRANT);
 
@@ -616,7 +616,7 @@ public class ExcusalResponseServiceImplTest {
 
     @Test
     public void test_excusalRequest_withoutResponse_grant_courtUser_bureauOwner() {
-        final BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER");
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequestNoResponse(ExcusalDecision.GRANT);
 
@@ -647,7 +647,7 @@ public class ExcusalResponseServiceImplTest {
         Mockito.verify(printDataService, Mockito.never()).printExcusalLetter(Mockito.any());
     }
 
-    private void verifyHappyPaperPath(BureauJWTPayload payload, String jurorNumber) {
+    private void verifyHappyPaperPath(BureauJwtPayload payload, String jurorNumber) {
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).findByJurorNumber(jurorNumber);
         Mockito.verify(jurorResponseRepository, Mockito.never()).findById(jurorNumber);
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(payload.getLogin());
@@ -656,7 +656,7 @@ public class ExcusalResponseServiceImplTest {
         Mockito.verify(mergeService, Mockito.never()).mergeDigitalResponse(any(), any());
     }
 
-    private void verifyHappyDigitalPath(BureauJWTPayload payload, String jurorNumber) {
+    private void verifyHappyDigitalPath(BureauJwtPayload payload, String jurorNumber) {
         Mockito.verify(jurorPaperResponseRepository, Mockito.never()).findById(jurorNumber);
         Mockito.verify(jurorResponseRepository, Mockito.times(1)).findByJurorNumber(jurorNumber);
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(payload.getLogin());
@@ -686,7 +686,7 @@ public class ExcusalResponseServiceImplTest {
             .printExcusalDeniedLetter(any());
     }
 
-    private void verifyFailedAtResponseStatusPath(BureauJWTPayload payload) {
+    private void verifyFailedAtResponseStatusPath(BureauJwtPayload payload) {
         Mockito.verify(userRepository, Mockito.never()).findByUsername(payload.getLogin());
         Mockito.verify(mergeService, Mockito.never()).mergePaperResponse(any(), any());
         Mockito.verify(mergeService, Mockito.never()).mergeDigitalResponse(any(), any());
@@ -695,7 +695,7 @@ public class ExcusalResponseServiceImplTest {
         Mockito.verify(printDataService, Mockito.never()).printExcusalDeniedLetter(any());
     }
 
-    private void verifyFailedInitialChecksPath(BureauJWTPayload payload, String jurorNumber) {
+    private void verifyFailedInitialChecksPath(BureauJwtPayload payload, String jurorNumber) {
         Mockito.verify(jurorPaperResponseRepository, Mockito.never()).findById(jurorNumber);
         Mockito.verify(jurorResponseRepository, Mockito.never()).findByJurorNumber(jurorNumber);
         Mockito.verify(userRepository, Mockito.never()).findByUsername(payload.getLogin());

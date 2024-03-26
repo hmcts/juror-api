@@ -31,7 +31,7 @@ import java.util.Map;
 @Data
 @EqualsAndHashCode
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BureauJWTPayload {
+public class BureauJwtPayload {
     private String owner;
     private String locCode;
     private String login;
@@ -46,7 +46,7 @@ public class BureauJWTPayload {
 
     private Collection<Role> roles;
 
-    public BureauJWTPayload(User user, String locCode, List<CourtLocation> courtLocations) {
+    public BureauJwtPayload(User user, String locCode, List<CourtLocation> courtLocations) {
         this.owner = courtLocations.stream()
             .filter(courtLocation -> CourtType.MAIN.equals(courtLocation.getType()))
             .toList().get(0).getOwner();
@@ -81,7 +81,7 @@ public class BureauJWTPayload {
     }
 
 
-    public BureauJWTPayload(String owner, String login, String userLevel, Boolean passwordWarning, Integer daysToExpire,
+    public BureauJwtPayload(String owner, String login, String userLevel, Boolean passwordWarning, Integer daysToExpire,
                             Staff staff) {
         this(owner, null, login, userLevel, passwordWarning, daysToExpire, staff, null, null);
     }
@@ -110,11 +110,11 @@ public class BureauJWTPayload {
     }
 
     @SuppressWarnings("unchecked")
-    public static BureauJWTPayload fromClaims(Claims claims) {
+    public static BureauJwtPayload fromClaims(Claims claims) {
         // parse the staff object
         final Map<String, Object> staffMap = claims.get("staff", Map.class);
 
-        final BureauJWTPayload.Staff staff = BureauJWTPayload.Staff.fromClaims(staffMap);
+        final BureauJwtPayload.Staff staff = BureauJwtPayload.Staff.fromClaims(staffMap);
 
 
         final List<String> roleString =
@@ -129,7 +129,7 @@ public class BureauJWTPayload {
             ? UserType.valueOf(claims.get("userType", String.class))
             : null;
 
-        return BureauJWTPayload.builder()
+        return BureauJwtPayload.builder()
             .daysToExpire(claims.get("daysToExpire", Integer.class))
             .login(claims.get("login", String.class))
             .owner(claims.get("owner", String.class))

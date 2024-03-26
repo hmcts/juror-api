@@ -10,11 +10,9 @@ public interface HolidaysService {
     /**
      * Get the Holiday dates from the Juror Date picker.
      *
-     * @param request contains the dates selected
+     * @param requestDto contains the dates selected
      * @return JurorHolidaysResponseDto matched dates from JUROR.Holidays.holidays
      */
-
-
     JurorHolidaysResponseDto.MatchingHolidayDates getMatchingHolidayDates(JurorHolidaysRequestDto requestDto);
 
 

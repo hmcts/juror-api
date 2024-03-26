@@ -3,7 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service.trial;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JurorForExemptionListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialExemptionListDto;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
@@ -28,7 +28,7 @@ public class ExemptionCertificateServiceImpl implements ExemptionCertificateServ
 
     @Override
     public List<TrialExemptionListDto> getTrialExemptionList(String courtLocation) {
-        BureauJWTPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         if (!payload.getStaff().getCourts().contains(courtLocation)) {
             throw new MojException.Forbidden
                 .Forbidden("Current user has insufficient permission to view the trial details for the court location",
@@ -54,7 +54,7 @@ public class ExemptionCertificateServiceImpl implements ExemptionCertificateServ
 
     @Override
     public List<JurorForExemptionListDto> getJurorsForExemptionList(String caseNumber, String courtLocation) {
-        BureauJWTPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         if (!payload.getStaff().getCourts().contains(courtLocation)) {
             throw new MojException.Forbidden
                 .Forbidden("Current user has insufficient permission to view the trial details for the court location",

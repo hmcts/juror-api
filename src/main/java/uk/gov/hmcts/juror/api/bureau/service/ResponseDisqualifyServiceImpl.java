@@ -53,7 +53,8 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
 
 
     @Override
-    public List<ResponseDisqualifyController.DisqualifyCodeDto> getDisqualifyReasons() throws DisqualifyException.UnableToRetrieveDisqualifyCodeList {
+    public List<ResponseDisqualifyController.DisqualifyCodeDto> getDisqualifyReasons()
+        throws DisqualifyException.UnableToRetrieveDisqualifyCodeList {
         Iterable<DisqualifiedCode> disqualifyReasonsList = disqualifyCodeRepository.findAll();
         if (!disqualifyReasonsList.iterator().hasNext()) {
             throw new DisqualifyException.UnableToRetrieveDisqualifyCodeList();
@@ -97,7 +98,7 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
             savedResponse.setVersion(disqualifyCodeDto.getVersion());
 
             //update response
-            ProcessingStatus oldProcessingStatus = savedResponse.getProcessingStatus();
+            final ProcessingStatus oldProcessingStatus = savedResponse.getProcessingStatus();
             savedResponse.setProcessingStatus(ProcessingStatus.CLOSED);
 
             // JDB-2685: if no staff assigned, assign current login
@@ -138,7 +139,7 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
 
             // audit pool
             JurorHistory history = new JurorHistory();
-         //   history.setOwner("400");
+            //history.setOwner("400");
             history.setJurorNumber(jurorId);
             history.setDateCreated(LocalDateTime.now());
             history.setHistoryCode(HistoryCodeMod.DISQUALIFY_POOL_MEMBER);

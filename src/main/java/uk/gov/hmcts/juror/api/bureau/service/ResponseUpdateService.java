@@ -50,7 +50,7 @@ public interface ResponseUpdateService extends ResponseNotesService, ResponsePho
     /**
      * Update juror eligibility section of a juror response.
      *
-     * @param jurorEligibilityDto Updated details
+     * @param dto Updated details
      * @param jurorId             Response id
      * @param login               Editing user
      */
@@ -60,18 +60,18 @@ public interface ResponseUpdateService extends ResponseNotesService, ResponsePho
     /**
      * Update the CJS Employment section of a juror response.
      *
-     * @param CJSEmploymentDetailsDto Updated CJS employment details
+     * @param reasonableAdjustmentsDto Updated CJS employment details
      * @param jurorId                 Response id
      * @param login                   Editing user
      */
-    void updateCjs(ResponseUpdateController.CJSEmploymentDetailsDto reasonableAdjustmentsDto, String jurorId,
+    void updateCjs(ResponseUpdateController.CjsEmploymentDetailsDto reasonableAdjustmentsDto, String jurorId,
                    String login);
 
 
     /**
      * Update processing_status/Processing_completed for a juror response, when.
      *
-     * @param ProcessingStatus Updated processing_status/Processing_completed
+     * @param status Updated processing_status/Processing_completed
      * @param jurorId          Response id
      * @param login            Editing user
      */

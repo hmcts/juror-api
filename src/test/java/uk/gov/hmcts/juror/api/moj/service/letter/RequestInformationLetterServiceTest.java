@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.AdditionalInformationDto;
@@ -68,7 +68,7 @@ public class RequestInformationLetterServiceTest {
         DigitalResponse jurorResponse = new DigitalResponse();
         jurorResponse.setProcessingStatus(ProcessingStatus.TODO);
 
-        final BureauJWTPayload payload = TestUtils.createJwt(owner, "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt(owner, "BUREAU_USER");
 
         AdditionalInformationDto additionalInformationDto = getAdditionalInformationDto(jurorNumber);
         additionalInformationDto.setReplyMethod(ReplyMethod.DIGITAL);
@@ -103,7 +103,7 @@ public class RequestInformationLetterServiceTest {
         PaperResponse jurorPaperResponse = new PaperResponse();
         jurorPaperResponse.setProcessingStatus(ProcessingStatus.TODO);
 
-        BureauJWTPayload payload = TestUtils.createJwt(owner, "BUREAU_USER");
+        BureauJwtPayload payload = TestUtils.createJwt(owner, "BUREAU_USER");
 
         AdditionalInformationDto additionalInformationDto = new AdditionalInformationDto(jurorNumber, ReplyMethod.PAPER,
             Collections.singletonList(MissingInformation.SIGNATURE));
@@ -132,7 +132,7 @@ public class RequestInformationLetterServiceTest {
         PaperResponse jurorPaperResponse = new PaperResponse();
         jurorPaperResponse.setProcessingStatus(ProcessingStatus.TODO);
 
-        final BureauJWTPayload payload = TestUtils.createJwt(owner, "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt(owner, "BUREAU_USER");
 
         final AdditionalInformationDto additionalInformationDto = getAdditionalInformationDto(jurorNumber);
 
@@ -172,7 +172,7 @@ public class RequestInformationLetterServiceTest {
         // an empty list of pool members required for test
         List<JurorPool> jurorPools = new ArrayList<>();
 
-        BureauJWTPayload payload = TestUtils.createJwt(owner, "BUREAU_USER");
+        BureauJwtPayload payload = TestUtils.createJwt(owner, "BUREAU_USER");
 
         AdditionalInformationDto additionalInformationDto = getAdditionalInformationDto(jurorNumber);
 
@@ -212,7 +212,7 @@ public class RequestInformationLetterServiceTest {
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(jurorPool);
 
-        BureauJWTPayload payload = TestUtils.createJwt(owner, "BUREAU_USER");
+        BureauJwtPayload payload = TestUtils.createJwt(owner, "BUREAU_USER");
 
         AdditionalInformationDto additionalInformationDto = getAdditionalInformationDto(jurorNumber);
 

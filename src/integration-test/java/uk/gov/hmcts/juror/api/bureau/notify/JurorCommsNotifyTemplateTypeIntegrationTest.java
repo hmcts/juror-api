@@ -50,11 +50,11 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getNotifyTemplateKey_COMMS() {
+    public void getNotifyTemplateKeyComms() {
         final JurorCommsNotifyTemplateType type = COMMS;
 
-        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod" +
-            ".NOTIFY_TEMPLATE_MAPPING").stream().map(s -> s.get("TEMPLATE_NAME")).collect(Collectors.toSet());
+        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod"
+            + ".NOTIFY_TEMPLATE_MAPPING").stream().map(s -> s.get("TEMPLATE_NAME")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
         softly.assertThat(type.getNotifyTemplateKey(CY_LANG_FALSE, FIRST_WEEKLY_COMM))
@@ -86,7 +86,7 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getNotifyTemplateKey_SENT_TO_COURT() {
+    public void getNotifyTemplateKeySentToCourt() {
         final JurorCommsNotifyTemplateType type = SENT_TO_COURT;
 
         final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod"
@@ -114,7 +114,7 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getNotifyTemplateKey_SU_SENT_TO_COURT() {
+    public void getNotifyTemplateKeySuSentToCourt() {
         final JurorCommsNotifyTemplateType type = SU_SENT_TO_COURT;
 
         final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod"
@@ -143,11 +143,11 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getNotifyTemplateKey_COMMS_welshLanguage() {
+    public void getNotifyTemplateKeyCommsWelshLanguage() {
         final JurorCommsNotifyTemplateType type = COMMS;
 
-        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod" +
-            ".NOTIFY_TEMPLATE_MAPPING").stream().map(s -> s.get("TEMPLATE_NAME")).collect(Collectors.toSet());
+        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod"
+            + ".NOTIFY_TEMPLATE_MAPPING").stream().map(s -> s.get("TEMPLATE_NAME")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
         softly.assertThat(type.getNotifyTemplateKey(CY_LANG_TRUE, FIRST_WEEKLY_COMM))
@@ -179,11 +179,11 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getNotifyTemplateKey_SENT_TO_COURT_welshLanguage() {
+    public void getNotifyTemplateKeySentToCourtWelshLanguage() {
         final JurorCommsNotifyTemplateType type = SENT_TO_COURT;
 
-        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod" +
-            ".NOTIFY_TEMPLATE_MAPPING").stream().map(s -> s.get("TEMPLATE_NAME")).collect(Collectors.toSet());
+        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod"
+            + ".NOTIFY_TEMPLATE_MAPPING").stream().map(s -> s.get("TEMPLATE_NAME")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
         softly.assertThat(type.getNotifyTemplateKey(CY_LANG_TRUE, SMS_COMMS_FALSE))
@@ -207,11 +207,11 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getNotifyTemplateKey_SU_SENT_TO_COURT_welshLanguage() {
+    public void getNotifyTemplateKeySuSentToCourtWelshLanguage() {
         final JurorCommsNotifyTemplateType type = SU_SENT_TO_COURT;
 
-        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod" +
-            ".NOTIFY_TEMPLATE_MAPPING").stream().map(s -> s.get("TEMPLATE_NAME")).collect(Collectors.toSet());
+        final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod"
+            + ".NOTIFY_TEMPLATE_MAPPING").stream().map(s -> s.get("TEMPLATE_NAME")).collect(Collectors.toSet());
 
         final SoftAssertions softly = new SoftAssertions();
         softly.assertThat(type.getNotifyTemplateKey(CY_LANG_TRUE, SMS_COMMS_FALSE))

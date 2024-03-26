@@ -31,7 +31,6 @@ public class HolidaysDateServiceImpl implements HolidaysDateService {
     /**
      * Match the dates from juror with Public Holiday dates in Holidays Table.
      *
-     * @param holidaysDate
      * @return holidayDatesList
      */
 
@@ -41,7 +40,7 @@ public class HolidaysDateServiceImpl implements HolidaysDateService {
         log.info("Called Service : HolidaysServiceImpl.getHolidayDates()..... ");
         log.info("Juror Selected dates: {}", holidaysDate);
 
-        BooleanExpression matchHolidayDates = HolidaysQueries.HolidayDatesMatched(holidaysDate);
+        BooleanExpression matchHolidayDates = HolidaysQueries.holidayDatesMatched(holidaysDate);
 
         List<Holidays> holidayDatesList = Lists.newLinkedList(holidaysRepository.findAll(matchHolidayDates));
         log.info("Count of Holiday Dates: {}", holidayDatesList.size());

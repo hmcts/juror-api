@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.domain.PartAmendment;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -108,7 +108,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     @Override
     @Transactional
     public void updateJurorResponseStatus(final String jurorNumber, final ProcessingStatus status,
-                                          final BureauJWTPayload payload) {
+                                          final BureauJwtPayload payload) {
         log.debug("Updating status for juror {} to {}", jurorNumber, status.getDescription());
         PaperResponse paperResponse = DataUtils.getJurorPaperResponse(jurorNumber,
             jurorPaperResponseRepository);
@@ -155,7 +155,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
     @Transactional
     public void updateDigitalJurorResponseStatus(final String jurorNumber,
         final ProcessingStatus status,
-        final BureauJWTPayload payload) {
+        final BureauJwtPayload payload) {
         final String auditorUsername = payload.getLogin();
 
         log.debug("Updating status for juror {} to {}", jurorNumber, status.getDescription());

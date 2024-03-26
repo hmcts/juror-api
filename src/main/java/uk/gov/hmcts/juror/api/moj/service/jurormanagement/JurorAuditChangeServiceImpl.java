@@ -56,9 +56,9 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      *
      * @param juror               the original juror record, to reference the existing juror details
      * @param jurorNameDetailsDto the request DTO containing the changed/updated data values
-     * @return a Map containing property names as keys and a Boolean result indicating whether the
-     * property values differ between the original juror record and the newly provided juror name details,
-     * true means there is a difference, false means there is no difference
+     * @return a Map    containing property names as keys and a Boolean result indicating whether the
+     *                  property values differ between the original juror record and the newly provided juror
+     *                  name details, true means there is a difference, false means there is no difference
      */
     @Override
     public Map<String, Boolean> initChangedPropertyMap(Juror juror,
@@ -89,10 +89,9 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      * @param juror         the original juror record, to reference the existing juror details
      * @param jurorResponse the juror response (Paper/Digital), to reference the newly provided juror
      *                      details from a summons reply
-     * @return a Map containing juror response property names as keys and a Boolean result indicating whether the
-     * property values differ between the original juror record and the new juror summons reply, true means there
-     * is a
-     * difference, false means there is no difference
+     * @return a Map    containing juror response property names as keys and a Boolean result indicating whether the
+     *                  property values differ between the original juror record and the new juror summons reply, true
+     *                  means there is a difference, false means there is no difference
      */
     @Override
     public Map<String, Boolean> initChangedPropertyMap(Juror juror,
@@ -239,8 +238,8 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      * event of the initial assignment (from null to a date value) a default date is used 1901-01-01 (YYYY-MM-DD) for
      * comparison (to avoid a null pointer exception).
      *
-     * @return LocalDate object with either the Juror's date of birth or a default date value to use for change
-     * comparison
+     * @return LocalDate    object with either the Juror's date of birth or a default date value to use for change
+     *                      comparison
      */
     private LocalDate setOriginalDateOfBirth(LocalDate jurorDob) {
         final LocalDate defaultNullReplacementDob = LocalDate.of(1901, 1, 1);
