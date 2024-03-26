@@ -82,7 +82,7 @@ class CompleteServiceServiceImplTest {
         }
 
 
-        void testInvalidStatus(int poolStatus) {
+        void assertInvalidStatus(int poolStatus) {
             LocalDate localDate = LocalDate.of(2023, 11, 22);
 
             final String firstName = RandomStringUtils.randomAlphabetic(20);
@@ -120,7 +120,7 @@ class CompleteServiceServiceImplTest {
                                      juror, jurorPool);
         }
 
-        void testValidStatus(int poolStatus) {
+        void assertValidStatus(int poolStatus) {
             LocalDate localDate = LocalDate.of(2023, 11, 22);
 
             final String firstName = RandomStringUtils.randomAlphabetic(20);
@@ -149,9 +149,8 @@ class CompleteServiceServiceImplTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void positiveTypicalSingle() {
-            testValidStatus(IJurorStatus.RESPONDED);
+            assertValidStatus(IJurorStatus.RESPONDED);
         }
 
         @Test
@@ -220,33 +219,28 @@ class CompleteServiceServiceImplTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void negativeNotInTransferredStatus() {
-            testInvalidStatus(IJurorStatus.TRANSFERRED);
+            assertInvalidStatus(IJurorStatus.TRANSFERRED);
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void negativeNotInFailedToAttendStatus() {
-            testInvalidStatus(IJurorStatus.FAILED_TO_ATTEND);
+            assertInvalidStatus(IJurorStatus.FAILED_TO_ATTEND);
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void negativeNotInSummonedStatus() {
-            testInvalidStatus(IJurorStatus.SUMMONED);
+            assertInvalidStatus(IJurorStatus.SUMMONED);
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void samplePositiveCompletedStatus() {
-            testValidStatus(IJurorStatus.COMPLETED);
+            assertValidStatus(IJurorStatus.COMPLETED);
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void samplePositiveExcusedStatus() {
-            testValidStatus(IJurorStatus.EXCUSED);
+            assertValidStatus(IJurorStatus.EXCUSED);
         }
 
         @Test
@@ -357,7 +351,7 @@ class CompleteServiceServiceImplTest {
 
         @Test
         @SuppressWarnings({
-            "PMD.PMD.JUnitTestsShouldIncludeAssert"//False positive
+            "PMD.JUnitTestsShouldIncludeAssert"//False positive
         })
         void positiveTypicalMultiple() {
 
