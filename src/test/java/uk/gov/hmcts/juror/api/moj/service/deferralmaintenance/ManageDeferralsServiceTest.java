@@ -34,6 +34,7 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
@@ -161,7 +162,7 @@ class ManageDeferralsServiceTest {
 
         @Test
         @SuppressWarnings({"PMD.TooManyFields"})
-        void processJurorPostponementHappyPathMoveToActivePool() {
+        void processJurorPostponementHappyPathMoveToActivePoolPoliceChecked() {
             LocalDate newAttendanceDate = LocalDate.now();
             LocalDate oldAttendanceDate = LocalDate.of(2023, 6, 6);
 
@@ -192,11 +193,12 @@ class ManageDeferralsServiceTest {
             assertThat(response.getCountJurorsPostponed()).isEqualTo(1);
 
             verify(jurorPoolRepository, times(1))
-                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
             verify(jurorPoolRepository, times(2)).saveAndFlush(any());
             verify(jurorPoolRepository, times(2)).save(any());
             verify(jurorHistoryRepository, times(3)).save(any());
-            verify(poolRequestRepository, times(2)).findByPoolNumber(anyString());
+            verify(poolRequestRepository, times(1)).findByPoolNumber(POOL_111111111);
+            verify(poolRequestRepository, times(1)).findByPoolNumber(POOL_111111112);
             verify(poolMemberSequenceService, times(1))
                 .getPoolMemberSequenceNumber(any(String.class));
             verify(poolRequestRepository, times(1)).save(any());
@@ -205,6 +207,60 @@ class ManageDeferralsServiceTest {
             verify(postponementLetterService, never()).getLetterToEnqueue(any(), any());
             verify(postponementLetterService, never()).enqueueLetter(any());
             verify(printDataService, times(1)).printConfirmationLetter(any());
+            verify(jurorHistoryService, times(1)).createConfirmationLetterHistory(any(), anyString());
+            verify(currentlyDeferredRepository, times(0)).save(any());
+        }
+
+        @Test
+        @SuppressWarnings({"PMD.TooManyFields"})
+        void processJurorPostponementHappyPathMoveToActivePoolNotPoliceChecked() {
+            LocalDate newAttendanceDate = LocalDate.now();
+            LocalDate oldAttendanceDate = LocalDate.of(2023, 6, 6);
+
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+
+            final PoolRequest oldPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111111, LOC_CODE_415,
+                oldAttendanceDate);
+
+            final PoolRequest newPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111112, LOC_CODE_415,
+                newAttendanceDate);
+
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+            List<JurorPool> jurorPool = createJurorPoolMember(JUROR_123456789);
+            jurorPool.get(0).getJuror().setPoliceCheck(PoliceCheck.NOT_CHECKED);
+
+            doReturn(jurorPool).when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
+
+            doReturn(Optional.of(oldPoolRequest)).when(poolRequestRepository).findByPoolNumber(POOL_111111111);
+            doReturn(Optional.of(jurorStatus)).when(jurorStatusRepository).findById(anyInt());
+            doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
+
+            doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(anyString());
+            doReturn(new PostponementLetter()).when(postponementLetterService).getLetterToEnqueue(any(), any());
+
+            DeferralResponseDto response =
+                manageDeferralsService.processJurorPostponement(bureauPayload, createProcessJurorRequestDto());
+
+            assertThat(response.getCountJurorsPostponed()).isEqualTo(1);
+
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
+            verify(jurorPoolRepository, times(2)).saveAndFlush(any());
+            verify(jurorPoolRepository, times(2)).save(any());
+            verify(jurorHistoryRepository, times(3)).save(any());
+            verify(poolRequestRepository, times(1)).findByPoolNumber(POOL_111111111);
+            verify(poolRequestRepository, times(1)).findByPoolNumber(POOL_111111112);
+            verify(poolMemberSequenceService, times(1))
+                .getPoolMemberSequenceNumber(any(String.class));
+            verify(poolRequestRepository, times(1)).save(any());
+            verify(poolRequestRepository, times(1)).saveAndFlush(any());
+            verify(poolMemberSequenceService, times(1)).leftPadInteger(any(int.class));
+            verify(postponementLetterService, never()).getLetterToEnqueue(any(), any());
+            verify(postponementLetterService, never()).enqueueLetter(any());
+            verify(printDataService, times(0)).printConfirmationLetter(any());
+            verify(jurorHistoryService, times(0)).createConfirmationLetterHistory(any(), anyString());
             verify(currentlyDeferredRepository, times(0)).save(any());
         }
 
@@ -896,6 +952,12 @@ class ManageDeferralsServiceTest {
         verify(printDataService, never()).printConfirmationLetter(any());
     }
 
+    private void verifyJurorToDeferralMaintenanceTestNoLetter() {
+        verify(jurorHistoryRepository, times(1)).save(any());
+        verify(jurorPoolRepository, times(2)).save(any());
+        verify(printDataService, never()).printConfirmationLetter(any());
+    }
+
     private void verifyLettersHappyPathTest() {
         verify(printDataService, times(1)).printDeferralLetter(any());
     }
@@ -1128,18 +1190,18 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void processJuror_deferral_queue_deferral_letter_court_user() {
+    void processJurorDeferralCourtUser() {
         final BureauJwtPayload courtPayload = TestUtils.createJwt("415", "COURT_USER");
         String jurorNumber = "123456789";
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
         final PoolRequest oldPoolRequest = createPoolRequest("415",
-            "111111111", "415", oldAttendanceDate
-        );
+            "111111111", "415", oldAttendanceDate);
         final DeferralReasonRequestDto dto = createDeferralReasonDtoToDeferralMaintenance(ReplyMethod.PAPER);
 
         List<JurorPool> poolMembers = new ArrayList<>();
         JurorPool member = createJurorPool(jurorNumber);
         member.setOwner("415");
+        member.getJuror().setPoliceCheck(PoliceCheck.ELIGIBLE);
         poolMembers.add(member);
 
         PaperResponse paperResponse = new PaperResponse();
@@ -1152,8 +1214,7 @@ class ManageDeferralsServiceTest {
         doReturn(paperResponse).when(paperResponseRepository)
             .findByJurorNumber(any(String.class));
         manageDeferralsService.processJurorDeferral(courtPayload, jurorNumber, dto);
-        verifyJurorToDeferralMaintenanceTest();
-        verifyLettersHappyPathTest();
+        verifyJurorToDeferralMaintenanceTestNoLetter();
     }
 
     @Test
@@ -2393,6 +2454,7 @@ class ManageDeferralsServiceTest {
         juror.setAddressLine5("Address County");
         juror.setPostcode("CH1 2AN");
         juror.setNoDefPos(0);
+        juror.setPoliceCheck(PoliceCheck.ELIGIBLE);
 
         CourtLocation location = new CourtLocation();
         location.setLocCode("415");
@@ -2441,6 +2503,7 @@ class ManageDeferralsServiceTest {
             juror.setAddressLine4("Address Town");
             juror.setAddressLine5("Address County");
             juror.setPostcode("CH1 2AN");
+            juror.setPoliceCheck(PoliceCheck.ELIGIBLE);
 
             JurorPool jurorPool = new JurorPool();
             jurorPool.setOwner(owner);

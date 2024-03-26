@@ -54,7 +54,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Integration tests for the API endpoints defined in CreatePoolController }.
+ * Integration tests for the API endpoints defined in CreatePoolController.
  */
 @RunWith(SpringRunner.class)
 @SuppressWarnings({"PMD.LawOfDemeter", "PMD.TooManyMethods", "PMD.LinguisticNaming"})
@@ -287,7 +287,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Sql(statements = "DELETE FROM JUROR_MOD.BULK_PRINT_DATA")
+    @Sql(statements = "delete from juror_mod.bulk_print_data")
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_createPoolWithDeferral.sql"})
     public void createPool_withBureauDeferral() throws Exception {
@@ -314,7 +314,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         long deferredJurorLetters = bulkPrintDataRepository.countByJurorNo("641500005");
         assertThat(deferredJurorLetters).isEqualTo(1);
         long letterCount = bulkPrintDataRepository.count();
-        assertThat(letterCount).isEqualTo(17);
+        assertThat(letterCount).isEqualTo(9); // 8 summons and 1 confirmation letter
     }
 
     @Test
@@ -354,7 +354,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         long letterCount = bulkPrintDataRepository.count();
-        assertThat(letterCount).isEqualTo(19);
+        assertThat(letterCount).isEqualTo(11); // 10 summons and 1 confirmation letters
     }
 
     @Test
@@ -432,7 +432,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         long letterCount = bulkPrintDataRepository.count();
-        assertThat(letterCount).isEqualTo(19);
+        assertThat(letterCount).isEqualTo(11);
 
         PoolAdditionalSummonsDto poolAdditionalSummons2 = setUpPoolAdditionalSummonsDto();
         poolAdditionalSummons2.setCitizensSummoned(10);
