@@ -73,6 +73,10 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.TooManyMethods",
+    "PMD.PossibleGodClass",
+    "PMD.ExcessiveImports",
+    "PMD.TooManyFields"})
 public class PoolCreateServiceImpl implements PoolCreateService {
 
     private static final String AGE_DISQ_CODE = "A";
@@ -280,7 +284,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
         // find the actual number of jurors added and pass to pool history (minus the disq. on selection)
         int numSelected = jurorPools.stream().mapToInt(jurorPool -> Objects.equals(jurorPool.getStatus().getStatus(),
-                IJurorStatus.DISQUALIFIED) ? 0 : 1)
+                IJurorStatus.DISQUALIFIED)
+                ? 0
+                : 1)
             .sum();
 
         String owner = payload.getOwner();
@@ -303,7 +309,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         // find the actual number of jurors added and pass to pool history (minus the disq. on selection)
         int numSelected = jurorPools.stream().mapToInt(member -> Objects.equals(member.getStatus().getStatus(),
             IJurorStatus.DISQUALIFIED
-        ) ? 0 : 1).sum();
+        )
+            ? 0
+            : 1).sum();
 
         String owner = payload.getOwner();
         String userId = payload.getLogin();
@@ -597,7 +605,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             int deferralsUsed = manageDeferralsService.useBureauDeferrals(poolRequest, bureauDeferrals, userId);
             if (deferralsUsed > 0) {
                 updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, deferralsUsed,
-                    isNewPool ? PoolHistory.NEW_POOL_REQUEST_SUFFIX : PoolHistory.ADD_POOL_MEMBERS_SUFFIX,
+                    isNewPool
+                        ? PoolHistory.NEW_POOL_REQUEST_SUFFIX
+                        : PoolHistory.ADD_POOL_MEMBERS_SUFFIX,
                     HistoryCode.PHSI);
             }
         }
@@ -616,8 +626,6 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     @Override
     public NilPoolResponseDto checkForDeferrals(String owner, NilPoolRequestDto nilPoolRequestDto) {
 
-        NilPoolResponseDto nilPoolResponseDto = new NilPoolResponseDto();
-
         // validate court location
         CourtLocation location = getLocation(nilPoolRequestDto);
         if (location == null) {
@@ -625,6 +633,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         }
 
         String locationCode = location.getLocCode();
+        NilPoolResponseDto nilPoolResponseDto = new NilPoolResponseDto();
         nilPoolResponseDto.setLocationCode(locationCode);
         nilPoolResponseDto.setLocationName(location.getName());
         LocalDate attendanceDate = nilPoolRequestDto.getAttendanceDate();
@@ -669,8 +678,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     @Override
     public void createNilPool(String owner, NilPoolRequestDto nilPoolRequestDto) {
 
-        String poolNumber = nilPoolRequestDto.getPoolNumber();
-        LocalDate attendanceDate = nilPoolRequestDto.getAttendanceDate();
+        final String poolNumber = nilPoolRequestDto.getPoolNumber();
+        final LocalDate attendanceDate = nilPoolRequestDto.getAttendanceDate();
         final LocalTime attendanceTime = nilPoolRequestDto.getAttendanceTime();
         final String poolTypeStr = nilPoolRequestDto.getPoolType();
 
@@ -713,7 +722,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     @Override
     public void convertNilPool(PoolRequestDto poolRequestDto, BureauJwtPayload payload) {
 
-        String poolNumber = poolRequestDto.getPoolNumber();
+        final String poolNumber = poolRequestDto.getPoolNumber();
         log.debug("Converting Nil Pool record {}", poolNumber);
 
         PoolRequest poolRequest = RepositoryUtils.retrieveFromDatabase(poolNumber, poolRequestRepository);
@@ -844,7 +853,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     private void validateCoronerPoolRequest(CoronerPoolRequestDto coronerPoolRequestDto) {
         final int noRequested = coronerPoolRequestDto.getNoRequested();
 
-        if ((noRequested < LOWER_REQUEST_LIMIT) || (noRequested > UPPER_REQUEST_LIMIT)) {
+        if (noRequested < LOWER_REQUEST_LIMIT || noRequested > UPPER_REQUEST_LIMIT) {
             throw new PoolCreateException.InvalidNoOfJurorsRequested(LOWER_REQUEST_LIMIT, UPPER_REQUEST_LIMIT);
         }
     }
@@ -879,7 +888,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 if (size < requiredMembers) {
                     throw new RuntimeException();
                 }
-                for (int index = 0; index < requiredMembers; index++) {
+                for (int index = 0;
+                     index < requiredMembers;
+                     index++) {
                     Voters voter = votersRepository.findByJurorNumber(jurorNumbers.get(index));
 
                     votersService.markVoterAsSelected(voter, Date.valueOf(LocalDate.now()));

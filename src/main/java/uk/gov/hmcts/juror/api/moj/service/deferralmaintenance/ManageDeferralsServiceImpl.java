@@ -88,7 +88,11 @@ import static uk.gov.hmcts.juror.api.moj.utils.NumberUtils.unboxIntegerValues;
  */
 @Slf4j
 @Service
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.PossibleGodClass"})
+@SuppressWarnings({"PMD.ExcessiveImports",
+    "PMD.PossibleGodClass",
+    "PMD.TooManyMethods",
+    "PMD.TooManyFields",
+    "PMD.CyclomaticComplexity"})
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
@@ -337,7 +341,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             if (jurorPool.getPoolNumber().equalsIgnoreCase(request.getPoolNumber())) {
                 throw new MojException.BadRequest("Cannot postpone to the same pool",
                     null);
-            } else if (!reasonCode.equalsIgnoreCase(POSTPONE_REASON_CODE)) {
+            } else if (!POSTPONE_REASON_CODE.equals(reasonCode)) {
                 throw new MojException.BadRequest("Invalid reason code for postponement",
                     null);
             }
@@ -397,7 +401,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 t.get(2, String.class),
                 t.get(3, String.class),
                 t.get(4, String.class),
-                (t.get(5, LocalDate.class))
+                t.get(5, LocalDate.class)
             );
             deferralsList.add(deferral);
         }
