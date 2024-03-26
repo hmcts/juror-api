@@ -7,7 +7,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
@@ -67,7 +67,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     @Override
     @Transactional
     public JurorAppearanceResponseDto.JurorAppearanceResponseData processAppearance(
-        BureauJWTPayload payload, JurorAppearanceDto jurorAppearanceDto) {
+        BureauJwtPayload payload, JurorAppearanceDto jurorAppearanceDto) {
 
         final String jurorNumber = jurorAppearanceDto.getJurorNumber();
         final String locCode = jurorAppearanceDto.getLocationCode();
@@ -132,7 +132,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     public JurorAppearanceResponseDto getAppearanceRecords(String locCode, LocalDate date,
-                                                           BureauJWTPayload payload) {
+                                                           BureauJwtPayload payload) {
 
         CourtLocationUtils.validateAccessToCourtLocation(locCode, payload.getOwner(), courtLocationRepository);
 
@@ -148,7 +148,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
-    public AttendanceDetailsResponse retrieveAttendanceDetails(BureauJWTPayload payload,
+    public AttendanceDetailsResponse retrieveAttendanceDetails(BureauJwtPayload payload,
                                                                RetrieveAttendanceDetailsDto request) {
         final RetrieveAttendanceDetailsDto.CommonData commonData = request.getCommonData();
 
@@ -168,7 +168,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     @Transactional
-    public AttendanceDetailsResponse updateAttendance(BureauJWTPayload payload, UpdateAttendanceDto request) {
+    public AttendanceDetailsResponse updateAttendance(BureauJwtPayload payload, UpdateAttendanceDto request) {
         final UpdateAttendanceDto.CommonData commonData = request.getCommonData();
         final UpdateAttendanceStatus status = commonData.getStatus();
 
@@ -209,7 +209,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         log.trace(String.format("Entered method: updateAttendanceDate(). There are %s jurors to update",
             request.getJurorNumbers().size()));
 
-        BureauJWTPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         List<JurorPool> updatedJurorPools = new ArrayList<>();
 
         for (String jurorNumber : request.getJurorNumbers()) {
@@ -244,7 +244,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     @Transactional
-    public AttendanceDetailsResponse deleteAttendance(BureauJWTPayload payload, UpdateAttendanceDto request) {
+    public AttendanceDetailsResponse deleteAttendance(BureauJwtPayload payload, UpdateAttendanceDto request) {
         final UpdateAttendanceDto.CommonData commonData = validateDeleteRequest(request);
 
         // ensure only a single attendance record is deleted per api call
@@ -283,7 +283,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     @Transactional(readOnly = true)
     public JurorsToDismissResponseDto retrieveJurorsToDismiss(JurorsToDismissRequestDto request) {
 
-        BureauJWTPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         String locationCode = request.getLocationCode();
 
         log.debug(String.format("User %s is retrieving jurors to dismiss for court location %s", payload.getLogin(),
@@ -323,7 +323,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     public void addNonAttendance(JurorNonAttendanceDto request) {
 
         // validate the court user has access to the juror and pool
-        BureauJWTPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         final String locationCode = request.getLocationCode();
         final LocalDate nonAttendanceDate = request.getNonAttendanceDate();
 

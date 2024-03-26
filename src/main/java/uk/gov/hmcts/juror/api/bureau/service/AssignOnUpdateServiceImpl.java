@@ -13,9 +13,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMo
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 
 
 /**

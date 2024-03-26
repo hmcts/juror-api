@@ -16,7 +16,8 @@ public interface ResponseExcusalService {
      *
      * @return ExcusalReasonsDto dto
      */
-    List<ResponseExcusalController.ExcusalCodeDto> getExcusalReasons() throws ExcusalException.UnableToRetrieveExcusalCodeList;
+    List<ResponseExcusalController.ExcusalCodeDto> getExcusalReasons()
+        throws ExcusalException.UnableToRetrieveExcusalCodeList;
 
     /**
      * Excuse Juror with specified code.

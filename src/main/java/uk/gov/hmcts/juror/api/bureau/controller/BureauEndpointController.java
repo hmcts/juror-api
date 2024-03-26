@@ -21,8 +21,8 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.bureau.service.BureauService;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseStatusUpdateService;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 /**
  * API endpoints controller for Bureau Endpoints.
@@ -77,7 +77,7 @@ public class BureauEndpointController {
         @Parameter(hidden = true) BureauJwtAuthentication principal)
         throws BureauOptimisticLockingException {
 
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) principal.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) principal.getPrincipal();
         try {
             responseStatusUpdateService.updateJurorResponseStatus(jurorNumber, updateDto.getStatus(),
                 updateDto.getVersion(), jwtPayload.getLogin()

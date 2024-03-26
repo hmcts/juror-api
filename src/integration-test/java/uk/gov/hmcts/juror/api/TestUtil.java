@@ -8,8 +8,8 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.SneakyThrows;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
-import uk.gov.hmcts.juror.api.config.public_.PublicJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -23,6 +23,11 @@ import java.util.Map;
  * Testing utility methods.
  */
 public class TestUtil {
+
+    private TestUtil() {
+
+    }
+
     /**
      * Parse an Object to JSON byte array using Jackson.
      *
@@ -41,7 +46,7 @@ public class TestUtil {
      * @return JSON String
      */
     @SneakyThrows(JsonProcessingException.class)
-    public static String parseToJsonString(final Object object)  {
+    public static String parseToJsonString(final Object object) {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(object);
     }
@@ -55,7 +60,7 @@ public class TestUtil {
      * @param expires     Expiry date
      * @return Json Web Token
      */
-    public static String mintPublicJwt(final PublicJWTPayload dataPayload,
+    public static String mintPublicJwt(final PublicJwtPayload dataPayload,
                                        final SignatureAlgorithm algorithm, final String base64Key,
                                        final Instant expires) {
 
@@ -79,7 +84,7 @@ public class TestUtil {
      * @param expires   Expiry date
      * @return Json Web Token
      */
-    public static String mintBureauJwt(final BureauJWTPayload payload,
+    public static String mintBureauJwt(final BureauJwtPayload payload,
                                        final SignatureAlgorithm algorithm, final String base64Key,
                                        final Instant expires) {
 

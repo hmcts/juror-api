@@ -43,7 +43,7 @@ public class TeamRepositoryTest extends AbstractIntegrationTest {
     }
 
     /**
-     * Tests that findAll returns the three teams inserted as standing data
+     * Tests that findAll returns the three teams inserted as standing data.
      */
     @Test
     @Sql("/db/truncate.sql")
@@ -56,7 +56,7 @@ public class TeamRepositoryTest extends AbstractIntegrationTest {
     }
 
     /**
-     * Tests that findByName returns the correct values
+     * Tests that findByName returns the correct values.
      */
     @Test
     @Sql("/db/truncate.sql")
@@ -68,7 +68,7 @@ public class TeamRepositoryTest extends AbstractIntegrationTest {
     }
 
     /**
-     * Tests that saving a team with a non-unique name results in an error
+     * Tests that saving a team with a non-unique name results in an error.
      */
     @Test(expected = DataIntegrityViolationException.class)
     @Sql("/db/truncate.sql")

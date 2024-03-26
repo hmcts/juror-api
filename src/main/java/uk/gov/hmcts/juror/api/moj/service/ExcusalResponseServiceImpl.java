@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.ExcusalDecisionDto;
 import uk.gov.hmcts.juror.api.moj.domain.ExcusalDecision;
@@ -74,7 +74,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
     @Override
     @Transactional
-    public void respondToExcusalRequest(BureauJWTPayload payload, ExcusalDecisionDto excusalDecisionDto,
+    public void respondToExcusalRequest(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
                                         String jurorNumber) {
 
         final String login = payload.getLogin();
@@ -126,7 +126,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         }
     }
 
-    private void setPaperResponseProcessingStatusToClosed(BureauJWTPayload payload, String jurorNumber) {
+    private void setPaperResponseProcessingStatusToClosed(BureauJwtPayload payload, String jurorNumber) {
 
         log.info(String.format("Locating PAPER response for Juror %s", jurorNumber));
         PaperResponse jurorPaperResponse = DataUtils.getJurorPaperResponse(jurorNumber, jurorPaperResponseRepository);
@@ -151,7 +151,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         log.info(String.format("PAPER response for Juror %s successfully closed", jurorNumber));
     }
 
-    private void setDigitalResponseProcessingStatusToClosed(BureauJWTPayload payload, String jurorNumber) {
+    private void setDigitalResponseProcessingStatusToClosed(BureauJwtPayload payload, String jurorNumber) {
 
         log.info(String.format("Locating DIGITAL response for Juror %s", jurorNumber));
         DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
@@ -176,7 +176,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         log.info(String.format("DIGITAL response for Juror %s successfully closed", jurorNumber));
     }
 
-    private void grantExcusalForJuror(BureauJWTPayload payload, ExcusalDecisionDto excusalDecisionDto,
+    private void grantExcusalForJuror(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
                                       JurorPool jurorPool) {
         Juror juror = jurorPool.getJuror();
 
@@ -205,7 +205,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         jurorHistoryRepository.save(jurorHistory);
     }
 
-    private void refuseExcusalForJuror(BureauJWTPayload payload, ExcusalDecisionDto excusalDecisionDto,
+    private void refuseExcusalForJuror(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
                                        JurorPool jurorPool) {
         Juror juror = jurorPool.getJuror();
         log.info(String.format("Processing officer decision to refuse excusal for Juror %s", juror.getJurorNumber()));

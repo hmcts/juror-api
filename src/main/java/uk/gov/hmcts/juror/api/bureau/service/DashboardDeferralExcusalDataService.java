@@ -11,8 +11,7 @@ public interface DashboardDeferralExcusalDataService {
     /**
      * Get all Deferral records from the StatsDeferrals table between given parameters.
      *
-     * @param startYearWeek
-     * @param endYearWeek
+     
      * @return List
      */
 
@@ -22,8 +21,7 @@ public interface DashboardDeferralExcusalDataService {
     /**
      * Get all Deferral Court records from the StatsDeferrals table between given parameters.
      *
-     * @param startYearWeek
-     * @param endYearWeek
+     
      * @return List
      */
 
@@ -32,8 +30,7 @@ public interface DashboardDeferralExcusalDataService {
     /**
      * Get all Deferral Bureau records from the StatsDeferrals table between given parameters.
      *
-     * @param startYearWeek
-     * @param endYearWeek
+     
      * @return List
      */
 
@@ -43,8 +40,7 @@ public interface DashboardDeferralExcusalDataService {
     /**
      * Get all Excusal records from the StatsExcusal table between given parameters.
      *
-     * @param startYearWeek
-     * @param endYearWeek
+     
      * @return List
      */
     List<StatsExcusals> getStatsExcusals(String startYearWeek, String endYearWeek);
@@ -53,8 +49,7 @@ public interface DashboardDeferralExcusalDataService {
     /**
      * Get all Excusal Court records from the StatsExcusal table between given parameters.
      *
-     * @param startYearWeek
-     * @param endYearWeek
+     
      * @return List
      */
     List<StatsExcusals> getStatsCourtExcusals(String startYearWeek, String endYearWeek);
@@ -62,8 +57,7 @@ public interface DashboardDeferralExcusalDataService {
     /**
      * Get all Excusal Bureau records from the StatsExcusal table between given parameters.
      *
-     * @param startYearWeek
-     * @param endYearWeek
+     
      * @return List
      */
     List<StatsExcusals> getStatsBureauExcusals(String startYearWeek, String endYearWeek);

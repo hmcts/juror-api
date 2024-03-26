@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.AdditionalInformationDto;
@@ -82,7 +82,7 @@ public class LetterController {
         final String jurorNumber = additionalInformationDto.getJurorNumber();
         log.trace("Process to queue the Request Letter started for juror {} ", jurorNumber);
 
-        BureauJWTPayload payload = (BureauJWTPayload) auth.getPrincipal();
+        BureauJwtPayload payload = (BureauJwtPayload) auth.getPrincipal();
         if (!JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner())) {
             throw new MojException.Forbidden("Request additional information "
                 + "letter is a Bureau only process", null);

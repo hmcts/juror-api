@@ -15,7 +15,7 @@ import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.service.JurorResponseAlreadyCompletedException;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
@@ -183,7 +183,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     @Override
     @Transactional
-    public void processJurorDeferral(BureauJWTPayload payload, String jurorNumber,
+    public void processJurorDeferral(BureauJwtPayload payload, String jurorNumber,
                                      DeferralReasonRequestDto deferralReasonDto) {
         String auditorUsername = payload.getLogin();
         JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
@@ -233,7 +233,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     @Override
     @Transactional
-    public void changeJurorDeferralDate(BureauJWTPayload payload, String jurorNumber,
+    public void changeJurorDeferralDate(BureauJwtPayload payload, String jurorNumber,
                                         DeferralReasonRequestDto deferralReasonDto) {
         String auditorUsername = payload.getLogin();
         JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
@@ -294,7 +294,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     @Override
     @Transactional
-    public void allocateJurorsToActivePool(BureauJWTPayload payload, DeferralAllocateRequestDto dto) {
+    public void allocateJurorsToActivePool(BureauJwtPayload payload, DeferralAllocateRequestDto dto) {
         final String auditorUsername = payload.getLogin();
 
         Optional<PoolRequest> poolRequestOpt = poolRequestRepository.findById(dto.getPoolNumber());
@@ -323,7 +323,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     @Override
     @Transactional
-    public DeferralResponseDto processJurorPostponement(BureauJWTPayload payload,
+    public DeferralResponseDto processJurorPostponement(BureauJwtPayload payload,
                                                         ProcessJurorPostponementRequestDto request) {
         final String auditorUsername = payload.getLogin();
         final String reasonCode = request.getExcusalReasonCode();
@@ -387,7 +387,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     }
 
     @Override
-    public DeferralListDto getDeferralsByCourtLocationCode(BureauJWTPayload payload, String courtLocation) {
+    public DeferralListDto getDeferralsByCourtLocationCode(BureauJwtPayload payload, String courtLocation) {
         List<DeferralListDto.DeferralListDataDto> deferralsList = new ArrayList<>();
         List<Tuple> result = currentlyDeferredRepository.getDeferralsByCourtLocationCode(payload, courtLocation);
         for (Tuple t : result) {
@@ -405,7 +405,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     }
 
     @Override
-    public DeferralOptionsDto findActivePoolsForCourtLocation(BureauJWTPayload payload, String courtLocation) {
+    public DeferralOptionsDto findActivePoolsForCourtLocation(BureauJwtPayload payload, String courtLocation) {
         DeferralOptionsDto.OptionSummaryDto poolSummary = new DeferralOptionsDto.OptionSummaryDto();
         LocalDate weekCommencing = DateUtils.getStartOfWeekFromDate(LocalDate.now().plusWeeks(1));
         poolSummary.setWeekCommencing(weekCommencing);
@@ -446,7 +446,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     @Override
     public DeferralOptionsDto findActivePoolsForDates(DeferralDatesRequestDto deferralDatesRequestDto,
                                                       String jurorNumber,
-                                                      BureauJWTPayload payload) {
+                                                      BureauJwtPayload payload) {
         log.trace("Juror {}: Enter findActivePoolsForDates", jurorNumber);
         String owner = payload.getOwner();
 
@@ -469,7 +469,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     @Override
     public DeferralOptionsDto findActivePoolsForDatesAndLocCode(DeferralDatesRequestDto deferralDatesRequestDto,
                                                                 String jurorNumber, String locationCode,
-                                                                BureauJWTPayload payload) {
+                                                                BureauJwtPayload payload) {
         log.trace("Location Code {}: Enter findActivePoolsForDates", locationCode);
 
         if (locationCode == null) {
@@ -496,7 +496,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     }
 
     @Override
-    public List<String> getPreferredDeferralDates(String jurorNumber, BureauJWTPayload payload) {
+    public List<String> getPreferredDeferralDates(String jurorNumber, BureauJwtPayload payload) {
         log.trace("Juror {}: Enter getPreferredDeferralDates", jurorNumber);
 
         // check if the current user has permission to view the juror record and their preferred deferral dates
@@ -532,7 +532,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     }
 
     @Override
-    public DeferralOptionsDto getAvailablePoolsByCourtLocationCodeAndJurorNumber(BureauJWTPayload payload,
+    public DeferralOptionsDto getAvailablePoolsByCourtLocationCodeAndJurorNumber(BureauJwtPayload payload,
                                                                                  String courtLocationCode,
                                                                                  String jurorNumber) {
         log.trace("Juror {}: Enter getAvailablePoolsByCourtLocationCodeAndJurorNumber", jurorNumber);
@@ -559,7 +559,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     }
 
     @Override
-    public void deleteDeferral(BureauJWTPayload payload, String jurorNumber) {
+    public void deleteDeferral(BureauJwtPayload payload, String jurorNumber) {
 
         String customErrorMessage = String.format("Cannot find deferred record for juror number %s - ", jurorNumber);
 
@@ -782,8 +782,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         while (deferralsUsed < deferralsRequested && deferralsIterator.hasNext()) {
             deferralRecord = deferralsIterator.next();
             try {
-                JurorPool deferredJurorPool = getPoolMember(deferralRecord, newPool.getReturnDate());
-                JurorPool newJurorPool = addMemberToNewPool(newPool, deferredJurorPool, userId, sequenceNumber);
+                final JurorPool deferredJurorPool = getPoolMember(deferralRecord, newPool.getReturnDate());
+                final JurorPool newJurorPool = addMemberToNewPool(newPool, deferredJurorPool, userId, sequenceNumber);
                 sequenceNumber++;
 
                 removeMemberFromOldPool(deferredJurorPool);

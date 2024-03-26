@@ -47,6 +47,7 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
         this.validStatus = validStatus;
         this.returnType = ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
     }
+
     protected AbstractControllerIntegrationTest(HttpMethod method, TestRestTemplate template,
                                                 HttpStatus validStatus, Type returnType) {
         this.method = method;

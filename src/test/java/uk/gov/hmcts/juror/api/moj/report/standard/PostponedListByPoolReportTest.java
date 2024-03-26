@@ -81,11 +81,6 @@ class PostponedListByPoolReportTest extends AbstractReportTestSupport<PostponedL
             .build();
     }
 
-    @Override
-    protected Class<?> getValidatorClass() {
-        return PostponedListByPoolReport.RequestValidator.class;
-    }
-
     @Test
     void negativeMissingPoolNumber() {
         StandardReportRequest request = getValidRequest();

@@ -84,11 +84,6 @@ class NonRespondedReportTest extends AbstractReportTestSupport<NonRespondedRepor
             .build();
     }
 
-    @Override
-    protected Class<?> getValidatorClass() {
-        return NonRespondedReport.RequestValidator.class;
-    }
-
     @Test
     void negativeMissingPoolNumber() {
         StandardReportRequest request = getValidRequest();

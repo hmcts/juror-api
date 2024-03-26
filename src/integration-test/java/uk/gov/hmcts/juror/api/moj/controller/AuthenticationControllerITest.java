@@ -24,7 +24,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractControllerIntegrationTest;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.CourtDto;
@@ -198,7 +198,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
 
 
             private void responseValidator(JwtDto response,
-                                           String username, BureauJWTPayload expectedJwtClaims) {
+                                           String username, BureauJwtPayload expectedJwtClaims) {
                 Jwt<JwsHeader, Claims> jwt = Jwts.parser()
                     .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(bureauSecret)))
                     .build()
@@ -252,14 +252,14 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                     .assertValid((controllerTest, response) -> responseValidator(
                         response,
                         "test_court_primary",
-                        BureauJWTPayload.builder()
+                        BureauJwtPayload.builder()
                             .owner("408")
                             .locCode("408")
                             .login("test_court_primary")
                             .userLevel("1")
                             .userType(UserType.COURT)
                             .roles(Set.of())
-                            .staff(BureauJWTPayload.Staff.builder()
+                            .staff(BureauJwtPayload.Staff.builder()
                                 .name("Court Primary Only")
                                 .rank(1)
                                 .active(1)
@@ -278,14 +278,14 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                     .assertValid((controllerTest, response) -> responseValidator(
                         response,
                         "test_court_standard",
-                        BureauJWTPayload.builder()
+                        BureauJwtPayload.builder()
                             .owner("415")
                             .locCode("462")
                             .login("test_court_standard")
                             .userLevel("1")
                             .userType(UserType.COURT)
                             .roles(List.of())
-                            .staff(BureauJWTPayload.Staff.builder()
+                            .staff(BureauJwtPayload.Staff.builder()
                                 .rank(1)
                                 .name("Court Standard")
                                 .active(1)
@@ -304,14 +304,14 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                     .assertValid((controllerTest, response) -> responseValidator(
                         response,
                         "test_admin_standard",
-                        BureauJWTPayload.builder()
+                        BureauJwtPayload.builder()
                             .owner("415")
                             .locCode("767")
                             .login("test_admin_standard")
                             .userLevel("0")
                             .userType(UserType.ADMINISTRATOR)
                             .roles(List.of(Role.values()))
-                            .staff(BureauJWTPayload.Staff.builder()
+                            .staff(BureauJwtPayload.Staff.builder()
                                 .rank(0)
                                 .name("Admin Standard")
                                 .active(1)
@@ -329,14 +329,14 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                     .assertValid((controllerTest, response) -> responseValidator(
                         response,
                         "test_bureau_standard",
-                        BureauJWTPayload.builder()
+                        BureauJwtPayload.builder()
                             .owner("400")
                             .locCode("400")
                             .login("test_bureau_standard")
                             .userLevel("0")
                             .userType(UserType.BUREAU)
                             .roles(Set.of())
-                            .staff(BureauJWTPayload.Staff.builder()
+                            .staff(BureauJwtPayload.Staff.builder()
                                 .name("Bureau Standard")
                                 .rank(0)
                                 .active(1)
@@ -354,14 +354,14 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                     .assertValid((controllerTest, response) -> responseValidator(
                         response,
                         "test_admin_standard",
-                        BureauJWTPayload.builder()
+                        BureauJwtPayload.builder()
                             .owner("400")
                             .locCode("400")
                             .login("test_admin_standard")
                             .userLevel("0")
                             .userType(UserType.ADMINISTRATOR)
                             .roles(List.of(Role.values()))
-                            .staff(BureauJWTPayload.Staff.builder()
+                            .staff(BureauJwtPayload.Staff.builder()
                                 .rank(0)
                                 .name("Admin Standard")
                                 .active(1)
@@ -379,14 +379,14 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                     .assertValid((controllerTest, response) -> responseValidator(
                         response,
                         "test_court_sjo_mangr",
-                        BureauJWTPayload.builder()
+                        BureauJwtPayload.builder()
                             .owner("415")
                             .locCode("415")
                             .login("test_court_sjo_mangr")
                             .userLevel("9")
                             .userType(UserType.COURT)
                             .roles(List.of(Role.MANAGER, Role.SENIOR_JUROR_OFFICER))
-                            .staff(BureauJWTPayload.Staff.builder()
+                            .staff(BureauJwtPayload.Staff.builder()
                                 .rank(9)
                                 .name("Court SJO & Manager")
                                 .active(1)

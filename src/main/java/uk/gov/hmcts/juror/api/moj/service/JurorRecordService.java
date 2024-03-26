@@ -2,7 +2,7 @@ package uk.gov.hmcts.juror.api.moj.service;
 
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
@@ -30,17 +30,17 @@ import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 
 public interface JurorRecordService {
 
-    JurorDetailsResponseDto getJurorDetails(BureauJWTPayload payload, String jurorNumber, String locCode);
+    JurorDetailsResponseDto getJurorDetails(BureauJwtPayload payload, String jurorNumber, String locCode);
 
     FilterableJurorDetailsResponseDto getJurorDetails(FilterableJurorDetailsRequestDto request);
 
-    JurorOverviewResponseDto getJurorOverview(BureauJWTPayload payload, String jurorNumber, String locCode);
+    JurorOverviewResponseDto getJurorOverview(BureauJwtPayload payload, String jurorNumber, String locCode);
 
-    JurorRecordSearchDto searchJurorRecord(BureauJWTPayload payload, String jurorNumber);
+    JurorRecordSearchDto searchJurorRecord(BureauJwtPayload payload, String jurorNumber);
 
-    ContactLogListDto getJurorContactLogs(BureauJWTPayload payload, String jurorNumber);
+    ContactLogListDto getJurorContactLogs(BureauJwtPayload payload, String jurorNumber);
 
-    void createJurorContactLog(BureauJWTPayload payload, ContactLogRequestDto contactLogRequestDto);
+    void createJurorContactLog(BureauJwtPayload payload, ContactLogRequestDto contactLogRequestDto);
 
     ContactEnquiryTypeListDto getContactEnquiryTypes();
 
@@ -48,36 +48,36 @@ public interface JurorRecordService {
 
     void setJurorNotes(String jurorNumber, String notes, String owner);
 
-    void createJurorOpticReference(BureauJWTPayload payload, JurorOpticRefRequestDto opticsRefRequestDto);
+    void createJurorOpticReference(BureauJwtPayload payload, JurorOpticRefRequestDto opticsRefRequestDto);
 
-    String getJurorOpticReference(String jurorNumber, String poolNumber, BureauJWTPayload payload);
+    String getJurorOpticReference(String jurorNumber, String poolNumber, BureauJwtPayload payload);
 
     JurorBankDetailsDto getJurorBankDetails(String jurorNumber);
 
     BureauJurorDetailDto getBureauDetailsByJurorNumber(String jurorNumber, String owner);
 
-    JurorSummonsReplyResponseDto getJurorSummonsReply(BureauJWTPayload payload, String jurorNumber, String locCode);
+    JurorSummonsReplyResponseDto getJurorSummonsReply(BureauJwtPayload payload, String jurorNumber, String locCode);
 
     @Transactional
     void setPendingNameChange(Juror juror, String pendingTitle,
                               String pendingFirstName, String pendingLastName);
 
-    void fixErrorInJurorName(BureauJWTPayload payload, String jurorNumber, JurorNameDetailsDto jurorNameDetailsDto);
+    void fixErrorInJurorName(BureauJwtPayload payload, String jurorNumber, JurorNameDetailsDto jurorNameDetailsDto);
 
-    void processPendingNameChange(BureauJWTPayload payload, String jurorNumber, ProcessNameChangeRequestDto requestDto);
+    void processPendingNameChange(BureauJwtPayload payload, String jurorNumber, ProcessNameChangeRequestDto requestDto);
 
-    void editJurorDetails(BureauJWTPayload payload, EditJurorRecordRequestDto requestDto, String jurorNumber);
+    void editJurorDetails(BureauJwtPayload payload, EditJurorRecordRequestDto requestDto, String jurorNumber);
 
     void updatePncStatus(String jurorNumber, PoliceCheck policeCheck);
 
-    void createJurorRecord(BureauJWTPayload payload, JurorCreateRequestDto jurorCreateRequestDto);
+    void createJurorRecord(BureauJwtPayload payload, JurorCreateRequestDto jurorCreateRequestDto);
 
     void updateJurorToFailedToAttend(String jurorNumber, String poolNumber);
 
     void undoUpdateJurorToFailedToAttend(String jurorNumber, String poolNumber);
 
     JurorAttendanceDetailsResponseDto getJurorAttendanceDetails(String jurorNumber,
-                                                                String poolNumber, BureauJWTPayload payload);
+                                                                String poolNumber, BureauJwtPayload payload);
 
     PendingJurorsResponseDto getPendingJurors(String locCode, PendingJurorStatus status);
 

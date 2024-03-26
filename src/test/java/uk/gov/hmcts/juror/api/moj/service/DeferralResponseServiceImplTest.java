@@ -10,7 +10,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeEntity;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.DeferralDecision;
@@ -77,7 +77,7 @@ public class DeferralResponseServiceImplTest {
     @Test
     public void test_denyDeferralRequest_happyPath_courtUser_courtOwner() {
         String jurorNumber = "987654321";
-        BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER");
 
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
 
@@ -95,7 +95,7 @@ public class DeferralResponseServiceImplTest {
     @Test
     public void test_denyDeferralRequest_happyPath_bureauUser_bureauOwner() {
         String jurorNumber = "123456789";
-        BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
 
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
 
@@ -112,7 +112,7 @@ public class DeferralResponseServiceImplTest {
     @Test
     public void test_denyDeferralRequest_bureauUser_courtOwner() {
         String jurorNumber = "987654321";
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
 
@@ -132,7 +132,7 @@ public class DeferralResponseServiceImplTest {
     @Test
     public void test_denyDeferralRequest_courtUser_bureauOwner() {
         String jurorNumber = "123456789";
-        BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER");
 
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
 
@@ -152,7 +152,7 @@ public class DeferralResponseServiceImplTest {
     @Test
     public void test_denyDeferralRequest_noJurorRecord() {
         String jurorNumber = "111111111";
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
 
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
 

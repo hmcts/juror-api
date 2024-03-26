@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauBacklogCountData;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
 @Slf4j

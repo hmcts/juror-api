@@ -83,8 +83,8 @@ dependencies {
 
     //Internal dependency overrides
     implementation 'org.yaml:snakeyaml:2.2'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.19'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.19'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.20'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.20'
     //
     implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
@@ -92,7 +92,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-json:${springBootVersion}")
-    implementation ("org.springframework.boot:spring-boot-starter-validation:${springBootVersion}")
+    implementation("org.springframework.boot:spring-boot-starter-validation:${springBootVersion}")
     runtimeOnly("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
 
 
@@ -272,14 +272,6 @@ sourceSets {
         resources.srcDir file('src/integration-test/resources')
     }
 }
-
-checkstyleMain {
-    maxWarnings = 573
-}
-checkstyleIntegrationTest {
-
-    maxWarnings = 315
-}
 checkstyle {
     maxWarnings = 0
     toolVersion = '10.14.2'
@@ -287,13 +279,13 @@ checkstyle {
 }
 
 pmdIntegrationTest {
-    maxFailures = 560
+    maxFailures = 434
 }
 pmdTest {
-    maxFailures = 384
+    maxFailures = 381
 }
 pmdMain {
-    maxFailures = 1316
+    maxFailures = 1139
 }
 pmd {
     maxFailures = 0

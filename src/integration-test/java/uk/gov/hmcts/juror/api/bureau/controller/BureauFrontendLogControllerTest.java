@@ -26,10 +26,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BureauFrontendLogControllerTest extends AbstractIntegrationTest {
-    private static final String HMAC_HEADER_VALID = "eyJhbGciOiJIUzI1NiJ9" +
-        ".eyJleHAiOjM0NTIwMTk4MzM1MCwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";
-    private static final String HMAC_HEADER_INVALID = "eyJhbGciOiJIUzI1NiJ9" +
-        ".eyJleHAiOjM0NTIwMTk4MzM1MSwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";
+    private static final String HMAC_HEADER_VALID = "eyJhbGciOiJIUzI1NiJ9"
+        + ".eyJleHAiOjM0NTIwMTk4MzM1MCwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";
+    private static final String HMAC_HEADER_INVALID = "eyJhbGciOiJIUzI1NiJ9"
+        + ".eyJleHAiOjM0NTIwMTk4MzM1MSwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";
     //payload (second section) has been modified
 
     @Autowired
@@ -48,9 +48,9 @@ public class BureauFrontendLogControllerTest extends AbstractIntegrationTest {
     public void log_happy() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
         final URI uri = URI.create("/api/v1/auth/bureau/log");
-        final String TEST_LOG_MESSAGE = "Hello world bureau log message!";
+        final String testLogMessage = "Hello world bureau log message!";
 
-        RequestEntity<String> requestEntity = new RequestEntity<>(TEST_LOG_MESSAGE, httpHeaders, HttpMethod.POST, uri);
+        RequestEntity<String> requestEntity = new RequestEntity<>(testLogMessage, httpHeaders, HttpMethod.POST, uri);
 
         ResponseEntity<Object> exchange = template.exchange(requestEntity, Object.class);
         assertThat(exchange).isNotNull();
@@ -62,9 +62,9 @@ public class BureauFrontendLogControllerTest extends AbstractIntegrationTest {
     public void log_unhappy() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_INVALID);
         final URI uri = URI.create("/api/v1/auth/bureau/log");
-        final String TEST_LOG_MESSAGE = "Hello world bureau log message!";
+        final String testLogMessage = "Hello world bureau log message!";
 
-        RequestEntity<String> requestEntity = new RequestEntity<>(TEST_LOG_MESSAGE, httpHeaders, HttpMethod.POST, uri);
+        RequestEntity<String> requestEntity = new RequestEntity<>(testLogMessage, httpHeaders, HttpMethod.POST, uri);
 
         ResponseEntity<Object> exchange = template.exchange(requestEntity, Object.class);
         assertThat(exchange).isNotNull();

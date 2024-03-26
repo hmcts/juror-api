@@ -18,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
@@ -108,13 +108,13 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     }
 
     private void initHeaders() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("COURT_USER")
             .daysToExpire(89)
             .owner("415")
-            .staff(BureauJWTPayload.Staff.builder().courts(Collections.singletonList("415")).build())
+            .staff(BureauJwtPayload.Staff.builder().courts(Collections.singletonList("415")).build())
             .build());
 
         httpHeaders = new HttpHeaders();

@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolEditRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.PoolComment;
@@ -34,7 +34,7 @@ public class EditPoolServiceImpl implements EditPoolService {
     private final PoolCommentRepository poolCommentRepository;
 
     @Override
-    public void editPool(BureauJWTPayload payload, PoolEditRequestDto poolEditRequestDto) {
+    public void editPool(BureauJwtPayload payload, PoolEditRequestDto poolEditRequestDto) {
         String payloadOwner = payload.getOwner();
 
         if (payloadOwner.equals(JurorDigitalApplication.JUROR_OWNER)) {
@@ -45,7 +45,7 @@ public class EditPoolServiceImpl implements EditPoolService {
     }
 
     @Transactional
-    public void editPoolJurorsRequested(BureauJWTPayload payload, PoolEditRequestDto poolEditRequestDto) {
+    public void editPoolJurorsRequested(BureauJwtPayload payload, PoolEditRequestDto poolEditRequestDto) {
         String poolNumber = poolEditRequestDto.getPoolNumber();
         log.trace(String.format("Enter editPoolJurorsRequested for Pool Number: %s", poolNumber));
 
@@ -79,13 +79,13 @@ public class EditPoolServiceImpl implements EditPoolService {
         log.trace(String.format("Edited a pool request with Pool Number: %s", poolNumber));
     }
 
-    private void updatePoolHistory(BureauJWTPayload payload, String poolNumber, String otherInformation) {
+    private void updatePoolHistory(BureauJwtPayload payload, String poolNumber, String otherInformation) {
         poolHistoryRepository.save(new PoolHistory(poolNumber, LocalDateTime.now(), HistoryCode.PREQ,
             payload.getLogin(), otherInformation
         ));
     }
 
-    private void savePoolComments(BureauJWTPayload payload, PoolRequest pool, int noRequested,
+    private void savePoolComments(BureauJwtPayload payload, PoolRequest pool, int noRequested,
                                   String reasonForChange) {
         PoolComment poolComment = new PoolComment();
         poolComment.setUserId(payload.getLogin());
@@ -111,7 +111,7 @@ public class EditPoolServiceImpl implements EditPoolService {
     }
 
     @Transactional
-    public void editPoolTotalCapacity(BureauJWTPayload payload, PoolEditRequestDto poolEditRequestDto) {
+    public void editPoolTotalCapacity(BureauJwtPayload payload, PoolEditRequestDto poolEditRequestDto) {
         String poolNumber = poolEditRequestDto.getPoolNumber();
         log.trace(String.format("Enter editPoolTotalCapacity for Pool Number: %s", poolNumber));
 

@@ -39,7 +39,7 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
     private JurorPoolRepository poolRepository;
 
     @Autowired
-    private JurorCommsNotificationService JurorCommsNotifiyService;
+    private JurorCommsNotificationService jurorCommsNotifiyService;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -50,7 +50,7 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
     @Sql("/db/juror-comms-notify.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_4WKS_COMMS() {
+    public void sendNotificationResponse4WksComms() {
         assertJurorCommsNotification("641500496", "1ST_COMMS_ENG",
             JurorCommsNotifyTemplateType.COMMS);
     }
@@ -62,7 +62,7 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
     @Sql("/db/juror-comms-notify.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_3WKS_COMMS() {
+    public void sendNotificationResponse3WksComms() {
         assertJurorCommsNotification("641500540", "2ND_COMMS_ENG",
             JurorCommsNotifyTemplateType.COMMS);
     }
@@ -74,7 +74,7 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
     @Sql("/db/juror-comms-notify.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_2WKS_COMMS() {
+    public void sendNotificationResponse2WksComms() {
         assertJurorCommsNotification("641500127", "3RD_COMMS_ENG",
             JurorCommsNotifyTemplateType.COMMS);
     }
@@ -86,7 +86,7 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
     @Sql("/db/juror-comms-notify.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_SEND_TO_COURT_SMS_CY_comms() {
+    public void sendNotificationResponseSendToCourtSmsCyComms() {
         assertJurorCommsNotification("641500127", "SENT_TO_COURT_SMS_CY",
             JurorCommsNotifyTemplateType.SENT_TO_COURT);
     }
@@ -99,7 +99,7 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
     @Sql("/db/juror-comms-notify.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_SU_SEND_TO_COURT_EMAIL_CY_comms() {
+    public void sendNotificationResponseSuSendToCourtEmailCyComms() {
         assertJurorCommsNotification("641500127", "SU_SENT_TO_COURT_EMAIL_CY",
             JurorCommsNotifyTemplateType.SU_SENT_TO_COURT);
     }
@@ -107,9 +107,9 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
     private void assertJurorCommsNotification(final String jurorNumber, final String expectedTemplateName,
                                               final JurorCommsNotifyTemplateType expectedType) {
 
-        final String templateUUID = jdbcTemplate.queryForObject(NOTIFY_TEMPLATE_SQL, String.class,
+        final String templateUuid = jdbcTemplate.queryForObject(NOTIFY_TEMPLATE_SQL, String.class,
             expectedTemplateName);
-        assertThat(templateUUID).as("UUID value present")
+        assertThat(templateUuid).as("UUID value present")
             .isNotBlank().containsPattern(UUID_REGEX);
 
         Map<String, String> payLoad = new HashMap<>();
@@ -121,12 +121,12 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
 
         final JurorPool pool = poolRepository.findByJurorJurorNumber(jurorNumber);
 
-        final EmailNotification emailNotification = JurorCommsNotifiyService.createEmailNotification(
-            pool, expectedType, templateUUID, payLoad);
+        final EmailNotification emailNotification = jurorCommsNotifiyService.createEmailNotification(
+            pool, expectedType, templateUuid, payLoad);
 
         assertThat(emailNotification.getTemplateId())
             .as("Correct Notify template selected")
-            .isEqualTo(templateUUID);
+            .isEqualTo(templateUuid);
     }
 
     private DigitalResponse loadJurorResponse(final String jurorNumber) {

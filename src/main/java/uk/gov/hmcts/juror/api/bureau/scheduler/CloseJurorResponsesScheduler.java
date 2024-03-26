@@ -8,12 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionSystemException;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetail;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetailQueries;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetailRepository;
 import uk.gov.hmcts.juror.api.bureau.service.JurorResponsesSummonedService;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
@@ -21,10 +17,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorDetailRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
@@ -56,9 +49,9 @@ public class CloseJurorResponsesScheduler implements JurorResponsesSummonedServi
         log.info("Close Response Scheduler Starting time, is now {}", dateFormat.format(new Date()));
 
 
-        BooleanExpression JurorResponseCloseFilter = BureauJurorDetailQueries.JurorResponsesForClosing();
+        BooleanExpression jurorResponseCloseFilter = BureauJurorDetailQueries.jurorResponsesForClosing();
         final List<ModJurorDetail> JurorResponsesDetail = Lists.newLinkedList(bureauJurorDetailRepository.findAll(
-            JurorResponseCloseFilter));
+            jurorResponseCloseFilter));
 
 
         int numberRecordsClosed = 0;

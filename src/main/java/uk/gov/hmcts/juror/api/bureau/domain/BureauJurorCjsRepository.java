@@ -7,14 +7,14 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * Repository for {@link BureauJurorCJS} entities.
+ * Repository for {@link BureauJurorCjs} entities.
  */
 @Repository
-public interface BureauJurorCJSRepository extends CrudRepository<BureauJurorCJS, Long>,
-    QuerydslPredicateExecutor<BureauJurorCJS> {
-    List<BureauJurorCJS> findByJurorNumber(String jurorNumber);
+public interface BureauJurorCjsRepository extends CrudRepository<BureauJurorCjs, Long>,
+    QuerydslPredicateExecutor<BureauJurorCjs> {
+    List<BureauJurorCjs> findByJurorNumber(String jurorNumber);
 
     // BureauJurorCJS findByEmployerAndId(String employer, String jurorNumber);
 
-    BureauJurorCJS findByJurorNumberAndEmployer(String jurorNumber, String employer);
+    BureauJurorCjs findByJurorNumberAndEmployer(String jurorNumber, String employer);
 }

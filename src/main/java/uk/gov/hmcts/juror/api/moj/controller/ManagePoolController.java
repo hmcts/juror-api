@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolEditRequestDto;
@@ -69,7 +69,7 @@ public class ManagePoolController {
      */
     @DeleteMapping(path = "/delete")
     @Operation(summary = "Delete a pool record from the database")
-    public ResponseEntity<?> deletePool(@Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+    public ResponseEntity<?> deletePool(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                         @Valid @RequestParam() @Size(min = 9, max = 9) String poolNumber) {
         deletePoolService.deletePool(payload, poolNumber);
 
@@ -84,7 +84,7 @@ public class ManagePoolController {
      */
     @PutMapping(path = "/edit-pool")
     @Operation(summary = "Edit a pool request record")
-    public ResponseEntity<?> editPool(@Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+    public ResponseEntity<?> editPool(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                       @RequestBody @Valid PoolEditRequestDto poolEditRequestDto) {
         editPoolService.editPool(payload, poolEditRequestDto);
         return ResponseEntity.ok().build();
@@ -103,7 +103,7 @@ public class ManagePoolController {
     @Operation(summary = "Transfer one (or more) jurors from one pool/court location to a new pool at a different "
         + "court location")
     public ResponseEntity<Integer> transferJurorsToNewCourt(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid @Parameter(description = "Transfer request data", required = true)
         JurorManagementRequestDto requestDto) {
 
@@ -116,7 +116,7 @@ public class ManagePoolController {
     @Operation(summary = "Perform basic validation on pool members to ensure they meet the criteria to be moved")
     public ResponseEntity<JurorManagementResponseDto> validatePoolMembers(
         @Parameter(hidden = true) @AuthenticationPrincipal
-        BureauJWTPayload payload,
+        BureauJwtPayload payload,
         @RequestBody @Valid
         @Parameter(description =
             "Transfer request data",
@@ -133,7 +133,7 @@ public class ManagePoolController {
     @GetMapping("/available-pools/{locCode}")
     @Operation(summary = "Retrieve active pools, including required Jurors, for a given court location")
     public ResponseEntity<AvailablePoolsInCourtLocationDto> getAvailablePoolsInCourtLocation(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "3-digit numeric string to identify the court") @PathVariable(name = "locCode")
         @Size(min = 3, max = 3) @Valid String locCode) {
         AvailablePoolsInCourtLocationDto responseBody = managePoolsService.findAvailablePools(locCode, payload);
@@ -145,7 +145,7 @@ public class ManagePoolController {
         "Retrieve active pools, including required Jurors, for a given court location and owned by the court")
     @IsCourtUser
     public ResponseEntity<AvailablePoolsInCourtLocationDto> getAvailablePoolsInCourtLocationCourtOwned(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "3-digit numeric string to identify the court") @PathVariable(name = "locCode")
         @Size(min = 3, max = 3) @Valid String locCode) {
         AvailablePoolsInCourtLocationDto responseBody = managePoolsService.findAvailablePoolsCourtOwned(locCode,
@@ -162,7 +162,7 @@ public class ManagePoolController {
     @PutMapping(path = "/reassign-jurors")
     @Operation(summary = "Reassign Jurors from current pool to another pool")
     public ResponseEntity<Integer> reassignJurors(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid JurorManagementRequestDto jurorManagementRequestDto) {
         int jurorsReassigned = jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
         return ResponseEntity.ok().body(jurorsReassigned);
@@ -171,7 +171,7 @@ public class ManagePoolController {
     @GetMapping(path = "/summoning-progress/{courtLocCode}/{poolType}")
     @Operation(summary = "Get pool monitoring stats")
     public ResponseEntity<SummoningProgressResponseDto> getPoolMonitoringStats(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter @PathVariable("courtLocCode") String courtLocationCode,
         @Parameter @PathVariable("poolType") String poolType) {
 

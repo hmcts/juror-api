@@ -25,7 +25,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestUtil;
 import uk.gov.hmcts.juror.api.config.RemoteConfig;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.client.contracts.PncCheckServiceClient;
 
 import java.net.URI;
@@ -67,7 +67,7 @@ public class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
             level = userLevel[0];
         }
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel(level)
             .passwordWarning(false)
             .login("BUREAU_USER")
@@ -179,7 +179,7 @@ public class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
     }
 
     @Override
-    protected String mintBureauJwt(final BureauJWTPayload payload) {
+    protected String mintBureauJwt(final BureauJwtPayload payload) {
         return TestUtil.mintBureauJwt(payload, SignatureAlgorithm.HS256, bureauSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }

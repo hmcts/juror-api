@@ -14,7 +14,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.CourtroomsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.CourtroomsListDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -89,20 +89,20 @@ public class CourtroomControllerITest extends AbstractIntegrationTest {
     }
 
     private void initHeadersCourt() {
-        BureauJWTPayload.Staff staff = createStaff("456", "MsCourt");
+        BureauJwtPayload.Staff staff = createStaff("456", "MsCourt");
 
         httpHeaders = initialiseHeaders("99", false, "COURT_USER", 89,
             "456", staff);
     }
 
     private void initHeadersBureau() {
-        BureauJWTPayload.Staff staff = createStaff("400", "MrBureau");
+        BureauJwtPayload.Staff staff = createStaff("400", "MrBureau");
 
         httpHeaders = initialiseHeaders("99", false, "BUREAU_USER", 89,
             "400", staff);
     }
 
-    private BureauJWTPayload.Staff createStaff(String owner, String staffName) {
+    private BureauJwtPayload.Staff createStaff(String owner, String staffName) {
         List<String> staffCourts = Collections.singletonList(owner);
         return TestUtils.staffBuilder(staffName, 1, staffCourts);
     }

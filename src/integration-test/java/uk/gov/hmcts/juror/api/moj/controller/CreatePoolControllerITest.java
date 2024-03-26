@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolAddCitizenRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.NilPoolRequestDto;
@@ -92,10 +92,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_requestPoolDetails.sql"})
     public void getPoolRequestItem_happyPath() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("rprice")
-            .staff(BureauJWTPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("400")
             .build());
@@ -181,10 +181,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_requestPoolDetails.sql"})
     public void getSummaryFormData_happyPath() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("rprice")
-            .staff(BureauJWTPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("400")
             .build());
@@ -216,10 +216,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_createPool.sql"})
     public void createPool_noBureauDeferrals() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("BUREAU_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("400")
             .build());
@@ -240,10 +240,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_createPool.sql",
         "/db/CreatePoolController_loadVotersWithFlags.sql"})
     public void createPool_withDisqualifiedOnSelection() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("BUREAU_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("400")
             .build());
@@ -291,10 +291,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_createPoolWithDeferral.sql"})
     public void createPool_withBureauDeferral() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("BUREAU_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("400")
             .build());
@@ -322,10 +322,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_createPoolWithDeferral.sql"})
     public void summonAdditionalCitizens() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("BUREAU_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("400")
             .build());
@@ -403,10 +403,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_createPoolWithDeferral.sql"})
     public void summonAdditionalCitizens_tooManyCitizens() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("BUREAU_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("400")
             .build());
@@ -473,10 +473,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_requestPoolDetails.sql"})
     public void createPool_tooManyCitizens() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("BUREAU_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("400")
             .build());
@@ -519,10 +519,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql",
         "/db/CreatePoolController_requestPoolDetails.sql"})
     public void createPool_invalidUserType() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("774")
             .build());
@@ -542,10 +542,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getThinPoolMembersHappyPath() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("415")
             .build());
@@ -566,10 +566,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getThinPoolMembersNoInaccessibleJurors() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("415")
             .build());
@@ -593,10 +593,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getThinPoolMembersMissingPool() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("415")
             .build());
@@ -615,10 +615,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getThinPoolMembersInvalidPool() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("415")
             .build());
@@ -636,10 +636,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getThinPoolMembersEmptyPool() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("415")
             .build());
@@ -659,10 +659,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getThinPoolMembersUnauthorised() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("414")
             .build());
@@ -681,10 +681,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getPoolMembers_bureauUser_bureauOwnedPool() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("BUREAU_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("400")
             .build());
@@ -721,10 +721,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getPoolMembers_bureauUser_courtOwnedPool() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("BUREAU_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("400")
             .build());
@@ -761,10 +761,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getPoolMembers_courtUser_bureauOwnedPool() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("415")
             .build());
@@ -799,10 +799,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getPoolMembers_noPoolMembers() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("415")
             .build());
@@ -827,10 +827,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getPoolMembers_noFilters() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Court User")
+            .staff(BureauJwtPayload.Staff.builder().name("Court User")
                 .active(1).rank(1).build())
             .daysToExpire(89)
             .owner("415")
@@ -857,10 +857,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getPoolMembers_filterByAttendance() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Court User")
+            .staff(BureauJwtPayload.Staff.builder().name("Court User")
                 .active(1).rank(1).build())
             .daysToExpire(89)
             .owner("415")
@@ -890,10 +890,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getPoolMembers_filterByCheckedIn() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Court User")
+            .staff(BureauJwtPayload.Staff.builder().name("Court User")
                 .active(1).rank(1).build())
             .daysToExpire(89)
             .owner("415")
@@ -922,10 +922,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getPoolMembers_filterByNextDueTrue() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Court User")
+            .staff(BureauJwtPayload.Staff.builder().name("Court User")
                 .active(1).rank(1).build())
             .daysToExpire(89)
             .owner("415")
@@ -955,10 +955,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getPoolMembers_filterByNextDueFalse() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Court User")
+            .staff(BureauJwtPayload.Staff.builder().name("Court User")
                 .active(1).rank(1).build())
             .daysToExpire(89)
             .owner("415")
@@ -987,10 +987,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void getPoolMembers_filterByBothNextDueValues() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login("COURT_USER")
-            .staff(BureauJWTPayload.Staff.builder().name("Court User").active(1).rank(1).build())
+            .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .daysToExpire(89)
             .owner("415")
             .build());
@@ -1651,13 +1651,13 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     private String initCourtsJwt(String owner, List<String> courts) throws Exception {
 
-        return mintBureauJwt(BureauJWTPayload.builder()
+        return mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("COURT_USER")
             .daysToExpire(89)
             .owner(owner)
-            .staff(BureauJWTPayload.Staff.builder().courts(courts).build())
+            .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build());
     }
 

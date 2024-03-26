@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationListDto;
@@ -47,7 +47,7 @@ public class CourtLocationServiceImpl implements CourtLocationService {
      */
     @Override
     @Transactional(readOnly = true)
-    public CourtLocationListDto buildCourtLocationDataResponse(BureauJWTPayload payload) {
+    public CourtLocationListDto buildCourtLocationDataResponse(BureauJwtPayload payload) {
         log.trace("Enter buildCourtLocationDataResponse");
 
         Iterable<CourtLocation> courtLocationRecords;

@@ -56,7 +56,7 @@ public class ETagConfigITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql","/db/CreatePoolController_requestPoolDetails.sql"})
-    public void eTagHeaderHappy() throws Exception {
+    public void etagHeaderHappy() throws Exception {
 
         RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri);
         ResponseEntity<PoolRequestItemDto> response = template.exchange(requestEntity, PoolRequestItemDto.class);
@@ -68,7 +68,7 @@ public class ETagConfigITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql","/db/CreatePoolController_requestPoolDetails.sql"})
-    public void eTagHeaderResourceNotModified() throws Exception {
+    public void etagHeaderResourceNotModified() throws Exception {
 
         RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri);
         ResponseEntity<PoolRequestItemDto> response = template.exchange(requestEntity, PoolRequestItemDto.class);
@@ -89,7 +89,7 @@ public class ETagConfigITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql","/db/CreatePoolController_requestPoolDetails.sql"})
-    public void eTagHeaderResourceModified() throws Exception {
+    public void etagHeaderResourceModified() throws Exception {
 
         RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri);
         ResponseEntity<PoolRequestItemDto> response = template.exchange(requestEntity, PoolRequestItemDto.class);

@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.security.Key;
 import java.time.Clock;
@@ -90,7 +90,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public String generateBureauJwtToken(String id, BureauJWTPayload payload) {
+    public String generateBureauJwtToken(String id, BureauJwtPayload payload) {
         return generateJwtToken(
             id,
             "juror",

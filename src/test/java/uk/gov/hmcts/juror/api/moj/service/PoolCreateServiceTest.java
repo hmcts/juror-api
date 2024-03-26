@@ -12,7 +12,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
@@ -209,7 +209,7 @@ public class PoolCreateServiceTest {
         final Map<String, String> jurorNumber = Collections.singletonMap(createValidVoter().getJurorNumber(), null);
         CourtLocation courtLocation = createValidPoolRequest("415220110").getCourtLocation();
 
-        final BureauJWTPayload payload = buildPayload(owner);
+        final BureauJwtPayload payload = buildPayload(owner);
 
         PoolCreateRequestDto poolCreateRequestDto = createValidPoolCreateRequestDto();
         poolCreateRequestDto.setNoRequested(noRequested);
@@ -385,7 +385,7 @@ public class PoolCreateServiceTest {
         String courtOwner = "415";
         poolCreateService.createNilPool(courtOwner, nilPoolRequestDto);
 
-        BureauJWTPayload payload = buildPayload(bureauOwner);
+        BureauJwtPayload payload = buildPayload(bureauOwner);
         PoolRequestDto poolRequestDto = createValidPoolRequestDto();
 
         Mockito.when(poolRequestRepository.findById(Mockito.any())).thenReturn(Optional.of(poolRequest));
@@ -536,7 +536,7 @@ public class PoolCreateServiceTest {
     @Test
     void testGetPoolMembersListBureauUserMapsFieldsProperly() {
         String bureauOwner = "400";
-        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
 
         PoolRequest poolRequest = createValidPoolRequest("415220110");
         poolRequest.setOwner(bureauOwner);
@@ -578,7 +578,7 @@ public class PoolCreateServiceTest {
     @Test
     void testGetPoolMembersListCourtUserMapsFieldsProperly() {
         String bureauOwner = "415";
-        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "COURT_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, "COURT_USER");
 
         PoolRequest poolRequest = createValidPoolRequest("415220110");
         poolRequest.setOwner(bureauOwner);
@@ -690,8 +690,8 @@ public class PoolCreateServiceTest {
             .isEqualTo("0121 1235432");
     }
 
-    private BureauJWTPayload buildPayload(String owner) {
-        return BureauJWTPayload.builder()
+    private BureauJwtPayload buildPayload(String owner) {
+        return BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("SOME_USER")

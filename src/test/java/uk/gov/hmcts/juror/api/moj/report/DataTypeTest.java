@@ -164,9 +164,15 @@ class DataTypeTest {
     }
 
     @Test
+    void serviceNextAttendanceDate() {
+        assertMatchesStandard(DataType.NEXT_ATTENDANCE_DATE, "next_attendance_date", "Next attendance date",
+            LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool);
+    }
+
+    @Test
     void serviceStartDate() {
-        assertMatchesStandard(DataType.SERVICE_START_DATE, "service_start_date", "Service Start Date", LocalDate.class,
-            QPoolRequest.poolRequest.returnDate, QPoolRequest.poolRequest);
+        assertMatchesStandard(DataType.SERVICE_START_DATE, "service_start_date", "Service Start Date",
+            LocalDate.class, QPoolRequest.poolRequest.returnDate, QPoolRequest.poolRequest);
     }
 
 

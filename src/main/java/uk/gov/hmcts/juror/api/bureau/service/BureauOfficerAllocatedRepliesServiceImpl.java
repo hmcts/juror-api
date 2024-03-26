@@ -10,7 +10,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauOfficerAllocatedD
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauOfficerAllocatedResponses;
 import uk.gov.hmcts.juror.api.bureau.domain.UserQueries;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;

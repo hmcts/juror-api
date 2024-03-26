@@ -8,17 +8,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
-import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
 
 
 /**
@@ -36,13 +33,12 @@ public class JurorCommsSuperUrgentSendToCourtServiceImpl implements JurorCommsSu
     private final JurorPoolRepository jurorRepository;
 
 
-
     @Autowired
     public JurorCommsSuperUrgentSendToCourtServiceImpl(
-       final JurorCommsNotificationService jurorCommsNotificationService,
-       final JurorPoolRepository jurorRepository,
-       final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepositoryMod,
-       final ResponseInspector responseInspector) {
+        final JurorCommsNotificationService jurorCommsNotificationService,
+        final JurorPoolRepository jurorRepository,
+        final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepositoryMod,
+        final ResponseInspector responseInspector) {
         Assert.notNull(jurorCommsNotificationService, "JurorCommsNotificationService cannot be null.");
         Assert.notNull(jurorRepository, "JurorRepository cannot be null.");
         Assert.notNull(responseInspector, "ResponseInspector cannot be null");
@@ -65,9 +61,9 @@ public class JurorCommsSuperUrgentSendToCourtServiceImpl implements JurorCommsSu
         SimpleDateFormat dateFormat = new SimpleDateFormat();
         log.info("Super Urgent Sent To Court Comms Processing : Started - {}", dateFormat.format(new Date()));
 
-       // final Pool poolDetails = poolRepository.findByJurorNumber(jurorId);
+        // final Pool poolDetails = poolRepository.findByJurorNumber(jurorId);
         final JurorPool jurorDetails = jurorRepository.findByJurorJurorNumber(jurorId);
-       // final JurorResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorId);
+        // final JurorResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorId);
         final DigitalResponse digitalResponse = jurorDigitalResponseRepositoryMod.findByJurorNumber(jurorId);
 
         if (digitalResponse.getWelsh().equals(Boolean.TRUE)) {
@@ -128,9 +124,8 @@ public class JurorCommsSuperUrgentSendToCourtServiceImpl implements JurorCommsSu
         log.info("Super Urgent Sent To Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
     }
 
-    /***
+    /**
      * Updates juror notification.
-     * @param jurorDetails
      */
     private void update(JurorPool jurorDetails) {
         log.trace("Inside update .....");

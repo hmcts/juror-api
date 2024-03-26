@@ -1925,7 +1925,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     case "Last name" -> assertThat(value).isEqualTo("LNAMEFIVEFOURZERO");
                     case "Postcode" -> assertThat(value).isEqualTo("CH1 2AN");
                     case "Status" -> assertThat(value).isEqualTo("Postponed");
-                    case "Deferred to" -> assertThat(value).isEqualTo("2024-01-01");
+                    case "Postponed to" -> assertThat(value).isEqualTo("2024-01-01");
                     case "Reason" -> assertThat(value).isEqualTo("Postponement of service");
                     case "Date printed" -> assertThat(value).isEqualTo(
                         LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));

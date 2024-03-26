@@ -6,8 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.hmcts.juror.api.bureau.controller.request.AssignmentsMultiRequestDto;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 
 import java.util.List;
@@ -15,7 +13,6 @@ import java.util.List;
 /**
  * Response DTO for staff assignment list endpoint.
  *
- * @see uk.gov.hmcts.juror.api.bureau.controller.BureauStaffController#getStaffAssignments(AssignmentsMultiRequestDto, BureauJwtAuthentication)
  */
 @AllArgsConstructor
 @NoArgsConstructor

@@ -40,7 +40,7 @@ public class BureauJwtAuthenticationProvider implements AuthenticationProvider {
                 final Claims body = jwtService
                     .extractClaims(bureauJwtAuthentication.getToken(), secret);
 
-                final BureauJWTPayload payload = BureauJWTPayload.fromClaims(body);
+                final BureauJwtPayload payload = BureauJwtPayload.fromClaims(body);
                 return new BureauJwtAuthentication(payload.getGrantedAuthority(), payload);
             }
             if (log.isErrorEnabled()) {

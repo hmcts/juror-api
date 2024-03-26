@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetter;
 import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetterRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -74,7 +74,7 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
     private final SummonsReplyMergeService summonsReplyMergeService;
 
     @Override
-    public DisqualifyReasonsDto getDisqualifyReasons(BureauJWTPayload payload) {
+    public DisqualifyReasonsDto getDisqualifyReasons(BureauJwtPayload payload) {
         log.trace("Api service method getDisqualifyReasons() started to retrieve disqualification reasons");
         List<DisqualifyReasonsDto.DisqualifyReasons> disqualifyReasons = new ArrayList<>();
 
@@ -99,7 +99,7 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
 
     @Override
     @Transactional
-    public void disqualifyJuror(String jurorNumber, DisqualifyJurorDto disqualifyJurorDto, BureauJWTPayload payload) {
+    public void disqualifyJuror(String jurorNumber, DisqualifyJurorDto disqualifyJurorDto, BureauJwtPayload payload) {
 
         log.trace("Juror Number {} - Api service method disqualifyJuror() started with code {}", jurorNumber,
             disqualifyJurorDto.getCode());
@@ -146,7 +146,7 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
     @Override
     @Transactional
     public void disqualifyJurorDueToAgeOutOfRange(String jurorNumber,
-                                                  BureauJWTPayload bureauJwtPayload) {
+                                                  BureauJwtPayload bureauJwtPayload) {
 
         final JurorPool jurorPool = checkOfficerIsAuthorisedToAccessJurorRecord(jurorNumber, bureauJwtPayload);
         DigitalResponse digitalResponse = jurorDigitalResponseRepository.findByJurorNumber(jurorNumber);
@@ -181,7 +181,7 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
 
 
     private void processDisqualification(JurorPool jurorPool, AbstractJurorResponse response,
-                                         BureauJWTPayload bureauJwtPayload, DisqualifyCodeEnum disqualifyCodeEnum) {
+                                         BureauJwtPayload bureauJwtPayload, DisqualifyCodeEnum disqualifyCodeEnum) {
         saveJurorPoolRecord(jurorPool, response.getJurorNumber(), disqualifyCodeEnum,
             bureauJwtPayload.getLogin());
         createAuditHistory(bureauJwtPayload.getLogin(), response.getJurorNumber(), jurorPool.getPoolNumber(),
@@ -293,7 +293,7 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
         }
     }
 
-    private JurorPool checkOfficerIsAuthorisedToAccessJurorRecord(String jurorNumber, BureauJWTPayload payload) {
+    private JurorPool checkOfficerIsAuthorisedToAccessJurorRecord(String jurorNumber, BureauJwtPayload payload) {
         log.trace("Juror {} - Service method checkOfficerIsAuthorisedToAccessJurorRecord() invoked", jurorNumber);
 
         JurorPool jurorPool = getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber, payload.getOwner());

@@ -4,7 +4,7 @@ import com.querydsl.core.Tuple;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.AvailableJurorsDto;
@@ -68,7 +68,7 @@ public class PanelServiceImpl implements PanelService {
     @Override
     public List<PanelListDto> createPanel(int numberRequested, String trialNumber,
                                           Optional<List<String>> poolNumbers, String courtLocationCode,
-                                          BureauJWTPayload payload) {
+                                          BureauJwtPayload payload) {
         panelValidationChecks(numberRequested, trialNumber, courtLocationCode);
 
         List<JurorPool> appearanceList;
@@ -104,7 +104,7 @@ public class PanelServiceImpl implements PanelService {
     }
 
     private List<PanelListDto> processPanelList(int numberRequested, String trialNumber, String courtLocationCode,
-                               BureauJWTPayload payload,
+                               BureauJwtPayload payload,
                            List<JurorPool> appearanceList, Trial trial) {
 
         if (numberRequested > appearanceList.size()) {
@@ -158,7 +158,7 @@ public class PanelServiceImpl implements PanelService {
     }
 
     @Override
-    public List<PanelListDto> processEmpanelled(JurorListRequestDto dto, BureauJWTPayload payload) {
+    public List<PanelListDto> processEmpanelled(JurorListRequestDto dto, BureauJwtPayload payload) {
         if (dto.getNumberRequested() <= 0 || dto.getNumberRequested() > 30) {
             throw new MojException.BadRequest(
                 "Number requested must be between 1 and 30", null);
