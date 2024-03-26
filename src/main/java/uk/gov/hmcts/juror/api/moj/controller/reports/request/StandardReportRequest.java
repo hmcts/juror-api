@@ -3,6 +3,9 @@ package uk.gov.hmcts.juror.api.moj.controller.reports.request;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -24,6 +27,16 @@ public class StandardReportRequest {
 
     @NotBlank(groups = AbstractReport.Validators.AbstractRequestValidator.class)
     @NotBlank
+    @Schema(allowableValues = {
+        //Standard
+        "CurrentPoolStatusReport",
+        "DeferredListByDateReport",
+        "NextAttendanceDayReport",
+        "NonRespondedReport",
+        "PostponedListByPoolReport",
+        //Grouped
+        "PostponedListByDateReport"
+    })
     private String reportType;
 
     @PoolNumber(groups = AbstractReport.Validators.RequirePoolNumber.class)
