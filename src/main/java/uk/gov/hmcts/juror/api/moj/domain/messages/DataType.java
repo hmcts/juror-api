@@ -40,7 +40,7 @@ public enum DataType {
             throw new MojException.BusinessRuleViolation(
                 "Invalid must be in format "
                     + "'" + getFormat() + "'",
-                INVALID_FORMAT, throwable);
+                INVALID_FORMAT, null, throwable);
         }
     }
 
