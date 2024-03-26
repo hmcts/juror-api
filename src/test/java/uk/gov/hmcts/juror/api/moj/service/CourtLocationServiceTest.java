@@ -106,6 +106,7 @@ class CourtLocationServiceTest {
         assertThat(courtLocationData.getLocationName()).isEqualTo("MANCHESTER");
         assertThat(courtLocationData.getLocationCode()).isEqualTo("435");
         assertThat(courtLocationData.getAttendanceTime()).isEqualTo("09:15");
+        assertThat(courtLocationData.getOwner()).isEqualTo("435");
     }
 
     @Test
@@ -154,6 +155,7 @@ class CourtLocationServiceTest {
             assertThat(courtLocationData.getLocationCode()).isEqualTo(courtLocation.getLocCode());
             assertThat(courtLocationData.getAttendanceTime()).isEqualTo(courtLocation.getCourtAttendTime().format(
                 DateTimeFormatter.ofPattern("HH:mm")));
+            assertThat(courtLocationData.getOwner()).isEqualTo(courtLocation.getOwner());
         }
 
     }
@@ -186,6 +188,7 @@ class CourtLocationServiceTest {
         assertThat(courtLocationsDto.get(0).getLocationCode()).isEqualTo("440");
         assertThat(courtLocationsDto.get(0).getLocationName()).isEqualTo("Inner London");
         assertThat(courtLocationsDto.get(0).getAttendanceTime()).isEqualTo("");
+        assertThat(courtLocationsDto.get(0).getOwner()).isEqualTo("440");
     }
 
     @Test
@@ -206,7 +209,7 @@ class CourtLocationServiceTest {
     }
 
     private List<CourtLocationDataDto> getCourtDetailsFilteredByPostcode() {
-        return List.of(new CourtLocationDataDto("440", "Inner London", ""));
+        return List.of(new CourtLocationDataDto("440", "Inner London", "", "440"));
     }
 
 

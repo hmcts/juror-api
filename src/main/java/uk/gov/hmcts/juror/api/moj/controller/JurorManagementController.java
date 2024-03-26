@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
+import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
@@ -95,9 +96,20 @@ public class JurorManagementController {
         return ResponseEntity.ok(jurorAppearanceService.updateAttendance(payload, request));
     }
 
+    @PostMapping("/add-attendance-day")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(description = "Manually add attendance day for a juror")
+    @IsCourtUser
+    public void addAttendanceDay(
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
+        @RequestBody @Valid AddAttendanceDayDto addAttendanceDayDto) {
+        jurorAppearanceService.addAttendanceDay(payload, addAttendanceDayDto);
+    }
+
     @PatchMapping("/attendance/attendance-date")
     @Operation(description = "Update juror attendance date")
     @IsCourtUser
+
     public ResponseEntity<String> updateAttendanceDate(
         @RequestBody @Valid UpdateAttendanceDateDto request) {
         return ResponseEntity.ok(jurorAppearanceService.updateAttendanceDate(request));
