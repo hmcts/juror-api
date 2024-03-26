@@ -5,12 +5,13 @@ import com.querydsl.jpa.impl.JPAQuery;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReportTestSupport;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
@@ -23,7 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("PMD.LawOfDemeter")
-class CurrentPoolStatusReportTest extends AbstractReportTestSupport<CurrentPoolStatusReport> {
+class CurrentPoolStatusReportTest extends AbstractStandardReportTestSupport<CurrentPoolStatusReport> {
     public CurrentPoolStatusReportTest() {
         super(QJurorPool.jurorPool,
             CurrentPoolStatusReport.RequestValidator.class,
@@ -74,7 +75,7 @@ class CurrentPoolStatusReportTest extends AbstractReportTestSupport<CurrentPoolS
     @Override
     public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
-        StandardReportResponse.TableData tableData,
+        AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
         List<LinkedHashMap<String, Object>> data) {
         when(data.size()).thenReturn(2);
 

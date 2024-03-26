@@ -55,9 +55,6 @@ public abstract class AbstractReport<T> {
         CLASS_TO_JOIN.put(QJurorPool.jurorPool, Map.of(
             QJuror.juror, new Predicate[]{QJurorPool.jurorPool.juror.eq(QJuror.juror)}
         ));
-        CLASS_TO_JOIN.put(QPool.pool, Map.of(
-            QJurorPool.jurorPool, new Predicate[]{QPool.pool.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber)}
-        ));
         CLASS_TO_JOIN.put(QPoolRequest.poolRequest, Map.of(
             QJurorPool.jurorPool,
             new Predicate[]{QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber)}

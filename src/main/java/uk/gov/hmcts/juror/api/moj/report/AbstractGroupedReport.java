@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractGroupedReport extends AbstractReport<Map<String, List<LinkedHashMap<String, Object>>>> {
 
-    private final DataType groupBy;
-    private final boolean removeGroupByFromResponse;
+    final DataType groupBy;
+    final boolean removeGroupByFromResponse;
 
     public AbstractGroupedReport(PoolRequestRepository poolRequestRepository,
                                  EntityPath<?> from, DataType groupBy,
@@ -27,7 +27,7 @@ public abstract class AbstractGroupedReport extends AbstractReport<Map<String, L
         this.groupBy = groupBy;
     }
 
-    private static DataType[] combine(DataType groupBy, DataType[] dataType) {
+    static DataType[] combine(DataType groupBy, DataType[] dataType) {
         List<DataType> list = new ArrayList<>();
         list.add(groupBy);
         list.addAll(Arrays.asList(dataType));
