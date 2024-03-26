@@ -61,7 +61,6 @@ public class ExpenseCalculatorControllerTest extends AbstractIntegrationTest {
             .login("ksalazar")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
             .build());
     }
 
