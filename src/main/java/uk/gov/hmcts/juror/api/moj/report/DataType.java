@@ -39,12 +39,21 @@ public enum DataType {
         .then("Not police checked")
         .when(QJuror.juror.policeCheck.eq(PoliceCheck.INELIGIBLE)).then("Failed police check")
         .otherwise(""), QJuror.juror),
+
+    // juror address data types
     POSTCODE("Postcode", String.class, QJuror.juror.postcode, QJuror.juror),
-    POSTPONED_TO("Postcode", LocalDate.class, QJurorPool.jurorPool.deferralDate, QJuror.juror),
+    ADDRESS_LINE_1("Address Line 1", String.class, QJuror.juror.addressLine1, QJuror.juror),
+    ADDRESS_LINE_2("Address Line 2", String.class, QJuror.juror.addressLine2, QJuror.juror),
+    ADDRESS_LINE_3("Address Line 3", String.class, QJuror.juror.addressLine3, QJuror.juror),
+    ADDRESS_LINE_4("Address Line 4", String.class, QJuror.juror.addressLine4, QJuror.juror),
+    ADDRESS_LINE_5("Address Line 5", String.class, QJuror.juror.addressLine5, QJuror.juror),
+    JUROR_ADDRESS("Address", List.class, ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3, ADDRESS_LINE_4,
+        ADDRESS_LINE_5, POSTCODE),
 
-    DEFERRED_TO("Deferred To", LocalDate.class, QJurorPool.jurorPool.deferralDate, QJuror.juror),
+    POSTPONED_TO("Postponed to", LocalDate.class, QJurorPool.jurorPool.deferralDate, QJuror.juror),
+
+    DEFERRED_TO("Deferred to", LocalDate.class, QJurorPool.jurorPool.deferralDate, QJuror.juror),
     NUMBER_DEFERRED("Number Deferred", Long.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
-
 
     REASONABLE_ADJUSTMENT_CODE("Reasonable Adjustment Code", String.class,
         QJuror.juror.reasonableAdjustmentCode, QJuror.juror),
@@ -55,9 +64,7 @@ public enum DataType {
 
     ON_CALL("On Call", Boolean.class, QJurorPool.jurorPool.onCall, QJurorPool.jurorPool),
     SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate,
-        QPoolRequest.poolRequest),
-    ;
-
+        QPoolRequest.poolRequest);
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;

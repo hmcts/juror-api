@@ -13,6 +13,7 @@ public abstract class IJurorStatus {
     public static final int DISQUALIFIED = 6;
     public static final int DEFERRED = 7;
     public static final int REASSIGNED = 8;
+    public static final int UNDELIVERABLE = 9;
     public static final int TRANSFERRED = 10;
     public static final int ADDITIONAL_INFO = 11;
     public static final int FAILED_TO_ATTEND = 12;

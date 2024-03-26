@@ -283,5 +283,4 @@ public abstract class AbstractReport {
 
         }
     }
-
 }

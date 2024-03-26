@@ -169,6 +169,12 @@ class DataTypeTest {
             QPoolRequest.poolRequest.returnDate, QPoolRequest.poolRequest);
     }
 
+    @Test
+    void jurorAddress() {
+        assertMatchesCombined(DataType.JUROR_ADDRESS, "juror_address", "Address", List.class,
+            DataType.ADDRESS_LINE_1, DataType.ADDRESS_LINE_2, DataType.ADDRESS_LINE_3, DataType.ADDRESS_LINE_4,
+            DataType.ADDRESS_LINE_5, DataType.POSTCODE);
+    }
 
     void assertMatchesStandard(DataType dataType,
                                String id,
