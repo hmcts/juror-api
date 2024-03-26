@@ -70,6 +70,7 @@ class CompleteServiceServiceImplTest {
 
     @Nested
     @DisplayName("completeService")
+    @SuppressWarnings("PMD.TooManyMethods")
     class CompleteService {
 
         private JurorStatus completedStatus;
