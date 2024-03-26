@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -70,6 +71,7 @@ public class JurorResponseRetrieveResponseDto {
 
         @JsonProperty("date_received")
         @Schema(description = "Date response received")
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         private LocalDateTime dateReceived;
 
         @JsonProperty("reply_type")
