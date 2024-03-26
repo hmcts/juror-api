@@ -27,7 +27,7 @@ public abstract class AbstractGroupedReport extends AbstractReport<Map<String, L
         this.groupBy = groupBy;
     }
 
-    static DataType[] combine(DataType groupBy, DataType[] dataType) {
+    static DataType[] combine(DataType groupBy, DataType... dataType) {
         List<DataType> list = new ArrayList<>();
         list.add(groupBy);
         list.addAll(Arrays.asList(dataType));

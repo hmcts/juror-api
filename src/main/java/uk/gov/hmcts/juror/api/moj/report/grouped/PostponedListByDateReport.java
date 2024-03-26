@@ -20,12 +20,13 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
+@SuppressWarnings("PMD.LawOfDemeter")
 public class PostponedListByDateReport extends AbstractGroupedReport {
 
 
@@ -65,7 +66,7 @@ public class PostponedListByDateReport extends AbstractGroupedReport {
         StandardReportRequest request,
         StandardReportResponse.TableData<Map<String, List<LinkedHashMap<String, Object>>>> tableData) {
 
-        Map<String, GroupedReportResponse.DataTypeValue> map = new HashMap<>();
+        Map<String, GroupedReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
         map.put("date_from", AbstractReportResponse.DataTypeValue.builder()
             .displayName("Date From")
             .dataType(LocalDate.class.getSimpleName())

@@ -40,7 +40,8 @@ import java.util.stream.Collectors;
 @Getter
 @SuppressWarnings({
     "PMD.LawOfDemeter",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.ExcessiveImports"
 })
 public abstract class AbstractReport<T> {
     static final Map<EntityPath<?>, Map<EntityPath<?>, Predicate[]>> CLASS_TO_JOIN;
@@ -167,28 +168,38 @@ public abstract class AbstractReport<T> {
     public Map.Entry<String, Object> getDataFromReturnType(Tuple tuple, DataType dataType) {
         Object value;
         if (dataType.getReturnTypes() == null) {
-            value = tuple.get(dataType.getExpression());
-
-            if (value != null) {
-                if (value instanceof LocalDate localDate) {
-                    value = DateTimeFormatter.ISO_DATE.format(localDate);
-                } else if (value instanceof LocalTime localTime) {
-                    value = DateTimeFormatter.ISO_TIME.format(localTime);
-                } else if (value instanceof LocalDateTime localDateTime) {
-                    value = DateTimeFormatter.ISO_DATE_TIME.format(localDateTime);
-                }
-            }
+            value = getSimpleValue(tuple, dataType);
         } else {
-            Map<String, Object> data = new LinkedHashMap<>();
-            for (DataType subType : dataType.getReturnTypes()) {
-                Map.Entry<String, Object> valueEntry = getDataFromReturnType(tuple, subType);
-                if (valueEntry.getValue() != null) {
-                    data.put(valueEntry.getKey(), valueEntry.getValue());
-                }
-            }
-            value = data;
+            value = getComplexValue(tuple, dataType);
         }
         return new AbstractMap.SimpleEntry<>(dataType.getId(), value);
+    }
+
+    @SuppressWarnings("PMD.UseConcurrentHashMap")
+    private Object getComplexValue(Tuple tuple, DataType dataType) {
+        Map<String, Object> data = new LinkedHashMap<>();
+        for (DataType subType : dataType.getReturnTypes()) {
+            Map.Entry<String, Object> valueEntry = getDataFromReturnType(tuple, subType);
+            if (valueEntry.getValue() != null) {
+                data.put(valueEntry.getKey(), valueEntry.getValue());
+            }
+        }
+        return data;
+    }
+
+    private Object getSimpleValue(Tuple tuple, DataType dataType) {
+        Object value = tuple.get(dataType.getExpression());
+
+        if (value != null) {
+            if (value instanceof LocalDate localDate) {
+                value = DateTimeFormatter.ISO_DATE.format(localDate);
+            } else if (value instanceof LocalTime localTime) {
+                value = DateTimeFormatter.ISO_TIME.format(localTime);
+            } else if (value instanceof LocalDateTime localDateTime) {
+                value = DateTimeFormatter.ISO_DATE_TIME.format(localDateTime);
+            }
+        }
+        return value;
     }
 
     List<Tuple> getData(StandardReportRequest request) {
