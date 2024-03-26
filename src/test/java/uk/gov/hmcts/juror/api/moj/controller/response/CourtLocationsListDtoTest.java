@@ -15,11 +15,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 public class CourtLocationsListDtoTest {
 
-    private CourtLocation createCourtLocation(String locationCode, String name, String attendanceTime, String owner) {
+    private CourtLocation createCourtLocation(String locationCode, String name, LocalTime attendanceTime, String owner) {
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(locationCode);
         courtLocation.setName(name);
-        courtLocation.setCourtAttendTime(LocalTime.parse(attendanceTime));
+        courtLocation.setCourtAttendTime(attendanceTime);
         courtLocation.setOwner(owner);
 
         return courtLocation;
@@ -28,7 +28,7 @@ public class CourtLocationsListDtoTest {
     @Test
     public void test_CourtLocationListDto_CourtLocationDataDto() {
         CourtLocation courtLocation = createCourtLocation("401",
-            "AYLESBURY", "09:15", "401");
+            "AYLESBURY", LocalTime.parse("09:15"), "401");
 
         CourtLocationDataDto courtLocationDataDto =
             new CourtLocationDataDto(courtLocation);
@@ -50,9 +50,9 @@ public class CourtLocationsListDtoTest {
     @Test
     public void test_CourtLocationListDto() {
         CourtLocation courtLocationOne = createCourtLocation("401",
-            "AYLESBURY", "09:15", "401");
+            "AYLESBURY", LocalTime.parse("09:15"), "401");
         CourtLocation courtLocationTwo = createCourtLocation("777",
-            "HOVE", "09:45", "799");
+            "HOVE", LocalTime.parse("09:45"), "799");
 
         CourtLocationDataDto courtLocationDataOne =
             new CourtLocationDataDto(courtLocationOne);
