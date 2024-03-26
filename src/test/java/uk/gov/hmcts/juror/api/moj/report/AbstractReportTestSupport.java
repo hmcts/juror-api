@@ -40,7 +40,8 @@ import static org.mockito.Mockito.withSettings;
 
 @SuppressWarnings({
     "PMD.LawOfDemeter",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.ExcessiveImports",
 })
 public abstract class AbstractReportTestSupport<
     T, R extends AbstractReport<T>> {

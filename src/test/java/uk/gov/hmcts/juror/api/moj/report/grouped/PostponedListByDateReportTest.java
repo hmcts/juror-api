@@ -38,7 +38,11 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
-public class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<PostponedListByDateReport> {
+@SuppressWarnings({
+    "PMD.LawOfDemeter",
+    "PMD.ExcessiveImports"
+})
+class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<PostponedListByDateReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
@@ -182,8 +186,6 @@ public class PostponedListByDateReportTest extends AbstractGroupedReportTestSupp
             mock(AbstractReportResponse.TableData.class);
         Map<String, List<LinkedHashMap<String, Object>>> data = spy(createData());
         doReturn(data).when(tableData).getData();
-        Map<String, AbstractReportResponse.DataTypeValue> standardPoolMappings = getStandardPoolHeaders();
-
 
         when(request.getFromDate()).thenReturn(LocalDate.of(2023, 3, 1));
         when(request.getToDate()).thenReturn(LocalDate.of(2023, 3, 2));

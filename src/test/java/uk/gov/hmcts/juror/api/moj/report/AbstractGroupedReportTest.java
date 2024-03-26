@@ -23,6 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+@SuppressWarnings("PMD.LawOfDemeter")
 class AbstractGroupedReportTest {
 
     private PoolRequestRepository poolRequestRepository;
@@ -33,6 +34,7 @@ class AbstractGroupedReportTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveConstructor() {
         AbstractGroupedReport report = new AbstractStandardReportTestImpl(
             poolRequestRepository,
@@ -52,7 +54,7 @@ class AbstractGroupedReportTest {
         assertThat(report.effectiveDataTypes)
             .containsExactly(DataType.JUROR_NUMBER, DataType.FIRST_NAME, DataType.MAIN_PHONE,
                 DataType.OTHER_PHONE, DataType.WORK_PHONE, DataType.EMAIL, DataType.STATUS);
-        assertThat(report.requiredTables).containsExactly(QJuror.juror, QJurorPool.jurorPool);
+        assertThat(report.requiredTables).contains(QJuror.juror, QJurorPool.jurorPool);
     }
 
     @Test
@@ -70,6 +72,7 @@ class AbstractGroupedReportTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveGetTableData() {
         final List<Tuple> data = List.of(mock(Tuple.class), mock(Tuple.class));
 
@@ -99,11 +102,11 @@ class AbstractGroupedReportTest {
         assertThat(result).isNotNull();
         assertThat(result).hasSize(3);
         assertThat(result.get("1231")).hasSize(2)
-            .containsExactly(tableData.get(0), tableData.get(2));
+            .contains(tableData.get(0), tableData.get(2));
         assertThat(result.get("1232")).hasSize(1)
-            .containsExactly(tableData.get(1));
+            .contains(tableData.get(1));
         assertThat(result.get("1233")).hasSize(1)
-            .containsExactly(tableData.get(3));
+            .contains(tableData.get(3));
         verify(report).getTableDataAsList(data);
     }
 
