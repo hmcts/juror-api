@@ -116,7 +116,8 @@ public class AdministrationController {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR + " or " + SecurityUtil.USER_TYPE_COURT)
     public ResponseEntity<ExpenseRatesDto> viewExpenseDetails() {
-        return ResponseEntity.ok(new ExpenseRatesDto(jurorExpenseService.getCurrentExpenseRates(SecurityUtil.isCourt())));
+        return ResponseEntity.ok(new ExpenseRatesDto(
+            jurorExpenseService.getCurrentExpenseRates(SecurityUtil.isCourt())));
     }
 
     @PutMapping("/expenses/rates")

@@ -21,7 +21,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.utils.TestConstants;
 
 import java.security.Key;
@@ -267,7 +267,7 @@ class JwtServiceImplTest {
 
 
             Map<String, Object> claims = mock(Map.class);
-            BureauJWTPayload bureauJwtPayload = mock(BureauJWTPayload.class);
+            BureauJwtPayload bureauJwtPayload = mock(BureauJwtPayload.class);
             when(bureauJwtPayload.toClaims()).thenReturn(claims);
 
             SecretKey secretKey = mock(SecretKey.class);

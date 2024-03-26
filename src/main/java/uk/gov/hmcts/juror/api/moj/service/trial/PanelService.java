@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service.trial;
 
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.AvailableJurorsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.EmpanelListDto;
@@ -14,11 +14,11 @@ public interface PanelService {
 
     List<PanelListDto> createPanel(int numberRequested, String trialNumber,
                                    Optional<List<String>> poolNumbers, String courtLocationCodes,
-                                   BureauJWTPayload payload);
+                                   BureauJwtPayload payload);
 
     EmpanelListDto requestEmpanel(int numberRequested, String trialNumber, String locCode);
 
-    List<PanelListDto> processEmpanelled(JurorListRequestDto dto, BureauJWTPayload payload);
+    List<PanelListDto> processEmpanelled(JurorListRequestDto dto, BureauJwtPayload payload);
 
     List<PanelListDto> getPanelSummary(String trialId, String locCode);
 

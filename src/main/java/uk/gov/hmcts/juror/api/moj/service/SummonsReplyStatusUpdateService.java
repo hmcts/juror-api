@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 
 /**
@@ -14,9 +14,9 @@ public interface SummonsReplyStatusUpdateService {
      * @param status      The processing status to change to
      * @param payload     Bureau authentication Json Web Token payload.
      */
-    void updateJurorResponseStatus(String jurorNumber, ProcessingStatus status, BureauJWTPayload payload);
+    void updateJurorResponseStatus(String jurorNumber, ProcessingStatus status, BureauJwtPayload payload);
 
     void updateDigitalJurorResponseStatus(String jurorNumber, ProcessingStatus status,
-                                          BureauJWTPayload payload);
+                                          BureauJwtPayload payload);
 
 }

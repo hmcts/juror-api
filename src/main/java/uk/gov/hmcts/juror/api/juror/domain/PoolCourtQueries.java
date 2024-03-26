@@ -32,7 +32,6 @@ public class PoolCourtQueries {
     /**
      * Query to match where SERVICE_COMP_COMMS_STATUS EQUALS NULL.
      *
-     * @return
      */
     public static BooleanExpression serviceCompCommsStatus() {
         return poolDetail.serviceCompCommsStatus.isNull();

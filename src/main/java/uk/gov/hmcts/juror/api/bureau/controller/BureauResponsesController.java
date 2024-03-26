@@ -32,8 +32,8 @@ import uk.gov.hmcts.juror.api.bureau.service.BureauAuthenticationService;
 import uk.gov.hmcts.juror.api.bureau.service.BureauService;
 import uk.gov.hmcts.juror.api.bureau.service.JurorResponseSearchService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 /**
  * API endpoints controller for response-related operations.
@@ -65,7 +65,7 @@ public class BureauResponsesController {
     @GetMapping(path = "/todo")
     @Operation(summary = "Retrieve all todo responses assigned to the current user")
     public ResponseEntity<BureauResponseSummaryWrapper> getCurrentUserTodo(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload) {
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
         BureauResponseSummaryWrapper wrapper = bureauService.getTodo(payload.getLogin());
         return ResponseEntity.ok().body(wrapper);
     }
@@ -73,7 +73,7 @@ public class BureauResponsesController {
     @GetMapping(path = "/pending")
     @Operation(summary = "Retrieve all pending responses assigned to the current user")
     public ResponseEntity<BureauResponseSummaryWrapper> getCurrentUserPending(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload) {
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
         BureauResponseSummaryWrapper wrapper = bureauService.getPending(payload.getLogin());
         return ResponseEntity.ok().body(wrapper);
     }
@@ -82,7 +82,7 @@ public class BureauResponsesController {
     @Operation(summary = "Retrieve all responses assigned to the current user "
         + "which were completed today")
     public ResponseEntity<BureauResponseSummaryWrapper> getCurrentUserCompletedToday(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload) {
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
         BureauResponseSummaryWrapper wrapper = bureauService.getCompletedToday(payload.getLogin());
         return ResponseEntity.ok().body(wrapper);
     }
@@ -92,7 +92,7 @@ public class BureauResponsesController {
         + "user")
     public ResponseEntity<BureauResponseOverviewDto> getUserResponseOverview(
         @PathVariable String login,
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload) {
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
         BureauResponseOverviewDto overviewDto = bureauService.getOverview(login);
         return ResponseEntity.ok().body(overviewDto);
     }
@@ -124,7 +124,9 @@ public class BureauResponsesController {
     @PostMapping(path = "/autoassign")
     @Operation(summary = "Auto-assign response backlog")
     public ResponseEntity<Void> autoAssign(@Parameter(hidden = true) BureauJwtAuthentication auth,
-                                           @RequestBody @Validated AutoAssignRequest autoAssignRequest) throws AutoAssignException {
+                                           @RequestBody @Validated AutoAssignRequest autoAssignRequest)
+        throws AutoAssignException {
+
         if (!authService.userIsTeamLeader(auth)) {
             log.error("Auto-assign endpoint called by non-team leader");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

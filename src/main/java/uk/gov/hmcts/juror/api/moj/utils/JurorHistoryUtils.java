@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.utils;
 
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -13,7 +13,7 @@ public class JurorHistoryUtils {
     }
 
     public static void saveJurorHistory(HistoryCodeMod code, String jurorNumber, String poolNumber,
-                                         BureauJWTPayload payload, JurorHistoryRepository jurorHistoryRepository) {
+                                        BureauJwtPayload payload, JurorHistoryRepository jurorHistoryRepository) {
         JurorHistory jurorHistory = JurorHistory.builder()
             .jurorNumber(jurorNumber)
             .dateCreated(LocalDateTime.now())

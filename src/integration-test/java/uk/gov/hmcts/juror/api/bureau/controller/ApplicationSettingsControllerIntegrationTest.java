@@ -30,10 +30,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ApplicationSettingsControllerIntegrationTest extends AbstractIntegrationTest {
-    private static final String HMAC_HEADER_VALID = "eyJhbGciOiJIUzI1NiJ9" +
-        ".eyJleHAiOjM0NTIwMTk4MzM1MCwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";
-    private static final String HMAC_HEADER_INVALID = "eyJhbGciOiJIUzI1NiJ9" +
-        ".eyJleHAiOjM0NTIwMTk4MzM1MSwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";
+    private static final String HMAC_HEADER_VALID = "eyJhbGciOiJIUzI1NiJ9"
+        + ".eyJleHAiOjM0NTIwMTk4MzM1MCwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";
+    private static final String HMAC_HEADER_INVALID = "eyJhbGciOiJIUzI1NiJ9"
+        + ".eyJleHAiOjM0NTIwMTk4MzM1MSwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";
     //payload (second section) has been modified
 
     @Autowired
@@ -55,8 +55,8 @@ public class ApplicationSettingsControllerIntegrationTest extends AbstractIntegr
     public void applicationSettings_happy() {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
 
-        ResponseEntity<String> responseEntity = template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET
-            , URI.create("/api/v1/auth/settings")), String.class);
+        ResponseEntity<String> responseEntity = template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            URI.create("/api/v1/auth/settings")), String.class);
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThatJson(responseEntity.getBody())

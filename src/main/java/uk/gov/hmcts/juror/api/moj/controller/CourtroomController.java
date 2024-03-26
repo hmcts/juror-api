@@ -11,7 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.CourtroomsListDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.trial.CourtroomService;
@@ -38,7 +38,7 @@ public class CourtroomController {
 
     @GetMapping("/list")
     public ResponseEntity<List<CourtroomsListDto>> getListOfCourtroomsForLocation(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload) {
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
         if (BUREAU_USER.equals(payload.getOwner())) {
             throw new MojException.Forbidden("This service is for court users only", null);
         }

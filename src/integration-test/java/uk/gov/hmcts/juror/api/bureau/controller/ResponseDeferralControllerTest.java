@@ -25,7 +25,7 @@ import uk.gov.hmcts.juror.api.bureau.domain.PartHist;
 import uk.gov.hmcts.juror.api.bureau.domain.THistoryCode;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseDeferralServiceImpl;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.net.URI;
 import java.time.DayOfWeek;
@@ -86,7 +86,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/juror/defer/" + jurorNumber);
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(staffLogin)
@@ -188,8 +188,8 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
                 + "'644892530'",
             LocalDate.class)).isInTheFuture().isEqualTo(fourWeeksFromNextMonday).isBefore(twelveMonthsFromNow);
         softly.assertThat(
-            jdbcTemplate.queryForObject("SELECT date_excused FROM juror_mod.juror WHERE juror_number = '644892530'"
-                , Date.class)).isInSameDayAs(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
+            jdbcTemplate.queryForObject("SELECT date_excused FROM juror_mod.juror WHERE juror_number = '644892530'",
+                Date.class)).isInSameDayAs(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
         softly.assertThat(
             jdbcTemplate.queryForObject("SELECT excusal_code FROM juror_mod.juror WHERE juror_number = '644892530'",
                 String.class)).isEqualTo(WORK_RELATED_EXCUSAL_CODE);
@@ -197,15 +197,15 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
             jdbcTemplate.queryForObject("SELECT USER_EDTQ FROM juror_mod.juror_pool WHERE juror_number = '644892530'",
                 String.class)).isEqualTo(staffLogin);
         softly.assertThat(
-            jdbcTemplate.queryForObject("SELECT NO_DEF_POS FROM juror_mod.juror WHERE juror_number = '644892530'"
-                , Long.class)).isEqualTo(1L);
+            jdbcTemplate.queryForObject("SELECT NO_DEF_POS FROM juror_mod.juror WHERE juror_number = '644892530'",
+                Long.class)).isEqualTo(1L);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT NEXT_DATE FROM juror_mod.juror_pool WHERE juror_number "
                 + "= '644892530'",
             String.class)).isNullOrEmpty();
 
         // assert defer_dbf was set correctly
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT OWNER FROM JUROR.DEFER_DBF WHERE part_no = '644892530'"
-            , String.class)).isEqualTo(JurorDigitalApplication.JUROR_OWNER);
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT OWNER FROM JUROR.DEFER_DBF WHERE part_no = '644892530'",
+            String.class)).isEqualTo(JurorDigitalApplication.JUROR_OWNER);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT DEFER_TO FROM JUROR.DEFER_DBF WHERE part_no = "
                 + "'644892530'", LocalDate.class)).isInTheFuture().isEqualTo(fourWeeksFromNextMonday)
             .isBefore(twelveMonthsFromNow);
@@ -284,21 +284,21 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/ResponseDeferralControllerTest_processJurorDeferral.sql"
     })
-    public void processJurorDeferralAccept_unhappy_optimisticLock() throws Exception {
-        final String JUROR_NUMBER = "644892530";
-        final String STAFF_LOGIN = "STAFF1";
-        final Integer INVALID_VERSION = 1;// invalid version, 1 behind DB
-        final LocalDate FOUR_WEEKS_FROM_NEXT_MONDAY =
+    public void processJurorDeferralAcceptUnhappyOptimisticLock() throws Exception {
+        final String jurorNumber = "644892530";
+        final String staffLogin = "STAFF1";
+        final Integer invalidVersion = 1;// invalid version, 1 behind DB
+        final LocalDate fourWeeksFromNextMonday =
             LocalDate.now().atStartOfDay().plusHours(12).with(TemporalAdjusters.next(DayOfWeek.MONDAY))
                 .plus(4, ChronoUnit.WEEKS).toLocalDate();
         final String description = "Manual deferral of juror response unhappy path.";
 
-        final URI uri = URI.create("/api/v1/bureau/juror/defer/" + JUROR_NUMBER);
+        final URI uri = URI.create("/api/v1/bureau/juror/defer/" + jurorNumber);
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
-            .login(STAFF_LOGIN)
+            .login(staffLogin)
             .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
@@ -331,10 +331,10 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
             + "WHERE JUROR_NUMBER='644892530'", String.class)).isNull();
 
         final ResponseDeferralController.DeferralDto dto = ResponseDeferralController.DeferralDto.builder()
-            .version(INVALID_VERSION)
+            .version(invalidVersion)
             .acceptDeferral(true)
             .deferralReason(WORK_RELATED_EXCUSAL_CODE)
-            .deferralDate(FOUR_WEEKS_FROM_NEXT_MONDAY)
+            .deferralDate(fourWeeksFromNextMonday)
             .build();
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -395,7 +395,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/juror/defer/" + jurorNumber);
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(staffLogin)
@@ -488,7 +488,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/juror/defer/" + jurorNumber);
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(staffLogin)
@@ -525,7 +525,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
             .version(validVersion)
             .acceptDeferral(false)
             .deferralReason(WORK_RELATED_EXCUSAL_CODE)
-//                .deferralDate(null)
+            //.deferralDate(null)
             .build();
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -588,8 +588,8 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
                 + "'644892530'",
             Date.class)).isNull();
         softly.assertThat(
-            jdbcTemplate.queryForObject("SELECT date_excused FROM juror_mod.juror WHERE juror_number = '644892530'"
-                , Date.class)).isNull();
+            jdbcTemplate.queryForObject("SELECT date_excused FROM juror_mod.juror WHERE juror_number = '644892530'",
+                Date.class)).isNull();
         softly.assertThat(
             jdbcTemplate.queryForObject("SELECT excusal_code FROM juror_mod.juror WHERE juror_number = '644892530'",
                 String.class)).isEqualTo(WORK_RELATED_EXCUSAL_CODE);
@@ -597,8 +597,8 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
                 + "= '644892530'",
             String.class)).isEqualTo(staffLogin);
         softly.assertThat(
-            jdbcTemplate.queryForObject("SELECT NO_DEF_POS FROM juror_mod.juror WHERE juror_number = '644892530'"
-                , Long.class)).isNull();
+            jdbcTemplate.queryForObject("SELECT NO_DEF_POS FROM juror_mod.juror WHERE juror_number = '644892530'",
+                Long.class)).isNull();
         softly.assertThat(jdbcTemplate.queryForObject("SELECT next_date FROM juror_mod.juror_pool WHERE juror_number "
                 + "= '644892530'",
             Date.class)).isInTheFuture();
@@ -658,24 +658,24 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
         softly.assertThat(jdbcTemplate.queryForObject("SELECT EXC_CODE FROM JUROR.DEF_DENIED WHERE part_no = "
             + "'644892530'", String.class)).asString().isEqualTo(WORK_RELATED_EXCUSAL_CODE);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT DATE_DEF FROM JUROR.DEF_DENIED WHERE part_no = "
-            + "'644892530'", Date.class)).isCloseTo(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant())
-            , 5000L);
+            + "'644892530'", Date.class)).isCloseTo(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()),
+            5000L);
         softly.assertAll();
     }
 
     @Test
     public void processJurorDeferralDenial_unhappy_optimisticLock() throws Exception {
-        final String JUROR_NUMBER = "644892530";
-        final String STAFF_LOGIN = "STAFF1";
-        final Integer INVALID_VERSION = 1;// invalid version, 1 behind DB
+        final String jurorNumber = "644892530";
+        final String staffLogin = "STAFF1";
+        final Integer invalidVersion = 1;// invalid version, 1 behind DB
         final String description = "Manual deferral of juror response unhappy path.";
 
-        final URI uri = URI.create("/api/v1/bureau/juror/defer/" + JUROR_NUMBER);
+        final URI uri = URI.create("/api/v1/bureau/juror/defer/" + jurorNumber);
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
-            .login(STAFF_LOGIN)
+            .login(staffLogin)
             .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
@@ -708,7 +708,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
             + "WHERE JUROR_NUMBER='644892530'", String.class)).isNull();
 
         final ResponseDeferralController.DeferralDto dto = ResponseDeferralController.DeferralDto.builder()
-            .version(INVALID_VERSION)
+            .version(invalidVersion)
             .acceptDeferral(false)
             .deferralReason(WORK_RELATED_EXCUSAL_CODE)
             .build();

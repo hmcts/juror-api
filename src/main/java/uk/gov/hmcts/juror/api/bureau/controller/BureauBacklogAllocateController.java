@@ -38,8 +38,9 @@ public class BureauBacklogAllocateController {
 
     @PostMapping(path = "/replies")
     @Operation(summary = "Allocate Backlog replies to selected staff")
-    public ResponseEntity<Void> allocateBacklogReplies(@Parameter(hidden = true) BureauJwtAuthentication auth,
-                                                       @Validated @RequestBody BureauBacklogAllocateRequestDto bureauBacklogAllocateRequestDto) {
+    public ResponseEntity<Void> allocateBacklogReplies(
+        @Parameter(hidden = true) BureauJwtAuthentication auth,
+        @Validated @RequestBody BureauBacklogAllocateRequestDto bureauBacklogAllocateRequestDto) {
         if (!authService.userIsTeamLeader(auth)) {
             log.error("Allocate replies endpoint called by non-team leader");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

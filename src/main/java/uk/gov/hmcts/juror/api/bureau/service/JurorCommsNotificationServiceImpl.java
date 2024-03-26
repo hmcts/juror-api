@@ -25,9 +25,11 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
     private final JurorCommsNotifyPayLoadService jurorCommsNotifyPayLoadService;
 
     @Autowired
-    public JurorCommsNotificationServiceImpl(final NotifyAdapter notifyAdapter,
-                                             final NotifyTemplateMappingRepositoryMod notifyTemplateMappingRepositoryMod,
-                                             final JurorCommsNotifyPayLoadService jurorCommsNotifyPayLoadService) {
+    public JurorCommsNotificationServiceImpl(
+        final NotifyAdapter notifyAdapter,
+        final NotifyTemplateMappingRepositoryMod notifyTemplateMappingRepositoryMod,
+        final JurorCommsNotifyPayLoadService jurorCommsNotifyPayLoadService) {
+
         Assert.notNull(notifyAdapter, "NotifyAdapter cannot be null");
         Assert.notNull(notifyTemplateMappingRepositoryMod, "NotifyTemplateMappingRepositoryMod cannot be null");
         Assert.notNull(jurorCommsNotifyPayLoadService, "JurorCommsNotifyPayLoadService cannot be null");
@@ -40,15 +42,17 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
      * Handles the identification of the templateId and calls the notify client to send the
      * notification comms to notify.
      *
-     * @param jurorDetails                  Response to send the notification for.
+     * @param jurorDetails                 Response to send the notification for.
      * @param jurorCommsNotifyTemplateType Template type to use for the message
      * @param commsTemplateId              TemplateId provided for LETTER_COMMS
      * @param detailData                   additional data to establish payload for the message.
      * @param smsComms                     is a sms message to be sent.
      */
     @Override
-    public void sendJurorComms(final JurorPool jurorDetails, final JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
-                               final String commsTemplateId, final String detailData, final Boolean smsComms) {
+    public void sendJurorComms(
+        final JurorPool jurorDetails,
+        final JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
+        final String commsTemplateId, final String detailData, final Boolean smsComms) {
 
         String templateId;
         Map<String, String> payLoad;
@@ -108,7 +112,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
      * Handles the identification of the templateId and calls the notify client to send the
      * notification comms to notify.
      *
-     * @param jurorDetails                  Response to send the notification for.
+     * @param jurorDetails                 Response to send the notification for.
      * @param jurorCommsNotifyTemplateType Template type to use for the message
      * @param commsTemplateId              TemplateId provided for LETTER_COMMS
      * @param detailData                   additional data to establish payload for the message.
@@ -120,7 +124,6 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
                                   final String commsTemplateId, final String detailData, final Boolean smsComms) {
 
         String templateId;
-        Map<String, String> payLoad;
         final String templateKey = getTemplateKey(jurorDetails, jurorCommsNotifyTemplateType, smsComms);
         // get template for given template key.
         log.debug(" sms template key obtained as {}", templateKey);
@@ -132,7 +135,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
         templateId = template.getTemplateId();
         log.debug("Inside sendJurorCommsSms: templateId obtained as : {}", templateId);
         //Deal with payload.
-        payLoad = jurorCommsNotifyPayLoadService.generatePayLoadData(templateId, jurorDetails);
+        Map<String, String> payLoad = jurorCommsNotifyPayLoadService.generatePayLoadData(templateId, jurorDetails);
 
         log.debug("sendJurorCommsSms - calling createSmsNotification");
         final SmsNotification smsNotification = createSmsNotification(jurorDetails, jurorCommsNotifyTemplateType,
@@ -162,7 +165,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
     /**
      * Identify and return the templateId based on the paramters proivided.
      *
-     * @param jurorDetails                  juror details
+     * @param jurorDetails                 juror details
      * @param jurorCommsNotifyTemplateType Type of Notify Comms ie weekly, sentToCourt
      * @param smsComms                     is sms required for this type of comms.
      * @return String - TemplateId.

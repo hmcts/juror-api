@@ -24,10 +24,9 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetter;
 import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
@@ -107,7 +106,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -197,7 +195,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     }
 
     private void initHeaders() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("BUREAU_USER")
@@ -1985,13 +1983,13 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     private String initCourtsJwt(String owner, List<String> courts, int level) throws Exception {
 
-        return mintBureauJwt(BureauJWTPayload.builder()
+        return mintBureauJwt(BureauJwtPayload.builder()
             .userLevel(Integer.toString(level))
             .passwordWarning(false)
             .login("COURT_USER")
             .daysToExpire(89)
             .owner(owner)
-            .staff(BureauJWTPayload.Staff.builder().courts(courts).build())
+            .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build());
     }
 
@@ -2863,7 +2861,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     }
 
     private void updateNotesForEtag() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("BUREAU_USER")
@@ -3288,7 +3286,6 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
 
 
-
         @ParameterizedTest
         @ValueSource(strings = {
             "111111111",
@@ -3421,7 +3418,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             verifyStandardJurorHistory(jurorPool, List.of(jurorHistory),
                 new JurorHistoryExpectedValues("POLG", "Unchecked - timed out")
             );
-            verifyBulkPrintData(jurorNumber,FormCode.ENG_CONFIRMATION.getCode());
+            verifyBulkPrintData(jurorNumber, FormCode.ENG_CONFIRMATION.getCode());
         }
     }
 
@@ -4725,6 +4722,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             return requestDto;
         }
     }
+
     private void verifyBulkPrintData(String jurorNumber, String formCode) {
         List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
         assertThat(bulkPrintData).hasSize(1);
@@ -4774,13 +4772,13 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     }
 
     private String initPayloadWithStaffRank(String owner, int rank, String username) throws Exception {
-        return mintBureauJwt(BureauJWTPayload.builder()
+        return mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login(username)
             .daysToExpire(89)
             .owner(owner)
-            .staff(BureauJWTPayload.Staff.builder().rank(rank).build())
+            .staff(BureauJwtPayload.Staff.builder().rank(rank).build())
             .build());
     }
 
@@ -4826,7 +4824,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @SneakyThrows
     private void setAuthorization(String login, String owner, String level) {
         httpHeaders.remove(HttpHeaders.AUTHORIZATION);
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel(level)
             .passwordWarning(false)
             .login(login)

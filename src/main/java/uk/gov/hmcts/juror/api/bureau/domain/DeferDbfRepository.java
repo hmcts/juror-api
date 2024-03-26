@@ -5,5 +5,5 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface DeferDBFRepository extends CrudRepository<DeferDBF, String>, QuerydslPredicateExecutor<DeferDBF> {
+public interface DeferDbfRepository extends CrudRepository<DeferDbf, String>, QuerydslPredicateExecutor<DeferDbf> {
 }

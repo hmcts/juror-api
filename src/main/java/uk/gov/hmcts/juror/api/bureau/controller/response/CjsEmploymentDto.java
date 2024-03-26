@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 @Data
 @Schema(description = "Details on a Juror's employments with the CJS")
-public class CJSEmploymentDto implements Serializable {
+public class CjsEmploymentDto implements Serializable {
 
     @Schema(description = "Juror number")
     private String jurorNumber;
@@ -19,9 +19,9 @@ public class CJSEmploymentDto implements Serializable {
     @Schema(description = "Details of the CJS employment")
     private String details;
 
-    public CJSEmploymentDto(final JurorResponseCjsEmployment bureauJurorCJS) {
-        this.jurorNumber = bureauJurorCJS.getJurorNumber();
-        this.employer = bureauJurorCJS.getCjsEmployer();
-        this.details = bureauJurorCJS.getCjsEmployerDetails();
+    public CjsEmploymentDto(final JurorResponseCjsEmployment bureauJurorCjs) {
+        this.jurorNumber = bureauJurorCjs.getJurorNumber();
+        this.employer = bureauJurorCjs.getCjsEmployer();
+        this.details = bureauJurorCjs.getCjsEmployerDetails();
     }
 }

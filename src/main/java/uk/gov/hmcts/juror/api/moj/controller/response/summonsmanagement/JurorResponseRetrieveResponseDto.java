@@ -11,7 +11,6 @@ import lombok.Setter;
 import lombok.Singular;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 

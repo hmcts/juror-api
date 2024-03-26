@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.User;
@@ -106,7 +106,7 @@ public class UserServiceModImpl implements UserService {
             return new JwtDto(
                 jwtService.generateBureauJwtToken(
                     user.getUsername(),
-                    new BureauJWTPayload(user, locCode, courtLocations)
+                    new BureauJwtPayload(user, locCode, courtLocations)
                 ));
         }
         throw new MojException.Forbidden("User not part of court", null);

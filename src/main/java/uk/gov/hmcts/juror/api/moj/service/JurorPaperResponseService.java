@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.CjsEmploymentDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EligibilityDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPaperResponseDto;
@@ -27,23 +27,23 @@ public interface JurorPaperResponseService {
     String DEFERRAL = "deferral";
     String SIGNATURE = "signature";
 
-    void saveResponse(BureauJWTPayload payload, JurorPaperResponseDto paperResponseDto);
+    void saveResponse(BureauJwtPayload payload, JurorPaperResponseDto paperResponseDto);
 
-    JurorPaperResponseDetailDto getJurorPaperResponse(String jurorNumber, BureauJWTPayload payload);
+    JurorPaperResponseDetailDto getJurorPaperResponse(String jurorNumber, BureauJwtPayload payload);
 
-    void updateCjsDetails(BureauJWTPayload payload, CjsEmploymentDetailsDto cjsEmploymentDetailsDto,
+    void updateCjsDetails(BureauJwtPayload payload, CjsEmploymentDetailsDto cjsEmploymentDetailsDto,
                           String jurorNumber);
 
-    void updateReasonableAdjustmentsDetails(BureauJWTPayload payload,
+    void updateReasonableAdjustmentsDetails(BureauJwtPayload payload,
                                             ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto,
                                             String jurorNumber);
 
-    void updateJurorEligibilityDetails(BureauJWTPayload payload, EligibilityDetailsDto eligibilityDetailsDto,
+    void updateJurorEligibilityDetails(BureauJwtPayload payload, EligibilityDetailsDto eligibilityDetailsDto,
                                        String jurorNumber);
 
-    void updateJurorReplyTypeDetails(BureauJWTPayload payload, ReplyTypeDetailsDto replyTypeDetailsDto,
+    void updateJurorReplyTypeDetails(BureauJwtPayload payload, ReplyTypeDetailsDto replyTypeDetailsDto,
                                      String jurorNumber);
 
-    void updateJurorSignatureDetails(BureauJWTPayload payload, SignatureDetailsDto signatureDetailsDto,
+    void updateJurorSignatureDetails(BureauJwtPayload payload, SignatureDetailsDto signatureDetailsDto,
                                      String jurorNumber);
 }

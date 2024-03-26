@@ -18,8 +18,6 @@ public class StatsExcusalsQueries {
 
     /**
      * Query to match all excusal records for BUREAU_OR_COURT where Bureau is selected.
-     *
-     * @return
      */
 
     public static BooleanExpression isBureau() {
@@ -29,8 +27,6 @@ public class StatsExcusalsQueries {
 
     /**
      * Query to match all excusal  records for BUREAU_OR_COURT where Court is selected.
-     *
-     * @return
      */
 
     public static BooleanExpression isCourt() {
@@ -40,10 +36,6 @@ public class StatsExcusalsQueries {
 
     /**
      * Query to match all excusal records from STATSEXCUSALS table in between week parameters.
-     *
-     * @param startYearWeek
-     * @param endYearWeek
-     * @return
      */
 
     public static BooleanExpression excusalRecordsBetween(String startYearWeek, String endYearWeek) {
@@ -52,20 +44,11 @@ public class StatsExcusalsQueries {
 
     /**
      * Query to match excusal court records where week is between  week parameters.
-     *
-     * @param startYearWeek
-     * @param endYearWeek
-     * @return
      */
     public static BooleanExpression excusalsCourtRecordsBetween(String startYearWeek, String endYearWeek) {
         return statsExcusalsDetail.week.between(startYearWeek, endYearWeek).and(isCourt());
     }
 
-    /**
-     * @param startYearWeek
-     * @param endYearWeek
-     * @return
-     */
     public static BooleanExpression excusalBureauRecordsBetween(String startYearWeek, String endYearWeek) {
         return statsExcusalsDetail.week.between(startYearWeek, endYearWeek).and(isBureau());
     }

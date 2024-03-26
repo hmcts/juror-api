@@ -64,13 +64,11 @@ public class UserRepositoryTest extends AbstractIntegrationTest {
             );
         assertThat(userRepository.findAll()).isNotNull()
             .describedAs("Teams associated and loaded eagerly")
-            .extracting("team.id", "team.teamName")
-            .containsExactlyInAnyOrder(
+            .extracting("team.id", "team.teamName").containsExactlyInAnyOrder(
                 tuple(1L, "London & Wales"),
                 tuple(2L, "South East, North East & North West"),
                 tuple(3L, "Midlands & South West"),
-                tuple(null, null)
-            );
+                tuple(null, null));
     }
 
 

@@ -1,12 +1,9 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
 
-import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
-
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,7 +13,8 @@ import java.util.List;
  */
 public interface UrgencyService {
     /**
-     * Performs {@link #flagSlaOverdueForResponse(uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail)} on a list of {@link ModJurorDetail}.
+     * Performs {@link #flagSlaOverdueForResponse(uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail)} on a list of
+     * {@link ModJurorDetail}.
      *
      * @param details details to flag
      * @return List of details with SLA overdue flagged
@@ -61,7 +59,7 @@ public interface UrgencyService {
     /**
      * Set urgent / superUrgent flags on a juror response.
      *
-     * @param response    response to set flags on
+     * @param response     response to set flags on
      * @param jurorDetails pool details the response relates to
      */
     void setUrgencyFlags(DigitalResponse response, JurorPool jurorDetails);
@@ -69,18 +67,16 @@ public interface UrgencyService {
     /**
      * get super urgent based on current date, added for scheduler.
      *
-     * @param response
-     * @param jurorDetails
-     * @return
+     
+     
      */
-    boolean isUrgent(DigitalResponse  response, JurorPool jurorDetails);
+    boolean isUrgent(DigitalResponse response, JurorPool jurorDetails);
 
     /**
      * get super urgent based on current date, added for scheduler.
      *
-     * @param response
-     * @param jurorDetails
-     * @return
+     
+     
      */
     boolean isSuperUrgent(DigitalResponse response, JurorPool jurorDetails);
 

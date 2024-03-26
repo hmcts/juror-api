@@ -16,8 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.ReturnJuryDto;
@@ -70,7 +70,7 @@ import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 class TrialControllerTest {
     private static final String BASE_URL = "/api/v1/moj/trial";
 
-    private BureauJWTPayload jwtPayload;
+    private BureauJwtPayload jwtPayload;
     private MockMvc mockMvc;
 
     @MockBean
@@ -166,7 +166,7 @@ class TrialControllerTest {
                 "T100000025", "T100000021")));
 
         verify(trialService, times(1))
-            .getTrials(any(BureauJWTPayload.class), anyInt(), anyString(), anyString(), anyBoolean(), isNull());
+            .getTrials(any(BureauJwtPayload.class), anyInt(), anyString(), anyString(), anyBoolean(), isNull());
     }
 
     @Test
@@ -189,7 +189,7 @@ class TrialControllerTest {
                 "T100000025", "T100000021")));
 
         verify(trialService, times(1))
-            .getTrials(any(BureauJWTPayload.class), eq(0), eq("trialNumber"), eq("desc"), eq(false), eq("1234"));
+            .getTrials(any(BureauJwtPayload.class), eq(0), eq("trialNumber"), eq("desc"), eq(false), eq("1234"));
     }
 
     @Test

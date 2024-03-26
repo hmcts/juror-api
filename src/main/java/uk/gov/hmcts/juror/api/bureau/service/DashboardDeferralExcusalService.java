@@ -9,8 +9,6 @@ public interface DashboardDeferralExcusalService {
     /**
      * Get the Deferral Excusal Values.
      *
-     * @param requestDto
-     * @return
      */
 
     DashboardDeferralExcusalResponseDto.DeferralExcusalValues getDeferralExcusalValues(

@@ -9,7 +9,7 @@ public abstract class BureauJurorCjsQueries {
     }
 
     public static BooleanExpression byJurorNumberAndEmployer(final String jurorNumber, final String employer) {
-        final QBureauJurorCJS bureauJurorCJS = QBureauJurorCJS.bureauJurorCJS;
-        return bureauJurorCJS.jurorNumber.eq(jurorNumber).and(bureauJurorCJS.employer.eq(employer));
+        final QBureauJurorCjs bureauJurorCjs = QBureauJurorCjs.bureauJurorCjs;
+        return bureauJurorCjs.jurorNumber.eq(jurorNumber).and(bureauJurorCjs.employer.eq(employer));
     }
 }

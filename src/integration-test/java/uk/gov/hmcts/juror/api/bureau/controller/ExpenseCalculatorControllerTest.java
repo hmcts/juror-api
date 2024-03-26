@@ -20,7 +20,7 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.bureau.controller.request.JurorExpensesCalcRequestDto;
 import uk.gov.hmcts.juror.api.bureau.controller.request.JurorExpensesCalcTravelModeData;
 import uk.gov.hmcts.juror.api.bureau.controller.response.JurorExpensesCalcResults;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -55,7 +55,7 @@ public class ExpenseCalculatorControllerTest extends AbstractIntegrationTest {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
-        bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ksalazar")

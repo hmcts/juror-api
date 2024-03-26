@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolAddCitizenRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.NilPoolRequestDto;
@@ -30,9 +30,9 @@ public interface PoolCreateService {
 
     int getBureauDeferrals(String locationCode, LocalDate deferredTo);
 
-    void createPool(BureauJWTPayload payload, PoolCreateRequestDto poolCreateRequestDto) throws Exception;
+    void createPool(BureauJwtPayload payload, PoolCreateRequestDto poolCreateRequestDto) throws Exception;
 
-    PaginatedList<FilterPoolMember> getJurorPoolsList(BureauJWTPayload payload, PoolMemberFilterRequestQuery search);
+    PaginatedList<FilterPoolMember> getJurorPoolsList(BureauJwtPayload payload, PoolMemberFilterRequestQuery search);
 
     List<String> getThinJurorPoolsList(String poolNumber, String owner);
 
@@ -43,12 +43,12 @@ public interface PoolCreateService {
 
     void createNilPool(String owner, NilPoolRequestDto nilPoolRequestDto);
 
-    void lockVotersAndCreatePool(BureauJWTPayload payload, PoolCreateRequestDto poolCreateRequestDto);
+    void lockVotersAndCreatePool(BureauJwtPayload payload, PoolCreateRequestDto poolCreateRequestDto);
 
-    void lockVotersAndSummonAdditionalCitizens(BureauJWTPayload payload,
+    void lockVotersAndSummonAdditionalCitizens(BureauJwtPayload payload,
                                                PoolAdditionalSummonsDto poolAdditionalSummonsDto);
 
-    void convertNilPool(PoolRequestDto poolRequestDto, BureauJWTPayload payload);
+    void convertNilPool(PoolRequestDto poolRequestDto, BureauJwtPayload payload);
 
     String createCoronerPool(String owner, CoronerPoolRequestDto coronerPoolRequestDto);
 

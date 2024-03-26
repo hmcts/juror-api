@@ -24,7 +24,7 @@ import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.bureau.service.BureauService;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
@@ -761,7 +761,7 @@ class JurorRecordServiceTest {
 
     @Test
     void testGetJurorContactLogsBureauUserBureauLogs() {
-        final BureauJWTPayload payload = buildPayload(BUREAU_OWNER);
+        final BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER));
         ContactLog contactLog = createContactLog(VALID_JUROR_NUMBER,
@@ -786,7 +786,7 @@ class JurorRecordServiceTest {
 
     @Test
     void testGetJurorContactLogsBureauUserCourtLogs() {
-        final BureauJWTPayload payload = buildPayload(BUREAU_OWNER);
+        final BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, COURT_OWNER));
 
@@ -810,7 +810,7 @@ class JurorRecordServiceTest {
 
     @Test
     void testGetJurorContactLogsBureauUserNoLogs() {
-        final BureauJWTPayload payload = buildPayload(BUREAU_OWNER);
+        final BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER));
 
@@ -829,7 +829,7 @@ class JurorRecordServiceTest {
 
     @Test
     void testGetJurorContactLogsBureauUserInvalidJuror() {
-        BureauJWTPayload payload = buildPayload(BUREAU_OWNER);
+        BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
 
         List<JurorPool> jurorPools = new ArrayList<>();
 
@@ -843,7 +843,7 @@ class JurorRecordServiceTest {
 
     @Test
     void testGetJurorContactLogsCourtUserBureauLogs() {
-        BureauJWTPayload payload = buildPayload(COURT_OWNER);
+        BureauJwtPayload payload = buildPayload(COURT_OWNER);
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER));
 
@@ -856,7 +856,7 @@ class JurorRecordServiceTest {
 
     @Test
     void testGetJurorContactLogsCourtUserValidCourtLogs() {
-        final BureauJWTPayload payload = buildPayload(COURT_OWNER);
+        final BureauJwtPayload payload = buildPayload(COURT_OWNER);
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, COURT_OWNER));
         ContactLog contactLog1 = createContactLog(VALID_JUROR_NUMBER,
@@ -884,7 +884,7 @@ class JurorRecordServiceTest {
 
     @Test
     void testGetJurorContactLogsCourtUserDifferentCourt() {
-        BureauJWTPayload payload = buildPayload(COURT_OWNER);
+        BureauJwtPayload payload = buildPayload(COURT_OWNER);
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, "799"));
 
@@ -917,7 +917,7 @@ class JurorRecordServiceTest {
     @Test
     void testCreateJurorContactLogBureauUserHappyPath() {
         final ArgumentCaptor<ContactLog> contactArgumentCaptor = ArgumentCaptor.forClass(ContactLog.class);
-        final BureauJWTPayload payload = buildPayload(BUREAU_OWNER);
+        final BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER));
         ContactCode contactEnquiryType = new ContactCode(IContactCode.GENERAL.getCode(),
@@ -947,7 +947,7 @@ class JurorRecordServiceTest {
 
     @Test
     void testCreateJurorContactLogBureauUserJurorNotFound() {
-        BureauJWTPayload payload = buildPayload(BUREAU_OWNER);
+        BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
         ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, IContactCode.GENERAL);
 
         List<JurorPool> jurorPools = new ArrayList<>();
@@ -964,7 +964,7 @@ class JurorRecordServiceTest {
 
     @Test
     void testCreateJurorContactLogBureauUserCourtOwnedRecord() {
-        final BureauJWTPayload payload = buildPayload(BUREAU_OWNER);
+        final BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, COURT_OWNER));
 
@@ -988,7 +988,7 @@ class JurorRecordServiceTest {
     @Test
     void testCreateJurorContactLogCourtUserHappyPath() {
         final ArgumentCaptor<ContactLog> contactArgumentCaptor = ArgumentCaptor.forClass(ContactLog.class);
-        final BureauJWTPayload payload = buildPayload(COURT_OWNER);
+        final BureauJwtPayload payload = buildPayload(COURT_OWNER);
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, "415"));
         ContactCode contactEnquiryType =
@@ -1017,7 +1017,7 @@ class JurorRecordServiceTest {
 
     @Test
     void testCreateJurorContactLogCourtUserBureauOwnedRecord() {
-        final BureauJWTPayload payload = buildPayload(COURT_OWNER);
+        final BureauJwtPayload payload = buildPayload(COURT_OWNER);
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER));
 
@@ -1040,7 +1040,7 @@ class JurorRecordServiceTest {
 
     @Test
     void testCreateJurorContactLogCourtUserDifferentCourt() {
-        final BureauJWTPayload payload = buildPayload("415");
+        final BureauJwtPayload payload = buildPayload("415");
         String jurorNumber = "123456789";
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(jurorNumber, "416"));
@@ -1063,7 +1063,7 @@ class JurorRecordServiceTest {
 
     @Test
     void testCreateJurorContactLogCourtUserInvalidEnquiryType() {
-        final BureauJWTPayload payload = buildPayload("415");
+        final BureauJwtPayload payload = buildPayload("415");
         String jurorNumber = "123456789";
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(jurorNumber, "415"));
@@ -1146,8 +1146,8 @@ class JurorRecordServiceTest {
         return courtLocation;
     }
 
-    private BureauJWTPayload buildPayload(String owner) {
-        return BureauJWTPayload.builder()
+    private BureauJwtPayload buildPayload(String owner) {
+        return BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("SOME_USER")
@@ -1865,7 +1865,7 @@ class JurorRecordServiceTest {
         String username = "BUREAU_USER";
         String jurorNumber = "111111111";
 
-        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, username);
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, username);
 
         JurorPool jurorPool = createValidJurorPool(jurorNumber, bureauOwner);
         jurorPool.getPool().setPoolNumber("123456789");
@@ -1900,7 +1900,7 @@ class JurorRecordServiceTest {
         String username = "BUREAU_USER";
         String jurorNumber = "111111111";
 
-        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, username);
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, username);
 
         JurorPool jurorPool = createValidJurorPool(jurorNumber, bureauOwner);
         jurorPool.getPool().setPoolNumber("123456789");
@@ -1937,7 +1937,7 @@ class JurorRecordServiceTest {
         String username = "BUREAU_USER";
         String jurorNumber = "111111111";
 
-        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, username);
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, username);
 
         JurorPool jurorPool = createValidJurorPool(jurorNumber, bureauOwner);
         jurorPool.getPool().setPoolNumber("123456789");
@@ -1966,7 +1966,7 @@ class JurorRecordServiceTest {
         String username = "BUREAU_USER";
         String jurorNumber = "111111111";
 
-        final BureauJWTPayload payload = TestUtils.createJwt(courtOwner, username);
+        final BureauJwtPayload payload = TestUtils.createJwt(courtOwner, username);
 
         JurorPool jurorPool = createValidJurorPool(jurorNumber, bureauOwner);
         jurorPool.getPool().setPoolNumber("123456789");
@@ -1995,7 +1995,7 @@ class JurorRecordServiceTest {
         String username = "BUREAU_USER";
         String jurorNumber = "111111111";
 
-        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, username);
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, username);
 
         JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
         jurorPool.getPool().setPoolNumber("123456789");
@@ -2029,7 +2029,7 @@ class JurorRecordServiceTest {
         String pendingFirstName = "First";
         final String pendingLastName = "Last";
 
-        final BureauJWTPayload payload = TestUtils.createJwt(courtOwner, username);
+        final BureauJwtPayload payload = TestUtils.createJwt(courtOwner, username);
 
         JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
         jurorPool.getPool().setPoolNumber("123456789");
@@ -2097,7 +2097,7 @@ class JurorRecordServiceTest {
         String pendingFirstName = "First";
         final String pendingLastName = "Last";
 
-        final BureauJWTPayload payload = TestUtils.createJwt(courtOwner, username);
+        final BureauJwtPayload payload = TestUtils.createJwt(courtOwner, username);
 
         JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
         jurorPool.getPool().setPoolNumber("123456789");
@@ -2157,7 +2157,7 @@ class JurorRecordServiceTest {
         String username = "COURT_USER";
         String jurorNumber = "111111111";
 
-        BureauJWTPayload payload = TestUtils.createJwt("416", username);
+        BureauJwtPayload payload = TestUtils.createJwt("416", username);
 
 
         JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
@@ -2193,7 +2193,7 @@ class JurorRecordServiceTest {
         String username = "COURT_USER";
         String jurorNumber = "111111111";
 
-        BureauJWTPayload payload = TestUtils.createJwt(courtOwner, username);
+        BureauJwtPayload payload = TestUtils.createJwt(courtOwner, username);
 
         String notes = "Their name has not been legally changed";
 
@@ -2865,8 +2865,8 @@ class JurorRecordServiceTest {
                 .thenReturn(Optional.ofNullable(pendingJurorStatus));
         }
 
-        private BureauJWTPayload createBureauJwtPayload(String owner, String login) {
-            BureauJWTPayload payload = new BureauJWTPayload();
+        private BureauJwtPayload createBureauJwtPayload(String owner, String login) {
+            BureauJwtPayload payload = new BureauJwtPayload();
             payload.setOwner(owner);
             payload.setLogin(login);
             return payload;
@@ -2874,7 +2874,7 @@ class JurorRecordServiceTest {
 
         @Test
         void positiveTypicalExistingPool() {
-            final BureauJWTPayload payload = createBureauJwtPayload("415", "COURT_USER");
+            final BureauJwtPayload payload = createBureauJwtPayload("415", "COURT_USER");
             JurorCreateRequestDto dto = JurorCreateRequestDtoTest.createValidJurorCreateRequestExistingPoolDto();
             PoolRequest poolRequest = mock(PoolRequest.class);
             when(poolRequest.getOwner()).thenReturn("415");
@@ -2908,7 +2908,7 @@ class JurorRecordServiceTest {
 
         @Test
         void positiveTypicalNewPool() {
-            final BureauJWTPayload payload = createBureauJwtPayload("415", "COURT_USER");
+            final BureauJwtPayload payload = createBureauJwtPayload("415", "COURT_USER");
 
             JurorCreateRequestDto dto = JurorCreateRequestDtoTest.createValidJurorCreateRequestNewPoolDto();
 
@@ -2978,7 +2978,7 @@ class JurorRecordServiceTest {
         @Test
         void negativeOwnersDoNotMatch() {
             JurorCreateRequestDto dto = JurorCreateRequestDtoTest.createValidJurorCreateRequestExistingPoolDto();
-            BureauJWTPayload payload = createBureauJwtPayload("415", "COURT_USER");
+            BureauJwtPayload payload = createBureauJwtPayload("415", "COURT_USER");
             PoolRequest poolRequest = mock(PoolRequest.class);
             when(poolRequest.getOwner()).thenReturn("406");
             when(poolRequest.getPoolNumber()).thenReturn(dto.getPoolNumber());
@@ -3003,7 +3003,7 @@ class JurorRecordServiceTest {
 
         @Test
         void negativePendingJurorStatusNotFound() {
-            final BureauJWTPayload payload = createBureauJwtPayload("415", "COURT_USER");
+            final BureauJwtPayload payload = createBureauJwtPayload("415", "COURT_USER");
             JurorCreateRequestDto dto = JurorCreateRequestDtoTest.createValidJurorCreateRequestExistingPoolDto();
             PoolRequest poolRequest = mock(PoolRequest.class);
             when(poolRequest.getOwner()).thenReturn("415");

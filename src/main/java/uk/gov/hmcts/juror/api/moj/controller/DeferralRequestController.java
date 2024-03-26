@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
 import uk.gov.hmcts.juror.api.moj.service.DeferralResponseService;
 
@@ -35,7 +35,7 @@ public class DeferralRequestController {
     @PutMapping(path = "/juror/{jurorNumber}")
     @Operation(summary = "Enter and respond to an deferral request from a Juror")
     public ResponseEntity<Void> respondToDeferralRequest(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid DeferralRequestDto deferralRequestDto) {
         log.info("Begin process for response to deferral request");
         deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto);

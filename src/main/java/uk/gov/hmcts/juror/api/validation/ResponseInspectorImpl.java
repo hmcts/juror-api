@@ -10,19 +10,16 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameter;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
-import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
+import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
-import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
-import uk.gov.hmcts.juror.api.juror.notify.NotifyTemplateType;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Optional;
-
-import static java.time.ZoneId.systemDefault;
 
 @Component
 @Slf4j

@@ -74,7 +74,6 @@ public class PoolQueries {
     /**
      * Query to match all records where bureau_to_court_transfer date is between 6pm and midnight.
      *
-     * @return
      */
 
     public static BooleanExpression bureauToCourtTransferDate() {

@@ -6,13 +6,10 @@ import com.querydsl.core.types.dsl.StringPath;
 import org.apache.commons.lang3.StringUtils;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.QModJurorDetail;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,7 +20,7 @@ import static org.apache.commons.lang3.StringUtils.deleteWhitespace;
  * QueryDSL queries for BureauJurorDetail view.
  *
  * @since JDB-1971
-*/
+ */
 public class BureauJurorDetailQueries {
 
     private static final String INWARD_CODE_FRAGMENT = "^([0-9])([A-Z]{0,2})$";
@@ -33,8 +30,9 @@ public class BureauJurorDetailQueries {
     private static final String OWNER_IS_BUREAU = "400";
 
 
-  //  private static final QBureauJurorDetail bureauJurorDetail = QBureauJurorDetail.bureauJurorDetail;
-      private static final QModJurorDetail bureauJurorDetail = QModJurorDetail.modJurorDetail;
+    //  private static final QBureauJurorDetail bureauJurorDetail = QBureauJurorDetail.bureauJurorDetail;
+    private static final QModJurorDetail bureauJurorDetail = QModJurorDetail.modJurorDetail;
+
     private BureauJurorDetailQueries() {
     }
 
@@ -42,6 +40,7 @@ public class BureauJurorDetailQueries {
      * Juror number.
      * must be a full and exact match. Case in-sensitive.
      * Changed for JDB-3192.
+     *
      * @param jurorNumber juror number to search for
      * @return QueryDSL filter.
      */
@@ -66,6 +65,7 @@ public class BureauJurorDetailQueries {
     /**
      * Pool number.
      * must be a full and exact match.
+     *
      * @param poolNumber pool number to search for.
      * @return QueryDSL filter.
      */
@@ -113,7 +113,8 @@ public class BureauJurorDetailQueries {
             .and(byStatus(statuses));
     }
 
-    public static BooleanExpression byCompletedAt(String staffLogin, LocalDateTime startOfSearchPeriod, LocalDateTime endOfSearchPeriod) {
+    public static BooleanExpression byCompletedAt(String staffLogin, LocalDateTime startOfSearchPeriod,
+                                                  LocalDateTime endOfSearchPeriod) {
         return byMemberOfStaffAssigned(staffLogin)
             .and(byStatus(Collections.singletonList(ProcessingStatus.CLOSED.name())))
             .and(bureauJurorDetail.completedAt.between(startOfSearchPeriod, endOfSearchPeriod));
@@ -125,6 +126,7 @@ public class BureauJurorDetailQueries {
      * way. So for example the values "G1 1RD" and "G11RD" are equivalent, and a user search (full or partial) for one
      * must also match the other.
      * Exact Match for JDB-3192. No wildcards.
+     *
      * @param postcode postcode to generate matchers for.
      * @return list of SQL matchers.
      */
@@ -162,6 +164,7 @@ public class BureauJurorDetailQueries {
     /**
      * Checks if a token (superficially) looks like a fragment of an outward code.
      * (an outward code is the 'left part' of a UK postcode).
+     *
      * @param token token to check.
      * @return whether it could be an outward code fragment.
      */
@@ -172,6 +175,7 @@ public class BureauJurorDetailQueries {
     /**
      * Checks if a token (superficially) looks like a fragment of an inward code.
      * (an inward code is the 'right part' of a UK postcode).
+     *
      * @param token token to check.
      * @return whether it could be an outward code fragment.
      */
@@ -191,6 +195,7 @@ public class BureauJurorDetailQueries {
     /**
      * Urgents only.
      * Urgents means either urgent or super urgent responses.
+     *
      * @return QueryDSL filter.
      */
     public static BooleanExpression urgentsOnly() {
@@ -199,6 +204,7 @@ public class BureauJurorDetailQueries {
 
     /**
      * Staff assigned.
+     *
      * @return QueryDSL filter.
      */
     public static BooleanExpression byMemberOfStaffAssigned(String staffMemberLogin) {
@@ -207,6 +213,7 @@ public class BureauJurorDetailQueries {
 
     /**
      * Status.
+     *
      * @return QueryDSL filter.
      */
     public static BooleanExpression byStatus(List<String> statuses) {
@@ -215,6 +222,7 @@ public class BureauJurorDetailQueries {
 
     /**
      * Enables QueryDSL results to be sorted in ascending date order.
+     *
      * @return QueryDSL order specifier.
      * @since JDB-2142.
      */
@@ -225,39 +233,39 @@ public class BureauJurorDetailQueries {
 
     /**
      * Matches records where READ_ONLY is equal 'Y'.
-     * @return
+     *
      */
 
-    public static BooleanExpression ByReadOnly() {
+    public static BooleanExpression byReadOnly() {
         return bureauJurorDetail.owner.ne(OWNER_IS_BUREAU);
 
     }
 
     /**
      * Matches records where POOL.STATUS is SUMMONED.
-     * @return
+     *
      */
 
-    public static BooleanExpression ByPoolStatusSummoned() {
+    public static BooleanExpression byPoolStatusSummoned() {
         return bureauJurorDetail.status.eq((long) IJurorStatus.SUMMONED);
     }
 
     /**
      * Matches records where POOL.STATUS is NOT equal to RESPONDED.
-     * @return
+     *
      */
 
-    public static BooleanExpression ByPoolStatusNotSummoned() {
+    public static BooleanExpression byPoolStatusNotSummoned() {
         return bureauJurorDetail.status.ne((long) IJurorStatus.SUMMONED);
     }
 
     /**
      * Matches records where POOL.STATUS is equal to SUMMONED and READ_ONLY = Y.
-     * @return
+     *
      */
 
-    public static BooleanExpression ByPoolStatusSummonedAndReadOnly() {
-        return ByPoolStatusSummoned().and(ByReadOnly());
+    public static BooleanExpression byPoolStatusSummonedAndReadOnly() {
+        return byPoolStatusSummoned().and(byReadOnly());
     }
 
 
@@ -266,15 +274,15 @@ public class BureauJurorDetailQueries {
      * jurorDetail@return
      */
 
-    public static BooleanExpression JurorResponsesForClosing() {
-        return ProcessingStatusToDo().and((ByPoolStatusNotSummoned()).or(ByPoolStatusSummonedAndReadOnly()));
+    public static BooleanExpression jurorResponsesForClosing() {
+        return processingStatusToDo().and((byPoolStatusNotSummoned()).or(byPoolStatusSummonedAndReadOnly()));
 
     }
 
     /**
      * Processing Status not equal TODO.
      */
-    public static BooleanExpression ProcessingStatusToDo() {
+    public static BooleanExpression processingStatusToDo() {
         return bureauJurorDetail.processingStatus.eq(TODO);
     }
 

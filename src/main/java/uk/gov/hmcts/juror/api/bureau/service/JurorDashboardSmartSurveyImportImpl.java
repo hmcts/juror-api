@@ -226,9 +226,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
 
         // Get the latest survey export URL from the smart survey API
 
-        int exportId = -1;
-        String exportUrl = null;
-        String configExportName = this.appSetting.getSmartSurveySummonsResponseExportName();
+        final String configExportName = this.appSetting.getSmartSurveySummonsResponseExportName();
         String smartSurveyExportList = null;
         RestTemplate restTemplate = null;
         HttpHeaders headers = null;
@@ -281,7 +279,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
                 jsonList.add(obj);
             }
         }
-
+        String exportUrl = null;
         //Get the Url for the latest export record - first item in list
         if (jsonList.size() > 0) {
             JSONObject obj = jsonList.get(0);
@@ -366,10 +364,10 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
                     // Ended Date
                     String surveyEndDateString = csvCols[8].trim().replaceAll("\"", "");
                     LocalDate ldSurveyEndDate = null;
-                    Date dSurveyEndDate = null;
+                    Date surveyEndDate = null;
                     try {
                         ldSurveyEndDate = LocalDate.parse(surveyEndDateString);
-                        dSurveyEndDate = Date.from(ldSurveyEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                        surveyEndDate = Date.from(ldSurveyEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
                     } catch (Exception e) {
                         log.error("Error parsing date value: {}", surveyEndDateString);
                     }
@@ -387,7 +385,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
                         objSurveyResponse.setId(surveyUserId);
                         objSurveyResponse.setSurveyId(surveyId);
                         objSurveyResponse.setUserNo(surveyUserNo);
-                        objSurveyResponse.setSurveyResponseDate(dSurveyEndDate);
+                        objSurveyResponse.setSurveyResponseDate(surveyEndDate);
                         objSurveyResponse.setSatisfactionDesc(surveySatisfactionDesc);
 
                         surveyResponseList.add(objSurveyResponse);

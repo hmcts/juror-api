@@ -9,7 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.CompleteServiceJurorNumberListDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.EndTrialDto;
@@ -83,7 +83,7 @@ public class TrialServiceImpl implements TrialService {
     private static final int PAGE_SIZE = 25;
 
     @Override
-    public TrialSummaryDto createTrial(BureauJWTPayload payload, TrialDto trialDto) {
+    public TrialSummaryDto createTrial(BureauJwtPayload payload, TrialDto trialDto) {
         Courtroom courtroom =
             RepositoryUtils.unboxOptionalRecord(courtroomRepository.findById(trialDto.getCourtroomId()),
                 trialDto.getCourtroomId().toString());
@@ -104,7 +104,7 @@ public class TrialServiceImpl implements TrialService {
     }
 
     @Override
-    public Page<TrialListDto> getTrials(BureauJWTPayload payload, int pageNumber, String sortBy, String sortOrder,
+    public Page<TrialListDto> getTrials(BureauJwtPayload payload, int pageNumber, String sortBy, String sortOrder,
                                         boolean isActive, String trialNumber) {
         Sort sort = "desc".equals(sortOrder)
             ? Sort.by(sortBy).descending()
@@ -123,7 +123,7 @@ public class TrialServiceImpl implements TrialService {
     }
 
     @Override
-    public TrialSummaryDto getTrialSummary(BureauJWTPayload payload, String trialNo, String locCode) {
+    public TrialSummaryDto getTrialSummary(BureauJwtPayload payload, String trialNo, String locCode) {
         Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNo, locCode);
         if (trial == null) {
             throw new MojException.NotFound("Cannot find trial %s for court location %s.".formatted(trialNo, locCode),
@@ -133,7 +133,7 @@ public class TrialServiceImpl implements TrialService {
     }
 
     @Override
-    public void returnPanel(BureauJWTPayload payload, String trialNo, String locCode,
+    public void returnPanel(BureauJwtPayload payload, String trialNo, String locCode,
                             List<JurorDetailRequestDto> jurorDetailRequestDto) {
 
         // grabs the panel members from the DB and checks to make sure they match the requested members to be returned
@@ -161,7 +161,7 @@ public class TrialServiceImpl implements TrialService {
 
     @Override
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-    public void returnJury(BureauJWTPayload payload, String trialNumber, String locationCode,
+    public void returnJury(BureauJwtPayload payload, String trialNumber, String locationCode,
                            ReturnJuryDto returnJuryDto) {
         List<Panel> panelList =
             panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, locationCode);

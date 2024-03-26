@@ -36,8 +36,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDto;
@@ -105,7 +105,7 @@ class JurorRecordControllerTest {
     @MockBean
     private RestfulAuthenticationEntryPoint restfulAuthenticationEntryPoint;
 
-    private BureauJWTPayload bureauJwtPayload;
+    private BureauJwtPayload bureauJwtPayload;
 
     private MockMvc mockMvc;
 
@@ -245,7 +245,7 @@ class JurorRecordControllerTest {
 
         @Override
         public boolean supportsParameter(MethodParameter parameter) {
-            return parameter.getParameterType().isAssignableFrom(BureauJWTPayload.class);
+            return parameter.getParameterType().isAssignableFrom(BureauJwtPayload.class);
         }
 
         @Override
@@ -258,7 +258,7 @@ class JurorRecordControllerTest {
     @Test
     public void test_fixJurorName_courtUser_happyPath() throws Exception {
         bureauJwtPayload = TestUtils.createJwt(OWNER_COURT, USERNAME_COURT);
-        bureauJwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(0).build());
+        bureauJwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(0).build());
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(bureauJwtPayload);
 
@@ -274,14 +274,14 @@ class JurorRecordControllerTest {
             .andExpect(status().is2xxSuccessful());
 
         verify(jurorRecordService, times(1))
-            .fixErrorInJurorName(any(BureauJWTPayload.class), Mockito.anyString(),
+            .fixErrorInJurorName(any(BureauJwtPayload.class), Mockito.anyString(),
                 any(JurorNameDetailsDto.class));
     }
 
     @Test
     public void test_fixJurorName_bureauUser_teamLeader_happyPath() throws Exception {
         bureauJwtPayload = TestUtils.createJwt(OWNER_COURT, USERNAME_COURT);
-        bureauJwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(1).build());
+        bureauJwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(1).build());
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(bureauJwtPayload);
 
@@ -297,14 +297,14 @@ class JurorRecordControllerTest {
             .andExpect(status().is2xxSuccessful());
 
         verify(jurorRecordService, times(1))
-            .fixErrorInJurorName(any(BureauJWTPayload.class), Mockito.anyString(),
+            .fixErrorInJurorName(any(BureauJwtPayload.class), Mockito.anyString(),
                 any(JurorNameDetailsDto.class));
     }
 
     @Test
     public void test_fixJurorName_bureauUser_insufficientRank() throws Exception {
         bureauJwtPayload = TestUtils.createJwt(OWNER_BUREAU, USERNAME_BUREAU);
-        bureauJwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(0).build());
+        bureauJwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(0).build());
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(bureauJwtPayload);
 
@@ -319,7 +319,7 @@ class JurorRecordControllerTest {
                 .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isForbidden());
 
-        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJWTPayload.class),
+        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJwtPayload.class),
             Mockito.anyString(), any(JurorNameDetailsDto.class));
     }
 
@@ -328,7 +328,7 @@ class JurorRecordControllerTest {
     @ValueSource(strings = {"MrMrsMsMiss", "Mr|"})
     void testFixJurorNameBureauUserInvalidTitle(String title) throws Exception {
         bureauJwtPayload = TestUtils.createJwt(OWNER_BUREAU, USERNAME_BUREAU);
-        bureauJwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(1).build());
+        bureauJwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(1).build());
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(bureauJwtPayload);
 
@@ -343,7 +343,7 @@ class JurorRecordControllerTest {
                 .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
-        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJWTPayload.class),
+        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJwtPayload.class),
             Mockito.anyString(), any(JurorNameDetailsDto.class));
     }
 
@@ -352,8 +352,8 @@ class JurorRecordControllerTest {
     @NullSource
     @ValueSource(strings = {"", "FirstNameTooLongFirst", "Test|"})
     void testFixJurorNameBureauUserFirstNameInvalid(String firstName) throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt(OWNER_BUREAU, USERNAME_BUREAU);
-        jwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(1).build());
+        BureauJwtPayload jwtPayload = TestUtils.createJwt(OWNER_BUREAU, USERNAME_BUREAU);
+        jwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(1).build());
 
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -369,7 +369,7 @@ class JurorRecordControllerTest {
                 .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
-        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJWTPayload.class),
+        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJwtPayload.class),
             Mockito.anyString(), any(JurorNameDetailsDto.class));
     }
 
@@ -378,8 +378,8 @@ class JurorRecordControllerTest {
     @NullSource
     @ValueSource(strings = {"", "LastNameLastNameLastN", "Person|"})
     void testFixJurorNameBureauUserLastNameEmpty(String lastName) throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt(OWNER_COURT, USERNAME_COURT);
-        jwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(0).build());
+        BureauJwtPayload jwtPayload = TestUtils.createJwt(OWNER_COURT, USERNAME_COURT);
+        jwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(0).build());
 
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -395,7 +395,7 @@ class JurorRecordControllerTest {
                 .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
-        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJWTPayload.class),
+        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJwtPayload.class),
             Mockito.anyString(), any(JurorNameDetailsDto.class));
     }
 
@@ -405,8 +405,8 @@ class JurorRecordControllerTest {
     @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
         + " type to represent the variable and apply validation - like we do for DTOs")
     public void testFixJurorNameBureauUserInvalidRequestJurorNumberTooShort() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt(OWNER_BUREAU, USERNAME_BUREAU);
-        jwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(1).build());
+        BureauJwtPayload jwtPayload = TestUtils.createJwt(OWNER_BUREAU, USERNAME_BUREAU);
+        jwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(1).build());
 
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -422,7 +422,7 @@ class JurorRecordControllerTest {
                 .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
-        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJWTPayload.class),
+        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJwtPayload.class),
             Mockito.anyString(), any(JurorNameDetailsDto.class));
     }
 
@@ -431,8 +431,8 @@ class JurorRecordControllerTest {
     @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
         + " type to represent the variable and apply validation - like we do for DTOs")
     public void testFixJurorNameBureauUserInvalidRequestJurorNumberTooLong() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt(OWNER_COURT, USERNAME_COURT);
-        jwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(0).build());
+        BureauJwtPayload jwtPayload = TestUtils.createJwt(OWNER_COURT, USERNAME_COURT);
+        jwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(0).build());
 
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -448,7 +448,7 @@ class JurorRecordControllerTest {
                 .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
-        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJWTPayload.class),
+        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJwtPayload.class),
             Mockito.anyString(), any(JurorNameDetailsDto.class));
     }
 
@@ -457,8 +457,8 @@ class JurorRecordControllerTest {
     @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
         + " type to represent the variable and apply validation - like we do for DTOs")
     public void testFixJurorNameBureauUserInvalidRequestJurorNumberAlphaNumeric() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt(OWNER_BUREAU, USERNAME_BUREAU);
-        jwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(1).build());
+        BureauJwtPayload jwtPayload = TestUtils.createJwt(OWNER_BUREAU, USERNAME_BUREAU);
+        jwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(1).build());
 
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -476,14 +476,14 @@ class JurorRecordControllerTest {
                 .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isBadRequest());
 
-        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJWTPayload.class),
+        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJwtPayload.class),
             Mockito.anyString(), any(JurorNameDetailsDto.class));
     }
 
     @Test
     public void testFixJurorNameBureauUserInvalidRequestJurorNumberNull() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt(OWNER_COURT, USERNAME_COURT);
-        jwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(0).build());
+        BureauJwtPayload jwtPayload = TestUtils.createJwt(OWNER_COURT, USERNAME_COURT);
+        jwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(0).build());
 
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -496,7 +496,7 @@ class JurorRecordControllerTest {
                 .content(TestUtils.asJsonString(dto)))
             .andExpect(status().isNotFound());
 
-        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJWTPayload.class),
+        verify(jurorRecordService, Mockito.never()).fixErrorInJurorName(any(BureauJwtPayload.class),
             Mockito.anyString(), any(JurorNameDetailsDto.class));
     }
 
@@ -504,7 +504,7 @@ class JurorRecordControllerTest {
     @Test
     public void testProcessNameChangeApprovalCourtUserHappyPath() throws Exception {
         bureauJwtPayload = TestUtils.createJwt(OWNER_COURT, USERNAME_COURT);
-        bureauJwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(0).build());
+        bureauJwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(0).build());
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(bureauJwtPayload);
 
@@ -521,14 +521,14 @@ class JurorRecordControllerTest {
             .andExpect(status().is2xxSuccessful());
 
         verify(jurorRecordService, times(1))
-            .processPendingNameChange(any(BureauJWTPayload.class), Mockito.anyString(),
+            .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
                 any(ProcessNameChangeRequestDto.class));
     }
 
     @Test
     public void testProcessNameChangeApprovalBureauUser() throws Exception {
         bureauJwtPayload = TestUtils.createJwt(OWNER_BUREAU, USERNAME_BUREAU);
-        bureauJwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(0).build());
+        bureauJwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(0).build());
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(bureauJwtPayload);
 
@@ -542,13 +542,13 @@ class JurorRecordControllerTest {
             .andExpect(status().isForbidden());
 
         verify(jurorRecordService, Mockito.never())
-            .processPendingNameChange(any(BureauJWTPayload.class), Mockito.anyString(),
+            .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
                 any(ProcessNameChangeRequestDto.class));
     }
 
     @Test
     public void testProcessNameChangeApprovalInvalidRequestBodyMissingApprovalDecision() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -562,13 +562,13 @@ class JurorRecordControllerTest {
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
-            .processPendingNameChange(any(BureauJWTPayload.class), Mockito.anyString(),
+            .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
                 any(ProcessNameChangeRequestDto.class));
     }
 
     @Test
     public void testProcessNameChangeApprovalInvalidRequestBodyMissingNotes() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -581,13 +581,13 @@ class JurorRecordControllerTest {
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
-            .processPendingNameChange(any(BureauJWTPayload.class), Mockito.anyString(),
+            .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
                 any(ProcessNameChangeRequestDto.class));
     }
 
     @Test
     public void test_processNameChangeApproval_invalidJurorNumber_missing() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -601,7 +601,7 @@ class JurorRecordControllerTest {
             .andExpect(status().isNotFound());
 
         verify(jurorRecordService, Mockito.never())
-            .processPendingNameChange(any(BureauJWTPayload.class), Mockito.anyString(),
+            .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
                 any(ProcessNameChangeRequestDto.class));
     }
 
@@ -610,7 +610,7 @@ class JurorRecordControllerTest {
     @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
         + " type to represent the variable and apply validation - like we do for DTOs")
     public void test_processNameChangeApproval_invalidJurorNumber_tooShort() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -625,7 +625,7 @@ class JurorRecordControllerTest {
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
-            .processPendingNameChange(any(BureauJWTPayload.class), Mockito.anyString(),
+            .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
                 any(ProcessNameChangeRequestDto.class));
     }
 
@@ -634,7 +634,7 @@ class JurorRecordControllerTest {
     @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
         + " type to represent the variable and apply validation - like we do for DTOs")
     public void test_processNameChangeApproval_invalidJurorNumber_tooLong() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -649,7 +649,7 @@ class JurorRecordControllerTest {
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
-            .processPendingNameChange(any(BureauJWTPayload.class), Mockito.anyString(),
+            .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
                 any(ProcessNameChangeRequestDto.class));
     }
 
@@ -658,7 +658,7 @@ class JurorRecordControllerTest {
     @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
         + " type to represent the variable and apply validation - like we do for DTOs")
     public void test_processNameChangeApproval_invalidJurorNumber_alphaNumeric() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -673,13 +673,13 @@ class JurorRecordControllerTest {
             .andExpect(status().isBadRequest());
 
         verify(jurorRecordService, Mockito.never())
-            .processPendingNameChange(any(BureauJWTPayload.class), Mockito.anyString(),
+            .processPendingNameChange(any(BureauJwtPayload.class), Mockito.anyString(),
                 any(ProcessNameChangeRequestDto.class));
     }
 
     @Test
     public void test_editJurorDetails_happyPath() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -699,7 +699,7 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_title_invalidPipe() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -720,7 +720,7 @@ class JurorRecordControllerTest {
     @NullSource
     @ValueSource(strings = {"", "First|Name"})
     void testEditJurorDetailsInvalidFirstName(String firstName) throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -741,7 +741,7 @@ class JurorRecordControllerTest {
     @NullSource
     @ValueSource(strings = {"", "Last|Name"})
     void testEditJurorDetailsInvalidLastName(String lastName) throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -763,7 +763,7 @@ class JurorRecordControllerTest {
     @ValueSource(strings = {"", "Address|Line"})
     void testEditJurorDetailsInvalidAddressLine1(String addressLine1) throws Exception {
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
         EditJurorRecordRequestDto dto = createEditJurorRecordRequestDto();
@@ -781,8 +781,8 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_lastName_invalidPipe() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
-        jwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(0).build());
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
+        jwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(0).build());
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -803,8 +803,8 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_addressLine1_missing() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
-        jwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(0).build());
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
+        jwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(0).build());
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -825,8 +825,8 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_addressLine1_invalidPipe() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
-        jwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(0).build());
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
+        jwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(0).build());
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -847,7 +847,7 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_addressLine2_invalidPipe() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -866,7 +866,7 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_addressLine3_invalidPipe() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -885,7 +885,7 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_addressLine4_invalidPipe() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -904,7 +904,7 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_addressLine5_invalidPipe() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -923,7 +923,7 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_postcode_invalidFormat() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -942,7 +942,7 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_dob_tooOld() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -961,7 +961,7 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_dob_tooYoung() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -980,7 +980,7 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_primaryPhone_invalidFormat() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -999,7 +999,7 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_secondaryPhone_invalidFormat() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -1018,7 +1018,7 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_emailAddress_invalidFormat() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -1037,7 +1037,7 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_pendingTitle_tooLong() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -1056,7 +1056,7 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_pendingFirstName_tooLong() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -1075,7 +1075,7 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidRequestDto_pendingLastName_tooLong() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -1097,7 +1097,7 @@ class JurorRecordControllerTest {
     @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
         + " type to represent the variable and apply validation - like we do for DTOs")
     public void test_editJurorDetails_invalidJurorNumber_tooShort() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -1120,7 +1120,7 @@ class JurorRecordControllerTest {
     @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
         + " type to represent the variable and apply validation - like we do for DTOs")
     public void test_editJurorDetails_invalidJurorNumber_tooLong() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -1143,7 +1143,7 @@ class JurorRecordControllerTest {
     @Ignore("PathVariables are not validating, need a solution to fix these tests. One solution is to create a custom"
         + " type to represent the variable and apply validation - like we do for DTOs")
     public void test_editJurorDetails_invalidJurorNumber_alphaNumeric() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -1163,7 +1163,7 @@ class JurorRecordControllerTest {
 
     @Test
     public void test_editJurorDetails_invalidJurorNumber_missing() throws Exception {
-        BureauJWTPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
+        BureauJwtPayload jwtPayload = createPayload(OWNER_COURT, USERNAME_COURT, 0);
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -1232,9 +1232,9 @@ class JurorRecordControllerTest {
         return dto;
     }
 
-    private BureauJWTPayload createPayload(String owner, String username, int rank) {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt(owner, username);
-        jwtPayload.setStaff(BureauJWTPayload.Staff.builder().rank(rank).build());
+    private BureauJwtPayload createPayload(String owner, String username, int rank) {
+        BureauJwtPayload jwtPayload = TestUtils.createJwt(owner, username);
+        jwtPayload.setStaff(BureauJwtPayload.Staff.builder().rank(rank).build());
         return jwtPayload;
     }
 
@@ -1494,7 +1494,7 @@ class JurorRecordControllerTest {
 
         @org.junit.jupiter.api.Test
         void juryOfficerGetJurorBankDetailsHappyPath() throws Exception {
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
                 Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -1528,7 +1528,7 @@ class JurorRecordControllerTest {
         @Disabled("Need to fix path variable validation")
         @org.junit.jupiter.api.Test
         void juryOfficerGetJurorBankDetailsJurorNumberTooLong() throws Exception {
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
                 Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -1546,7 +1546,7 @@ class JurorRecordControllerTest {
         @Disabled("Need to fix the principle validation")
         @org.junit.jupiter.api.Test
         void bureauUserGetJurorBankDetailsDoesNotHaveAccess() throws Exception {
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(SecurityUtil.BUREAU_OWNER, "BUREAU_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(SecurityUtil.BUREAU_OWNER, "BUREAU_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Bureau User", 1,
                 Collections.singletonList(SecurityUtil.BUREAU_OWNER)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -1566,7 +1566,7 @@ class JurorRecordControllerTest {
     class EditBankDetails {
         @org.junit.jupiter.api.Test
         void happyPathEditBankDetails() throws Exception {
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
                 Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -1596,7 +1596,7 @@ class JurorRecordControllerTest {
         @org.junit.jupiter.api.Test
         @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void invalidAccountNumber() throws Exception {
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
                 Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -1624,7 +1624,7 @@ class JurorRecordControllerTest {
         @org.junit.jupiter.api.Test
         @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void wrongSortCode() throws Exception {
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
                 Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
@@ -1652,7 +1652,7 @@ class JurorRecordControllerTest {
         @org.junit.jupiter.api.Test
         @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void wrongAccountName() throws Exception {
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
                 Collections.singletonList(TestConstants.VALID_COURT_LOCATION)));
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);

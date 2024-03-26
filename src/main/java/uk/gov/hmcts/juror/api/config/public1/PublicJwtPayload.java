@@ -1,4 +1,4 @@
-package uk.gov.hmcts.juror.api.config.public_;
+package uk.gov.hmcts.juror.api.config.public1;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PublicJWTPayload {
+public class PublicJwtPayload {
     private String id;
     private String jurorNumber;
     private String surname;

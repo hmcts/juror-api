@@ -23,7 +23,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.AutoAssignResponse;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseOverviewDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
 import uk.gov.hmcts.juror.api.bureau.controller.response.JurorResponseSearchResults;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -69,7 +69,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void getTodo() throws Exception {
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ncrawford")
@@ -105,7 +105,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void getRepliesPending() throws Exception {
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ncrawford")
@@ -142,7 +142,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/BureauServiceImplTest_completedToday.sql"
     })
     public void getCompletedToday() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ncrawford")
@@ -178,7 +178,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
     public void getOverview() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ncrawford")
@@ -209,7 +209,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql"
     })
     public void searchForResponses_jurorNumberOnly_errorPath_notANumber() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ncrawford")
@@ -221,8 +221,8 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         RequestEntity<JurorResponseSearchRequest> requestEntity =
-            new RequestEntity<>(JurorResponseSearchRequest.builder().jurorNumber("Not a number").build(), httpHeaders
-                , HttpMethod.POST, uri);
+            new RequestEntity<>(JurorResponseSearchRequest.builder().jurorNumber("Not a number").build(), httpHeaders,
+                HttpMethod.POST, uri);
         ResponseEntity<JurorResponseSearchResults> response = template.exchange(requestEntity,
             JurorResponseSearchResults.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -236,7 +236,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql"
     })
     public void searchForResponses_lastNameOnly_errorPath_blank() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ncrawford")
@@ -263,7 +263,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql"
     })
     public void searchForResponses_postcodeOnly_errorPath_blank() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ncrawford")
@@ -290,7 +290,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql"
     })
     public void searchForResponses_poolNumber_errorPath_notANumber() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ncrawford")
@@ -317,7 +317,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql"
     })
     public void searchForResponses_lastNameOnly() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ncrawford")
@@ -352,13 +352,13 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/JurorResponseSearchServiceImpl_searchForResponses_teamLeader.sql"
     })
     public void searchForResponses_teamLeaderHasHigherLimit() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ksalazar")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
             .build());
 
         final URI uri = URI.create("/api/v1/bureau/responses/search");
@@ -387,13 +387,13 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void autoAssign_post_happyPath() throws Exception {
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ksalazar")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -418,13 +418,13 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
     public void autoAssign_post_alternatePath_insufficientCapacity() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ksalazar")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -449,13 +449,13 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
     public void autoAssign_post_errorPath_staffMemberDoesNotExist() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ksalazar")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -480,13 +480,13 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
     public void autoAssign_post_errorPath_staffMemberIsTeamLeader() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ksalazar")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -511,13 +511,13 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
     public void autoAssign_post_errorPath_userIsNotTeamLeader() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("carneson")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(0).active(1).name("Chad Arneson").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(0).active(1).name("Chad Arneson").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -541,13 +541,13 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
     public void autoAssign_post_errorPath_duplicateCapacityValue() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ksalazar")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -565,7 +565,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     }
 
     /**
-     * The backend should return a 404 when the request specifies a capacity value for a non-existent bureau officer
+     * The backend should return a 404 when the request specifies a capacity value for a non-existent bureau officer.
      *
      * @throws Exception if the test falls over
      */
@@ -577,13 +577,13 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
     public void autoAssign_post_errorPath_bureauOfficerDoesNotExist() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ksalazar")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -599,7 +599,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     }
 
     /**
-     * The backend should return a 403 when the request specifies a capacity value for an inactive bureau officer
+     * The backend should return a 403 when the request specifies a capacity value for an inactive bureau officer.
      *
      * @throws Exception if the test falls over
      */
@@ -611,13 +611,13 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
     public void autoAssign_post_errorPath_bureauOfficerInactive() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ksalazar")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -633,7 +633,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     }
 
     /**
-     * The backend should return a 403 when the request specifies a capacity value for a team leader
+     * The backend should return a 403 when the request specifies a capacity value for a team leader.
      *
      * @throws Exception if the test falls over
      */
@@ -645,13 +645,13 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/BureauResponsesController_autoAssignPost.sql"
     })
     public void autoAssign_post_errorPath_capacityForTeamLeader() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("ksalazar")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -676,13 +676,13 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     @Sql(statements = "INSERT INTO juror_mod.app_setting (SETTING,VALUE) "
         + "VALUES ('AUTO_ASSIGNMENT_DEFAULT_CAPACITY', '50');")
     public void autoAssign_get_happyPath() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("jbrown1")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(1).active(1).name("Jared Brown").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Jared Brown").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -713,13 +713,13 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/BureauResponsesController_autoAssignGet.sql"
     })
     public void autoAssign_get_alternatePath_noSettingInDatabase() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("jbrown1")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(1).active(1).name("Jared Brown").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Jared Brown").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -747,13 +747,13 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         "/db/BureauResponsesController_autoAssignGet.sql"
     })
     public void autoAssign_get_errorPath_userIsNotTeamLeader() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("sbell")
             .daysToExpire(89)
             .owner("400")
-            .staff(BureauJWTPayload.Staff.builder().rank(0).active(1).name("Sandra Bell").build())
+            .staff(BureauJwtPayload.Staff.builder().rank(0).active(1).name("Sandra Bell").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);

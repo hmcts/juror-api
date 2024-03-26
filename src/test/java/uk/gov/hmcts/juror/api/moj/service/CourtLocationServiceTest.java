@@ -11,7 +11,7 @@ import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationListDto;
@@ -73,7 +73,7 @@ class CourtLocationServiceTest {
 
     @Test
     void testBuildCourtLocationDataResponseBureauUser() {
-        BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         CourtLocationListDto dto = courtLocationService.buildCourtLocationDataResponse(payload);
 
         verify(courtLocationRepository, times(1)).findAll();
@@ -85,7 +85,7 @@ class CourtLocationServiceTest {
 
     @Test
     void testBuildCourtLocationDataResponseCourtUserNoSatellites() {
-        BureauJWTPayload payload = TestUtils.createJwt("435", "COURT_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("435", "COURT_USER");
         List<String> staffCourts = Collections.singletonList("435");
         payload.setStaff(TestUtils.staffBuilder("Test Staff", 1, staffCourts));
         doReturn(courtLocationList.stream().filter(courtLocation ->
@@ -110,7 +110,7 @@ class CourtLocationServiceTest {
 
     @Test
     void testBuildCourtLocationDataResponseCourtUserWithSatellites() {
-        BureauJWTPayload payload = TestUtils.createJwt("415", "COURT_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("415", "COURT_USER");
         List<String> staffCourts = Arrays.asList("415", "462");
         payload.setStaff(TestUtils.staffBuilder("Test Staff", 1, staffCourts));
         List<CourtLocation> courtLocations = courtLocationList.stream().filter(courtLocation ->

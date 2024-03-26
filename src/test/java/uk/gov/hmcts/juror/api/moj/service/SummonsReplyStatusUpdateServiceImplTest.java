@@ -7,7 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
@@ -89,7 +89,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
     //Interface method: updateJurorResponseStatus
     @Test
     public void test_updateJurorResponseStatus_noResponseFound() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         Mockito.doReturn(null).when(jurorPaperResponseRepository).findByJurorNumber(any());
         assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> summonsReplyStatusUpdateService.updateJurorResponseStatus("123456789",
@@ -113,7 +113,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         response.setJurorNumber(jurorNumber);
         response.setProcessingComplete(true);
 
-        final BureauJWTPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
 
         Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
@@ -146,7 +146,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         response.setProcessingComplete(false);
         response.setProcessingStatus(ProcessingStatus.TODO);
 
-        final BureauJWTPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
 
         Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
@@ -188,7 +188,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         response.setPhoneNumber("07123456789");
         response.setAltPhoneNumber("01234567890");
 
-        final BureauJWTPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
 
         Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
@@ -239,7 +239,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         response.setPhoneNumber("01234567890");
         response.setAltPhoneNumber("07123456789");
 
-        final BureauJWTPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
 
         Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
         Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
@@ -270,7 +270,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         response.setProcessingComplete(true);
         response.setProcessingStatus(ProcessingStatus.CLOSED);
 
-        final BureauJWTPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
 
         Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
 
@@ -300,7 +300,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         response.setProcessingComplete(false);
         response.setProcessingStatus(ProcessingStatus.CLOSED);
 
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
 
         Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber(jurorNumber);
         Mockito.doReturn(new ArrayList<JurorPool>()).when(jurorPoolRepository)
@@ -324,7 +324,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         response.setProcessingComplete(false);
         response.setProcessingStatus(ProcessingStatus.CLOSED);
 
-        final BureauJWTPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
 
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createJuror(jurorNumber));
@@ -352,7 +352,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         response.setProcessingComplete(false);
         response.setProcessingStatus(ProcessingStatus.TODO);
 
-        final BureauJWTPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
 
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createJuror(jurorNumber));
@@ -381,7 +381,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         response.setProcessingComplete(false);
         response.setProcessingStatus(ProcessingStatus.TODO);
 
-        final BureauJWTPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
 
         List<JurorPool> jurorPools = new ArrayList<>();
         JurorPool juror = createJuror(jurorNumber);
@@ -403,7 +403,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PaperResponse response = createPaperResponseWithOnlyMandatoryFields(jurorNumber);
         response.setFirstName("");
 
-        BureauJWTPayload courtPayload = buildPayload();
+        BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
         List<JurorPool> jurorPools = new ArrayList<>();
@@ -434,7 +434,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         response.setProcessingComplete(false);
         response.setProcessingStatus(ProcessingStatus.TODO);
 
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
 
         List<JurorPool> jurorPools = new ArrayList<>();
@@ -468,7 +468,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         response.setProcessingComplete(false);
         response.setProcessingStatus(ProcessingStatus.TODO);
 
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
 
         List<JurorPool> jurorPools = new ArrayList<>();
@@ -489,7 +489,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PaperResponse response = createPaperResponseWithOnlyMandatoryFields(jurorNumber);
         response.setLastName("");
 
-        BureauJWTPayload courtPayload = buildPayload();
+        BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
         List<JurorPool> jurorPools = new ArrayList<>();
@@ -519,7 +519,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PaperResponse response = createPaperResponseWithOnlyMandatoryFields(jurorNumber);
         response.setDateOfBirth(null);
 
-        BureauJWTPayload courtPayload = buildPayload();
+        BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
         List<JurorPool> jurorPools = new ArrayList<>();
@@ -549,7 +549,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PaperResponse response = createPaperResponseWithOnlyMandatoryFields(jurorNumber);
         response.setAddressLine1("");
 
-        BureauJWTPayload courtPayload = buildPayload();
+        BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
         List<JurorPool> jurorPools = new ArrayList<>();
@@ -579,7 +579,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PaperResponse response = createPaperResponseWithOnlyMandatoryFields(jurorNumber);
         response.setAddressLine4("");
 
-        BureauJWTPayload courtPayload = buildPayload();
+        BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
         List<JurorPool> jurorPools = new ArrayList<>();
@@ -609,7 +609,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PaperResponse response = createPaperResponseWithOnlyMandatoryFields(jurorNumber);
         response.setPostcode("");
 
-        BureauJWTPayload courtPayload = buildPayload();
+        BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
         List<JurorPool> jurorPools = new ArrayList<>();
@@ -639,7 +639,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PaperResponse response = createPaperResponseWithOnlyMandatoryFields(jurorNumber);
         response.setBail(null);
 
-        BureauJWTPayload courtPayload = buildPayload();
+        BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
         List<JurorPool> jurorPools = new ArrayList<>();
@@ -669,7 +669,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PaperResponse response = createPaperResponseWithOnlyMandatoryFields(jurorNumber);
         response.setConvictions(null);
 
-        BureauJWTPayload courtPayload = buildPayload();
+        BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
         List<JurorPool> jurorPools = new ArrayList<>();
@@ -699,7 +699,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PaperResponse response = createPaperResponseWithOnlyMandatoryFields(jurorNumber);
         response.setMentalHealthAct(null);
 
-        BureauJWTPayload courtPayload = buildPayload();
+        BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
         List<JurorPool> jurorPools = new ArrayList<>();
@@ -729,7 +729,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PaperResponse response = createPaperResponseWithOnlyMandatoryFields(jurorNumber);
         response.setMentalHealthCapacity(null);
 
-        BureauJWTPayload courtPayload = buildPayload();
+        BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
         List<JurorPool> jurorPools = new ArrayList<>();
@@ -758,7 +758,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         String jurorNumber = "123456789";
         PaperResponse response = createPaperResponseWithOnlyMandatoryFields(jurorNumber);
         response.setResidency(null);
-        BureauJWTPayload courtPayload = buildPayload();
+        BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
 
@@ -789,7 +789,7 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         PaperResponse response = createPaperResponseWithOnlyMandatoryFields(jurorNumber);
         response.setSigned(null);
 
-        BureauJWTPayload courtPayload = buildPayload();
+        BureauJwtPayload courtPayload = buildPayload();
         courtPayload.setOwner("411");
 
         List<JurorPool> jurorPools = new ArrayList<>();
@@ -2433,8 +2433,8 @@ public class SummonsReplyStatusUpdateServiceImplTest {
         return reasonableAdjustments;
     }
 
-    private BureauJWTPayload buildPayload() {
-        return BureauJWTPayload.builder()
+    private BureauJwtPayload buildPayload() {
+        return BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("test_user")

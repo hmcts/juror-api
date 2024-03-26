@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.domain.jurorresponse;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

@@ -17,8 +17,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.deferralmaintenance.ProcessJurorPostponementRequestDto;
@@ -84,7 +84,7 @@ class DeferralMaintenanceControllerTest {
         void happyPathCourtUser() throws Exception {
             final String jurorNumber = "111111111";
             final String currentCourtLocation = "415";
-            BureauJWTPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
 
             jwtPayload.setStaff(
                 TestUtils.staffBuilder("Court User", 1,
@@ -145,7 +145,7 @@ class DeferralMaintenanceControllerTest {
             final String jurorNumber = "111111111";
             final String currentCourtLocation = "400";
 
-            BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
             when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -200,7 +200,7 @@ class DeferralMaintenanceControllerTest {
         void unHappyPathInvalidJurorNumber() throws Exception {
             final String jurorNumber = "111111111";
             String locationCode = " 415";
-            BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
 
             jwtPayload.setStaff(
                 TestUtils.staffBuilder("Bureau User", 1,
@@ -248,7 +248,7 @@ class DeferralMaintenanceControllerTest {
         void unHappyPathInvalidLocationCode() throws Exception {
             final String jurorNumber = "111111111";
             String locationCode = " 415";
-            BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
 
             jwtPayload.setStaff(
                 TestUtils.staffBuilder("Bureau User", 1,
@@ -296,7 +296,7 @@ class DeferralMaintenanceControllerTest {
         @DisplayName("Invalid Request No Location Code")
         void unHappyPathInvalidUrl() throws Exception {
 
-            BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+            BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
 
             jwtPayload.setStaff(
                 TestUtils.staffBuilder("Bureau User", 1,
@@ -320,7 +320,7 @@ class DeferralMaintenanceControllerTest {
     @DisplayName("POST Process juror postponement")
     class ProcessJurorPostponement {
         static final String URL = "/api/v1/moj/deferral-maintenance/juror/postpone";
-        BureauJWTPayload jwtPayload;
+        BureauJwtPayload jwtPayload;
 
         @Test
         @DisplayName("Process juror postponement - happy path")

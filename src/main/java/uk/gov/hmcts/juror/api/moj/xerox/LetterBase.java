@@ -12,7 +12,6 @@ import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
-import uk.gov.hmcts.juror.api.moj.exception.PoolRequestException;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 
 import java.sql.Date;

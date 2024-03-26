@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Date;
 
 /**
  * Entity representing deferral entry.
@@ -25,7 +24,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DeferDBF implements Serializable {
+public class DeferDbf implements Serializable {
     @Id
     @Column(name = "PART_NO")
     private String partNo;

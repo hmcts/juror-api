@@ -24,8 +24,8 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.bureau.exception.ExcusalException;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsSuperUrgentSendToCourtService;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseSendToCourtService;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.io.Serializable;
 
@@ -42,8 +42,9 @@ public class ResponseSendToCourtController {
     private final JurorCommsSuperUrgentSendToCourtService jurorCommsSuperUrgentSendToCourtService;
 
     @Autowired
-    public ResponseSendToCourtController(final ResponseSendToCourtService sendToCourtService,
-                                         final JurorCommsSuperUrgentSendToCourtService jurorCommsSuperUrgentSendToCourtService) {
+    public ResponseSendToCourtController(
+        final ResponseSendToCourtService sendToCourtService,
+        final JurorCommsSuperUrgentSendToCourtService jurorCommsSuperUrgentSendToCourtService) {
         Assert.notNull(sendToCourtService, "sendToCourtService cannot be null");
         Assert.notNull(jurorCommsSuperUrgentSendToCourtService, "bureauProcessService cannot be null");
         this.sendToCourtServiceres = sendToCourtService;
@@ -59,7 +60,7 @@ public class ResponseSendToCourtController {
         BureauJwtAuthentication jwt,
         @Validated @RequestBody SendToCourtDto sendToCourtDto) throws ExcusalException {
         validateJurorNumberPathVariable(jurorId);
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) jwt.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
 
         log.info("Attempting to send juror {} using code {}, by user {}", jurorId, jwtPayload.getLogin());
         sendToCourtServiceres.sendResponseToCourt(jurorId, sendToCourtDto, jwtPayload.getLogin());

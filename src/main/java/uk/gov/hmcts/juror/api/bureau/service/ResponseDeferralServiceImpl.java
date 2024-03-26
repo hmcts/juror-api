@@ -1,8 +1,8 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
-import io.jsonwebtoken.lang.Assert;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ValidationException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +17,8 @@ import uk.gov.hmcts.juror.api.bureau.domain.DefDenied;
 import uk.gov.hmcts.juror.api.bureau.domain.DefDeniedRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.DefLett;
 import uk.gov.hmcts.juror.api.bureau.domain.DefLettRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.DeferDBF;
-import uk.gov.hmcts.juror.api.bureau.domain.DeferDBFRepository;
+import uk.gov.hmcts.juror.api.bureau.domain.DeferDbf;
+import uk.gov.hmcts.juror.api.bureau.domain.DeferDbfRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -35,13 +35,15 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseR
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
-
-import java.time.*;
-import java.time.temporal.ChronoUnit;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ResponseDeferralServiceImpl implements ResponseDeferralService {
     private final JurorStatusRepository jurorStatusRepository;
     public static final String DEFER_DBF_CHECKED_VALUE = null;// null is an intentional value
@@ -51,50 +53,12 @@ public class ResponseDeferralServiceImpl implements ResponseDeferralService {
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
     private final EntityManager entityManager;
     private final JurorResponseAuditRepositoryMod auditRepository;
-    private final DeferDBFRepository deferDBFRepository;
+    private final DeferDbfRepository deferDbfRepository;
     private final JurorHistoryRepository partHistRepository;
     private final DefLettRepository defLettRepository;
     private final DefDeniedRepository defDeniedRepository;
     private final ExcusalCodeRepository excusalCodeRepository;
     private final AssignOnUpdateService assignOnUpdateService;
-
-    @Autowired
-    public ResponseDeferralServiceImpl(final JurorPoolRepository poolRepository,
-                                       final ResponseMergeService responseMergeService,
-                                       final JurorDigitalResponseRepositoryMod jurorResponseRepository,
-                                       final EntityManager entityManager,
-                                       final JurorResponseAuditRepositoryMod auditRepository,
-                                       final DeferDBFRepository deferDBFRepository,
-                                       final JurorHistoryRepository partHistRepository,
-                                       final DefLettRepository defLettRepository,
-                                       final DefDeniedRepository defDeniedRepository,
-                                       final ExcusalCodeRepository excusalCodeRepository,
-                                       final AssignOnUpdateService assignOnUpdateService,
-                                       JurorStatusRepository jurorStatusRepository) {
-        Assert.notNull(poolRepository, "JurorRepository cannot be null.");
-        Assert.notNull(responseMergeService, "SummonsReplyMergeService cannot be null.");
-        Assert.notNull(jurorResponseRepository, "JurorDigitalResponseRepositoryMod cannot be null.");
-        Assert.notNull(entityManager, "EntityManager cannot be null.");
-        Assert.notNull(auditRepository, "JurorResponseAuditRepositoryMod cannot be null.");
-        Assert.notNull(deferDBFRepository, "DeferDBFRepository cannot be null.");
-        Assert.notNull(partHistRepository, "JurorHistoryRepository cannot be null.");
-        Assert.notNull(defLettRepository, "DefLettRepository cannot be null.");
-        Assert.notNull(defDeniedRepository, "DefDeniedRepository cannot be null.");
-        Assert.notNull(excusalCodeRepository, "ExcusalCodeRepository cannot be null.");
-        Assert.notNull(assignOnUpdateService, "AssignOnUpdateService cannot be null");
-        this.poolRepository = poolRepository;
-        this.responseMergeService = responseMergeService;
-        this.jurorResponseRepository = jurorResponseRepository;
-        this.entityManager = entityManager;
-        this.auditRepository = auditRepository;
-        this.deferDBFRepository = deferDBFRepository;
-        this.partHistRepository = partHistRepository;
-        this.defLettRepository = defLettRepository;
-        this.defDeniedRepository = defDeniedRepository;
-        this.excusalCodeRepository = excusalCodeRepository;
-        this.assignOnUpdateService = assignOnUpdateService;
-        this.jurorStatusRepository = jurorStatusRepository;
-    }
 
     @Override
     @Transactional
@@ -162,7 +126,7 @@ public class ResponseDeferralServiceImpl implements ResponseDeferralService {
                 poolRepository.save(pool);
 
                 // Insert into defer_dbf
-                deferDBFRepository.save(DeferDBF.builder()
+                deferDbfRepository.save(DeferDbf.builder()
                     .owner(JurorDigitalApplication.JUROR_OWNER)
                     .partNo(deferResponse.getJurorNumber())
                     .deferTo(deferTo)

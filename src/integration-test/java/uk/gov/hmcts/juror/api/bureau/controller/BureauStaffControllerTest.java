@@ -34,7 +34,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.TeamDto;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -139,8 +139,8 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/StaffRepositoryTest_findByActiveOrderByNameAsc.sql")
     public void getAll_happyPath() throws Exception {
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("rprice")
-                .staff(BureauJWTPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("rprice")
+                .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
                 .daysToExpire(89).owner("400").build());
 
         final URI uri = URI.create("/api/v1/bureau/staff");
@@ -165,8 +165,8 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/StaffRepositoryTest_findByActiveOrderByNameAsc.sql")
     public void getAll_unhappyPath_notATeamLeader() throws Exception {
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("jpowers")
-                .staff(BureauJWTPayload.Staff.builder().name("Joanna Powers").active(1).rank(0).build())
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("jpowers")
+                .staff(BureauJwtPayload.Staff.builder().name("Joanna Powers").active(1).rank(0).build())
                 .daysToExpire(89).owner("400").build());
 
         final URI uri = URI.create("/api/v1/bureau/staff");
@@ -184,8 +184,8 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/StaffRepositoryTest_findByActiveOrderByNameAsc.sql")
     public void getOne_happyPath() throws Exception {
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("rprice")
-                .staff(BureauJWTPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("rprice")
+                .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
                 .daysToExpire(89).owner("400").build());
 
         final URI uri = URI.create("/api/v1/bureau/staff/jpowers");
@@ -205,8 +205,8 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/StaffRepositoryTest_findByActiveOrderByNameAsc.sql")
     public void getOne_errorPath_noResult() throws Exception {
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("rprice")
-                .staff(BureauJWTPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("rprice")
+                .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
                 .daysToExpire(89).owner("400").build());
 
         final URI uri = URI.create("/api/v1/bureau/staff/nresult");
@@ -224,8 +224,8 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/StaffRepositoryTest_findByActiveOrderByNameAsc.sql")
     public void getOne_errorPath_notATeamLeader() throws Exception {
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("jpowers")
-                .staff(BureauJWTPayload.Staff.builder().name("Joanna Powers").active(1).rank(0).build())
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("jpowers")
+                .staff(BureauJwtPayload.Staff.builder().name("Joanna Powers").active(1).rank(0).build())
                 .daysToExpire(89).owner("400").build());
 
         final URI uri = URI.create("/api/v1/bureau/staff");
@@ -247,7 +247,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
                 .owner("400").build());
 
         // assert db state before merge.
@@ -307,7 +307,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
                 .owner("400").build());
 
         // assert db state before merge.
@@ -366,7 +366,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
                 .owner("400").build());
 
         // assert db state before merge.
@@ -421,7 +421,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
                 .owner("400").build());
 
         // assert db state before merge.
@@ -476,7 +476,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
                 .owner("400").build());
 
         // assert db state before merge.
@@ -531,7 +531,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
                 .owner("400").build());
 
         // assert db state before merge.
@@ -586,7 +586,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
                 .owner("400").build());
 
         // assert db state before merge.
@@ -641,7 +641,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("jmcbob").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("jmcbob").daysToExpire(89)
                 .owner("400").build());
 
         // assert db state before merge.
@@ -696,7 +696,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
                 .owner("400").build());
 
         // assert db state before merge.
@@ -752,7 +752,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/roster");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
                 .owner("400").build());
 
         final int expectedStaffIncludingAutoUser = 6;
@@ -792,7 +792,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assignments-multi");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
                 .owner("400").build());
 
         // assert db state before merge.
@@ -842,7 +842,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign-multi");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
                 .owner("400").build());
 
         // assert db state before merge.
@@ -907,7 +907,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign-multi");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
                 .owner("400").build());
 
         // assert db state before merge.
@@ -971,7 +971,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign-multi");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("smcbob").daysToExpire(89)
                 .owner("400").build());
 
         // assert db state before merge.
@@ -1049,9 +1049,9 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/BureauResponseController_reassign.sql")
     public void reassignStaffMembersResponses_happyPath() throws Exception {
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("kfry").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("kfry").daysToExpire(89)
                 .owner("400").staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name("kfry").courts(Collections.singletonList(
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name("kfry").courts(Collections.singletonList(
                         "123"))
                         .build()).build());
 
@@ -1105,9 +1105,9 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/BureauResponseController_reassign.sql")
     public void reassignStaffMembersResponses_unhappyPath_sendUrgentsToBacklog() throws Exception {
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("kfry").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("kfry").daysToExpire(89)
                 .owner("400").staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name("kfry").courts(Collections.singletonList(
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name("kfry").courts(Collections.singletonList(
                         "123"))
                         .build()).build());
 
@@ -1154,9 +1154,9 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/BureauResponseController_reassign.sql")
     public void reassignStaffMembersResponses_unhappyPath_cantFindStaff() throws Exception {
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("kfry").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("kfry").daysToExpire(89)
                 .owner("400").staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name("kfry").courts(Collections.singletonList(
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name("kfry").courts(Collections.singletonList(
                         "123"))
                         .build()).build());
 

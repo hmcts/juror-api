@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
-import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -20,7 +19,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -153,12 +151,12 @@ public class JurorDetailsCommonResponseDto {
         this.courtName = jurorPool.getCourt().getLocCourtName();
 
         if (this.excusalCode != null) {
-            this.excusalDescription =  ExcusalCodeEnum.fromCode(this.excusalCode).getDescription();
+            this.excusalDescription = ExcusalCodeEnum.fromCode(this.excusalCode).getDescription();
         }
 
         if (this.deferralCode != null) {
             // set the excusal description as front end needs it to display the deferral reason
-            this.excusalDescription =  ExcusalCodeEnum.fromCode(this.deferralCode).getDescription();
+            this.excusalDescription = ExcusalCodeEnum.fromCode(this.deferralCode).getDescription();
         }
 
         if (jurorPool.getCourt() != null) {

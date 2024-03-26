@@ -7,11 +7,10 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
-import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameter;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
-import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
+import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
+import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +20,6 @@ import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.math.NumberUtils.isDigits;
 
-/**
- * @see AppSettingService .
- */
 @Service
 @Slf4j
 public class AppSettingServiceImpl implements AppSettingService {

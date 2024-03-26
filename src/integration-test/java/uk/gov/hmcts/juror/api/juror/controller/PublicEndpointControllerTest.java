@@ -21,7 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.SpringBootErrorResponse;
 import uk.gov.hmcts.juror.api.TestUtil;
-import uk.gov.hmcts.juror.api.config.public_.PublicJWTPayload;
+import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.service.JurorPersistenceService;
 import uk.gov.hmcts.juror.api.juror.service.JurorServiceImpl.JurorResponseAlreadyExistsException;
@@ -30,10 +30,8 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
-import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -55,8 +53,8 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
     @Value("${jwt.secret.public}")
     private String publicSecret;
 
-    private LocalDate DOB_40_YEARS_OLD;
-    private JurorResponseDto.Qualify VALID_QUALIFY;
+    private LocalDate dob40YearsOld;
+    private JurorResponseDto.Qualify validQualify;
 
     @SuppressWarnings("Duplicates")
     @Override
@@ -67,10 +65,10 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         //create a valid DOB
-        DOB_40_YEARS_OLD = LocalDate.now().minusYears(40L);
+        dob40YearsOld = LocalDate.now().minusYears(40L);
 
         //create a valid Qualify
-        VALID_QUALIFY = JurorResponseDto.Qualify.builder()
+        validQualify = JurorResponseDto.Qualify.builder()
             .convicted(JurorResponseDto.Answerable.builder().answer(false).build())
             .livedConsecutive(JurorResponseDto.Answerable.builder().answer(true).build())
             .mentalHealthAct(JurorResponseDto.Answerable.builder().answer(false).build())
@@ -85,7 +83,7 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_constraintViolationException() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("789456123")
             .postcode("G6 1AB")
             .surname("SMITH")
@@ -98,8 +96,8 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
                 "789456123", "Joe", "Smith", "123456 Pleasant Walk",
                 "Grimsby",
                 "Town Centre",
-                "G6 1AB", DOB_40_YEARS_OLD,
-                "012341234567", "joe@smith.dev", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "G6 1AB", dob40YearsOld,
+                "012341234567", "joe@smith.dev", validQualify, null, ReplyMethod.DIGITAL)
             .title("Mr")
             .build();
 
@@ -117,7 +115,7 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
         verify(mockJurorPersistenceService).persistJurorResponse(any(JurorResponseDto.class));
     }
 
-    public String mintPublicJwt(final PublicJWTPayload payload) {
+    public String mintPublicJwt(final PublicJwtPayload payload) {
         return TestUtil.mintPublicJwt(payload, SignatureAlgorithm.HS256, publicSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }

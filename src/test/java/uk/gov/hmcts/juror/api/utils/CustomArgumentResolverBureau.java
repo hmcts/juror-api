@@ -5,7 +5,7 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 
@@ -13,7 +13,7 @@ public class CustomArgumentResolverBureau implements HandlerMethodArgumentResolv
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        return parameter.getParameterType().isAssignableFrom(BureauJWTPayload.class);
+        return parameter.getParameterType().isAssignableFrom(BureauJwtPayload.class);
     }
 
     @Override

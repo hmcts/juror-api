@@ -10,7 +10,6 @@ public interface HolidaysDateService {
     /**
      * Get Holiday dates from the JUROR_HOLIDAYS.holiday that match Selected Juror Date
      *
-     * @param holidays
      * @return List
      */
 

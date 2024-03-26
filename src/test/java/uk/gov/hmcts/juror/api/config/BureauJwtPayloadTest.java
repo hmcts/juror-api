@@ -3,7 +3,7 @@ package uk.gov.hmcts.juror.api.config;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
@@ -39,7 +39,7 @@ class BureauJwtPayloadTest {
         when(user.getUserType()).thenReturn(UserType.COURT);
         when(user.getRoles()).thenReturn(Set.of(Role.MANAGER));
         when(user.isActive()).thenReturn(true);
-        BureauJWTPayload payload = new BureauJWTPayload(
+        BureauJwtPayload payload = new BureauJwtPayload(
             user,
             "401",
             List.of(
@@ -58,7 +58,7 @@ class BureauJwtPayloadTest {
         assertThat(payload.getUserType()).isEqualTo(UserType.COURT);
         assertThat(payload.getRoles()).containsExactly(Role.MANAGER);
         assertThat(payload.getStaff()).isEqualTo(
-            new BureauJWTPayload.Staff(
+            new BureauJwtPayload.Staff(
                 "name1",
                 3,
                 1,
@@ -76,7 +76,7 @@ class BureauJwtPayloadTest {
         when(user.getUserType()).thenReturn(UserType.ADMINISTRATOR);
         when(user.getRoles()).thenReturn(Set.of(Role.MANAGER));
         when(user.isActive()).thenReturn(true);
-        BureauJWTPayload payload = new BureauJWTPayload(
+        BureauJwtPayload payload = new BureauJwtPayload(
             user,
             "401",
             List.of(
@@ -95,7 +95,7 @@ class BureauJwtPayloadTest {
         assertThat(payload.getUserType()).isEqualTo(UserType.ADMINISTRATOR);
         assertThat(payload.getRoles()).containsExactly(Role.values());
         assertThat(payload.getStaff()).isEqualTo(
-            new BureauJWTPayload.Staff(
+            new BureauJwtPayload.Staff(
                 "name1",
                 3,
                 1,
@@ -107,14 +107,14 @@ class BureauJwtPayloadTest {
     @Test
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveToClaims() {
-        BureauJWTPayload payload = new BureauJWTPayload(
+        BureauJwtPayload payload = new BureauJwtPayload(
             "owner",
             "locCode",
             "login",
             "userLevel",
             false,
             999,
-            new BureauJWTPayload.Staff(
+            new BureauJwtPayload.Staff(
                 "staffName",
                 1,
                 2,
@@ -166,16 +166,16 @@ class BureauJwtPayloadTest {
         when(claims.get("userLevel", String.class)).thenReturn("userLevel");
 
 
-        assertThat(BureauJWTPayload.fromClaims(claims))
+        assertThat(BureauJwtPayload.fromClaims(claims))
             .isEqualTo(
-                new BureauJWTPayload(
+                new BureauJwtPayload(
                     "owner",
                     "locCode",
                     "login",
                     "userLevel",
                     false,
                     999,
-                    new BureauJWTPayload.Staff(
+                    new BureauJwtPayload.Staff(
                         "staffName",
                         1,
                         2,
@@ -210,16 +210,16 @@ class BureauJwtPayloadTest {
         when(claims.get("userLevel", String.class)).thenReturn("userLevel");
 
 
-        assertThat(BureauJWTPayload.fromClaims(claims))
+        assertThat(BureauJwtPayload.fromClaims(claims))
             .isEqualTo(
-                new BureauJWTPayload(
+                new BureauJwtPayload(
                     "owner",
                     "locCode",
                     "login",
                     "userLevel",
                     false,
                     999,
-                    new BureauJWTPayload.Staff(
+                    new BureauJwtPayload.Staff(
                         "staffName",
                         1,
                         2,
@@ -236,7 +236,7 @@ class BureauJwtPayloadTest {
         @Test
         @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveToClaims() {
-            BureauJWTPayload.Staff staff = new BureauJWTPayload.Staff(
+            BureauJwtPayload.Staff staff = new BureauJwtPayload.Staff(
                 "StaffName",
                 1,
                 2,
@@ -253,13 +253,13 @@ class BureauJwtPayloadTest {
         @Test
         @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveFromClaimsHasValues() {
-            assertThat(BureauJWTPayload.Staff.fromClaims(Map.of(
+            assertThat(BureauJwtPayload.Staff.fromClaims(Map.of(
                 "name", "StaffName",
                 "rank", 1,
                 "active", 2,
                 "courts", List.of("400", "415")
             ))).isEqualTo(
-                new BureauJWTPayload.Staff(
+                new BureauJwtPayload.Staff(
                     "StaffName",
                     1,
                     2,
@@ -270,9 +270,9 @@ class BureauJwtPayloadTest {
 
         @Test
         void positiveFromClaimsDefaultValues() {
-            assertThat(BureauJWTPayload.Staff.fromClaims(Map.of("someKey", "someValue")))
+            assertThat(BureauJwtPayload.Staff.fromClaims(Map.of("someKey", "someValue")))
                 .isEqualTo(
-                    new BureauJWTPayload.Staff(
+                    new BureauJwtPayload.Staff(
                         "",
                         Integer.MIN_VALUE,
                         0,
@@ -283,9 +283,9 @@ class BureauJwtPayloadTest {
 
         @Test
         void positiveFromClaimsNull() {
-            assertThat(BureauJWTPayload.Staff.fromClaims(null))
+            assertThat(BureauJwtPayload.Staff.fromClaims(null))
                 .isEqualTo(
-                    new BureauJWTPayload.Staff(
+                    new BureauJwtPayload.Staff(
                         null,
                         null,
                         null,
@@ -296,9 +296,9 @@ class BureauJwtPayloadTest {
 
         @Test
         void positiveFromClaimsEmptyMap() {
-            assertThat(BureauJWTPayload.Staff.fromClaims(Map.of()))
+            assertThat(BureauJwtPayload.Staff.fromClaims(Map.of()))
                 .isEqualTo(
-                    new BureauJWTPayload.Staff(
+                    new BureauJwtPayload.Staff(
                         null,
                         null,
                         null,

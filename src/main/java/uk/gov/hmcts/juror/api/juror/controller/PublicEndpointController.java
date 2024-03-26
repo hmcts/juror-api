@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
-import uk.gov.hmcts.juror.api.config.public_.PublicJWTPayload;
+import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorHolidaysRequestDto;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
@@ -50,14 +50,16 @@ public class PublicEndpointController {
     private final SpringValidatorAdapter validator;
     private final HolidaysService holidaysService;
 
-    private final JurorResponseService jurorResponseService ;
+    private final JurorResponseService jurorResponseService;
 
     @Autowired
-    public PublicEndpointController(final JurorPersistenceService jurorPersistenceService,
-                                    final JurorService jurorService,
-                                    final HolidaysService holidaysService,
-                                    final JurorResponseService jurorResponseService,
-                                    @SuppressWarnings("SpringJavaAutowiringInspection") final SpringValidatorAdapter validator) {
+    public PublicEndpointController(
+        final JurorPersistenceService jurorPersistenceService,
+        final JurorService jurorService,
+        final HolidaysService holidaysService,
+        final JurorResponseService jurorResponseService,
+        @SuppressWarnings("SpringJavaAutowiringInspection") final SpringValidatorAdapter validator) {
+
         Assert.notNull(jurorPersistenceService, "JurorPersistenceService cannot be null.");
         Assert.notNull(jurorService, "JurorService cannot be null.");
         Assert.notNull(holidaysService, "HolidaysService cannot be null");
@@ -81,7 +83,7 @@ public class PublicEndpointController {
     @Operation(summary = "Find juror details by Juror Number",
         description = "The existing juror summons details for confirmation by the juror")
     public ResponseEntity<JurorDetailDto> retrieveJurorById(
-        @Parameter(hidden = true) @AuthenticationPrincipal PublicJWTPayload principal,
+        @Parameter(hidden = true) @AuthenticationPrincipal PublicJwtPayload principal,
         @Parameter(description = "Juror number", required = true) @PathVariable String jurorNumber) {
         if (ObjectUtils.isEmpty(jurorNumber) || !principal.getJurorNumber().equals(jurorNumber)) {
             log.warn(
@@ -103,15 +105,12 @@ public class PublicEndpointController {
     /**
      * Get Dates Chosen by Juror.
      * Response if date is Bank Holiday.
-     *
-     * @param jurorHolidaysRequestDto
-     * @param principal
      */
     @PostMapping("/deferral-dates")
     @Operation(summary = "/confirm_date/deferral-dates",
         description = "Retrieve dates if Bank Holidays")
     public ResponseEntity<JurorHolidaysResponseDto> jurorHolidayDates(
-        @Parameter(hidden = true) @AuthenticationPrincipal PublicJWTPayload principal,
+        @Parameter(hidden = true) @AuthenticationPrincipal PublicJwtPayload principal,
         @Validated @RequestBody JurorHolidaysRequestDto jurorHolidaysRequestDto) {
 
         final JurorHolidaysResponseDto jurorHolidaysResponseDto = new JurorHolidaysResponseDto();
@@ -132,7 +131,7 @@ public class PublicEndpointController {
     @Operation(summary = "Save a Juror response", description = "Process the Juror Response from the"
         + " Juror and save")
     public ResponseEntity<String> respondToSummons(
-        @Parameter(hidden = true) @AuthenticationPrincipal PublicJWTPayload principal,
+        @Parameter(hidden = true) @AuthenticationPrincipal PublicJwtPayload principal,
         @RequestBody JurorResponseDto responseDto)
         throws NoSuchMethodException, MethodArgumentNotValidException {
 
@@ -182,7 +181,7 @@ public class PublicEndpointController {
 
             final MethodParameter methodParameter = new MethodParameter(this.getClass().getDeclaredMethod(
                 "respondToSummons",
-                PublicJWTPayload.class,
+                PublicJwtPayload.class,
                 JurorResponseDto.class
             ), 1);
             throw new MethodArgumentNotValidException(methodParameter, errors);

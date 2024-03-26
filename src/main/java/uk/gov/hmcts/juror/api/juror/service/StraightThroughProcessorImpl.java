@@ -91,7 +91,7 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             // check the response for answers making it ineligible for straight through processing.
             // JDB-126 a. the title, first name and last name must be the same in the Juror response as they are on
             // the Juror application
-            if (jurorDetails.getJuror().getTitle() != null) {// title is nullable!!!
+            if (jurorDetails.getJuror().getTitle() != null) { // title is nullable!!!
                 //pool details title has value
                 if (!jurorDetails.getJuror().getTitle().equalsIgnoreCase(savedDigitalResponse.getTitle())) {
                     log.debug("Title does not match: {} - {}", jurorDetails.getJuror().getTitle(),
@@ -185,8 +185,8 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
 
 
             // JDB-126 c. the date of birth in the response must not indicate that the Juror is too old or too young.
-            int youngestJurorAgeAllowed = responseInspector.getYoungestJurorAgeAllowed();
-            int tooOldJurorAge = responseInspector.getTooOldJurorAge();
+            final int youngestJurorAgeAllowed = responseInspector.getYoungestJurorAgeAllowed();
+            final int tooOldJurorAge = responseInspector.getTooOldJurorAge();
             if (savedDigitalResponse.getDateOfBirth() == null) {
                 log.debug("Cannot calculate age from null DOB");
                 throw new StraightThroughProcessingServiceException("Cannot calculate age from null DOB");
