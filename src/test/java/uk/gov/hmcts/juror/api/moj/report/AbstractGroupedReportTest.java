@@ -71,7 +71,7 @@ class AbstractGroupedReportTest {
 
     @Test
     void positiveGetTableData() {
-        List<Tuple> data = List.of(mock(Tuple.class), mock(Tuple.class));
+        final List<Tuple> data = List.of(mock(Tuple.class), mock(Tuple.class));
 
         List<LinkedHashMap<String, Object>> tableData = new ArrayList<>();
         tableData.add(new ReportLinkedMap<String, Object>()

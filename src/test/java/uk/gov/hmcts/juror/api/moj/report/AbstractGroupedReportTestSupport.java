@@ -3,7 +3,6 @@ package uk.gov.hmcts.juror.api.moj.report;
 import com.querydsl.core.types.EntityPath;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,6 +34,7 @@ public abstract class AbstractGroupedReportTestSupport
         assertThat(report.groupBy).isEqualTo(groupBy);
         //Other fields don't need testing as they will be tested via the dedicated AbstractReportTest
     }
+
     @Override
     protected Map<String, List<LinkedHashMap<String, Object>>> createData() {
         return new HashMap<>();

@@ -9,7 +9,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.Getter;
-import uk.gov.hmcts.juror.api.juror.domain.QPool;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
@@ -126,9 +125,9 @@ public abstract class AbstractReport<T> {
         AbstractReportResponse.TableData<T> tableData = tupleToTableData(data);
 
         AbstractReportResponse<T> report = createBlankResponse();
-        Map<String, StandardReportResponse.DataTypeValue> headings =
+        Map<String, AbstractReportResponse.DataTypeValue> headings =
             new ConcurrentHashMap<>(getHeadings(request, tableData));
-        headings.put("report_created", StandardReportResponse.DataTypeValue.builder()
+        headings.put("report_created", AbstractReportResponse.DataTypeValue.builder()
             .value(DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()))
             .dataType(LocalDateTime.class.getSimpleName())
             .build());
@@ -252,7 +251,7 @@ public abstract class AbstractReport<T> {
 
     protected abstract void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request);
 
-    public abstract Map<String, StandardReportResponse.DataTypeValue> getHeadings(
+    public abstract Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
         StandardReportRequest request,
         StandardReportResponse.TableData<T> tableData);
 
@@ -263,29 +262,42 @@ public abstract class AbstractReport<T> {
         }
     }
 
-    protected ConcurrentHashMap<String, StandardReportResponse.DataTypeValue> loadStandardPoolHeaders(
+    public Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameHeader(PoolRequest poolRequest) {
+        return new AbstractMap.SimpleEntry<>("court_name", AbstractReportResponse.DataTypeValue.builder()
+            .displayName("Court Name")
+            .dataType(String.class.getSimpleName())
+            .value(
+                poolRequest.getCourtLocation().getName() + " (" + poolRequest.getCourtLocation().getLocCode() + ")")
+            .build());
+    }
+
+    public Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameHeader(String activeOwner) {
+        return getCourtNameHeader(getPoolRequest(activeOwner));
+    }
+
+    public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadStandardPoolHeaders(
         StandardReportRequest request, boolean ownerMustMatch, boolean allowBureau) {
         PoolRequest poolRequest = getPoolRequest(request.getPoolNumber());
         if (ownerMustMatch) {
             checkOwnership(poolRequest, allowBureau);
         }
         return new ConcurrentHashMap<>(Map.of(
-            "pool_number", StandardReportResponse.DataTypeValue.builder()
+            "pool_number", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Pool Number")
                 .dataType(String.class.getSimpleName())
                 .value(request.getPoolNumber())
                 .build(),
-            "pool_type", StandardReportResponse.DataTypeValue.builder()
+            "pool_type", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Pool Type")
                 .dataType(String.class.getSimpleName())
                 .value(poolRequest.getPoolType().getDescription())
                 .build(),
-            "service_start_date", StandardReportResponse.DataTypeValue.builder()
+            "service_start_date", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Service Start Date")
                 .dataType(LocalDate.class.getSimpleName())
                 .value(DateTimeFormatter.ISO_DATE.format(poolRequest.getReturnDate()))
                 .build(),
-            "court_name", StandardReportResponse.DataTypeValue.builder()
+            "court_name", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Court Name")
                 .dataType(String.class.getSimpleName())
                 .value(

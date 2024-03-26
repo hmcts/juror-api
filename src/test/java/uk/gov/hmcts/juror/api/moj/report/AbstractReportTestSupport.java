@@ -19,9 +19,9 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,6 +35,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.withSettings;
 
 @SuppressWarnings({
@@ -109,6 +110,7 @@ public abstract class AbstractReportTestSupport<
             withSettings().defaultAnswer(RETURNS_SELF));
         StandardReportRequest request = getValidRequest();
         positivePreProcessQueryTypical(query, request);
+        verifyNoMoreInteractions(query);
     }
 
     @Test
@@ -164,6 +166,14 @@ public abstract class AbstractReportTestSupport<
                     .build()
             )
         );
+    }
+
+    protected final Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameEntry() {
+        return new AbstractMap.SimpleEntry<>("court_name", AbstractReportResponse.DataTypeValue.builder()
+            .displayName("Court Name")
+            .dataType(String.class.getSimpleName())
+            .value("CHESTER (415)")
+            .build());
     }
 
     protected final void assertHeadingContains(Map<String, AbstractReportResponse.DataTypeValue> actualMap,

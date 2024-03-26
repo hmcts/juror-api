@@ -209,11 +209,11 @@ class AbstractReportTest {
             doReturn(tableData).when(report).tupleToTableData(data);
 
 
-            Map<String, StandardReportResponse.DataTypeValue> headingsResponse = Map.of(
+            Map<String, AbstractReportResponse.DataTypeValue> headingsResponse = Map.of(
                 "testValue1",
-                mock(StandardReportResponse.DataTypeValue.class),
+                mock(AbstractReportResponse.DataTypeValue.class),
                 "testValue2",
-                mock(StandardReportResponse.DataTypeValue.class)
+                mock(AbstractReportResponse.DataTypeValue.class)
             );
             doReturn(headingsResponse).when(report).getHeadings(request, tableData);
 
@@ -226,7 +226,7 @@ class AbstractReportTest {
             assertThat(response.getHeadings()).hasSize(3);
             assertThat(response.getHeadings()).containsAllEntriesOf(headingsResponse);
             assertThat(response.getHeadings()).containsKey("report_created");
-            StandardReportResponse.DataTypeValue reportCreated = response.getHeadings().get("report_created");
+            AbstractReportResponse.DataTypeValue reportCreated = response.getHeadings().get("report_created");
             assertThat(reportCreated).isNotNull();
             assertThat(reportCreated.getDataType()).isEqualTo(LocalDateTime.class.getSimpleName());
             LocalDateTime createdAt =
@@ -240,6 +240,69 @@ class AbstractReportTest {
                 .tupleToTableData(data);
             verify(report, times(1))
                 .getHeadings(request, tableData);
+        }
+    }
+
+    @Nested
+    @DisplayName("public Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameHeader()")
+    class GetCourtNameHeader {
+
+        @Test
+        void positiveTypicalFromOwner() {
+            AbstractReport<Object> report = createReport();
+
+            PoolRequest poolRequest = mock(PoolRequest.class);
+            doReturn(poolRequest).when(report).getPoolRequest(any());
+
+            CourtLocation courtLocation = mock(CourtLocation.class);
+            doReturn(courtLocation).when(poolRequest).getCourtLocation();
+
+            when(courtLocation.getName()).thenReturn("CHESTER");
+            when(courtLocation.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
+
+
+            assertThat(report.getCourtNameHeader(TestConstants.VALID_COURT_LOCATION))
+                .isEqualTo(Map.entry("court_name",
+                    new AbstractReportResponse.DataTypeValue(
+                        "Court Name",
+                        String.class.getSimpleName(),
+                        "CHESTER (" + TestConstants.VALID_COURT_LOCATION + ")")
+                ));
+
+            verify(report, times(1))
+                .getPoolRequest(TestConstants.VALID_COURT_LOCATION);
+            verify(poolRequest, times(2)).getCourtLocation();
+            verify(courtLocation).getName();
+            verify(courtLocation).getLocCode();
+            verifyNoMoreInteractions(poolRequest, courtLocation);
+        }
+
+
+        @Test
+        void positiveTypicalFromPool() {
+            AbstractReport<Object> report = createReport();
+
+            PoolRequest poolRequest = mock(PoolRequest.class);
+
+            CourtLocation courtLocation = mock(CourtLocation.class);
+            doReturn(courtLocation).when(poolRequest).getCourtLocation();
+
+            when(courtLocation.getName()).thenReturn("CHESTER");
+            when(courtLocation.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
+
+            assertThat(report.getCourtNameHeader(poolRequest))
+                .isEqualTo(Map.entry("court_name",
+                    new AbstractReportResponse.DataTypeValue(
+                        "Court Name",
+                        String.class.getSimpleName(),
+                        "CHESTER (" + TestConstants.VALID_COURT_LOCATION + ")")
+                ));
+
+            verify(poolRequest, times(2)).getCourtLocation();
+            verify(courtLocation).getName();
+            verify(courtLocation).getLocCode();
+            verifyNoMoreInteractions(poolRequest, courtLocation);
+
         }
     }
 
@@ -761,7 +824,7 @@ class AbstractReportTest {
 
 
     @Nested
-    @DisplayName("HashMap<String, StandardReportResponse.DataTypeValue> loadStandardPoolHeaders("
+    @DisplayName("HashMap<String, AbstractReportResponse.DataTypeValue> loadStandardPoolHeaders("
         + "        StandardReportRequest request, boolean ownerMustMatch, boolean allowBureau)")
     class LoadStandardPoolHeaders {
         @Test
@@ -789,22 +852,22 @@ class AbstractReportTest {
                 request, false, false))
                 .isEqualTo(Map.of(
                     "pool_number",
-                    StandardReportResponse.DataTypeValue.builder()
+                    AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Pool Number")
                         .dataType(String.class.getSimpleName())
                         .value(TestConstants.VALID_POOL_NUMBER)
                         .build(),
-                    "pool_type", StandardReportResponse.DataTypeValue.builder()
+                    "pool_type", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Pool Type")
                         .dataType(String.class.getSimpleName())
                         .value("Pool Type desc")
                         .build(),
-                    "service_start_date", StandardReportResponse.DataTypeValue.builder()
+                    "service_start_date", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Service Start Date")
                         .dataType(LocalDate.class.getSimpleName())
                         .value("2023-02-01")
                         .build(),
-                    "court_name", StandardReportResponse.DataTypeValue.builder()
+                    "court_name", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Court Name")
                         .dataType(String.class.getSimpleName())
                         .value("Court Name (LOC)")
@@ -850,22 +913,22 @@ class AbstractReportTest {
                 request, true, false))
                 .isEqualTo(Map.of(
                     "pool_number",
-                    StandardReportResponse.DataTypeValue.builder()
+                    AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Pool Number")
                         .dataType(String.class.getSimpleName())
                         .value(TestConstants.VALID_POOL_NUMBER)
                         .build(),
-                    "pool_type", StandardReportResponse.DataTypeValue.builder()
+                    "pool_type", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Pool Type")
                         .dataType(String.class.getSimpleName())
                         .value("Pool Type desc")
                         .build(),
-                    "service_start_date", StandardReportResponse.DataTypeValue.builder()
+                    "service_start_date", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Service Start Date")
                         .dataType(LocalDate.class.getSimpleName())
                         .value("2023-02-01")
                         .build(),
-                    "court_name", StandardReportResponse.DataTypeValue.builder()
+                    "court_name", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Court Name")
                         .dataType(String.class.getSimpleName())
                         .value("Court Name (LOC)")
@@ -1017,7 +1080,7 @@ class AbstractReportTest {
         }
 
         @Override
-        public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
+        public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
             StandardReportRequest request,
             StandardReportResponse.TableData<Object> tableData) {
             return new HashMap<>();

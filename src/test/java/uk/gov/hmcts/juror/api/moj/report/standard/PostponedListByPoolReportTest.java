@@ -48,6 +48,7 @@ class PostponedListByPoolReportTest extends AbstractStandardReportTestSupport<Po
             .where(QJurorPool.jurorPool.pool.poolNumber.eq(TestConstants.VALID_POOL_NUMBER)
                 .and(QJurorPool.jurorPool.deferralDate.isNotNull())
                 .and(QJurorPool.jurorPool.deferralCode.eq(ExcusalCodeEnum.P.getCode())));
+        verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override

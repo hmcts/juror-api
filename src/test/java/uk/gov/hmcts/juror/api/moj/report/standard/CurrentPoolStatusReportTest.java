@@ -19,6 +19,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,6 +55,7 @@ class CurrentPoolStatusReportTest extends AbstractStandardReportTestSupport<Curr
 
     @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+        doNothing().when(report).addGroupBy(any(), any(DataType[].class));
         report.preProcessQuery(query, request);
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.poolNumber.eq(TestConstants.VALID_POOL_NUMBER));

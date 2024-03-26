@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.juror.domain.QPool;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
@@ -16,6 +18,8 @@ import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -50,20 +54,42 @@ public class PostponedListByDateReport extends AbstractGroupedReport {
                 .and(QJurorPool.jurorPool.deferralDate.isNotNull())
                 .and(QJurorPool.jurorPool.deferralCode.eq(ExcusalCodeEnum.P.getCode()))
         );
-        //TODO confirm restrictions
         if (SecurityUtil.isCourt()) {
-            query.where(QPool.pool.court.locCode.eq(SecurityUtil.getLocCode()));
+            query.where(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner()));
         }
         query.orderBy(QPool.pool.poolNumber.asc(), QJuror.juror.jurorNumber.asc());
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
+    public Map<String, GroupedReportResponse.DataTypeValue> getHeadings(
         StandardReportRequest request,
         StandardReportResponse.TableData<Map<String, List<LinkedHashMap<String, Object>>>> tableData) {
-        return new HashMap<>();
-    }
 
+        Map<String, GroupedReportResponse.DataTypeValue> map = new HashMap<>();
+        map.put("date_from", AbstractReportResponse.DataTypeValue.builder()
+            .displayName("Date From")
+            .dataType(LocalDate.class.getSimpleName())
+            .value(DateTimeFormatter.ISO_DATE.format(request.getFromDate()))
+            .build());
+        map.put("date_to", GroupedReportResponse.DataTypeValue.builder()
+            .displayName("Date To")
+            .dataType(LocalDate.class.getSimpleName())
+            .value(DateTimeFormatter.ISO_DATE.format(request.getToDate()))
+            .build());
+        map.put("total_postponed", GroupedReportResponse.DataTypeValue.builder()
+            .displayName("Total postponed")
+            .dataType(Long.class.getSimpleName())
+            .value(tableData.getData().size())
+            .build());
+
+        if (SecurityUtil.isCourt()) {
+            Map.Entry<String, GroupedReportResponse.DataTypeValue> entry =
+                getCourtNameHeader(SecurityUtil.getActiveOwner());
+            map.put(entry.getKey(), entry.getValue());
+        }
+
+        return map;
+    }
 
     public interface RequestValidator extends
         AbstractReport.Validators.AbstractRequestValidator,

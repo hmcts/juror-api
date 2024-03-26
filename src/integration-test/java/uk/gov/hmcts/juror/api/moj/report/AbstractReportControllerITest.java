@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractControllerIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 
 import java.time.LocalDateTime;
@@ -47,7 +48,7 @@ public abstract class AbstractReportControllerITest
         assertThat(response.getHeadings()).isNotNull();
         assertThat(response.getHeadings().containsKey("report_created")).isTrue();
 
-        StandardReportResponse.DataTypeValue reportCreated =
+        AbstractReportResponse.DataTypeValue reportCreated =
             response.getHeadings().get("report_created");
         assertThat(reportCreated).isNotNull();
         assertThat(reportCreated.getDisplayName()).isNull();
