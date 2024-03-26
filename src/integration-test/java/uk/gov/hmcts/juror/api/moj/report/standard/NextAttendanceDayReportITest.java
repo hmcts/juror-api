@@ -16,13 +16,13 @@ import java.util.List;
     "/db/truncate.sql",
     "/db/mod/truncate.sql",
     "/db/administration/createUsers.sql",
-    "/db/mod/reports/NonRespondedReportITest_typical.sql"
+    "/db/mod/reports/NextDayNonAttendanceReportITest_typical.sql"
 })
 @SuppressWarnings("PMD.LawOfDemeter")
-class NonRespondedReportITest extends AbstractReportControllerITest {
+class NextAttendanceDayReportITest extends AbstractReportControllerITest {
     @Autowired
-    public NonRespondedReportITest(TestRestTemplate template) {
-        super(template, NonRespondedReport.class);
+    public NextAttendanceDayReportITest(TestRestTemplate template) {
+        super(template, NextAttendanceDayReport.class);
     }
 
     @Override
@@ -56,7 +56,6 @@ class NonRespondedReportITest extends AbstractReportControllerITest {
             .assertEquals(getTypicalResponse());
     }
 
-
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeInvalidPayload() {
@@ -77,20 +76,9 @@ class NonRespondedReportITest extends AbstractReportControllerITest {
             .assertMojForbiddenResponse("User not allowed to access this pool");
     }
 
-
     private StandardReportResponse getTypicalResponse() {
         return StandardReportResponse.builder()
             .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
-                .add("total_non_responded", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Total non-responded")
-                    .dataType("Long")
-                    .value(2)
-                    .build())
-                .add("court_name", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Court Name")
-                    .dataType("String")
-                    .value("CHESTER (415)")
-                    .build())
                 .add("service_start_date", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Service Start Date")
                     .dataType("LocalDate")
@@ -100,6 +88,11 @@ class NonRespondedReportITest extends AbstractReportControllerITest {
                     .displayName("Pool Number")
                     .dataType("String")
                     .value("415230103")
+                    .build())
+                .add("court_name", StandardReportResponse.DataTypeValue.builder()
+                    .displayName("Court Name")
+                    .dataType("String")
+                    .value("CHESTER (415)")
                     .build())
                 .add("pool_type", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Pool Type")
@@ -128,30 +121,42 @@ class NonRespondedReportITest extends AbstractReportControllerITest {
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("mobile_phone")
-                            .name("Mobile Phone")
+                            .id("postcode")
+                            .name("Postcode")
                             .dataType("String")
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("home_phone")
-                            .name("Home Phone")
-                            .dataType("String")
+                            .id("next_attendance_date")
+                            .name("Next attendance date")
+                            .dataType("LocalDate")
                             .headings(null)
                             .build()))
                     .data(List.of(
                         new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "641500023")
+                            .add("first_name", "John3")
+                            .add("last_name", "Smith3")
+                            .add("postcode", "AB1 3CD")
+                            .add("next_attendance_date", "2023-01-03"),
+                        new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500024")
                             .add("first_name", "John4")
                             .add("last_name", "Smith4")
-                            .add("mobile_phone", "400000001")
-                            .add("home_phone", "400000003"),
+                            .add("postcode", "AB1 4CD")
+                            .add("next_attendance_date", "2023-01-04"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "641500025")
+                            .add("first_name", "John5")
+                            .add("last_name", "Smith5")
+                            .add("postcode", "AB1 5CD")
+                            .add("next_attendance_date", "2023-01-05"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500026")
                             .add("first_name", "John6")
                             .add("last_name", "Smith6")
-                            .add("mobile_phone", "600000001")
-                            .add("home_phone", "600000003")))
+                            .add("postcode", "AB1 6CD")
+                            .add("next_attendance_date", "2023-01-06")))
                     .build())
             .build();
     }
