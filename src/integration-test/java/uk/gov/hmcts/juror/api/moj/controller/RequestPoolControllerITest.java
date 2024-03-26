@@ -141,6 +141,9 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         assertThat(dataItem.getAttendanceTime().isEmpty())
             .as("Expect the attendance time to be populated in the list of data items")
             .isFalse();
+        assertThat(dataItem.getOwner().isEmpty())
+            .as("Expect the owner to be populated in the list of data items")
+            .isFalse();
     }
 
     @Test
@@ -170,6 +173,9 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         assertThat(dataItem.getAttendanceTime())
             .as("Expect the attendance time to be populated in the list of data items")
             .isEqualTo("09:00");
+        assertThat(dataItem.getOwner())
+            .as("Expect the owner to be populated in the list of data items")
+            .isEqualTo("799");
     }
 
     @Test

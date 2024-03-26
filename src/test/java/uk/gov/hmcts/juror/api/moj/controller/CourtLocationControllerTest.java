@@ -229,14 +229,9 @@ class CourtLocationControllerTest {
 
     private List<CourtLocationDataDto> getAllCourtLocationsByPostcode() {
         return List.of(
-            new CourtLocationDataDto(
-                "440",
-                "Inner London",
-                null),
-            new CourtLocationDataDto(
-                "400",
-                "Jury Central Summoning Bureau",
-                null)
+            new CourtLocationDataDto("440", "Inner London", null, "440"),
+            new CourtLocationDataDto("400", "Jury Central Summoning Bureau",
+                null, "400")
         );
     }
 

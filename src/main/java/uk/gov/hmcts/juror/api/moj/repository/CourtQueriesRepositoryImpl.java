@@ -35,7 +35,8 @@ public class CourtQueriesRepositoryImpl implements CourtQueriesRepository {
 
         return queryFactory
             .select(COURT_CATCHMENT.locCode,
-                COURT_LOCATION.name
+                COURT_LOCATION.name,
+                COURT_LOCATION.owner
             )
             .from(COURT_CATCHMENT)
             .innerJoin(COURT_LOCATION)
@@ -47,7 +48,7 @@ public class CourtQueriesRepositoryImpl implements CourtQueriesRepository {
             .map(tuple -> new CourtLocationDataDto(
                 tuple.get(COURT_CATCHMENT.locCode),
                 WordUtils.capitalizeFully(tuple.get(COURT_LOCATION.name)),
-                null))
+                null, tuple.get(COURT_LOCATION.owner)))
             .toList();
     }
 }

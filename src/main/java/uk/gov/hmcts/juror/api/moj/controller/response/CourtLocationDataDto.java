@@ -17,16 +17,21 @@ import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 public class CourtLocationDataDto {
 
     @JsonProperty("locationCode")
-    @Schema(name = "Location code", description = "3 digit identification code for a court location")
+    @Schema(name = "locationCode", description = "3 digit identification code for a court location")
     private String locationCode;
 
     @JsonProperty("locationName")
-    @Schema(name = "Location name", description = "The court name")
+    @Schema(name = "locationName", description = "The court name")
     private String locationName;
 
     @JsonProperty("attendanceTime")
-    @Schema(name = "Attendance time", description = "The default start time for a court location")
+    @Schema(name = "attendanceTime", description = "The default start time for a court location")
     private String attendanceTime;
+
+    @JsonProperty("owner")
+    @Schema(name = "owner", description = "3 digit identification code for a primary court location which owns this "
+        + "court location")
+    private String owner;
 
     /**
      * Initialise an instance of this DTO class using a CourtLocation object to populate its properties.
@@ -37,6 +42,7 @@ public class CourtLocationDataDto {
         this.locationCode = courtLocation.getLocCode();
         this.locationName = courtLocation.getName();
         this.attendanceTime = DataUtils.asStringHHmm(courtLocation.getCourtAttendTime());
+        this.owner = courtLocation.getOwner();
     }
 
 }
