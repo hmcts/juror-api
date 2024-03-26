@@ -17,7 +17,7 @@ import java.util.List;
     "/db/truncate.sql",
     "/db/mod/truncate.sql",
     "/db/administration/createUsers.sql",
-    "/db/mod/reports/PostponedListByDateReportITest_typical.sql"
+    "/db/mod/reports/PostponedListByPoolReportITest_typical.sql"
 })
 @SuppressWarnings("PMD.LawOfDemeter")
 class PostponedListByPoolReportITest extends AbstractStandardReportControllerITest {
