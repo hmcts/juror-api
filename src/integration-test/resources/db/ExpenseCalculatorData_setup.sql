@@ -1,5 +1,4 @@
 
--- INSERT INTO juror_mod.STAFF (LOGIN, NAME, RANK, ACTIVE, TEAM_ID, VERSION) VALUES ('ksalazar', 'Kris Salazar', 1, 1, 3, 1);
 
 INSERT INTO juror_mod.users(owner, username,email, name, active, last_logged_in, version, team_id)
 VALUES ('400', 'ksalazar','ksalazar@email.gov.uk', 'Kris Salazar', true, CURRENT_DATE-3, 0, 1);
