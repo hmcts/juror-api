@@ -248,20 +248,15 @@ class AbstractReportTest {
     class GetCourtNameHeader {
 
         @Test
-        void positiveTypicalFromOwner() {
+        void positiveTypicalFromCourtLocation() {
             AbstractReport<Object> report = createReport();
 
-            PoolRequest poolRequest = mock(PoolRequest.class);
-            doReturn(poolRequest).when(report).getPoolRequest(any());
-
             CourtLocation courtLocation = mock(CourtLocation.class);
-            doReturn(courtLocation).when(poolRequest).getCourtLocation();
 
             when(courtLocation.getName()).thenReturn("CHESTER");
             when(courtLocation.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
-
-            assertThat(report.getCourtNameHeader(TestConstants.VALID_COURT_LOCATION))
+            assertThat(report.getCourtNameHeader(courtLocation))
                 .isEqualTo(Map.entry("court_name",
                     new AbstractReportResponse.DataTypeValue(
                         "Court Name",
@@ -269,40 +264,9 @@ class AbstractReportTest {
                         "CHESTER (" + TestConstants.VALID_COURT_LOCATION + ")")
                 ));
 
-            verify(report, times(1))
-                .getPoolRequest(TestConstants.VALID_COURT_LOCATION);
-            verify(poolRequest, times(2)).getCourtLocation();
             verify(courtLocation).getName();
             verify(courtLocation).getLocCode();
-            verifyNoMoreInteractions(poolRequest, courtLocation);
-        }
-
-
-        @Test
-        void positiveTypicalFromPool() {
-            AbstractReport<Object> report = createReport();
-
-            PoolRequest poolRequest = mock(PoolRequest.class);
-
-            CourtLocation courtLocation = mock(CourtLocation.class);
-            doReturn(courtLocation).when(poolRequest).getCourtLocation();
-
-            when(courtLocation.getName()).thenReturn("CHESTER");
-            when(courtLocation.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
-
-            assertThat(report.getCourtNameHeader(poolRequest))
-                .isEqualTo(Map.entry("court_name",
-                    new AbstractReportResponse.DataTypeValue(
-                        "Court Name",
-                        String.class.getSimpleName(),
-                        "CHESTER (" + TestConstants.VALID_COURT_LOCATION + ")")
-                ));
-
-            verify(poolRequest, times(2)).getCourtLocation();
-            verify(courtLocation).getName();
-            verify(courtLocation).getLocCode();
-            verifyNoMoreInteractions(poolRequest, courtLocation);
-
+            verifyNoMoreInteractions(courtLocation);
         }
     }
 

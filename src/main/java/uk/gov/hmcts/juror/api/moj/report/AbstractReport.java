@@ -9,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.Getter;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
@@ -273,18 +274,15 @@ public abstract class AbstractReport<T> {
         }
     }
 
-    public Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameHeader(PoolRequest poolRequest) {
+    public Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameHeader(CourtLocation courtLocation) {
         return new AbstractMap.SimpleEntry<>("court_name", AbstractReportResponse.DataTypeValue.builder()
             .displayName("Court Name")
             .dataType(String.class.getSimpleName())
             .value(
-                poolRequest.getCourtLocation().getName() + " (" + poolRequest.getCourtLocation().getLocCode() + ")")
+                courtLocation.getName() + " (" + courtLocation.getLocCode() + ")")
             .build());
     }
 
-    public Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameHeader(String activeOwner) {
-        return getCourtNameHeader(getPoolRequest(activeOwner));
-    }
 
     public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadStandardPoolHeaders(
         StandardReportRequest request, boolean ownerMustMatch, boolean allowBureau) {
@@ -324,7 +322,6 @@ public abstract class AbstractReport<T> {
         }
         return poolRequest.get();
     }
-
 
     protected List<LinkedHashMap<String, Object>> getTableDataAsList(List<Tuple> data) {
         return data.stream()

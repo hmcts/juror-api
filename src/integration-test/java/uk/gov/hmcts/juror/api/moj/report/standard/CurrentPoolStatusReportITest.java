@@ -6,7 +6,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReportControllerITest;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
@@ -20,10 +20,10 @@ import java.util.List;
     "/db/mod/reports/CurrentPoolStatusReportControllerITest_typical.sql"
 })
 @SuppressWarnings("PMD.LawOfDemeter")
-class CurrentPoolStatusReportControllerITest extends AbstractReportControllerITest {
+class CurrentPoolStatusReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public CurrentPoolStatusReportControllerITest(TestRestTemplate template) {
+    public CurrentPoolStatusReportITest(TestRestTemplate template) {
         super(template, CurrentPoolStatusReport.class);
     }
 

@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -29,9 +30,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @SuppressWarnings("PMD.LawOfDemeter")
 public class PostponedListByDateReport extends AbstractGroupedReport {
 
+    private final CourtLocationService courtLocationService;
 
     @Autowired
-    public PostponedListByDateReport(PoolRequestRepository poolRequestRepository) {
+    public PostponedListByDateReport(PoolRequestRepository poolRequestRepository,
+                                     CourtLocationService courtLocationService) {
         super(poolRequestRepository,
             QJurorPool.jurorPool,
             DataType.POOL_NUMBER,
@@ -41,6 +44,7 @@ public class PostponedListByDateReport extends AbstractGroupedReport {
             DataType.LAST_NAME,
             DataType.POSTCODE,
             DataType.POSTPONED_TO);
+        this.courtLocationService = courtLocationService;
     }
 
     @Override
@@ -80,12 +84,14 @@ public class PostponedListByDateReport extends AbstractGroupedReport {
         map.put("total_postponed", GroupedReportResponse.DataTypeValue.builder()
             .displayName("Total postponed")
             .dataType(Long.class.getSimpleName())
-            .value(tableData.getData().size())
+            .value(tableData.getData().values().stream()
+                .map(List::size)
+                .reduce(0, Integer::sum))
             .build());
 
         if (SecurityUtil.isCourt()) {
             Map.Entry<String, GroupedReportResponse.DataTypeValue> entry =
-                getCourtNameHeader(SecurityUtil.getActiveOwner());
+                getCourtNameHeader(courtLocationService.getCourtLocation(SecurityUtil.getActiveOwner()));
             map.put(entry.getKey(), entry.getValue());
         }
 

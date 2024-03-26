@@ -6,7 +6,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReportControllerITest;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
@@ -20,7 +20,7 @@ import java.util.List;
     "/db/mod/reports/NonRespondedReportITest_typical.sql"
 })
 @SuppressWarnings("PMD.LawOfDemeter")
-class NonRespondedReportITest extends AbstractReportControllerITest {
+class NonRespondedReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public NonRespondedReportITest(TestRestTemplate template) {
         super(template, NonRespondedReport.class);

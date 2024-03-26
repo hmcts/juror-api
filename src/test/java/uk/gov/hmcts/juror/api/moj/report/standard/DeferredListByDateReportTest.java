@@ -42,7 +42,9 @@ class DeferredListByDateReportTest extends AbstractStandardReportTestSupport<Def
     }
 
     @BeforeEach
-    void beforeEach() {
+    @Override
+    public void beforeEach() {
+        super.beforeEach();
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
     }
 

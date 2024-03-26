@@ -6,7 +6,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReportControllerITest;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
@@ -17,10 +17,10 @@ import java.util.List;
     "/db/truncate.sql",
     "/db/mod/truncate.sql",
     "/db/administration/createUsers.sql",
-    "/db/mod/reports/NextDayNonAttendanceReportITest_typical.sql"
+    "/db/mod/reports/NextAttendanceDayReportITest_typical.sql"
 })
 @SuppressWarnings("PMD.LawOfDemeter")
-class NextAttendanceDayReportITest extends AbstractReportControllerITest {
+class NextAttendanceDayReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public NextAttendanceDayReportITest(TestRestTemplate template) {
         super(template, NextAttendanceDayReport.class);

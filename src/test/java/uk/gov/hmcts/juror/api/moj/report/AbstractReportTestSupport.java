@@ -63,14 +63,13 @@ public abstract class AbstractReportTestSupport<
         this.validator = validatorFactory.getValidator();
         validatorFactory.close();
         this.poolRequestRepository = mock(PoolRequestRepository.class);
-        this.report = createReport(poolRequestRepository);
         this.from = from;
         this.dataTypes = dataTypes.clone();
         this.validatorClass = validatorClass;
     }
 
     @BeforeEach
-    public void setUp() {
+    public void beforeEach() {
         this.poolRequestRepository = mock(PoolRequestRepository.class);
         this.report = spy(createReport(poolRequestRepository));
         doNothing().when(report).addGroupBy(any(), any());
