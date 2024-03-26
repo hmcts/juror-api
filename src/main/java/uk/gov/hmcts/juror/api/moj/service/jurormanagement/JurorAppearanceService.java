@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service.jurormanagement;
 
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
@@ -16,7 +16,7 @@ import java.time.LocalDate;
 
 public interface JurorAppearanceService {
 
-    void addAttendanceDay(BureauJWTPayload payload, AddAttendanceDayDto dto);
+    void addAttendanceDay(BureauJwtPayload payload, AddAttendanceDayDto dto);
 
     JurorAppearanceResponseDto.JurorAppearanceResponseData processAppearance(
         BureauJwtPayload payload, JurorAppearanceDto jurorAppearanceDto);

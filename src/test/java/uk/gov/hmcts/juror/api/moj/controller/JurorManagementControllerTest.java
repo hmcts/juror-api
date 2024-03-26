@@ -16,8 +16,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
@@ -77,7 +77,8 @@ class JurorManagementControllerTest {
 
     @Test
     void addAttendanceDayHappyPath() throws Exception {
-        BureauJWTPayload payload = TestUtils.createJwt("415", "COURT_USER");
+        BureauJwtPayload
+            payload = TestUtils.createJwt("415", "COURT_USER");
         AddAttendanceDayDto request = buildAddAttendanceDayDto();
 
 
@@ -92,7 +93,8 @@ class JurorManagementControllerTest {
 
     @Test
     void addAttendanceDayInvalidPayload() throws Exception {
-        BureauJWTPayload payload = TestUtils.createJwt("415", "COURT_USER");
+        BureauJwtPayload
+            payload = TestUtils.createJwt("415", "COURT_USER");
         AddAttendanceDayDto request = buildAddAttendanceDayDto();
         request.setJurorNumber(null);
 

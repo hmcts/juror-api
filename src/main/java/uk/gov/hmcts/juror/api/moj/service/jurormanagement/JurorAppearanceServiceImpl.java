@@ -67,7 +67,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     private final JurorExpenseService jurorExpenseService;
 
     @Override
-    public void addAttendanceDay(BureauJWTPayload payload, AddAttendanceDayDto dto) {
+    public void addAttendanceDay(BureauJwtPayload payload, AddAttendanceDayDto dto) {
 
         JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(
             dto.getJurorNumber(), dto.getPoolNumber());
@@ -92,12 +92,12 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     @Override
     @Transactional
     public JurorAppearanceResponseDto.JurorAppearanceResponseData processAppearance(
-        BureauJWTPayload payload, JurorAppearanceDto jurorAppearanceDto) {
+        BureauJwtPayload payload, JurorAppearanceDto jurorAppearanceDto) {
         return processAppearance(payload, jurorAppearanceDto, false);
     }
 
     JurorAppearanceResponseDto.JurorAppearanceResponseData processAppearance(
-        BureauJWTPayload payload, JurorAppearanceDto jurorAppearanceDto, boolean allowBothCheckInAndOut) {
+        BureauJwtPayload payload, JurorAppearanceDto jurorAppearanceDto, boolean allowBothCheckInAndOut) {
 
         final String jurorNumber = jurorAppearanceDto.getJurorNumber();
         final String locCode = jurorAppearanceDto.getLocationCode();
@@ -812,28 +812,28 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         return activeJurorRecord;
     }
 
-     void validateBothCheckInAndOutTimeNotNull(LocalTime checkInTime, LocalTime checkOutTime) {
+    void validateBothCheckInAndOutTimeNotNull(LocalTime checkInTime, LocalTime checkOutTime) {
         if (checkInTime == null && checkOutTime == null) {
             throw new MojException.BadRequest("Must provide a Check-in or Check-out time",
                 null);
         }
     }
 
-     void validateBothCheckInAndOutTimeNotSet(LocalTime checkInTime, LocalTime checkOutTime) {
+    void validateBothCheckInAndOutTimeNotSet(LocalTime checkInTime, LocalTime checkOutTime) {
         if (checkInTime != null && checkOutTime != null) {
             throw new MojException.BadRequest("Cannot have both Check-in and Check-out time",
                 null);
         }
     }
 
-     void validateCheckInNotNull(LocalTime checkInTime) {
+    void validateCheckInNotNull(LocalTime checkInTime) {
         if (checkInTime == null) {
             throw new MojException.BadRequest("Check-in time cannot be null",
                 null);
         }
     }
 
-     void validateCheckOutNotNull(LocalTime checkOutTime) {
+    void validateCheckOutNotNull(LocalTime checkOutTime) {
         if (checkOutTime == null) {
             throw new MojException.BadRequest("Check-out time cannot be null",
                 null);

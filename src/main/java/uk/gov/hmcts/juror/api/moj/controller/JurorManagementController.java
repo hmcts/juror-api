@@ -101,7 +101,7 @@ public class JurorManagementController {
     @Operation(description = "Manually add attendance day for a juror")
     @IsCourtUser
     public void addAttendanceDay(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid AddAttendanceDayDto addAttendanceDayDto) {
         jurorAppearanceService.addAttendanceDay(payload, addAttendanceDayDto);
     }

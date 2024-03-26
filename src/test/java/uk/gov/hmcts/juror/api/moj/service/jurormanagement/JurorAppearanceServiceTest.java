@@ -135,7 +135,7 @@ class JurorAppearanceServiceTest {
         ArgumentCaptor<JurorAppearanceDto> appearanceDtoCaptor = ArgumentCaptor.forClass(JurorAppearanceDto.class);
         ArgumentCaptor<UpdateAttendanceDto.CommonData> attendanceDtoCaptor =
             ArgumentCaptor.forClass(UpdateAttendanceDto.CommonData.class);
-        ArgumentCaptor<BureauJWTPayload> payloadArgumentCaptor = ArgumentCaptor.forClass(BureauJWTPayload.class);
+        ArgumentCaptor<BureauJwtPayload> payloadArgumentCaptor = ArgumentCaptor.forClass(BureauJwtPayload.class);
 
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndPoolPoolNumber(JUROR_123456789, "123456789");
@@ -1957,8 +1957,8 @@ class JurorAppearanceServiceTest {
             .build();
     }
 
-    private BureauJWTPayload buildPayload(String owner, List<String> courts) {
-        return BureauJWTPayload.builder()
+    private BureauJwtPayload buildPayload(String owner, List<String> courts) {
+        return BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("COURT_USER")
