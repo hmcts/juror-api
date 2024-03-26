@@ -8,13 +8,14 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
 import java.util.Map;
 
 @Component
-public class NextAttendanceDayReport extends AbstractReport {
+public class NextAttendanceDayReport extends AbstractStandardReport {
     @Autowired
     public NextAttendanceDayReport(PoolRequestRepository poolRequestRepository) {
         super(poolRequestRepository,

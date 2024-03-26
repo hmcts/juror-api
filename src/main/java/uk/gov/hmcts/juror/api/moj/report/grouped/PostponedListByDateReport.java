@@ -58,9 +58,9 @@ public class PostponedListByDateReport extends AbstractGroupedReport {
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                                                         StandardReportResponse.TableData<Map<String,
-                                                                             List<LinkedHashMap<String, Object>>>> tableData) {
+    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
+        StandardReportRequest request,
+        StandardReportResponse.TableData<Map<String, List<LinkedHashMap<String, Object>>>> tableData) {
         return new HashMap<>();
     }
 

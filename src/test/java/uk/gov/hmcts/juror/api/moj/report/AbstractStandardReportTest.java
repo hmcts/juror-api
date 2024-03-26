@@ -1,73 +1,14 @@
 package uk.gov.hmcts.juror.api.moj.report;
 
-import com.querydsl.core.Tuple;
-import com.querydsl.core.types.EntityPath;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.Predicate;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import uk.gov.hmcts.juror.api.TestConstants;
-import uk.gov.hmcts.juror.api.bureau.domain.QBureauJurorCJS;
-import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
-import uk.gov.hmcts.juror.api.moj.domain.PoolType;
-import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
-import uk.gov.hmcts.juror.api.moj.domain.QJuror;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.assertj.core.api.BDDAssertions.within;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.RETURNS_SELF;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
 
-@SuppressWarnings({
-    "unchecked",
-    "PMD.LawOfDemeter",
-    "PMD.ExcessiveImports",
-    "PMD.CouplingBetweenObjects"
-})
 class AbstractStandardReportTest {
 
     private PoolRequestRepository poolRequestRepository;

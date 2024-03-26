@@ -8,12 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.DeferralLetterData;
-import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ExcusalLetterData;
-import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.FailedToAttendLetterData;
-import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.NonDeferralLetterData;
-import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PostponeLetterData;
-import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.WithdrawalLetterData;
 
 import java.util.List;
 import java.util.Map;
