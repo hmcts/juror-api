@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.AdditionalInformationDto;
@@ -82,7 +82,7 @@ public class LetterController {
         final String jurorNumber = additionalInformationDto.getJurorNumber();
         log.trace("Process to queue the Request Letter started for juror {} ", jurorNumber);
 
-        BureauJWTPayload payload = (BureauJWTPayload) auth.getPrincipal();
+        BureauJwtPayload payload = (BureauJwtPayload) auth.getPrincipal();
         if (!JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner())) {
             throw new MojException.Forbidden("Request additional information "
                 + "letter is a Bureau only process", null);
@@ -147,7 +147,7 @@ public class LetterController {
 
     @GetMapping(path = "/court-letter-list/{letter_type}/{include_printed}")
     @Operation(summary = "GET - Court letter list", description = "Request a list of "
-        + "jurors eligible for absent letters to be issued/re-issued.")
+        + "jurors eligible for absent letters to be issued/re-issued. Basic search for absent jurors")
     @IsCourtUser
     public ResponseEntity<LetterListResponseDto> courtLetterListAbsentJurors(
         @PathVariable(name = "letter_type") CourtLetterType letterType,

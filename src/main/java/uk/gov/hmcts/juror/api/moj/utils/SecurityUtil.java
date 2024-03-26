@@ -3,8 +3,8 @@ package uk.gov.hmcts.juror.api.moj.utils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
@@ -31,6 +31,7 @@ public final class SecurityUtil {
     public static final String IS_MANAGER = "hasRole('ROLE_MANAGER')";
 
     public static final String USER_TYPE_ADMINISTRATOR = "principal.userType.name() == 'ADMINISTRATOR'";
+    public static final String USER_TYPE_COURT = "principal.userType.name() == 'COURT'";
 
 
     private SecurityUtil() {
@@ -46,10 +47,10 @@ public final class SecurityUtil {
         throw new MojException.Forbidden("User must be authorised with BureauJwtAuthentication", null);
     }
 
-    public static BureauJWTPayload getActiveUsersBureauPayload() {
+    public static BureauJwtPayload getActiveUsersBureauPayload() {
         Object principal = getActiveUsersBureauJwtAuthentication().getPrincipal();
 
-        if (principal instanceof BureauJWTPayload bureauPayload) {
+        if (principal instanceof BureauJwtPayload bureauPayload) {
             return bureauPayload;
         }
         throw new MojException.InternalServerError("Unexpected principal object type", null);
@@ -80,7 +81,7 @@ public final class SecurityUtil {
     }
 
     public static boolean isCourt() {
-        return !isBureau();
+        return UserType.COURT.equals(getUserType());
     }
 
     public static void validateCanAccessOwner(String owner) {

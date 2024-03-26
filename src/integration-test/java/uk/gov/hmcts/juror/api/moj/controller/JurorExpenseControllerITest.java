@@ -20,7 +20,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestConstants;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
@@ -184,9 +184,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            ResponseEntity<CustomPageImpl<Void>> response = template.exchange(new RequestEntity<>(httpHeaders, GET,
-                uri), new ParameterizedTypeReference<>() {
-            });
+            ResponseEntity<CustomPageImpl<Void>> response =
+                template.exchange(new RequestEntity<>(httpHeaders, GET, uri),
+                    new ParameterizedTypeReference<>() {
+                    });
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -208,9 +209,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            ResponseEntity<CustomPageImpl<Void>> response = template.exchange(new RequestEntity<>(httpHeaders, GET,
-                uri), new ParameterizedTypeReference<>() {
-            });
+            ResponseEntity<CustomPageImpl<Void>> response =
+                template.exchange(new RequestEntity<>(httpHeaders, GET, uri),
+                    new ParameterizedTypeReference<>() {
+                    });
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
             CustomPageImpl<Void> responseBody = response.getBody();
@@ -234,9 +236,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            ResponseEntity<CustomPageImpl<Void>> response = template.exchange(new RequestEntity<>(httpHeaders, GET,
-                uri), new ParameterizedTypeReference<>() {
-            });
+            ResponseEntity<CustomPageImpl<Void>> response =
+                template.exchange(new RequestEntity<>(httpHeaders, GET, uri),
+                    new ParameterizedTypeReference<>() {
+                    });
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -308,16 +311,16 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
 
         private String createBureauJwt(String login, String owner) throws Exception {
-            return mintBureauJwt(BureauJWTPayload.builder()
+            return mintBureauJwt(BureauJwtPayload.builder()
                 .userLevel("1")
                 .login(login)
-                .staff(BureauJWTPayload.Staff.builder()
+                .staff(BureauJwtPayload.Staff.builder()
                     .name("Test User")
                     .active(1)
                     .rank(1)
                     .build())
                 .daysToExpire(89)
-                .owner(owner).staff(BureauJWTPayload.Staff.builder()
+                .owner(owner).staff(BureauJwtPayload.Staff.builder()
                     .courts(Collections.singletonList(owner))
                     .build())
                 .build());
@@ -815,7 +818,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 List<Appearance> appearances =
                     appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(jurorNumber, poolNumber);
 
-                assertThat(appearances).size().isEqualTo(3);
+                assertThat(appearances).size().isEqualTo(4);
                 appearances.forEach(appearance1 -> {
                     if (PayAttendanceType.HALF_DAY.equals(appearance1.getPayAttendanceType())) {
                         assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(1.01));
@@ -826,9 +829,14 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     } else if (PayAttendanceType.FULL_DAY.equals(appearance1.getPayAttendanceType())) {
                         assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(1.01));
                         assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(50.00));
-                        assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(13.94));
                         assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
-                        assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(64.95));
+                        if (AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance1.getAttendanceType())) {
+                            assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(35.00));
+                            assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(86.01));
+                        } else {
+                            assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(13.94));
+                            assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(64.95));
+                        }
                     } else {
                         fail("Not handled");
                     }
@@ -863,11 +871,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 List<Appearance> appearances =
                     appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(jurorNumber, poolNumber);
 
-                assertThat(appearances).size().isEqualTo(3);
+                assertThat(appearances).size().isEqualTo(4);
 
                 AtomicBoolean hasNonAttendanceDay = new AtomicBoolean(false);
                 appearances.forEach(appearance1 -> {
-                    if (AttendanceType.NON_ATTENDANCE.equals(appearance1.getAttendanceType())) {
+                    if (AttendanceType.NON_ATTENDANCE.equals(appearance1.getAttendanceType())
+                        || AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance1.getAttendanceType())) {
                         hasNonAttendanceDay.set(true);
                         assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(0.00));
                         assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(0.00));
@@ -1130,7 +1139,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 List<Appearance> appearances =
                     appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(jurorNumber, poolNumber);
 
-                assertThat(appearances).size().isEqualTo(3);
+                assertThat(appearances).size().isEqualTo(4);
                 appearances.forEach(appearance1 -> {
                     assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(5.00));
                     assertThat(appearance1.getMiscDescription()).isEqualTo("Desc");
@@ -1164,7 +1173,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(jurorNumber, poolNumber);
 
                 // ensure apply all is updated for all applicable expenses and to all days
-                assertThat(appearances).size().isEqualTo(3);
+                assertThat(appearances).size().isEqualTo(4);
                 appearances.forEach(appearance1 -> {
                     assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(5.00));
                     assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(10.00));
@@ -3491,7 +3500,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            void typicalWithDBData() throws Exception {
+            void typicalWithDbData() throws Exception {
                 CalculateTotalExpenseRequestDto request = CalculateTotalExpenseRequestDto.builder()
                     .jurorNumber(JUROR_NUMBER)
                     .poolNumber(POOL_NUMBER)
@@ -3883,51 +3892,50 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
                 assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
 
-                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals")
-                    .containsExactly(
-                        PendingApproval.builder()
-                            .jurorNumber("641500020")
-                            .poolNumber("415230101")
-                            .firstName("Fnametwozero")
-                            .lastName("Lnametwozero")
-                            .amountDue(new BigDecimal("1683.98"))
-                            .expenseType(ExpenseType.FOR_APPROVAL)
-                            .canApprove(true)
-                            .dateToRevisions(List.of(
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 2, 8))
-                                    .version(1L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 2, 9))
-                                    .version(2L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 2, 10))
-                                    .version(1L)
-                                    .build()
-                            ))
-                            .build(),
-                        PendingApproval.builder()
-                            .jurorNumber("641500021")
-                            .poolNumber("415230101")
-                            .firstName("Fnametwoone")
-                            .lastName("Lnametwoone")
-                            .amountDue(new BigDecimal("1134.01"))
-                            .expenseType(ExpenseType.FOR_APPROVAL)
-                            .canApprove(true)
-                            .dateToRevisions(List.of(
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 2, 1))
-                                    .version(1L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 2, 2))
-                                    .version(2L)
-                                    .build()
-                            ))
-                            .build()
-                    );
+                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals").containsExactly(
+                    PendingApproval.builder()
+                        .jurorNumber("641500020")
+                        .poolNumber("415230101")
+                        .firstName("Fnametwozero")
+                        .lastName("Lnametwozero")
+                        .amountDue(new BigDecimal("1683.98"))
+                        .expenseType(ExpenseType.FOR_APPROVAL)
+                        .canApprove(true)
+                        .dateToRevisions(List.of(
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 2, 8))
+                                .version(1L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 2, 9))
+                                .version(2L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 2, 10))
+                                .version(1L)
+                                .build()
+                        ))
+                        .build(),
+                    PendingApproval.builder()
+                        .jurorNumber("641500021")
+                        .poolNumber("415230101")
+                        .firstName("Fnametwoone")
+                        .lastName("Lnametwoone")
+                        .amountDue(new BigDecimal("1134.01"))
+                        .expenseType(ExpenseType.FOR_APPROVAL)
+                        .canApprove(true)
+                        .dateToRevisions(List.of(
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 2, 1))
+                                .version(1L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 2, 2))
+                                .version(2L)
+                                .build()
+                        ))
+                        .build()
+                );
             }
 
             @Test
@@ -3936,78 +3944,77 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
                 assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
 
-                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals")
-                    .containsExactly(
-                        PendingApproval.builder()
-                            .jurorNumber("641500020")
-                            .poolNumber("415230101")
-                            .firstName("Fnametwozero")
-                            .lastName("Lnametwozero")
-                            .amountDue(new BigDecimal("1683.98"))
-                            .expenseType(ExpenseType.FOR_APPROVAL)
-                            .canApprove(true)
-                            .dateToRevisions(List.of(
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 8))
-                                    .version(1L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 9))
-                                    .version(2L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 10))
-                                    .version(1L)
-                                    .build()
-                            ))
-                            .build(),
-                        PendingApproval.builder()
-                            .jurorNumber("641500020")
-                            .poolNumber("415230101")
-                            .firstName("Fnametwozero")
-                            .lastName("Lnametwozero")
-                            .amountDue(new BigDecimal("407.00"))
-                            .expenseType(ExpenseType.FOR_REAPPROVAL)
-                            .canApprove(true)
-                            .dateToRevisions(List.of(
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 14))
-                                    .version(1L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 15))
-                                    .version(1L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 16))
-                                    .version(1L)
-                                    .build()
-                            ))
-                            .build(),
-                        PendingApproval.builder()
-                            .jurorNumber("641500021")
-                            .poolNumber("415230101")
-                            .firstName("Fnametwoone")
-                            .lastName("Lnametwoone")
-                            .amountDue(new BigDecimal("1687.98"))
-                            .expenseType(ExpenseType.FOR_APPROVAL)
-                            .canApprove(true)
-                            .dateToRevisions(List.of(
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 8))
-                                    .version(1L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 9))
-                                    .version(2L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 10))
-                                    .version(1L)
-                                    .build()
-                            ))
-                            .build()
-                    );
+                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals").containsExactly(
+                    PendingApproval.builder()
+                        .jurorNumber("641500020")
+                        .poolNumber("415230101")
+                        .firstName("Fnametwozero")
+                        .lastName("Lnametwozero")
+                        .amountDue(new BigDecimal("1683.98"))
+                        .expenseType(ExpenseType.FOR_APPROVAL)
+                        .canApprove(true)
+                        .dateToRevisions(List.of(
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .version(1L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .version(2L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .version(1L)
+                                .build()
+                        ))
+                        .build(),
+                    PendingApproval.builder()
+                        .jurorNumber("641500020")
+                        .poolNumber("415230101")
+                        .firstName("Fnametwozero")
+                        .lastName("Lnametwozero")
+                        .amountDue(new BigDecimal("407.00"))
+                        .expenseType(ExpenseType.FOR_REAPPROVAL)
+                        .canApprove(true)
+                        .dateToRevisions(List.of(
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 14))
+                                .version(1L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 15))
+                                .version(1L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 16))
+                                .version(1L)
+                                .build()
+                        ))
+                        .build(),
+                    PendingApproval.builder()
+                        .jurorNumber("641500021")
+                        .poolNumber("415230101")
+                        .firstName("Fnametwoone")
+                        .lastName("Lnametwoone")
+                        .amountDue(new BigDecimal("1687.98"))
+                        .expenseType(ExpenseType.FOR_APPROVAL)
+                        .canApprove(true)
+                        .dateToRevisions(List.of(
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .version(1L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .version(2L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .version(1L)
+                                .build()
+                        ))
+                        .build()
+                );
             }
 
             @Test
@@ -4017,31 +4024,30 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
                 assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
 
-                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals")
-                    .containsExactly(
-                        PendingApproval.builder()
-                            .jurorNumber("641500020")
-                            .poolNumber("415230101")
-                            .firstName("Fnametwozero")
-                            .lastName("Lnametwozero")
-                            .amountDue(new BigDecimal("407.00"))
-                            .expenseType(ExpenseType.FOR_REAPPROVAL)
-                            .canApprove(true)
-                            .dateToRevisions(List.of(
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 14))
-                                    .version(1L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 15))
-                                    .version(1L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 16))
-                                    .version(1L)
-                                    .build()
-                            ))
-                            .build());
+                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals").containsExactly(
+                    PendingApproval.builder()
+                        .jurorNumber("641500020")
+                        .poolNumber("415230101")
+                        .firstName("Fnametwozero")
+                        .lastName("Lnametwozero")
+                        .amountDue(new BigDecimal("407.00"))
+                        .expenseType(ExpenseType.FOR_REAPPROVAL)
+                        .canApprove(true)
+                        .dateToRevisions(List.of(
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 14))
+                                .version(1L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 15))
+                                .version(1L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 16))
+                                .version(1L)
+                                .build()
+                        ))
+                        .build());
             }
 
             @Test
@@ -4051,53 +4057,53 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
                 assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
 
-                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals")
-                    .containsExactly(PendingApproval.builder()
-                            .jurorNumber("641500020")
-                            .poolNumber("415230101")
-                            .firstName("Fnametwozero")
-                            .lastName("Lnametwozero")
-                            .amountDue(new BigDecimal("1683.98"))
-                            .expenseType(ExpenseType.FOR_APPROVAL)
-                            .canApprove(true)
-                            .dateToRevisions(List.of(
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 8))
-                                    .version(1L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 9))
-                                    .version(2L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 10))
-                                    .version(1L)
-                                    .build()
-                            ))
-                            .build(),
-                        PendingApproval.builder()
-                            .jurorNumber("641500021")
-                            .poolNumber("415230101")
-                            .firstName("Fnametwoone")
-                            .lastName("Lnametwoone")
-                            .amountDue(new BigDecimal("1687.98"))
-                            .expenseType(ExpenseType.FOR_APPROVAL)
-                            .canApprove(true)
-                            .dateToRevisions(List.of(
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 8))
-                                    .version(1L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 9))
-                                    .version(2L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 10))
-                                    .version(1L)
-                                    .build()
-                            ))
-                            .build());
+                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals").containsExactly(
+                    PendingApproval.builder()
+                        .jurorNumber("641500020")
+                        .poolNumber("415230101")
+                        .firstName("Fnametwozero")
+                        .lastName("Lnametwozero")
+                        .amountDue(new BigDecimal("1683.98"))
+                        .expenseType(ExpenseType.FOR_APPROVAL)
+                        .canApprove(true)
+                        .dateToRevisions(List.of(
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .version(1L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .version(2L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .version(1L)
+                                .build()
+                        ))
+                        .build(),
+                    PendingApproval.builder()
+                        .jurorNumber("641500021")
+                        .poolNumber("415230101")
+                        .firstName("Fnametwoone")
+                        .lastName("Lnametwoone")
+                        .amountDue(new BigDecimal("1687.98"))
+                        .expenseType(ExpenseType.FOR_APPROVAL)
+                        .canApprove(true)
+                        .dateToRevisions(List.of(
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .version(1L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .version(2L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .version(1L)
+                                .build()
+                        ))
+                        .build());
             }
 
             @Test
@@ -4107,53 +4113,53 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
                 assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
 
-                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals")
-                    .containsExactly(PendingApproval.builder()
-                            .jurorNumber("641500020")
-                            .poolNumber("415230101")
-                            .firstName("Fnametwozero")
-                            .lastName("Lnametwozero")
-                            .amountDue(new BigDecimal("1683.98"))
-                            .expenseType(ExpenseType.FOR_APPROVAL)
-                            .canApprove(true)
-                            .dateToRevisions(List.of(
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 8))
-                                    .version(1L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 9))
-                                    .version(2L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 10))
-                                    .version(1L)
-                                    .build()
-                            ))
-                            .build(),
-                        PendingApproval.builder()
-                            .jurorNumber("641500021")
-                            .poolNumber("415230101")
-                            .firstName("Fnametwoone")
-                            .lastName("Lnametwoone")
-                            .amountDue(new BigDecimal("1687.98"))
-                            .expenseType(ExpenseType.FOR_APPROVAL)
-                            .canApprove(true)
-                            .dateToRevisions(List.of(
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 8))
-                                    .version(1L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 9))
-                                    .version(2L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 10))
-                                    .version(1L)
-                                    .build()
-                            ))
-                            .build());
+                assertThat(pendingApprovals.getPendingApproval()).as("Verify pendingApprovals").containsExactly(
+                    PendingApproval.builder()
+                        .jurorNumber("641500020")
+                        .poolNumber("415230101")
+                        .firstName("Fnametwozero")
+                        .lastName("Lnametwozero")
+                        .amountDue(new BigDecimal("1683.98"))
+                        .expenseType(ExpenseType.FOR_APPROVAL)
+                        .canApprove(true)
+                        .dateToRevisions(List.of(
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .version(1L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .version(2L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .version(1L)
+                                .build()
+                        ))
+                        .build(),
+                    PendingApproval.builder()
+                        .jurorNumber("641500021")
+                        .poolNumber("415230101")
+                        .firstName("Fnametwoone")
+                        .lastName("Lnametwoone")
+                        .amountDue(new BigDecimal("1687.98"))
+                        .expenseType(ExpenseType.FOR_APPROVAL)
+                        .canApprove(true)
+                        .dateToRevisions(List.of(
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .version(1L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .version(2L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .version(1L)
+                                .build()
+                        ))
+                        .build());
 
             }
 
@@ -4165,55 +4171,54 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
                 assertThat(pendingApprovals.getTotalPendingBacs()).isEqualTo(3L);
 
-                assertThat(pendingApprovals.getPendingApproval())
-                    .containsExactly(
-                        PendingApproval.builder()
-                            .jurorNumber("641500020")
-                            .poolNumber("415230101")
-                            .firstName("Fnametwozero")
-                            .lastName("Lnametwozero")
-                            .amountDue(new BigDecimal("1683.98"))
-                            .expenseType(ExpenseType.FOR_APPROVAL)
-                            .canApprove(true)
-                            .dateToRevisions(List.of(
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 8))
-                                    .version(1L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 9))
-                                    .version(2L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 10))
-                                    .version(1L)
-                                    .build()
-                            ))
-                            .build(),
-                        PendingApproval.builder()
-                            .jurorNumber("641500021")
-                            .poolNumber("415230101")
-                            .firstName("Fnametwoone")
-                            .lastName("Lnametwoone")
-                            .amountDue(new BigDecimal("1687.98"))
-                            .expenseType(ExpenseType.FOR_APPROVAL)
-                            .canApprove(false)
-                            .dateToRevisions(List.of(
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 8))
-                                    .version(1L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 9))
-                                    .version(2L)
-                                    .build(),
-                                ApproveExpenseDto.DateToRevision.builder()
-                                    .attendanceDate(LocalDate.of(2023, 1, 10))
-                                    .version(1L)
-                                    .build()
-                            ))
-                            .build()
-                    );
+                assertThat(pendingApprovals.getPendingApproval()).containsExactly(
+                    PendingApproval.builder()
+                        .jurorNumber("641500020")
+                        .poolNumber("415230101")
+                        .firstName("Fnametwozero")
+                        .lastName("Lnametwozero")
+                        .amountDue(new BigDecimal("1683.98"))
+                        .expenseType(ExpenseType.FOR_APPROVAL)
+                        .canApprove(true)
+                        .dateToRevisions(List.of(
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .version(1L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .version(2L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .version(1L)
+                                .build()
+                        ))
+                        .build(),
+                    PendingApproval.builder()
+                        .jurorNumber("641500021")
+                        .poolNumber("415230101")
+                        .firstName("Fnametwoone")
+                        .lastName("Lnametwoone")
+                        .amountDue(new BigDecimal("1687.98"))
+                        .expenseType(ExpenseType.FOR_APPROVAL)
+                        .canApprove(false)
+                        .dateToRevisions(List.of(
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 8))
+                                .version(1L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 9))
+                                .version(2L)
+                                .build(),
+                            ApproveExpenseDto.DateToRevision.builder()
+                                .attendanceDate(LocalDate.of(2023, 1, 10))
+                                .version(1L)
+                                .build()
+                        ))
+                        .build()
+                );
 
             }
 

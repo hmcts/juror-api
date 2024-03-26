@@ -43,7 +43,6 @@ class PostponedListByPoolReportITest extends AbstractReportControllerITest {
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
-            .printResponse()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
     }
@@ -54,7 +53,6 @@ class PostponedListByPoolReportITest extends AbstractReportControllerITest {
         testBuilder()
             .jwt(getBureauJwt())
             .triggerValid()
-            .printResponse()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
     }
@@ -67,7 +65,6 @@ class PostponedListByPoolReportITest extends AbstractReportControllerITest {
         testBuilder()
             .payload(addReportType(request))
             .triggerInvalid()
-            .printResponse()
             .assertInvalidPathParam("poolNumber: must not be null");
     }
 
@@ -77,7 +74,6 @@ class PostponedListByPoolReportITest extends AbstractReportControllerITest {
         testBuilder()
             .jwt(getCourtJwt("414"))
             .triggerInvalid()
-            .printResponse()
             .assertMojForbiddenResponse("User not allowed to access this pool");
     }
 

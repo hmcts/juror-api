@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
 
-import org.hibernate.validator.constraints.Length;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,7 +16,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
 

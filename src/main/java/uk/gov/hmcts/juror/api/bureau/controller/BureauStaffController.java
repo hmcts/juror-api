@@ -29,8 +29,8 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.bureau.service.BureauAuthenticationService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.util.stream.Collectors;
 
@@ -92,7 +92,7 @@ public class BureauStaffController {
         @RequestBody @Validated StaffAssignmentRequestDto requestDto,
         @Parameter(hidden = true) BureauJwtAuthentication principal) throws BureauOptimisticLockingException {
         log.info("Processing assignment {} by '{}'", requestDto, principal);
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) principal.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) principal.getPrincipal();
         try {
             final StaffAssignmentResponseDto responseDto = userService.changeAssignment(
                 requestDto,
@@ -127,7 +127,7 @@ public class BureauStaffController {
     public ResponseEntity<OperationFailureListDto> changeMultipleAssignments(
         @RequestBody @Validated MultipleStaffAssignmentDto requestDto,
         @Parameter(hidden = true) BureauJwtAuthentication principal) throws BureauOptimisticLockingException {
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) principal.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) principal.getPrincipal();
 
         try {
             log.info("Processing multiple assignments {} by '{}'", requestDto, principal);
@@ -165,7 +165,7 @@ public class BureauStaffController {
     public ResponseEntity<AssignmentsListDto> getStaffAssignments(
         @RequestBody @Validated AssignmentsMultiRequestDto requestDto,
         @Parameter(hidden = true) BureauJwtAuthentication principal) {
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) principal.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) principal.getPrincipal();
 
         // filter out any juror numbers not nine characters in length
         requestDto.setJurorNumbers(requestDto.getJurorNumbers().stream()

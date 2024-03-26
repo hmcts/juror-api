@@ -18,8 +18,7 @@ public interface JurorDashboardDataService {
     /**
      * Get the records from the StatsResponseTime.
      *
-     * @param startDate
-     * @param endDate
+     
      * @return List
      */
     List<StatsResponseTime> getResponsesOverTime(Date startDate, Date endDate);
@@ -28,8 +27,7 @@ public interface JurorDashboardDataService {
     /**
      * Get the records from the StatsNotResponded.
      *
-     * @param startDate
-     * @param endDate
+     
      * @return List
      */
     List<StatsNotResponded> getNotResponded(Date startDate, Date endDate);
@@ -55,8 +53,7 @@ public interface JurorDashboardDataService {
     /**
      * Get the records from the StatsWelshOnlineResponse.
      *
-     * @param startDate
-     * @param endDate
+     
      * @return List
      */
     List<StatsWelshOnlineResponse> getWelshOnlineResponses(Date startDate, Date endDate);
@@ -64,8 +61,7 @@ public interface JurorDashboardDataService {
     /**
      * Get the records from the StatsAutoProcessed.
      *
-     * @param startDate
-     * @param endDate
+     
      * @return List
      */
     List<StatsAutoProcessed> getAutoOnlineResponses(Date startDate, Date endDate);
@@ -73,8 +69,7 @@ public interface JurorDashboardDataService {
     /**
      * Get the records from the StatsThirdPartyOnlineResponse.
      *
-     * @param startDate
-     * @param endDate
+     
      * @return List
      */
     List<StatsThirdPartyOnlineResponse> getThirdPtyOnlineResponses(Date startDate, Date endDate);
@@ -82,8 +77,7 @@ public interface JurorDashboardDataService {
     /**
      * Get the records from the SurveyResponse.
      *
-     * @param startDate
-     * @param endDate
+     
      * @return List
      */
     List<SurveyResponse> getSurveyResponses(Date startDate, Date endDate);

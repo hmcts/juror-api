@@ -36,6 +36,12 @@ public class UserDetailsDto {
     private Set<Role> roles;
     private List<UserCourtDto> courts;
 
+    // use this constructor to create a UserDetailsDto object from a User object when returning
+    // Paper or Digital response or there will be an infinite recursion
+    public UserDetailsDto(User user) {
+        this(user, null);
+    }
+
     public UserDetailsDto(User user, List<UserCourtDto> courts) {
         this.username = user.getUsername();
         this.email = user.getEmail();

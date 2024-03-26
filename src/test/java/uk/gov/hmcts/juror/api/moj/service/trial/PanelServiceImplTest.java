@@ -7,7 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorListRequestDto;
@@ -345,7 +345,7 @@ class PanelServiceImplTest {
         final int totalPanelMembers = 10;
         int totalUnusedJurors = 0;
         List<Panel> panelMembers = createPanelMembers(totalPanelMembers);
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
 
         for (Panel member : panelMembers) {
             doReturn(member).when(panelRepository).findByTrialTrialNumberAndJurorPoolJurorJurorNumber(
@@ -377,7 +377,7 @@ class PanelServiceImplTest {
         JurorListRequestDto jurorListRequestDto =
             createEmpanelledListRequestDto(Collections.singletonList(createSinglePanelData()));
         jurorListRequestDto.setNumberRequested(0);
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         Assertions.assertThrows(MojException.BadRequest.class, () ->
             panelService.processEmpanelled(jurorListRequestDto, payload)
         );
@@ -392,7 +392,7 @@ class PanelServiceImplTest {
         JurorListRequestDto jurorListRequestDto =
             createEmpanelledListRequestDto(Collections.singletonList(panel));
         jurorListRequestDto.setNumberRequested(1);
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         Assertions.assertThrows(MojException.BadRequest.class, () ->
             panelService.processEmpanelled(jurorListRequestDto, payload)
         );
@@ -407,7 +407,7 @@ class PanelServiceImplTest {
         JurorListRequestDto jurorListRequestDto =
             createEmpanelledListRequestDto(Collections.singletonList(panel));
         jurorListRequestDto.setNumberRequested(1);
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         Assertions.assertThrows(MojException.BadRequest.class, () ->
             panelService.processEmpanelled(jurorListRequestDto, payload)
         );
@@ -455,7 +455,7 @@ class PanelServiceImplTest {
         JurorListRequestDto jurorListRequestDto =
             createEmpanelledListRequestDto(Collections.singletonList(createSinglePanelData()));
         jurorListRequestDto.setNumberRequested(31);
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
 
         Assertions.assertThrows(MojException.BadRequest.class, () ->
             panelService.processEmpanelled(jurorListRequestDto, payload)
@@ -648,8 +648,8 @@ class PanelServiceImplTest {
         return panelList;
     }
 
-    private BureauJWTPayload buildPayload() {
-        return BureauJWTPayload.builder()
+    private BureauJwtPayload buildPayload() {
+        return BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("SOME_USER")

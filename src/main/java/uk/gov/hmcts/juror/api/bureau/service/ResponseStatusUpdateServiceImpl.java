@@ -32,10 +32,8 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjust
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
@@ -259,7 +257,8 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
                 // compare dates
 
                 String updatedDob = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(updatedDetails.getDateOfBirth());
-                String oldDob = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(jurorDetails.getJuror().getDateOfBirth());
+                String oldDob =
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd").format(jurorDetails.getJuror().getDateOfBirth());
                 dobChanged = updatedDob.compareTo(oldDob) != 0;
             } else {
                 dobChanged = true;
@@ -544,30 +543,21 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
 
         String primaryPhone = jurorResponse.getPhoneNumber();
         String secondaryPhone = jurorResponse.getAltPhoneNumber();
-
-        /*
-        If the main phone number starts with an 07 then it should be allocated to the mobile phone number
-         */
+        //If the main phone number starts with an 07 then it should be allocated to the mobile phone number
         if (isMobileNumber(primaryPhone)) {
             jurorResponse.setAltPhoneNumber(primaryPhone);
             jurorResponse.setWorkPhone(secondaryPhone);
             jurorResponse.setPhoneNumber(null);
-        }
-        /*
-        If the main phone number does not start with an 07 but the Another one does then the Another phone will be
-         allocated to the mobile phone number
-         */
-        else if (isMobileNumber(secondaryPhone)) {
+        } else if (isMobileNumber(secondaryPhone)) {
+            //If the main phone number does not start with an 07 but the Another one does then the Another phone will be
+            //allocated to the mobile phone number
             jurorResponse.setPhoneNumber(primaryPhone);
             jurorResponse.setAltPhoneNumber(secondaryPhone);
             jurorResponse.setWorkPhone(null);
-        }
-        /*
-        If the main phone number has not been allocated to the mobile number it should be allocated to the home number
-
-        If the Another phone has not been allocated to the mobile number it should be allocated to the Work number
-         */
-        else {
+        } else {
+            //If the main phone number has not been allocated to the mobile number
+            // it should be allocated to the home number
+            //If the Another phone has not been allocated to the mobile number it should be allocated to the Work number
             jurorResponse.setPhoneNumber(primaryPhone);
             jurorResponse.setWorkPhone(secondaryPhone);
             jurorResponse.setAltPhoneNumber(null);

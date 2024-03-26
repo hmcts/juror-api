@@ -24,10 +24,9 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetter;
 import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
@@ -57,8 +56,10 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseD
 import uk.gov.hmcts.juror.api.moj.controller.response.NameDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PaymentDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -78,6 +79,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
+import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactEnquiryTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -104,7 +106,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -181,6 +182,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Autowired
     private PoolHistoryRepository poolHistoryRepository;
     @Autowired
+    private BulkPrintDataRepository bulkPrintDataRepository;
     private JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;
     private HttpHeaders httpHeaders;
 
@@ -193,7 +195,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     }
 
     private void initHeaders() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("BUREAU_USER")
@@ -1981,13 +1983,13 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     private String initCourtsJwt(String owner, List<String> courts, int level) throws Exception {
 
-        return mintBureauJwt(BureauJWTPayload.builder()
+        return mintBureauJwt(BureauJwtPayload.builder()
             .userLevel(Integer.toString(level))
             .passwordWarning(false)
             .login("COURT_USER")
             .daysToExpire(89)
             .owner(owner)
-            .staff(BureauJWTPayload.Staff.builder().courts(courts).build())
+            .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build());
     }
 
@@ -2859,7 +2861,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     }
 
     private void updateNotesForEtag() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("BUREAU_USER")
@@ -3273,17 +3275,16 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(2, jurorPool.getStatus().getStatus(),
                 "Juror pool status should match");
 
-            List<JurorHistory> jurorHistoryList =
-                jurorHistoryRepository.findByJurorNumber(jurorNumber);
-            JurorHistory jurorHistory = jurorHistoryList.get(0);
-            verifyStandardJurorHistory(jurorPool, List.of(jurorHistory),
+            List<JurorHistory> jurorHistoryList = new ArrayList<>(
+                jurorHistoryRepository.findByJurorNumber(jurorNumber));
+            jurorHistoryList.sort(Comparator.comparing(JurorHistory::getHistoryCode));
+            verifyStandardJurorHistory(jurorPool, jurorHistoryList,
+                new JurorHistoryExpectedValues("RRES", "Confirmation Letter Auto"),
                 new JurorHistoryExpectedValues("POLG", "Passed")
             );
-            List<DisqualificationLetter> disqualificationLetters =
-                disqualificationLetterRepository.findByJurorNumber(jurorNumber);
-            assertEquals(0, disqualificationLetters.size(),
-                "As user is eligible no disqualification letters should be created");
+            verifyBulkPrintData(jurorNumber, FormCode.ENG_CONFIRMATION.getCode());
         }
+
 
         @ParameterizedTest
         @ValueSource(strings = {
@@ -3324,28 +3325,16 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(6, jurorPool.getStatus().getStatus(),
                 "Juror pool status should match");
 
-            List<JurorHistory> jurorHistoryList =
-                jurorHistoryRepository.findByJurorNumber(jurorNumber);
+            List<JurorHistory> jurorHistoryList = new ArrayList<>(
+                jurorHistoryRepository.findByJurorNumber(jurorNumber));
 
             verifyStandardJurorHistory(jurorPool,
-                List.of(
-                    jurorHistoryList.get(0),
-                    jurorHistoryList.get(1)
-                ),
+                jurorHistoryList,
                 new JurorHistoryExpectedValues("POLF", "Failed"),
-                new JurorHistoryExpectedValues("PDIS", "Disqualify - E")
+                new JurorHistoryExpectedValues("PDIS", "Disqualify - E"),
+                new JurorHistoryExpectedValues("RDIS", "Withdrawal Letter Auto")
             );
-            List<DisqualificationLetter> disqualificationLetters =
-                disqualificationLetterRepository.findByJurorNumber(jurorNumber);
-            assertEquals(1, disqualificationLetters.size(),
-                "As user is ineligible one disqualificaiton letter should be made");
-            DisqualificationLetter disqualificationLetter = disqualificationLetters.get(0);
-
-            assertEquals("400", disqualificationLetter.getOwner(), "Owner should match");
-            assertEquals(jurorNumber, disqualificationLetter.getJurorNumber(), "Juror number should match");
-            assertEquals("E", disqualificationLetter.getDisqCode(), "Disqualifed code should match");
-            assertEquals(Date.from(clock.instant()), disqualificationLetter.getDateDisq(),
-                "Date Disqualified should match");
+            verifyBulkPrintData(jurorNumber, FormCode.ENG_WITHDRAWAL.getCode());
         }
 
 
@@ -3384,16 +3373,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 "Disqualify date should be null");
             assertEquals(2, jurorPool.getStatus().getStatus(),
                 "Juror pool status should match");
-
-            List<JurorHistory> jurorHistoryList =
-                jurorHistoryRepository.findByJurorNumber(jurorNumber);
-            assertEquals(0, jurorHistoryList.size(),
-                "No part histories should be created as user retry attempts left");
-            List<DisqualificationLetter> disqualificationLetters =
-                disqualificationLetterRepository.findByJurorNumber(jurorNumber);
-            assertEquals(0, disqualificationLetters.size(),
-                "User should not be disqualified as user retry attempts left");
+            verifyNoBulkPrintData(jurorNumber);
         }
+
 
         @ParameterizedTest
         @ValueSource(strings = {
@@ -3436,11 +3418,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             verifyStandardJurorHistory(jurorPool, List.of(jurorHistory),
                 new JurorHistoryExpectedValues("POLG", "Unchecked - timed out")
             );
-            List<DisqualificationLetter> disqualificationLetters =
-                disqualificationLetterRepository.findByJurorNumber(jurorNumber);
-            assertEquals(0, disqualificationLetters.size(),
-                "As user is eligible no disqualification letters should be created");
-
+            verifyBulkPrintData(jurorNumber, FormCode.ENG_CONFIRMATION.getCode());
         }
     }
 
@@ -4745,6 +4723,16 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
     }
 
+    private void verifyBulkPrintData(String jurorNumber, String formCode) {
+        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
+        assertThat(bulkPrintData).hasSize(1);
+        assertThat(bulkPrintData.get(0).getFormAttribute().getFormType()).isEqualTo(formCode);
+    }
+
+    private void verifyNoBulkPrintData(String jurorNumber) {
+        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
+        assertThat(bulkPrintData).isEmpty();
+    }
 
     private void verifyStandardJurorHistory(JurorPool jurorPool,
                                             List<JurorHistory> jurorHistoryList,
@@ -4784,13 +4772,13 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     }
 
     private String initPayloadWithStaffRank(String owner, int rank, String username) throws Exception {
-        return mintBureauJwt(BureauJWTPayload.builder()
+        return mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login(username)
             .daysToExpire(89)
             .owner(owner)
-            .staff(BureauJWTPayload.Staff.builder().rank(rank).build())
+            .staff(BureauJwtPayload.Staff.builder().rank(rank).build())
             .build());
     }
 
@@ -4836,7 +4824,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @SneakyThrows
     private void setAuthorization(String login, String owner, String level) {
         httpHeaders.remove(HttpHeaders.AUTHORIZATION);
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel(level)
             .passwordWarning(false)
             .login(login)

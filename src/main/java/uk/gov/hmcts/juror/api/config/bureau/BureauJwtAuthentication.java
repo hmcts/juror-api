@@ -12,27 +12,25 @@ import java.util.Collection;
 public class BureauJwtAuthentication extends AbstractAuthenticationToken {
     @Getter
     private final String token;
-    private final BureauJWTPayload principal;
+    private final BureauJwtPayload principal;
 
     /**
      * Pre-authenticated token. ({@link #isAuthenticated()} is <b>false</b>).
      *
-     * @param token
      */
     public BureauJwtAuthentication(final String token) {
         super(AuthorityUtils.NO_AUTHORITIES);
         this.token = token;
-        this.principal = BureauJWTPayload.builder().login(token).build();
+        this.principal = BureauJwtPayload.builder().login(token).build();
         setAuthenticated(false);
     }
 
     /**
      * Authenticated token. ({@link #isAuthenticated()} is <b>true</b>).
      *
-     * @param authorities
-     * @param jwt
+     
      */
-    public BureauJwtAuthentication(Collection<? extends GrantedAuthority> authorities, BureauJWTPayload jwt) {
+    public BureauJwtAuthentication(Collection<? extends GrantedAuthority> authorities, BureauJwtPayload jwt) {
         super(authorities);
         this.token = null;
         setAuthenticated(true);

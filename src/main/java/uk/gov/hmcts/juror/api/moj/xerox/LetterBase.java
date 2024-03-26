@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
@@ -11,7 +12,6 @@ import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
-import uk.gov.hmcts.juror.api.moj.exception.PoolRequestException;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 
 import java.sql.Date;
@@ -29,6 +29,7 @@ import static java.lang.String.format;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.LETTER_CANNOT_GENERATE_ON_WEEKEND;
 
 @SuppressWarnings("PMD.LawOfDemeter")
+@Slf4j
 public class LetterBase {
 
     private final LetterContext letterContext;
@@ -80,6 +81,7 @@ public class LetterBase {
         } catch (MojException exception) {
             throw exception;
         } catch (Exception exception) {
+            log.error("Failed to generate letter string", exception);
             throw new MojException.InternalServerError("Failed to generate letter string",
                 exception);
         }

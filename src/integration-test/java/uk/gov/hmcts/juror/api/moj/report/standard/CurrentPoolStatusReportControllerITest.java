@@ -45,7 +45,6 @@ class CurrentPoolStatusReportControllerITest extends AbstractReportControllerITe
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
-            .printResponse()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
     }
@@ -56,7 +55,6 @@ class CurrentPoolStatusReportControllerITest extends AbstractReportControllerITe
         testBuilder()
             .jwt(getBureauJwt())
             .triggerValid()
-            .printResponse()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
     }
@@ -69,7 +67,6 @@ class CurrentPoolStatusReportControllerITest extends AbstractReportControllerITe
         testBuilder()
             .payload(addReportType(request))
             .triggerInvalid()
-            .printResponse()
             .assertInvalidPathParam("poolNumber: must not be null");
     }
 
@@ -79,7 +76,6 @@ class CurrentPoolStatusReportControllerITest extends AbstractReportControllerITe
         testBuilder()
             .jwt(getCourtJwt("414"))
             .triggerInvalid()
-            .printResponse()
             .assertMojForbiddenResponse("User not allowed to access this pool");
     }
 

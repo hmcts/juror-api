@@ -20,11 +20,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthenticationProvider;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.hmac.HmacJwtAuthenticationProvider;
-import uk.gov.hmcts.juror.api.config.public_.PublicJWTPayload;
-import uk.gov.hmcts.juror.api.config.public_.PublicJwtAuthenticationProvider;
+import uk.gov.hmcts.juror.api.config.public1.PublicJwtAuthenticationProvider;
+import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.service.JwtServiceImpl;
@@ -206,7 +206,7 @@ class SecurityConfigTest {
             }
 
             private static Map<String, Object> getPublicClaimMap() {
-                PublicJWTPayload payload = PublicJWTPayload.builder()
+                PublicJwtPayload payload = PublicJwtPayload.builder()
                     .jurorNumber("209092530")
                     .postcode("AB3 9RY")
                     .surname("CASTILLO")
@@ -223,13 +223,13 @@ class SecurityConfigTest {
             }
 
             private static Map<String, Object> getBureauClaimMap() {
-                BureauJWTPayload payload = BureauJWTPayload.builder()
+                BureauJwtPayload payload = BureauJwtPayload.builder()
                     .userLevel("99")
                     .passwordWarning(false)
                     .login("COURT_USER")
                     .daysToExpire(89)
                     .owner("400")
-                    .staff(BureauJWTPayload.Staff.builder().courts(Collections.singletonList("415")).build())
+                    .staff(BureauJwtPayload.Staff.builder().courts(Collections.singletonList("415")).build())
                     .build();
                 final Map<String, Object> claimsMap = new HashMap<>();
                 claimsMap.put("daysToExpire", payload.getDaysToExpire());

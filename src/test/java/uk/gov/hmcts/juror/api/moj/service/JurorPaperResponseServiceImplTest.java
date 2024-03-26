@@ -9,7 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
@@ -137,7 +137,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_bureauUser_bureauOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         PaperResponse jurorPaperResponse = createTestJurorResponse("123456789");
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber("123456789");
         Mockito.when(poolRequestRepository.findByPoolNumber(any()))
@@ -156,7 +156,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_bureauUser_bureauOwner_welsh() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         PaperResponse jurorPaperResponse = createTestJurorResponse(VALID_JUROR_NUMBER_BUREAU);
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository)
             .findByJurorNumber(VALID_JUROR_NUMBER_BUREAU);
@@ -176,7 +176,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_summonsSnapshotPresent() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         String jurorNumber = VALID_JUROR_NUMBER_BUREAU;
         PaperResponse jurorPaperResponse = createTestJurorResponse(jurorNumber);
         SummonsSnapshot summonsSnapshot = new SummonsSnapshot(jurorNumber, "435230101",
@@ -201,7 +201,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_bureauUser_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         PaperResponse jurorPaperResponse = createTestJurorResponse(VALID_JUROR_NUMBER_COURT);
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository)
             .findByJurorNumber(VALID_JUROR_NUMBER_COURT);
@@ -218,7 +218,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_happyPath_courtUser_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
         PaperResponse jurorPaperResponse = createTestJurorResponse(VALID_JUROR_NUMBER_COURT);
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository)
@@ -237,7 +237,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_courtUser_bureauOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
         String jurorNumber = VALID_JUROR_NUMBER_BUREAU;
         PaperResponse jurorPaperResponse = createTestJurorResponse(jurorNumber);
@@ -249,7 +249,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_bureauUser_noJurorPool() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         PaperResponse jurorPaperResponse = createTestJurorResponse("111111111");
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber("111111111");
 
@@ -263,7 +263,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_courtUser_noAccess() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("416");
         PaperResponse jurorPaperResponse = createTestJurorResponse(VALID_JUROR_NUMBER_COURT);
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository)
@@ -279,7 +279,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_getJurorPaperResponse_courtUser_noPaperResponseExists() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
         Mockito.doReturn(null).when(jurorPaperResponseRepository)
             .findByJurorNumber(VALID_JUROR_NUMBER_COURT);
@@ -298,7 +298,7 @@ public class JurorPaperResponseServiceImplTest {
     public void test_saveResponse_bureauUser_bureauOwnedJurorRecord() {
         final ArgumentCaptor<PaperResponse> paperResponseArgumentCaptor =
             ArgumentCaptor.forClass(PaperResponse.class);
-        final BureauJWTPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
 
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
         setEligibilityDetails(responseDto);
@@ -332,7 +332,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_saveResponse_bureauUser_courtOwnedJurorRecord() {
-        final BureauJWTPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
 
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
         responseDto.setJurorNumber(VALID_JUROR_NUMBER_COURT);
@@ -357,7 +357,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_saveResponse_courtUser_bureauOwnedJurorRecord() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
 
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
@@ -384,7 +384,7 @@ public class JurorPaperResponseServiceImplTest {
     public void test_saveResponse_courtUser_sameCourtOwnedJurorRecord() {
         final ArgumentCaptor<PaperResponse> paperResponseArgumentCaptor =
             ArgumentCaptor.forClass(PaperResponse.class);
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
 
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
@@ -413,7 +413,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_saveResponse_courtUser_differentCourtOwnedJurorRecord() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("416");
 
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
@@ -441,7 +441,7 @@ public class JurorPaperResponseServiceImplTest {
     public void test_saveResponse_duplicateResponseRecord() {
         Mockito.doReturn(new PaperResponse()).when(jurorPaperResponseRepository)
             .findByJurorNumber(any());
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
 
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
         setEligibilityDetails(responseDto);
@@ -452,7 +452,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_saveResponse_withCjs_noSpecialNeeds() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
         List<JurorPaperResponseDto.CjsEmployment> cjsEmployment =
             Collections.singletonList(buildCjsEmployment(CjsEmploymentType.POLICE.getEmployer()));
@@ -475,7 +475,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_saveResponse_noCjs_withSpecialNeeds() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
         List<JurorPaperResponseDto.ReasonableAdjustment> specialNeeds =
             Collections.singletonList(buildSpecialNeeds(SpecialNeeds.VISUAL_IMPAIRMENT.getCode()));
@@ -498,7 +498,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_saveResponse_withCjs_withSpecialNeeds() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
         List<JurorPaperResponseDto.CjsEmployment> cjsEmployment =
             Collections.singletonList(buildCjsEmployment(CjsEmploymentType.POLICE.getEmployer()));
@@ -524,7 +524,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_saveResponse_invalidCjsEmployer() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
         List<JurorPaperResponseDto.CjsEmployment> cjsEmployment =
             Collections.singletonList(buildCjsEmployment("!£$%^&*()_+"));
@@ -536,7 +536,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_saveResponse_duplicateCjsEmployer() {
-        final BureauJWTPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
         JurorPaperResponseDto.CjsEmployment cjsEmployment = buildCjsEmployment(CjsEmploymentType.POLICE.getEmployer());
         List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
@@ -550,7 +550,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_saveResponse_invalidSpecialNeeds() {
-        final BureauJWTPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
         List<JurorPaperResponseDto.ReasonableAdjustment> specialNeeds =
             Collections.singletonList(buildSpecialNeeds("!£$%^&*()_+"));
@@ -562,7 +562,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_saveResponse_duplicateSpecialNeeds() {
-        final BureauJWTPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
         JurorPaperResponseDto.ReasonableAdjustment specialNeed
             = buildSpecialNeeds(SpecialNeeds.VISUAL_IMPAIRMENT.getCode());
@@ -579,7 +579,7 @@ public class JurorPaperResponseServiceImplTest {
     public void test_saveResponse_welshTicked() {
         final ArgumentCaptor<PaperResponse> paperResponseArgumentCaptor =
             ArgumentCaptor.forClass(PaperResponse.class);
-        final BureauJWTPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
 
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
         responseDto.setWelsh(Boolean.TRUE);
@@ -614,7 +614,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_CjsEmployment_Happy_bureauUser_bureauOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         CjsEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
 
         Mockito.doReturn(new PaperResponse()).when(jurorPaperResponseRepository)
@@ -634,7 +634,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_CjsEmployment_Happy_courtUser_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
         CjsEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
 
@@ -654,7 +654,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_CjsEmployment_bureauUser_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         CjsEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
 
         Mockito.doReturn(new PaperResponse()).when(jurorPaperResponseRepository)
@@ -668,7 +668,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_CjsEmployment_courtUser_bureauOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
         CjsEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
 
@@ -682,7 +682,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_CjsEmployment_courtUser_noAccess_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("416");
         CjsEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
 
@@ -697,7 +697,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_CjsEmployment_DuplicateEmployer() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         CjsEmploymentDetailsDto cjsEmploymentDto = buildDuplicateCjsEmploymentDetailsDto();
 
         Mockito.doReturn(new PaperResponse()).when(jurorPaperResponseRepository)
@@ -710,7 +710,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_CjsEmployment_InvalidEmployer() {
-        final BureauJWTPayload payload = buildPayload();
+        final BureauJwtPayload payload = buildPayload();
         CjsEmploymentDetailsDto cjsEmploymentDto = buildCjsEmploymentDetailsDto();
         List<JurorPaperResponseDto.CjsEmployment> cjsEmploymentList = new ArrayList<>();
         JurorPaperResponseDto.CjsEmployment cjsEmployment = JurorPaperResponseDto.CjsEmployment.builder()
@@ -729,7 +729,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_SpecialNeeds_Happy_bureauUser_bureauOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto = buildSpecialNeedsDetailsDto();
 
         Mockito.doReturn(new PaperResponse()).when(jurorPaperResponseRepository)
@@ -770,7 +770,7 @@ public class JurorPaperResponseServiceImplTest {
 
         Mockito.when(jurorRepository.findById(VALID_JUROR_NUMBER_BUREAU)).thenReturn(Optional.of(mockJuror));
 
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         jurorPaperResponseService.updateReasonableAdjustmentsDetails(payload, reasonableAdjustmentDetailsDto,
             VALID_JUROR_NUMBER_BUREAU);
 
@@ -787,7 +787,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_SpecialNeeds_Happy_courtUser_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
         ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto = buildSpecialNeedsDetailsDto();
 
@@ -812,7 +812,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_SpecialNeeds_bureauUser_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto = buildSpecialNeedsDetailsDto();
 
         Mockito.doReturn(new PaperResponse()).when(jurorPaperResponseRepository)
@@ -826,7 +826,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_SpecialNeeds_courtUser_bureauOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
         ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto = buildSpecialNeedsDetailsDto();
 
@@ -841,7 +841,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_SpecialNeeds_courtUser_noAccess_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("416");
         ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto = buildSpecialNeedsDetailsDto();
 
@@ -856,7 +856,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_SpecialNeeds_InvalidAssistanceType() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto = buildInvalidSpecialNeedsDetailsDto();
 
         Mockito.doReturn(new PaperResponse()).when(jurorPaperResponseRepository)
@@ -870,7 +870,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_SpecialNeeds_DuplicateAssistanceType() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto = buildDuplicateSpecialNeedsDetailsDto();
 
         Mockito.doReturn(new PaperResponse()).when(jurorPaperResponseRepository)
@@ -884,7 +884,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_EligibilityDetails_Happy_bureauUser_bureauOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
 
         EligibilityDetailsDto eligibilityDto = buildJurorEligibilityDetailsDto();
 
@@ -899,7 +899,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_EligibilityDetails_Happy_courtUser_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
 
         EligibilityDetailsDto eligibilityDto = buildJurorEligibilityDetailsDto();
@@ -916,7 +916,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_EligibilityDetails_bureauUser_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
 
         EligibilityDetailsDto eligibilityDto = buildJurorEligibilityDetailsDto();
 
@@ -930,7 +930,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_EligibilityDetails_courtUser_noAccess_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("416");
 
         EligibilityDetailsDto eligibilityDto = buildJurorEligibilityDetailsDto();
@@ -945,7 +945,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_EligibilityDetails_courtUser_bureauOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
 
         EligibilityDetailsDto eligibilityDto = buildJurorEligibilityDetailsDto();
@@ -960,7 +960,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_EligibilityDetails_Null() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
 
         EligibilityDetailsDto eligibilityDto = buildJurorEligibilityDetailsDto();
         eligibilityDto.setEligibility(null);
@@ -975,7 +975,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_ReplyTypeDetails_Happy_bureauUser_bureauOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
 
         ReplyTypeDetailsDto replyTypeDto = buildJurorReplyTypeDetailsDto();
 
@@ -990,7 +990,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_ReplyTypeDetails_Happy_courtUser_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
 
         ReplyTypeDetailsDto replyTypeDto = buildJurorReplyTypeDetailsDto();
@@ -1006,7 +1006,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_ReplyTypeDetails_bureauUser_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
 
         ReplyTypeDetailsDto replyTypeDto = buildJurorReplyTypeDetailsDto();
 
@@ -1020,7 +1020,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_ReplyTypeDetails_courtUser_bureauOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
 
         ReplyTypeDetailsDto replyTypeDto = buildJurorReplyTypeDetailsDto();
@@ -1035,7 +1035,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_ReplyTypeDetails_courtUser_noAccess_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("416");
 
         ReplyTypeDetailsDto replyTypeDto = buildJurorReplyTypeDetailsDto();
@@ -1050,7 +1050,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_ReplyTypeDetails_InvalidReplyTypes() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
 
         ReplyTypeDetailsDto replyTypeDto = buildJurorInvalidReplyTypeDetailsDto();
 
@@ -1064,7 +1064,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_SignatureDetails_Happy_bureauUser_bureauOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
 
         SignatureDetailsDto signatureDetailsDto = new SignatureDetailsDto();
         signatureDetailsDto.setSignature(false);
@@ -1080,7 +1080,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_SignatureDetails_Happy_courtUser_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
 
         SignatureDetailsDto signatureDetailsDto = new SignatureDetailsDto();
@@ -1097,7 +1097,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_SignatureDetails_bureauUser_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
 
         SignatureDetailsDto signatureDetailsDto = new SignatureDetailsDto();
         signatureDetailsDto.setSignature(false);
@@ -1112,7 +1112,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_SignatureDetails_courtUser_bureauOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("415");
 
         SignatureDetailsDto signatureDetailsDto = new SignatureDetailsDto();
@@ -1128,7 +1128,7 @@ public class JurorPaperResponseServiceImplTest {
 
     @Test
     public void test_updatePaperResponse_SignatureDetails_courtUser_noAccess_courtOwner() {
-        BureauJWTPayload payload = buildPayload();
+        BureauJwtPayload payload = buildPayload();
         payload.setOwner("416");
 
         SignatureDetailsDto signatureDetailsDto = new SignatureDetailsDto();
@@ -1284,8 +1284,8 @@ public class JurorPaperResponseServiceImplTest {
         return reasonableAdjustmentDetailsDto;
     }
 
-    private BureauJWTPayload buildPayload() {
-        return BureauJWTPayload.builder()
+    private BureauJwtPayload buildPayload() {
+        return BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("SOME_USER")
@@ -1505,6 +1505,8 @@ public class JurorPaperResponseServiceImplTest {
 
         response.setSigned(true);
         response.setProcessingStatus(ProcessingStatus.TODO);
+
+        response.setStaff(User.builder().username("SOME_USER").build());
 
         return response;
     }

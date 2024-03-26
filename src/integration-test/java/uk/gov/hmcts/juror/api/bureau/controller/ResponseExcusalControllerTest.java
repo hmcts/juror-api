@@ -23,7 +23,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.Excusa
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeEntity;
 import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
 import uk.gov.hmcts.juror.api.bureau.domain.PartHist;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.net.URI;
 import java.sql.Timestamp;
@@ -59,7 +59,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     public void getExcusalReasons_happy() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -91,7 +91,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void excuseJuror_happy() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -200,8 +200,8 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530' AND HISTORY_CODE='PEXC'", String.class))
             .as("Juror's PART_HIST entry should have the appropriate pool code set as POOL_NO")
             .isEqualTo("555");
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT EXC_CODE FROM JUROR.EXC_LETT WHERE PART_NO='644892530'"
-                , String.class))
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT EXC_CODE FROM JUROR.EXC_LETT WHERE PART_NO='644892530'",
+                String.class))
             .as("Juror's EXC_LETT entry should have the appropriate excusal code set")
             .isEqualTo(excusalCodeEntity.getExcusalCode());
         softly.assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE "
@@ -220,7 +220,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void excuseJuror_happy_deceasedExcusal() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -326,8 +326,8 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
             .isEqualTo("555");
 
         // Deceased disqualifications should not have an excusal letter created
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_LETT WHERE PART_NO='644892530'"
-                , Integer.class))
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_LETT WHERE PART_NO='644892530'",
+                Integer.class))
             .as("Juror should not have an EXC_LETT entry as they are deceased")
             .isEqualTo(0);
         softly.assertAll();
@@ -342,7 +342,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void excuseJuror_unhappy_invalidExcusalCode() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -415,8 +415,8 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530'", Integer.class))
             .as("Juror should not have a PART_HIST entry")
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_LETT WHERE PART_NO='644892530'"
-                , Integer.class))
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_LETT WHERE PART_NO='644892530'",
+                Integer.class))
             .as("Juror should not have an EXC_LETT entry")
             .isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.juror_response "
@@ -435,7 +435,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void excuseJuror_unhappy_JurorNotFound() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -477,8 +477,8 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 + "juror_number='123456789'", Integer.class))
             .as("Juror should not have a PART_HIST entry")
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_LETT WHERE PART_NO='123456789'"
-                , Integer.class))
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_LETT WHERE PART_NO='123456789'",
+                Integer.class))
             .as("Juror should not have an EXC_LETT entry")
             .isEqualTo(0);
         softly.assertAll();
@@ -493,7 +493,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void excuseJuror_unhappy_incorrectVersion() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -563,8 +563,8 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530'", Integer.class))
             .as("Juror should not have a PART_HIST entry")
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_LETT WHERE PART_NO='644892530'"
-                , Integer.class))
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_LETT WHERE PART_NO='644892530'",
+                Integer.class))
             .as("Juror should not have an EXC_LETT entry")
             .isEqualTo(0);
         softly.assertAll();
@@ -579,7 +579,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void excuseJuror_unhappy_nullVersion() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -649,8 +649,8 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530'", Integer.class))
             .as("Juror should not have a PART_HIST entry")
             .isEqualTo(0);
-        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_LETT WHERE PART_NO='644892530'"
-                , Integer.class))
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_LETT WHERE PART_NO='644892530'",
+                Integer.class))
             .as("Juror should not have an EXC_LETT entry")
             .isEqualTo(0);
         softly.assertAll();
@@ -665,7 +665,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void rejectExcusalRequest_happy() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -806,7 +806,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void rejectExcusalRequest_unhappy_invalidExcusalCode() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -877,7 +877,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
     })
     public void rejectExcusalRequest_unhappy_JurorNotFound() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)

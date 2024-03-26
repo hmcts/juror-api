@@ -9,8 +9,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
@@ -24,7 +22,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorCJS;
+import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorCjs;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeed;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.utils.converters.YesNo10Converter;
@@ -34,15 +32,10 @@ import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static java.time.ZoneId.systemDefault;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REGEX;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REGEX;
@@ -388,7 +381,7 @@ public class JurorResponse implements Serializable {
     private Date staffAssignmentDate;
 
     /**
-     * @implNote Holder for switching fields during a merge operation.
+     * Holder for switching fields during a merge operation.
      */
     @Transient
     private String workPhone;
@@ -401,11 +394,11 @@ public class JurorResponse implements Serializable {
     private List<BureauJurorSpecialNeed> specialNeeds = new ArrayList<>();
 
     /**
-     * List of {@link BureauJurorCJS} entities associated with this entity.
+     * List of {@link BureauJurorCjs} entities associated with this entity.
      */
     @OneToMany(mappedBy = "jurorNumber")
     @Builder.Default
-    private List<BureauJurorCJS> cjsEmployments = new ArrayList<>();
+    private List<BureauJurorCjs> cjsEmployments = new ArrayList<>();
     /**
      * Flag that this response is urgent.
      */

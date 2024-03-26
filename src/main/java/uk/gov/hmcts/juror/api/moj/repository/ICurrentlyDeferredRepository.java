@@ -1,7 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.util.List;
 
@@ -11,6 +11,6 @@ import java.util.List;
  */
 public interface ICurrentlyDeferredRepository {
 
-    List<Tuple> getDeferralsByCourtLocationCode(BureauJWTPayload payload, String courtLocation);
+    List<Tuple> getDeferralsByCourtLocationCode(BureauJwtPayload payload, String courtLocation);
 
 }

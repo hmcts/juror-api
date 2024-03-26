@@ -12,8 +12,9 @@ public interface ResponseInspector {
      * @param digitalResponse Response to inspect for a third party.
      * @return If the response was submitted by a third party on behalf of the Juror.
      */
-   // boolean isThirdPartyResponse(JurorResponse jurorResponse);
+    // boolean isThirdPartyResponse(JurorResponse jurorResponse);
     boolean isThirdPartyResponse(DigitalResponse digitalResponse);
+
     /**
      * Does a juror response have and adjustments to the fields?.
      *
@@ -41,7 +42,7 @@ public interface ResponseInspector {
 
     /**
      * The type of unclassified juror response.  Will only detect responses of type {@link NotifyTemplateType#EXCUSAL},
-     * {@link NotifyTemplateType#DEFERRAL}. Default for other types is {@link NotifyTemplateType# DISQUALIFICATION}.
+     * {@link NotifyTemplateType#DEFERRAL}. Default for other types is {@link NotifyTemplateType#DISQUALIFICATION_AGE}.
      *
      * @param digitalResponse Response to inspect for type
      * @return Response type

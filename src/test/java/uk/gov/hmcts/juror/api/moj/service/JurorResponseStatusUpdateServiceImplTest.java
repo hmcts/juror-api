@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -83,7 +83,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
 
     @Test
     public void updateResponse_awaitingContact_happy() throws Exception {
-        BureauJWTPayload payload = TestUtils.createJwt("400", "testuser");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "testuser");
         String jurorNumber = "1";
 
         // Configure mocks
@@ -106,7 +106,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
 
     @Test
     public void updateResponse_awaitingCourtReply_happy() throws Exception {
-        BureauJWTPayload payload = TestUtils.createJwt("400", "testuser");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "testuser");
         String jurorNumber = "1";
 
         // Configure mocks
@@ -129,7 +129,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
 
     @Test
     public void updateResponse_awaitingTranslation_happy() throws Exception {
-        BureauJWTPayload payload = TestUtils.createJwt("400", "testuser");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "testuser");
         String jurorNumber = "1";
 
         // Configure mocks
@@ -149,7 +149,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
 
     @Test
     public void updateResponse_todo_happy() throws Exception {
-        BureauJWTPayload payload = TestUtils.createJwt("400", "testuser");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "testuser");
 
         String jurorNumber = "1";
         // Configure mocks
@@ -166,7 +166,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
 
     @Test
     public void updateResponse_alsoUpdatesStaffAssignment_happy() throws Exception {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "testuser");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "testuser");
         String jurorNumber = "1";
         ProcessingStatus currentProcessingStatus = ProcessingStatus.AWAITING_CONTACT;
 
@@ -188,7 +188,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
 
     @Test
     public void updateResponse_bureauUser_bureauOwned_awaitingTranslation() {
-        BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "testuser");
+        BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "testuser");
         String jurorNumber = "1";
 
         // Configure mocks
@@ -205,7 +205,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
 
     @Test
     public void updateResponse_courtUser_bureauOwned_awaitingTranslation() {
-        BureauJWTPayload courtPayload = TestUtils.createJwt("415", "testuser");
+        BureauJwtPayload courtPayload = TestUtils.createJwt("415", "testuser");
         String jurorNumber = "1";
 
         // Configure mocks
@@ -220,7 +220,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
 
     @Test
     public void updateResponse_bureauUser_courtOwned_awaitingTranslation() {
-        BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "testuser");
+        BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "testuser");
 
         String jurorNumber = "1";
         ProcessingStatus currentProcessingStatus = ProcessingStatus.TODO;
@@ -237,7 +237,7 @@ public class JurorResponseStatusUpdateServiceImplTest {
 
     @Test
     public void updateResponse_courtUser_courtOwned_awaitingTranslation() {
-        BureauJWTPayload courtPayload = TestUtils.createJwt("415", "testuser");
+        BureauJwtPayload courtPayload = TestUtils.createJwt("415", "testuser");
 
         String jurorNumber = "1";
         ProcessingStatus currentProcessingStatus = ProcessingStatus.TODO;

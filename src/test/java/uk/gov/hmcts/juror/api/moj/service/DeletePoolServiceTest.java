@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -128,7 +128,7 @@ public class DeletePoolServiceTest {
     @Test
     public void test_deletePool() {
         String poolNumber = "415220101";
-        final BureauJWTPayload payload = buildPayload("400", "1");
+        final BureauJwtPayload payload = buildPayload("400", "1");
 
         String locCode = "415";
         CourtLocation courtLocation = new CourtLocation();
@@ -154,7 +154,7 @@ public class DeletePoolServiceTest {
     @Test
     public void test_deletePoolRequest() {
         String poolNumber = "101010101";
-        final BureauJWTPayload payload = buildPayload("400", "1");
+        final BureauJwtPayload payload = buildPayload("400", "1");
 
         String locCode = "415";
         CourtLocation courtLocation = new CourtLocation();
@@ -177,7 +177,7 @@ public class DeletePoolServiceTest {
     @Test
     public void test_deleteJurorPools() {
         String poolNumber = "415221001";
-        final BureauJWTPayload payload = buildPayload("400", "1");
+        final BureauJwtPayload payload = buildPayload("400", "1");
 
         String locCode = "415";
         CourtLocation courtLocation = new CourtLocation();
@@ -223,8 +223,8 @@ public class DeletePoolServiceTest {
         return jurorPool;
     }
 
-    private BureauJWTPayload buildPayload(String owner, String userLevel) {
-        return BureauJWTPayload.builder()
+    private BureauJwtPayload buildPayload(String owner, String userLevel) {
+        return BureauJwtPayload.builder()
             .userLevel(userLevel)
             .passwordWarning(false)
             .login("SOME_USER")

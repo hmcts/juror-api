@@ -104,7 +104,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
             savedResponse.setVersion(excusalCodeDto.getVersion());
 
             //update response
-            ProcessingStatus oldProcessingStatus = savedResponse.getProcessingStatus();
+            final ProcessingStatus oldProcessingStatus = savedResponse.getProcessingStatus();
             savedResponse.setProcessingStatus(ProcessingStatus.CLOSED);
 
             // JDB-2685: if no staff assigned, assign current login
@@ -209,7 +209,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
             savedResponse.setVersion(excusalCodeDto.getVersion());
 
             //update response
-            ProcessingStatus oldProcessingStatus = savedResponse.getProcessingStatus();
+            final ProcessingStatus oldProcessingStatus = savedResponse.getProcessingStatus();
             savedResponse.setProcessingStatus(ProcessingStatus.CLOSED);
 
             // JDB-2685: if no staff assigned, assign current login

@@ -7,10 +7,9 @@ import java.time.LocalDate;
 
 
 @EqualsAndHashCode
-public class BulkPrintDataKey  implements Serializable {
+public class BulkPrintDataKey implements Serializable {
 
-
-        private String jurorNo;
-        private Long  id;
-        private LocalDate creationDate;
+    private String jurorNo;
+    private Long id;
+    private LocalDate creationDate;
 }

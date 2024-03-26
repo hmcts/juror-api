@@ -13,13 +13,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.controller.request.BureauBacklogAllocateRequestDto;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauBacklogAllocateException;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
@@ -27,11 +23,8 @@ import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -90,8 +83,8 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
 
         for (User staffMember : staff) {
 
-            List<DigitalResponse> toBeAllocated = new LinkedList<>();
-            List<StaffJurorResponseAuditMod> auditEntries = new LinkedList<>();
+            final List<DigitalResponse> toBeAllocated = new LinkedList<>();
+            final List<StaffJurorResponseAuditMod> auditEntries = new LinkedList<>();
 
             log.trace("Allocating backlog responses to bureau officer : {} ", staffMember.getUsername());
 
@@ -179,7 +172,7 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
      * @return List Allocated Responses for staff member.
      */
     private List<DigitalResponse> allocateResponses(BooleanExpression condition, User staffMember,
-                                                  Integer urgencyAllocateCount) {
+                                                    Integer urgencyAllocateCount) {
 
         //Fetch the responses to allocate to the staffMember. Only fetches requested amount (urgencyAllocateCount)
         final List<DigitalResponse> urgencybacklog = getBacklogData(condition, urgencyAllocateCount);
@@ -196,12 +189,13 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
      * @param urgencyAllocateCount Requested Allocate count for Staff (ie nonUrgentCount)
      * @return List Allocated Responses for saff member.
      */
-    private List<DigitalResponse> allocate(List<DigitalResponse> backlogData, User staff, Integer urgencyAllocateCount) {
+    private List<DigitalResponse> allocate(List<DigitalResponse> backlogData, User staff,
+                                           Integer urgencyAllocateCount) {
 
         final List<DigitalResponse> allocation = new LinkedList<>();
 
         final Iterator<DigitalResponse> backlogItems = backlogData.iterator();
-    final LocalDate now = LocalDateTime.now().toLocalDate();
+        final LocalDate now = LocalDateTime.now().toLocalDate();
 
         for (int j = 0;
              j < urgencyAllocateCount && backlogItems.hasNext();
@@ -216,7 +210,7 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
                 ?
                 r.getVersion() + 1
                 :
-                1);
+                    1);
 
         });
         return allocation;
@@ -231,7 +225,7 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
      * @return List StaffJurorResponseAudit
      */
     private List<StaffJurorResponseAuditMod> auditAllocatedEntries(List<DigitalResponse> allocation, User staff,
-                                                                String requestingUser) {
+                                                                   String requestingUser) {
 
         final List<StaffJurorResponseAuditMod> auditEntries = new LinkedList<>();
 

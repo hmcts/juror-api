@@ -7,16 +7,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
+import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.AppSetting;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
-import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.time.*;
-import java.time.temporal.ChronoUnit;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,7 +34,7 @@ import static java.time.ZoneId.systemDefault;
 @Slf4j
 public class UrgencyServiceImpl implements UrgencyService {
     /**
-     * Processing status "closed"
+     * Processing status "closed".
      */
     private static final String CLOSED = ProcessingStatus.CLOSED.name();
     private static final String URGENCY_DAYS = "URGENCY_DAYS";
@@ -77,8 +78,8 @@ public class UrgencyServiceImpl implements UrgencyService {
         //SLA period for responses in days.
         Integer workingDays;
 
-//        Optional<AppSetting> optSlaOverdueDays = appSettingRepository.findById(SLA_OVERDUE_DAYS);
-//        final AppSetting slaOverdueDays = optSlaOverdueDays.isPresent() ? optSlaOverdueDays.get() : null;
+        //Optional<AppSetting> optSlaOverdueDays = appSettingRepository.findById(SLA_OVERDUE_DAYS);
+        //final AppSetting slaOverdueDays = optSlaOverdueDays.isPresent() ? optSlaOverdueDays.get() : null;
 
         final AppSetting slaOverdueDays = appSettingRepository.findById(SLA_OVERDUE_DAYS).get();
         // check the SLA_OVERDUE_DAYS application setting

@@ -121,7 +121,7 @@ public enum LetterType {
         ReissueLetterService.DataType.JUROR_LAST_NAME,
         ReissueLetterService.DataType.JUROR_POSTCODE,
         ReissueLetterService.DataType.JUROR_STATUS,
-        ReissueLetterService.DataType.JUROR_DEFERRED_TO,
+        ReissueLetterService.DataType.JUROR_POSTPONED_TO,
         ReissueLetterService.DataType.JUROR_DEFERRED_TO_REASON,
         ReissueLetterService.DataType.DATE_PRINTED,
         ReissueLetterService.DataType.EXTRACTED_FLAG,

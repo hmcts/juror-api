@@ -22,7 +22,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.ResponseDisqualifyController.Dis
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseDisqualifyController.DisqualifyReasonsDto;
 import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
 
 import java.net.URI;
@@ -58,7 +58,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     public void getDisqualifyReasons_happy() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -92,7 +92,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     })
     public void disqualifyJuror_happy() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -217,7 +217,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     })
     public void disqualifyJuror_happy_ageDisqualification() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -312,7 +312,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     })
     public void disqualifyJuror_unhappy_invalidDisqualifyCode() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -400,7 +400,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     })
     public void disqualifyJuror_unhappy_jurorNotFound() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -482,7 +482,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     })
     public void disqualifyJuror_unhappy_incorrectVersion() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)
@@ -564,7 +564,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     })
     public void disqualifyJuror_unhappy_nullVersion() throws Exception {
         final String loginName = "testlogin";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login(loginName)

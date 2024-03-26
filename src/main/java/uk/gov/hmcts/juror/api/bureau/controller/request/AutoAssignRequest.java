@@ -13,7 +13,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import java.util.List;
 
 /**
- * Request DTO for the auto-assignment feature
+ * Request DTO for the auto-assignment feature.
  */
 @AllArgsConstructor
 @NoArgsConstructor

@@ -11,7 +11,7 @@ import uk.gov.hmcts.juror.api.validation.NumericString;
 import java.util.List;
 
 /**
- * DTO for the JDB-1971 search functionality
+ * DTO for the JDB-1971 search functionality.
  */
 @AllArgsConstructor
 @NoArgsConstructor

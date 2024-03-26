@@ -42,10 +42,13 @@ public class JurorResponseDto {
     /**
      * Required arguments builder for common flows.
      */
-    public static JurorResponseDtoBuilder builder(String jurorNumber, String firstName, String lastName,
-                                                  String addressLineOne, String addressLineTwo, String addressLineThree,
-                                                  String addressPostcode, LocalDate dateOfBirth, String primaryPhone,
-                                                  String emailAddress, Qualify qualify, Integer version,ReplyMethod replyMethod) {
+    public static JurorResponseDtoBuilder builder(
+        String jurorNumber, String firstName, String lastName,
+        String addressLineOne, String addressLineTwo, String addressLineThree,
+        String addressPostcode, LocalDate dateOfBirth, String primaryPhone,
+        String emailAddress, Qualify qualify, Integer version,
+        ReplyMethod replyMethod) {
+
         return realBuilder()
             .jurorNumber(jurorNumber)
             .firstName(firstName)
@@ -71,7 +74,6 @@ public class JurorResponseDto {
             .thirdParty(thirdParty)
             ;
     }
-
 
 
     @Schema(description = "Juror number", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -163,11 +165,11 @@ public class JurorResponseDto {
 
     @Null(groups = ThirdPartyDeceasedValidationGroup.class)
     @Schema(description = "Array of any Criminal Justice System employment of the Juror")
-    private List<CJSEmployment> cjsEmployment;
+    private List<CjsEmployment> cjsEmployment;
 
     @Null(groups = ThirdPartyDeceasedValidationGroup.class)
     @Schema(description = "Array of any special requirements of the Juror at the court location")
-    private List<ReasonableAdjustment> reasonableAdjustments;
+    private List<ReasonableAdjustment> specialNeeds;
 
     @Null(groups = ThirdPartyDeceasedValidationGroup.class)
     @Schema(description = "Juror text description of special arrangements required")
@@ -310,7 +312,7 @@ public class JurorResponseDto {
     @NoArgsConstructor
     @Data
     @Schema(description = "Criminal Justice System employment object for the Juror")
-    public static class CJSEmployment {
+    public static class CjsEmployment {
         @Schema(description = "CJS employer name", requiredMode = Schema.RequiredMode.REQUIRED, example = "Police")
         @NotNull
         private String cjsEmployer;
@@ -330,7 +332,7 @@ public class JurorResponseDto {
     @ThirdPartyRequireAtLeastOneOf(
         groups = {ThirdPartyValidationCommonGroup.class},
         message = "Third party must supply a main phone or an email address")
-   public static class ThirdParty {
+    public static class ThirdParty {
         @Schema(description = "Third party firstname", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotEmpty(groups = {ThirdPartyValidationGroup.class, ThirdPartyDeceasedValidationGroup.class})
         private String thirdPartyFName;
@@ -345,8 +347,6 @@ public class JurorResponseDto {
 
         /**
          * Removed redundant field.
-         *
-         * @deprecated
          */
         @Schema(description = "Third party email contact preference address")
         @Null(groups = ThirdPartyDeceasedValidationGroup.class)
@@ -354,7 +354,7 @@ public class JurorResponseDto {
         private String contactEmail;
 
         /**
-         * @implNote Validated by {@link ScriptAssert}
+         * Validated by {@link ScriptAssert}.
          */
         @Pattern(regexp = THIRD_PARTY_PHONE_PRIMARY_REGEX, groups = {ThirdPartyValidationGroup.class})
         @Schema(description = "Third party landline phone number", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -365,7 +365,7 @@ public class JurorResponseDto {
         private String otherPhone;
 
         /**
-         * @implNote Validated by {@link ScriptAssert}
+         * Validated by {@link ScriptAssert}.
          */
         @Length(max = 254)
         @Schema(description = "Third party personal email address", requiredMode = Schema.RequiredMode.REQUIRED)

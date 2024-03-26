@@ -25,38 +25,23 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffAssignmentResponse
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
-import uk.gov.hmcts.juror.api.bureau.domain.QTeam;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffAmendmentAction;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffAuditRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.Team;
-import uk.gov.hmcts.juror.api.bureau.domain.TeamRepository;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.ReassignException;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
-import uk.gov.hmcts.juror.api.moj.domain.*;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
+import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
-import uk.gov.hmcts.juror.api.juror.domain.QJurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.QPool;
-import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -324,7 +309,8 @@ public class UserServiceImpl implements UserService {
 
         //for want of a unified DTO for JUROR.POOL
 
-        final JurorPool pool = poolRepository.findOne(QJuror.juror.jurorNumber.eq(urgentJurorResponse.getJurorNumber())).get();
+        final JurorPool pool =
+            poolRepository.findOne(QJuror.juror.jurorNumber.eq(urgentJurorResponse.getJurorNumber())).get();
         final String courtId = pool.getCourt().getLocCode();
 
         final List<User> availableStaff = new ArrayList<>();

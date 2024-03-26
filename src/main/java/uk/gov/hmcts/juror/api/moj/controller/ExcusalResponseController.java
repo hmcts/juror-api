@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.ExcusalDecisionDto;
 import uk.gov.hmcts.juror.api.moj.service.ExcusalResponseService;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
@@ -44,7 +44,7 @@ public class ExcusalResponseController {
     @PutMapping(path = "/juror/{jurorNumber}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Enter and respond to an excusal request from a Juror")
-    public void respondToExcusalRequest(@Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+    public void respondToExcusalRequest(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                         @RequestBody @Valid ExcusalDecisionDto excusalDecisionDto,
                                         @Parameter(description = "Valid juror number", required = true)
                                         @PathVariable("jurorNumber") @JurorNumber

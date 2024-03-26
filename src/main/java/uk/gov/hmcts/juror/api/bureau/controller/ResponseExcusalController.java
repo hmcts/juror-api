@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeEntity;
 import uk.gov.hmcts.juror.api.bureau.exception.ExcusalException;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 
 import java.util.List;
 import java.util.Objects;
@@ -64,7 +64,7 @@ public class ResponseExcusalController {
         BureauJwtAuthentication jwt,
         @Validated @RequestBody ExcusalCodeDto excusalCodeDto) throws ExcusalException {
         validateJurorNumberPathVariable(jurorId);
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) jwt.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         if (null == excusalCodeDto.getExcusalCode() || null == excusalCodeDto.getVersion()) {
             // there is either no body or no version present in the request
             throw new ExcusalException.RequestIsMissingDetails(jurorId);
@@ -87,7 +87,7 @@ public class ResponseExcusalController {
         BureauJwtAuthentication jwt,
         @Validated @RequestBody ExcusalCodeDto excusalCodeDto) throws ExcusalException {
         validateJurorNumberPathVariable(jurorId);
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) jwt.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         if (null == excusalCodeDto.getExcusalCode() || null == excusalCodeDto.getVersion()) {
             // there is either no body or no version present in the request
             throw new ExcusalException.RequestIsMissingDetails(jurorId);

@@ -47,8 +47,6 @@ public class BureauServiceImpl implements BureauService {
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
 
-
-
     @Override
     @Transactional(readOnly = true)
     public BureauJurorDetailDto getDetailsByJurorNumber(final String jurorNumber) {
@@ -224,9 +222,8 @@ public class BureauServiceImpl implements BureauService {
     }
 
 
-
     private LocalDateTime startOfToday() {
-    return LocalDate.now().atStartOfDay();
+        return LocalDate.now().atStartOfDay();
     }
 
     private LocalDateTime endOfToday() {

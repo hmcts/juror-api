@@ -50,7 +50,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-scenarios.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_1ST_STRAIGHT_THROUGH() {
+    public void sendNotificationResponseNotify1StStraightThrough() {
         assertNotification("641500496", "NOTIFY_1ST_STRAIGHT_THROUGH",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -63,7 +63,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-all-jurors-ineligible.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_1ST_STRAIGHT_THROUGH_INEL() {
+    public void sendNotificationResponseNotify1StStraightThroughInel() {
         assertNotification("641500537", "NOTIFY_1ST_STRAIGHT_THROUGH_INEL",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -75,7 +75,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-scenarios.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_1ST_STRAIGHT_THROUGH_ADJ() {
+    public void sendNotificationResponseNotify1StStraightThroughAdj() {
         assertNotification("641500540", "NOTIFY_1ST_STRAIGHT_THROUGH_ADJ",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -88,7 +88,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-all-jurors-ineligible.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_1ST_STRAIGHT_THROUGH_ADJ_INEL() {
+    public void sendNotificationResponseNotify1StStraightThroughAdjInel() {
         assertNotification("641500540", "NOTIFY_1ST_STRAIGHT_THROUGH_ADJ_INEL",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -100,7 +100,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-scenarios.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_3RD_STRAIGHT_THROUGH() {
+    public void sendNotificationResponseNotify3RdStraightThrough() {
         assertNotification("641500127", "NOTIFY_3RD_STRAIGHT_THROUGH",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -113,7 +113,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_3RD_STRAIGHT_THROUGH() {
+    public void sendNotificationResponseNotifyCy3RdStraightThrough() {
         assertNotification("641500128", "NOTIFY_CY_3RD_STRAIGHT_THROUGH",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -126,7 +126,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-all-jurors-ineligible.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_3RD_STRAIGHT_THROUGH_INEL() {
+    public void sendNotificationResponseNotify3RdStraightThroughInel() {
         assertNotification("641500119", "NOTIFY_3RD_STRAIGHT_THROUGH_INEL",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -140,7 +140,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_3RD_STRAIGHT_THROUGH_INEL() {
+    public void sendNotificationResponseNotifyCy3RdStraightThroughInel() {
         assertNotification("641500120", "NOTIFY_CY_3RD_STRAIGHT_THROUGH_INEL",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -152,7 +152,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-scenarios.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_3RD_STRAIGHT_THROUGH_ADJ() {
+    public void sendNotificationResponseNotify3RdStraightThroughAdj() {
         assertNotification("641500130", "NOTIFY_3RD_STRAIGHT_THROUGH_ADJ",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -165,7 +165,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_3RD_STRAIGHT_THROUGH_ADJ() {
+    public void sendNotificationResponseNotifyCy3RdStraightThroughAdj() {
         assertNotification("641500131", "NOTIFY_CY_3RD_STRAIGHT_THROUGH_ADJ",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -178,7 +178,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-all-jurors-ineligible.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_3RD_STRAIGHT_THROUGH_ADJ_INEL() {
+    public void sendNotificationResponseNotify3RdStraightThroughAdjInel() {
         assertNotification("641500130", "NOTIFY_3RD_STRAIGHT_THROUGH_ADJ_INEL",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -192,7 +192,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_3RD_STRAIGHT_THROUGH_ADJ_INEL() {
+    public void sendNotificationResponseNotifyCy3RdStraightThroughAdjInel() {
         assertNotification("641500131", "NOTIFY_CY_3RD_STRAIGHT_THROUGH_ADJ_INEL",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -205,7 +205,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_1ST_STRAIGHT_THROUGH() {
+    public void sendNotificationResponseNotifyCy1StStraightThrough() {
         assertNotification("641500497", "NOTIFY_CY_1ST_STRAIGHT_THROUGH",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -219,7 +219,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-all-jurors-ineligible.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_1ST_STRAIGHT_THROUGH_INEL() {
+    public void sendNotificationResponseNotifyCy1StStraightThroughInel() {
         assertNotification("641500538", "NOTIFY_CY_1ST_STRAIGHT_THROUGH_INEL",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -232,7 +232,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_1ST_STRAIGHT_THROUGH_ADJ() {
+    public void sendNotificationResponseNotifyCy1StStraightThroughAdj() {
         assertNotification("641500541", "NOTIFY_CY_1ST_STRAIGHT_THROUGH_ADJ",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -246,7 +246,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-all-jurors-ineligible.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_1ST_STRAIGHT_THROUGH_ADJ_INEL() {
+    public void sendNotificationResponseNotifyCy1StStraightThroughAdjInel() {
         assertNotification("641500541", "NOTIFY_CY_1ST_STRAIGHT_THROUGH_ADJ_INEL",
             NotifyTemplateType.STRAIGHT_THROUGH);
     }
@@ -258,7 +258,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-scenarios.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_1ST_AGE_DISQUALIFIED_AGE() {
+    public void sendNotificationResponseNotify1StAgeDisqualifiedAge() {
         assertNotification("641500518", "NOTIFY_1ST_DISQUALIFICATION_AGE",
             NotifyTemplateType.DISQUALIFICATION_AGE);
     }
@@ -271,7 +271,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_1ST_AGE_DISQUALIFIED_AGE() {
+    public void sendNotificationResponseNotifyCy1StAgeDisqualifiedAge() {
         assertNotification("641500519", "NOTIFY_CY_1ST_DISQUALIFICATION_AGE",
             NotifyTemplateType.DISQUALIFICATION_AGE);
     }
@@ -283,7 +283,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-scenarios.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_3RD_AGE_DISQUALIFIED_AGE() {
+    public void sendNotificationResponseNotify3RdAgeDisqualifiedAge() {
         assertNotification("641500542", "NOTIFY_3RD_DISQUALIFICATION_AGE",
             NotifyTemplateType.DISQUALIFICATION_AGE);
     }
@@ -296,7 +296,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_3RD_AGE_DISQUALIFIED_AGE() {
+    public void sendNotificationResponseNotifyCy3RdAgeDisqualifiedAge() {
         assertNotification("641500543", "NOTIFY_CY_3RD_DISQUALIFICATION_AGE",
             NotifyTemplateType.DISQUALIFICATION_AGE);
     }
@@ -308,7 +308,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-scenarios.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_1ST_DEFERRAL() {
+    public void sendNotificationResponseNotify1StDeferral() {
         assertNotification("641500521", "NOTIFY_1ST_DEFERRAL",
             NotifyTemplateType.DEFERRAL);
     }
@@ -321,7 +321,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-all-jurors-ineligible.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_1ST_DEFERRAL_INEL() {
+    public void sendNotificationResponseNotify1StDeferralInel() {
         assertNotification("641500521", "NOTIFY_1ST_DEFERRAL_INEL",
             NotifyTemplateType.DEFERRAL);
     }
@@ -333,7 +333,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-scenarios.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_1ST_DEFERRAL_ADJ() {
+    public void sendNotificationResponseNotify1StDeferralAdj() {
         assertNotification("641500529", "NOTIFY_1ST_DEFERRAL_ADJ",
             NotifyTemplateType.DEFERRAL);
     }
@@ -346,7 +346,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-all-jurors-ineligible.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_1ST_DEFERRAL_ADJ_INEL() {
+    public void sendNotificationResponseNotify1StDeferralAdjInel() {
         assertNotification("641500529", "NOTIFY_1ST_DEFERRAL_ADJ_INEL",
             NotifyTemplateType.DEFERRAL);
     }
@@ -358,7 +358,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-scenarios.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_3RD_DEFERRAL() {
+    public void sendNotificationResponseNotify3RdDeferral() {
         assertNotification("641500093", "NOTIFY_3RD_DEFERRAL",
             NotifyTemplateType.DEFERRAL);
     }
@@ -371,7 +371,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-all-jurors-ineligible.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_3RD_DEFERRAL_INEL() {
+    public void sendNotificationResponseNotify3RdDeferralInel() {
         assertNotification("641500093", "NOTIFY_3RD_DEFERRAL_INEL",
             NotifyTemplateType.DEFERRAL);
     }
@@ -383,7 +383,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-scenarios.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_3RD_DEFERRAL_ADJ() {
+    public void sendNotificationResponseNotify3RdDeferralAdj() {
         assertNotification("641500095", "NOTIFY_3RD_DEFERRAL_ADJ",
             NotifyTemplateType.DEFERRAL);
     }
@@ -396,7 +396,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-all-jurors-ineligible.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_3RD_DEFERRAL_ADJ_INEL() {
+    public void sendNotificationResponseNotify3RdDeferralAdjInel() {
         assertNotification("641500095", "NOTIFY_3RD_DEFERRAL_ADJ_INEL",
             NotifyTemplateType.DEFERRAL);
     }
@@ -409,7 +409,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_1ST_DEFERRAL() {
+    public void sendNotificationResponseNotifyCy1StDeferral() {
         assertNotification("641500522", "NOTIFY_CY_1ST_DEFERRAL",
             NotifyTemplateType.DEFERRAL);
     }
@@ -423,7 +423,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_1ST_DEFERRAL_INEL() {
+    public void sendNotificationResponseNotifyCy1StDeferralInel() {
         assertNotification("641500522", "NOTIFY_CY_1ST_DEFERRAL_INEL",
             NotifyTemplateType.DEFERRAL);
     }
@@ -436,7 +436,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_1ST_DEFERRAL_ADJ() {
+    public void sendNotificationResponseNotifyCy1StDeferralAdj() {
         assertNotification("641500530", "NOTIFY_CY_1ST_DEFERRAL_ADJ",
             NotifyTemplateType.DEFERRAL);
     }
@@ -450,7 +450,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_1ST_DEFERRAL_ADJ_INEL() {
+    public void sendNotificationResponseNotifyCy1StDeferralAdjInel() {
         assertNotification("641500530", "NOTIFY_CY_1ST_DEFERRAL_ADJ_INEL",
             NotifyTemplateType.DEFERRAL);
     }
@@ -463,7 +463,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_3RD_DEFERRAL() {
+    public void sendNotificationResponseNotifyCy3RdDeferral() {
         assertNotification("641500094", "NOTIFY_CY_3RD_DEFERRAL",
             NotifyTemplateType.DEFERRAL);
     }
@@ -477,7 +477,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_3RD_DEFERRAL_INEL() {
+    public void sendNotificationResponseNotifyCy3RdDeferralInel() {
         assertNotification("641500094", "NOTIFY_CY_3RD_DEFERRAL_INEL",
             NotifyTemplateType.DEFERRAL);
     }
@@ -490,7 +490,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_3RD_DEFERRAL_ADJ() {
+    public void sendNotificationResponseNotifyCy3RdDeferralAdj() {
         assertNotification("641500096", "NOTIFY_CY_3RD_DEFERRAL_ADJ",
             NotifyTemplateType.DEFERRAL);
     }
@@ -504,7 +504,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_3RD_DEFERRAL_ADJ_INEL() {
+    public void sendNotificationResponseNotifyCy3RdDeferralAdjInel() {
         assertNotification("641500096", "NOTIFY_CY_3RD_DEFERRAL_ADJ_INEL",
             NotifyTemplateType.DEFERRAL);
     }
@@ -516,7 +516,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-scenarios.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_1ST_EXCUSAL() {
+    public void sendNotificationResponseNotify1StExcusal() {
         assertNotification("641500531", "NOTIFY_1ST_EXCUSAL",
             NotifyTemplateType.EXCUSAL);
     }
@@ -529,7 +529,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-all-jurors-ineligible.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_1ST_EXCUSAL_INEL() {
+    public void sendNotificationResponseNotify1StExcusalInel() {
         assertNotification("641500531", "NOTIFY_1ST_EXCUSAL_INEL",
             NotifyTemplateType.EXCUSAL);
     }
@@ -541,7 +541,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-scenarios.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_1ST_EXCUSAL_ADJ() {
+    public void sendNotificationResponseNotify1StExcusalAdj() {
         assertNotification("641500534", "NOTIFY_1ST_EXCUSAL_ADJ",
             NotifyTemplateType.EXCUSAL);
     }
@@ -554,7 +554,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-all-jurors-ineligible.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_1ST_EXCUSAL_ADJ_INEL() {
+    public void sendNotificationResponseNotify1StExcusalAdjInel() {
         assertNotification("641500534", "NOTIFY_1ST_EXCUSAL_ADJ_INEL",
             NotifyTemplateType.EXCUSAL);
     }
@@ -566,7 +566,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-scenarios.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_3RD_EXCUSAL() {
+    public void sendNotificationResponseNotify3RdExcusal() {
         assertNotification("641500101", "NOTIFY_3RD_EXCUSAL",
             NotifyTemplateType.EXCUSAL);
     }
@@ -579,7 +579,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-all-jurors-ineligible.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_3RD_EXCUSAL_INEL() {
+    public void sendNotificationResponseNotify3RdExcusalInel() {
         assertNotification("641500101", "NOTIFY_3RD_EXCUSAL_INEL",
             NotifyTemplateType.EXCUSAL);
     }
@@ -591,7 +591,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-scenarios.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_3RD_EXCUSAL_ADJ() {
+    public void sendNotificationResponseNotify3RdExcusalAdj() {
         assertNotification("641500108", "NOTIFY_3RD_EXCUSAL_ADJ",
             NotifyTemplateType.EXCUSAL);
     }
@@ -604,7 +604,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-all-jurors-ineligible.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_3RD_EXCUSAL_ADJ_INEL() {
+    public void sendNotificationResponseNotify3RdExcusalAdjInel() {
         assertNotification("641500108", "NOTIFY_3RD_EXCUSAL_ADJ_INEL",
             NotifyTemplateType.EXCUSAL);
     }
@@ -617,7 +617,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_1ST_EXCUSAL() {
+    public void sendNotificationResponseNotifyCy1StExcusal() {
         assertNotification("641500532", "NOTIFY_CY_1ST_EXCUSAL",
             NotifyTemplateType.EXCUSAL);
     }
@@ -631,7 +631,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_1ST_EXCUSAL_INEL() {
+    public void sendNotificationResponseNotifyCy1StExcusalInel() {
         assertNotification("641500532", "NOTIFY_CY_1ST_EXCUSAL_INEL",
             NotifyTemplateType.EXCUSAL);
     }
@@ -644,7 +644,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_1ST_EXCUSAL_ADJ() {
+    public void sendNotificationResponseNotifyCy1StExcusalAdj() {
         assertNotification("641500535", "NOTIFY_CY_1ST_EXCUSAL_ADJ",
             NotifyTemplateType.EXCUSAL);
     }
@@ -660,7 +660,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_1ST_EXCUSAL_ADJ_INEL() {
+    public void sendNotificationResponseNotifyCy1StExcusalAdjInel() {
         assertNotification("641500535", "NOTIFY_CY_1ST_EXCUSAL_ADJ_INEL",
             NotifyTemplateType.EXCUSAL);
     }
@@ -673,7 +673,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_3RD_EXCUSAL() {
+    public void sendNotificationResponseNotifyCy3RdExcusal() {
         assertNotification("641500102", "NOTIFY_CY_3RD_EXCUSAL",
             NotifyTemplateType.EXCUSAL);
     }
@@ -687,7 +687,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_3RD_EXCUSAL_INEL() {
+    public void sendNotificationResponseNotifyCy3RdExcusalInel() {
         assertNotification("641500102", "NOTIFY_CY_3RD_EXCUSAL_INEL",
             NotifyTemplateType.EXCUSAL);
     }
@@ -700,7 +700,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_3RD_EXCUSAL_ADJ() {
+    public void sendNotificationResponseNotifyCy3RdExcusalAdj() {
         assertNotification("641500109", "NOTIFY_CY_3RD_EXCUSAL_ADJ",
             NotifyTemplateType.EXCUSAL);
     }
@@ -714,7 +714,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_3RD_EXCUSAL_ADJ_INEL() {
+    public void sendNotificationResponseNotifyCy3RdExcusalAdjInel() {
         assertNotification("641500109", "NOTIFY_CY_3RD_EXCUSAL_ADJ_INEL",
             NotifyTemplateType.EXCUSAL);
     }
@@ -726,7 +726,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql("/db/notify-scenarios.sql")
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_3RD_DECEASED() {
+    public void sendNotificationResponseNotify3RdDeceased() {
         assertNotification("641500092", "NOTIFY_3RD_EXCUSAL_DECEASED",
             NotifyTemplateType.EXCUSAL_DECEASED);
     }
@@ -739,7 +739,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     @Sql({"/db/notify-all-jurors-welsh.sql", "/db/welsh_enabled.sql"})
     @Transactional
     @Test
-    public void sendNotificationResponse_NOTIFY_CY_3RD_DECEASED() {
+    public void sendNotificationResponseNotifyCy3RdDeceased() {
         assertNotification("641500192", "NOTIFY_CY_3RD_EXCUSAL_DECEASED",
             NotifyTemplateType.EXCUSAL_DECEASED);
     }
@@ -749,8 +749,8 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
     private void assertNotification(final String jurorNumber, final String expectedTemplateKey,
                                     final NotifyTemplateType expectedType) {
 
-        final String templateUUID = jdbcTemplate.queryForObject(TEMPLATE_SQL, String.class, expectedTemplateKey);
-        assertThat(templateUUID).as("UUID value present")
+        final String templateUuid = jdbcTemplate.queryForObject(TEMPLATE_SQL, String.class, expectedTemplateKey);
+        assertThat(templateUuid).as("UUID value present")
             .isNotBlank().containsPattern(UUID_REGEX);
 
         final DigitalResponse savedResponse = loadDigitalResponse(jurorNumber);
@@ -764,7 +764,7 @@ public class JurorNotificationServiceImplIntegrationTest extends AbstractIntegra
 
         assertThat(emailNotification.getTemplateId())
             .as("Correct Notify template selected")
-            .isEqualTo(templateUUID);
+            .isEqualTo(templateUuid);
     }
 
     private DigitalResponse loadDigitalResponse(final String jurorNumber) {

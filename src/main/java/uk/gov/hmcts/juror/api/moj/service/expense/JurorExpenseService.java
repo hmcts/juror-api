@@ -72,9 +72,10 @@ public interface JurorExpenseService {
 
     void apportionSmartCard(ApportionSmartCardRequest request);
 
-    ExpenseRates getCurrentExpenseRates();
+    ExpenseRates getCurrentExpenseRates(boolean onlyFinancialLossLimit);
 
     void updateExpenseRates(ExpenseRatesDto expenseRatesDto);
 
-    CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(String jurorNumber, String poolNumber, List<LocalDate> dates);
+    CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(
+        String jurorNumber, String poolNumber, List<LocalDate> dates);
 }

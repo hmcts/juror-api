@@ -28,7 +28,7 @@ import uk.gov.hmcts.juror.api.bureau.service.ResponseNotesService;
 import uk.gov.hmcts.juror.api.bureau.service.ResponsePhoneLogService;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseUpdateServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseUpdateServiceImpl.CjsEmployment;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 
 import java.net.URI;
@@ -66,7 +66,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void jurorNoteByJurorNumber_happy() throws Exception {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner("400").build()));
 
         ResponseEntity<ResponseUpdateController.JurorNoteDto> responseEntity = template.exchange(
@@ -87,7 +87,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void jurorNoteByJurorNumber_unhappyNonExistentJuror() throws Exception {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner("400").build()));
 
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(
@@ -107,8 +107,8 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
-                .owner("400").staff(BureauJWTPayload.Staff.builder().active(1).rank(1).name(loginName)
+            BureauJwtPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
+                .owner("400").staff(BureauJwtPayload.Staff.builder().active(1).rank(1).name(loginName)
                     .courts(Collections.singletonList("123")).build()).build());
 
         // assert db state before merge.
@@ -161,9 +161,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner("400").staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(loginName + " Mc" + loginName)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(loginName + " Mc" + loginName)
                         .courts(Collections.singletonList("123")).build()).build());
 
         // assert db state before merge.
@@ -207,9 +207,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner("400").staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(loginName + " Mc" + loginName)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(loginName + " Mc" + loginName)
                         .courts(Collections.singletonList("123")).build()).build());
 
         // assert db state before merge.
@@ -254,8 +254,8 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String jurorNumber = "644892530";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
-                .owner("400").staff(BureauJWTPayload.Staff.builder().active(1).rank(1).name(loginName)
+            BureauJwtPayload.builder().userLevel("5").passwordWarning(false).login(loginName).daysToExpire(89)
+                .owner("400").staff(BureauJwtPayload.Staff.builder().active(1).rank(1).name(loginName)
                     .courts(Collections.singletonList("123")).build()).build());
 
         // assert db state before merge.
@@ -355,9 +355,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -535,9 +535,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -670,11 +670,11 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void updateJurorDetailsFirstPerson_unhappy_optimisticLocking() throws Exception {
         final String loginName = "BUREAULADY9";
         final String staffBureauLady = "Bureau Lady";
-        final String JUROR_NUMBER = "352004504";
+        final String jurorNumber = "352004504";
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt =
-            mintBureauJwt(BureauJWTPayload.builder().userLevel("1").login(loginName).daysToExpire(89).build());
+            mintBureauJwt(BureauJwtPayload.builder().userLevel("1").login(loginName).daysToExpire(89).build());
 
         // assert db state before merge.
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
@@ -701,32 +701,32 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
             0);
 
-        final String UPDATED_TITLE = "Sir";//"Rev";
-        final String UPDATED_FIRST_NAME = "James";//"Jose";
-        final String UPDATED_LAST_NAME = "Rivers";//"Rivera";
-        final String UPDATED_ADDRESS1 = "22177 Bluewing Way";//"22177 Redwing Way";
-        final String UPDATED_ADDRESS2 = "London";//"England";
+        final String updatedTitle = "Sir";//"Rev";
+        final String updatedFirstName = "James";//"Jose";
+        final String updatedLastName = "Rivers";//"Rivera";
+        final String updatedAddress1 = "22177 Bluewing Way";//"22177 Redwing Way";
+        final String updatedAddress2 = "London";//"England";
         final String updatedAddress3 = "England";//"London";
-        final String UPDATED_ADDRESS4 = "Lonely Island";//"United Kingdom";
-        final String UPDATED_ADDRESS5 = "Planet Earth";//null;
-        final String UPDATED_POSTCODE = "E17 2NY";//"EC3M 2NY";
+        final String updatedAddress4 = "Lonely Island";//"United Kingdom";
+        final String updatedAddress5 = "Planet Earth";//null;
+        final String updatedPostcode = "E17 2NY";//"EC3M 2NY";
         // Not updating DOB!
-        final String UPDATED_MAIN_PHONE = "01415555559";//"01415555557";
-        final String UPDATED_ALT_PHONE = "07415555558";//"01415555558";
-        final String UPDATED_EMAIL_ADDRESS = "james.rivers@email.com";//"jose.rivera@email.com";
-        final Integer INVALID_VERSION = -1;// stale version
+        final String updatedMainPhone = "01415555559";//"01415555557";
+        final String updatedAltPhone = "07415555558";//"01415555558";
+        final String updatedEmailAddress = "james.rivers@email.com";//"jose.rivera@email.com";
+        final Integer invalidVersion = -1;// stale version
 
         final ResponseUpdateController.FirstPersonJurorDetailsDto tpDto =
-            ResponseUpdateController.FirstPersonJurorDetailsDto.builder().title(UPDATED_TITLE)
-                .firstName(UPDATED_FIRST_NAME).lastName(UPDATED_LAST_NAME).address(UPDATED_ADDRESS1)
-                .address2(UPDATED_ADDRESS2).address3(updatedAddress3).address4(UPDATED_ADDRESS4)
-                .address5(UPDATED_ADDRESS5).postcode(UPDATED_POSTCODE).dob(LocalDate.of(1995, 8, 8))// no change!
-                .mainPhone(UPDATED_MAIN_PHONE).altPhone(UPDATED_ALT_PHONE).emailAddress(UPDATED_EMAIL_ADDRESS)
-                .notes(changeLogNotes).version(INVALID_VERSION).build();
+            ResponseUpdateController.FirstPersonJurorDetailsDto.builder().title(updatedTitle)
+                .firstName(updatedFirstName).lastName(updatedLastName).address(updatedAddress1)
+                .address2(updatedAddress2).address3(updatedAddress3).address4(updatedAddress4)
+                .address5(updatedAddress5).postcode(updatedPostcode).dob(LocalDate.of(1995, 8, 8))// no change!
+                .mainPhone(updatedMainPhone).altPhone(updatedAltPhone).emailAddress(updatedEmailAddress)
+                .notes(changeLogNotes).version(invalidVersion).build();
 
         // expecting an optimistic lock error response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        final URI uri = URI.create("/api/v1/bureau/juror/" + JUROR_NUMBER + "/details/first-person");
+        final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/first-person");
         final RequestEntity<ResponseUpdateController.FirstPersonJurorDetailsDto> requestEntity =
             new RequestEntity<>(tpDto, httpHeaders, HttpMethod.POST, uri);
         final ResponseEntity<SpringBootErrorResponse> exchange =
@@ -743,48 +743,48 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
                 jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class))
             .isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT TITLE FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'", String.class))
-            .as("Changed title column updated").isNotEqualTo(UPDATED_TITLE);
+                "SELECT TITLE FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'", String.class))
+            .as("Changed title column updated").isNotEqualTo(updatedTitle);
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT FIRST_NAME FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
-            String.class)).as("Changed first name column updated").isNotEqualTo(UPDATED_FIRST_NAME);
+            "SELECT FIRST_NAME FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
+            String.class)).as("Changed first name column updated").isNotEqualTo(updatedFirstName);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT LAST_NAME FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                "SELECT LAST_NAME FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
                 String.class))
-            .as("Changed last name column updated").isNotEqualTo(UPDATED_LAST_NAME);
+            .as("Changed last name column updated").isNotEqualTo(updatedLastName);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT address_line_1 FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                "SELECT address_line_1 FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
                 String.class))
-            .as("Changed address1 column updated").isNotEqualTo(UPDATED_ADDRESS1);
+            .as("Changed address1 column updated").isNotEqualTo(updatedAddress1);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT address_line_2 FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                "SELECT address_line_2 FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
                 String.class))
-            .as("Changed address2 column updated").isNotEqualTo(UPDATED_ADDRESS2);
+            .as("Changed address2 column updated").isNotEqualTo(updatedAddress2);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT address_line_3 FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                "SELECT address_line_3 FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
                 String.class))
             .as("Changed address3 column updated").isNotEqualTo(updatedAddress3);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT address_line_4 FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                "SELECT address_line_4 FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
                 String.class))
-            .as("Changed address4 column updated").isNotEqualTo(UPDATED_ADDRESS4);
+            .as("Changed address4 column updated").isNotEqualTo(updatedAddress4);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT address_line_5 FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                "SELECT address_line_5 FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
                 String.class))
-            .as("Changed address5 column updated").isNotEqualTo(UPDATED_ADDRESS5);
+            .as("Changed address5 column updated").isNotEqualTo(updatedAddress5);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT postcode FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                "SELECT postcode FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
                 String.class))
-            .as("Changed postcode column updated").isNotEqualTo(UPDATED_POSTCODE);
+            .as("Changed postcode column updated").isNotEqualTo(updatedPostcode);
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT PHONE_NUMBER FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
-            String.class)).as("Changed main phone column updated").isNotEqualTo(UPDATED_MAIN_PHONE);
+            "SELECT PHONE_NUMBER FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
+            String.class)).as("Changed main phone column updated").isNotEqualTo(updatedMainPhone);
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT ALT_PHONE_NUMBER FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
-            String.class)).as("Changed alt phone column updated").isNotEqualTo(UPDATED_ALT_PHONE);
+            "SELECT ALT_PHONE_NUMBER FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
+            String.class)).as("Changed alt phone column updated").isNotEqualTo(updatedAltPhone);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT EMAIL FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'", String.class))
-            .as("Changed email column updated").isNotEqualTo(UPDATED_EMAIL_ADDRESS);
+                "SELECT EMAIL FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'", String.class))
+            .as("Changed email column updated").isNotEqualTo(updatedEmailAddress);
         softly.assertAll();
     }
 
@@ -796,13 +796,13 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void updateJurorDetailsThirdParty_unhappy_optimisticLocking() throws Exception {
         final String loginName = "BUREAULADY9";
         final String staffBureauLady = "Bureau Lady";
-        final String JUROR_NUMBER = "352004504";
+        final String jurorNumber = "352004504";
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -832,31 +832,31 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final Map<String, Object> originalPool =
             jdbcTemplate.queryForMap("SELECT * FROM juror_mod.juror WHERE juror_number = '352004504'");
 
-        final boolean USE_JUROR_PHONE = true;
-        final boolean USE_JUROR_EMAIL = true;
-        final String RELATIONSHIP = "Brother";
-        final String REASON = "nothere";
+        final boolean useJurorPhone = true;
+        final boolean useJurorEmail = true;
+        final String relationship = "Brother";
+        final String reason = "nothere";
         // otherReason = null
-        final String TP_FIRST_NAME = "John";
-        final String TP_LAST_NAME = "Doe";
-        final String TP_MAIN_PHONE = "01415555555";
-        final String TP_ALT_PHONE = "01415555556";
-        final String TP_EMAIL = "john.doe@email.com";
-        final String UPDATED_TITLE = "Sir";
-        final Integer INVALID_VERSION = -1;
+        final String tpFirstName = "John";
+        final String tpLastName = "Doe";
+        final String tpMainPhone = "01415555555";
+        final String tpAltPhone = "01415555556";
+        final String tpEmail = "john.doe@email.com";
+        final String updatedTitle = "Sir";
+        final Integer invalidVersion = -1;
         final ResponseUpdateController.ThirdPartyJurorDetailsDto tpDto =
-            ResponseUpdateController.ThirdPartyJurorDetailsDto.builder().useJurorPhone(USE_JUROR_PHONE)
-                .useJurorEmail(USE_JUROR_EMAIL).relationship(RELATIONSHIP).thirdPartyReason(REASON)
-                .thirdPartyFirstName(TP_FIRST_NAME).thirdPartyLastName(TP_LAST_NAME).thirdPartyMainPhone(TP_MAIN_PHONE)
-                .thirdPartyAltPhone(TP_ALT_PHONE).thirdPartyEmail(TP_EMAIL).title(UPDATED_TITLE).firstName("Jose")
+            ResponseUpdateController.ThirdPartyJurorDetailsDto.builder().useJurorPhone(useJurorPhone)
+                .useJurorEmail(useJurorEmail).relationship(relationship).thirdPartyReason(reason)
+                .thirdPartyFirstName(tpFirstName).thirdPartyLastName(tpLastName).thirdPartyMainPhone(tpMainPhone)
+                .thirdPartyAltPhone(tpAltPhone).thirdPartyEmail(tpEmail).title(updatedTitle).firstName("Jose")
                 .lastName("Rivera").address("22177 Redwing Way").address2("England").address3("London")
                 .address4("United Kingdom").address5(null).postcode("EC3M 2NY").dob(LocalDate.of(1995, 8, 8))
                 .mainPhone("01415555557").altPhone("01415555558").emailAddress("jose.rivera@email.com")
-                .notes(changeLogNotes).version(INVALID_VERSION).build();
+                .notes(changeLogNotes).version(invalidVersion).build();
 
         // expecting an optimistic lock error response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        final URI uri = URI.create("/api/v1/bureau/juror/" + JUROR_NUMBER + "/details/third-party");
+        final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/third-party");
         final RequestEntity<ResponseUpdateController.ThirdPartyJurorDetailsDto> requestEntity =
             new RequestEntity<>(tpDto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<SpringBootErrorResponse> exchange =
@@ -901,8 +901,8 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         softly.assertThat(jdbcTemplate.queryForMap("SELECT * FROM juror_mod.juror WHERE juror_number = '352004504'"))
             .containsAllEntriesOf(originalPool);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT TITLE FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'", String.class))
-            .as("Changed title column updated").isNotEqualTo(UPDATED_TITLE);
+                "SELECT TITLE FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'", String.class))
+            .as("Changed title column updated").isNotEqualTo(updatedTitle);
         softly.assertAll();
     }
 
@@ -914,13 +914,13 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void updateDeferralExcusal_confirmation_happy() throws Exception {
         final String loginName = "BUREAULADY9";
         final String staffBureauLady = "Bureau Lady";
-        final String JUROR_NUMBER = "352004504";
+        final String jurorNumber = "352004504";
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -958,7 +958,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
 
         // expecting an accepted response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        final URI uri = URI.create("/api/v1/bureau/juror/" + JUROR_NUMBER + "/details/excusal");
+        final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/excusal");
         final RequestEntity<ResponseUpdateController.DeferralExcusalDto> requestEntity =
             new RequestEntity<>(confirmationDto, httpHeaders, HttpMethod.POST, uri);
         final ResponseEntity<Void> exchange = template.exchange(requestEntity, Void.class);
@@ -993,16 +993,16 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(1);
 
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT DEFERRAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+            "SELECT DEFERRAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             String.class)).as("Deferral reason column blanked out").isNullOrEmpty();
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT DEFERRAL_DATE FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+            "SELECT DEFERRAL_DATE FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             String.class)).as("Deferral dates column blanked out").isNullOrEmpty();
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT EXCUSAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+            "SELECT EXCUSAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             String.class)).as("Excusal reason column blanked out").isNullOrEmpty();
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
                 Integer.class))
             .as("Version has been zeroed").isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject(
@@ -1014,7 +1014,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(loginName);
         softly.assertThat(
                 jdbcTemplate.queryForObject("SELECT JUROR_NUMBER FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(JUROR_NUMBER);
+            .isEqualTo(jurorNumber);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT TYPE FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
             .isEqualTo(ChangeLogType.DEFERRAL_EXCUSAL.name());
         softly.assertThat(jdbcTemplate.queryForObject("SELECT NOTES FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
@@ -1034,13 +1034,13 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void updateDeferralExcusal_deferral_happy() throws Exception {
         final String loginName = "BUREAULADY9";
         final String staffBureauLady = "Bureau Lady";
-        final String JUROR_NUMBER = "352004504";
+        final String jurorNumber = "352004504";
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1071,17 +1071,17 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'",
             String.class)).isNull();
 
-        final String DEFERRAL_REASON = "Deferral reason text.";
-        final String DEFERRAL_DATES = "Updated dates.";
+        final String deferralReason = "Deferral reason text.";
+        final String deferralDates = "Updated dates.";
 
         final ResponseUpdateController.DeferralExcusalDto confirmationDto =
             ResponseUpdateController.DeferralExcusalDto.builder()
-                .excusal(ResponseUpdateController.DeferralExcusalUpdateType.DEFERRAL).reason(DEFERRAL_REASON)
-                .deferralDates(DEFERRAL_DATES).notes(changeLogNotes).version(0).build();
+                .excusal(ResponseUpdateController.DeferralExcusalUpdateType.DEFERRAL).reason(deferralReason)
+                .deferralDates(deferralDates).notes(changeLogNotes).version(0).build();
 
         // expecting an accepted response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        final URI uri = URI.create("/api/v1/bureau/juror/" + JUROR_NUMBER + "/details/excusal");
+        final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/excusal");
         final RequestEntity<ResponseUpdateController.DeferralExcusalDto> requestEntity =
             new RequestEntity<>(confirmationDto, httpHeaders, HttpMethod.POST, uri);
         final ResponseEntity<Void> exchange = template.exchange(requestEntity, Void.class);
@@ -1116,16 +1116,16 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(1);
 
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT DEFERRAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
-            String.class)).as("Deferral reason column updated").isEqualTo(DEFERRAL_REASON);
+            "SELECT DEFERRAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
+            String.class)).as("Deferral reason column updated").isEqualTo(deferralReason);
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT DEFERRAL_DATE FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
-            String.class)).as("Deferral dates column updated").isEqualTo(DEFERRAL_DATES);
+            "SELECT DEFERRAL_DATE FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
+            String.class)).as("Deferral dates column updated").isEqualTo(deferralDates);
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT EXCUSAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+            "SELECT EXCUSAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             String.class)).as("Excusal reason column blanked out").isNullOrEmpty();
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
                 Integer.class))
             .as("Version has been zeroed").isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject(
@@ -1137,7 +1137,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(loginName);
         softly.assertThat(
                 jdbcTemplate.queryForObject("SELECT JUROR_NUMBER FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(JUROR_NUMBER);
+            .isEqualTo(jurorNumber);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT TYPE FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
             .isEqualTo(ChangeLogType.DEFERRAL_EXCUSAL.name());
         softly.assertThat(jdbcTemplate.queryForObject("SELECT NOTES FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
@@ -1157,13 +1157,13 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void updateDeferralExcusal_excusal_happy() throws Exception {
         final String loginName = "BUREAULADY9";
         final String staffBureauLady = "Bureau Lady";
-        final String JUROR_NUMBER = "352004504";
+        final String jurorNumber = "352004504";
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1194,16 +1194,16 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'",
             String.class)).isNull();
 
-        final String EXCUSAL_REASON = "Excusal reason text.";
+        final String excusalReason = "Excusal reason text.";
 
         final ResponseUpdateController.DeferralExcusalDto confirmationDto =
             ResponseUpdateController.DeferralExcusalDto.builder()
-                .excusal(ResponseUpdateController.DeferralExcusalUpdateType.EXCUSAL).reason(EXCUSAL_REASON)
+                .excusal(ResponseUpdateController.DeferralExcusalUpdateType.EXCUSAL).reason(excusalReason)
                 .deferralDates(null).notes(changeLogNotes).version(0).build();
 
         // expecting an accepted response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        final URI uri = URI.create("/api/v1/bureau/juror/" + JUROR_NUMBER + "/details/excusal");
+        final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/excusal");
         final RequestEntity<ResponseUpdateController.DeferralExcusalDto> requestEntity =
             new RequestEntity<>(confirmationDto, httpHeaders, HttpMethod.POST, uri);
         final ResponseEntity<Void> exchange = template.exchange(requestEntity, Void.class);
@@ -1238,16 +1238,16 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(1);
 
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT DEFERRAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+            "SELECT DEFERRAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             String.class)).as("Deferral reason removed").isEqualTo(null);
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT DEFERRAL_DATE FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+            "SELECT DEFERRAL_DATE FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             String.class)).as("Deferral dates column removed").isEqualTo(null);
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT EXCUSAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
-            String.class)).as("Excusal reason column blanked out").isEqualTo(EXCUSAL_REASON);
+            "SELECT EXCUSAL_REASON FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
+            String.class)).as("Excusal reason column blanked out").isEqualTo(excusalReason);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
                 Integer.class))
             .as("Version has been zeroed").isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject(
@@ -1259,7 +1259,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(loginName);
         softly.assertThat(
                 jdbcTemplate.queryForObject("SELECT JUROR_NUMBER FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(JUROR_NUMBER);
+            .isEqualTo(jurorNumber);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT TYPE FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
             .isEqualTo(ChangeLogType.DEFERRAL_EXCUSAL.name());
         softly.assertThat(jdbcTemplate.queryForObject("SELECT NOTES FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
@@ -1279,13 +1279,13 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void updateDeferralExcusal_excusal_unhappy_optimisticLock() throws Exception {
         final String loginName = "BUREAULADY9";
         final String staffBureauLady = "Bureau Lady";
-        final String JUROR_NUMBER = "352004504";
+        final String jurorNumber = "352004504";
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1313,17 +1313,17 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
             0);
 
-        final String EXCUSAL_REASON = "Excusal reason text.";
+        final String excusalReason = "Excusal reason text.";
 
-        final Integer INVALID_VERSION = -1;
+        final Integer invalidVersion = -1;
         final ResponseUpdateController.DeferralExcusalDto confirmationDto =
             ResponseUpdateController.DeferralExcusalDto.builder()
-                .excusal(ResponseUpdateController.DeferralExcusalUpdateType.EXCUSAL).reason(EXCUSAL_REASON)
-                .deferralDates(null).notes(changeLogNotes).version(INVALID_VERSION).build();
+                .excusal(ResponseUpdateController.DeferralExcusalUpdateType.EXCUSAL).reason(excusalReason)
+                .deferralDates(null).notes(changeLogNotes).version(invalidVersion).build();
 
         // expecting a conflict response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        final URI uri = URI.create("/api/v1/bureau/juror/" + JUROR_NUMBER + "/details/excusal");
+        final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/excusal");
         final RequestEntity<ResponseUpdateController.DeferralExcusalDto> requestEntity =
             new RequestEntity<>(confirmationDto, httpHeaders, HttpMethod.POST, uri);
         final ResponseEntity<SpringBootErrorResponse> exchange =
@@ -1378,9 +1378,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1504,13 +1504,13 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void updateSpecialNeeds_unhappy_optimisticLock() throws Exception {
         final String loginName = "BUREAULADY9";
         final String staffBureauLady = "Bureau Lady";
-        final String JUROR_NUMBER = "352004504";
+        final String jurorNumber = "352004504";
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1554,7 +1554,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
 
         // expecting an conflict response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        final URI uri = URI.create("/api/v1/bureau/juror/" + JUROR_NUMBER + "/details/special-needs");
+        final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/special-needs");
         final RequestEntity<ResponseUpdateController.ReasonableAdjustmentsDto> requestEntity =
             new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<SpringBootErrorResponse> exchange =
@@ -1602,9 +1602,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1637,20 +1637,20 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'",
             String.class)).isNull();
 
-        final Boolean RESIDENCY = false;
-        final String RESIDENCY_DETAIL = "I lived in an airship until last year";
-        final Boolean MENTAL_HEALTH_ACT = true;
-        final String MENTAL_HEALTH_ACT_DETAILS = "I have altitude-induced insanity";
-        final Boolean BAIL = true;
-        final String BAIL_DETAILS = "I am on bail";
-        final Boolean CONVICTIONS = true;
-        final String CONVICTIONS_DETAILS = "I was convicted for a total misunderstanding no big deal";
+        final Boolean residency = false;
+        final String residencyDetail = "I lived in an airship until last year";
+        final Boolean mentalHealthAct = true;
+        final String mentalHealthActDetails = "I have altitude-induced insanity";
+        final Boolean bail = true;
+        final String bailDetails = "I am on bail";
+        final Boolean convictions = true;
+        final String convictionsDetails = "I was convicted for a total misunderstanding no big deal";
 
         final ResponseUpdateController.JurorEligibilityDto dto =
             ResponseUpdateController.JurorEligibilityDto.builder().version(0).notes(changeLogNotes)
-                .residency(RESIDENCY).residencyDetails(RESIDENCY_DETAIL).mentalHealthAct(MENTAL_HEALTH_ACT)
-                .mentalHealthActDetails(MENTAL_HEALTH_ACT_DETAILS).bail(BAIL).bailDetails(BAIL_DETAILS)
-                .convictions(CONVICTIONS).convictionsDetails(CONVICTIONS_DETAILS).build();
+                .residency(residency).residencyDetails(residencyDetail).mentalHealthAct(mentalHealthAct)
+                .mentalHealthActDetails(mentalHealthActDetails).bail(bail).bailDetails(bailDetails)
+                .convictions(convictions).convictionsDetails(convictionsDetails).build();
 
         // expecting an accepted response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1702,26 +1702,26 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .as("Residency column should be updated").isEqualTo(false);
         softly.assertThat(jdbcTemplate.queryForObject(
             "SELECT RESIDENCY_DETAIL FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-            String.class)).as("Residency detail column should be updated").isEqualTo(RESIDENCY_DETAIL);
+            String.class)).as("Residency detail column should be updated").isEqualTo(residencyDetail);
         softly.assertThat(jdbcTemplate.queryForObject(
             "SELECT MENTAL_HEALTH_ACT FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             Boolean.class)).as("Mental health act column should updated").isEqualTo(true);
         softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT MENTAL_HEALTH_ACT_DETAILS FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber
                     + "'", String.class)).as("Mental health act details column should updated")
-            .isEqualTo(MENTAL_HEALTH_ACT_DETAILS);
+            .isEqualTo(mentalHealthActDetails);
         softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT BAIL FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'", Boolean.class))
             .as("Bail column should be updated").isEqualTo(true);
         softly.assertThat(jdbcTemplate.queryForObject(
             "SELECT BAIL_DETAILS FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-            String.class)).as("Bail details column should be updated").isEqualTo(BAIL_DETAILS);
+            String.class)).as("Bail details column should be updated").isEqualTo(bailDetails);
         softly.assertThat(jdbcTemplate.queryForObject(
             "SELECT CONVICTIONS FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             Boolean.class)).as("Convictions column should be updated").isEqualTo(true);
         softly.assertThat(jdbcTemplate.queryForObject(
             "SELECT CONVICTIONS_DETAILS FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
-            String.class)).as("Convictions details column should be updated").isEqualTo(CONVICTIONS_DETAILS);
+            String.class)).as("Convictions details column should be updated").isEqualTo(convictionsDetails);
         softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
                 Integer.class))
@@ -1752,13 +1752,13 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void updateJurorEligibility_unhappy_optimisticLocking() throws Exception {
         final String loginName = "BUREAULADY9";
         final String staffBureauLady = "Bureau Lady";
-        final String JUROR_NUMBER = "352004504";
+        final String jurorNumber = "352004504";
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1788,26 +1788,26 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final Map<String, Object> originalPool =
             jdbcTemplate.queryForMap("SELECT * FROM juror_mod.juror WHERE juror_number = '352004504'");
 
-        final Boolean RESIDENCY = false;
-        final String RESIDENCY_DETAIL = "I lived in an airship until last year";
-        final Boolean MENTAL_HEALTH_ACT = true;
-        final String MENTAL_HEALTH_ACT_DETAILS = "I have altitude-induced insanity";
-        final Boolean BAIL = true;
-        final String BAIL_DETAILS = "I am on bail";
-        final Boolean CONVICTIONS = true;
-        final String CONVICTIONS_DETAILS = "I was convicted for a total misunderstanding no big deal";
+        final Boolean residency = false;
+        final String residencyDetail = "I lived in an airship until last year";
+        final Boolean mentalHealthAct = true;
+        final String mentalHealthActDetails = "I have altitude-induced insanity";
+        final Boolean bail = true;
+        final String bailDetails = "I am on bail";
+        final Boolean convictions = true;
+        final String convictionsDetails = "I was convicted for a total misunderstanding no big deal";
 
-        final int INVALID_VERSION = -1;
+        final int invalidVersion = -1;
 
         final ResponseUpdateController.JurorEligibilityDto dto =
-            ResponseUpdateController.JurorEligibilityDto.builder().version(INVALID_VERSION).notes(changeLogNotes)
-                .residency(RESIDENCY).residencyDetails(RESIDENCY_DETAIL).mentalHealthAct(MENTAL_HEALTH_ACT)
-                .mentalHealthActDetails(MENTAL_HEALTH_ACT_DETAILS).bail(BAIL).bailDetails(BAIL_DETAILS)
-                .convictions(CONVICTIONS).convictionsDetails(CONVICTIONS_DETAILS).build();
+            ResponseUpdateController.JurorEligibilityDto.builder().version(invalidVersion).notes(changeLogNotes)
+                .residency(residency).residencyDetails(residencyDetail).mentalHealthAct(mentalHealthAct)
+                .mentalHealthActDetails(mentalHealthActDetails).bail(bail).bailDetails(bailDetails)
+                .convictions(convictions).convictionsDetails(convictionsDetails).build();
 
         // expecting an optimistic lock error response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        final URI uri = URI.create("/api/v1/bureau/juror/" + JUROR_NUMBER + "/details/eligibility");
+        final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/eligibility");
         final RequestEntity<ResponseUpdateController.JurorEligibilityDto> requestEntity =
             new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<SpringBootErrorResponse> exchange =
@@ -1851,29 +1851,29 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .containsAllEntriesOf(originalPool);
 
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT RESIDENCY FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                "SELECT RESIDENCY FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
                 Boolean.class))
             .as("Residency column should not be updated").isEqualTo(true);
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT RESIDENCY_DETAIL FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+            "SELECT RESIDENCY_DETAIL FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             String.class)).as("Residency detail column should not be updated").isEqualTo(null);
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT MENTAL_HEALTH_ACT FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+            "SELECT MENTAL_HEALTH_ACT FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             Boolean.class)).as("Mental health act column should not updated").isEqualTo(false);
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT MENTAL_HEALTH_ACT_DETAILS FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER
+            "SELECT MENTAL_HEALTH_ACT_DETAILS FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber
                 + "'", String.class)).as("Mental health act details column should not updated").isEqualTo(null);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT BAIL FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'", Boolean.class))
+                "SELECT BAIL FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'", Boolean.class))
             .as("Bail column should not be updated").isEqualTo(false);
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT BAIL_DETAILS FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+            "SELECT BAIL_DETAILS FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             String.class)).as("Bail details column should not be updated").isEqualTo(null);
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT CONVICTIONS FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+            "SELECT CONVICTIONS FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             Boolean.class)).as("Convictions column should not be updated").isEqualTo(false);
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT CONVICTIONS_DETAILS FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+            "SELECT CONVICTIONS_DETAILS FROM juror_mod.juror_response WHERE JUROR_NUMBER = '" + jurorNumber + "'",
             String.class)).as("Convictions details column should not be updated").isEqualTo(null);
 
         // assert changelog
@@ -1893,13 +1893,13 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void updateCjsEmployment_happy_updateAll() throws Exception {
         final String loginName = "BUREAULADY9";
         final String staffBureauLady = "Bureau Lady";
-        final String JUROR_NUMBER = "352004504";
+        final String jurorNumber = "352004504";
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -1930,23 +1930,23 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'",
             String.class)).isNull();
 
-        final String POLICE_DETAILS = "I worked for the police";
-        final String PRISON_DETAILS = "I worked in a prison";
-        final Boolean NCA_EMPLOYMENT = true;
-        final Boolean JUDICIARY_EMPLOYMENT = true;
-        final Boolean HMCTS_EMPLOYMENT = true;
-        final String OTHER_DETAILS = "I wear a fake sheriffs badge on the weekends and hassle loiterers by the KFC";
+        final String policeDetails = "I worked for the police";
+        final String prisonDetails = "I worked in a prison";
+        final Boolean ncaEmployment = true;
+        final Boolean judiciaryEmployment = true;
+        final Boolean hmctsEmployment = true;
+        final String otherDetails = "I wear a fake sheriffs badge on the weekends and hassle loiterers by the KFC";
 
-        final ResponseUpdateController.CJSEmploymentDetailsDto dto =
-            ResponseUpdateController.CJSEmploymentDetailsDto.builder().policeForceDetails(POLICE_DETAILS)
-                .prisonServiceDetails(PRISON_DETAILS).ncaEmployment(NCA_EMPLOYMENT)
-                .judiciaryEmployment(JUDICIARY_EMPLOYMENT).hmctsEmployment(HMCTS_EMPLOYMENT).otherDetails(OTHER_DETAILS)
-                .jurorNumber(JUROR_NUMBER).notes(changeLogNotes).version(0).build();
+        final ResponseUpdateController.CjsEmploymentDetailsDto dto =
+            ResponseUpdateController.CjsEmploymentDetailsDto.builder().policeForceDetails(policeDetails)
+                .prisonServiceDetails(prisonDetails).ncaEmployment(ncaEmployment)
+                .judiciaryEmployment(judiciaryEmployment).hmctsEmployment(hmctsEmployment).otherDetails(otherDetails)
+                .jurorNumber(jurorNumber).notes(changeLogNotes).version(0).build();
 
         // expecting an accepted response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        final URI uri = URI.create("/api/v1/bureau/juror/" + JUROR_NUMBER + "/details/cjs");
-        final RequestEntity<ResponseUpdateController.CJSEmploymentDetailsDto> requestEntity =
+        final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/cjs");
+        final RequestEntity<ResponseUpdateController.CjsEmploymentDetailsDto> requestEntity =
             new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<Void> exchange = template.exchange(requestEntity, Void.class);
 
@@ -1982,31 +1982,31 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         //updated fields
         softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT CJS_EMPLOYER_DETAILS FROM juror_mod.juror_response_CJS_EMPLOYMENT"
-                    + " WHERE CJS_EMPLOYER = 'Police Force' AND JUROR_NUMBER = '" + JUROR_NUMBER + "'", String.class))
-            .as("Police employer details should be updated").isEqualTo(POLICE_DETAILS);
+                    + " WHERE CJS_EMPLOYER = 'Police Force' AND JUROR_NUMBER = '" + jurorNumber + "'", String.class))
+            .as("Police employer details should be updated").isEqualTo(policeDetails);
         softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT CJS_EMPLOYER_DETAILS FROM juror_mod.juror_response_CJS_EMPLOYMENT"
-                    + " WHERE CJS_EMPLOYER = 'HM Prison Service' AND JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                    + " WHERE CJS_EMPLOYER = 'HM Prison Service' AND JUROR_NUMBER = '" + jurorNumber + "'",
                 String.class))
-            .as("Prison service details should be added").isEqualTo(PRISON_DETAILS);
+            .as("Prison service details should be added").isEqualTo(prisonDetails);
         softly.assertThat(jdbcTemplate.queryForObject(
             "SELECT CJS_EMPLOYER_DETAILS FROM juror_mod.juror_response_CJS_EMPLOYMENT"
-                + " WHERE CJS_EMPLOYER = 'National Crime Agency' AND JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                + " WHERE CJS_EMPLOYER = 'National Crime Agency' AND JUROR_NUMBER = '" + jurorNumber + "'",
             String.class)).as("NCA details should be added").isEqualTo(CjsEmployment.NCA.getDescription());
 
         softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT CJS_EMPLOYER_DETAILS FROM juror_mod.juror_response_CJS_EMPLOYMENT"
-                    + " WHERE CJS_EMPLOYER = 'Judiciary' AND JUROR_NUMBER = '" + JUROR_NUMBER + "'", String.class))
+                    + " WHERE CJS_EMPLOYER = 'Judiciary' AND JUROR_NUMBER = '" + jurorNumber + "'", String.class))
             .as("Judiciary details should be added").isEqualTo(CjsEmployment.JUDICIARY.getDescription());
         softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT CJS_EMPLOYER_DETAILS FROM juror_mod.juror_response_CJS_EMPLOYMENT"
-                    + " WHERE CJS_EMPLOYER = 'HMCTS' AND JUROR_NUMBER = '" + JUROR_NUMBER + "'", String.class))
+                    + " WHERE CJS_EMPLOYER = 'HMCTS' AND JUROR_NUMBER = '" + jurorNumber + "'", String.class))
             .as("HMCTS details should be added").isEqualTo(CjsEmployment.HMCTS.getDescription());
 
         softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT CJS_EMPLOYER_DETAILS FROM juror_mod.juror_response_CJS_EMPLOYMENT"
-                    + " WHERE CJS_EMPLOYER = 'Other' AND JUROR_NUMBER = '" + JUROR_NUMBER + "'", String.class))
-            .as("Other CJS employer details should be added").isEqualTo(OTHER_DETAILS);
+                    + " WHERE CJS_EMPLOYER = 'Other' AND JUROR_NUMBER = '" + jurorNumber + "'", String.class))
+            .as("Other CJS employer details should be added").isEqualTo(otherDetails);
         softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE JUROR_NUMBER = '352004504'", String.class))
             .isEqualTo(loginName);
@@ -2016,7 +2016,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(loginName);
         softly.assertThat(
                 jdbcTemplate.queryForObject("SELECT JUROR_NUMBER FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(JUROR_NUMBER);
+            .isEqualTo(jurorNumber);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT TYPE FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
             .isEqualTo(ChangeLogType.CJS_EMPLOYMENTS.name());
         softly.assertThat(jdbcTemplate.queryForObject("SELECT NOTES FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
@@ -2026,7 +2026,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             "SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM WHERE CHANGE_LOG_ITEM.CHANGE_LOG = " + changeLogId,
             Integer.class)).as("Correct number of change log items were created").isEqualTo(6);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
                 Integer.class))
             .as("Version has been zeroed").isEqualTo(0);
         softly.assertAll();
@@ -2044,9 +2044,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -2081,8 +2081,8 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final Boolean hmctsEmployment = false;
         final String otherDetails = "I wear a fake sheriffs badge on the weekends and hassle loiterers by the KFC";
 
-        final ResponseUpdateController.CJSEmploymentDetailsDto dto =
-            ResponseUpdateController.CJSEmploymentDetailsDto.builder().policeForceDetails(policeDetails)
+        final ResponseUpdateController.CjsEmploymentDetailsDto dto =
+            ResponseUpdateController.CjsEmploymentDetailsDto.builder().policeForceDetails(policeDetails)
                 .prisonServiceDetails(prisonDetails).ncaEmployment(ncaEmployment)
                 .judiciaryEmployment(judiciaryEmployment).hmctsEmployment(hmctsEmployment).otherDetails(otherDetails)
                 .jurorNumber(jurorNumber).notes(changeLogNotes).version(0).build();
@@ -2090,7 +2090,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         // expecting an accepted response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/cjs");
-        final RequestEntity<ResponseUpdateController.CJSEmploymentDetailsDto> requestEntity =
+        final RequestEntity<ResponseUpdateController.CjsEmploymentDetailsDto> requestEntity =
             new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<Void> exchange = template.exchange(requestEntity, Void.class);
 
@@ -2171,13 +2171,13 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     public void updateCjsEmployment_happy_removeAllWithNull() throws Exception {
         final String loginName = "BUREAULADY9";
         final String staffBureauLady = "Bureau Lady";
-        final String JUROR_NUMBER = "352004504";
+        final String jurorNumber = "352004504";
         final String changeLogNotes = "Some change log notes.";
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -2205,23 +2205,23 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
             0);
 
-        final String POLICE_DETAILS = null;
-        final String PRISON_DETAILS = null;
-        final Boolean NCA_EMPLOYMENT = null; // NCA has different logic to others, RE: null, as it's a boolean
-        final Boolean JUDICIARY_EMPLOYMENT = false;
-        final Boolean HMCTS_EMPLOYMENT = false;
-        final String OTHER_DETAILS = null;
+        final String policeDetails = null;
+        final String prisonDetails = null;
+        final Boolean ncaEmployment = null; // NCA has different logic to others, RE: null, as it's a boolean
+        final Boolean judiciaryEmployment = false;
+        final Boolean hmctsEmployment = false;
+        final String otherDetails = null;
 
-        final ResponseUpdateController.CJSEmploymentDetailsDto dto =
-            ResponseUpdateController.CJSEmploymentDetailsDto.builder().policeForceDetails(POLICE_DETAILS)
-                .prisonServiceDetails(PRISON_DETAILS).ncaEmployment(NCA_EMPLOYMENT)
-                .judiciaryEmployment(JUDICIARY_EMPLOYMENT).hmctsEmployment(HMCTS_EMPLOYMENT).otherDetails(OTHER_DETAILS)
-                .jurorNumber(JUROR_NUMBER).notes(changeLogNotes).version(0).build();
+        final ResponseUpdateController.CjsEmploymentDetailsDto dto =
+            ResponseUpdateController.CjsEmploymentDetailsDto.builder().policeForceDetails(policeDetails)
+                .prisonServiceDetails(prisonDetails).ncaEmployment(ncaEmployment)
+                .judiciaryEmployment(judiciaryEmployment).hmctsEmployment(hmctsEmployment).otherDetails(otherDetails)
+                .jurorNumber(jurorNumber).notes(changeLogNotes).version(0).build();
 
         // expecting an accepted response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        final URI uri = URI.create("/api/v1/bureau/juror/" + JUROR_NUMBER + "/details/cjs");
-        final RequestEntity<ResponseUpdateController.CJSEmploymentDetailsDto> requestEntity =
+        final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/cjs");
+        final RequestEntity<ResponseUpdateController.CjsEmploymentDetailsDto> requestEntity =
             new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<Void> exchange = template.exchange(requestEntity, Void.class);
 
@@ -2256,17 +2256,17 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
 
         //updated fields
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT"
-                + " WHERE CJS_EMPLOYER = 'Police Force' AND JUROR_NUMBER = '" + JUROR_NUMBER + "'", Integer.class))
+                + " WHERE CJS_EMPLOYER = 'Police Force' AND JUROR_NUMBER = '" + jurorNumber + "'", Integer.class))
             .as("Police employer details should be removed").isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT"
-                + " WHERE CJS_EMPLOYER = 'HM Prison Service' AND JUROR_NUMBER = '" + JUROR_NUMBER + "'", Integer.class))
+                + " WHERE CJS_EMPLOYER = 'HM Prison Service' AND JUROR_NUMBER = '" + jurorNumber + "'", Integer.class))
             .as("Prison service employer details should be removed").isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT"
-                    + " WHERE CJS_EMPLOYER = 'National Crime Agency' AND JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                    + " WHERE CJS_EMPLOYER = 'National Crime Agency' AND JUROR_NUMBER = '" + jurorNumber + "'",
                 Integer.class))
             .as("NCA details should be updated").isEqualTo(0);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT"
-                + " WHERE CJS_EMPLOYER = 'Other' AND JUROR_NUMBER = '" + JUROR_NUMBER + "'", Integer.class))
+                + " WHERE CJS_EMPLOYER = 'Other' AND JUROR_NUMBER = '" + jurorNumber + "'", Integer.class))
             .as("Other CJS employer details should be updated").isEqualTo(0);
 
         // assert changelog
@@ -2274,7 +2274,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             .isEqualTo(loginName);
         softly.assertThat(
                 jdbcTemplate.queryForObject("SELECT JUROR_NUMBER FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
-            .isEqualTo(JUROR_NUMBER);
+            .isEqualTo(jurorNumber);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT TYPE FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
             .isEqualTo(ChangeLogType.CJS_EMPLOYMENTS.name());
         softly.assertThat(jdbcTemplate.queryForObject("SELECT NOTES FROM JUROR_DIGITAL.CHANGE_LOG", String.class))
@@ -2287,7 +2287,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
                 jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class))
             .as("Correct TOTAL number of change log items were created").isEqualTo(2);
         softly.assertThat(jdbcTemplate.queryForObject(
-                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + JUROR_NUMBER + "'",
+                "SELECT VERSION FROM JUROR_DIGITAL.CHANGE_LOG WHERE JUROR_NUMBER = '" + jurorNumber + "'",
                 Integer.class))
             .as("Version has been zeroed").isEqualTo(0);
         softly.assertAll();
@@ -2306,9 +2306,9 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final Integer invalidVersion = -1;
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("1").passwordWarning(false).login(loginName).daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).staff(
-                    BureauJWTPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
+                    BureauJwtPayload.Staff.builder().active(1).rank(1).name(staffBureauLady)
                         .courts(Collections.singletonList("448")).build()).build());
 
         // assert db state before merge.
@@ -2336,23 +2336,23 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR_DIGITAL.CHANGE_LOG_ITEM", Integer.class)).isEqualTo(
             0);
 
-        final String POLICE_DETAILS = "I worked for the police";
-        final String PRISON_DETAILS = "I worked in a prison";
-        final Boolean NCA_EMPLOYMENT = true;
-        final Boolean JUDICIARY_EMPLOYMENT = true;
-        final Boolean HMCTS_EMPLOYMENT = true;
-        final String OTHER_DETAILS = "I wear a fake sheriffs badge on the weekends and hassle loiterers by the KFC";
+        final String policeDetails = "I worked for the police";
+        final String prisonDetails = "I worked in a prison";
+        final Boolean ncaEmployment = true;
+        final Boolean judiciaryEmployment = true;
+        final Boolean hmctsEmployment = true;
+        final String otherDetails = "I wear a fake sheriffs badge on the weekends and hassle loiterers by the KFC";
 
-        final ResponseUpdateController.CJSEmploymentDetailsDto dto =
-            ResponseUpdateController.CJSEmploymentDetailsDto.builder().policeForceDetails(POLICE_DETAILS)
-                .prisonServiceDetails(PRISON_DETAILS).ncaEmployment(NCA_EMPLOYMENT)
-                .judiciaryEmployment(JUDICIARY_EMPLOYMENT).hmctsEmployment(HMCTS_EMPLOYMENT).otherDetails(OTHER_DETAILS)
+        final ResponseUpdateController.CjsEmploymentDetailsDto dto =
+            ResponseUpdateController.CjsEmploymentDetailsDto.builder().policeForceDetails(policeDetails)
+                .prisonServiceDetails(prisonDetails).ncaEmployment(ncaEmployment)
+                .judiciaryEmployment(judiciaryEmployment).hmctsEmployment(hmctsEmployment).otherDetails(otherDetails)
                 .jurorNumber(jurorNumber).notes(changeLogNotes).version(invalidVersion).build();
 
         // expecting a conflict response
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         final URI uri = URI.create("/api/v1/bureau/juror/" + jurorNumber + "/details/cjs");
-        final RequestEntity<ResponseUpdateController.CJSEmploymentDetailsDto> requestEntity =
+        final RequestEntity<ResponseUpdateController.CjsEmploymentDetailsDto> requestEntity =
             new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<SpringBootErrorResponse> exchange =
             template.exchange(requestEntity, SpringBootErrorResponse.class);
@@ -2395,7 +2395,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         softly.assertThat(jdbcTemplate.queryForObject(
                 "SELECT CJS_EMPLOYER_DETAILS FROM juror_mod.juror_response_CJS_EMPLOYMENT"
                     + " WHERE CJS_EMPLOYER = 'Police Force' AND JUROR_NUMBER = '" + jurorNumber + "'", String.class))
-            .as("Police employer details should not be updated").isNotEqualTo(POLICE_DETAILS);
+            .as("Police employer details should not be updated").isNotEqualTo(policeDetails);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_response_CJS_EMPLOYMENT"
                 + " WHERE CJS_EMPLOYER = 'HM Prison Service' AND JUROR_NUMBER = '" + jurorNumber + "'", Integer.class))
             .as("Prison service details should not be added").isEqualTo(0);
@@ -2422,7 +2422,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/juror/644892530/response/status");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("testlogin").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("testlogin").daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).build());
 
         // assert db state before merge.
@@ -2433,7 +2433,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response_AUD", Integer.class)).isEqualTo(
             0);
         // assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_history", Integer.class))
-// .isEqualTo(1);
+        // .isEqualTo(1);
 
 
         final BureauResponseStatusUpdateDto dto =
@@ -2484,7 +2484,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/juror/644892530/response/status");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJWTPayload.builder().userLevel("99").passwordWarning(false).login("testlogin").daysToExpire(89)
+            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("testlogin").daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER).build());
 
         // assert db state before merge.

@@ -10,7 +10,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffAssignmentResponse
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 
@@ -91,7 +90,8 @@ public interface UserService {
      * @param reassignResponsesDto Reassignment request payload.
      * @param auditorUsername      The user carrying out this operation.
      * @throws uk.gov.hmcts.juror.api.bureau.exception.ReassignException.StaffMemberNotFound Failed to assign
-     * responses to specified staff member.
+     *                                                                                       responses to specified
+     *                                                                                       staff member.
      */
     void reassignResponses(String auditorUsername, ReassignResponsesDto reassignResponsesDto);
 }

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.juror.api.config.public_;
+package uk.gov.hmcts.juror.api.config.public1;
 
 
 import lombok.extern.slf4j.Slf4j;

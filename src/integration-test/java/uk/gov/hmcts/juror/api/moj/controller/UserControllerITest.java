@@ -656,7 +656,6 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .jwt(createBureauJwt("test_admin_standard", "400",
                         UserType.ADMINISTRATOR, Set.of(), "400"))
                     .triggerValid()
-                    .printResponse()
                     .assertEquals(PaginatedList.builder()
                         .currentPage(1L)
                         .totalPages(5L)

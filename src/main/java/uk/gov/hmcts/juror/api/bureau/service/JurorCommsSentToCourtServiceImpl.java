@@ -74,14 +74,16 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
             try {
                 //Email
                 if (jurorDetail.getJuror().getEmail() != null && !notificationsSent.equals(EMAIL_NOTIFICATION_SENT)) {
-                    jurorCommsNotificationService.sendJurorComms(jurorDetail, JurorCommsNotifyTemplateType.SENT_TO_COURT,
+                    jurorCommsNotificationService.sendJurorComms(jurorDetail,
+                        JurorCommsNotifyTemplateType.SENT_TO_COURT,
                         null, null, false
                     );
                     notificationsSent = EMAIL_NOTIFICATION_SENT;
                 }
 
                 //Send SMS only if there has not been an email sent
-                if (jurorDetail.getJuror().getAltPhoneNumber() != null && !notificationsSent.equals(EMAIL_NOTIFICATION_SENT)
+                if (jurorDetail.getJuror().getAltPhoneNumber() != null && !notificationsSent.equals(
+                    EMAIL_NOTIFICATION_SENT)
                     && appSetting.getSendEmailOrSms() == SEND_EMAIL_OR_SMS) {
 
 
@@ -95,7 +97,8 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
                 }
 
                 // Send SMS
-                if (jurorDetail.getJuror().getAltPhoneNumber() != null && appSetting.getSendEmailOrSms() != SEND_EMAIL_OR_SMS) {
+                if (jurorDetail.getJuror().getAltPhoneNumber() != null
+                    && appSetting.getSendEmailOrSms() != SEND_EMAIL_OR_SMS) {
 
 
                     jurorCommsNotificationService.sendJurorCommsSms(
@@ -131,9 +134,8 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
         log.info("Sent To Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
     }
 
-    /***
+    /**
      * Updates juror notification.
-     * @param jurorDetails
      */
     private void update(JurorPool jurorDetails) {
         try {
@@ -142,10 +144,11 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
             log.trace("Updating Juror notification as sent ({})... ", jurorDetails.getJuror().getNotifications());
         } catch (TransactionSystemException e) {
             Throwable cause = e.getRootCause();
-          // if (poolDetails.getNotifications().equals(EMAIL_NOTIFICATION_SENT)) {
-            if (jurorDetails.getJuror().getNotifications()==(EMAIL_NOTIFICATION_SENT)) {
+            // if (poolDetails.getNotifications().equals(EMAIL_NOTIFICATION_SENT)) {
+            if (jurorDetails.getJuror().getNotifications() == (EMAIL_NOTIFICATION_SENT)) {
                 log.trace("notifications is : {} - logging error", jurorDetails.getJuror().getNotifications());
-                log.error("Failed to update db to {}. Manual update required. {}", jurorDetails.getJuror().getNotifications(),
+                log.error("Failed to update db to {}. Manual update required. {}",
+                    jurorDetails.getJuror().getNotifications(),
                     cause.toString()
                 );
             } else {

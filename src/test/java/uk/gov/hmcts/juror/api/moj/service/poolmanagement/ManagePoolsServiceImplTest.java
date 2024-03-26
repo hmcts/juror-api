@@ -10,7 +10,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
@@ -56,7 +56,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
     @Before
     public void setupMocks() {
         final String partialPoolNumber = "4152306";
-        BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         List<Tuple> results = getStatisticsByCourtLocationAndPoolTypeResults(8, partialPoolNumber);
         List<Tuple> nilPoolResults = getNilPools();
 
@@ -76,7 +76,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
         doReturn(createActivePools()).when(poolRequestRepository).findActivePoolsForDateRange(any(), any(), any(),
             any());
 
-        BureauJWTPayload payload = TestUtils.createJwt("404", "COURT_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("404", "COURT_USER", "99");
         AvailablePoolsInCourtLocationDto availablePools = managePoolsService.findAvailablePools("404", payload);
 
         assertThat(availablePools.getAvailablePools()).hasSize(1);
@@ -92,7 +92,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
     public void findAvailablePools_courtUser_noCourtsFoundForOwner() {
         doReturn(new ArrayList<>()).when(courtLocationRepository).findByOwner(any());
 
-        BureauJWTPayload payload = TestUtils.createJwt("404", "COURT_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("404", "COURT_USER", "99");
         AvailablePoolsInCourtLocationDto availablePools = new AvailablePoolsInCourtLocationDto();
 
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(
@@ -105,7 +105,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
     public void findAvailablePools_courtUser_noCourtsFoundForLocCode() {
         doReturn(createCourtLocations()).when(courtLocationRepository).findByOwner(any());
 
-        BureauJWTPayload payload = TestUtils.createJwt("404", "COURT_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("404", "COURT_USER", "99");
         AvailablePoolsInCourtLocationDto availablePools = new AvailablePoolsInCourtLocationDto();
 
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(
@@ -119,7 +119,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
         doReturn(createCourtLocations()).when(courtLocationRepository).findByOwner(any());
         doReturn(new ArrayList<>()).when(poolRequestRepository).findActivePoolsForDateRange(any(), any(), any(), any());
 
-        BureauJWTPayload payload = TestUtils.createJwt("404", "COURT_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("404", "COURT_USER", "99");
         AvailablePoolsInCourtLocationDto availablePools = managePoolsService.findAvailablePools("404", payload);
 
         assertThat(availablePools.getAvailablePools()).isEmpty();
@@ -178,7 +178,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
 
     @Test
     public void test_getPoolMonitoringStats_validateGetStatisticsByCourtLocationAndPoolType() {
-        BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         List<Tuple> poolStatistics = poolStatisticsRepository
             .getStatisticsByCourtLocationAndPoolType(bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE,
                 NUMBER_OF_WEEKS);
@@ -206,7 +206,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
 
     @Test
     public void test_getPoolMonitoringStats_nilPool() {
-        BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         List<Tuple> poolStatistics = poolStatisticsRepository
             .getNilPools(bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
         assertThat(poolStatistics.size()).as("Expected list size of two").isEqualTo(2);
@@ -230,7 +230,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
 
     @Test
     public void test_getPoolMonitoringStats_happyPath() {
-        BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         SummoningProgressResponseDto dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
 
@@ -266,14 +266,14 @@ public class ManagePoolsServiceImplTest extends TestCase {
 
     @Test
     public void test_getPoolMonitoringStats_unhappyPath() {
-        BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> managePoolsService.getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, "HGH"));
     }
 
     @Test
     public void test_getPoolMonitoringStats_serviceStartDateBeforeCurrentWeek() {
-        BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         doReturn(getStatisticsBeforeCurrentWeek()).when(poolStatisticsRepository)
             .getStatisticsByCourtLocationAndPoolType(
                 bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
@@ -287,7 +287,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
 
     @Test
     public void test_getPoolMonitoringStats_serviceStartDateAfterCurrentWeek() {
-        BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         doReturn(getStatisticsAfterCurrentWeek()).when(poolStatisticsRepository)
             .getStatisticsByCourtLocationAndPoolType(
                 bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
@@ -302,7 +302,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
 
     @Test
     public void test_getPoolMonitoringStats_nilPoolServiceStartDateAfterCurrentWeek() {
-        BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         doReturn(null).when(poolStatisticsRepository).getStatisticsByCourtLocationAndPoolType(
             bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
         doReturn(getNilPoolAfterCurrentWeek()).when(poolStatisticsRepository).getNilPools(
@@ -317,7 +317,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
 
     @Test
     public void test_getPoolMonitoringStats_nilPoolsOnly() {
-        BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         doReturn(null).when(poolStatisticsRepository).getStatisticsByCourtLocationAndPoolType(
             bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, NUMBER_OF_WEEKS);
         SummoningProgressResponseDto dto = managePoolsService

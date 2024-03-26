@@ -394,21 +394,13 @@ public class BureauJurorDetail implements Serializable {
     @Transient
     private Boolean assignmentAllowed = Boolean.FALSE;
 
-    /**
-     * @see PhoneLog
-     */
     @OneToMany(mappedBy = "jurorNumber")
     private List<PhoneLog> phoneLogs = new ArrayList<>();
 
-    /**
-     * @see BureauJurorCJS
-     */
     @OneToMany(mappedBy = "jurorNumber")
-    private List<BureauJurorCJS> cjsEmployments = new ArrayList<>();
+    private List<BureauJurorCjs> cjsEmployments = new ArrayList<>();
 
-    /**
-     * @see BureauJurorSpecialNeed
-     */
+
     @OneToMany(mappedBy = "jurorNumber")
     private List<BureauJurorSpecialNeed> specialNeeds = new ArrayList<>();
 

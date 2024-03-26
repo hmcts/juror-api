@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.AdditionalInformationDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -42,7 +42,7 @@ public class RequestInformationLetterServiceImpl implements RequestInformationLe
 
     @Override
     @Transactional
-    public void requestInformation(BureauJWTPayload payload, AdditionalInformationDto additionalInformationDto) {
+    public void requestInformation(BureauJwtPayload payload, AdditionalInformationDto additionalInformationDto) {
 
         final String jurorNumber = additionalInformationDto.getJurorNumber();
         final String owner = payload.getOwner();

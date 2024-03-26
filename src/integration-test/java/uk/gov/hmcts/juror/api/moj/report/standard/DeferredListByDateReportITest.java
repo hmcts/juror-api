@@ -43,7 +43,6 @@ class DeferredListByDateReportITest extends AbstractReportControllerITest {
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
-            .printResponse()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponseCourt());
     }
@@ -54,7 +53,6 @@ class DeferredListByDateReportITest extends AbstractReportControllerITest {
         testBuilder()
             .jwt(getBureauJwt())
             .triggerValid()
-            .printResponse()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponseBureau());
     }
@@ -65,7 +63,6 @@ class DeferredListByDateReportITest extends AbstractReportControllerITest {
         testBuilder()
             .jwt(getCourtJwt("414"))
             .triggerValid()
-            .printResponse()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(StandardReportResponse.builder()
                 .headings(new ReportLinkedMap<String, StandardReportResponse.DataTypeValue>()

@@ -22,7 +22,7 @@ import java.util.function.UnaryOperator;
 
 @SuppressWarnings("unchecked")
 public interface ReissueLetterService {
-    
+
     String REASON = "Reason";
 
     ReissueLetterListResponseDto reissueLetterList(ReissueLetterListRequestDto request);
@@ -45,6 +45,8 @@ public interface ReissueLetterService {
             .as("status"), List.of(QJurorPool.class)),
         JUROR_DEFERRED_TO(LocalDate.class, "Deferred to", QJurorPool.jurorPool.deferralDate
             .as("deferral_date"), List.of(QJurorPool.class), Object::toString),
+        JUROR_POSTPONED_TO(LocalDate.class, "Postponed to", QJurorPool.jurorPool.deferralDate
+            .as("postponed_date"), List.of(QJurorPool.class), Object::toString),
         JUROR_DEFERRED_TO_REASON(String.class, REASON, QJurorPool.jurorPool.deferralCode
             .as("deferral_code"),
             List.of(QJurorPool.class), deferralCode -> ExcusalCodeEnum.valueOf((String)deferralCode).getDescription()),

@@ -34,7 +34,7 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
     @Override
     public List<BureauResponseSummaryDto> convertToDtos(Iterable<ModJurorDetail> details) {
         return StreamSupport.stream(details.spliterator(), false)
-           // .map(urgencyCalculator::flagSlaOverdueForResponse)
+            // .map(urgencyCalculator::flagSlaOverdueForResponse)
             .map(this::detailToDto)
             .collect(Collectors.toCollection(LinkedList::new));
     }
@@ -68,10 +68,7 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
             .slaOverdue(detail.getSlaOverdue())
             .dateReceived(detail.getDateReceived())
             .assignedStaffMember(detail.getAssignedStaffMember() != null
-                ?
-                toStaffDto(detail.getAssignedStaffMember())
-                :
-                null)
+                ? toStaffDto(detail.getAssignedStaffMember()) : null)
             .completedAt(detail.getCompletedAt())
             .version(detail.getVersion())
             .build();

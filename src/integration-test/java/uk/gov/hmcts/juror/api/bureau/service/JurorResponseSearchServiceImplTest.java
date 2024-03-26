@@ -178,14 +178,14 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_fiveCharacterPostcode.sql")
     public void searchForResponses_postcodeOnly_fiveCharacterPostcode() {
-        final List<String> WORKS = Arrays.asList("G1 1RD", "G11RD");
+        final List<String> works = Arrays.asList("G1 1RD", "G11RD");
         //"G1 1R", "G11R", "G1 1", "G11", "G1", "1 1RD", "11RD", "1RD"
-        final List<String> DOES_NOT_WORK = Arrays.asList("G1 1R", "G11R", "G1 1", "G11", "G1", "1 1RD", "11RD", "1RD");
-        postcodeCheck(WORKS, DOES_NOT_WORK);
+        final List<String> doesNotWork = Arrays.asList("G1 1R", "G11R", "G1 1", "G11", "G1", "1 1RD", "11RD", "1RD");
+        postcodeCheck(works, doesNotWork);
     }
 
     /**
-     * Tests search matching against five-character postcodes in the database
+     * Tests search matching against five-character postcodes in the database.
      */
     @Test
     @Sql("/db/truncate.sql")
@@ -193,14 +193,14 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_sixCharacterPostcode.sql")
     public void searchForResponses_postcodeOnly_sixCharacterPostcode() {
-        final List<String> WORKS = Arrays.asList("G46 6JF", "G466JF");
-        final List<String> DOES_NOT_WORK = Arrays.asList("G4", "G46", "G466", "G46 6", "G466J", "G46 6J", "466JF",
+        final List<String> works = Arrays.asList("G46 6JF", "G466JF");
+        final List<String> doesNotWork = Arrays.asList("G4", "G46", "G466", "G46 6", "G466J", "G46 6J", "466JF",
             "46 6JF", "6 6JF", "66JF", "6JF");
-        postcodeCheck(WORKS, DOES_NOT_WORK);
+        postcodeCheck(works, doesNotWork);
     }
 
     /**
-     * Tests search matching against seven-character postcodes in the database
+     * Tests search matching against seven-character postcodes in the database.
      */
     @Test
     @Sql("/db/truncate.sql")
@@ -208,25 +208,25 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_sevenCharacterPostcode.sql")
     public void searchForResponses_postcodeOnly_sevenCharacterPostcode() {
-        final List<String> WORKS = Arrays.asList("LL12 7BQ", "LL127BQ");
-        final List<String> DOES_NOT_WORK = Arrays.asList("LL12 7B", "LL127B", "LL12 7", "LL127", "LL12", "L12 7BQ",
+        final List<String> works = Arrays.asList("LL12 7BQ", "LL127BQ");
+        final List<String> doesNotWork = Arrays.asList("LL12 7B", "LL127B", "LL12 7", "LL127", "LL12", "L12 7BQ",
             "L127BQ", "12 7BQ", "127BQ", "2 7BQ", "27BQ", "7BQ");
-        postcodeCheck(WORKS, DOES_NOT_WORK);
+        postcodeCheck(works, doesNotWork);
     }
 
-    private void postcodeCheck(Iterable<String> WORKING, Iterable<String> NOT_WORKING) {
-        for (String search : WORKING) {
-            assertThat(searchService.searchForResponses(JurorResponseSearchRequest.builder().postCode(search).build()
-                , false).getResponses()).describedAs("Search using " + search + " should return 50 matches")
+    private void postcodeCheck(Iterable<String> working, Iterable<String> notWorking) {
+        for (String search : working) {
+            assertThat(searchService.searchForResponses(JurorResponseSearchRequest.builder().postCode(search).build(),
+                false).getResponses()).describedAs("Search using " + search + " should return 50 matches")
                 .hasSize(50);
             assertThat(searchService.searchForResponses(
                     JurorResponseSearchRequest.builder().postCode(search.toLowerCase()).build(), false)
                 .getResponses()).describedAs("Search using " + search.toLowerCase() + " should return 50 matches")
                 .hasSize(50);
         }
-        for (String search : NOT_WORKING) {
-            assertThat(searchService.searchForResponses(JurorResponseSearchRequest.builder().postCode(search).build()
-                , false).getResponses()).describedAs("Search using " + search + " should return 0 matches").size()
+        for (String search : notWorking) {
+            assertThat(searchService.searchForResponses(JurorResponseSearchRequest.builder().postCode(search).build(),
+                false).getResponses()).describedAs("Search using " + search + " should return 0 matches").size()
                 .isLessThan(50);
             assertThat(searchService.searchForResponses(
                     JurorResponseSearchRequest.builder().postCode(search.toLowerCase()).build(), false)
@@ -402,8 +402,9 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
 
     /**
      * Asserts the sort order required by the JDB-1971 AC
-     * <p>
-     * The list returned must be displayed on the screen in date summons response received order with the oldest first.
+     *
+     * <p>The list returned must be displayed on the screen in date summons response received order
+     * with the oldest first.
      *
      * @param dto dto to assert against
      */

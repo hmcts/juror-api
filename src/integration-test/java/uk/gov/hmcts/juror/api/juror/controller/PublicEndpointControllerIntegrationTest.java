@@ -28,7 +28,7 @@ import uk.gov.hmcts.juror.api.TestUtil;
 import uk.gov.hmcts.juror.api.bureau.domain.QSystemParameter;
 import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
-import uk.gov.hmcts.juror.api.config.public_.PublicJWTPayload;
+import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.service.StraightThroughType;
@@ -74,8 +74,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Value("${jwt.secret.public}")
     private String publicSecret;
 
-    private LocalDate DOB_40_YEARS_OLD;
-    private JurorResponseDto.Qualify VALID_QUALIFY;
+    private LocalDate dob40YearsOld;
+    private JurorResponseDto.Qualify validQualify;
 
     private int youngestJurorAgeAllowed;
     private int tooOldJurorAge;
@@ -88,10 +88,10 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         //create a valid DOB
-        DOB_40_YEARS_OLD = LocalDate.now().minusYears(40L);
+        dob40YearsOld = LocalDate.now().minusYears(40L);
 
         //create a valid Qualify
-        VALID_QUALIFY = JurorResponseDto.Qualify.builder()
+        validQualify = JurorResponseDto.Qualify.builder()
             .convicted(JurorResponseDto.Answerable.builder().answer(false).build())
             .livedConsecutive(JurorResponseDto.Answerable.builder().answer(true).build())
             .mentalHealthAct(JurorResponseDto.Answerable.builder().answer(false).build())
@@ -139,7 +139,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void retrieveJurorById_unhappy_header3() throws Exception {
         final String description = "Authentication header is invalid";
 
-        final String publicJwt = mintPublicJwt(PublicJWTPayload.builder()
+        final String publicJwt = mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("123456789")
             .postcode("")
             .surname("")
@@ -170,7 +170,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest_retrieveJurorById.sql")
     public void retrieveJurorById_RequestWithValidNumber_ReturnsJurorDetails() throws Exception {
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("209092530")
             .postcode("AB3 9RY")
             .surname("CASTILLO")
@@ -197,7 +197,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest_retrieveJurorById_poolAttendTime.sql")
     public void retrieveJurorById_alternatePath_poolAttendTime() throws Exception {
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("209092530")
             .postcode("AB3 9RY")
             .surname("CASTILLO")
@@ -228,7 +228,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Test
     public void retrieveJurorById_InvalidNumberRequest_ReturnsUnauthorizedErrorMessage() throws Exception {
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("209092530")
             .postcode("AB3 9RY")
             .surname("CASTILLO")
@@ -252,7 +252,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_happy() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -265,15 +265,15 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "644892530", "Joseph", "Dredd", "123456 Pleasant Walk",
                 "Cube Four",
                 "Block 871",
-                "M1 1AB", DOB_40_YEARS_OLD,
-                "012341234567", "dredd@megaone.web", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "M1 1AB", dob40YearsOld,
+                "012341234567", "dredd@megaone.web", validQualify, null, ReplyMethod.DIGITAL)
             .title("Judge")
-            .reasonableAdjustments(Collections.singletonList(JurorResponseDto.ReasonableAdjustment.builder()
+            .specialNeeds(Collections.singletonList(JurorResponseDto.ReasonableAdjustment.builder()
                 .assistanceType("V")
                 .assistanceTypeDetails("Helmet visor tinted and cannot remove even indoors")
                 .build())
             )
-            .cjsEmployment(Collections.singletonList(JurorResponseDto.CJSEmployment.builder()
+            .cjsEmployment(Collections.singletonList(JurorResponseDto.CjsEmployment.builder()
                 .cjsEmployer("Mega City 1 Hall of Justice")
                 .cjsEmployerDetails("I am the law.")
                 .build())
@@ -316,7 +316,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     /**
-     * Backend test for the first-party aspect of the JDB-1937 bug
+     * Backend test for the first-party aspect of the JDB-1937 bug.
      *
      * @throws Exception if the test falls over
      */
@@ -327,7 +327,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_unhappy_tooOld() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -374,7 +374,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_straightThroughTooYoung_unhappy.sql")
     public void respondToSummons_unhappy_failedAgeCheckOnStraightThrough() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -390,7 +390,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -411,7 +411,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number= '644892530'",
@@ -426,7 +427,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_unhappy_failedSuperUrgentCheckOnStraightThrough() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -442,7 +443,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -458,7 +459,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
@@ -472,7 +474,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void respondToSummons_unhappy_noEmailOrPhoneNumber() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -485,8 +487,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "644892530", "Joseph", "Dredd", "123456 Pleasant Walk",
                 "Cube Four",
                 "Block 871",
-                "M1 1AB", DOB_40_YEARS_OLD,
-                null, null, VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "M1 1AB", dob40YearsOld,
+                null, null, validQualify, null, ReplyMethod.DIGITAL)
             .title("Judge")
             .build();
 
@@ -523,7 +525,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_happy_successfulStraightThroughAcceptance() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -539,7 +541,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -596,7 +598,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_happy_disabledStraightThroughAcceptance() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -612,7 +614,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .qualify(JurorResponseDto.Qualify.builder()
                 .livedConsecutive(JurorResponseDto.Answerable.builder().answer(true).build()).build())
@@ -634,7 +636,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history", Integer.class)).isEqualTo(0);
@@ -644,7 +647,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
 
     /**
-     * Asserts that the excusal date is null when there isn't an excusal
+     * Asserts that the excusal date is null when there isn't an excusal.
      *
      * @since JDB-1902
      */
@@ -662,7 +665,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_unhappy_straightThroughAcceptance_cjsEmployed() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -678,10 +681,10 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .cjsEmployment(Collections.singletonList(
-                    JurorResponseDto.CJSEmployment.builder()
+                    JurorResponseDto.CjsEmployment.builder()
                         .cjsEmployer("police")
                         .cjsEmployerDetails("I am invalid because I am a forensic examiner")
                         .build()
@@ -691,13 +694,14 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         assertThat(jdbcTemplate.queryForObject("select count(*) FROM juror_mod.app_setting where SETTING='"
             + StraightThroughType.ACCEPTANCE.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            0);
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class))
+            .isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(
-            1);//summoned
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class))
+            .isEqualTo(1);//summoned
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<String> exchange = template.exchange(requestEntity, String.class);
@@ -708,7 +712,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(
             1);//summoned
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_CJS_EMPLOYMENT",
@@ -739,7 +744,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_unhappy_straightThroughAcceptance_specialNeed() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -755,9 +760,9 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
-            .reasonableAdjustments(Collections.singletonList(
+            .specialNeeds(Collections.singletonList(
                 JurorResponseDto.ReasonableAdjustment.builder()
                     .assistanceType("I")
                     .assistanceTypeDetails("I have a nut allergy")
@@ -768,13 +773,15 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.app_setting where SETTING='"
             + StraightThroughType.ACCEPTANCE.getDbName() + "' AND VALUE='TRUE'", Integer.class)).isEqualTo(0);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            0);
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class))
+            .isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response_AUD",
             Integer.class)).isEqualTo(0);
-        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class))
+            .isEqualTo(1);
         //summoned
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
 
         RequestEntity<JurorResponseDto> requestEntity = new RequestEntity<>(dto, httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<String> exchange = template.exchange(requestEntity, String.class);
@@ -785,7 +792,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(
             1);//summoned
         assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_reasonable_adjustment",
@@ -818,7 +826,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_happy_thirdPartyDeceased_disabledStraightThrough() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -857,7 +865,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             String.class)).isEqualTo("TODO");
         assertThat(jdbcTemplate.queryForObject("select THIRDPARTY_REASON from juror_mod.juror_response",
             String.class)).isEqualToIgnoringCase("deceased");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
@@ -876,7 +885,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_unhappy_thirdPartyDeceased_validationFail() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -914,9 +923,10 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .containsExactlyInAnyOrder("thirdParty.thirdPartyFName", "thirdParty.thirdPartyLName", "thirdParty",
                 "thirdParty.relationship");
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            0);
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class))
+            .isEqualTo(0);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
@@ -931,7 +941,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_unhappy_thirdPartyDeceased_validationFail_superUrgent() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -964,7 +974,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject(
             "select count(*) from juror_mod.juror_history WHERE OTHER_INFORMATION='ADD Excuse - D' and "
@@ -981,7 +992,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_happy_ageExcusal_successfulStraightThrough_young() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1004,7 +1015,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -1060,7 +1071,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_happy_ageExcusal_successfulStraightThrough_old() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1086,7 +1097,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -1147,7 +1158,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_happy_ageExcusal_straightThroughDisabled() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1171,7 +1182,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -1188,10 +1199,12 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            1);
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
-        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class))
+            .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class))
+            .isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
                 Integer.class)).isEqualTo(0);
@@ -1235,7 +1248,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_unhappy_ageExcusal_notExcused_exactlyMinimumAge() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1259,7 +1272,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -1276,11 +1289,14 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            1);
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
-        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class))
+            .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class))
+            .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history "
+                + "WHERE pool_number='644892530'",
             Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
@@ -1322,7 +1338,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1346,7 +1362,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB3 9RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
             .build();
 
@@ -1363,11 +1379,14 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(
-            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class)).isEqualTo(
-            1);
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
-        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history WHERE pool_number='644892530'",
+            jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_response", Integer.class))
+            .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class))
+            .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("select count(*) from juror_mod.juror_history "
+                + "WHERE pool_number='644892530'",
             Integer.class)).isEqualTo(0);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
@@ -1406,7 +1425,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     public void respondToSummons_EmploymentsValidation() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1422,9 +1441,9 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
                 "Scotland",
                 "Aberdeen",
                 "AB39RY", dob,
-                "012341234567", "jcastillo0@ed.gov", VALID_QUALIFY, null, ReplyMethod.DIGITAL)
+                "012341234567", "jcastillo0@ed.gov", validQualify, null, ReplyMethod.DIGITAL)
             .title("DR")
-            .cjsEmployment(Collections.singletonList(JurorResponseDto.CJSEmployment.builder()
+            .cjsEmployment(Collections.singletonList(JurorResponseDto.CjsEmployment.builder()
                 .cjsEmployer("Mega City 1 Hall of Justice")
                 .cjsEmployerDetails("I am the law.")
                 .cjsEmployer("Police Force")
@@ -1444,7 +1463,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             1);
         assertThat(jdbcTemplate.queryForObject("select PROCESSING_STATUS from juror_mod.juror_response",
             String.class)).isEqualTo("TODO");
-        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class)).isEqualTo(false);
+        assertThat(jdbcTemplate.queryForObject("select RESPONDED from juror_mod.juror", Boolean.class))
+            .isEqualTo(false);
         assertThat(jdbcTemplate.queryForObject("select STATUS from juror_mod.juror_pool", Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject(
             "select count(*) from juror_mod.juror_history WHERE OTHER_INFORMATION='ADD Excuse - D' and "
@@ -1465,7 +1485,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappy_noPhoneNumbersProvided() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1508,7 +1528,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_useThirdPartyPhoneNumberButNoneSupplied() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1554,7 +1574,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_happyPath_useJurorPhoneNumber() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1602,7 +1622,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappyPath_useJurorPhoneNumberButNoneProvided() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1651,7 +1671,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappy_invalidJurorPhoneNumber() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1698,7 +1718,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappy_noEmailsProvided() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1740,7 +1760,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappyPath_useThirdPartyEmailButNoneSupplied() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1774,7 +1794,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     /**
-     * Should accept response if 'use juror email' is set and no third party email is provided
+     * Should accept response if 'use juror email' is set and no third party email is provided.
      *
      * @throws Exception if the test falls over
      */
@@ -1785,7 +1805,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_happyPath_useJurorEmail() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1831,7 +1851,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappyPath_useJurorEmailButNoneProvided() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1879,7 +1899,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_happy.sql")
     public void thirdPartyResponse_unhappy_invalidJurorEmail() throws Exception {
         final URI uri = URI.create("/api/v1/public/juror/respond");
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("644892530")
             .postcode("AB39RY")
             .surname("CASTILLO")
@@ -1914,7 +1934,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             0);
     }
 
-    private String mintPublicJwt(final PublicJWTPayload payload) throws Exception {
+    private String mintPublicJwt(final PublicJwtPayload payload) throws Exception {
         return TestUtil.mintPublicJwt(payload, SignatureAlgorithm.HS256, publicSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }

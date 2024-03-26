@@ -17,8 +17,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationDataDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
@@ -61,7 +61,7 @@ class CourtLocationControllerTest {
     @Test
     void retrieveAllCourtLocationsByPostcodeBureauHappy() throws Exception {
         final ArgumentCaptor<String> postcodeCaptor = ArgumentCaptor.forClass(String.class);
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
 
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -89,7 +89,7 @@ class CourtLocationControllerTest {
     @Test
     void retrieveAllCourtLocationsByPostcodeCourtHappy() throws Exception {
         final ArgumentCaptor<String> postcodeCaptor = ArgumentCaptor.forClass(String.class);
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
 
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -116,7 +116,7 @@ class CourtLocationControllerTest {
 
     @Test
     void retrieveAllCourtLocationsByPostcodeInvalidPath() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -133,7 +133,7 @@ class CourtLocationControllerTest {
 
     @Test
     void retrieveAllCourtLocationsByPostcodeIncorrectHttpOperation() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -150,7 +150,7 @@ class CourtLocationControllerTest {
 
     @Test
     void retrieveAllCourtLocationsByPostcodeLongPostcode() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -165,7 +165,7 @@ class CourtLocationControllerTest {
 
     @Test
     void retrieveAllCourtLocationsByPostcodeNoPostcode() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -180,7 +180,7 @@ class CourtLocationControllerTest {
 
     @Test
     void retrieveAllCourtLocationsByPostcodeBlankPostcode() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -196,7 +196,7 @@ class CourtLocationControllerTest {
 
     @Test
     void retrieveAllCourtLocationsByPostcodeInvalidPostcodeRegExValidationFailureFormat() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -213,7 +213,7 @@ class CourtLocationControllerTest {
 
     @Test
     void retrieveAllCourtLocationsByPostcodeInvalidPostcodeSpace() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -248,7 +248,7 @@ class CourtLocationControllerTest {
 
         protected GetCourtRates() {
             super(HttpMethod.GET, URL, MOCK_PRINCIPAL);
-            BureauJWTPayload bureauJwtPayload = TestUtils.createJwt("415", "COURT_USER");
+            BureauJwtPayload bureauJwtPayload = TestUtils.createJwt("415", "COURT_USER");
             when(MOCK_PRINCIPAL.getPrincipal()).thenReturn(bureauJwtPayload);
         }
 

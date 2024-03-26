@@ -27,8 +27,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.config.security.IsSeniorCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
@@ -83,7 +83,7 @@ public class JurorRecordController {
     @Operation(summary = "Get juror details by juror number and location code",
         description = "Retrieve details of a single juror by his/her juror number")
     public ResponseEntity<JurorDetailsResponseDto> getJurorDetails(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "Valid juror number",
             required = true)
         @Size(min = 9, max = 9) @PathVariable("jurorNumber")
@@ -116,7 +116,7 @@ public class JurorRecordController {
     @Operation(summary = "Get juror overview by juror number and location code",
         description = "Retrieve overview of a single juror by his/her juror number")
     public ResponseEntity<JurorOverviewResponseDto> getJurorOverview(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "Valid juror number",
             required = true)
         @Size(min = 9, max = 9) @PathVariable(
@@ -134,7 +134,7 @@ public class JurorRecordController {
     @Operation(summary = "Get summons reply information of a juror",
         description = "Retrieve summons reply information of a juror by juror number and location code")
     public ResponseEntity<JurorSummonsReplyResponseDto> getJurorSummonsReply(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "Valid juror number", required = true)
         @Size(min = 9, max = 9) @PathVariable("jurorNumber")
         @Valid String jurorNumber,
@@ -152,7 +152,7 @@ public class JurorRecordController {
     @GetMapping("/single-search")
     @Operation(summary = "Search for juror record by juror number")
     public ResponseEntity<JurorRecordSearchDto> searchJurorRecord(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "Valid juror number",
             required = true)
         @RequestParam @Size(min = 9, max = 9)
@@ -164,7 +164,7 @@ public class JurorRecordController {
     @GetMapping("/contact-log/{jurorNumber}")
     @Operation(summary = "Get all logged contact information relating to a given juror")
     public ResponseEntity<ContactLogListDto> getJurorContactLogs(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Valid @JurorNumber @Parameter(description = "Valid juror number", required = true)
         @PathVariable String jurorNumber) {
         ContactLogListDto contactLogs = jurorRecordService.getJurorContactLogs(payload, jurorNumber);
@@ -175,7 +175,7 @@ public class JurorRecordController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Send a payload to create a new Juror Record")
     public void createJurorRecord(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Valid @RequestBody JurorCreateRequestDto jurorCreateRequestDto) {
         jurorRecordService.createJurorRecord(payload, jurorCreateRequestDto);
     }
@@ -213,7 +213,7 @@ public class JurorRecordController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Send a payload containing the necessary data items to create and "
         + "populate a new log of contact information relating to a given juror")
-    public void createJurorContactLog(@Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+    public void createJurorContactLog(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                       @Valid @RequestBody ContactLogRequestDto contactLogRequestDto) {
         jurorRecordService.createJurorContactLog(payload, contactLogRequestDto);
     }
@@ -231,7 +231,7 @@ public class JurorRecordController {
     @GetMapping("/notes/{jurorNumber}")
     @Operation(summary = "Get the latest Notes data for a specific Juror record")
     public ResponseEntity<JurorNotesDto> getJurorNotes(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Valid @Parameter(description = "Valid juror number",
             required = true)
         @JurorNumber @PathVariable String jurorNumber) {
@@ -243,7 +243,7 @@ public class JurorRecordController {
     @PatchMapping("/notes/{jurorNumber}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Update the Notes property for a specific Juror record")
-    public void updateJurorNotes(@Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+    public void updateJurorNotes(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                  @Valid @Parameter(description = "Valid juror number", required = true) @JurorNumber
                                  @PathVariable String jurorNumber,
                                  @Valid @RequestBody JurorNotesRequestDto notes) {
@@ -253,7 +253,7 @@ public class JurorRecordController {
     @PostMapping("/create/optic-reference")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Send a payload containing Optic Reference to add it to the Juror Record")
-    public void createJurorOpticReference(@Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+    public void createJurorOpticReference(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                           @Valid @RequestBody JurorOpticRefRequestDto opticRefRequestDto) {
         jurorRecordService.createJurorOpticReference(payload, opticRefRequestDto);
     }
@@ -261,7 +261,7 @@ public class JurorRecordController {
     @GetMapping("/optic-reference/{jurorNumber}/{poolNumber}")
     @Operation(summary = "Retrieve an Optic Reference for a specific Juror")
     public ResponseEntity<String> getJurorOpticReference(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @PathVariable @Size(min = 9, max = 9)
         @Parameter(description = "Juror number", required = true)
         @Valid String jurorNumber,
@@ -284,7 +284,7 @@ public class JurorRecordController {
         description = "Retrieve details of a single juror by his/her juror number")
     public ResponseEntity<BureauJurorDetailDto> retrieveJurorDetailsById(
         @Parameter(hidden = true) @AuthenticationPrincipal
-        BureauJWTPayload payload,
+        BureauJwtPayload payload,
         @PathVariable @Valid @JurorNumber
         @Parameter(description = "Valid juror number",
             required = true) String jurorId) {
@@ -307,7 +307,7 @@ public class JurorRecordController {
     @PatchMapping(path = "/fix-name/{jurorNumber}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Schema(description = "Update the name details on a juror record without an approval process")
-    public void fixJurorName(@Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+    public void fixJurorName(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                              @RequestBody @Valid JurorNameDetailsDto jurorNameDetailsDto,
                              @Parameter(description = "Valid juror number", required = true)
                              @Size(min = 9, max = 9)
@@ -337,7 +337,7 @@ public class JurorRecordController {
     @PatchMapping(path = "/change-name/{jurorNumber}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Schema(description = "Approve or reject changes to the name details on a juror record")
-    public void processNameChangeApproval(@Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+    public void processNameChangeApproval(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                           @RequestBody @Valid ProcessNameChangeRequestDto requestDto,
                                           @Parameter(description = "Valid juror number", required = true)
                                           @JurorNumber @PathVariable("jurorNumber")
@@ -362,7 +362,7 @@ public class JurorRecordController {
     @PatchMapping(path = "/edit-juror/{jurorNumber}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Schema(description = "Edit personal details of an existing juror")
-    public void editJurorDetails(@Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+    public void editJurorDetails(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                  @RequestBody @Valid EditJurorRecordRequestDto requestDto,
                                  @Parameter(description = "Valid juror number", required = true)
                                  @JurorNumber @PathVariable("jurorNumber")
@@ -422,7 +422,7 @@ public class JurorRecordController {
     @GetMapping(path = "/attendance-detail/{jurorNumber}/{poolNumber}")
     @Operation(summary = "Get attendance details for juror number in a pool")
     public ResponseEntity<JurorAttendanceDetailsResponseDto> getJurorAttendanceDetails(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @PathVariable("jurorNumber") @Valid @JurorNumber
         @Parameter(description = "Valid juror number", required = true) String jurorNumber,
         @Valid @PathVariable("poolNumber") @PoolNumber

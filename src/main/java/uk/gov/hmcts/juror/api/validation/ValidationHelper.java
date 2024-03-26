@@ -17,4 +17,8 @@ public final class ValidationHelper {
         }
         log.trace("Juror number valid");
     }
+
+    private ValidationHelper() {
+
+    }
 }

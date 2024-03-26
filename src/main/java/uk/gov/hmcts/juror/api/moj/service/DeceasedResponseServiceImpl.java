@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.MarkAsDeceasedDto;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
@@ -54,7 +54,7 @@ public class DeceasedResponseServiceImpl implements DeceasedResponseService {
 
     @Transactional
     @Override
-    public void markAsDeceased(BureauJWTPayload payload, MarkAsDeceasedDto markAsDeceasedDto) {
+    public void markAsDeceased(BureauJwtPayload payload, MarkAsDeceasedDto markAsDeceasedDto) {
 
         final String jurorNumber = markAsDeceasedDto.getJurorNumber();
         final String owner = payload.getOwner();

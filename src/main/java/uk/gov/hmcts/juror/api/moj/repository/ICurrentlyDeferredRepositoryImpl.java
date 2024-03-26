@@ -4,7 +4,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.QCurrentlyDeferred;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
@@ -26,7 +26,7 @@ public class ICurrentlyDeferredRepositoryImpl implements ICurrentlyDeferredRepos
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
 
     @Override
-    public List<Tuple> getDeferralsByCourtLocationCode(BureauJWTPayload payload, String courtLocation) {
+    public List<Tuple> getDeferralsByCourtLocationCode(BureauJwtPayload payload, String courtLocation) {
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         final QCurrentlyDeferred qCurrentlyDeferred = QCurrentlyDeferred.currentlyDeferred;

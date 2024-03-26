@@ -22,7 +22,6 @@ import uk.gov.hmcts.juror.api.juror.domain.Holidays;
 import uk.gov.hmcts.juror.api.juror.domain.HolidaysRepository;
 import uk.gov.hmcts.juror.api.moj.controller.response.administration.HolidayDate;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
-import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;

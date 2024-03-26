@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.CjsEmploymentDetailsDto;
@@ -25,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.SpecialNeeds;
 import uk.gov.hmcts.juror.api.moj.domain.SummonsSnapshot;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
@@ -86,7 +87,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
     @Override
     @Transactional
-    public JurorPaperResponseDetailDto getJurorPaperResponse(final String jurorNumber, BureauJWTPayload payload) {
+    public JurorPaperResponseDetailDto getJurorPaperResponse(final String jurorNumber, BureauJwtPayload payload) {
         log.info(String.format("Retrieving Juror paper response for juror number %s, by user %s", jurorNumber,
             payload.getLogin()));
         String owner = payload.getOwner();
@@ -156,7 +157,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         jurorPaperResponseDetailDto.setEmailAddress(jurorPaperResponse.getEmail());
 
         // set the assignee
-        jurorPaperResponseDetailDto.setAssignedStaffMember(jurorPaperResponse.getStaff());
+        jurorPaperResponseDetailDto.setAssignedStaffMember(new UserDetailsDto(jurorPaperResponse.getStaff()));
 
         // set the contact log
         List<ContactLogListDto.ContactLogDataDto> contactLogList = new ArrayList<>();
@@ -302,7 +303,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
     @Override
     @Transactional
-    public void saveResponse(BureauJWTPayload payload, JurorPaperResponseDto paperResponseDto) {
+    public void saveResponse(BureauJwtPayload payload, JurorPaperResponseDto paperResponseDto) {
 
         final String jurorNumber = paperResponseDto.getJurorNumber();
 
@@ -541,7 +542,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
     @Override
     @Transactional
-    public void updateCjsDetails(BureauJWTPayload payload, CjsEmploymentDetailsDto cjsEmploymentDetailsDto,
+    public void updateCjsDetails(BureauJwtPayload payload, CjsEmploymentDetailsDto cjsEmploymentDetailsDto,
                                  final String jurorNumber) {
         log.info(String.format("Updating paper response CJS Employment for Juror %s, by user %s",
             jurorNumber, payload.getLogin()
@@ -630,7 +631,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
     @Override
     @Transactional
-    public void updateReasonableAdjustmentsDetails(BureauJWTPayload payload,
+    public void updateReasonableAdjustmentsDetails(BureauJwtPayload payload,
                                                    ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto,
                                                    final String jurorNumber) {
 
@@ -749,7 +750,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
     @Override
     @Transactional
-    public void updateJurorEligibilityDetails(BureauJWTPayload payload, EligibilityDetailsDto eligibilityDetailsDto,
+    public void updateJurorEligibilityDetails(BureauJwtPayload payload, EligibilityDetailsDto eligibilityDetailsDto,
                                               final String jurorNumber) {
 
         log.info(String.format("Updating paper response eligibility details for Juror %s, by user %s",
@@ -800,14 +801,14 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         log.debug(String.format("Finished updating paper response eligibility details for Juror %s", jurorNumber));
     }
 
-    private PaperResponse getJurorPaperResponseForWrite(BureauJWTPayload payload, final String jurorNumber) {
+    private PaperResponse getJurorPaperResponseForWrite(BureauJwtPayload payload, final String jurorNumber) {
         // Check if the current user has access to the Juror record
         checkWriteAccessForCurrentUser(jurorNumber, payload.getOwner());
         return getJurorPaperResponse(jurorNumber);
     }
 
     @Override
-    public void updateJurorReplyTypeDetails(BureauJWTPayload payload, ReplyTypeDetailsDto replyTypeDetailsDto,
+    public void updateJurorReplyTypeDetails(BureauJwtPayload payload, ReplyTypeDetailsDto replyTypeDetailsDto,
                                             final String jurorNumber) {
 
         log.info(String.format("Updating paper response reply type for Juror %s, by user %s",
@@ -839,7 +840,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     }
 
     @Override
-    public void updateJurorSignatureDetails(BureauJWTPayload payload, SignatureDetailsDto signatureDetailsDto,
+    public void updateJurorSignatureDetails(BureauJwtPayload payload, SignatureDetailsDto signatureDetailsDto,
                                             final String jurorNumber) {
 
         log.info(String.format("Updating paper response signature for Juror %s, by user %s",
@@ -871,7 +872,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     }
 
     private void processStraightThroughResponse(PaperResponse jurorPaperResponse, JurorPool jurorPool,
-                                                LocalDate returnDate, BureauJWTPayload payload) {
+                                                LocalDate returnDate, BureauJwtPayload payload) {
         log.trace("Enter processStraightThroughResponse for {}", jurorPool.getJurorNumber());
 
         if (jurorPaperResponse.getDateOfBirth() != null && returnDate != null

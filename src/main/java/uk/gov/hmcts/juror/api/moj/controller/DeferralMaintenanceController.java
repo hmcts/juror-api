@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralReasonRequestDto;
@@ -47,7 +47,7 @@ public class DeferralMaintenanceController {
     @Operation(summary = "deferral for a specific juror",
         description = "Mark a single juror response with a deferral decision")
     public ResponseEntity<Void> processJurorDeferral(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "9-digit numeric string to identify the"
             + " juror") @PathVariable(name = "jurorNumber")
         @JurorNumber @Valid String jurorNumber,
@@ -60,7 +60,7 @@ public class DeferralMaintenanceController {
     @Operation(description = "GET With Body",
         summary = "Retrieve active pools, including utilisation stats, for the given deferral dates")
     public ResponseEntity<DeferralOptionsDto> getDeferralOptionsForDates(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "9-digit numeric string to identify the juror") @PathVariable(name = "jurorNumber")
         @JurorNumber @Valid String jurorNumber, @RequestBody @Valid DeferralDatesRequestDto deferralDatesRequestDto) {
         DeferralOptionsDto responseBody =
@@ -71,7 +71,7 @@ public class DeferralMaintenanceController {
     @GetMapping("/available-pools/{courtLocationCode}")
     @Operation(summary = "Retrieve active pools, including utilisation stats, for the given court location")
     public ResponseEntity<DeferralOptionsDto> getDeferralOptionsForCourtLocation(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @PathVariable(name = "courtLocationCode") String courtLocationCode) {
         DeferralOptionsDto responseBody = manageDeferralsService
             .findActivePoolsForCourtLocation(payload, courtLocationCode);
@@ -82,7 +82,7 @@ public class DeferralMaintenanceController {
     @Operation(description = "GET With Body",
         summary = "Retrieve active pools, including utilisation stats, for the given deferral dates")
     public ResponseEntity<DeferralOptionsDto> getDeferralOptionsForDatesAndCourtLocation(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "9-digit numeric string to identify the juror") @PathVariable(name = "jurorNumber")
         @JurorNumber @Valid String jurorNumber, @RequestBody @Valid DeferralDatesRequestDto deferralDatesRequestDto,
         @PathVariable(name = "locationCode") @Size(min = 3, max = 3) String locationCode) {
@@ -99,7 +99,7 @@ public class DeferralMaintenanceController {
             + "non-zero padded days/months (where applicable). This will return a list of dates converted into "
             + "ISO format (yyyy-MM-dd) with months and days always zero-padded where applicable")
     public ResponseEntity<List<String>> getPreferredDates(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "9-digit numeric string to "
             + "identify the juror")
         @PathVariable(name = "jurorNumber") @JurorNumber @Valid
@@ -111,7 +111,7 @@ public class DeferralMaintenanceController {
     @GetMapping("/deferrals/{courtLocationCode}")
     @Operation(summary = "Retrieve a list of all deferred jurors for a court location")
     public ResponseEntity<DeferralListDto> getDeferralsByCourtLocationCode(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "3 Digit numeric string to identify court location")
         @PathVariable("courtLocationCode") @Size(min = 3, max = 3) String courtLocationCode) {
         DeferralListDto dto = manageDeferralsService.getDeferralsByCourtLocationCode(payload, courtLocationCode);
@@ -122,7 +122,7 @@ public class DeferralMaintenanceController {
     @Operation(summary = "Retrieve available pools, including utilisation stats, for the given court location code and "
         + "juror")
     public ResponseEntity<DeferralOptionsDto> getDeferralPoolsByJurorNumberAndCourtLocationCode(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "3-digit numeric string to identify the court")
         @PathVariable("courtLocationCode") @Size(min = 3, max = 3) String courtLocationCode,
         @Parameter(description = "9-digit numeric string to identify the juror")
@@ -137,7 +137,7 @@ public class DeferralMaintenanceController {
     @PostMapping("/deferrals/allocate-jurors-to-pool")
     @Operation(summary = "Move juror(s) to the selected active pool")
     public ResponseEntity<Void> moveJurorsToActivePool(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid DeferralAllocateRequestDto deferralAllocateRequestDto) {
         manageDeferralsService.allocateJurorsToActivePool(payload, deferralAllocateRequestDto);
         return ResponseEntity.noContent().build();
@@ -146,7 +146,7 @@ public class DeferralMaintenanceController {
     @PostMapping("/deferrals/change-deferral-date/{jurorNumber}")
     @Operation(summary = "Change the date of a deferred juror")
     public ResponseEntity<Void> changeJurorsDeferralDate(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @PathVariable(name = "jurorNumber") @JurorNumber @Valid String jurorNumber,
         @RequestBody @Valid DeferralReasonRequestDto deferralReasonRequestDto) {
         manageDeferralsService.changeJurorDeferralDate(payload, jurorNumber, deferralReasonRequestDto);
@@ -155,7 +155,7 @@ public class DeferralMaintenanceController {
 
     @DeleteMapping("/delete-deferral/{jurorNumber}")
     @Operation(summary = "Delete a deferral")
-    public void deleteDeferral(@Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+    public void deleteDeferral(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                @PathVariable(name = "jurorNumber") @JurorNumber @Valid
                                String jurorNumber) {
         manageDeferralsService.deleteDeferral(payload, jurorNumber);
@@ -165,7 +165,7 @@ public class DeferralMaintenanceController {
     @PostMapping("/juror/postpone")
     @Operation(summary = "Postpone one or more jurors", description = "Mark one or more jurors as postponed")
     public ResponseEntity<DeferralResponseDto> processJurorPostponement(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid ProcessJurorPostponementRequestDto request) {
         return ResponseEntity.ok().body(manageDeferralsService.processJurorPostponement(payload, request));
     }

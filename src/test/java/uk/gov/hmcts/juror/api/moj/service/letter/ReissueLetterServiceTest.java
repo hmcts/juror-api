@@ -308,7 +308,7 @@ public class ReissueLetterServiceTest {
             doReturn("ABC 2DE").when(tuple).get(ReissueLetterService.DataType.JUROR_POSTCODE.getExpression());
             doReturn("Postponed").when(tuple).get(ReissueLetterService.DataType.JUROR_STATUS.getExpression());
             doReturn(LocalDateTime.now().minusDays(10)).when(tuple)
-                .get(ReissueLetterService.DataType.JUROR_DEFERRED_TO.getExpression());
+                .get(ReissueLetterService.DataType.JUROR_POSTPONED_TO.getExpression());
             doReturn("P").when(tuple).get(ReissueLetterService.DataType.JUROR_DEFERRED_TO_REASON.getExpression());
             doReturn(LocalDate.now().minusDays(10)).when(tuple)
                 .get(ReissueLetterService.DataType.DATE_PRINTED.getExpression());

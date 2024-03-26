@@ -10,7 +10,7 @@ import uk.gov.hmcts.juror.api.bureau.domain.ReadOnlyRepository;
  */
 
 @Repository
-public interface BulkPrintDataNotifyCommsRepository extends ReadOnlyRepository <BulkPrintDataNotifyComms, Long>,
-    QuerydslPredicateExecutor<BulkPrintDataNotifyComms>{
+public interface BulkPrintDataNotifyCommsRepository extends ReadOnlyRepository<BulkPrintDataNotifyComms, Long>,
+    QuerydslPredicateExecutor<BulkPrintDataNotifyComms> {
 
 }

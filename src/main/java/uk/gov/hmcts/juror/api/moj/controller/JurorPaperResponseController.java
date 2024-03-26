@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.CjsEmploymentDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EligibilityDetailsDto;
@@ -70,15 +70,12 @@ public class JurorPaperResponseController {
     @Operation(summary = "Find juror paper response details by Juror Number",
         description = "The Juror Paper response details")
     public ResponseEntity<JurorPaperResponseDetailDto> retrieveJurorById(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
-        @Parameter(description = "Juror number",
-            required = true)
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
+        @Parameter(description = "Juror number", required = true)
         @PathVariable String jurorNumber) {
         final JurorPaperResponseDetailDto jurorPaperResponseDto = jurorPaperResponseService.getJurorPaperResponse(
-            jurorNumber,
-            payload
-        );
-        return ResponseEntity.ok(jurorPaperResponseDto);
+            jurorNumber, payload);
+        return ResponseEntity.status(HttpStatus.OK).body(jurorPaperResponseDto);
     }
 
     /**
@@ -93,7 +90,7 @@ public class JurorPaperResponseController {
     @Operation(summary = "Save a Juror paper response", description = "Process the Juror Paper Response from the "
         + "Officer and save")
     public ResponseEntity<SaveJurorPaperReplyResponseDto> respondToSummons(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid JurorPaperResponseDto paperResponseDto) {
         jurorPaperResponseService.saveResponse(payload, paperResponseDto);
 
@@ -117,7 +114,7 @@ public class JurorPaperResponseController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Update an existing Juror paper response CJS employment details")
     public void updatePaperSummonsCjsDetails(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid CjsEmploymentDetailsDto cjsEmploymentDetailsDto,
         @Parameter(description = "Valid juror number", required = true)
         @Size(min = 9, max = 9) @PathVariable("jurorNumber")
@@ -136,7 +133,7 @@ public class JurorPaperResponseController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Update an existing Juror paper response special needs details")
     public void updatePaperSpecialNeedsDetails(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto,
         @Parameter(description = "Valid juror number", required = true)
         @Size(min = 9, max = 9) @PathVariable("jurorNumber")
@@ -156,7 +153,7 @@ public class JurorPaperResponseController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Update an existing Juror paper response eligibility details")
     public void updateJurorEligibilityDetails(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid EligibilityDetailsDto eligibilityDetailsDto,
         @Parameter(description = "Valid juror number", required = true)
         @Size(min = 9, max = 9) @PathVariable("jurorNumber")
@@ -174,7 +171,7 @@ public class JurorPaperResponseController {
     @PatchMapping(path = "/juror/{jurorNumber}/details/reply-type")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Update an existing Juror paper response reply type details")
-    public void updateJurorReplyTypeDetails(@Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+    public void updateJurorReplyTypeDetails(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                             @RequestBody @Valid ReplyTypeDetailsDto replyTypeDetailsDto,
                                             @Parameter(description = "Valid juror number", required = true)
                                             @Size(min = 9, max = 9) @PathVariable("jurorNumber")
@@ -192,7 +189,7 @@ public class JurorPaperResponseController {
     @PatchMapping(path = "/juror/{jurorNumber}/details/signature")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Update an existing Juror paper response signature details")
-    public void updateJurorSignatureDetails(@Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+    public void updateJurorSignatureDetails(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                             @RequestBody @Valid SignatureDetailsDto signatureDetailsDto,
                                             @Parameter(description = "Valid juror number", required = true)
                                             @Size(min = 9, max = 9) @PathVariable("jurorNumber")
@@ -204,7 +201,7 @@ public class JurorPaperResponseController {
     @Operation(summary = "Update the processing status of a Juror Paper Response",
         description = "Juror records with a pending response can be uniquely identified by just the Juror Number")
     public ResponseEntity<Void> updateJurorPaperResponseStatus(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "Valid Juror Number",
             required = true)
         @Size(min = 9, max = 9) @PathVariable("jurorNumber")

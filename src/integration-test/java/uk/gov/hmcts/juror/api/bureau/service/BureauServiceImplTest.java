@@ -205,7 +205,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
     }
 
     /**
-     * Asserts that the response is sorted in the order required by the AC
+     * Asserts that the response is sorted in the order required by the AC.
      *
      * @param wrapper response to assert against
      * @since JDB-2142

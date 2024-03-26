@@ -1,11 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service.summonsmanagement;
 
-import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
-import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
-import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPersonalDetailsDto;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 
 public interface JurorResponseService {
     String TITLE = "title";
@@ -28,11 +24,8 @@ public interface JurorResponseService {
     String EXCUSAL = "excusal";
     String DEFERRAL = "deferral";
 
-    void updateJurorPersonalDetails(BureauJWTPayload payload, JurorPersonalDetailsDto jurorPersonalDetailsDto,
+    void updateJurorPersonalDetails(BureauJwtPayload payload, JurorPersonalDetailsDto jurorPersonalDetailsDto,
                                     String jurorNumber);
-
-
-
 
 
 }

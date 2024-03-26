@@ -20,7 +20,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
@@ -165,7 +165,7 @@ class ManageDeferralsServiceTest {
             LocalDate newAttendanceDate = LocalDate.now();
             LocalDate oldAttendanceDate = LocalDate.of(2023, 6, 6);
 
-            final BureauJWTPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
 
             final PoolRequest oldPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111111, LOC_CODE_415,
                 oldAttendanceDate);
@@ -213,7 +213,7 @@ class ManageDeferralsServiceTest {
             LocalDate newAttendanceDate = LocalDate.now();
             LocalDate oldAttendanceDate = LocalDate.of(2023, 6, 6);
 
-            final BureauJWTPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
 
             final PoolRequest oldPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111111, LOC_CODE_415,
                 oldAttendanceDate);
@@ -266,7 +266,7 @@ class ManageDeferralsServiceTest {
 
         @Test
         void processJurorPostponementUnhappyPathInvalidReasonCode() {
-            final BureauJWTPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
 
             doReturn(createJurorPoolMember(JUROR_123456789)).when(jurorPoolRepository)
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
@@ -289,7 +289,7 @@ class ManageDeferralsServiceTest {
 
         @Test
         void processJurorPostponementUnhappyPathJurorNumberNotFound() {
-            final BureauJWTPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
             DeferralReasonRequestDto dto = new DeferralReasonRequestDto();
             dto.setPoolNumber(POOL_111111111);
             dto.setExcusalReasonCode("P");
@@ -314,7 +314,7 @@ class ManageDeferralsServiceTest {
 
         @Test
         void processJurorPostponementUnhappyPathPoolNumberNotFound() {
-            final BureauJWTPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
 
             doReturn(createJurorPoolMember(JUROR_123456789)).when(jurorPoolRepository)
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
@@ -337,7 +337,7 @@ class ManageDeferralsServiceTest {
 
         @Test
         void processJurorPostponementHappyPathMoveToCurrentlyDeferred() {
-            final BureauJWTPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
 
             doReturn(createJurorPoolMember(JUROR_123456789)).when(jurorPoolRepository)
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
@@ -366,7 +366,7 @@ class ManageDeferralsServiceTest {
 
         @Test
         void processJurorPostponementUnhappyPathPostponeToExistingPoolNumber() {
-            final BureauJWTPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
 
             ProcessJurorPostponementRequestDto request = new ProcessJurorPostponementRequestDto();
             request.setJurorNumbers(Collections.singletonList(JUROR_123456789));
@@ -444,7 +444,7 @@ class ManageDeferralsServiceTest {
     void deleteDeferralHappyPathBureauUser() {
         final ArgumentCaptor<JurorPool> jurorPoolArgumentCaptor = ArgumentCaptor.forClass(JurorPool.class);
 
-        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
 
         String jurorNumber = "123456789";
         String poolNumber = "987654321";
@@ -486,7 +486,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     void deleteDeferralDeferralNotFound() {
-        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
 
         String jurorNumber = "123456789";
         String poolNumber = "987654321";
@@ -904,7 +904,7 @@ class ManageDeferralsServiceTest {
     void processJuror_deferral_digital_happy_path_moveToActivePool() {
         LocalDate newAttendanceDate = LocalDate.now();
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
-        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
         final PoolRequest oldPoolRequest = createPoolRequest("400", "111111111", "415",
             oldAttendanceDate
@@ -942,7 +942,7 @@ class ManageDeferralsServiceTest {
     void changeDeferralDate_happy_path_moveToActivePool() {
         LocalDate newAttendanceDate = LocalDate.now();
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
-        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
         final PoolRequest oldPoolRequest = createPoolRequest("400",
             "111111111", "415", oldAttendanceDate
@@ -975,7 +975,7 @@ class ManageDeferralsServiceTest {
     void changeDeferralDate_happy_path_moveToActivePool_RemoveFromDeferralMaintenance() {
         LocalDate newAttendanceDate = LocalDate.now();
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
-        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
         final PoolRequest oldPoolRequest = createPoolRequest("400",
             "111111111", "415", oldAttendanceDate
@@ -1008,7 +1008,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     void changeDeferralDate_happy_path_moveToDeferralMaintenance() {
-        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
         final DeferralReasonRequestDto dto = createDeferralReasonDtoToDeferralMaintenance(null);
@@ -1039,7 +1039,7 @@ class ManageDeferralsServiceTest {
     void processJuror_deferral_paper_happy_path_moveToActivePool() {
         LocalDate newAttendanceDate = LocalDate.now();
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
-        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
         final PoolRequest oldPoolRequest = createPoolRequest("400", "111111111", "415",
             oldAttendanceDate);
@@ -1070,7 +1070,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     void processJuror_deferral_digital_happy_path_moveToDeferralMaintenance() {
-        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
         final DeferralReasonRequestDto dto = createDeferralReasonDtoToDeferralMaintenance(ReplyMethod.DIGITAL);
@@ -1101,7 +1101,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     void processJuror_deferral_paper_happy_path_moveToDeferralMaintenance() {
-        final BureauJWTPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
         final PoolRequest oldPoolRequest = createPoolRequest("400",
@@ -1129,7 +1129,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     void processJuror_deferral_queue_deferral_letter_court_user() {
-        final BureauJWTPayload courtPayload = TestUtils.createJwt("415", "COURT_USER");
+        final BureauJwtPayload courtPayload = TestUtils.createJwt("415", "COURT_USER");
         String jurorNumber = "123456789";
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
         final PoolRequest oldPoolRequest = createPoolRequest("415",
@@ -1161,7 +1161,7 @@ class ManageDeferralsServiceTest {
         String bureauOwner = "400";
         final String jurorNumber = "123456789";
         final String currentCourtLocation = "415";
-        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
 
         Tuple deferralOption = mock(Tuple.class);
         setUpMockQueryResult(deferralOption,
@@ -1322,7 +1322,7 @@ class ManageDeferralsServiceTest {
         String bureauOwner = "400";
         String jurorNumber = "123456789";
         String currentCourtLocation = "415";
-        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
 
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(currentCourtLocation);
@@ -1389,7 +1389,7 @@ class ManageDeferralsServiceTest {
         String bureauOwner = "400";
         String jurorNumber = "123456789";
         String currentCourtLocation = "415";
-        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
 
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(currentCourtLocation);
@@ -1422,7 +1422,7 @@ class ManageDeferralsServiceTest {
     @Test
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void test_getPreferredDeferralDates_threeValidDates() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
 
         Juror juror = new Juror();
@@ -1456,7 +1456,7 @@ class ManageDeferralsServiceTest {
         String bureauOwner = "400";
         final String jurorNumber = "123456789";
         final String currentCourtLocation = "415";
-        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
 
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(currentCourtLocation);
@@ -1620,7 +1620,7 @@ class ManageDeferralsServiceTest {
         String bureauOwner = "400";
         String jurorNumber = "123456789";
         String currentCourtLocation = "415";
-        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
 
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(currentCourtLocation);
@@ -1653,7 +1653,7 @@ class ManageDeferralsServiceTest {
         String bureauOwner = "400";
         String jurorNumber = "123456789";
         String currentCourtLocation = "415";
-        final BureauJWTPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, "BUREAU_USER");
 
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(currentCourtLocation);
@@ -1691,7 +1691,7 @@ class ManageDeferralsServiceTest {
     @Test
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void test_getPreferredDeferralDates_twoValidDates() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
 
         Juror juror = new Juror();
@@ -1721,7 +1721,7 @@ class ManageDeferralsServiceTest {
     @Test
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void test_getPreferredDeferralDates_oneValidDate() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
 
         Juror juror = new Juror();
@@ -1749,7 +1749,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     void test_getPreferredDeferralDates_noValidDates() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
 
         Juror juror = new Juror();
@@ -1775,7 +1775,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     void test_getPreferredDeferralDates_invalidReadAccess() {
-        final BureauJWTPayload payload = TestUtils.createJwt("415", "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("415", "BUREAU_USER");
         String jurorNumber = "123456789";
 
         Juror juror = new Juror();
@@ -1798,7 +1798,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     void test_getPreferredDeferralDates_noDigitalResponse() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
 
         Juror juror = new Juror();
@@ -1822,7 +1822,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     void test_moveJurorsToActivePool_singleJuror() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         final String courtLocationCode = "415";
         String poolNumber = "123456789";
         List<String> jurorNumbers = new ArrayList<>();
@@ -1877,7 +1877,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     void test_moveJurorsToActivePool_multipleJuror() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         final String courtLocationCode = "415";
         final String poolNumber = "123456789";
         List<String> jurorNumbers = new ArrayList<>();
@@ -1925,7 +1925,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     void test_moveJurorsToActivePool_poolRequestNotFound() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         final String courtLocationCode = "415";
         String poolNumber = "123456789";
         List<String> jurorNumbers = new ArrayList<>();
@@ -1976,7 +1976,7 @@ class ManageDeferralsServiceTest {
         courtJurors.add("222222222");
         courtJurors.add("333333333");
 
-        BureauJWTPayload payload = TestUtils.createJwt("415", "COURT_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("415", "COURT_USER");
 
         String courtLocationCode = "415";
         List<JurorPool> poolMembers = createJurorPools(courtJurors, poolNumber, payload.getOwner(),
@@ -2016,7 +2016,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     void test_findActivePoolsForCourtLocation() {
-        final BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         final String courtLocationCode = "415";
 
         List<Tuple> results = new ArrayList<>();
@@ -2082,7 +2082,7 @@ class ManageDeferralsServiceTest {
                 LocalDate.of(2023, 7, 7));
 
         //Invoke service method under test
-        BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         DeferralOptionsDto deferralOptions =
             manageDeferralsService.getAvailablePoolsByCourtLocationCodeAndJurorNumber(payload,
                 "415",
@@ -2185,7 +2185,7 @@ class ManageDeferralsServiceTest {
                 LocalDate.of(2023, 7, 7));
 
         //Invoke service method under test
-        BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         DeferralOptionsDto deferralOptions =
             manageDeferralsService.getAvailablePoolsByCourtLocationCodeAndJurorNumber(payload,
                 "415",
@@ -2254,7 +2254,7 @@ class ManageDeferralsServiceTest {
             .when(digitalResponseRepository)
             .findByJurorNumber(jurorNumber);
 
-        BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> manageDeferralsService.getAvailablePoolsByCourtLocationCodeAndJurorNumber(payload,
                 "415", "123456789"));
@@ -2271,7 +2271,7 @@ class ManageDeferralsServiceTest {
         doReturn(new ArrayList<>()).when(jurorPoolRepository).findByJurorJurorNumberAndIsActive(
             "123456789", Boolean.TRUE);
 
-        BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> manageDeferralsService.getAvailablePoolsByCourtLocationCodeAndJurorNumber(payload,
                 "415", "123456789"));
@@ -2289,7 +2289,7 @@ class ManageDeferralsServiceTest {
             .when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(anyString(), anyBoolean());
 
-        BureauJWTPayload payload = TestUtils.createJwt("123", "BUREAU_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("123", "BUREAU_USER");
         assertThatExceptionOfType(MojException.Forbidden.class)
             .isThrownBy(() -> manageDeferralsService.getAvailablePoolsByCourtLocationCodeAndJurorNumber(payload,
                 "415", "123456789"));
@@ -2309,7 +2309,7 @@ class ManageDeferralsServiceTest {
 
         doReturn(null).when(digitalResponseRepository).findByJurorNumber(any());
 
-        BureauJWTPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> manageDeferralsService.getAvailablePoolsByCourtLocationCodeAndJurorNumber(payload,
                 "415", "123456789"));

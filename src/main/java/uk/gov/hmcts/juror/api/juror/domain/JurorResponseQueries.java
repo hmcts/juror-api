@@ -94,7 +94,6 @@ public class JurorResponseQueries {
     /**
      * Work allocation related methods, kept separate from the original work.
      *
-     * @return
      */
 
     private static BooleanExpression backlogUrgent() {
@@ -103,6 +102,7 @@ public class JurorResponseQueries {
 
 
     /**
+     * returns a response - Super Urgent.
      * @returns a response - Super Urgent
      */
     private static BooleanExpression backlogSuperUrgent() {
@@ -110,6 +110,7 @@ public class JurorResponseQueries {
     }
 
     /**
+     * return all  responses.
      * @return all  responses
      */
     public static BooleanExpression byStatusAll() {
@@ -119,6 +120,7 @@ public class JurorResponseQueries {
 
 
     /**
+     * return all urgent responses.
      * @return all urgent responses
      */
     public static BooleanExpression byStatusUrgent() {
@@ -128,6 +130,7 @@ public class JurorResponseQueries {
     }
 
     /**
+     * return all super urgent responses.
      * @return all super urgent responses
      */
     public static BooleanExpression byStatusSuperUrgent() {
@@ -138,6 +141,7 @@ public class JurorResponseQueries {
 
 
     /**
+     * return all un assigned responses assigned to staff.
      * @return all un assigned responses assigned to staff
      */
     public static BooleanExpression byAssignedNonUrgent(User staffMember) {
@@ -148,6 +152,7 @@ public class JurorResponseQueries {
     }
 
     /**
+     * return all urgent responses assigned to staff.
      * @return all urgent responses assigned to staff
      */
     public static BooleanExpression byAssignedUrgent(User staffMember) {
@@ -157,6 +162,7 @@ public class JurorResponseQueries {
     }
 
     /**
+     * return all super urgent responses assigned to staff.
      * @return all super urgent responses assigned to staff
      */
     public static BooleanExpression byAssignedSuperUrgent(User staffMember) {
@@ -165,6 +171,7 @@ public class JurorResponseQueries {
     }
 
     /**
+     * return all responses assigned to staff.
      * @return all responses assigned to staff
      */
     public static BooleanExpression byAssignedAll(User staffMember) {

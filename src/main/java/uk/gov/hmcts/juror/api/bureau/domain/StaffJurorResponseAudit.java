@@ -38,6 +38,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @AllArgsConstructor
 public class StaffJurorResponseAudit implements Serializable {
     /**
+     * Creates a new instance of the builder with the required arguments populated.
      * @param staffLogin          Login name of the staff member being assigned.
      * @param jurorNumber         Juror number of the juror response.
      * @param dateReceived        Date received of the juror response.

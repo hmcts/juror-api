@@ -30,8 +30,8 @@ import static org.mockito.Mockito.verify;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class JurorCommsCronBatchControllerTest extends AbstractIntegrationTest {
-    private static final String HMAC_HEADER_VALID = "eyJhbGciOiJIUzI1NiJ9" +
-        ".eyJleHAiOjM0NTIwMTk4MzM1MCwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";
+    private static final String HMAC_HEADER_VALID = "eyJhbGciOiJIUzI1NiJ9"
+        + ".eyJleHAiOjM0NTIwMTk4MzM1MCwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";
 
     private static final String[] TYPES = {"letterComms"};
     private HttpHeaders httpHeaders;
