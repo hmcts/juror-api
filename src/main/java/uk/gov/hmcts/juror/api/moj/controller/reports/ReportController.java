@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
 
 @RestController
@@ -30,7 +30,7 @@ public class ReportController {
     @PostMapping("/standard")
     @Operation(summary = "View a give report")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<StandardReportResponse> viewReportStandard(
+    public ResponseEntity<AbstractReportResponse<?>> viewReportStandard(
         @RequestBody
         @Valid StandardReportRequest standardReportRequest
     ) {

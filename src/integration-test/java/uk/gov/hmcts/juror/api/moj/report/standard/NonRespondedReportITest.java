@@ -6,10 +6,11 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReportControllerITest;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
@@ -19,7 +20,7 @@ import java.util.List;
     "/db/mod/reports/NonRespondedReportITest_typical.sql"
 })
 @SuppressWarnings("PMD.LawOfDemeter")
-class NonRespondedReportITest extends AbstractReportControllerITest {
+class NonRespondedReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public NonRespondedReportITest(TestRestTemplate template) {
         super(template, NonRespondedReport.class);
@@ -107,7 +108,7 @@ class NonRespondedReportITest extends AbstractReportControllerITest {
                     .value("CROWN COURT")
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.builder()
+                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")

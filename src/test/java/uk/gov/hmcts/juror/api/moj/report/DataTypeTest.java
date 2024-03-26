@@ -175,6 +175,12 @@ class DataTypeTest {
             LocalDate.class, QPoolRequest.poolRequest.returnDate, QPoolRequest.poolRequest);
     }
 
+    @Test
+    void poolNumber() {
+        assertMatchesStandard(DataType.POOL_NUMBER, "pool_number", "Pool Number",
+            String.class, QPoolRequest.poolRequest.poolNumber, QPoolRequest.poolRequest);
+    }
+
 
     void assertMatchesStandard(DataType dataType,
                                String id,
