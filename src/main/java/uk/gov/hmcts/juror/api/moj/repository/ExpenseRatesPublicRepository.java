@@ -7,6 +7,6 @@ import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesPublic;
 
 @Repository
 public interface ExpenseRatesPublicRepository extends ReadOnlyRepository<ExpenseRatesPublic, String>,
-    QuerydslPredicateExecutor<ExpenseRatesPublic>{
+    QuerydslPredicateExecutor<ExpenseRatesPublic> {
 
 }
