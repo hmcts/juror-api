@@ -217,7 +217,7 @@ class ManageDeferralsServiceTest {
             LocalDate newAttendanceDate = LocalDate.now();
             LocalDate oldAttendanceDate = LocalDate.of(2023, 6, 6);
 
-            final BureauJWTPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER);
 
             final PoolRequest oldPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111111, LOC_CODE_415,
                 oldAttendanceDate);
@@ -1191,7 +1191,7 @@ class ManageDeferralsServiceTest {
 
     @Test
     void processJurorDeferralCourtUser() {
-        final BureauJWTPayload courtPayload = TestUtils.createJwt("415", "COURT_USER");
+        final BureauJwtPayload courtPayload = TestUtils.createJwt("415", "COURT_USER");
         String jurorNumber = "123456789";
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
         final PoolRequest oldPoolRequest = createPoolRequest("415",

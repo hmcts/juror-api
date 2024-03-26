@@ -217,7 +217,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
         registerHistorySystem(jurorPool, HistoryCodeMod.WITHDRAWAL_LETTER, otherInfo);
     }
 
-    public void createPostponementLetterHistory(JurorPool jurorPool, String confirmationLetter){
+    public void createPostponementLetterHistory(JurorPool jurorPool, String confirmationLetter) {
         if (jurorPool.getDeferralDate() == null || !jurorPool.getDeferralCode().equals("P")) {
             throw new MojException.InternalServerError("A postponed juror_pool record should exist for "
                 + "the juror relating to the original pool they were summoned to and postponed from", null);
@@ -228,7 +228,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
 
     }
 
-    public void createSummonsLetterHistory(JurorPool jurorPool, String otherInfo){
+    public void createSummonsLetterHistory(JurorPool jurorPool, String otherInfo) {
         registerHistorySystem(jurorPool, HistoryCodeMod.PRINT_SUMMONS, otherInfo);
     }
 

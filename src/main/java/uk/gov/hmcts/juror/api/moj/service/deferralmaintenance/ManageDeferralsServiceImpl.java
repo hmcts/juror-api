@@ -88,7 +88,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.NumberUtils.unboxIntegerValues;
  */
 @Slf4j
 @Service
-@SuppressWarnings({"PMD.ExcessiveImports","PMD.PossibleGodClass"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.PossibleGodClass"})
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
@@ -660,12 +660,12 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     }
 
     private void printDeferralAndConfirmationLetters(String owner, JurorPool jurorPool, JurorPool newJurorPool) {
-        if(JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
+        if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
             // send letters via bulk print for Bureau users only
             printDataService.printDeferralLetter(jurorPool);
             jurorHistoryService.createDeferredLetterHistory(jurorPool);
             Juror juror = jurorPool.getJuror();
-            if(juror.getPoliceCheck() != null && juror.getPoliceCheck().isChecked()){
+            if (juror.getPoliceCheck() != null && juror.getPoliceCheck().isChecked()) {
                 printDataService.printConfirmationLetter(newJurorPool);
                 jurorHistoryService.createConfirmationLetterHistory(newJurorPool, "Confirmation Letter");
             }
@@ -673,7 +673,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     }
 
     private void printDeferralLetter(String owner, JurorPool jurorPool) {
-        if(JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
+        if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
             // send letter via bulk print for Bureau users only
             printDataService.printDeferralLetter(jurorPool);
             jurorHistoryService.createDeferredLetterHistory(jurorPool);
@@ -681,10 +681,10 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     }
 
     private void printConfirmationLetter(String owner, JurorPool jurorPool) {
-        if(JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
+        if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
             // send letter via bulk print for Bureau users only
             Juror juror = jurorPool.getJuror();
-            if(juror.getPoliceCheck() != null && juror.getPoliceCheck().isChecked()) {
+            if (juror.getPoliceCheck() != null && juror.getPoliceCheck().isChecked()) {
                 printDataService.printConfirmationLetter(jurorPool);
                 jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Confirmation Letter");
             }
@@ -692,10 +692,10 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     }
 
     private void printPostponementLetter(String owner, JurorPool jurorPool) {
-        if(JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
+        if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
             // Postponement needs the old jurorPool for deferral dates
             printDataService.printPostponeLetter(jurorPool);
-            jurorHistoryService.createPostponementLetterHistory(jurorPool,"Postponed Letter");
+            jurorHistoryService.createPostponementLetterHistory(jurorPool, "Postponed Letter");
         }
     }
 
@@ -713,12 +713,13 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         }
 
         String otherInfo = deferralReasonDto.getExcusalReasonCode().equalsIgnoreCase(POSTPONE_REASON_CODE)
-            ? POSTPONE_INFO : JurorHistory.ADDED;
+            ? POSTPONE_INFO
+            : JurorHistory.ADDED;
         // this will update the juror history for deferred juror
         updateJurorHistory(jurorPool, jurorPool.getPoolNumber(), auditorUsername, otherInfo,
             HistoryCodeMod.DEFERRED_POOL_MEMBER);
     }
-    
+
     private void updateJurorResponse(String jurorNumber, DeferralReasonRequestDto deferralReasonDto,
                                      String auditorUsername) {
 
