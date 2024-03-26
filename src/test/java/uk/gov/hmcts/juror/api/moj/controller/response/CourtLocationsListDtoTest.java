@@ -15,7 +15,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 public class CourtLocationsListDtoTest {
 
-    private CourtLocation createCourtLocation(String locationCode, String name, LocalTime attendanceTime, String owner) {
+    private CourtLocation createCourtLocation(String locationCode, String name, LocalTime attendanceTime,
+                                              String owner) {
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode(locationCode);
         courtLocation.setName(name);
