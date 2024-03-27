@@ -6792,7 +6792,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(JUROR_NUMBER + jurorPostfix);
 
 
-
         }
 
         void verifyDataWelsh(PrintLetterDataResponseDto response,
