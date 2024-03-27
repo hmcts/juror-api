@@ -9,15 +9,18 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResp
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 
 @Component
 @SuppressWarnings("PMD.LawOfDemeter")
-public class PostponedListByPoolReport extends AbstractReport {
+public class PostponedListByPoolReport extends AbstractStandardReport {
     @Autowired
     public PostponedListByPoolReport(PoolRequestRepository poolRequestRepository) {
         super(
@@ -42,8 +45,9 @@ public class PostponedListByPoolReport extends AbstractReport {
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                                                         StandardReportResponse.TableData tableData) {
+    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
+        StandardReportRequest request,
+        StandardReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
 
         Map<String, StandardReportResponse.DataTypeValue> map = loadStandardPoolHeaders(request, true, true);
         map.put("total_postponed", StandardReportResponse.DataTypeValue.builder()

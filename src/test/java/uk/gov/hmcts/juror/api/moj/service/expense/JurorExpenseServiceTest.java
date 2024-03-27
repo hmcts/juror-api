@@ -83,6 +83,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -3941,7 +3942,7 @@ class JurorExpenseServiceTest {
         @Test
         void positiveTrue() {
             Appearance appearance = mock(Appearance.class);
-            doReturn(true).when(appearance).isExpenseDetailsValid();
+            doReturn(Map.of()).when(appearance).getExpensesWhereDueIsLessThenPaid();
 
             assertDoesNotThrow(() -> jurorExpenseService.checkDueIsMoreThanPaid(appearance),
                 "Should not throw exception when due is more then paid");
@@ -3950,7 +3951,8 @@ class JurorExpenseServiceTest {
         @Test
         void positiveFalse() {
             Appearance appearance = mock(Appearance.class);
-            doReturn(false).when(appearance).isExpenseDetailsValid();
+            Map<String, Object> errors = Map.of("some field", true);
+            doReturn(errors).when(appearance).getExpensesWhereDueIsLessThenPaid();
 
             MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
                 () -> jurorExpenseService.checkDueIsMoreThanPaid(appearance),
@@ -3959,6 +3961,7 @@ class JurorExpenseServiceTest {
             assertThat(exception).isNotNull();
             assertThat(exception.getCause()).isNull();
             assertThat(exception.getMessage()).isEqualTo("Updated expense values cannot be less than the paid amount");
+            assertThat(exception.getMetaData()).isEqualTo(errors);
             assertThat(exception.getErrorCode()).isEqualTo(
                 MojException.BusinessRuleViolation.ErrorCode.EXPENSE_VALUES_REDUCED_LESS_THAN_PAID);
         }

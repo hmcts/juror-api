@@ -71,15 +71,15 @@ public class LetterBase {
         this.data.add(new LetterData(length, letterDataType));
     }
 
-
+    @SuppressWarnings("PMD.AvoidRethrowingException")
     public String getLetterString() {
         try {
             return this.data.stream()
                 .map(LetterData::getFormattedString)
                 .collect(Collectors.joining())
                 .toUpperCase();
-        } catch (MojException exception) {
-            throw exception;
+        } catch (MojException mojException) {
+            throw mojException;
         } catch (Exception exception) {
             log.error("Failed to generate letter string", exception);
             throw new MojException.InternalServerError("Failed to generate letter string",
@@ -104,7 +104,6 @@ public class LetterBase {
         final int processDays = 2;
         final int processDaysOverWeekend = 4;
 
-        SimpleDateFormat formatter = new SimpleDateFormat("dd MMMM yyyy");
         Calendar cal = Calendar.getInstance();
 
         switch (cal.get(Calendar.DAY_OF_WEEK)) {
@@ -118,6 +117,8 @@ public class LetterBase {
                 throw new MojException.BusinessRuleViolation("cannot generate a letter on a weekend",
                     LETTER_CANNOT_GENERATE_ON_WEEKEND);
         }
+
+        SimpleDateFormat formatter = new SimpleDateFormat("dd MMMM yyyy");
 
         return formatter.format(cal.getTime()).toUpperCase();
     }
@@ -223,7 +224,7 @@ public class LetterBase {
         public void validateContext(LetterContext context) {
             Arrays.stream(contextTypes).forEach(contextType -> {
                 if (!contextType.validate(context)) {
-                    throw new MojException.InternalServerError("Letter context validation failed", new Exception());
+                    throw new MojException.InternalServerError("Letter context validation failed", null);
                 }
             });
         }

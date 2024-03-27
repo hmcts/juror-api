@@ -136,6 +136,9 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
                                                                           WebRequest request) {
         Map<String, Object> body = createGenericErrorResponseBody(ex.getMessage());
         body.put("code", ex.getErrorCode());
+        if (ex.getMetaData() != null) {
+            body.put("meta_data", ex.getMetaData());
+        }
         return new ResponseEntity<>(body, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 

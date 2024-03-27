@@ -34,6 +34,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
@@ -364,58 +366,34 @@ public class Appearance implements Serializable {
         return getTotalTravelDue().subtract(getTotalTravelPaid());
     }
 
-    public boolean isExpenseDetailsValid() {
-        return
-            BigDecimalUtils.isGreaterThanOrEqualTo(
-                getOrZero(this.getPublicTransportDue()),
-                getOrZero(this.getPublicTransportPaid())
-            )
-                && BigDecimalUtils.isGreaterThanOrEqualTo(
-                getOrZero(this.getHiredVehicleDue()),
-                getOrZero(this.getHiredVehiclePaid())
-            )
-                && BigDecimalUtils.isGreaterThanOrEqualTo(
-                getOrZero(this.getMotorcycleDue()),
-                getOrZero(this.getMotorcyclePaid())
-            )
-                && BigDecimalUtils.isGreaterThanOrEqualTo(
-                getOrZero(this.getCarDue()),
-                getOrZero(this.getCarPaid())
-            )
-                && BigDecimalUtils.isGreaterThanOrEqualTo(
-                getOrZero(this.getBicycleDue()),
-                getOrZero(this.getBicyclePaid())
-            )
-                && BigDecimalUtils.isGreaterThanOrEqualTo(
-                getOrZero(this.getParkingDue()),
-                getOrZero(this.getParkingPaid())
-            )
-                && BigDecimalUtils.isGreaterThanOrEqualTo(
-                getOrZero(this.getSubsistenceDue()),
-                getOrZero(this.getSubsistencePaid())
-            )
-                && BigDecimalUtils.isGreaterThanOrEqualTo(
-                getOrZero(this.getLossOfEarningsDue()),
-                getOrZero(this.getLossOfEarningsPaid())
-            )
-                && BigDecimalUtils.isGreaterThanOrEqualTo(
-                getOrZero(this.getChildcareDue()),
-                getOrZero(this.getChildcarePaid())
-            )
-                && BigDecimalUtils.isGreaterThanOrEqualTo(
-                getOrZero(this.getMiscAmountDue()),
-                getOrZero(this.getMiscAmountPaid())
-            )
-                && BigDecimalUtils.isGreaterThanOrEqualTo(
-                getOrZero(this.getTotalDue()),
-                getOrZero(this.getTotalPaid())
-            )
-                && (!(AppearanceStage.EXPENSE_EDITED.equals(this.getAppearanceStage())
-                || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage()))
-                || BigDecimalUtils.isGreaterThanOrEqualTo(
-                getOrZero(this.getSmartCardAmountPaid()),
-                getOrZero(this.getSmartCardAmountDue())
-            ));
+    public Map<String, Object> getExpensesWhereDueIsLessThenPaid() {
+        Map<String, Object> errors = new HashMap<>();
+        addExpenseToErrors(errors, "publicTransport", this.getPublicTransportDue(), this.getPublicTransportPaid());
+        addExpenseToErrors(errors, "hiredVehicle", this.getHiredVehicleDue(), this.getHiredVehiclePaid());
+        addExpenseToErrors(errors, "motorcycle", this.getMotorcycleDue(), this.getMotorcyclePaid());
+        addExpenseToErrors(errors, "car", this.getCarDue(), this.getCarPaid());
+        addExpenseToErrors(errors, "bicycle", this.getBicycleDue(), this.getBicyclePaid());
+        addExpenseToErrors(errors, "parking", this.getParkingDue(), this.getParkingPaid());
+        addExpenseToErrors(errors, "subsistence", this.getSubsistenceDue(), this.getSubsistencePaid());
+        addExpenseToErrors(errors, "lossOfEarnings", this.getLossOfEarningsDue(), this.getLossOfEarningsPaid());
+        addExpenseToErrors(errors, "childcare", this.getChildcareDue(), this.getChildcarePaid());
+        addExpenseToErrors(errors, "miscAmount", this.getMiscAmountDue(), this.getMiscAmountPaid());
+        addExpenseToErrors(errors, "total", this.getTotalDue(), this.getTotalPaid());
+        if ((AppearanceStage.EXPENSE_EDITED.equals(this.getAppearanceStage())
+            || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage()))) {
+            if (BigDecimalUtils.isLessThan(this.getSmartCardAmountPaid(), this.getSmartCardAmountDue())) {
+                errors.put("smartCardAmount",
+                    "Must be at most " + BigDecimalUtils.currencyFormat(this.getSmartCardAmountPaid()));
+            }
+        }
+        return errors;
+    }
+
+    void addExpenseToErrors(Map<String, Object> errors, String expenseName,
+                            BigDecimal actualAmount, BigDecimal minAmount) {
+        if (BigDecimalUtils.isLessThan(getOrZero(actualAmount), getOrZero(minAmount))) {
+            errors.put(expenseName, "Must be at least " + BigDecimalUtils.currencyFormat(minAmount));
+        }
     }
 
     public void setPayAttendanceType(PayAttendanceType payAttendanceType) {
