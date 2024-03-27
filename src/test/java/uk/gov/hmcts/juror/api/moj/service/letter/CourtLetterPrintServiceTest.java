@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.domain.system.SystemParameterMod;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
+import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.SystemParameterRepositoryMod;
@@ -69,6 +70,7 @@ public class CourtLetterPrintServiceTest {
     private WelshCourtLocationRepository welshCourtLocationRepository;
     private SystemParameterRepositoryMod systemParameterRepositoryMod;
     private CourtPrintLetterRepository courtPrintLetterRepository;
+    private AppearanceRepository appearanceRepository;
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
@@ -89,9 +91,10 @@ public class CourtLetterPrintServiceTest {
         this.systemParameterRepositoryMod = mock(SystemParameterRepositoryMod.class);
         this.jurorHistoryRepository = mock(JurorHistoryRepository.class);
         this.courtPrintLetterRepository = mock(CourtPrintLetterRepository.class);
+        this.appearanceRepository = mock(AppearanceRepository.class);
         this.courtLetterPrintServiceImpl = new CourtLetterPrintServiceImpl(
             systemParameterRepositoryMod, jurorRepository, welshCourtLocationRepository, jurorHistoryRepository,
-            courtPrintLetterRepository);
+            courtPrintLetterRepository, appearanceRepository);
 
         Authentication auth = mock(Authentication.class);
         SecurityContext securityContext = mock(SecurityContext.class);
@@ -1829,19 +1832,6 @@ public class CourtLetterPrintServiceTest {
                 .as("Expect welsh to be false")
                 .isFalse();
 
-            assertThat(dto.getNonAttendance())
-                .as("Expect non attendance to be Non Attendance")
-                .isEqualTo("Non Attendance");
-            assertThat(dto.getLossOfEarnings())
-                .as("Expect loss of earnings to be 40")
-                .isEqualTo(new BigDecimal(40));
-            assertThat(dto.getChildCare())
-                .as("Expect child care to be 10")
-                .isEqualTo(new BigDecimal(10));
-            assertThat(dto.getMisc())
-                .as("Expect misc to be 10")
-                .isEqualTo(new BigDecimal(10));
-
             ArgumentCaptor<JurorHistory> jurorHistoryArgumentCaptor = ArgumentCaptor.forClass(JurorHistory.class);
 
             verify(systemParameterRepositoryMod, times(1)).findById(102);
@@ -1951,20 +1941,6 @@ public class CourtLetterPrintServiceTest {
             assertThat(dto.getWelsh())
                 .as("Expect welsh to be true")
                 .isTrue();
-
-            assertThat(response.get(0).getNonAttendance())
-                .as("Expect non attendance to be Non Attendance")
-                .isEqualTo("Non Attendance");
-            assertThat(response.get(0).getLossOfEarnings())
-                .as("Expect loss of earnings to be 40")
-                .isEqualTo(new BigDecimal(40));
-            assertThat(response.get(0).getChildCare())
-                .as("Expect child care to be 10")
-                .isEqualTo(new BigDecimal(10));
-            assertThat(response.get(0).getMisc())
-                .as("Expect misc to be 10")
-                .isEqualTo(new BigDecimal(10));
-
 
 
             ArgumentCaptor<JurorHistory> jurorHistoryArgumentCaptor = ArgumentCaptor.forClass(JurorHistory.class);

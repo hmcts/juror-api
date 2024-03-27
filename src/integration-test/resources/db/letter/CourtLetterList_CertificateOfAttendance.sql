@@ -23,5 +23,11 @@ INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_c
 travel_time,appearance_stage, loss_of_earnings_due, childcare_total_due, misc_total_due, non_attendance) VALUES
 	(current_date + 10,'555555561','415220401','415','09:30:00','16:30:00','01:12','CHECKED_OUT', 40,
 	10, 10, false),
+	(current_date + 11,'555555561','415220401','415','09:30:00','16:30:00','01:12','CHECKED_OUT', 40,
+	10, 10, false),
+	(current_date + 12,'555555561','415220401','415','09:30:00','16:30:00','01:12','CHECKED_OUT', 40,
+	10, 10, false),
+	(current_date + 13,'555555561','415220401','415','09:30:00','16:30:00','01:12','CHECKED_OUT', 40,
+	10, 10, false),
 	(current_date + 10,'555555562','415220504','457','09:30:00','16:30:00','01:12','CHECKED_OUT', 50,
 	30, 10, false);

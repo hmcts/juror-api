@@ -6791,18 +6791,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getJurorNumber()).as("Expect juror number to be 5555555" + jurorPostfix)
                 .isEqualTo(JUROR_NUMBER + jurorPostfix);
 
-            assertThat(response.getNonAttendance())
-                .as("Expect non attendance to be Non Attendance")
-                .isEqualTo("Non Attendance");
-            assertThat(response.getLossOfEarnings())
-                .as("Expect loss of earnings to be 40.00")
-                .isEqualTo(new BigDecimal("40.00"));
-            assertThat(response.getChildCare())
-                .as("Expect child care to be 10.00")
-                .isEqualTo(new BigDecimal("10.00"));
-            assertThat(response.getMisc())
-                .as("Expect misc to be 10.00")
-                .isEqualTo(new BigDecimal("10.00"));
+
 
         }
 
