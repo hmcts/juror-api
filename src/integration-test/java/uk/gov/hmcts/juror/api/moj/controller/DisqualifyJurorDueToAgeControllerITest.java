@@ -57,8 +57,6 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
     @Autowired
     private TestRestTemplate restTemplate;
 
-    private HttpHeaders httpHeaders;
-
     private static final String URI_DISQUALIFY_JUROR = "/api/v1/moj/disqualify/juror/%s/age";
     private static final String JUROR_NUMBER_123456789 = "123456789";
     private static final String JUROR_NUMBER_987654321 = "987654321";
@@ -74,14 +72,14 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
     public void disqualifyJurorDueToAge_PartialDigitalResponsePresent_BureauUser() {
 
         //Pre-verification: Verify status of tables before the juror is disqualified
-        digitalDisqualifyJurorPreVerification(JUROR_NUMBER_123456789);
+        assertDigitalDisqualifyJurorPreVerification(JUROR_NUMBER_123456789);
 
         //Setup data
         //Invoke service
         templateExchangeDisqualifyJuror(JUROR_NUMBER_123456789, BUREAU_USER, "400", HttpStatus.OK);
 
         //Post-verification: Verify tables updated
-        digitalDisqualifyJurorPostVerification(JUROR_NUMBER_123456789);
+        assertDigitalDisqualifyJurorPostVerification(JUROR_NUMBER_123456789);
     }
 
     @Test
@@ -143,7 +141,7 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
     }
 
 
-    private void digitalDisqualifyJurorPreVerification(String jurorNumber) {
+    private void assertDigitalDisqualifyJurorPreVerification(String jurorNumber) {
 
         //Juror digital response
         DigitalResponse digitalResponse = getJurorDigitalResponse(jurorNumber,
@@ -173,7 +171,7 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
     }
 
 
-    private void digitalDisqualifyJurorPostVerification(String jurorNumber) {
+    private void assertDigitalDisqualifyJurorPostVerification(String jurorNumber) {
         //Juror digital response
         DigitalResponse digitalResponse = getJurorDigitalResponse(jurorNumber,
             jurorDigitalResponseRepository);
@@ -271,7 +269,8 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
                                                  String owner,
                                                  HttpStatus httpStatus) {
         final URI uri = URI.create(String.format(URI_DISQUALIFY_JUROR, jurorNumber));
-        httpHeaders = initialiseHeaders("1", false, userType, 89, owner);
+
+        HttpHeaders httpHeaders = initialiseHeaders("1", false, userType, 89, owner);
 
         RequestEntity<String> requestEntity = new RequestEntity<>(httpHeaders,
             HttpMethod.PATCH, uri);
