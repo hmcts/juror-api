@@ -6,10 +6,11 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReportControllerITest;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
@@ -19,7 +20,7 @@ import java.util.List;
     "/db/mod/reports/UndeliverableListReportITest_typical.sql"
 })
 @SuppressWarnings("PMD.LawOfDemeter")
-public class UndeliverableListReportITest extends AbstractReportControllerITest {
+public class UndeliverableListReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
     public UndeliverableListReportITest(TestRestTemplate template) {
@@ -28,7 +29,7 @@ public class UndeliverableListReportITest extends AbstractReportControllerITest 
 
     @Override
     protected String getValidJwt() {
-        return getCourtJwt("400");
+        return getBureauJwt();
     }
 
     @Override
@@ -42,10 +43,30 @@ public class UndeliverableListReportITest extends AbstractReportControllerITest 
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalBureau() {
         testBuilder()
+            .jwt(getBureauJwt())
             .triggerValid()
-            .printResponse()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
+    }
+
+    @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+    void negativeCourtUser() {
+        testBuilder()
+            .jwt(getCourtJwt("414"))
+            .triggerInvalid()
+            .assertMojForbiddenResponse("User not allowed to access this report");
+    }
+
+    @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+    void negativeInvalidPayload() {
+        StandardReportRequest request = getValidPayload();
+        request.setPoolNumber(null);
+        testBuilder()
+            .payload(addReportType(request))
+            .triggerInvalid()
+            .assertInvalidPathParam("poolNumber: must not be null");
     }
 
     private StandardReportResponse getTypicalResponse() {
@@ -77,7 +98,7 @@ public class UndeliverableListReportITest extends AbstractReportControllerITest 
                     .value("CROWN COURT")
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.builder()
+                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")
@@ -98,7 +119,7 @@ public class UndeliverableListReportITest extends AbstractReportControllerITest 
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("address")
+                            .id("juror_address")
                             .name("Address")
                             .dataType("List")
                             .headings(List.of(
@@ -141,27 +162,26 @@ public class UndeliverableListReportITest extends AbstractReportControllerITest 
                             .build()))
                     .data(List.of(
                         new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "641500001")
-                            .add("first_name", "FirstName1")
-                            .add("last_name", "LastName1")
-                            .add("address", new ReportLinkedMap<String, Object>()
-                                .add("address_line_1", "1 TheAddressLine1")
-                                .add("address_line_2", "2 TheAddressLine1")
-                                .add("address_line_3", "3 TheAddressLine1")
-                                .add("address_line_4", "4 TheAddressLine1")
-                                .add("address_line_5", "5 TheAddressLine1")
-                                .add("postcode", "MK1 1LA")),
+                            .add("juror_number", "641500025")
+                            .add("first_name", "John6")
+                            .add("last_name", "Smith6")
+                            .add("juror_address", new ReportLinkedMap<String, Object>()
+                                .add("address_line_1", "6 AddressLine1")
+                                .add("address_line_2", "AddressLine2")
+                                .add("address_line_3", "AddressLine3")
+                                .add("address_line_4", "AddressLine4")
+                                .add("address_line_5", "AddressLine5")
+                                .add("postcode", "MK6 6LA")),
                         new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "641500002")
-                            .add("first_name", "FirstName2")
-                            .add("last_name", "LastName2")
-                            .add("address", new ReportLinkedMap<String, Object>()
-                                .add("address_line_1", "1 TheAddressLine2")
-                                .add("address_line_2", "2 TheAddressLine2")
-                                .add("address_line_3", "3 TheAddressLine2")
-                                .add("address_line_4", "4 TheAddressLine2")
-                                .add("address_line_5", "5 TheAddressLine2")
-                                .add("postcode", "MK1 1LA"))))
+                            .add("juror_number", "641500026")
+                            .add("first_name", "John7")
+                            .add("last_name", "Smith7")
+                            .add("juror_address", new ReportLinkedMap<String, Object>()
+                                .add("address_line_1", "7 AddressLine1")
+                                .add("address_line_2", "AddressLine2")
+                                .add("address_line_4", "AddressLine4")
+                                .add("address_line_5", "AddressLine5")
+                                .add("postcode", "MK7 7LA"))))
                     .build())
             .build();
     }

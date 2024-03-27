@@ -120,13 +120,13 @@ class DataTypeTest {
 
     @Test
     void postponedTo() {
-        assertMatchesStandard(DataType.POSTPONED_TO, "postponed_to", "Postcode", LocalDate.class,
+        assertMatchesStandard(DataType.POSTPONED_TO, "postponed_to", "Postponed to", LocalDate.class,
             QJurorPool.jurorPool.deferralDate, QJuror.juror);
     }
 
     @Test
     void deferredTo() {
-        assertMatchesStandard(DataType.DEFERRED_TO, "deferred_to", "Deferred To", LocalDate.class,
+        assertMatchesStandard(DataType.DEFERRED_TO, "deferred_to", "Deferred to", LocalDate.class,
             QJurorPool.jurorPool.deferralDate, QJuror.juror);
     }
 

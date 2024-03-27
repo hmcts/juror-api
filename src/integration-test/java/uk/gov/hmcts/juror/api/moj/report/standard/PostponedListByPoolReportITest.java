@@ -135,7 +135,7 @@ class PostponedListByPoolReportITest extends AbstractStandardReportControllerITe
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
                             .id("postponed_to")
-                            .name("Postcode")
+                            .name("Postponed to")
                             .dataType("LocalDate")
                             .headings(null)
                             .build()))

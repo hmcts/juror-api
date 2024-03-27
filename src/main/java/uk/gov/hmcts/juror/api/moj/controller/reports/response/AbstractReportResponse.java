@@ -22,12 +22,8 @@ import java.util.Map;
     @JsonSubTypes.Type(value = StandardReportResponse.class, name = "Grouped Response")
 })
 public class AbstractReportResponse<T> {
-
     private Map<String, DataTypeValue> headings;
-
-
     private TableData<T> tableData;
-
 
     @Data
     @Builder
@@ -45,9 +41,7 @@ public class AbstractReportResponse<T> {
     @AllArgsConstructor
     public static class TableData<T> {
         private List<Heading> headings;
-
         private T data;
-
 
         @Data
         @Builder

@@ -57,7 +57,6 @@ class NonRespondedReportITest extends AbstractStandardReportControllerITest {
             .assertEquals(getTypicalResponse());
     }
 
-
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeInvalidPayload() {
@@ -77,7 +76,6 @@ class NonRespondedReportITest extends AbstractStandardReportControllerITest {
             .triggerInvalid()
             .assertMojForbiddenResponse("User not allowed to access this pool");
     }
-
 
     private StandardReportResponse getTypicalResponse() {
         return StandardReportResponse.builder()

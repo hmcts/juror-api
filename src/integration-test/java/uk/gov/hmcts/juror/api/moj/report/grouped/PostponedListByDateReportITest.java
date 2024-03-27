@@ -129,7 +129,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                                 .build(),
                             StandardReportResponse.TableData.Heading.builder()
                                 .id("postponed_to")
-                                .name("Postcode")
+                                .name("Postponed to")
                                 .dataType("LocalDate")
                                 .headings(null)
                                 .build()))
@@ -192,7 +192,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
                             .id("postponed_to")
-                            .name("Postcode")
+                            .name("Postponed to")
                             .dataType("LocalDate")
                             .headings(null)
                             .build()))
@@ -275,7 +275,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
                             .id("postponed_to")
-                            .name("Postcode")
+                            .name("Postponed to")
                             .dataType("LocalDate")
                             .headings(null)
                             .build()))

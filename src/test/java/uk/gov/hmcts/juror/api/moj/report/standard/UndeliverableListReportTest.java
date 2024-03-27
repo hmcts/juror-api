@@ -6,16 +6,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReportTestSupport;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -24,16 +21,28 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-class UndeliverableListReportTest extends AbstractReportTestSupport<UndeliverableListReport> {
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@SuppressWarnings({"PMD.LawOfDemeter"})
+class UndeliverableListReportTest extends AbstractStandardReportTestSupport<UndeliverableListReport> {
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     public UndeliverableListReportTest() {
-        super(QJurorPool.jurorPool, UndeliverableListReport.RequestValidator.class,
-            DataType.JUROR_NUMBER, DataType.FIRST_NAME, DataType.LAST_NAME, DataType.JUROR_ADDRESS);
+        super(QJurorPool.jurorPool,
+            UndeliverableListReport.RequestValidator.class,
+            DataType.JUROR_NUMBER,
+            DataType.FIRST_NAME,
+            DataType.LAST_NAME,
+            DataType.JUROR_ADDRESS);
     }
 
     @BeforeEach
-    void beforeEach() {
+    @Override
+    public void beforeEach() {
+        super.beforeEach();
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
     }
 
@@ -42,6 +51,7 @@ class UndeliverableListReportTest extends AbstractReportTestSupport<Undeliverabl
         securityUtilMockedStatic.close();
     }
 
+    // common tests
     @Override
     public UndeliverableListReport createReport(PoolRequestRepository poolRequestRepository) {
         return new UndeliverableListReport(poolRequestRepository);
@@ -53,11 +63,6 @@ class UndeliverableListReportTest extends AbstractReportTestSupport<Undeliverabl
             .reportType(report.getName())
             .poolNumber(TestConstants.VALID_POOL_NUMBER)
             .build();
-    }
-
-    @Override
-    protected Class<?> getValidatorClass() {
-        return UndeliverableListReport.RequestValidator.class;
     }
 
     @Override
@@ -77,7 +82,7 @@ class UndeliverableListReportTest extends AbstractReportTestSupport<Undeliverabl
     @Override
     public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
-        StandardReportResponse.TableData tableData,
+        AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
         List<LinkedHashMap<String, Object>> data) {
 
         when(data.size()).thenReturn(5);
@@ -99,8 +104,6 @@ class UndeliverableListReportTest extends AbstractReportTestSupport<Undeliverabl
         verify(data, times(1)).size();
         return map;
     }
-
-    //taherah - add test for bureau user
 
     // custom tests
     @Test

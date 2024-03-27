@@ -9,14 +9,16 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResp
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
-//taherah - update this (use AbstractStandardReport)
-public class UndeliverableListReport extends AbstractReport {
+public class UndeliverableListReport extends AbstractStandardReport {
 
     @Autowired
     public UndeliverableListReport(PoolRequestRepository poolRequestRepository) {
@@ -27,7 +29,7 @@ public class UndeliverableListReport extends AbstractReport {
             DataType.LAST_NAME,
             DataType.JUROR_ADDRESS);
 
-//            isBureauUserOnly(); //taherah - add the changes from Bens latest PR.
+        isBureauUserOnly();
     }
 
     @Override
@@ -44,8 +46,10 @@ public class UndeliverableListReport extends AbstractReport {
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                                                         StandardReportResponse.TableData tableData) {
+    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
+        StandardReportRequest request,
+        StandardReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
+
         Map<String, StandardReportResponse.DataTypeValue> map = loadStandardPoolHeaders(request, true, true);
         map.put("total_undelivered", StandardReportResponse.DataTypeValue.builder()
             .displayName("Total undelivered")

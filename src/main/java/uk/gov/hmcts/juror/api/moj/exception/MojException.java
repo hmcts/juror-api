@@ -39,16 +39,19 @@ public class MojException extends RuntimeException {
         public BusinessRuleViolation(String customErrorMessage, ErrorCode errorCode) {
             this(customErrorMessage, errorCode, null);
         }
+
         public BusinessRuleViolation(String customErrorMessage, ErrorCode errorCode, Map<String,Object> metaData) {
             this(customErrorMessage, errorCode, metaData, null);
         }
 
-        public BusinessRuleViolation(String customErrorMessage, ErrorCode errorCode, Map<String,Object> metaData, Throwable cause) {
+        public BusinessRuleViolation(String customErrorMessage,
+                                     ErrorCode errorCode,
+                                     Map<String,Object> metaData,
+                                     Throwable cause) {
             super(customErrorMessage, cause);
             this.errorCode = errorCode;
             this.metaData = metaData;
         }
-
 
         public enum ErrorCode {
             COMPLETE_SERVICE_JUROR_IN_INVALID_STATE,
