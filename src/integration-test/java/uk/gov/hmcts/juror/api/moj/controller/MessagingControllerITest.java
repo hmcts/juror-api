@@ -51,10 +51,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -3423,7 +3423,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void badPayload() throws Exception {
-                Map<String, String> request = new ConcurrentHashMap<>();
+                Map<String, String> request = new HashMap<>();
                 request.put("<trial_no>", null);
                 assertInvalidPathParam(
                     triggerInvalid(MessageType.SELECTION_COURT.name(), "415", "415",
