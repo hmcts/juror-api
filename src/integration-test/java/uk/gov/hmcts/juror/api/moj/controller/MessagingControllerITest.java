@@ -22,7 +22,10 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.hmcts.juror.api.AbstractControllerIntegrationTest;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorAndPoolRequest;
+import uk.gov.hmcts.juror.api.moj.controller.request.messages.ExportContactDetailsRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.messages.MessageSendRequest;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBase;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBureau;
@@ -48,10 +51,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -3420,7 +3423,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void badPayload() throws Exception {
-                Map<String, String> request = new HashMap<>();
+                Map<String, String> request = new ConcurrentHashMap<>();
                 request.put("<trial_no>", null);
                 assertInvalidPathParam(
                     triggerInvalid(MessageType.SELECTION_COURT.name(), "415", "415",
@@ -3431,4 +3434,165 @@ class MessagingControllerITest extends AbstractIntegrationTest {
             }
         }
     }
+
+
+    @Nested
+    @DisplayName("POST " + GetMessageDetailsPopulated.URL)
+    @Sql({"/db/mod/truncate.sql", "/db/MessagingControllerITest_toCsv.sql"})
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+    class ToCsv extends AbstractControllerIntegrationTest<ExportContactDetailsRequest, String> {
+
+        private static final String URL = BASE_URL + "/csv/{loc_code}";
+
+        private static final String LOC_CODE = "415";
+
+        protected ToCsv() {
+            super(POST, template, HttpStatus.OK);
+        }
+
+        protected String toUrl(String locCode) {
+            return URL.replace("{loc_code}", locCode);
+        }
+
+        @Override
+        protected String getValidUrl() {
+            return toUrl(LOC_CODE);
+        }
+
+        @Override
+        protected String getValidJwt() {
+            return getCourtJwt(LOC_CODE);
+        }
+
+
+        @Override
+        protected ExportContactDetailsRequest getValidPayload() {
+            return ExportContactDetailsRequest.builder()
+                .exportItems(List.of(ExportContactDetailsRequest.ExportItems.JUROR_NUMBER))
+                .jurors(List.of(
+                    JurorAndPoolRequest.builder()
+                        .jurorNumber("641500024")
+                        .poolNumber("415230103")
+                        .build(),
+                    JurorAndPoolRequest.builder()
+                        .jurorNumber("641500025")
+                        .poolNumber("415230104")
+                        .build()
+                ))
+                .build();
+        }
+
+        @BeforeEach
+        @Override
+        public void setUp() throws Exception {
+            httpHeaders = new HttpHeaders();
+            httpHeaders.set("Accept", "text/csv," + MediaType.APPLICATION_JSON_VALUE);
+        }
+
+        @Nested
+        @DisplayName("Positive")
+        class Positive {
+
+            @Test
+            void typicalCourt() {
+                ExportContactDetailsRequest payload = getValidPayload();
+                payload.setExportItems(List.of(ExportContactDetailsRequest.ExportItems.values()));
+                testBuilder()
+                    .payload(payload)
+                    .triggerValid()
+                    .assertEquals(
+                        "Juror Number,Title,First Name,Last Name,Email,Main Phone,Other Phone,Work Phone,Address Line"
+                            + " 1,Address Line 2,Address Line 3,Address Line 4,Address Line 5,Postcode,Welsh language,"
+                            + "Status,Pool Number,Next due at court date,Date deferred to,Completion date\n"
+                            + "641500024,T4,FName4,LName4,email4@email.com,1234567894,1234567884,1234567874,address1 "
+                            + "4,address2 4,address3 4,address4 4,address5 4,CF10 4AA,false,4,415230103,04/01/2023,"
+                            + "null,04/01/2023\n"
+                            + "641500025,T5,FName5,LName5,email5@email.com,1234567896,1234567885,1234567875,address1 "
+                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,5,415230104,05/01/2023,"
+                            + "05/02/2023,05/01/2023"
+                    );
+            }
+
+            @Test
+            void typicalCourtReduced() {
+                ExportContactDetailsRequest payload = getValidPayload();
+                payload.setExportItems(List.of(
+                    ExportContactDetailsRequest.ExportItems.JUROR_NUMBER,
+                    ExportContactDetailsRequest.ExportItems.FIRST_NAME,
+                    ExportContactDetailsRequest.ExportItems.LAST_NAME));
+                testBuilder()
+                    .payload(payload)
+                    .triggerValid()
+                    .assertEquals("Juror Number,First Name,Last Name\n"
+                        + "641500024,FName4,LName4\n"
+                        + "641500025,FName5,LName5"
+                    );
+            }
+
+            @Test
+            void typicalBureau() {
+                ExportContactDetailsRequest payload = ExportContactDetailsRequest.builder()
+                    .exportItems(List.of(ExportContactDetailsRequest.ExportItems.values()))
+                    .jurors(List.of(
+                        JurorAndPoolRequest.builder()
+                            .jurorNumber("641500021")
+                            .poolNumber("415230101")
+                            .build(),
+                        JurorAndPoolRequest.builder()
+                            .jurorNumber("641500025")
+                            .poolNumber("415230104")
+                            .build()
+                    )).build();
+
+                testBuilder()
+                    .payload(payload)
+                    .triggerValid()
+                    .printResponse()
+                    .assertEquals(
+                        "Juror Number,Title,First Name,Last Name,Email,Main Phone,Other Phone,Work Phone,Address Line"
+                            + " 1,Address Line 2,Address Line 3,Address Line 4,Address Line 5,Postcode,Welsh language,"
+                            + "Status,Pool Number,Next due at court date,Date deferred to,Completion date\n"
+                            + "641500021,T1,FName1,LName1,email1@email.com,1234567891,1234567881,1234567871,address1 "
+                            + "1,address2 1,address3 1,address4 1,address5 1,CF10 1AA,false,1,415230101,null,null,"
+                            + "01/01/2023\n"
+                            + "641500025,T5,FName5,LName5,email5@email.com,1234567896,1234567885,1234567875,address1 "
+                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,5,415230104,05/01/2023,"
+                            + "05/02/2023,05/01/2023");
+            }
+        }
+
+        @Nested
+        @DisplayName("Negative")
+        class Negative {
+            @Test
+            void unauthorisedNotMemberOfCourt() {
+                testBuilder()
+                    .jwt(getCourtJwt("414"))
+                    .triggerInvalid()
+                    .assertForbiddenResponse();
+            }
+
+            @Test
+            void invalidLocCode() {
+                testBuilder()
+                    .url(toUrl("INVALID"))
+                    .jwt(getCourtJwt("INVALID"))
+                    .triggerInvalid()
+                    .assertInvalidPathParam("toCsv.locCode: size must be between 3 and 3");
+            }
+
+            @Test
+            void badPayload() {
+                ExportContactDetailsRequest payload = getValidPayload();
+                payload.setExportItems(null);
+                testBuilder()
+                    .payload(payload)
+                    .triggerInvalid()
+                    .assertInvalidPayload(
+                        new RestResponseEntityExceptionHandler.FieldError("exportItems", "must not be empty")
+                    );
+            }
+        }
+    }
+
 }
