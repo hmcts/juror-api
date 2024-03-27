@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service.jurormanagement;
 
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
@@ -15,20 +16,22 @@ import java.time.LocalDate;
 
 public interface JurorAppearanceService {
 
-    JurorAppearanceResponseDto.JurorAppearanceResponseData processAppearance(
-        BureauJWTPayload payload, JurorAppearanceDto jurorAppearanceDto);
+    void addAttendanceDay(BureauJwtPayload payload, AddAttendanceDayDto dto);
 
-    JurorAppearanceResponseDto getAppearanceRecords(String locCode, LocalDate date, BureauJWTPayload payload);
+    JurorAppearanceResponseDto.JurorAppearanceResponseData processAppearance(
+        BureauJwtPayload payload, JurorAppearanceDto jurorAppearanceDto);
+
+    JurorAppearanceResponseDto getAppearanceRecords(String locCode, LocalDate date, BureauJwtPayload payload);
 
     boolean hasAppearances(String jurorNumber);
 
-    AttendanceDetailsResponse retrieveAttendanceDetails(BureauJWTPayload payload, RetrieveAttendanceDetailsDto request);
+    AttendanceDetailsResponse retrieveAttendanceDetails(BureauJwtPayload payload, RetrieveAttendanceDetailsDto request);
 
-    AttendanceDetailsResponse updateAttendance(BureauJWTPayload payload, UpdateAttendanceDto request);
+    AttendanceDetailsResponse updateAttendance(BureauJwtPayload payload, UpdateAttendanceDto request);
 
     String updateAttendanceDate(UpdateAttendanceDateDto request);
 
-    AttendanceDetailsResponse deleteAttendance(BureauJWTPayload payload, UpdateAttendanceDto request);
+    AttendanceDetailsResponse deleteAttendance(BureauJwtPayload payload, UpdateAttendanceDto request);
 
     JurorsToDismissResponseDto retrieveJurorsToDismiss(JurorsToDismissRequestDto request);
 

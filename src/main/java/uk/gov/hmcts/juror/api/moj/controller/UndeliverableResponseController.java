@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.bureau.exception.ExcusalException;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.service.UndeliverableResponseService;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
 
@@ -35,7 +35,7 @@ public class UndeliverableResponseController {
     @PutMapping("/{jurorNumber}")
     @Operation(summary = "Mark a Juror as undeliverable with information provided")
     public ResponseEntity<Void> markJurorAsUndeliverable(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @PathVariable(name = "jurorNumber") @JurorNumber @Valid String jurorNumber) throws ExcusalException {
         undeliverableResponseService.markAsUndeliverable(payload, jurorNumber);
         return ResponseEntity.ok().build();

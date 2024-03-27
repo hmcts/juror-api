@@ -248,7 +248,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @SuppressWarnings("checkstyle:LineLength")
     public void setDefaultExpensesForJuror(RequestDefaultExpensesDto dto) {
 
-        String owner = SecurityUtil.getActiveOwner();
+        final String owner = SecurityUtil.getActiveOwner();
 
         Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, dto.getJurorNumber());
 
@@ -565,10 +565,11 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     void checkDueIsMoreThanPaid(Appearance appearance) {
-        if (!appearance.isExpenseDetailsValid()) {
+        Map<String, Object> errors = appearance.getExpensesWhereDueIsLessThenPaid();
+        if (!errors.isEmpty()) {
             throw new MojException.BusinessRuleViolation(
                 "Updated expense values cannot be less than the paid amount",
-                MojException.BusinessRuleViolation.ErrorCode.EXPENSE_VALUES_REDUCED_LESS_THAN_PAID);
+                MojException.BusinessRuleViolation.ErrorCode.EXPENSE_VALUES_REDUCED_LESS_THAN_PAID, errors);
         }
     }
 
@@ -1178,7 +1179,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Transactional(readOnly = true)
     public ExpenseRates getCurrentExpenseRates(boolean onlyFinancialLossLimit) {
         ExpenseRates expenseRates = expenseRatesRepository.getCurrentRates();
-        if(onlyFinancialLossLimit){
+        if (onlyFinancialLossLimit) {
             expenseRates = ExpenseRates.builder()
                 .limitFinancialLossFullDay(expenseRates.getLimitFinancialLossFullDay())
                 .limitFinancialLossHalfDay(expenseRates.getLimitFinancialLossHalfDay())

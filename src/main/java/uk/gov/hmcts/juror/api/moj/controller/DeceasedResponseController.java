@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.bureau.exception.ExcusalException;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.MarkAsDeceasedDto;
 import uk.gov.hmcts.juror.api.moj.service.DeceasedResponseService;
 
@@ -39,7 +39,7 @@ public class DeceasedResponseController {
                                                     @Valid @RequestBody MarkAsDeceasedDto markAsDeceasedDto)
         throws ExcusalException {
 
-        BureauJWTPayload payload = (BureauJWTPayload) auth.getPrincipal();
+        BureauJwtPayload payload = (BureauJwtPayload) auth.getPrincipal();
 
         deceasedResponseService.markAsDeceased(payload, markAsDeceasedDto);
         return ResponseEntity.ok().build();

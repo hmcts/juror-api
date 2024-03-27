@@ -14,14 +14,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
-import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,13 +35,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.withSettings;
 
 @SuppressWarnings({
     "PMD.LawOfDemeter",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.ExcessiveImports",
 })
-public abstract class AbstractReportTestSupport<R extends AbstractReport> {
+public abstract class AbstractReportTestSupport<
+    T, R extends AbstractReport<T>> {
 
     private final EntityPath<?> from;
     private final DataType[] dataTypes;
@@ -60,22 +63,19 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
         this.validator = validatorFactory.getValidator();
         validatorFactory.close();
         this.poolRequestRepository = mock(PoolRequestRepository.class);
-        this.report = createReport(poolRequestRepository);
         this.from = from;
         this.dataTypes = dataTypes.clone();
         this.validatorClass = validatorClass;
     }
 
     @BeforeEach
-    public void setUp() {
+    public void beforeEach() {
         this.poolRequestRepository = mock(PoolRequestRepository.class);
         this.report = spy(createReport(poolRequestRepository));
         doNothing().when(report).addGroupBy(any(), any());
     }
 
     protected abstract StandardReportRequest getValidRequest();
-
-    protected abstract Class<?> getValidatorClass();
 
     @Test
     void negativeRequestMissingReportType() {
@@ -85,7 +85,7 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
     }
 
     protected final List<ConstraintViolation<StandardReportRequest>> validateRequest(StandardReportRequest request) {
-        return new ArrayList<>(validator.validate(request, getValidatorClass()));
+        return new ArrayList<>(validator.validate(request, validatorClass));
     }
 
 
@@ -110,6 +110,7 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
             withSettings().defaultAnswer(RETURNS_SELF));
         StandardReportRequest request = getValidRequest();
         positivePreProcessQueryTypical(query, request);
+        verifyNoMoreInteractions(query);
     }
 
     @Test
@@ -117,45 +118,48 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
         assertThat(report.getRequestValidatorClass()).isEqualTo(validatorClass);
     }
 
-    public abstract Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
+    public abstract Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
-        StandardReportResponse.TableData tableData,
-        List<LinkedHashMap<String, Object>> data);
+        AbstractReportResponse.TableData<T> tableData,
+        T data);
 
     @Test
+    @SuppressWarnings("unchecked")
     final void positiveGetHeadingsTypical() {
         StandardReportRequest request = mock(StandardReportRequest.class);
-        StandardReportResponse.TableData tableData = mock(StandardReportResponse.TableData.class);
-        List<LinkedHashMap<String, Object>> data = spy(new ArrayList<>());
+        AbstractReportResponse.TableData<T> tableData = mock(AbstractReportResponse.TableData.class);
+        T data = spy(createData());
         doReturn(data).when(tableData).getData();
-        Map<String, StandardReportResponse.DataTypeValue> standardPoolMappings = getStandardPoolHeaders();
+        Map<String, AbstractReportResponse.DataTypeValue> standardPoolMappings = getStandardPoolHeaders();
         doReturn(standardPoolMappings).when(report).loadStandardPoolHeaders(request, true, true);
 
-        Map<String, StandardReportResponse.DataTypeValue> headings =
+        Map<String, AbstractReportResponse.DataTypeValue> headings =
             positiveGetHeadingsTypical(request, tableData, data);
         //Is set via getStandardReportResponse so should not be set here
         assertThat(headings).isNotNull().doesNotContainKey("report_created");
     }
 
-    protected final Map<String, StandardReportResponse.DataTypeValue> getStandardPoolHeaders() {
+    protected abstract T createData();
+
+    protected final Map<String, AbstractReportResponse.DataTypeValue> getStandardPoolHeaders() {
         return new ConcurrentHashMap<>(
             Map.of(
-                "pool_number", StandardReportResponse.DataTypeValue.builder()
+                "pool_number", AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Pool Number")
                     .dataType("String")
                     .value(TestConstants.VALID_POOL_NUMBER)
                     .build(),
-                "pool_type", StandardReportResponse.DataTypeValue.builder()
+                "pool_type", AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Pool Type")
                     .dataType("String")
                     .value("CROWN COURT")
                     .build(),
-                "service_start_date", StandardReportResponse.DataTypeValue.builder()
+                "service_start_date", AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Service Start Date")
                     .dataType("LocalDate")
                     .value(DateTimeFormatter.ISO_DATE.format(LocalDate.of(2023, 1, 1)))
                     .build(),
-                "court_name", StandardReportResponse.DataTypeValue.builder()
+                "court_name", AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Court Name")
                     .dataType("String")
                     .value("CHESTER (415)")
@@ -164,16 +168,24 @@ public abstract class AbstractReportTestSupport<R extends AbstractReport> {
         );
     }
 
-    protected final void assertHeadingContains(Map<String, StandardReportResponse.DataTypeValue> actualMap,
-                                               Map<String, StandardReportResponse.DataTypeValue> expectedData) {
+    protected final Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameEntry() {
+        return new AbstractMap.SimpleEntry<>("court_name", AbstractReportResponse.DataTypeValue.builder()
+            .displayName("Court Name")
+            .dataType(String.class.getSimpleName())
+            .value("CHESTER (415)")
+            .build());
+    }
+
+    protected final void assertHeadingContains(Map<String, AbstractReportResponse.DataTypeValue> actualMap,
+                                               Map<String, AbstractReportResponse.DataTypeValue> expectedData) {
         assertHeadingContains(actualMap, null, false, expectedData);
     }
 
-    protected final void assertHeadingContains(Map<String, StandardReportResponse.DataTypeValue> actualMap,
+    protected final void assertHeadingContains(Map<String, AbstractReportResponse.DataTypeValue> actualMap,
                                                StandardReportRequest request,
                                                boolean hasStandardPoolHeaders,
-                                               Map<String, StandardReportResponse.DataTypeValue> expectedData) {
-        HashMap<String, StandardReportResponse.DataTypeValue> standardPoolMappings = new HashMap<>(expectedData);
+                                               Map<String, AbstractReportResponse.DataTypeValue> expectedData) {
+        HashMap<String, AbstractReportResponse.DataTypeValue> standardPoolMappings = new HashMap<>(expectedData);
         if (hasStandardPoolHeaders) {
             standardPoolMappings.putAll(getStandardPoolHeaders());
         }

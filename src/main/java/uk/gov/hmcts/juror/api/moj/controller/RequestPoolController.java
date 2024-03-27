@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationListDto;
@@ -55,7 +55,7 @@ public class RequestPoolController {
     @GetMapping("/court-locations")
     @Operation(summary = "Retrieve a list of all court locations")
     public ResponseEntity<CourtLocationListDto> getCourtLocations(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload) {
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload) {
         CourtLocationListDto courtLocations =
             courtLocationService.buildCourtLocationDataResponse(payload);
         return ResponseEntity.ok().body(courtLocations);
@@ -77,7 +77,7 @@ public class RequestPoolController {
     @GetMapping("/pools-requested")
     @Operation(summary = "Retrieve a list of all pools filtered by status, pool type and court location")
     public ResponseEntity<PoolRequestListDto> getPoolRequests(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam(required = false) @Size(min = 3, max = 3) @Valid String locCode,
         @RequestParam @Valid int offset,
         @RequestParam @Valid String sortBy,
@@ -98,7 +98,7 @@ public class RequestPoolController {
     @PostMapping("/new-pool")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create and persist a new pool request")
-    public void createPoolRequest(@Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+    public void createPoolRequest(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                   @RequestBody @Valid PoolRequestDto poolRequestDto) {
         poolRequestService.savePoolRequest(poolRequestDto, payload);
     }
@@ -184,7 +184,7 @@ public class RequestPoolController {
     @GetMapping("/pools-active")
     @Operation(summary = "Retrieve a list of all active pools for Court or Bureau users")
     public ResponseEntity<PoolRequestActiveListDto> getActivePoolRequests(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam(required = false) @Size(min = 3, max = 3) @Valid String locCode,
         @RequestParam @Valid String tab,
         @RequestParam @Valid int offset,

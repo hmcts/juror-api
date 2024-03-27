@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolHistoryListDto;
 import uk.gov.hmcts.juror.api.moj.service.PoolHistoryService;
 
@@ -35,7 +35,7 @@ public class PoolHistoryController {
     @GetMapping("/{poolNumber}")
     @Operation(summary = "Retrieve all unique pool history events for a single pool request")
     public ResponseEntity<PoolHistoryListDto> getPoolHistory(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @PathVariable @Size(min = 9, max = 9)
         @Parameter(description = "Pool number", required = true)
         @Valid String poolNumber) {

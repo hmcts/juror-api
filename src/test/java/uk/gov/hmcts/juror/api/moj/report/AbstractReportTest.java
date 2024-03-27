@@ -6,9 +6,6 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,15 +13,17 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import uk.gov.hmcts.juror.api.TestConstants;
-import uk.gov.hmcts.juror.api.bureau.domain.QBureauJurorCJS;
+import uk.gov.hmcts.juror.api.bureau.domain.QBureauJurorCjs;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -34,11 +33,13 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -47,7 +48,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -89,6 +89,15 @@ class AbstractReportTest {
     @Nested
     class ClassToJoinTest {
         @Test
+        void sizeCheck() {
+            assertThat(AbstractReport.CLASS_TO_JOIN).hasSize(4);
+            assertThat(AbstractReport.CLASS_TO_JOIN.get(QJuror.juror)).hasSize(2);
+            assertThat(AbstractReport.CLASS_TO_JOIN.get(QJurorPool.jurorPool)).hasSize(1);
+            assertThat(AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest)).hasSize(1);
+            assertThat(AbstractReport.CLASS_TO_JOIN.get(QAppearance.appearance)).hasSize(2);
+        }
+
+        @Test
         @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void jurorToJurorPool() {
             assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJuror.juror)).isTrue();
@@ -124,6 +133,17 @@ class AbstractReportTest {
         }
 
         @Test
+        void poolRequestToJurorPool() {
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QPoolRequest.poolRequest)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest);
+
+            assertThat(map.containsKey(QJurorPool.jurorPool)).isTrue();
+            assertThat(map.get(QJurorPool.jurorPool)).isEqualTo(
+                new Predicate[]{QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber)}
+            );
+        }
+
+        @Test
         void appearanceToJuror() {
             assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QAppearance.appearance)).isTrue();
             Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QAppearance.appearance);
@@ -151,7 +171,7 @@ class AbstractReportTest {
     @Test
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveConstructorTest() {
-        AbstractReport report = new AbstractReportTestImpl(
+        AbstractReport<?> report = new AbstractReportTestImpl(
             poolRequestRepository, QJuror.juror, DataType.JUROR_NUMBER, DataType.FIRST_NAME,
             DataType.CONTACT_DETAILS, DataType.STATUS
         );
@@ -180,7 +200,7 @@ class AbstractReportTest {
         @Test
         @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypical() {
-            AbstractReport report = createReport();
+            AbstractReport<Object> report = createReport();
             StandardReportRequest request = mock(StandardReportRequest.class);
             List<Tuple> data = mock(List.class);
             StandardReportResponse.TableData tableData = mock(StandardReportResponse.TableData.class);
@@ -189,16 +209,16 @@ class AbstractReportTest {
             doReturn(tableData).when(report).tupleToTableData(data);
 
 
-            Map<String, StandardReportResponse.DataTypeValue> headingsResponse = Map.of(
+            Map<String, AbstractReportResponse.DataTypeValue> headingsResponse = Map.of(
                 "testValue1",
-                mock(StandardReportResponse.DataTypeValue.class),
+                mock(AbstractReportResponse.DataTypeValue.class),
                 "testValue2",
-                mock(StandardReportResponse.DataTypeValue.class)
+                mock(AbstractReportResponse.DataTypeValue.class)
             );
             doReturn(headingsResponse).when(report).getHeadings(request, tableData);
 
 
-            StandardReportResponse response = report.getStandardReportResponse(request);
+            AbstractReportResponse<?> response = report.getStandardReportResponse(request);
 
             assertThat(response).isNotNull();
             assertThat(response.getTableData()).isEqualTo(tableData);
@@ -206,7 +226,7 @@ class AbstractReportTest {
             assertThat(response.getHeadings()).hasSize(3);
             assertThat(response.getHeadings()).containsAllEntriesOf(headingsResponse);
             assertThat(response.getHeadings()).containsKey("report_created");
-            StandardReportResponse.DataTypeValue reportCreated = response.getHeadings().get("report_created");
+            AbstractReportResponse.DataTypeValue reportCreated = response.getHeadings().get("report_created");
             assertThat(reportCreated).isNotNull();
             assertThat(reportCreated.getDataType()).isEqualTo(LocalDateTime.class.getSimpleName());
             LocalDateTime createdAt =
@@ -223,25 +243,112 @@ class AbstractReportTest {
         }
     }
 
+    @Nested
+    @DisplayName("public Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameHeader()")
+    class GetCourtNameHeader {
+
+        @Test
+        void positiveTypicalFromCourtLocation() {
+            AbstractReport<Object> report = createReport();
+
+            CourtLocation courtLocation = mock(CourtLocation.class);
+
+            when(courtLocation.getName()).thenReturn("CHESTER");
+            when(courtLocation.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
+
+            assertThat(report.getCourtNameHeader(courtLocation))
+                .isEqualTo(Map.entry("court_name",
+                    new AbstractReportResponse.DataTypeValue(
+                        "Court Name",
+                        String.class.getSimpleName(),
+                        "CHESTER (" + TestConstants.VALID_COURT_LOCATION + ")")
+                ));
+
+            verify(courtLocation).getName();
+            verify(courtLocation).getLocCode();
+            verifyNoMoreInteractions(courtLocation);
+        }
+    }
+
+    @Nested
+    @DisplayName("protected List<LinkedHashMap<String, Object>> getTableDataAsList(List<Tuple> data)")
+    class GetTableDataAsList {
+
+        @Test
+        void positiveHasNulValue() {
+            List<Tuple> data = List.of(
+                mock(Tuple.class),
+                mock(Tuple.class),
+                mock(Tuple.class)
+            );
+            DataType dataType = DataType.JUROR_NUMBER;
+
+            AbstractReport<Object> report = createReport();
+            doReturn(
+                new AbstractMap.SimpleEntry<>(dataType.getId(), null),
+                new AbstractMap.SimpleEntry<>(dataType.getId(), "test1"),
+                new AbstractMap.SimpleEntry<>(dataType.getId(), "test2")
+            ).when(report)
+                .getDataFromReturnType(any(), any());
+
+            List<LinkedHashMap<String, Object>> tableData = report.getTableDataAsList(data);
+
+            assertThat(tableData).isNotNull();
+            assertThat(tableData).hasSize(3);
+            assertThat(tableData).containsExactly(
+                new ReportLinkedMap<>(),
+                new ReportLinkedMap<String, Object>().add(dataType.getId(), "test1"),
+                new ReportLinkedMap<String, Object>().add(dataType.getId(), "test2")
+            );
+            verify(report, times(1)).getDataFromReturnType(data.get(0), dataType);
+            verify(report, times(1)).getDataFromReturnType(data.get(1), dataType);
+            verify(report, times(1)).getDataFromReturnType(data.get(2), dataType);
+        }
+
+        @Test
+        void positiveIsEmptyMap() {
+            List<Tuple> data = List.of(
+                mock(Tuple.class),
+                mock(Tuple.class),
+                mock(Tuple.class)
+            );
+            DataType dataType = DataType.JUROR_NUMBER;
+
+            AbstractReport<Object> report = createReport();
+            doReturn(
+                new AbstractMap.SimpleEntry<>(dataType.getId(), "test1"),
+                new AbstractMap.SimpleEntry<>(dataType.getId(), Map.of()),
+                new AbstractMap.SimpleEntry<>(dataType.getId(), "test2")
+            ).when(report)
+                .getDataFromReturnType(any(), any());
+
+            List<LinkedHashMap<String, Object>> tableData = report.getTableDataAsList(data);
+
+            assertThat(tableData).isNotNull();
+            assertThat(tableData).hasSize(3);
+            assertThat(tableData).containsExactly(
+                new ReportLinkedMap<String, Object>().add(dataType.getId(), "test1"),
+                new ReportLinkedMap<>(),
+                new ReportLinkedMap<String, Object>().add(dataType.getId(), "test2")
+            );
+            verify(report, times(1)).getDataFromReturnType(data.get(0), dataType);
+            verify(report, times(1)).getDataFromReturnType(data.get(1), dataType);
+            verify(report, times(1)).getDataFromReturnType(data.get(2), dataType);
+        }
+
+    }
 
     @Nested
     @DisplayName("StandardReportResponse.TableData tupleToTableData(List<Tuple> data)")
     class TupleToTableData {
         @Test
         void positiveTypical() {
-            List<Tuple> data = List.of(
-                mock(Tuple.class),
-                mock(Tuple.class),
-                mock(Tuple.class)
-            );
-
-            AbstractReport report = createReport(
+            AbstractReport<Object> report = createReport(
                 QJuror.juror,
                 DataType.JUROR_NUMBER,
                 DataType.FIRST_NAME,
                 DataType.LAST_NAME
             );
-
 
             StandardReportResponse.TableData.Heading heading1 = StandardReportResponse.TableData.Heading.builder()
                 .dataType(String.class.getSimpleName())
@@ -266,25 +373,12 @@ class AbstractReportTest {
             doReturn(heading3)
                 .when(report)
                 .getHeading(DataType.LAST_NAME);
+            List<Tuple> data = mock(List.class);
+            Object expectedData = "some data";
+            doReturn(expectedData).when(report).getTableData(data);
 
-            doReturn(
-                new HelperEntry<>("testId1_1", "testValue1_1"),
-                new HelperEntry<>("testId1_2", "testValue1_2"),
-                new HelperEntry<>("testId1_3", "testValue1_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.JUROR_NUMBER));
-            doReturn(
-                new HelperEntry<>("testId2_1", "testValue2_1"),
-                new HelperEntry<>("testId2_2", "testValue2_2"),
-                new HelperEntry<>("testId2_3", "testValue2_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.FIRST_NAME));
 
-            doReturn(
-                new HelperEntry<>("testId3_1", "testValue3_1"),
-                new HelperEntry<>("testId3_2", "testValue3_2"),
-                new HelperEntry<>("testId3_3", "testValue3_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.LAST_NAME));
-
-            StandardReportResponse.TableData tableData = report.tupleToTableData(data);
+            StandardReportResponse.TableData<Object> tableData = report.tupleToTableData(data);
 
 
             assertThat(tableData).isNotNull();
@@ -292,23 +386,7 @@ class AbstractReportTest {
             assertThat(tableData.getHeadings()).containsAll(
                 List.of(heading1, heading2, heading3)
             );
-            assertThat(tableData.getData()).hasSize(3);
-            assertThat(tableData.getData()).containsAll(
-                List.of(
-                    new HelperMap()
-                        .add("testId1_1", "testValue1_1")
-                        .add("testId2_1", "testValue2_1")
-                        .add("testId3_1", "testValue3_1"),
-                    new HelperMap()
-                        .add("testId1_2", "testValue1_2")
-                        .add("testId2_2", "testValue2_2")
-                        .add("testId3_2", "testValue3_2"),
-                    new HelperMap()
-                        .add("testId1_3", "testValue1_3")
-                        .add("testId2_3", "testValue2_3")
-                        .add("testId3_3", "testValue3_3")
-                )
-            );
+
             verify(report, times(1))
                 .getHeading(DataType.JUROR_NUMBER);
             verify(report, times(1))
@@ -316,210 +394,7 @@ class AbstractReportTest {
             verify(report, times(1))
                 .getHeading(DataType.LAST_NAME);
             verify(report, times(1))
-                .getDataFromReturnType(data.get(0), DataType.JUROR_NUMBER);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(1), DataType.JUROR_NUMBER);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(2), DataType.JUROR_NUMBER);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(0), DataType.FIRST_NAME);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(1), DataType.FIRST_NAME);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(2), DataType.FIRST_NAME);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(0), DataType.LAST_NAME);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(1), DataType.LAST_NAME);
-            verify(report, times(1))
-                .getDataFromReturnType(data.get(2), DataType.LAST_NAME);
-        }
-
-        @Test
-        void positiveNullValue() {
-            List<Tuple> data = List.of(
-                mock(Tuple.class),
-                mock(Tuple.class),
-                mock(Tuple.class)
-            );
-
-            AbstractReport report = createReport(
-                QJuror.juror,
-                DataType.JUROR_NUMBER,
-                DataType.FIRST_NAME,
-                DataType.LAST_NAME
-            );
-
-
-            StandardReportResponse.TableData.Heading heading1 = StandardReportResponse.TableData.Heading.builder()
-                .dataType(String.class.getSimpleName())
-                .id("testId")
-                .build();
-            doReturn(heading1)
-                .when(report)
-                .getHeading(DataType.JUROR_NUMBER);
-
-            StandardReportResponse.TableData.Heading heading2 = StandardReportResponse.TableData.Heading.builder()
-                .dataType(String.class.getSimpleName())
-                .id("testId2")
-                .build();
-            doReturn(heading2)
-                .when(report)
-                .getHeading(DataType.FIRST_NAME);
-
-            StandardReportResponse.TableData.Heading heading3 = StandardReportResponse.TableData.Heading.builder()
-                .dataType(String.class.getSimpleName())
-                .id("testId3")
-                .build();
-            doReturn(heading3)
-                .when(report)
-                .getHeading(DataType.LAST_NAME);
-
-            doReturn(
-                new HelperEntry<>("testId1_1", null),
-                new HelperEntry<>("testId1_2", "testValue1_2"),
-                new HelperEntry<>("testId1_3", "testValue1_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.JUROR_NUMBER));
-            doReturn(
-                new HelperEntry<>("testId2_1", "testValue2_1"),
-                new HelperEntry<>("testId2_2", "testValue2_2"),
-                new HelperEntry<>("testId2_3", null))
-                .when(report).getDataFromReturnType(any(), eq(DataType.FIRST_NAME));
-
-            doReturn(
-                new HelperEntry<>("testId3_1", "testValue3_1"),
-                new HelperEntry<>("testId3_2", null),
-                new HelperEntry<>("testId3_3", "testValue3_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.LAST_NAME));
-
-            StandardReportResponse.TableData tableData = report.tupleToTableData(data);
-
-
-            assertThat(tableData).isNotNull();
-            assertThat(tableData.getHeadings()).hasSize(3);
-            assertThat(tableData.getHeadings()).containsAll(
-                List.of(heading1, heading2, heading3)
-            );
-            assertThat(tableData.getData()).hasSize(3);
-            assertThat(tableData.getData()).containsAll(
-                List.of(
-                    new HelperMap()
-                        .add("testId2_1", "testValue2_1")
-                        .add("testId3_1", "testValue3_1"),
-                    new HelperMap()
-                        .add("testId1_2", "testValue1_2")
-                        .add("testId2_2", "testValue2_2"),
-                    new HelperMap()
-                        .add("testId1_3", "testValue1_3")
-                        .add("testId3_3", "testValue3_3")
-                )
-            );
-        }
-
-        @Test
-        void positiveMapEmptyValue() {
-            List<Tuple> data = List.of(
-                mock(Tuple.class),
-                mock(Tuple.class),
-                mock(Tuple.class)
-            );
-
-            AbstractReport report = createReport(
-                QJuror.juror,
-                DataType.JUROR_NUMBER,
-                DataType.FIRST_NAME,
-                DataType.LAST_NAME
-            );
-
-
-            StandardReportResponse.TableData.Heading heading1 = StandardReportResponse.TableData.Heading.builder()
-                .dataType(String.class.getSimpleName())
-                .id("testId")
-                .build();
-            doReturn(heading1)
-                .when(report)
-                .getHeading(DataType.JUROR_NUMBER);
-
-            StandardReportResponse.TableData.Heading heading2 = StandardReportResponse.TableData.Heading.builder()
-                .dataType(String.class.getSimpleName())
-                .id("testId2")
-                .build();
-            doReturn(heading2)
-                .when(report)
-                .getHeading(DataType.FIRST_NAME);
-
-            StandardReportResponse.TableData.Heading heading3 = StandardReportResponse.TableData.Heading.builder()
-                .dataType(String.class.getSimpleName())
-                .id("testId3")
-                .build();
-            doReturn(heading3)
-                .when(report)
-                .getHeading(DataType.LAST_NAME);
-
-            doReturn(
-                new HelperEntry<>("testId1_1", Map.of()),
-                new HelperEntry<>("testId1_2", "testValue1_2"),
-                new HelperEntry<>("testId1_3", "testValue1_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.JUROR_NUMBER));
-            doReturn(
-                new HelperEntry<>("testId2_1", "testValue2_1"),
-                new HelperEntry<>("testId2_2", "testValue2_2"),
-                new HelperEntry<>("testId2_3", "testValue2_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.FIRST_NAME));
-
-            doReturn(
-                new HelperEntry<>("testId3_1", "testValue3_1"),
-                new HelperEntry<>("testId3_2", "testValue3_2"),
-                new HelperEntry<>("testId3_3", "testValue3_3"))
-                .when(report).getDataFromReturnType(any(), eq(DataType.LAST_NAME));
-
-            StandardReportResponse.TableData tableData = report.tupleToTableData(data);
-
-
-            assertThat(tableData).isNotNull();
-            assertThat(tableData.getHeadings()).hasSize(3);
-            assertThat(tableData.getHeadings()).containsAll(
-                List.of(heading1, heading2, heading3)
-            );
-            assertThat(tableData.getData()).hasSize(3);
-            assertThat(tableData.getData()).containsAll(
-                List.of(
-                    new HelperMap()
-                        .add("testId2_1", "testValue2_1")
-                        .add("testId3_1", "testValue3_1"),
-                    new HelperMap()
-                        .add("testId1_2", "testValue1_2")
-                        .add("testId2_2", "testValue2_2")
-                        .add("testId3_2", "testValue3_2"),
-                    new HelperMap()
-                        .add("testId1_3", "testValue1_3")
-                        .add("testId2_3", "testValue2_3")
-                        .add("testId3_3", "testValue3_3")
-                )
-            );
-        }
-
-        static class HelperMap extends LinkedHashMap<String, Object> {
-
-            HelperMap add(String key, Object value) {
-                this.put(key, value);
-                return this;
-            }
-        }
-
-        @AllArgsConstructor
-        @Getter
-        @Setter
-        static class HelperEntry<K, V> implements Map.Entry<K, V> {
-
-            private K key;
-            private V value;
-
-            @Override
-            public V setValue(V value) {
-                this.value = value;
-                return value;
-            }
+                .getTableData(data);
         }
     }
 
@@ -698,7 +573,7 @@ class AbstractReportTest {
         void positiveTypical() {
             JPAQuery<Tuple> query = mock(JPAQuery.class);
             StandardReportRequest request = mock(StandardReportRequest.class);
-            AbstractReport report = createReport();
+            AbstractReport<Object> report = createReport();
 
             doReturn(query).when(report).getQuery();
             doNothing().when(report).addJoins(any());
@@ -726,7 +601,7 @@ class AbstractReportTest {
     class GetQuery {
         @Test
         void positiveTypical() {
-            AbstractReport report = createReport(QJuror.juror, DataType.FIRST_NAME, DataType.STATUS);
+            AbstractReport<Object> report = createReport(QJuror.juror, DataType.FIRST_NAME, DataType.STATUS);
             JPAQueryFactory queryFactory = mock(JPAQueryFactory.class);
 
             doReturn(queryFactory).when(report).getQueryFactory();
@@ -752,7 +627,7 @@ class AbstractReportTest {
         void positiveTypical() {
             JPAQuery<Tuple> query = mock(JPAQuery.class, withSettings()
                 .defaultAnswer(RETURNS_SELF));
-            AbstractReport report =
+            AbstractReport<Object> report =
                 createReport(QJuror.juror, DataType.FIRST_NAME, DataType.LAST_NAME, DataType.STATUS);
             report.addJoins(query);
 
@@ -767,7 +642,7 @@ class AbstractReportTest {
         void positiveRequiredTableIsSameAsFrom() {
             JPAQuery<Tuple> query = mock(JPAQuery.class, withSettings()
                 .defaultAnswer(RETURNS_SELF));
-            AbstractReport report =
+            AbstractReport<Object> report =
                 createReport(QJuror.juror, DataType.FIRST_NAME, DataType.LAST_NAME);
             report.addJoins(query);
             verifyNoInteractions(query);
@@ -779,7 +654,7 @@ class AbstractReportTest {
                 .defaultAnswer(RETURNS_SELF));
 
             DataType dataType = mock(DataType.class);
-            when(dataType.getRequiredTables()).thenReturn(List.of(QBureauJurorCJS.bureauJurorCJS));
+            when(dataType.getRequiredTables()).thenReturn(List.of(QBureauJurorCjs.bureauJurorCjs));
 
             MojException.InternalServerError exception = assertThrows(MojException.InternalServerError.class,
                 () -> createReport(
@@ -788,7 +663,7 @@ class AbstractReportTest {
                 ).addJoins(query),
                 "Expected exception to be thrown when primary join is not found");
 
-            assertThat(exception.getMessage()).isEqualTo("No join found for bureauJurorCJS");
+            assertThat(exception.getMessage()).isEqualTo("No join found for bureauJurorCjs");
             assertThat(exception.getCause()).isNull();
         }
 
@@ -836,7 +711,7 @@ class AbstractReportTest {
         @Test
         void positiveTypical() {
             JPAQuery<Tuple> query = mock(JPAQuery.class);
-            AbstractReport report = createReport();
+            AbstractReport<Object> report = createReport();
             report.addGroupBy(query,
                 DataType.JUROR_NUMBER,
                 DataType.FIRST_NAME,
@@ -913,14 +788,14 @@ class AbstractReportTest {
 
 
     @Nested
-    @DisplayName("HashMap<String, StandardReportResponse.DataTypeValue> loadStandardPoolHeaders("
+    @DisplayName("HashMap<String, AbstractReportResponse.DataTypeValue> loadStandardPoolHeaders("
         + "        StandardReportRequest request, boolean ownerMustMatch, boolean allowBureau)")
     class LoadStandardPoolHeaders {
         @Test
         void positiveTypical() {
             PoolRequest poolRequest = mock(PoolRequest.class);
 
-            AbstractReport report = createReport();
+            AbstractReport<Object> report = createReport();
             doReturn(poolRequest).when(report).getPoolRequest(any());
             PoolType poolType = mock(PoolType.class);
             when(poolType.getDescription()).thenReturn("Pool Type desc");
@@ -941,22 +816,22 @@ class AbstractReportTest {
                 request, false, false))
                 .isEqualTo(Map.of(
                     "pool_number",
-                    StandardReportResponse.DataTypeValue.builder()
+                    AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Pool Number")
                         .dataType(String.class.getSimpleName())
                         .value(TestConstants.VALID_POOL_NUMBER)
                         .build(),
-                    "pool_type", StandardReportResponse.DataTypeValue.builder()
+                    "pool_type", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Pool Type")
                         .dataType(String.class.getSimpleName())
                         .value("Pool Type desc")
                         .build(),
-                    "service_start_date", StandardReportResponse.DataTypeValue.builder()
+                    "service_start_date", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Service Start Date")
                         .dataType(LocalDate.class.getSimpleName())
                         .value("2023-02-01")
                         .build(),
-                    "court_name", StandardReportResponse.DataTypeValue.builder()
+                    "court_name", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Court Name")
                         .dataType(String.class.getSimpleName())
                         .value("Court Name (LOC)")
@@ -981,7 +856,7 @@ class AbstractReportTest {
         void positiveTypicalOwnersMustMatch() {
             PoolRequest poolRequest = mock(PoolRequest.class);
 
-            AbstractReport report = createReport();
+            AbstractReport<Object> report = createReport();
             doReturn(poolRequest).when(report).getPoolRequest(any());
             PoolType poolType = mock(PoolType.class);
             when(poolType.getDescription()).thenReturn("Pool Type desc");
@@ -1002,22 +877,22 @@ class AbstractReportTest {
                 request, true, false))
                 .isEqualTo(Map.of(
                     "pool_number",
-                    StandardReportResponse.DataTypeValue.builder()
+                    AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Pool Number")
                         .dataType(String.class.getSimpleName())
                         .value(TestConstants.VALID_POOL_NUMBER)
                         .build(),
-                    "pool_type", StandardReportResponse.DataTypeValue.builder()
+                    "pool_type", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Pool Type")
                         .dataType(String.class.getSimpleName())
                         .value("Pool Type desc")
                         .build(),
-                    "service_start_date", StandardReportResponse.DataTypeValue.builder()
+                    "service_start_date", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Service Start Date")
                         .dataType(LocalDate.class.getSimpleName())
                         .value("2023-02-01")
                         .build(),
-                    "court_name", StandardReportResponse.DataTypeValue.builder()
+                    "court_name", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Court Name")
                         .dataType(String.class.getSimpleName())
                         .value("Court Name (LOC)")
@@ -1038,6 +913,72 @@ class AbstractReportTest {
             verifyNoMoreInteractions(poolRequest, poolType, courtLocation, request);
         }
     }
+
+
+    @Test
+    void positiveAddAuthenticationConsumer() {
+        Consumer<StandardReportRequest> consumer = mock(Consumer.class);
+        AbstractReport<Object> report = createReport();
+        report.addAuthenticationConsumer(consumer);
+        assertThat(report.authenticationConsumers).hasSize(1).containsExactly(consumer);
+    }
+
+    @Test
+    void positiveIsCourtUserOnlyValid() {
+        securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
+        AbstractReport<Object> report = createReport();
+        report.isCourtUserOnly();
+        assertThat(report.authenticationConsumers).hasSize(1);
+        Consumer<StandardReportRequest> authenticationConsumer = report.authenticationConsumers.get(0);
+
+        assertDoesNotThrow(() -> authenticationConsumer.accept(mock(StandardReportRequest.class)),
+            "No exception should be thrown when court user");
+    }
+
+    @Test
+    void negativeIsCourtUserOnlyFailed() {
+        securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(false);
+        AbstractReport<Object> report = createReport();
+        report.isCourtUserOnly();
+        assertThat(report.authenticationConsumers).hasSize(1);
+        Consumer<StandardReportRequest> authenticationConsumer = report.authenticationConsumers.get(0);
+
+        MojException.Forbidden exception = assertThrows(
+            MojException.Forbidden.class,
+            () -> authenticationConsumer.accept(mock(StandardReportRequest.class)),
+            "Expected exception to be thrown when not court user");
+        assertThat(exception.getMessage()).isEqualTo("User not allowed to access this report");
+        assertThat(exception.getCause()).isNull();
+    }
+
+    @Test
+    void positiveIsBureauUserOnlyValid() {
+        securityUtilMockedStatic.when(SecurityUtil::isBureau).thenReturn(true);
+        AbstractReport<Object> report = createReport();
+        report.isBureauUserOnly();
+        assertThat(report.authenticationConsumers).hasSize(1);
+        Consumer<StandardReportRequest> authenticationConsumer = report.authenticationConsumers.get(0);
+
+        assertDoesNotThrow(() -> authenticationConsumer.accept(mock(StandardReportRequest.class)),
+            "No exception should be thrown when bureau user");
+    }
+
+    @Test
+    void negativeIsBureauUserOnlyFailed() {
+        securityUtilMockedStatic.when(SecurityUtil::isBureau).thenReturn(false);
+        AbstractReport<Object> report = createReport();
+        report.isBureauUserOnly();
+        assertThat(report.authenticationConsumers).hasSize(1);
+        Consumer<StandardReportRequest> authenticationConsumer = report.authenticationConsumers.get(0);
+
+        MojException.Forbidden exception = assertThrows(
+            MojException.Forbidden.class,
+            () -> authenticationConsumer.accept(mock(StandardReportRequest.class)),
+            "Expected exception to be thrown when not bureau user");
+        assertThat(exception.getMessage()).isEqualTo("User not allowed to access this report");
+        assertThat(exception.getCause()).isNull();
+    }
+
 
     @Nested
     @DisplayName("PoolRequest getPoolRequest(String poolNumber)")
@@ -1066,16 +1007,16 @@ class AbstractReportTest {
     }
 
 
-    private AbstractReport createReport(EntityPath<?> from, DataType... dataTypes) {
+    private AbstractReport<Object> createReport(EntityPath<?> from, DataType... dataTypes) {
         return spy(new AbstractReportTestImpl(poolRequestRepository,
             from, dataTypes));
     }
 
-    private AbstractReport createReport() {
+    private AbstractReport<Object> createReport() {
         return createReport(QJuror.juror, DataType.JUROR_NUMBER);
     }
 
-    private class AbstractReportTestImpl extends AbstractReport {
+    private static class AbstractReportTestImpl extends AbstractReport<Object> {
 
         public AbstractReportTestImpl(PoolRequestRepository poolRequestRepository,
                                       EntityPath<?> from, DataType... dataType) {
@@ -1084,7 +1025,17 @@ class AbstractReportTest {
 
         @Override
         public Class<?> getRequestValidatorClass() {
-            throw new UnsupportedOperationException();//Only use don service layer
+            throw new UnsupportedOperationException();//Only used on service layer
+        }
+
+        @Override
+        protected AbstractReportResponse<Object> createBlankResponse() {
+            return new AbstractReportResponse<>();
+        }
+
+        @Override
+        protected Object getTableData(List<Tuple> data) {
+            throw new UnsupportedOperationException();//Only used on service layer
         }
 
         @Override
@@ -1093,9 +1044,9 @@ class AbstractReportTest {
         }
 
         @Override
-        public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
+        public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
             StandardReportRequest request,
-            StandardReportResponse.TableData tableData) {
+            StandardReportResponse.TableData<Object> tableData) {
             return new HashMap<>();
         }
     }

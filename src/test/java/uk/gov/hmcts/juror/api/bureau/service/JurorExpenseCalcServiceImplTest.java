@@ -9,9 +9,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.controller.request.JurorExpensesCalcRequestDto;
 import uk.gov.hmcts.juror.api.bureau.controller.request.JurorExpensesCalcTravelModeData;
 import uk.gov.hmcts.juror.api.bureau.controller.response.JurorExpensesCalcResults;
-import uk.gov.hmcts.juror.api.bureau.domain.ExpensesRates;
-import uk.gov.hmcts.juror.api.bureau.domain.ExpensesRatesRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorExpenseCalcException;
+import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesPublic;
+import uk.gov.hmcts.juror.api.moj.repository.ExpenseRatesPublicRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,10 +26,10 @@ public class JurorExpenseCalcServiceImplTest {
 
     private JurorExpensesCalcRequestDto jurorExpensesCalcRequestDto;
     private JurorExpensesCalcResults jurorExpensesCalcResults;
-    private List<ExpensesRates> expensesRates = new ArrayList<>();
+    private List<ExpenseRatesPublic> expensesRates = new ArrayList<>();
 
     @Mock
-    private ExpensesRatesRepository expensesratesRepository;
+    private ExpenseRatesPublicRepository expensesratesRepository;
 
     @InjectMocks
     private JurorExpenseCalcServiceImpl jurorExpenseCalcService;
@@ -38,12 +38,12 @@ public class JurorExpenseCalcServiceImplTest {
     public void setUp() throws Exception {
 
         expensesRates = new ArrayList<>(Arrays.asList(
-            ExpensesRates.builder().expenseType("TRAVEL_BICYCLE_PER_MILE").rate(0.096f).build(),
-            ExpensesRates.builder().expenseType("TRAVEL_MOTORCYCLE_PER_MILE").rate(0.314f).build(),
-            ExpensesRates.builder().expenseType("TRAVEL_CAR_PER_MILE").rate(0.314f).build(),
-            ExpensesRates.builder().expenseType("SUBSISTENCE_PER_DAY").rate(5.71f).build(),
-            ExpensesRates.builder().expenseType("EARNING_TEN_DAYS_FOUR_HRS_MORE").rate(64.95f).build(),
-            ExpensesRates.builder().expenseType("EARNING_TEN_DAYS_FOUR_HRS_LESS").rate(32.47f).build()
+            ExpenseRatesPublic.builder().expenseType("TRAVEL_BICYCLE_PER_MILE").rate(0.096f).build(),
+            ExpenseRatesPublic.builder().expenseType("TRAVEL_MOTORCYCLE_PER_MILE").rate(0.314f).build(),
+            ExpenseRatesPublic.builder().expenseType("TRAVEL_CAR_PER_MILE").rate(0.314f).build(),
+            ExpenseRatesPublic.builder().expenseType("SUBSISTENCE_PER_DAY").rate(5.71f).build(),
+            ExpenseRatesPublic.builder().expenseType("EARNING_TEN_DAYS_FOUR_HRS_MORE").rate(64.95f).build(),
+            ExpenseRatesPublic.builder().expenseType("EARNING_TEN_DAYS_FOUR_HRS_LESS").rate(32.47f).build()
         ));
 
     }

@@ -26,26 +26,23 @@ public class HolidaysQueries {
 
     /**
      * Query to match JUROR.HOLIDAYS.HOLIDAY where holidayDates
-     *
-     * @param holidayDates
-     * @return
      */
 
-    public static BooleanExpression HolidayDatesMatched(Date holidayDates) {
+    public static BooleanExpression holidayDatesMatched(Date holidayDates) {
 
         String strUserSelectedDate = holidayDates.toString();
         String strBstTime = strUserSelectedDate.substring(strUserSelectedDate.length()
-                                                              - STRING_POSITION_BST_TIME);
+            - STRING_POSITION_BST_TIME);
         String strBstTimeValue = strBstTime.substring(0, 1);
         int intBstTimeCondition = Integer.parseInt(strBstTimeValue);
 
         if (intBstTimeCondition == BST_ADJUSTMENT) {
             return holidaysDetail.holiday.eq(
-                DateRelatedUtils.convertToLocalDateViaInstant(Date.from(holidayDates.toInstant().atZone(ZoneId.systemDefault())
-                    .toInstant().truncatedTo(ChronoUnit.DAYS).minus(
-                        1,
-                        ChronoUnit.HOURS
-                    ))));
+                DateRelatedUtils.convertToLocalDateViaInstant(
+                    Date.from(holidayDates.toInstant().atZone(ZoneId.systemDefault())
+                        .toInstant().truncatedTo(ChronoUnit.DAYS).minus(1,
+                            ChronoUnit.HOURS
+                        ))));
         } else {
             return holidaysDetail.holiday.eq(DateRelatedUtils.convertToLocalDateViaInstant(holidayDates));
         }
@@ -56,7 +53,7 @@ public class HolidaysQueries {
      * Also returns matching public holiday
      *
      * @param locCode 3-digit numeric string, unique identifier for court locations
-     * @param date  the value to check against holidaysDetail.holiday
+     * @param date    the value to check against holidaysDetail.holiday
      * @return Predicate
      */
     public static BooleanExpression isCourtHoliday(String locCode, LocalDate date) {

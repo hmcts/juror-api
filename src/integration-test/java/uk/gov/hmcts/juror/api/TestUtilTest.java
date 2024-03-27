@@ -7,8 +7,8 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.Test;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
-import uk.gov.hmcts.juror.api.config.public_.PublicJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 
 import java.time.Instant;
 
@@ -39,7 +39,7 @@ public class TestUtilTest {
 
     @Test
     public void testMintPublicJwt() throws Exception {
-        PublicJWTPayload jwtPayload = new PublicJWTPayload();
+        PublicJwtPayload jwtPayload = new PublicJwtPayload();
         jwtPayload.setId(TEST_ID);
         jwtPayload.setJurorNumber(TEST_JUROR_NUMBER);
         jwtPayload.setRoles(TEST_ROLES);
@@ -56,7 +56,7 @@ public class TestUtilTest {
             .parseClaimsJws(jwt);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        PublicJWTPayload data = objectMapper.convertValue(claimsJws.getBody().get("data"), PublicJWTPayload.class);
+        PublicJwtPayload data = objectMapper.convertValue(claimsJws.getBody().get("data"), PublicJwtPayload.class);
 
 
         assertThat(data).isNotNull();
@@ -73,7 +73,7 @@ public class TestUtilTest {
 
     @Test
     public void testMintBureauJwt() throws Exception {
-        BureauJWTPayload jwtPayload = new BureauJWTPayload(TEST_BUREAU_OWNER, TEST_BUREAU_LOGIN, TEST_BUREAU_USER_LEVEL,
+        BureauJwtPayload jwtPayload = new BureauJwtPayload(TEST_BUREAU_OWNER, TEST_BUREAU_LOGIN, TEST_BUREAU_USER_LEVEL,
             TEST_BUREAU_PASSWORD_WARNING, TEST_BUREAU_DAYS_TO_EXPIRE, null);
 
         // encode a token
@@ -89,7 +89,7 @@ public class TestUtilTest {
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        BureauJWTPayload data = objectMapper.convertValue(claimsJws.getBody(), BureauJWTPayload.class);
+        BureauJwtPayload data = objectMapper.convertValue(claimsJws.getBody(), BureauJwtPayload.class);
 
 
         assertThat(data).isNotNull();

@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service.deferralmaintenance;
 
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralReasonRequestDto;
@@ -22,31 +22,31 @@ public interface ManageDeferralsService {
     int useBureauDeferrals(PoolRequest newPool, int deferrals, String userId);
 
     DeferralOptionsDto findActivePoolsForDates(DeferralDatesRequestDto deferralDatesRequestDto,
-                                               String jurorNumber, BureauJWTPayload payload);
+                                               String jurorNumber, BureauJwtPayload payload);
 
     DeferralOptionsDto findActivePoolsForDatesAndLocCode(DeferralDatesRequestDto deferralDatesRequestDto,
                                                          String jurorNumber, String locationCode,
-                                                         BureauJWTPayload payload);
+                                                         BureauJwtPayload payload);
 
-    List<String> getPreferredDeferralDates(String jurorNumber, BureauJWTPayload payload);
+    List<String> getPreferredDeferralDates(String jurorNumber, BureauJwtPayload payload);
 
-    DeferralOptionsDto getAvailablePoolsByCourtLocationCodeAndJurorNumber(BureauJWTPayload payload,
+    DeferralOptionsDto getAvailablePoolsByCourtLocationCodeAndJurorNumber(BureauJwtPayload payload,
                                                                           String courtLocationCode,
                                                                           String jurorNumber);
 
-    void processJurorDeferral(BureauJWTPayload payload, String jurorNumber, DeferralReasonRequestDto deferralReasonDto);
+    void processJurorDeferral(BureauJwtPayload payload, String jurorNumber, DeferralReasonRequestDto deferralReasonDto);
 
-    void allocateJurorsToActivePool(BureauJWTPayload payload, DeferralAllocateRequestDto dto);
+    void allocateJurorsToActivePool(BureauJwtPayload payload, DeferralAllocateRequestDto dto);
 
-    DeferralListDto getDeferralsByCourtLocationCode(BureauJWTPayload payload, String courtLocation);
+    DeferralListDto getDeferralsByCourtLocationCode(BureauJwtPayload payload, String courtLocation);
 
-    DeferralOptionsDto findActivePoolsForCourtLocation(BureauJWTPayload payload, String courtLocation);
+    DeferralOptionsDto findActivePoolsForCourtLocation(BureauJwtPayload payload, String courtLocation);
 
-    void changeJurorDeferralDate(BureauJWTPayload payload, String jurorNumber,
+    void changeJurorDeferralDate(BureauJwtPayload payload, String jurorNumber,
                                  DeferralReasonRequestDto deferralReasonRequestDto);
 
-    void deleteDeferral(BureauJWTPayload payload, String jurorNumber);
+    void deleteDeferral(BureauJwtPayload payload, String jurorNumber);
 
-    DeferralResponseDto processJurorPostponement(BureauJWTPayload payload,
+    DeferralResponseDto processJurorPostponement(BureauJwtPayload payload,
                                                  ProcessJurorPostponementRequestDto processJurorRequestDto);
 }

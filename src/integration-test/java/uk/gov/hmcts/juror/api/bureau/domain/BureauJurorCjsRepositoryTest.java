@@ -16,35 +16,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 
 /**
- * Tests for {@link BureauJurorCJSRepository}.
+ * Tests for {@link BureauJurorCjsRepository}.
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BureauJurorCjsRepositoryTest extends AbstractIntegrationTest {
     @Autowired
-    private BureauJurorCJSRepository cjsRepository;
+    private BureauJurorCjsRepository cjsRepository;
 
-    private BureauJurorCJS bureauJurorCJS;
+    private BureauJurorCjs bureauJurorCjs;
 
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        bureauJurorCJS = new BureauJurorCJS();
-        bureauJurorCJS.setJurorNumber("209092530");
-        bureauJurorCJS.setEmployer("HMP");
-        bureauJurorCJS.setDetails("Prison guard");
+        bureauJurorCjs = new BureauJurorCjs();
+        bureauJurorCjs.setJurorNumber("209092530");
+        bureauJurorCjs.setEmployer("HMP");
+        bureauJurorCjs.setDetails("Prison guard");
     }
 
     @Ignore("Composite key removed")
     @Test
     @Sql("/db/truncate.sql")
     @Sql("/db/BureauJurorCJSRepository_findByCjsKey.sql")
-    public void findByCjsKey_WithValidCjsCompositeKey_ReturnsCorrectCjSEmploymentDetails() {
-        List<BureauJurorCJS> actualBureauJurorCJS = cjsRepository.findByJurorNumber(bureauJurorCJS.getJurorNumber());
-        assertThat(actualBureauJurorCJS).hasSize(1);
-        assertThat(actualBureauJurorCJS).extracting("jurorNumber", "employer", "details")
-            .contains(tuple(bureauJurorCJS.getJurorNumber(), bureauJurorCJS.getEmployer(),
-                bureauJurorCJS.getDetails()));
+    public void findByCjsKeyWithValidCjsCompositeKeyReturnsCorrectCjSEmploymentDetails() {
+        List<BureauJurorCjs> actualBureauJurorCjs = cjsRepository.findByJurorNumber(bureauJurorCjs.getJurorNumber());
+        assertThat(actualBureauJurorCjs).hasSize(1);
+        assertThat(actualBureauJurorCjs).extracting("jurorNumber", "employer", "details")
+            .contains(tuple(bureauJurorCjs.getJurorNumber(), bureauJurorCjs.getEmployer(),
+                bureauJurorCjs.getDetails()));
     }
 }

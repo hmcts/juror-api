@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolHistoryListDto;
 import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
@@ -30,7 +30,7 @@ public class PoolHistoryServiceImpl implements PoolHistoryService {
 
 
     @Override
-    public PoolHistoryListDto getPoolHistoryListData(BureauJWTPayload payload, String poolNumber) {
+    public PoolHistoryListDto getPoolHistoryListData(BureauJwtPayload payload, String poolNumber) {
         final String owner = payload.getOwner();
         log.debug(
             "Begin processing get pool history details for pool {} with user {} and owner {}", poolNumber,

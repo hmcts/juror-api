@@ -18,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralAllocateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralDatesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralReasonRequestDto;
@@ -1645,10 +1645,10 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
     @Override
     protected String createBureauJwt(String login, String owner) {
-        return mintBureauJwt(BureauJWTPayload.builder()
+        return mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .login(login)
-            .staff(BureauJWTPayload.Staff.builder()
+            .staff(BureauJwtPayload.Staff.builder()
                 .name("Test User")
                 .active(1)
                 .rank(1)

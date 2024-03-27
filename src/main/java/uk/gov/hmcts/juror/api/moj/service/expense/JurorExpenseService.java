@@ -76,5 +76,6 @@ public interface JurorExpenseService {
 
     void updateExpenseRates(ExpenseRatesDto expenseRatesDto);
 
-    CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(String jurorNumber, String poolNumber, List<LocalDate> dates);
+    CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(
+        String jurorNumber, String poolNumber, List<LocalDate> dates);
 }

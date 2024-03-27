@@ -15,8 +15,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.DisqualifyJurorDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.DisqualifyReasonsDto;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
@@ -69,7 +69,7 @@ class DisqualifyJurorControllerTest {
 
     @Test
     void positiveGetDisqualifyReasonsBureau() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
 
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -96,7 +96,7 @@ class DisqualifyJurorControllerTest {
 
     @Test
     void positiveGetDisqualifyReasonsCourt() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
 
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -124,7 +124,7 @@ class DisqualifyJurorControllerTest {
 
     @Test
     void negativeGetDisqualifyReasonsInvalidPath() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -142,7 +142,7 @@ class DisqualifyJurorControllerTest {
 
     @Test
     void negativeGetDisqualifyReasonsIncorrectHttpOperation() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -160,12 +160,12 @@ class DisqualifyJurorControllerTest {
 
     @Test
     void positiveDisqualifyJurorBureauHappy() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
         doNothing().when(disqualifyJurorService).disqualifyJuror(any(String.class), any(DisqualifyJurorDto.class),
-            any(BureauJWTPayload.class));
+            any(BureauJwtPayload.class));
 
         DisqualifyJurorDto disqualifyJurorDto = createRequestToDisqualifyJuror();
         mockMvc.perform(patch("/api/v1/moj/disqualify/juror/923456789")
@@ -182,12 +182,12 @@ class DisqualifyJurorControllerTest {
 
     @Test
     void positiveDisqualifyJurorCourt() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
         doNothing().when(disqualifyJurorService).disqualifyJuror(any(String.class), any(DisqualifyJurorDto.class),
-            any(BureauJWTPayload.class));
+            any(BureauJwtPayload.class));
 
         DisqualifyJurorDto disqualifyJurorDto = createRequestToDisqualifyJuror();
         mockMvc.perform(patch("/api/v1/moj/disqualify/juror/923456789")
@@ -206,7 +206,7 @@ class DisqualifyJurorControllerTest {
     @ParameterizedTest
     @ValueSource(strings = {"123", "12345678910"})
     void disqualifyJurorInvalidJurorNumbers(String jurorNumber) throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -224,7 +224,7 @@ class DisqualifyJurorControllerTest {
 
     @Test
     void disqualifyJurorAbsentJurorNumber() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -243,7 +243,7 @@ class DisqualifyJurorControllerTest {
 
     @Test
     void disqualifyJurorInvalidPath() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -261,7 +261,7 @@ class DisqualifyJurorControllerTest {
 
     @Test
     void disqualifyJurorMissingReplyMethod() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -284,7 +284,7 @@ class DisqualifyJurorControllerTest {
 
     @Test
     void disqualifyJurorMissingDisqualifyCode() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -307,7 +307,7 @@ class DisqualifyJurorControllerTest {
 
     @Test
     void disqualifyJurorNoDisqualifyJurorDto() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -325,12 +325,12 @@ class DisqualifyJurorControllerTest {
 
     @Test
     void disqualifyJurorDueToAgeBureauHappyPath() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
         doNothing().when(disqualifyJurorService).disqualifyJurorDueToAgeOutOfRange(any(String.class),
-            any(BureauJWTPayload.class));
+            any(BureauJwtPayload.class));
 
         mockMvc.perform(patch("/api/v1/moj/disqualify/juror/923456789/age")
                 .principal(mockPrincipal)
@@ -346,12 +346,12 @@ class DisqualifyJurorControllerTest {
 
     @Test
     void disqualifyJurorDueToAgeCourtsHappyPath() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("415", "COURT_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
         doNothing().when(disqualifyJurorService).disqualifyJurorDueToAgeOutOfRange(any(String.class),
-            any(BureauJWTPayload.class));
+            any(BureauJwtPayload.class));
 
         mockMvc.perform(patch("/api/v1/moj/disqualify/juror/923456789/age")
                 .principal(mockPrincipal)
@@ -368,7 +368,7 @@ class DisqualifyJurorControllerTest {
     @ParameterizedTest
     @ValueSource(strings = {"", "1234567891", "123", "12h£o986d"})
     void disqualifyJurorDueToAgeInvalidJurorNumberNoJurorNumber(String jurorNumber) throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -385,7 +385,7 @@ class DisqualifyJurorControllerTest {
 
     @Test
     void disqualifyJurorDueToAgeInvalidPath() throws Exception {
-        BureauJWTPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
+        BureauJwtPayload jwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
         BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
         when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 

@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.bureau.controller.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorSpecialNeed;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 
 import java.io.Serializable;

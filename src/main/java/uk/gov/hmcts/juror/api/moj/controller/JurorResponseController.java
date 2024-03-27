@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.bureau.controller.request.BureauResponseStatusUpdateDto;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPersonalDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.JurorResponseRetrieveRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.JurorResponseRetrieveResponseDto;
@@ -67,7 +67,7 @@ public class JurorResponseController {
     public ResponseEntity<Object> updateResponseStatus(
         @Parameter(description = "Juror number") @PathVariable String jurorNumber,
         @Parameter(description = "Status update details") @RequestBody BureauResponseStatusUpdateDto updateDto,
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload)
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload)
         throws BureauOptimisticLockingException {
         try {
             summonsReplyStatusUpdateService.updateDigitalJurorResponseStatus(jurorNumber, updateDto.getStatus(),
@@ -92,7 +92,7 @@ public class JurorResponseController {
     @PatchMapping(path = "/juror/{jurorNumber}/details/personal")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Update personal details of an existing paper or digital response")
-    public void updateJurorPersonalDetails(@Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+    public void updateJurorPersonalDetails(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                            @RequestBody @Valid JurorPersonalDetailsDto jurorPersonalDetailsDto,
                                            @Parameter(description = "Valid juror number", required = true)
                                            @Size(min = 9, max = 9)
@@ -104,7 +104,7 @@ public class JurorResponseController {
     @PostMapping(path = "/retrieve")
     @Operation(summary = "Retrieve responses based on search criteria")
     public ResponseEntity<JurorResponseRetrieveResponseDto> retrieveJurorResponse(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid JurorResponseRetrieveRequestDto request) {
         return ResponseEntity.ok().body(jurorResponseRetrieveService.retrieveJurorResponse(request, payload));
     }

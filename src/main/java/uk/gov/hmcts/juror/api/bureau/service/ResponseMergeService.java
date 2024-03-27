@@ -13,5 +13,4 @@ public interface ResponseMergeService {
      * @param auditorUsername The user performing the merge
      */
     void mergeResponse(DigitalResponse digitalResponse, String auditorUsername);
-  //  void mergeResponse (JurorResponse jurorResponse, String auditorUsername);
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -195,14 +195,14 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
     @Override
     @Transactional
     public void processAgeDisqualification(PaperResponse paperResponse, LocalDate returnDate, JurorPool jurorPool,
-                                           BureauJWTPayload payload) {
+                                           BureauJwtPayload payload) {
         ageDisqualificationImplementation(paperResponse, jurorPool, payload);
     }
 
     @Override
     @Transactional
     public void processAgeDisqualification(DigitalResponse digitalResponse, JurorPool jurorPool,
-                                           BureauJWTPayload payload) {
+                                           BureauJwtPayload payload) {
 
         ageDisqualificationImplementation(digitalResponse, jurorPool, payload);
     }
@@ -251,7 +251,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
     }
 
     private void ageDisqualificationImplementation(AbstractJurorResponse jurorResponse,
-                                                   JurorPool jurorPool, BureauJWTPayload payload) {
+                                                   JurorPool jurorPool, BureauJwtPayload payload) {
         final String username = payload.getLogin();
         final String owner = payload.getOwner();
         final String jurorNumber = jurorResponse.getJurorNumber();

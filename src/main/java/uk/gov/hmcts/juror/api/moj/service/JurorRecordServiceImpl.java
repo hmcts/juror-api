@@ -13,7 +13,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.service.BureauService;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
@@ -160,7 +160,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
-    public void editJurorDetails(BureauJWTPayload payload, EditJurorRecordRequestDto requestDto, String jurorNumber) {
+    public void editJurorDetails(BureauJwtPayload payload, EditJurorRecordRequestDto requestDto, String jurorNumber) {
         log.info(String.format("Juror: %s. Start updating details by user %s", jurorNumber, payload.getLogin()));
 
         String owner = payload.getOwner();
@@ -258,7 +258,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
      */
     @Override
     @Transactional(readOnly = true)
-    public JurorDetailsResponseDto getJurorDetails(BureauJWTPayload payload, String jurorNumber, String locCode) {
+    public JurorDetailsResponseDto getJurorDetails(BureauJwtPayload payload, String jurorNumber, String locCode) {
         log.info("Retrieving juror record details for juror {} by user {}", jurorNumber, payload.getLogin());
         CourtLocation courtLocation = courtLocationService.getCourtLocation(locCode);
         // should be only one active and editable record
@@ -295,7 +295,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional(readOnly = true)
-    public JurorOverviewResponseDto getJurorOverview(BureauJWTPayload payload, String jurorNumber, String locCode) {
+    public JurorOverviewResponseDto getJurorOverview(BureauJwtPayload payload, String jurorNumber, String locCode) {
         log.info("Retrieving juror record overview for juror {} by user {}", jurorNumber, payload.getLogin());
         CourtLocation courtLocation = courtLocationService.getCourtLocation(locCode);
 
@@ -366,7 +366,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     }
 
     @Override
-    public JurorRecordSearchDto searchJurorRecord(BureauJWTPayload payload, String jurorNumber) {
+    public JurorRecordSearchDto searchJurorRecord(BureauJwtPayload payload, String jurorNumber) {
         log.info("Searching for juror number {} by user {}", jurorNumber, payload.getLogin());
 
         List<JurorRecordSearchDto.JurorRecordSearchDataDto> data = new ArrayList<>();
@@ -422,7 +422,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Transactional
     @Override
     @IsCourtUser
-    public void createJurorRecord(BureauJWTPayload payload, JurorCreateRequestDto jurorCreateRequestDto) {
+    public void createJurorRecord(BureauJwtPayload payload, JurorCreateRequestDto jurorCreateRequestDto) {
         log.info("User {} creating a pending Juror record in court location", payload.getLogin(),
             jurorCreateRequestDto.getLocationCode());
 
@@ -618,7 +618,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     }
 
 
-    private PoolRequest createNewPoolFromDto(JurorCreateRequestDto jurorCreateRequestDto, BureauJWTPayload payload) {
+    private PoolRequest createNewPoolFromDto(JurorCreateRequestDto jurorCreateRequestDto, BureauJwtPayload payload) {
         String courtLocationCode = jurorCreateRequestDto.getLocationCode();
 
         log.debug("Retrieve the Court Location object from the database for: " + courtLocationCode);
@@ -662,7 +662,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
      * @return A JSON response containing a list of Contact Log records
      */
     @Override
-    public ContactLogListDto getJurorContactLogs(BureauJWTPayload payload, String jurorNumber) {
+    public ContactLogListDto getJurorContactLogs(BureauJwtPayload payload, String jurorNumber) {
         JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
             payload.getOwner());
         // do a check to see if a court user should be able to view this record
@@ -691,7 +691,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
      */
     @Override
     @Transactional(propagation = REQUIRED)
-    public void createJurorContactLog(BureauJWTPayload payload, ContactLogRequestDto contactLogRequestDto) {
+    public void createJurorContactLog(BureauJwtPayload payload, ContactLogRequestDto contactLogRequestDto) {
         JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository,
             contactLogRequestDto.getJurorNumber(), payload.getOwner());
         // check whether the current user has permissions to create new contact logs against the currently active
@@ -748,7 +748,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
-    public void createJurorOpticReference(BureauJWTPayload payload, JurorOpticRefRequestDto opticsRefRequestDto) {
+    public void createJurorOpticReference(BureauJwtPayload payload, JurorOpticRefRequestDto opticsRefRequestDto) {
 
         final String jurorNumber = opticsRefRequestDto.getJurorNumber();
         final String poolNumber = opticsRefRequestDto.getPoolNumber();
@@ -785,7 +785,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     }
 
     @Override
-    public String getJurorOpticReference(String jurorNumber, String poolNumber, BureauJWTPayload payload) {
+    public String getJurorOpticReference(String jurorNumber, String poolNumber, BureauJwtPayload payload) {
 
         log.info("Retrieving an Optics reference for Juror {} in pool {} by user {}", jurorNumber, poolNumber,
             payload.getLogin());
@@ -845,7 +845,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
-    public JurorSummonsReplyResponseDto getJurorSummonsReply(BureauJWTPayload payload, String jurorNumber,
+    public JurorSummonsReplyResponseDto getJurorSummonsReply(BureauJwtPayload payload, String jurorNumber,
                                                              String locCode) {
         log.info("Retrieving juror summons reply info for juror {} by user {}", jurorNumber, payload.getLogin());
         CourtLocation courtLocation = courtLocationService.getCourtLocation(locCode);
@@ -951,7 +951,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
      */
     @Override
     @Transactional
-    public void fixErrorInJurorName(BureauJWTPayload payload, String jurorNumber,
+    public void fixErrorInJurorName(BureauJwtPayload payload, String jurorNumber,
                                     JurorNameDetailsDto jurorNameDetailsDto) {
         log.trace("Enter fixErrorInJurorName");
 
@@ -966,7 +966,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
-    public void processPendingNameChange(BureauJWTPayload payload, String jurorNumber,
+    public void processPendingNameChange(BureauJwtPayload payload, String jurorNumber,
                                          ProcessNameChangeRequestDto requestDto) {
         log.trace("Enter processPendingNameChange");
 
@@ -1067,7 +1067,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             jurorHistoryService.createPoliceCheckQualifyHistory(jurorPool, newPoliceCheckValue.isChecked());
             if (jurorPool.getOwner().equals(SecurityUtil.BUREAU_OWNER)) {
                 printDataService.printConfirmationLetter(jurorPool);
-                jurorHistoryService.createConfirmServiceHistory(jurorPool, "Confirmation Letter Auto");
+                jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Confirmation Letter Auto");
             }
         } else if (newPoliceCheckValue == PoliceCheck.INELIGIBLE) {
             log.debug("Juror {} is ineligible disqualifying for police check", jurorNumber);
@@ -1137,7 +1137,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Override
     @Transactional(readOnly = true)
     public JurorAttendanceDetailsResponseDto getJurorAttendanceDetails(String jurorNumber, String poolNumber,
-                                                                       BureauJWTPayload payload) {
+                                                                       BureauJwtPayload payload) {
         log.info("Juror {} attendance record requested by user {}", jurorNumber, payload.getLogin());
 
         JurorPool jurorPool = getJurorPool(jurorNumber, poolNumber);

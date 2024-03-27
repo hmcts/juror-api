@@ -34,7 +34,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -1070,7 +1070,7 @@ class MessagingServiceImplTest {
 
             assertThat(message).isNotNull();
             assertThat(message.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
-            assertThat(message.getFileDatetime()).isEqualTo(LocalDate.now(clock));
+            assertThat(message.getFileDatetime()).isEqualTo(LocalDateTime.now(clock));
             assertThat(message.getUserName()).isEqualTo(username);
             assertThat(message.getLocationCode()).isEqualTo(courtLocation);
             assertThat(message.getPoolNumber()).isEqualTo(TestConstants.VALID_POOL_NUMBER);
@@ -1125,7 +1125,7 @@ class MessagingServiceImplTest {
 
             assertThat(message).isNotNull();
             assertThat(message.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
-            assertThat(message.getFileDatetime()).isEqualTo(LocalDate.now(clock));
+            assertThat(message.getFileDatetime()).isEqualTo(LocalDateTime.now(clock));
             assertThat(message.getUserName()).isEqualTo(username);
             assertThat(message.getLocationCode()).isEqualTo(courtLocation);
             assertThat(message.getPoolNumber()).isEqualTo(TestConstants.VALID_POOL_NUMBER);
@@ -1178,7 +1178,7 @@ class MessagingServiceImplTest {
 
             assertThat(message).isNotNull();
             assertThat(message.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
-            assertThat(message.getFileDatetime()).isEqualTo(LocalDate.now(clock));
+            assertThat(message.getFileDatetime()).isEqualTo(LocalDateTime.now(clock));
             assertThat(message.getUserName()).isEqualTo(username);
             assertThat(message.getLocationCode()).isEqualTo(courtLocation);
             assertThat(message.getPoolNumber()).isEqualTo(TestConstants.VALID_POOL_NUMBER);
@@ -1235,7 +1235,7 @@ class MessagingServiceImplTest {
 
             assertThat(message).isNotNull();
             assertThat(message.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
-            assertThat(message.getFileDatetime()).isEqualTo(LocalDate.now(clock));
+            assertThat(message.getFileDatetime()).isEqualTo(LocalDateTime.now(clock));
             assertThat(message.getUserName()).isEqualTo(username);
             assertThat(message.getLocationCode()).isEqualTo(courtLocation);
             assertThat(message.getPoolNumber()).isEqualTo(TestConstants.VALID_POOL_NUMBER);
@@ -1293,7 +1293,7 @@ class MessagingServiceImplTest {
 
             assertThat(message).isNotNull();
             assertThat(message.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
-            assertThat(message.getFileDatetime()).isEqualTo(LocalDate.now(clock));
+            assertThat(message.getFileDatetime()).isEqualTo(LocalDateTime.now(clock));
             assertThat(message.getUserName()).isEqualTo(username);
             assertThat(message.getLocationCode()).isEqualTo(courtLocation);
             assertThat(message.getPoolNumber()).isEqualTo(TestConstants.VALID_POOL_NUMBER);

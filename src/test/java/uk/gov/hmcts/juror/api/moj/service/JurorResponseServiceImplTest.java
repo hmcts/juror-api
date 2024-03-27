@@ -10,7 +10,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPaperResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPersonalDetailsDto;
@@ -104,7 +104,7 @@ public class JurorResponseServiceImplTest extends TestCase {
     public void test_updatePaperResponse_personalDetails_bureauUser_bureauOwner_happy() {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
 
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "123456789");
 
         assertPaperResponsePersonalDetailsMockitoVerification(0, 1,
@@ -118,7 +118,7 @@ public class JurorResponseServiceImplTest extends TestCase {
     public void test_updateDigitalResponse_PersonalDetails_bureauUser_bureauOwner_happy() {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
 
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "123456789");
 
         assertPaperResponsePersonalDetailsMockitoVerification(0, 1,
@@ -131,7 +131,7 @@ public class JurorResponseServiceImplTest extends TestCase {
     public void test_updatePaperResponse_PersonalDetails_courtUser_courtOwner_happy() {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
 
-        BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "987654321");
 
         assertPaperResponsePersonalDetailsMockitoVerification(1, 0,
@@ -144,7 +144,7 @@ public class JurorResponseServiceImplTest extends TestCase {
     public void test_updateDigitalResponse_PersonalDetails_courtUser_courtOwner_happy() {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
 
-        BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "987654321");
 
         assertPaperResponsePersonalDetailsMockitoVerification(1, 0,
@@ -155,7 +155,7 @@ public class JurorResponseServiceImplTest extends TestCase {
 
     @Test
     public void test_updatePaperResponse_PersonalDetails_bureauUser_courtOwner_userNotAuthorised() {
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
 
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
@@ -169,7 +169,7 @@ public class JurorResponseServiceImplTest extends TestCase {
 
     @Test
     public void test_updateDigitalResponse_PersonalDetails_bureauUser_courtOwner_userNotAuthorised() {
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
 
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
@@ -183,7 +183,7 @@ public class JurorResponseServiceImplTest extends TestCase {
 
     @Test
     public void test_updatePaperResponse_PersonalDetails_courtUser_courtOwner_noAccess() {
-        BureauJWTPayload payload = TestUtils.createJwt("416", "SOME_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("416", "SOME_USER", "99");
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
 
         Assertions.assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
@@ -197,7 +197,7 @@ public class JurorResponseServiceImplTest extends TestCase {
 
     @Test
     public void test_updateDigitalResponse_PersonalDetails_courtUser_courtOwner_noAccess() {
-        BureauJWTPayload payload = TestUtils.createJwt("416", "SOME_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("416", "SOME_USER", "99");
 
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
 
@@ -215,7 +215,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
         personalDetailsDto.setDateOfBirth(LocalDate.now().minusYears(30));
 
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "123456789");
 
         assertPaperResponsePersonalDetailsMockitoVerification(0, 1,
@@ -229,7 +229,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
         personalDetailsDto.setDateOfBirth(LocalDate.now().minusYears(30));
 
-        BureauJWTPayload payload = TestUtils.createJwt("415", "SOME_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "987654321");
 
         assertPaperResponsePersonalDetailsMockitoVerification(1, 0,
@@ -247,7 +247,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
         personalDetailsDto.setDateOfBirth(LocalDate.now().minusYears(17));
 
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "123456789");
 
         assertPaperResponsePersonalDetailsMockitoVerification(0, 1,
@@ -265,7 +265,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
         personalDetailsDto.setDateOfBirth(LocalDate.now().minusYears(17));
 
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "123456789");
 
         assertPaperResponsePersonalDetailsMockitoVerification(0, 1,
@@ -283,7 +283,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
         personalDetailsDto.setDateOfBirth(LocalDate.now().minusYears(80));
 
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "123456789");
 
         assertPaperResponsePersonalDetailsMockitoVerification(0, 1,
@@ -302,7 +302,7 @@ public class JurorResponseServiceImplTest extends TestCase {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
         personalDetailsDto.setDateOfBirth(LocalDate.now().minusYears(80));
 
-        BureauJWTPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         jurorResponseService.updateJurorPersonalDetails(payload, personalDetailsDto, "123456789");
 
         assertPaperResponsePersonalDetailsMockitoVerification(0, 1,

@@ -320,7 +320,7 @@ public class JurorServiceImpl implements JurorService {
 
         // call the build method after the optional third party field are added.
 
-       final DigitalResponse entity = builder.build();
+        final DigitalResponse entity = builder.build();
         // add urgency flags to the response if required
         urgencyService.setUrgencyFlags(entity, jurorDetails);
 

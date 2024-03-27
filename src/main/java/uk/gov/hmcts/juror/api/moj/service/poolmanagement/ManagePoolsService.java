@@ -1,15 +1,15 @@
 package uk.gov.hmcts.juror.api.moj.service.poolmanagement;
 
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
 
 public interface ManagePoolsService {
 
-    AvailablePoolsInCourtLocationDto findAvailablePools(String locCode, BureauJWTPayload payload);
+    AvailablePoolsInCourtLocationDto findAvailablePools(String locCode, BureauJwtPayload payload);
 
-    SummoningProgressResponseDto getPoolMonitoringStats(BureauJWTPayload payload, String courtLocationCode,
+    SummoningProgressResponseDto getPoolMonitoringStats(BureauJwtPayload payload, String courtLocationCode,
                                                         String poolType);
 
-    AvailablePoolsInCourtLocationDto findAvailablePoolsCourtOwned(String locCode, BureauJWTPayload payload);
+    AvailablePoolsInCourtLocationDto findAvailablePoolsCourtOwned(String locCode, BureauJwtPayload payload);
 }

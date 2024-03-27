@@ -7,11 +7,8 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
 import uk.gov.hmcts.juror.api.config.WelshDayMonthTranslationConfig;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-
-
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
-
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateFieldMod;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
@@ -292,7 +289,6 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
      * Strip out unwanted template fields.
      * For LETTER_COMMS, only interested in data coming from juror.print_files.detail_rec
      *
-     * @param templateId
      * @return List of required fields for template.
      */
     private List<NotifyTemplateFieldMod> getPayLoadFieldsForTemplate(String templateId) {
@@ -303,7 +299,6 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
     /**
      * Strip out unwanted template fields.
      *
-     * @param templateId
      * @return List of required fields for template.
      */
     private List<NotifyTemplateFieldMod> getPayLoadFields(String templateId) {

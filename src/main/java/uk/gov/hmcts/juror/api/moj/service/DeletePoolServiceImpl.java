@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -37,7 +37,7 @@ public class DeletePoolServiceImpl implements DeletePoolService {
 
     @Override
     @Transactional
-    public void deletePool(BureauJWTPayload payload, String poolNumber) {
+    public void deletePool(BureauJwtPayload payload, String poolNumber) {
         log.trace(String.format("Enter deletePoolRequest for Pool Number: %s", poolNumber));
 
         // according to specifications from heritage, users with a userLevel higher than 3 cannot delete empty pools

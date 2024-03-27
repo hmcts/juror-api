@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.CJSEmploymentDetailsDto;
+import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.CjsEmploymentDetailsDto;
 import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.DeferralExcusalDto;
 import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.FirstPersonJurorDetailsDto;
 import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.JurorEligibilityDto;
@@ -439,7 +439,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
 
     @Transactional
     @Override
-    public void updateCjs(final CJSEmploymentDetailsDto dto, final String jurorId, final String login)
+    public void updateCjs(final CjsEmploymentDetailsDto dto, final String jurorId, final String login)
         throws BureauOptimisticLockingException {
         log.debug("CJS employment for juror {} edit", jurorId);
         final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
@@ -495,7 +495,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     @Override
     public void updateResponseStatus(String jurorId, ProcessingStatus status, Integer version, String login) {
 
-        List<Integer> poolStatus = Arrays.asList(
+        final List<Integer> poolStatus = Arrays.asList(
             IJurorStatus.RESPONDED,
             IJurorStatus.EXCUSED,
             IJurorStatus.DISQUALIFIED,
@@ -962,8 +962,6 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     /**
      * Helper method to compare only the date portion of two dates, ignoring the time information.
      *
-     * @param date1
-     * @param date2
      * @return Boolean representing whether the dates match, regardless of time
      */
     private boolean isSameDate(LocalDate date1, LocalDate date2) {

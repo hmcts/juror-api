@@ -26,7 +26,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
 import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogType;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 
@@ -91,7 +91,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     public void bureauAuthenticationEndpoint_unhappy_header3() throws Exception {
         final String description = "Authentication header is invalid";
 
-        final String publicJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String publicJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -116,9 +116,9 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauRepository_findByJurorNumber.sql")
-    public void retrieveBureauJurorDetailsById_WithValidJurorNumberAsParam_ReturnCorrectJurorDetails() throws Exception {
+    public void retrieveBureauJurorDetailsById_WithValidJurorNumberAsParam_ReturnCorrectJurorDetails() {
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login("testlogin")
@@ -134,7 +134,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody()).isInstanceOf(BureauJurorDetailDto.class);
         assertThat(responseEntity.getBody()).extracting(
-            "jurorNumber", "firstName", "lastName", "version", "useJurorPhoneDetails", "useJurorEmailDetails")
+                "jurorNumber", "firstName", "lastName", "version", "useJurorPhoneDetails", "useJurorEmailDetails")
             .contains("209092530", "Jane", "CASTILLO", 555, true, true);
         assertThat(responseEntity.getBody().getChangeLog()).hasSize(1);
         assertThat(responseEntity.getBody().getChangeLog().get(0).getItems()).hasSize(2);
@@ -169,9 +169,9 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauRepository_findByJurorNumber.sql")
-    public void filterBureauDetailsByStatus_WithValidCategoryFilter_ReturnsResponsesForStatusAndCount() throws Exception {
+    public void filterBureauDetailsByStatus_WithValidCategoryFilter_ReturnsResponsesForStatusAndCount() {
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJWTPayload.builder()
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
             .passwordWarning(false)
             .login("testlogin")
@@ -180,8 +180,8 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             .build())
         );
 
-        ResponseEntity<BureauResponseSummaryWrapper> response = template.exchange(new RequestEntity<Void>(httpHeaders
-                , HttpMethod.GET, URI.create("/api/v1/bureau/responses?filterBy=todo")),
+        ResponseEntity<BureauResponseSummaryWrapper> response = template.exchange(new RequestEntity<Void>(httpHeaders,
+                HttpMethod.GET, URI.create("/api/v1/bureau/responses?filterBy=todo")),
             BureauResponseSummaryWrapper.class);
         assertThat(response.getStatusCodeValue()).isEqualTo(200);
         assertThat(response.getBody().getResponses()).hasSize(3);
@@ -203,7 +203,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -268,7 +268,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     }
 
     /**
-     * Tests that {@link JurorResponse#completedAt} is set correctly when a response is closed
+     * Tests that {@link JurorResponse#completedAt} is set correctly when a response is closed.
      *
      * @param beforeTest the time the test started at (the completedAt value should be after this)
      * @since JDB-2139
@@ -290,7 +290,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -369,7 +369,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -435,11 +435,6 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             String.class)).isEqualTo("CASTILLO");// unchanged
     }
 
-    /**
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingCourt()
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingTranslation()
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_todo()
-     */
     @Test
     @Sql("/db/truncate.sql")
     @Sql("/db/mod/truncate.sql")
@@ -452,7 +447,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final String description = "Update juror response status happy path.";
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -516,11 +511,6 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             + "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
     }
 
-    /**
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingJurorContact()
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingTranslation()
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_todo()
-     */
     @Test
     @Sql("/db/truncate.sql")
     @Sql("/db/mod/truncate.sql")
@@ -533,7 +523,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final String description = "Update juror response status happy path.";
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -597,11 +587,6 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             + "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
     }
 
-    /**
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingJurorContact()
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingCourt()
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_todo()
-     */
     @Test
     @Sql("/db/truncate.sql")
     @Sql("/db/mod/truncate.sql")
@@ -614,7 +599,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final String description = "Update juror response status happy path.";
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -672,17 +657,12 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             String.class)).isEqualTo("CASTILLO");
 
         // assert change to processing status was audited
-        assertThat(jdbcTemplate.queryForObject("SELECT NEW_PROCESSING_STATUS FROM juror_mod.juror_response_aud " +
-            "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo(newProcessingStatus.toString());
-        assertThat(jdbcTemplate.queryForObject("SELECT OLD_PROCESSING_STATUS FROM juror_mod.juror_response_aud " +
-            "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
+        assertThat(jdbcTemplate.queryForObject("SELECT NEW_PROCESSING_STATUS FROM juror_mod.juror_response_aud "
+            + "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo(newProcessingStatus.toString());
+        assertThat(jdbcTemplate.queryForObject("SELECT OLD_PROCESSING_STATUS FROM juror_mod.juror_response_aud "
+            + "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
     }
 
-    /**
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingJurorContact()
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingCourt()
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingTranslation()
-     */
     @Test
     @Sql({"/db/truncate.sql",
         "/db/mod/truncate.sql",
@@ -695,7 +675,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final String description = "Update juror response status happy path.";
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")
@@ -759,12 +739,6 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             + "WHERE JUROR_NUMBER = '644892530'", String.class)).isEqualTo("TODO");
     }
 
-    /**
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingJurorContact()
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingCourt()
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_awaitingTranslation()
-     * @see #updateResponseStatus_happy_nonMergeStatusChange_todo()
-     */
     @Test
     @Sql("/db/truncate.sql")
     @Sql("/db/mod/truncate.sql")
@@ -777,7 +751,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final String description = "Update juror response status happy path.";
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
-        final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("testlogin")

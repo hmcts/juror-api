@@ -13,7 +13,6 @@ public class HmacJwtAuthentication extends AbstractAuthenticationToken {
     /**
      * Pre-authenticated token. ({@link #isAuthenticated()} is <b>false</b>).
      *
-     * @param token
      */
     public HmacJwtAuthentication(final String token) {
         super(AuthorityUtils.NO_AUTHORITIES);
@@ -24,8 +23,7 @@ public class HmacJwtAuthentication extends AbstractAuthenticationToken {
     /**
      * Authenticated token. ({@link #isAuthenticated()} is <b>true</b>).
      *
-     * @param authorities
-     * @param token
+     
      */
     public HmacJwtAuthentication(Collection<? extends GrantedAuthority> authorities, String token) {
         super(authorities);

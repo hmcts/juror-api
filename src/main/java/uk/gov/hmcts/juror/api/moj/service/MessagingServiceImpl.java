@@ -28,7 +28,7 @@ import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.Clock;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -229,7 +229,7 @@ public class MessagingServiceImpl implements MessagingService {
         Juror juror = getJuror(jurorAndSendType.getJurorNumber());
         Message message = Message.builder()
             .jurorNumber(juror.getJurorNumber())
-            .fileDatetime(LocalDate.now(clock))
+            .fileDatetime(LocalDateTime.now(clock))
             .userName(username)
             .locationCode(courtLocation)
             .poolNumber(jurorAndSendType.getPoolNumber())

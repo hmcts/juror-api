@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.MarkAsDeceasedDto;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
@@ -195,8 +195,8 @@ public class DeceasedResponseServiceTest {
 
     //add positive tests for deceased excusal (with and without minimal paper response)
 
-    private BureauJWTPayload buildPayload(String owner) {
-        return BureauJWTPayload.builder()
+    private BureauJwtPayload buildPayload(String owner) {
+        return BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("BUREAU_USER")

@@ -52,8 +52,8 @@ public class BureauBacklogAllocateRequestDto {
 
         @NotNull(message = "No of Super Urgent responses to be allocated is required.")
         @Min(0)
-        @Schema(description = "Number of Super-Urgent backlog items to allocate to the bureau officer", example = "60"
-            , requiredMode = Schema.RequiredMode.REQUIRED)
+        @Schema(description = "Number of Super-Urgent backlog items to allocate to the bureau officer", example = "60",
+            requiredMode = Schema.RequiredMode.REQUIRED)
         private Integer superUrgentCount;
 
     }

@@ -5,9 +5,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * Exception type thrown when backlog allocation fails.
- *
- * @see uk.gov.hmcts.juror.api.bureau.service.BureauBacklogAllocateService#allocateBacklogReplies
- * (BureauBacklogAllocateRequestDto, String)
  */
 public class BureauBacklogAllocateException extends RuntimeException {
 

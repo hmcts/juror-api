@@ -16,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
@@ -2089,13 +2089,13 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     private String initCourtsJwt(String owner, List<String> courts) throws Exception {
 
-        return mintBureauJwt(BureauJWTPayload.builder()
+        return mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("COURT_USER")
             .daysToExpire(89)
             .owner(owner)
-            .staff(BureauJWTPayload.Staff.builder().courts(courts).build())
+            .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build());
     }
 
@@ -2168,7 +2168,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     private void verifyStraightThrough_ageDisqualification_notProcessed(PaperResponse jurorPaperResponse,
                                                                         JurorPool jurorPool, int statusCode) {
-        Juror juror = jurorPool.getJuror();
+        final Juror juror = jurorPool.getJuror();
         assertThat(jurorPaperResponse.getProcessingComplete())
             .as("No automatic processing, so processing complete flag remains unset")
             .isNotEqualTo(Boolean.TRUE);

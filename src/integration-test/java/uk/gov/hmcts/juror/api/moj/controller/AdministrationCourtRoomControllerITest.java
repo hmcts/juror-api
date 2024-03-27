@@ -111,7 +111,6 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
                 assertThat(response.getStatusCode())
                     .as("Expect the HTTP GET request to be successful")
                     .isEqualTo(HttpStatus.OK);
-                System.out.println(response);
                 assertThat(response.getBody()).isNotNull();
                 assertThat(response.getBody()).isEqualTo(List.of(expectedResponse));
             }

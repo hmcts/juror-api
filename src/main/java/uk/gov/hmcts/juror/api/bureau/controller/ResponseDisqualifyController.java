@@ -26,8 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.exception.DisqualifyException;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseDisqualifyService;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
 
 import java.util.List;
@@ -70,7 +70,7 @@ public class ResponseDisqualifyController {
         BureauJwtAuthentication jwt,
         @Validated @RequestBody DisqualifyCodeDto disqualifyCodeDto) throws DisqualifyException {
         validateJurorNumberPathVariable(jurorId);
-        final BureauJWTPayload jwtPayload = (BureauJWTPayload) jwt.getPrincipal();
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         if (null == disqualifyCodeDto.getDisqualifyCode() || null == disqualifyCodeDto.getVersion()) {
             // there is either no body or no version present in the request
             throw new DisqualifyException.RequestIsMissingDetails(jurorId);

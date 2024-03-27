@@ -11,7 +11,7 @@ import java.io.Serializable;
 
 
 /**
- * Travel Mode Data used by DTO request/response for the expenses calculator juror details
+ * Travel Mode Data used by DTO request/response for the expenses calculator juror details.
  */
 @AllArgsConstructor
 @Builder

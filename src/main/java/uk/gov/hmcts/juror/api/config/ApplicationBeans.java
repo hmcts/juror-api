@@ -37,6 +37,7 @@ public class ApplicationBeans {
             ZoneId.of("UCT")
         );
     }
+
     @Bean(name = "threadPoolTaskExecutor")
     public Executor threadPoolTaskExecutor() {
         return new ThreadPoolTaskExecutor();

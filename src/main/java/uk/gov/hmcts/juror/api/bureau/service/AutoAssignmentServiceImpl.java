@@ -9,13 +9,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.controller.request.AutoAssignRequest;
 import uk.gov.hmcts.juror.api.bureau.controller.response.AutoAssignResponse;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAudit;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffJurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.UserQueries;
 import uk.gov.hmcts.juror.api.bureau.exception.AutoAssignException;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
@@ -25,14 +21,11 @@ import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditReposi
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -96,7 +89,8 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
             throw new AutoAssignException.CapacityBiggerThanBacklog(totalCapacity, backlogSize);
         }
 
-        final List<StaffJurorResponseAuditMod> auditEntries = assignAndAudit(backlog, request.getData(), requestingUser);
+        final List<StaffJurorResponseAuditMod> auditEntries =
+            assignAndAudit(backlog, request.getData(), requestingUser);
 
         jurorResponseRepository.saveAll(backlog);
         auditRepository.saveAll(auditEntries);
@@ -173,8 +167,8 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
     public List<StaffJurorResponseAuditMod> assignAndAudit(List<DigitalResponse> backlog,
-                                                         List<AutoAssignRequest.StaffCapacity> staffCapacity,
-                                                         String requestingUser) throws AutoAssignException {
+                                                           List<AutoAssignRequest.StaffCapacity> staffCapacity,
+                                                           String requestingUser) throws AutoAssignException {
 
         final List<String> staffLogins = staffCapacity.stream().map(AutoAssignRequest.StaffCapacity::getLogin).toList();
         LinkedList<User> staff = new LinkedList<>(userRepository.findAllByUsernameIn(staffLogins));
@@ -220,7 +214,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
      * @return distributed workload
      */
     private Map<User, Set<DigitalResponse>> distributeWorkload(Collection<DigitalResponse> backlog, List<User> staff,
-                                                             Map<String, Integer> staffMemberCapacities) {
+                                                               Map<String, Integer> staffMemberCapacities) {
         final Iterator<DigitalResponse> backlogItems = backlog.iterator();
 
         Map<User, Set<DigitalResponse>> allocation = new HashMap<>();
@@ -257,7 +251,8 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
      */
     private void checkForInvalidStaff(Collection<User> staff) throws AutoAssignException {
         List<User> ineligible =
-            staff.stream().filter(s -> !s.isActive() || !nullSafeEquals(s.getLevel(), SecurityUtil.STANDARD_USER_LEVEL)).toList();
+            staff.stream().filter(s -> !s.isActive() || !nullSafeEquals(s.getLevel(), SecurityUtil.STANDARD_USER_LEVEL))
+                .toList();
         if (!ineligible.isEmpty()) {
             final List<String> ineligibleLogins = Lists.transform(ineligible, User::getUsername);
             log.error("Input included staff members not eligible for auto-allocation: {}", ineligibleLogins);

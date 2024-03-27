@@ -21,7 +21,7 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.request.BureauResponseStatusUpdateDto;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPaperResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPersonalDetailsDto;
@@ -423,7 +423,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             final String description = "Update juror response status happy path.";
             final URI uri = URI.create("/api/v1/moj/juror-response/update-status/644892530");
 
-            final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+            final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
                 .userLevel("99")
                 .passwordWarning(false)
                 .login("testlogin")
@@ -480,7 +480,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             final String description = "Update juror response status happy path.";
             final URI uri = URI.create("/api/v1/moj/juror-response/update-status/644892530");
 
-            final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+            final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
                 .userLevel("99")
                 .passwordWarning(false)
                 .login("testlogin")
@@ -532,7 +532,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             final String description = "Update juror response status happy path.";
             final URI uri = URI.create("/api/v1/moj/juror-response/update-status/644892530");
 
-            final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+            final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
                 .userLevel("99")
                 .passwordWarning(false)
                 .login("testlogin")
@@ -583,7 +583,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             final String description = "Update juror response status happy path.";
             final URI uri = URI.create("/api/v1/moj/juror-response/update-status/644892530");
 
-            final String bureauJwt = mintBureauJwt(BureauJWTPayload.builder()
+            final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
                 .userLevel("99")
                 .passwordWarning(false)
                 .login("testlogin")
@@ -874,12 +874,12 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         }
 
         private void setHeaders(String owner, String user, String userLevel) {
-            BureauJWTPayload.Staff staff = createStaff(owner, user, Integer.parseInt(userLevel));
+            BureauJwtPayload.Staff staff = createStaff(owner, user, Integer.parseInt(userLevel));
 
             httpHeaders = initialiseHeaders(userLevel, false, user, 89, owner, staff);
         }
 
-        private BureauJWTPayload.Staff createStaff(String owner, String staffName, int userLevel) {
+        private BureauJwtPayload.Staff createStaff(String owner, String staffName, int userLevel) {
             List<String> staffCourts = Collections.singletonList(owner);
             return TestUtils.staffBuilder(staffName, userLevel, staffCourts);
         }
@@ -1095,7 +1095,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
                                                                       int statusCode) {
         AbstractJurorResponse jurorResponse = createGenericJurorResponse(replyMethod, jurorNumber);
         JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
-        Juror juror = jurorPool.getJuror();
+        final Juror juror = jurorPool.getJuror();
 
         assertThat(jurorResponse.getProcessingComplete())
             .as("No automatic processing, so processing complete flag remains unset").isNotEqualTo(Boolean.TRUE);

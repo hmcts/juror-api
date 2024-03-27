@@ -42,7 +42,8 @@ public class JurorDigitalApplicationTests extends AbstractIntegrationTest {
     @Repeat(3)
     public void sequenceResetWorksCorrectly() throws Exception {
         assertThat(jdbcTemplate.queryForObject("SELECT currval('JUROR_DIGITAL.SPEC_NEED_SEQ')", Integer.class))
-                .as("The sequence initial value is 999 (for testing) in it's default state. Is the stored procedure for sequence rest accessible?")
+                .as("The sequence initial value is 999 (for testing) in it's default state. "
+                    + "Is the stored procedure for sequence rest accessible?")
                 .isEqualTo(999);
         assertThat(jdbcTemplate.queryForObject("SELECT nextval('JUROR_DIGITAL.SPEC_NEED_SEQ')", Integer.class))
                 .as("The sequence next value is 1000 (during testing)")

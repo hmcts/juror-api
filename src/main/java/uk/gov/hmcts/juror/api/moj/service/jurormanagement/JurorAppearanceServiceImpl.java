@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service.jurormanagement;
 
+
 import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,8 +8,9 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
@@ -65,9 +67,37 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     private final JurorExpenseService jurorExpenseService;
 
     @Override
+    public void addAttendanceDay(BureauJwtPayload payload, AddAttendanceDayDto dto) {
+
+        JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(
+            dto.getJurorNumber(), dto.getPoolNumber());
+
+        if (jurorPool == null) {
+            throw new MojException.NotFound("No valid juror pool found", null);
+        }
+
+        if (!jurorPool.getOwner().equals(payload.getOwner())) {
+            throw new MojException.Forbidden("Invalid access to juror pool", null);
+        }
+
+        JurorAppearanceDto appearanceDto = dto.getJurorAppearanceDto();
+        processAppearance(payload, appearanceDto, true);
+
+        UpdateAttendanceDto.CommonData commonData = dto.getUpdateAttendanceDtoCommonData();
+        updateConfirmAttendance(commonData);
+
+    }
+
+
+    @Override
     @Transactional
     public JurorAppearanceResponseDto.JurorAppearanceResponseData processAppearance(
-        BureauJWTPayload payload, JurorAppearanceDto jurorAppearanceDto) {
+        BureauJwtPayload payload, JurorAppearanceDto jurorAppearanceDto) {
+        return processAppearance(payload, jurorAppearanceDto, false);
+    }
+
+    JurorAppearanceResponseDto.JurorAppearanceResponseData processAppearance(
+        BureauJwtPayload payload, JurorAppearanceDto jurorAppearanceDto, boolean allowBothCheckInAndOut) {
 
         final String jurorNumber = jurorAppearanceDto.getJurorNumber();
         final String locCode = jurorAppearanceDto.getLocationCode();
@@ -76,7 +106,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         // validate the request to ensure the time and appearance stage combination are valid
         validateTimeAndAppearanceStage(jurorAppearanceDto.getCheckInTime(), jurorAppearanceDto.getCheckOutTime(),
-            appearanceStage);
+            appearanceStage, allowBothCheckInAndOut);
 
         CourtLocation courtLocation = CourtLocationUtils.validateAccessToCourtLocation(locCode, payload.getOwner(),
             courtLocationRepository);
@@ -103,11 +133,11 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             validateAppearanceStage(jurorNumber, appearanceStage, appearance);
         }
 
-        if (appearanceStage == AppearanceStage.CHECKED_IN) {
+        if (appearanceStage == AppearanceStage.CHECKED_IN || allowBothCheckInAndOut) {
             appearance.setTimeIn(jurorAppearanceDto.getCheckInTime());
         }
 
-        if (appearanceStage == AppearanceStage.CHECKED_OUT) {
+        if (appearanceStage == AppearanceStage.CHECKED_OUT || allowBothCheckInAndOut) {
             appearance.setTimeOut(jurorAppearanceDto.getCheckOutTime());
         }
         appearance.setAppearanceStage(appearanceStage);
@@ -132,7 +162,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     public JurorAppearanceResponseDto getAppearanceRecords(String locCode, LocalDate date,
-                                                           BureauJWTPayload payload) {
+                                                           BureauJwtPayload payload) {
 
         CourtLocationUtils.validateAccessToCourtLocation(locCode, payload.getOwner(), courtLocationRepository);
 
@@ -148,7 +178,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
-    public AttendanceDetailsResponse retrieveAttendanceDetails(BureauJWTPayload payload,
+    public AttendanceDetailsResponse retrieveAttendanceDetails(BureauJwtPayload payload,
                                                                RetrieveAttendanceDetailsDto request) {
         final RetrieveAttendanceDetailsDto.CommonData commonData = request.getCommonData();
 
@@ -168,7 +198,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     @Transactional
-    public AttendanceDetailsResponse updateAttendance(BureauJWTPayload payload, UpdateAttendanceDto request) {
+    public AttendanceDetailsResponse updateAttendance(BureauJwtPayload payload, UpdateAttendanceDto request) {
         final UpdateAttendanceDto.CommonData commonData = request.getCommonData();
         final UpdateAttendanceStatus status = commonData.getStatus();
 
@@ -209,7 +239,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         log.trace(String.format("Entered method: updateAttendanceDate(). There are %s jurors to update",
             request.getJurorNumbers().size()));
 
-        BureauJWTPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         List<JurorPool> updatedJurorPools = new ArrayList<>();
 
         for (String jurorNumber : request.getJurorNumbers()) {
@@ -244,7 +274,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     @Transactional
-    public AttendanceDetailsResponse deleteAttendance(BureauJWTPayload payload, UpdateAttendanceDto request) {
+    public AttendanceDetailsResponse deleteAttendance(BureauJwtPayload payload, UpdateAttendanceDto request) {
         final UpdateAttendanceDto.CommonData commonData = validateDeleteRequest(request);
 
         // ensure only a single attendance record is deleted per api call
@@ -283,7 +313,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     @Transactional(readOnly = true)
     public JurorsToDismissResponseDto retrieveJurorsToDismiss(JurorsToDismissRequestDto request) {
 
-        BureauJWTPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         String locationCode = request.getLocationCode();
 
         log.debug(String.format("User %s is retrieving jurors to dismiss for court location %s", payload.getLogin(),
@@ -323,7 +353,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     public void addNonAttendance(JurorNonAttendanceDto request) {
 
         // validate the court user has access to the juror and pool
-        BureauJWTPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         final String locationCode = request.getLocationCode();
         final LocalDate nonAttendanceDate = request.getNonAttendanceDate();
 
@@ -410,18 +440,24 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         }
     }
 
-    private void validateTimeAndAppearanceStage(LocalTime checkInTime, LocalTime checkOutTime,
-                                                AppearanceStage appearanceStage) {
-        if (appearanceStage == AppearanceStage.CHECKED_IN) {
+    void validateTimeAndAppearanceStage(LocalTime checkInTime, LocalTime checkOutTime,
+                                        AppearanceStage appearanceStage, boolean allowCheckInAndOut) {
+        if (allowCheckInAndOut) {
+            validateCheckInNotNull(checkInTime);
+            validateCheckOutNotNull(checkOutTime);
+        } else if (appearanceStage == AppearanceStage.CHECKED_IN) {
             validateCheckInNotNull(checkInTime);
         } else if (appearanceStage == AppearanceStage.CHECKED_OUT) {
             validateCheckOutNotNull(checkOutTime);
         } else {
             throw new MojException.BadRequest("Invalid appearance stage and time combination supplied", null);
         }
-
         validateBothCheckInAndOutTimeNotNull(checkInTime, checkOutTime);
-        validateBothCheckInAndOutTimeNotSet(checkInTime, checkOutTime);
+
+        if (!allowCheckInAndOut) {
+            validateBothCheckInAndOutTimeNotSet(checkInTime, checkOutTime);
+        }
+
     }
 
     private static UpdateAttendanceDto.CommonData validateDeleteRequest(UpdateAttendanceDto request) {
@@ -533,7 +569,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         return AttendanceDetailsResponse.builder().details(details).summary(summary).build();
     }
 
-    private AttendanceDetailsResponse updateConfirmAttendance(UpdateAttendanceDto.CommonData updateCommonData) {
+    AttendanceDetailsResponse updateConfirmAttendance(UpdateAttendanceDto.CommonData updateCommonData) {
         // 1. retrieve details of jurors who attended court for the given attendance date (checked-in)
         RetrieveAttendanceDetailsDto.CommonData retrieveCommonData = new RetrieveAttendanceDetailsDto.CommonData();
         retrieveCommonData.setAttendanceDate(updateCommonData.getAttendanceDate());
@@ -776,28 +812,28 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         return activeJurorRecord;
     }
 
-    private void validateBothCheckInAndOutTimeNotNull(LocalTime checkInTime, LocalTime checkOutTime) {
+    void validateBothCheckInAndOutTimeNotNull(LocalTime checkInTime, LocalTime checkOutTime) {
         if (checkInTime == null && checkOutTime == null) {
             throw new MojException.BadRequest("Must provide a Check-in or Check-out time",
                 null);
         }
     }
 
-    private void validateBothCheckInAndOutTimeNotSet(LocalTime checkInTime, LocalTime checkOutTime) {
+    void validateBothCheckInAndOutTimeNotSet(LocalTime checkInTime, LocalTime checkOutTime) {
         if (checkInTime != null && checkOutTime != null) {
             throw new MojException.BadRequest("Cannot have both Check-in and Check-out time",
                 null);
         }
     }
 
-    private void validateCheckInNotNull(LocalTime checkInTime) {
+    void validateCheckInNotNull(LocalTime checkInTime) {
         if (checkInTime == null) {
             throw new MojException.BadRequest("Check-in time cannot be null",
                 null);
         }
     }
 
-    private void validateCheckOutNotNull(LocalTime checkOutTime) {
+    void validateCheckOutNotNull(LocalTime checkOutTime) {
         if (checkOutTime == null) {
             throw new MojException.BadRequest("Check-out time cannot be null",
                 null);

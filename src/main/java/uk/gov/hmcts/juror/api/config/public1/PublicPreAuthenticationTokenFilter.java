@@ -1,4 +1,4 @@
-package uk.gov.hmcts.juror.api.config.public_;
+package uk.gov.hmcts.juror.api.config.public1;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

@@ -59,6 +59,7 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
     }
 
     /**
+     * Authenticate a juror using the supplied credentials.
      * @throws InvalidJurorCredentialsException Credentials do not match persistence
      */
     @Override

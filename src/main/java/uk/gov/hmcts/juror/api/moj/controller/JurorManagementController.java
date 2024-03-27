@@ -23,8 +23,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
+import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
@@ -56,7 +57,7 @@ public class JurorManagementController {
     @GetMapping(path = "/appearance")
     @Operation(description = "Retrieve juror appearance records for a given date and location ")
     public ResponseEntity<JurorAppearanceResponseDto> getAppearanceRecords(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam @CourtLocationCode @Valid String locationCode,
         @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid
         LocalDate attendanceDate) {
@@ -68,7 +69,7 @@ public class JurorManagementController {
     @PutMapping("/appearance")
     @Operation(description = "Check-in or Check-out a juror")
     public ResponseEntity<JurorAppearanceResponseDto.JurorAppearanceResponseData> processAppearance(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid JurorAppearanceDto jurorAppearanceDto) {
         JurorAppearanceResponseDto.JurorAppearanceResponseData appearanceData =
             jurorAppearanceService.processAppearance(payload, jurorAppearanceDto);
@@ -78,7 +79,7 @@ public class JurorManagementController {
     @GetMapping("/attendance")
     @Operation(description = "Retrieve a list of juror attendance details based on attendance (appearance) status")
     public ResponseEntity<AttendanceDetailsResponse> retrieveAttendanceDetails(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid RetrieveAttendanceDetailsDto request) {
         validateOwner(payload);
 
@@ -88,16 +89,27 @@ public class JurorManagementController {
     @PatchMapping("/attendance")
     @Operation(description = "Update the list of jurors based on their attendance (appearance) status")
     public ResponseEntity<AttendanceDetailsResponse> updateAttendance(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid UpdateAttendanceDto request) {
         validateOwner(payload);
 
         return ResponseEntity.ok(jurorAppearanceService.updateAttendance(payload, request));
     }
 
+    @PostMapping("/add-attendance-day")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(description = "Manually add attendance day for a juror")
+    @IsCourtUser
+    public void addAttendanceDay(
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
+        @RequestBody @Valid AddAttendanceDayDto addAttendanceDayDto) {
+        jurorAppearanceService.addAttendanceDay(payload, addAttendanceDayDto);
+    }
+
     @PatchMapping("/attendance/attendance-date")
     @Operation(description = "Update juror attendance date")
     @IsCourtUser
+
     public ResponseEntity<String> updateAttendanceDate(
         @RequestBody @Valid UpdateAttendanceDateDto request) {
         return ResponseEntity.ok(jurorAppearanceService.updateAttendanceDate(request));
@@ -106,7 +118,7 @@ public class JurorManagementController {
     @DeleteMapping("/attendance")
     @Operation(description = "Delete the attendance record for a juror")
     public ResponseEntity<AttendanceDetailsResponse> deleteAttendance(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJWTPayload payload,
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid UpdateAttendanceDto request) {
         validateOwner(payload);
 
@@ -132,7 +144,7 @@ public class JurorManagementController {
         return ResponseEntity.ok(jurorAppearanceService.retrieveJurorsToDismiss(request));
     }
 
-    private void validateOwner(BureauJWTPayload payload) {
+    private void validateOwner(BureauJwtPayload payload) {
         if (JUROR_OWNER.equalsIgnoreCase(payload.getOwner())) {
             throw new MojException.Forbidden("Bureau users are not allowed to use this service",
                 null);

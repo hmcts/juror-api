@@ -6,12 +6,8 @@ public interface CourtCatchmentService {
 
     /**
      * The Service to match the post code agaist the court code.
-     *
-     * @param jurorNumber
      */
 
-    CourtCatchmentStatusDto CourtCatchmentFinder(String jurorNumber);
-
-
+    CourtCatchmentStatusDto courtCatchmentFinder(String jurorNumber);
 }
 

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto;
@@ -73,12 +73,9 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public int reassignJurors(BureauJWTPayload payload, JurorManagementRequestDto jurorManagementRequestDto) {
+    public int reassignJurors(BureauJwtPayload payload, JurorManagementRequestDto jurorManagementRequestDto) {
         log.trace("Entered reassignJurors method");
 
-        String owner = payload.getOwner();
-        String currentUser = payload.getLogin();
-        int reassignedJurorsCount = 0;
 
         // validate the request DTO, cannot reassign to the same pool in the same court - bad request.
         validateRequest(jurorManagementRequestDto);
@@ -122,7 +119,9 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         log.debug("{} Pool Members found for the {} juror numbers provided", sourceJurorPools.size(),
             jurorManagementRequestDto.getJurorNumbers().stream().distinct().count()
         );
-
+        final String owner = payload.getOwner();
+        final String currentUser = payload.getLogin();
+        int reassignedJurorsCount = 0;
         for (JurorPool sourceJurorPool : sourceJurorPools) {
             String jurorNumber = sourceJurorPool.getJurorNumber();
             log.info("Juror: {} - reassigning from Pool: {} to Pool: {}", jurorNumber, sourcePoolNumber,
@@ -280,7 +279,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public int transferPoolMembers(BureauJWTPayload payload, JurorManagementRequestDto requestDto) {
+    public int transferPoolMembers(BureauJwtPayload payload, JurorManagementRequestDto requestDto) {
         log.trace("Enter transferPoolMembers");
 
         String activeUserOwner = payload.getOwner();
@@ -357,7 +356,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
     @Override
     @Transactional
-    public JurorManagementResponseDto validatePoolMembers(BureauJWTPayload payload,
+    public JurorManagementResponseDto validatePoolMembers(BureauJwtPayload payload,
                                                           JurorManagementRequestDto requestDto) {
         log.trace("Enter validatePoolMembers");
         int requestedJurorCount = (int) requestDto.getJurorNumbers().stream().distinct().count();
@@ -387,11 +386,11 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                         jurorPool -> jurorNumber.equals(jurorPool.getJurorNumber())).findFirst();
                     if (inactiveJuror.isPresent()) {
                         failedTransfers.put(jurorNumber, new Triple<>(JurorManagementConstants.NO_ACTIVE_RECORD_MESSAGE,
-                                                                      inactiveJuror.get().getJuror().getFirstName(),
-                                                                      inactiveJuror.get().getJuror().getLastName()));
+                            inactiveJuror.get().getJuror().getFirstName(),
+                            inactiveJuror.get().getJuror().getLastName()));
                     } else {
                         failedTransfers.put(jurorNumber, new Triple<>(JurorManagementConstants.NO_ACTIVE_RECORD_MESSAGE,
-                                                                      "", ""));
+                            "", ""));
                     }
                 });
         }
@@ -523,11 +522,11 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         if (age < lowerAgeLimit) {
             validationFailures.put(jurorPool.getJurorNumber(), new Triple<>(
                 JurorManagementConstants.BELOW_AGE_LIMIT_MESSAGE, jurorPool.getJuror().getFirstName(),
-                    jurorPool.getJuror().getLastName()));
+                jurorPool.getJuror().getLastName()));
         } else if (age >= upperAgeLimit) {
             validationFailures.put(jurorPool.getJurorNumber(), new Triple<>(
                 JurorManagementConstants.ABOVE_AGE_LIMIT_MESSAGE, jurorPool.getJuror().getFirstName(),
-                    jurorPool.getJuror().getLastName()));
+                jurorPool.getJuror().getLastName()));
         }
     }
 

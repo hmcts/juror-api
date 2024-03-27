@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.TestUtil;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
 import uk.gov.hmcts.juror.api.juror.controller.PublicAuthenticationController.PublicAuthenticationRequestDto;
 import uk.gov.hmcts.juror.api.juror.controller.PublicAuthenticationController.PublicAuthenticationResponseDto;
+import uk.gov.hmcts.juror.api.juror.service.PublicAuthenticationServiceImpl;
 
 import java.net.URI;
 import java.util.Collections;
@@ -63,7 +64,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicAuthenticationControllerTest.publicAuthenticationEndpoint_happy.sql")
-    public void publicAuthenticationEndpoint_happy() throws Exception {
+    public void publicAuthenticationEndpointHappy() throws Exception {
         final String jurorNumber = "644892530";
         final String lastName = "Castillo";
         final String postcode = "AB3 9RY";
@@ -96,7 +97,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicAuthenticationControllerTest.publicAuthenticationEndpoint_happy.sql")
-    public void publicAuthenticationEndpoint_happy_no_space_postcode() throws Exception {
+    public void publicAuthenticationEndpointHappyNoSpacePostcode() throws Exception {
         final String jurorNumber = "644892530";
         final String lastName = "Castillo";
         final String postcode = "AB39RY";
@@ -114,8 +115,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
             httpHeaders, HttpMethod.POST, uri);
 
         ResponseEntity<PublicAuthenticationResponseDto> exchange = template.exchange(requestEntity,
-            new ParameterizedTypeReference<PublicAuthenticationResponseDto>() {
-            });
+            new ParameterizedTypeReference<>() {});
 
         assertThat(exchange).isNotNull();
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -128,27 +128,26 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
     @Test
     @Sql("/db/truncate.sql")
     @Sql("/db/mod/truncate.sql")
-    public void publicAuthenticationEndpoint_unhappy_header1() throws Exception {
+    public void publicAuthenticationEndpointUnhappyHeader1() throws Exception {
         final String description = "Authentication header is not present";
 
-        final String JUROR_NUMBER = "644892530";
-        final String LAST_NAME = "Castillo";
-        final String POSTCODE = "AB3 9RY";
+        final String jurorNumber = "644892530";
+        final String lastName = "Castillo";
+        final String postcode = "AB3 9RY";
 
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .lastName(LAST_NAME)
-            .postcode(POSTCODE)
+            .jurorNumber(jurorNumber)
+            .lastName(lastName)
+            .postcode(postcode)
             .build();
 
         RequestEntity<PublicAuthenticationRequestDto> requestEntity = new RequestEntity<>(requestDto,
             httpHeaders, HttpMethod.POST, uri);
 
         ResponseEntity<SpringBootErrorResponse> exchange = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
-            });
+            new ParameterizedTypeReference<>() {});
 
         assertThat(exchange).describedAs(description).isNotNull();
         assertThat(exchange.getStatusCode()).isNotEqualTo(HttpStatus.OK);
@@ -161,19 +160,19 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
     @Test
     @Sql("/db/truncate.sql")
     @Sql("/db/mod/truncate.sql")
-    public void publicAuthenticationEndpoint_unhappy_header2() throws Exception {
+    public void publicAuthenticationEndpointUnhappyHeader2() throws Exception {
         final String description = "Authentication header is empty";
 
-        final String JUROR_NUMBER = "644892530";
-        final String LAST_NAME = "Castillo";
-        final String POSTCODE = "AB3 9RY";
+        final String jurorNumber = "644892530";
+        final String lastName = "Castillo";
+        final String postcode = "AB3 9RY";
 
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .lastName(LAST_NAME)
-            .postcode(POSTCODE)
+            .jurorNumber(jurorNumber)
+            .lastName(lastName)
+            .postcode(postcode)
             .build();
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, null);
@@ -195,19 +194,19 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
     @Test
     @Sql("/db/truncate.sql")
     @Sql("/db/mod/truncate.sql")
-    public void publicAuthenticationEndpoint_unhappy_header3() throws Exception {
+    public void publicAuthenticationEndpointUnhappyHeader3() throws Exception {
         final String description = "Authentication header is invalid";
 
-        final String JUROR_NUMBER = "644892530";
-        final String LAST_NAME = "Castillo";
-        final String POSTCODE = "AB3 9RY";
+        final String jurorNumber = "644892530";
+        final String lastName = "Castillo";
+        final String postcode = "AB3 9RY";
 
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .lastName(LAST_NAME)
-            .postcode(POSTCODE)
+            .jurorNumber(jurorNumber)
+            .lastName(lastName)
+            .postcode(postcode)
             .build();
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_INVALID);
@@ -215,8 +214,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
             httpHeaders, HttpMethod.POST, uri);
 
         ResponseEntity<SpringBootErrorResponse> exchange = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
-            });
+            new ParameterizedTypeReference<>() {});
 
         assertThat(exchange).describedAs(description).isNotNull();
         assertThat(exchange.getStatusCode()).isNotEqualTo(HttpStatus.OK);
@@ -234,17 +232,17 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
     public void publicAuthenticationEndpoint_unhappy_invalidCredentials() throws Exception {
         final String description = "Invalid credentials";
 
-        final String JUROR_NUMBER = "644892530";
-        final String LAST_NAME = "Castilloo";// invalid, should be "Castillo"
-        final String POSTCODE = "AB3 9RY";
+        final String jurorNumber = "644892530";
+        final String lastName = "Castilloo";// invalid, should be "Castillo"
+        final String postcode = "AB3 9RY";
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .lastName(LAST_NAME)
-            .postcode(POSTCODE)
+            .jurorNumber(jurorNumber)
+            .lastName(lastName)
+            .postcode(postcode)
             .build();
 
         RequestEntity<PublicAuthenticationRequestDto> requestEntity = new RequestEntity<>(requestDto,
@@ -260,7 +258,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         assertThat(exchange.getBody().getStatus()).isNotEqualTo(HttpStatus.OK.value())
             .isEqualTo(exchange.getStatusCode().value());
         assertThat(exchange.getBody().getException()).isEqualTo(
-            uk.gov.hmcts.juror.api.juror.service.PublicAuthenticationServiceImpl.InvalidJurorCredentialsException.class.getName());
+            PublicAuthenticationServiceImpl.InvalidJurorCredentialsException.class.getName());
         assertThat(exchange.getBody().getMessage()).isEqualTo("Invalid credentials");
     }
 
@@ -302,11 +300,12 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         assertThat(exchange.getBody().getStatus()).isNotEqualTo(HttpStatus.OK.value())
             .isEqualTo(exchange.getStatusCode().value());
         assertThat(exchange.getBody().getException()).isEqualTo(
-            uk.gov.hmcts.juror.api.juror.service.PublicAuthenticationServiceImpl.InvalidJurorCredentialsException.class.getName());
+            PublicAuthenticationServiceImpl.InvalidJurorCredentialsException.class.getName());
         assertThat(exchange.getBody().getMessage()).isEqualTo("Invalid credentials");
 
         // check that the login counter not exists.
-        assertThat(jdbcTemplate.queryForObject("select login_attempts from juror_mod.juror where juror_number = '644892530'",
+        assertThat(jdbcTemplate.queryForObject("select login_attempts from juror_mod.juror "
+                + "where juror_number = '644892530'",
             Integer.class)).isEqualTo(1);
 
         // failed login 2
@@ -319,11 +318,12 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         assertThat(exchange.getBody().getStatus()).isNotEqualTo(HttpStatus.OK.value())
             .isEqualTo(exchange.getStatusCode().value());
         assertThat(exchange.getBody().getException()).isEqualTo(
-            uk.gov.hmcts.juror.api.juror.service.PublicAuthenticationServiceImpl.InvalidJurorCredentialsException.class.getName());
+            PublicAuthenticationServiceImpl.InvalidJurorCredentialsException.class.getName());
         assertThat(exchange.getBody().getMessage()).isEqualTo("Invalid credentials");
 
         // check that the login counter is still there.
-        assertThat(jdbcTemplate.queryForObject("select login_attempts from juror_mod.juror where juror_number = '644892530'",
+        assertThat(jdbcTemplate.queryForObject("select login_attempts from juror_mod.juror "
+                + "where juror_number = '644892530'",
             Integer.class)).isEqualTo(2);
 
         // failed login 3
@@ -336,12 +336,13 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         assertThat(exchange.getBody().getStatus()).isNotEqualTo(HttpStatus.OK.value())
             .isEqualTo(exchange.getStatusCode().value());
         assertThat(exchange.getBody().getException()).isEqualTo(
-            uk.gov.hmcts.juror.api.juror.service.PublicAuthenticationServiceImpl.InvalidJurorCredentialsException.class.getName());
+            PublicAuthenticationServiceImpl.InvalidJurorCredentialsException.class.getName());
         assertThat(exchange.getBody().getMessage()).isEqualTo("Invalid credentials");
 
         // account should now be locked
         // the login attempt counter was reset after the account was locked
-        assertThat(jdbcTemplate.queryForObject("select login_attempts from juror_mod.juror where juror_number = '644892530'",
+        assertThat(jdbcTemplate.queryForObject("select login_attempts from juror_mod.juror "
+                + "where juror_number = '644892530'",
             Integer.class)).isEqualTo(0);
         // the account is indeed locked
         assertThat(
@@ -367,7 +368,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         assertThat(exchangeLocked.getBody().getStatus()).isNotEqualTo(HttpStatus.OK.value())
             .isEqualTo(exchangeLocked.getStatusCode().value());
         assertThat(exchangeLocked.getBody().getException()).isEqualTo(
-            uk.gov.hmcts.juror.api.juror.service.PublicAuthenticationServiceImpl.JurorAccountBlockedException.class.getName());
+            PublicAuthenticationServiceImpl.JurorAccountBlockedException.class.getName());
         assertThat(exchangeLocked.getBody().getMessage()).isEqualTo("Juror account is locked");
 
         // failed login count should have been cleared
@@ -410,7 +411,8 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         assertThat(exchange.getBody().getStatus()).isNotEqualTo(HttpStatus.OK.value())
             .isEqualTo(exchange.getStatusCode().value());
         assertThat(exchange.getBody().getException()).isEqualTo(
-            uk.gov.hmcts.juror.api.juror.service.PublicAuthenticationServiceImpl.JurorAlreadyRespondedException.class.getName());
+            PublicAuthenticationServiceImpl
+                .JurorAlreadyRespondedException.class.getName());
         assertThat(exchange.getBody().getMessage()).isEqualTo("Juror already responded");
     }
 
@@ -422,17 +424,17 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
     public void publicAuthenticationEndpoint_unhappy_courtDatePassed() throws Exception {
         final String description = "Court Date Passed";
 
-        final String JUROR_NUMBER = "644892530";
-        final String LAST_NAME = "Castillo";
-        final String POSTCODE = "AB3 9RY";
+        final String jurorNumber = "644892530";
+        final String lastName = "Castillo";
+        final String postcode = "AB3 9RY";
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
-            .jurorNumber(JUROR_NUMBER)
-            .lastName(LAST_NAME)
-            .postcode(POSTCODE)
+            .jurorNumber(jurorNumber)
+            .lastName(lastName)
+            .postcode(postcode)
             .build();
 
         RequestEntity<PublicAuthenticationRequestDto> requestEntity = new RequestEntity<>(requestDto,
@@ -448,7 +450,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         assertThat(exchange.getBody().getStatus()).isNotEqualTo(HttpStatus.OK.value())
             .isEqualTo(exchange.getStatusCode().value());
         assertThat(exchange.getBody().getException()).isEqualTo(
-            uk.gov.hmcts.juror.api.juror.service.PublicAuthenticationServiceImpl.CourtDateLapsedException.class.getName());
+            PublicAuthenticationServiceImpl.CourtDateLapsedException.class.getName());
         assertThat(exchange.getBody().getMessage()).isEqualTo("Not allowed. Court Date has already passed");
     }
 

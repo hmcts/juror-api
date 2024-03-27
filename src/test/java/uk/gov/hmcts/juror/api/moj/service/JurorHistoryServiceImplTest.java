@@ -136,7 +136,7 @@ class JurorHistoryServiceImplTest {
     @Test
     void createConfirmServiceHistory() {
         JurorPool jurorPool = createJurorPool();
-        jurorHistoryService.createConfirmServiceHistory(jurorPool,"Some Other Info");
+        jurorHistoryService.createConfirmationLetterHistory(jurorPool,"Some Other Info");
         assertStandardValuesSystem(jurorPool, new JurorHistoryPartHistoryJurorHistoryExpectedValues(
             HistoryCodeMod.RESPONDED_LETTER, "Some Other Info"));
     }

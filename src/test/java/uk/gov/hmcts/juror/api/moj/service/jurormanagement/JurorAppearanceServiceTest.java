@@ -12,8 +12,9 @@ import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJWTPayload;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
@@ -66,6 +67,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -105,6 +107,188 @@ class JurorAppearanceServiceTest {
 
     private static final String OWNER_415 = "415";
     private static final String LOC_415 = "415";
+
+    @Test
+    void addAttendanceDayHappyPath() {
+        jurorAppearanceService = spy(jurorAppearanceService);
+
+        doReturn(null).when(jurorAppearanceService).processAppearance(any(), any(), anyBoolean());
+        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any());
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_123456789);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("123456789");
+
+        JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
+        jurorPool.setPool(poolRequest);
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndPoolPoolNumber(
+                JUROR_123456789, "123456789");
+
+        AddAttendanceDayDto dto = buildAddAttendanceDayDto();
+        jurorAppearanceService.addAttendanceDay(buildPayload(OWNER_415, Arrays.asList("415", "462", "767")),
+            dto);
+
+        ArgumentCaptor<JurorAppearanceDto> appearanceDtoCaptor = ArgumentCaptor.forClass(JurorAppearanceDto.class);
+        ArgumentCaptor<UpdateAttendanceDto.CommonData> attendanceDtoCaptor =
+            ArgumentCaptor.forClass(UpdateAttendanceDto.CommonData.class);
+        ArgumentCaptor<BureauJwtPayload> payloadArgumentCaptor = ArgumentCaptor.forClass(BureauJwtPayload.class);
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorJurorNumberAndPoolPoolNumber(JUROR_123456789, "123456789");
+        verify(jurorAppearanceService, times(1)).processAppearance(payloadArgumentCaptor.capture(),
+            appearanceDtoCaptor.capture(), eq(true));
+        verify(jurorAppearanceService, times(1)).updateConfirmAttendance(attendanceDtoCaptor.capture());
+
+        JurorAppearanceDto appearanceDto = appearanceDtoCaptor.getValue();
+
+        assertThat(appearanceDto).isNotNull();
+        assertThat(appearanceDto.getAttendanceDate()).isEqualTo(dto.getAttendanceDate());
+        assertThat(appearanceDto.getJurorNumber()).isEqualTo(dto.getJurorNumber());
+        assertThat(appearanceDto.getCheckInTime()).isEqualTo(dto.getCheckInTime());
+        assertThat(appearanceDto.getCheckOutTime()).isEqualTo(dto.getCheckOutTime());
+        assertThat(appearanceDto.getLocationCode()).isEqualTo(dto.getLocationCode());
+
+        UpdateAttendanceDto.CommonData commonData = attendanceDtoCaptor.getValue();
+
+        assertThat(commonData).isNotNull();
+        assertThat(commonData.getAttendanceDate()).isEqualTo(dto.getAttendanceDate());
+        assertThat(commonData.getCheckInTime()).isEqualTo(dto.getCheckInTime());
+        assertThat(commonData.getCheckOutTime()).isEqualTo(dto.getCheckOutTime());
+        assertThat(commonData.getLocationCode()).isEqualTo(dto.getLocationCode());
+
+    }
+
+    @Test
+    void addAttendanceDayWrongAccess() {
+        jurorAppearanceService = spy(jurorAppearanceService);
+
+        doReturn(null).when(jurorAppearanceService).processAppearance(any(), any(), anyBoolean());
+        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any());
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_123456789);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("123456789");
+
+        JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
+        jurorPool.setPool(poolRequest);
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndPoolPoolNumber(
+                JUROR_123456789, "123456789");
+
+        AddAttendanceDayDto dto = buildAddAttendanceDayDto();
+
+        assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+                jurorAppearanceService.addAttendanceDay(buildPayload("400", List.of("400")),
+                    dto)).as("Invalid access to juror pool")
+            .withMessageContaining("Invalid access to juror pool");
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorJurorNumberAndPoolPoolNumber(JUROR_123456789, "123456789");
+        verify(jurorAppearanceService, never()).processAppearance(any(), any(), anyBoolean());
+        verify(jurorAppearanceService, never()).updateConfirmAttendance(any());
+
+    }
+
+    @Test
+    void addAttendanceDayJurorPoolNotFound() {
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_123456789);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("123456789");
+
+        JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
+        jurorPool.setPool(poolRequest);
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndPoolPoolNumber(
+                JUROR_123456789, "111111111");
+
+        AddAttendanceDayDto dto = buildAddAttendanceDayDto();
+
+        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+                jurorAppearanceService.addAttendanceDay(buildPayload("417", List.of("417")),
+                    dto)).as("No valid juror pool found")
+            .withMessageContaining("No valid juror pool found");
+
+    }
+
+    @Test
+    void processAppearanceBooleanTrue() {
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_123456789);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("123456789");
+        JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
+        jurorPool.setPool(poolRequest);
+        juror.setAssociatedPools(Collections.singleton(jurorPool));
+        CourtLocation courtLocation = getCourtLocation();
+
+        doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
+                JUROR_123456789, true);
+        doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
+
+        JurorAppearanceResponseDto.JurorAppearanceResponseData appearanceData = JurorAppearanceResponseDto
+            .JurorAppearanceResponseData.builder().jurorNumber(JUROR_123456789)
+            .lastName("LASTNAME")
+            .firstName("FIRSTNAME")
+            .checkInTime(LocalTime.of(9, 30))
+            .jurorStatus(IJurorStatus.RESPONDED)
+            .build();
+
+        List<JurorAppearanceResponseDto.JurorAppearanceResponseData> appearanceDataList = new ArrayList<>();
+        appearanceDataList.add(appearanceData);
+
+        when(appearanceRepository.getAppearanceRecords(anyString(), any(), anyString()))
+            .thenReturn(appearanceDataList);
+
+        JurorAppearanceDto jurorAppearanceDto = buildJurorAppearanceDto();
+        jurorAppearanceDto.setCheckOutTime(LocalTime.of(17, 30));
+
+        jurorAppearanceService.processAppearance(buildPayload(OWNER_415, Arrays.asList("415", "462", "767")),
+            jurorAppearanceDto, true);
+
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+
+        verify(jurorRepository, times(1))
+            .findById(JUROR_123456789);
+        verify(jurorPoolRepository, times(1))
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
+        verify(courtLocationRepository, times(1))
+            .findById(LOC_415);
+        verify(appearanceRepository, times(1)).saveAndFlush(appearanceArgumentCaptor.capture());
+
+        Appearance appearance = appearanceArgumentCaptor.getValue();
+
+        assertThat(appearance.getTimeIn()).isEqualTo(jurorAppearanceDto.getCheckInTime());
+        assertThat(appearance.getTimeOut()).isEqualTo(jurorAppearanceDto.getCheckOutTime());
+        assertThat(appearance.getAppearanceStage()).isEqualTo(CHECKED_IN);
+    }
+
+    @Test
+    void validateTimeAndAppearanceStage() {
+        LocalTime timeIn = LocalTime.of(9, 30);
+        LocalTime timeOut = LocalTime.of(17, 30);
+
+        jurorAppearanceService = spy(jurorAppearanceService);
+
+        jurorAppearanceService.validateTimeAndAppearanceStage(timeIn, timeOut, CHECKED_IN, true);
+
+        verify(jurorAppearanceService, times(1)).validateCheckInNotNull(timeIn);
+        verify(jurorAppearanceService, times(1)).validateCheckOutNotNull(timeOut);
+        verify(jurorAppearanceService, times(1)).validateBothCheckInAndOutTimeNotNull(timeIn, timeOut);
+        verify(jurorAppearanceService, never()).validateBothCheckInAndOutTimeNotSet(any(), any());
+    }
 
     @Test
     void testCheckInJurorHappy() {
@@ -1762,14 +1946,25 @@ class JurorAppearanceServiceTest {
             .build();
     }
 
-    private BureauJWTPayload buildPayload(String owner, List<String> courts) {
-        return BureauJWTPayload.builder()
+    private AddAttendanceDayDto buildAddAttendanceDayDto() {
+        return AddAttendanceDayDto.builder()
+            .jurorNumber(JUROR_123456789)
+            .poolNumber("123456789")
+            .locationCode(OWNER_415)
+            .attendanceDate(now())
+            .checkInTime(LocalTime.of(9, 30))
+            .checkOutTime(LocalTime.of(17, 0))
+            .build();
+    }
+
+    private BureauJwtPayload buildPayload(String owner, List<String> courts) {
+        return BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("COURT_USER")
             .daysToExpire(89)
             .owner(owner)
-            .staff(BureauJWTPayload.Staff.builder().courts(courts).build())
+            .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build();
     }
 
@@ -2250,7 +2445,7 @@ class JurorAppearanceServiceTest {
             assertThat(appearanceSaved.getCourtLocation()).isEqualTo(courtLocation);
             assertThat(appearanceSaved.getNonAttendanceDay()).isTrue();
             assertThat(appearanceSaved.getAttendanceType()).isEqualTo(AttendanceType.NON_ATTENDANCE);
-            assertThat(appearanceSaved.getAppearanceStage()).isEqualTo(AppearanceStage.EXPENSE_ENTERED);
+            assertThat(appearanceSaved.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(appearanceSaved.getPayAttendanceType()).isEqualTo(PayAttendanceType.FULL_DAY);
             assertThat(appearanceSaved.getCreatedBy()).isEqualTo(username);
 
@@ -2427,7 +2622,7 @@ class JurorAppearanceServiceTest {
             when(appearance.getNoShow()).thenReturn(noShow);
             when(appearance.getAttendanceType()).thenReturn(attendanceType);
 
-            LocalDate localDate = LocalDate.now();
+            LocalDate localDate = now();
             when(appearance.getJurorNumber()).thenReturn(TestConstants.VALID_JUROR_NUMBER);
             when(appearance.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
             when(appearance.getAttendanceDate()).thenReturn(localDate);

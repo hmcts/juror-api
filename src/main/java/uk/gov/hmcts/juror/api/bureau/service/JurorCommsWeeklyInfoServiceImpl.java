@@ -103,9 +103,8 @@ public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
         log.info("Informational Comms Processing : Finished - {}", dateFormat.format(new Date()));
     }
 
-    /***
+    /**
      * Updates pool notifciation.
-     * @param jurorDetails
      */
     private void update(JurorPool jurorDetails) {
 
