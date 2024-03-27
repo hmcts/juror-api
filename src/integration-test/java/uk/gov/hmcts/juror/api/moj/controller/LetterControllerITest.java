@@ -6814,7 +6814,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getAttendanceDataList().get(3).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(3).getLossOfEarnings()).isEqualTo(new BigDecimal("38.00"));
 
-
         }
 
         void verifyDataWelsh(PrintLetterDataResponseDto response,
