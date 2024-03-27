@@ -71,17 +71,16 @@ public class LetterBase {
         this.data.add(new LetterData(length, letterDataType));
     }
 
-
+    @SuppressWarnings("PMD.AvoidRethrowingException")
     public String getLetterString() {
         try {
             return this.data.stream()
                 .map(LetterData::getFormattedString)
                 .collect(Collectors.joining())
                 .toUpperCase();
+        } catch (MojException mojException) {
+            throw mojException;
         } catch (Exception exception) {
-            if (exception instanceof MojException) {
-                throw exception;
-            }
             log.error("Failed to generate letter string", exception);
             throw new MojException.InternalServerError("Failed to generate letter string",
                 exception);
