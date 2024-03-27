@@ -36,7 +36,7 @@ class UndeliverableListReportTest extends AbstractStandardReportTestSupport<Unde
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
-            DataType.JUROR_ADDRESS);
+            DataType.JUROR_POSTAL_ADDRESS);
     }
 
     @BeforeEach
@@ -67,8 +67,6 @@ class UndeliverableListReportTest extends AbstractStandardReportTestSupport<Unde
 
     @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
-        securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
-
         report.preProcessQuery(query, request);
 
         verify(query, times(1))

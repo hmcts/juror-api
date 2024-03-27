@@ -27,7 +27,7 @@ public class UndeliverableListReport extends AbstractStandardReport {
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
-            DataType.JUROR_ADDRESS);
+            DataType.JUROR_POSTAL_ADDRESS);
 
         isBureauUserOnly();
     }

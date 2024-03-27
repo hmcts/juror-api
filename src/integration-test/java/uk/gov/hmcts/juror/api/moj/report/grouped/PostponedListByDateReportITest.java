@@ -122,7 +122,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                                 .headings(null)
                                 .build(),
                             StandardReportResponse.TableData.Heading.builder()
-                                .id("postcode")
+                                .id("juror_postcode")
                                 .name("Postcode")
                                 .dataType("String")
                                 .headings(null)
@@ -137,7 +137,6 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                         .build())
                 .build());
     }
-
 
     private GroupedReportResponse getTypicalResponseCourt() {
         return GroupedReportResponse.builder()
@@ -185,7 +184,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("postcode")
+                            .id("juror_postcode")
                             .name("Postcode")
                             .dataType("String")
                             .headings(null)
@@ -202,26 +201,26 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                                 .add("juror_number", "641500023")
                                 .add("first_name", "John3")
                                 .add("last_name", "Smith3")
-                                .add("postcode", "AB1 3CD")
+                                .add("juror_postcode", "AB1 3CD")
                                 .add("postponed_to", "2023-01-01"),
                             new ReportLinkedMap<String, Object>()
                                 .add("juror_number", "641500024")
                                 .add("first_name", "John4")
                                 .add("last_name", "Smith4")
-                                .add("postcode", "AB1 4CD")
+                                .add("juror_postcode", "AB1 4CD")
                                 .add("postponed_to", "2023-01-02")))
                         .add("415230104", List.of(
                             new ReportLinkedMap<String, Object>()
                                 .add("juror_number", "641500025")
                                 .add("first_name", "John5")
                                 .add("last_name", "Smith5")
-                                .add("postcode", "AB1 5CD")
+                                .add("juror_postcode", "AB1 5CD")
                                 .add("postponed_to", "2023-01-01"),
                             new ReportLinkedMap<String, Object>()
                                 .add("juror_number", "641500026")
                                 .add("first_name", "John6")
                                 .add("last_name", "Smith6")
-                                .add("postcode", "AB1 6CD")
+                                .add("juror_postcode", "AB1 6CD")
                                 .add("postponed_to", "2023-01-02"))))
                     .build())
             .build();
@@ -268,7 +267,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("postcode")
+                            .id("juror_postcode")
                             .name("Postcode")
                             .dataType("String")
                             .headings(null)
@@ -285,39 +284,39 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
                                 .add("juror_number", "641500020")
                                 .add("first_name", "John0")
                                 .add("last_name", "Smith0")
-                                .add("postcode", "AB1 0CD")
+                                .add("juror_postcode", "AB1 0CD")
                                 .add("postponed_to", "2023-01-01"),
                             new ReportLinkedMap<String, Object>()
                                 .add("juror_number", "641500021")
                                 .add("first_name", "John1")
                                 .add("last_name", "Smith1")
-                                .add("postcode", "AB1 1CD")
+                                .add("juror_postcode", "AB1 1CD")
                                 .add("postponed_to", "2023-01-01")))
                         .add("415230103", List.of(
                             new ReportLinkedMap<String, Object>()
                                 .add("juror_number", "641500023")
                                 .add("first_name", "John3")
                                 .add("last_name", "Smith3")
-                                .add("postcode", "AB1 3CD")
+                                .add("juror_postcode", "AB1 3CD")
                                 .add("postponed_to", "2023-01-01"),
                             new ReportLinkedMap<String, Object>()
                                 .add("juror_number", "641500024")
                                 .add("first_name", "John4")
                                 .add("last_name", "Smith4")
-                                .add("postcode", "AB1 4CD")
+                                .add("juror_postcode", "AB1 4CD")
                                 .add("postponed_to", "2023-01-02")))
                         .add("415230104", List.of(
                             new ReportLinkedMap<String, Object>()
                                 .add("juror_number", "641500025")
                                 .add("first_name", "John5")
                                 .add("last_name", "Smith5")
-                                .add("postcode", "AB1 5CD")
+                                .add("juror_postcode", "AB1 5CD")
                                 .add("postponed_to", "2023-01-01"),
                             new ReportLinkedMap<String, Object>()
                                 .add("juror_number", "641500026")
                                 .add("first_name", "John6")
                                 .add("last_name", "Smith6")
-                                .add("postcode", "AB1 6CD")
+                                .add("juror_postcode", "AB1 6CD")
                                 .add("postponed_to", "2023-01-02"))))
                     .build())
             .build();

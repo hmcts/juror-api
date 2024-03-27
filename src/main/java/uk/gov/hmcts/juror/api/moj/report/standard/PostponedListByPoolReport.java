@@ -29,7 +29,7 @@ public class PostponedListByPoolReport extends AbstractStandardReport {
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
-            DataType.POSTCODE,
+            DataType.JUROR_POSTCODE,
             DataType.POSTPONED_TO);
     }
 

@@ -41,14 +41,14 @@ public enum DataType {
         .otherwise(""), QJuror.juror),
 
     // juror address data types
-    POSTCODE("Postcode", String.class, QJuror.juror.postcode, QJuror.juror),
-    ADDRESS_LINE_1("Address Line 1", String.class, QJuror.juror.addressLine1, QJuror.juror),
-    ADDRESS_LINE_2("Address Line 2", String.class, QJuror.juror.addressLine2, QJuror.juror),
-    ADDRESS_LINE_3("Address Line 3", String.class, QJuror.juror.addressLine3, QJuror.juror),
-    ADDRESS_LINE_4("Address Line 4", String.class, QJuror.juror.addressLine4, QJuror.juror),
-    ADDRESS_LINE_5("Address Line 5", String.class, QJuror.juror.addressLine5, QJuror.juror),
-    JUROR_ADDRESS("Address", List.class, ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3, ADDRESS_LINE_4,
-        ADDRESS_LINE_5, POSTCODE),
+    JUROR_ADDRESS_LINE_1("Address Line 1", String.class, QJuror.juror.addressLine1, QJuror.juror),
+    JUROR_ADDRESS_LINE_2("Address Line 2", String.class, QJuror.juror.addressLine2, QJuror.juror),
+    JUROR_ADDRESS_LINE_3("Address Line 3", String.class, QJuror.juror.addressLine3, QJuror.juror),
+    JUROR_ADDRESS_LINE_4("Address Line 4", String.class, QJuror.juror.addressLine4, QJuror.juror),
+    JUROR_ADDRESS_LINE_5("Address Line 5", String.class, QJuror.juror.addressLine5, QJuror.juror),
+    JUROR_POSTCODE("Postcode", String.class, QJuror.juror.postcode, QJuror.juror),
+    JUROR_POSTAL_ADDRESS("Address", List.class, JUROR_ADDRESS_LINE_1, JUROR_ADDRESS_LINE_2,
+        JUROR_ADDRESS_LINE_3, JUROR_ADDRESS_LINE_4, JUROR_ADDRESS_LINE_5, JUROR_POSTCODE),
 
     POSTPONED_TO("Postponed to", LocalDate.class, QJurorPool.jurorPool.deferralDate, QJuror.juror),
 
