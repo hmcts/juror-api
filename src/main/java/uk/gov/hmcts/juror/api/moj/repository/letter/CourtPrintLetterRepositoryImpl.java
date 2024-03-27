@@ -150,10 +150,9 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                     .join(PANEL).on(PANEL.jurorPool.eq(JUROR_POOL).and(PANEL.trial.eq(TRIAL)))
                     .where(PANEL.trial.trialNumber.eq(trialNumber))
                     .orderBy(PANEL.trial.trialNumber.desc());
-            case CERTIFICATE_OF_ATTENDANCE -> query
-                .join(APPEARANCE).on(JUROR_POOL.pool.poolNumber.eq(APPEARANCE.poolNumber)
-                    .and(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber)))
-                .where(APPEARANCE.attendanceDate.isNotNull());
+            case CERTIFICATE_OF_ATTENDANCE -> {
+            } // Does not do anything
+
             default -> throw new MojException.NotImplemented("letter type not implemented", null);
         }
     }
@@ -208,11 +207,7 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                 expressions.add(TRIAL.description);
             }
             case CERTIFICATE_OF_ATTENDANCE -> {
-                expressions.add(APPEARANCE.childcareDue);
-                expressions.add(APPEARANCE.nonAttendanceDay);
-                expressions.add(APPEARANCE.miscAmountDue);
-                expressions.add(APPEARANCE.lossOfEarningsDue);
-            }
+            } // does nothing here
             default -> throw new MojException.NotImplemented("letter type not implemented", null);
         }
     }
