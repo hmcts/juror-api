@@ -15,7 +15,7 @@ import org.hibernate.annotations.Immutable;
 import java.io.Serializable;
 
 /**
- * Entity representing data for JUROR_DIGITAL.STATS_DEFERRALS.
+ * Entity representing data for juror_mod.stats_deferrals.
  */
 
 @Data
@@ -24,42 +24,41 @@ import java.io.Serializable;
 @Entity
 @Immutable
 @IdClass(StatsDeferralsKey.class)
-@Table(name = "STATS_DEFERRALS", schema = "JUROR_DIGITAL")
+@Table(name = "stats_deferrals", schema = "juror_mod")
 @Builder
 
 public class StatsDeferrals implements Serializable {
 
     @Id
     @NotNull
-    @Column(name = "BUREAU_OR_COURT")
+    @Column(name = "bureau_or_court")
     private String bureauOrCourt;
 
 
     @Id
     @NotNull
-    @Column(name = "EXEC_CODE")
+    @Column(name = "exec_code")
     private String execCode;
 
 
     @Id
     @NotNull
-    @Column(name = "CALENDAR_YEAR")
+    @Column(name = "calendar_year")
     private String calendarYear;
 
 
     @Id
     @NotNull
-    @Column(name = "FINANCIAL_YEAR")
+    @Column(name = "financial_year")
     private String financialYear;
-
 
     @Id
     @NotNull
-    @Column(name = "WEEK")
+    @Column(name = "week")
     private String week;
 
     @NotNull
-    @Column(name = "EXCUSAL_COUNT")
+    @Column(name = "excusal_count")
     private Integer excusalCount;
 
 

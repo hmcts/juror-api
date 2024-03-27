@@ -24,37 +24,37 @@ import java.io.Serializable;
 @Entity
 @IdClass(StatsExcusalsKey.class)
 @Immutable
-@Table(name = "STATS_EXCUSALS", schema = "JUROR_DIGITAL")
+@Table(name = "stats_excusals", schema = "juror_mod")
 @Builder
 
 public class StatsExcusals implements Serializable {
     @NotNull
     @Id
-    @Column(name = "BUREAU_OR_COURT")
+    @Column(name = "bureau_or_court")
     private String bureauOrCourt;
 
     @NotNull
     @Id
-    @Column(name = "EXEC_CODE")
+    @Column(name = "exec_code")
     private String execCode;
 
     @NotNull
     @Id
-    @Column(name = "CALENDAR_YEAR")
+    @Column(name = "calendar_year")
     private String calendarYear;
 
     @NotNull
     @Id
-    @Column(name = "FINANCIAL_YEAR")
+    @Column(name = "financial_year")
     private String financialYear;
 
     @NotNull
     @Id
-    @Column(name = "WEEK")
+    @Column(name = "week")
     private String week;
 
     @NotNull
-    @Column(name = "EXCUSAL_COUNT")
+    @Column(name = "excusal_count")
     private Integer excusalCount;
 
 

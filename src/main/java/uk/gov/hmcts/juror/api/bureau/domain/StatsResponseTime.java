@@ -26,38 +26,38 @@ import java.util.Date;
 @Entity
 @IdClass(StatsResponseTimeKey.class)
 @Immutable
-@Table(name = "STATS_RESPONSE_TIMES", schema = "JUROR_DIGITAL")
+@Table(name = "stats_response_times", schema = "juror_mod")
 @Builder
 public class StatsResponseTime implements Serializable {
 
     @NotNull
     @Id
-    @Column(name = "SUMMONS_MONTH")
+    @Column(name = "summons_month")
     @Temporal(TemporalType.DATE)
     private Date summonsMonth;
 
     @NotNull
     @Id
-    @Column(name = "RESPONSE_MONTH")
+    @Column(name = "response_month")
     @Temporal(TemporalType.DATE)
     private Date responseMonth;
 
     @NotNull
     @Id
-    @Column(name = "RESPONSE_PERIOD")
+    @Column(name = "response_period")
     private String responsePeriod;
 
     @NotNull
     @Id
-    @Column(name = "LOC_CODE")
+    @Column(name = "loc_code")
     private String locCode;
 
     @NotNull
     @Id
-    @Column(name = "RESPONSE_METHOD")
+    @Column(name = "response_method")
     private String responseMethod;
 
-    @Column(name = "RESPONSE_COUNT")
+    @Column(name = "response_count")
     private Integer responseCount;
 
 }
