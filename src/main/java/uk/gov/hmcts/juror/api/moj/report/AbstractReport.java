@@ -171,7 +171,6 @@ public abstract class AbstractReport {
         return query.fetch();
     }
 
-
     JPAQuery<Tuple> getQuery() {
         return getQueryFactory()
             .select(effectiveDataTypes.stream()
