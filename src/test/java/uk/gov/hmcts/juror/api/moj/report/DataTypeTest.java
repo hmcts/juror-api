@@ -113,20 +113,14 @@ class DataTypeTest {
     }
 
     @Test
-    void postcode() {
-        assertMatchesStandard(DataType.POSTCODE, "postcode", "Postcode", String.class,
-            QJuror.juror.postcode, QJuror.juror);
-    }
-
-    @Test
     void postponedTo() {
-        assertMatchesStandard(DataType.POSTPONED_TO, "postponed_to", "Postcode", LocalDate.class,
+        assertMatchesStandard(DataType.POSTPONED_TO, "postponed_to", "Postponed to", LocalDate.class,
             QJurorPool.jurorPool.deferralDate, QJuror.juror);
     }
 
     @Test
     void deferredTo() {
-        assertMatchesStandard(DataType.DEFERRED_TO, "deferred_to", "Deferred To", LocalDate.class,
+        assertMatchesStandard(DataType.DEFERRED_TO, "deferred_to", "Deferred to", LocalDate.class,
             QJurorPool.jurorPool.deferralDate, QJuror.juror);
     }
 
@@ -181,6 +175,49 @@ class DataTypeTest {
             String.class, QPoolRequest.poolRequest.poolNumber, QPoolRequest.poolRequest);
     }
 
+
+    @Test
+    void jurorAddressLine1() {
+        assertMatchesStandard(DataType.JUROR_ADDRESS_LINE_1, "juror_address_line_1", "Address Line 1",
+            String.class, QJuror.juror.addressLine1, QJuror.juror);
+    }
+
+    @Test
+    void jurorAddressLine2() {
+        assertMatchesStandard(DataType.JUROR_ADDRESS_LINE_2, "juror_address_line_2", "Address Line 2",
+            String.class, QJuror.juror.addressLine2, QJuror.juror);
+    }
+
+    @Test
+    void jurorAddressLine3() {
+        assertMatchesStandard(DataType.JUROR_ADDRESS_LINE_3, "juror_address_line_3", "Address Line 3",
+            String.class, QJuror.juror.addressLine3, QJuror.juror);
+    }
+
+    @Test
+    void jurorAddressLine4() {
+        assertMatchesStandard(DataType.JUROR_ADDRESS_LINE_4, "juror_address_line_4", "Address Line 4",
+            String.class, QJuror.juror.addressLine4, QJuror.juror);
+    }
+
+    @Test
+    void jurorAddressLine5() {
+        assertMatchesStandard(DataType.JUROR_ADDRESS_LINE_5, "juror_address_line_5", "Address Line 5",
+            String.class, QJuror.juror.addressLine5, QJuror.juror);
+    }
+
+    @Test
+    void jurorPostcode() {
+        assertMatchesStandard(DataType.JUROR_POSTCODE, "juror_postcode", "Postcode", String.class,
+            QJuror.juror.postcode, QJuror.juror);
+    }
+
+    @Test
+    void jurorPostalAddress() {
+        assertMatchesCombined(DataType.JUROR_POSTAL_ADDRESS, "juror_postal_address", "Address",
+            List.class, DataType.JUROR_ADDRESS_LINE_1, DataType.JUROR_ADDRESS_LINE_2, DataType.JUROR_ADDRESS_LINE_3,
+            DataType.JUROR_ADDRESS_LINE_4, DataType.JUROR_ADDRESS_LINE_5, DataType.JUROR_POSTCODE);
+    }
 
     void assertMatchesStandard(DataType dataType,
                                String id,

@@ -130,7 +130,7 @@ class NextAttendanceDayReportITest extends AbstractStandardReportControllerITest
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("postcode")
+                            .id("juror_postcode")
                             .name("Postcode")
                             .dataType("String")
                             .headings(null)
@@ -146,25 +146,25 @@ class NextAttendanceDayReportITest extends AbstractStandardReportControllerITest
                             .add("juror_number", "641500023")
                             .add("first_name", "John3")
                             .add("last_name", "Smith3")
-                            .add("postcode", "AB1 3CD")
+                            .add("juror_postcode", "AB1 3CD")
                             .add("next_attendance_date", "2023-01-03"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500024")
                             .add("first_name", "John4")
                             .add("last_name", "Smith4")
-                            .add("postcode", "AB1 4CD")
+                            .add("juror_postcode", "AB1 4CD")
                             .add("next_attendance_date", "2023-01-04"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500025")
                             .add("first_name", "John5")
                             .add("last_name", "Smith5")
-                            .add("postcode", "AB1 5CD")
+                            .add("juror_postcode", "AB1 5CD")
                             .add("next_attendance_date", "2023-01-05"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500026")
                             .add("first_name", "John6")
                             .add("last_name", "Smith6")
-                            .add("postcode", "AB1 6CD")
+                            .add("juror_postcode", "AB1 6CD")
                             .add("next_attendance_date", "2023-01-06")))
                     .build())
             .build();

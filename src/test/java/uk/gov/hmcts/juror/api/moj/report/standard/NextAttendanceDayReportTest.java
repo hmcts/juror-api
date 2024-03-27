@@ -27,7 +27,7 @@ class NextAttendanceDayReportTest extends AbstractStandardReportTestSupport<Next
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
-            DataType.POSTCODE,
+            DataType.JUROR_POSTCODE,
             DataType.NEXT_ATTENDANCE_DATE);
     }
 

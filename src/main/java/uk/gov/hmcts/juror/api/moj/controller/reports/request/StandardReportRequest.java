@@ -32,6 +32,7 @@ public class StandardReportRequest {
         "NextAttendanceDayReport",
         "NonRespondedReport",
         "PostponedListByPoolReport",
+        "UndeliverableListReport",
         //Grouped
         "PostponedListByDateReport"
     })

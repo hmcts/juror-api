@@ -51,7 +51,6 @@ public class MojException extends RuntimeException {
             this.metaData = metaData;
         }
 
-
         public enum ErrorCode {
             COMPLETE_SERVICE_JUROR_IN_INVALID_STATE,
             FAILED_TO_ATTEND_HAS_COMPLETION_DATE,

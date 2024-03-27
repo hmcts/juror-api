@@ -210,7 +210,6 @@ public abstract class AbstractReport<T> {
         return query.fetch();
     }
 
-
     JPAQuery<Tuple> getQuery() {
         return getQueryFactory()
             .select(effectiveDataTypes.stream()
@@ -351,5 +350,4 @@ public abstract class AbstractReport<T> {
         public interface RequireToDate {
         }
     }
-
 }

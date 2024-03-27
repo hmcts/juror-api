@@ -76,7 +76,7 @@ class DeferredListByDateReportITest extends AbstractStandardReportControllerITes
                         .headings(List.of(
                             StandardReportResponse.TableData.Heading.builder()
                                 .id("deferred_to")
-                                .name("Deferred To")
+                                .name("Deferred to")
                                 .dataType("LocalDate")
                                 .headings(null)
                                 .build(),
@@ -104,7 +104,7 @@ class DeferredListByDateReportITest extends AbstractStandardReportControllerITes
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("deferred_to")
-                            .name("Deferred To")
+                            .name("Deferred to")
                             .dataType("LocalDate")
                             .headings(null)
                             .build(),
@@ -144,7 +144,7 @@ class DeferredListByDateReportITest extends AbstractStandardReportControllerITes
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("deferred_to")
-                            .name("Deferred To")
+                            .name("Deferred to")
                             .dataType("LocalDate")
                             .headings(null)
                             .build(),
