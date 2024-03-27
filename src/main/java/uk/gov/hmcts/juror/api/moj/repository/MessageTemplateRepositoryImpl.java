@@ -146,7 +146,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
             .join(JUROR_POOL)
             .on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
 
-        if(SecurityUtil.isCourt()) {
+        if (SecurityUtil.isCourt()) {
             query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));
         }
 

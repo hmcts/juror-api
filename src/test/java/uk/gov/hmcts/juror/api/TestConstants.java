@@ -22,6 +22,7 @@ public final class TestConstants {
     public static final String VALID_COURT_ROOM_NAME = "TSTRM";
     public static final String VALID_COURT_ROOM_DESC = "Some court room description";
     public static final String JWT = "GeneratedJwtFromSecret";
+    public static final String VALID_TITLE = "Dr";
 
     private TestConstants() {
 

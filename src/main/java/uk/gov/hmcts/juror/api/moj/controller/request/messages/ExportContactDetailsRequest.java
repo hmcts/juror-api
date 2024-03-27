@@ -9,6 +9,7 @@ import com.querydsl.core.types.dsl.StringPath;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import org.hibernate.validator.constraints.UniqueElements;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.function.Function;
 
 @Data
+@Builder
 public class ExportContactDetailsRequest {
 
     @JsonProperty("export_items")
@@ -39,7 +41,7 @@ public class ExportContactDetailsRequest {
 
     @Getter
     public enum ExportItems {
-        JUROR_NUMBER("Juror number", QJuror.juror.jurorNumber),
+        JUROR_NUMBER("Juror Number", QJuror.juror.jurorNumber),
         TITLE("Title", QJuror.juror.title),
         FIRST_NAME("First Name", QJuror.juror.firstName),
         LAST_NAME("Last Name", QJuror.juror.lastName),
@@ -101,7 +103,7 @@ public class ExportContactDetailsRequest {
 
 
         public String getAsString(Tuple tuple) {
-            return asStringFunction.apply(tuple);
+            return getAsStringFunction().apply(tuple);
         }
     }
 }

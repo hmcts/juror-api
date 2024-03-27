@@ -3,9 +3,10 @@ package uk.gov.hmcts.juror.api.moj.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class CsvBuilder {
-    private final List<List<String>> rows;
-    private final int expectedLength;
+    final List<List<String>> rows;
+    final int expectedLength;
 
 
     public CsvBuilder(List<String> titles) {
@@ -15,12 +16,10 @@ public class CsvBuilder {
     }
 
     public String build() {
-        String res = this.rows.stream()
+        return this.rows.stream()
             .map(row -> String.join(",", row))
             .reduce((a, b) -> a + "\n" + b)
             .orElse("");
-        System.out.println(res);
-        return res;
     }
 
     public void addRow(List<String> list) {

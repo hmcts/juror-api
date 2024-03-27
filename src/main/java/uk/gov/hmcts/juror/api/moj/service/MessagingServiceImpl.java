@@ -209,7 +209,6 @@ public class MessagingServiceImpl implements MessagingService {
                     .stream()
                     .map(ExportContactDetailsRequest.ExportItems::getTitle)
                     .toList());
-
         exportItems.forEach(csvBuilder::addRow);
         return csvBuilder.build();
     }

@@ -12,6 +12,8 @@ import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorAndPoolRequest;
+import uk.gov.hmcts.juror.api.moj.controller.request.messages.ExportContactDetailsRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.messages.MessageSendRequest;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBase;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.ViewMessageTemplateDto;
@@ -1058,7 +1060,7 @@ class MessagingServiceImplTest {
             MessageTemplate messageTemplate = mock(MessageTemplate.class);
             final String otherInfo = "Some other info";
             doReturn(messageTemplate).when(messagingService)
-                .getMessageTemplate(MessageType.FAILED_TO_ATTEND_COURT,true);
+                .getMessageTemplate(MessageType.FAILED_TO_ATTEND_COURT, true);
             doReturn(otherInfo).when(messageTemplate).getTitle();
             Message message = messagingService.createMessage(
                 jurorAndSendType,
@@ -1080,7 +1082,7 @@ class MessagingServiceImplTest {
             assertThat(message.getSubject()).isEqualTo(ENGLISH_SUBJECT);
             assertThat(message.getMessageText()).isEqualTo(englishTemplate);
             assertThat(message.getMessageId()).isEqualTo(2);
-            verify(historyService,times(1))
+            verify(historyService, times(1))
                 .createSendMessageHistory(
                     TestConstants.VALID_JUROR_NUMBER,
                     TestConstants.VALID_POOL_NUMBER,
@@ -1102,7 +1104,7 @@ class MessagingServiceImplTest {
             MessageTemplate messageTemplate = mock(MessageTemplate.class);
             final String otherInfo = "Some other info";
             doReturn(messageTemplate).when(messagingService)
-                .getMessageTemplate(MessageType.FAILED_TO_ATTEND_COURT,true);
+                .getMessageTemplate(MessageType.FAILED_TO_ATTEND_COURT, true);
             doReturn(otherInfo).when(messageTemplate).getTitle();
 
             securityUtilMockedStatic.when(SecurityUtil::getActiveLogin).thenReturn(username);
@@ -1135,7 +1137,7 @@ class MessagingServiceImplTest {
             assertThat(message.getSubject()).isEqualTo(ENGLISH_SUBJECT);
             assertThat(message.getMessageText()).isEqualTo(englishTemplate);
             assertThat(message.getMessageId()).isEqualTo(2);
-            verify(historyService,times(1))
+            verify(historyService, times(1))
                 .createSendMessageHistory(
                     TestConstants.VALID_JUROR_NUMBER,
                     TestConstants.VALID_POOL_NUMBER,
@@ -1166,7 +1168,7 @@ class MessagingServiceImplTest {
             MessageTemplate messageTemplate = mock(MessageTemplate.class);
             final String otherInfo = "Some other info";
             doReturn(messageTemplate).when(messagingService)
-                .getMessageTemplate(MessageType.FAILED_TO_ATTEND_COURT,true);
+                .getMessageTemplate(MessageType.FAILED_TO_ATTEND_COURT, true);
             doReturn(otherInfo).when(messageTemplate).getTitle();
             Message message = messagingService.createMessage(
                 jurorAndSendType,
@@ -1188,7 +1190,7 @@ class MessagingServiceImplTest {
             assertThat(message.getSubject()).isEqualTo(ENGLISH_SUBJECT);
             assertThat(message.getMessageText()).isEqualTo(englishTemplate);
             assertThat(message.getMessageId()).isEqualTo(2);
-            verify(historyService,times(1))
+            verify(historyService, times(1))
                 .createSendMessageHistory(
                     TestConstants.VALID_JUROR_NUMBER,
                     TestConstants.VALID_POOL_NUMBER,
@@ -1220,7 +1222,7 @@ class MessagingServiceImplTest {
             MessageTemplate messageTemplate = mock(MessageTemplate.class);
             final String otherInfo = "Some other info";
             doReturn(messageTemplate).when(messagingService)
-                .getMessageTemplate(MessageType.FAILED_TO_ATTEND_COURT,true);
+                .getMessageTemplate(MessageType.FAILED_TO_ATTEND_COURT, true);
             doReturn(otherInfo).when(messageTemplate).getTitle();
 
             doReturn(juror).when(messagingService).getJuror(TestConstants.VALID_JUROR_NUMBER);
@@ -1246,7 +1248,7 @@ class MessagingServiceImplTest {
             assertThat(message.getMessageText()).isEqualTo(englishTemplate);
             assertThat(message.getMessageId()).isEqualTo(2);
 
-            verify(historyService,times(1))
+            verify(historyService, times(1))
                 .createSendMessageHistory(
                     TestConstants.VALID_JUROR_NUMBER,
                     TestConstants.VALID_POOL_NUMBER,
@@ -1278,7 +1280,7 @@ class MessagingServiceImplTest {
             MessageTemplate messageTemplate = mock(MessageTemplate.class);
             final String otherInfo = "Some other info";
             doReturn(messageTemplate).when(messagingService)
-                .getMessageTemplate(MessageType.FAILED_TO_ATTEND_COURT,false);
+                .getMessageTemplate(MessageType.FAILED_TO_ATTEND_COURT, false);
             doReturn(otherInfo).when(messageTemplate).getTitle();
 
             doReturn(juror).when(messagingService).getJuror(TestConstants.VALID_JUROR_NUMBER);
@@ -1303,7 +1305,7 @@ class MessagingServiceImplTest {
             assertThat(message.getSubject()).isEqualTo(WELSH_SUBJECT);
             assertThat(message.getMessageText()).isEqualTo(welshTemplate);
             assertThat(message.getMessageId()).isEqualTo(19);
-            verify(historyService,times(1))
+            verify(historyService, times(1))
                 .createSendMessageHistory(
                     TestConstants.VALID_JUROR_NUMBER,
                     TestConstants.VALID_POOL_NUMBER,
@@ -1881,6 +1883,54 @@ class MessagingServiceImplTest {
             assertThat(messagingService.isWelshLocation(TestConstants.VALID_COURT_LOCATION))
                 .isFalse();
 
+        }
+    }
+
+    @Nested
+    @DisplayName("public String exportContactDetails(String locCode, ExportContactDetailsRequest "
+        + "exportContactDetailsRequest)")
+    class ExportContactDetails {
+        protected ExportContactDetailsRequest getRequest() {
+            return ExportContactDetailsRequest.builder()
+                .exportItems(List.of(
+                    ExportContactDetailsRequest.ExportItems.JUROR_NUMBER,
+                    ExportContactDetailsRequest.ExportItems.POOL_NUMBER,
+                    ExportContactDetailsRequest.ExportItems.STATUS
+                ))
+                .jurors(List.of(
+                    JurorAndPoolRequest.builder()
+                        .jurorNumber(TestConstants.VALID_JUROR_NUMBER + "0")
+                        .poolNumber(TestConstants.VALID_POOL_NUMBER + "0")
+                        .build(),
+
+                    JurorAndPoolRequest.builder()
+                        .jurorNumber(TestConstants.VALID_JUROR_NUMBER + "1")
+                        .poolNumber(TestConstants.VALID_POOL_NUMBER + "1")
+                        .build()
+                ))
+                .build();
+        }
+
+        @Test
+        void positiveTypical() {
+            ExportContactDetailsRequest exportContactDetailsRequest = getRequest();
+
+            List<List<String>> data = List.of(
+                List.of(TestConstants.VALID_JUROR_NUMBER + "0", TestConstants.VALID_POOL_NUMBER + "0", "1"),
+                List.of(TestConstants.VALID_JUROR_NUMBER + "1", TestConstants.VALID_POOL_NUMBER + "1", "2")
+            );
+
+            doReturn(data).when(messageTemplateRepository)
+                .exportDetails(exportContactDetailsRequest, TestConstants.VALID_COURT_LOCATION);
+
+            assertThat(messagingService.exportContactDetails(
+                TestConstants.VALID_COURT_LOCATION, exportContactDetailsRequest))
+                .isEqualTo("Juror Number,Pool Number,Status\n"
+                    + TestConstants.VALID_JUROR_NUMBER + "0," + TestConstants.VALID_POOL_NUMBER + "0,1\n"
+                    + TestConstants.VALID_JUROR_NUMBER + "1," + TestConstants.VALID_POOL_NUMBER + "1,2");
+
+            verify(messageTemplateRepository, times(1))
+                .exportDetails(exportContactDetailsRequest, TestConstants.VALID_COURT_LOCATION);
         }
     }
 
