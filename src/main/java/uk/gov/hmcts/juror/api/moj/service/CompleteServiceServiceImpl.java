@@ -23,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -176,6 +177,7 @@ public class CompleteServiceServiceImpl implements CompleteServiceService {
     }
 
     private boolean isJurorValidForCompletion(JurorPool jurorPool) {
-        return jurorPool.getStatus().getStatus() == IJurorStatus.RESPONDED;
+        return !Set.of(IJurorStatus.TRANSFERRED, IJurorStatus.FAILED_TO_ATTEND, IJurorStatus.SUMMONED)
+                .contains(jurorPool.getStatus().getStatus());
     }
 }

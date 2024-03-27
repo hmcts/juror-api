@@ -44,9 +44,7 @@ public class MojException extends RuntimeException {
             this(customErrorMessage, errorCode, metaData, null);
         }
 
-        public BusinessRuleViolation(String customErrorMessage,
-                                     ErrorCode errorCode,
-                                     Map<String,Object> metaData,
+        public BusinessRuleViolation(String customErrorMessage, ErrorCode errorCode, Map<String,Object> metaData,
                                      Throwable cause) {
             super(customErrorMessage, cause);
             this.errorCode = errorCode;
