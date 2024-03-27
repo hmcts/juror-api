@@ -2,12 +2,15 @@ package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.juror.api.moj.controller.request.messages.ExportContactDetailsRequest;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBase;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBureau;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageCourt;
@@ -21,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.domain.messages.MessageSearch;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -121,6 +125,44 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
                     .build();
             },
             maxItems);
+    }
+
+    @Override
+    public List<List<String>> exportDetails(ExportContactDetailsRequest exportContactDetailsRequest, String locCode) {
+        List<? extends Expression<?>> returnFields = exportContactDetailsRequest.getExportItems()
+            .stream()
+            .map(ExportContactDetailsRequest.ExportItems::getExpression)
+            .toList();
+        JPAQueryFactory queryFactory = getQueryFactory();
+
+        List<BooleanExpression> or = exportContactDetailsRequest.getJurors().stream()
+            .map(jurorAndPoolRequest -> JUROR.jurorNumber.eq(jurorAndPoolRequest.getJurorNumber())
+                .and(JUROR_POOL.pool.poolNumber.eq(jurorAndPoolRequest.getPoolNumber()))).toList();
+
+
+        List<List<String>> rows = new ArrayList<>();
+        JPQLQuery<Tuple> query = queryFactory.select(returnFields.toArray(new Expression<?>[0]))
+            .from(JUROR)
+            .join(JUROR_POOL)
+            .on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
+
+        if (SecurityUtil.isCourt()) {
+            query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));
+        }
+
+        query.where(or.stream().reduce(BooleanExpression::or).get());
+
+        query.fetch().stream().map(tuple -> {
+            List<String> row = new ArrayList<>();
+            exportContactDetailsRequest.getExportItems()
+                .forEach(exportItems -> row.add(exportItems.getAsString(tuple)));
+            return row;
+        }).forEach(rows::add);
+
+        if (rows.size() != exportContactDetailsRequest.getJurors().size()) {
+            throw new MojException.NotFound("One or more jurors not found", null);
+        }
+        return rows;
     }
 
     @Override

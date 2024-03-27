@@ -18,6 +18,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorAndPoolRequest;
+import uk.gov.hmcts.juror.api.moj.controller.request.messages.ExportContactDetailsRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.messages.MessageSendRequest;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBase;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.ViewMessageTemplateDto;
@@ -40,6 +42,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -369,6 +372,77 @@ class MessagingControllerTest {
                 .andExpect(jsonPath("$.errors[0].field", CoreMatchers.is("jurors[0].jurorNumber")))
                 .andExpect(jsonPath("$.errors[0].message",
                     CoreMatchers.is("must match \"^\\d{9}$\"")));
+            verifyNoInteractions(messagingService);
+        }
+    }
+
+
+    @Nested
+    @DisplayName("POST " + ToCsv.URL)
+    class ToCsv {
+        protected static final String URL = BASE_URL + "/csv/{loc_code}";
+
+        protected ExportContactDetailsRequest getValidPayload() {
+            return ExportContactDetailsRequest.builder()
+                .exportItems(List.of(
+                    ExportContactDetailsRequest.ExportItems.JUROR_NUMBER
+                ))
+                .jurors(List.of(
+                    JurorAndPoolRequest.builder()
+                        .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                        .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                        .build()
+                ))
+                .build();
+        }
+
+        @Test
+        void positiveTypical() throws Exception {
+            final String locCode = TestConstants.VALID_COURT_LOCATION;
+
+            ExportContactDetailsRequest request = getValidPayload();
+            String response = "Some example csv response";
+            doReturn(response).when(messagingService).exportContactDetails(locCode, request);
+
+            mockMvc.perform(post(URL, locCode)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(request)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(header().stringValues("Content-Disposition",
+                    "attachment; filename=juror_export_details.csv"))
+                .andExpect(header().string("Content-Type", "text/csv;charset=UTF-8"))
+                .andExpect(content().string(response));
+
+            verify(messagingService, times(1))
+                .exportContactDetails(locCode, request);
+        }
+
+        @Test
+        void negativeInvalidLocCode() throws Exception {
+            mockMvc.perform(post(URL, "INVALID")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(getValidPayload())))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message",
+                    CoreMatchers.is(
+                        "toCsv.locCode: size must be between 3 and 3")));
+            verifyNoInteractions(messagingService);
+        }
+
+        @Test
+        void negativeInvalidPayload() throws Exception {
+            ExportContactDetailsRequest request = getValidPayload();
+            request.setJurors(null);
+            mockMvc.perform(post(URL, TestConstants.VALID_COURT_LOCATION)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtils.asJsonString(request)))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field", CoreMatchers.is("jurors")))
+                .andExpect(jsonPath("$.errors[0].message",
+                    CoreMatchers.is("must not be empty")));
             verifyNoInteractions(messagingService);
         }
     }

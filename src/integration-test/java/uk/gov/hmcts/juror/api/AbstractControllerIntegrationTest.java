@@ -32,7 +32,7 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
     private final TestRestTemplate template;
     private final HttpMethod method;
     private final HttpStatus validStatus;
-    private HttpHeaders httpHeaders;
+    protected HttpHeaders httpHeaders;
 
     private final Type returnType;
 
