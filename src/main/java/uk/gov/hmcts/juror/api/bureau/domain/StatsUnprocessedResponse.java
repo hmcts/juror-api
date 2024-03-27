@@ -21,7 +21,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Entity
 @Immutable
-@Table(name = "stats_unprocessed_responses", schema = "juror_mod")
+@Table(name = "stats_unprocessed_responses", schema = "juror_dashboard")
 @Builder
 public class StatsUnprocessedResponse implements Serializable {
 

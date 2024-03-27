@@ -24,7 +24,7 @@ import java.io.Serializable;
 @Entity
 @Immutable
 @IdClass(StatsDeferralsKey.class)
-@Table(name = "stats_deferrals", schema = "juror_mod")
+@Table(name = "stats_deferrals", schema = "juror_dashboard")
 @Builder
 
 public class StatsDeferrals implements Serializable {

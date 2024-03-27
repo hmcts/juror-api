@@ -22,16 +22,16 @@ import java.util.Date;
 @Data
 @Entity
 @Immutable
-@Table(name = "STATS_WELSH_ONLINE_RESPONSES", schema = "JUROR_DIGITAL")
+@Table(name = "stats_welsh_online_responses", schema = "juror_dashboard")
 @Builder
 public class StatsWelshOnlineResponse implements Serializable {
 
     @NotNull
     @Id
-    @Column(name = "SUMMONS_MONTH")
+    @Column(name = "summons_month")
     private Date summonsMonth;
 
-    @Column(name = "WELSH_RESPONSE_COUNT")
+    @Column(name = "welsh_response_count")
     private Integer welshResponseCount;
 
 }

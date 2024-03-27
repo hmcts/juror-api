@@ -24,7 +24,7 @@ import java.util.Date;
 @Entity
 @IdClass(StatsNotRespondedKey.class)
 @Immutable
-@Table(name = "stats_not_responded", schema = "juror_mod")
+@Table(name = "stats_not_responded", schema = "juror_dashboard")
 @Builder
 public class StatsNotResponded implements Serializable {
 
