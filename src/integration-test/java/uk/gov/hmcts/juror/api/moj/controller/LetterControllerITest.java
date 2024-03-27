@@ -66,7 +66,6 @@ import uk.gov.hmcts.juror.api.moj.repository.letter.RequestLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.PostponementLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.ShowCauseLetterListRepository;
 
-import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -98,7 +97,6 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static uk.gov.hmcts.juror.api.TestUtil.getValuesInJsonObject;
 import static uk.gov.hmcts.juror.api.TestUtils.objectMapper;
-import static uk.gov.hmcts.juror.api.moj.controller.LetterControllerITest.PrintCourtLettersPostponement.JUROR_NUMBER;
 import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetails;
 
 /**
