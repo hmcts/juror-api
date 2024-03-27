@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorPaperResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPersonalDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.JurorResponseRetrieveRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.JurorResponseRetrieveResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -35,11 +36,10 @@ import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
-import uk.gov.hmcts.juror.api.moj.domain.letter.DisqualificationLetterMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
-import uk.gov.hmcts.juror.api.moj.repository.DisqualifyLetterModRepository;
+import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
@@ -56,7 +56,6 @@ import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -113,7 +112,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private final JurorResponseCjsEmploymentRepositoryMod jurorResponseCjsEmploymentRepository;
     private final JurorPoolRepository jurorPoolRepository;
     private final JurorHistoryRepository jurorHistoryRepository;
-    private final DisqualifyLetterModRepository disqualifyLetterRepository;
+    private final BulkPrintDataRepository bulkPrintDataRepository;
     private final JurorResponseAuditRepositoryMod auditRepository;
     private final JurorRepository jurorRepository;
     private final UserRepository userRepository;
@@ -1083,11 +1082,9 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.WITHDRAWAL_LETTER))).as(
             "Expect history record to be created for disqualification letter").isTrue();
 
-        Iterable<DisqualificationLetterMod> disqualifyLetterIterator = disqualifyLetterRepository.findAll();
-        List<DisqualificationLetterMod> disqualificationLetters = new ArrayList<>();
-        disqualifyLetterIterator.forEach(disqualificationLetters::add);
+        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
 
-        assertThat(disqualificationLetters.size()).as("Expect a single disqualification letter to exist "
+        assertThat(bulkPrintData.size()).as("Expect a single disqualification letter to exist "
             + "(existing record updated)").isEqualTo(1);
     }
 
@@ -1128,11 +1125,9 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.WITHDRAWAL_LETTER)))
             .as("Expect no history record to be created for disqualification letter").isFalse();
 
-        Iterable<DisqualificationLetterMod> disqualifyLetterIterator = disqualifyLetterRepository.findAll();
-        List<DisqualificationLetterMod> disqualificationLetters = new ArrayList<>();
-        disqualifyLetterIterator.forEach(disqualificationLetters::add);
+        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
 
-        assertThat(disqualificationLetters.size()).as("No disqualification letter expected to be generated")
+        assertThat(bulkPrintData.size()).as("No disqualification letter expected to be generated")
             .isEqualTo(0);
     }
 

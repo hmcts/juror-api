@@ -4,7 +4,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -20,7 +19,6 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReplyType;
-import uk.gov.hmcts.juror.api.moj.domain.letter.DisqualificationLetterMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -31,7 +29,6 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseR
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmploymentRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.service.letter.LetterService;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
@@ -71,8 +68,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
     @Autowired
     private final SummonsReplyMergeService mergeService;
     @Autowired
-    @Qualifier("DisqualificationLetterServiceImpl")
-    private final LetterService<DisqualificationLetterMod> disqualificationLetterService;
+    PrintDataService printDataService;
 
     @SuppressWarnings("checkstyle:AbbreviationAsWordInName")
     public StraightThroughProcessorServiceImpl(
@@ -86,7 +82,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
         @NonNull final JurorStatusRepository jurorStatusRepository,
         @NonNull final ResponseInspector responseInspector,
         @NonNull final SummonsReplyMergeService mergeService,
-        @NonNull final LetterService<DisqualificationLetterMod> disqualificationLetterService) {
+        @NonNull final PrintDataService printDataService) {
         this.jurorPaperResponseRepository = jurorPaperResponseRepository;
         this.jurorResponseCjsRepository = jurorResponseCjsRepository;
         this.jurorReasonableAdjustmentRepository = jurorReasonableAdjustmentRepository;
@@ -97,7 +93,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
         this.jurorStatusRepository = jurorStatusRepository;
         this.responseInspector = responseInspector;
         this.mergeService = mergeService;
-        this.disqualificationLetterService = disqualificationLetterService;
+        this.printDataService = printDataService;
     }
 
     /**
@@ -334,11 +330,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
 
         jurorHistoryRepository.save(disqualifyHistory);
 
-        DisqualificationLetterMod disqualificationLetter = disqualificationLetterService.getLetterToEnqueue(owner,
-            jurorNumber);
-        disqualificationLetter.setDisqCode(DisCode.AGE);
-        disqualificationLetter.setDateDisq(LocalDate.now());
-        disqualificationLetterService.enqueueLetter(disqualificationLetter);
+        printDataService.printWithdrawalLetter(jurorPool);
 
         // record disqualification letter entry history record
         JurorHistory disqualifyLetterHistory = new JurorHistory(jurorNumber, HistoryCodeMod.WITHDRAWAL_LETTER,
