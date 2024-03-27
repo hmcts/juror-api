@@ -66,7 +66,6 @@ import uk.gov.hmcts.juror.api.moj.repository.letter.RequestLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.PostponementLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.ShowCauseLetterListRepository;
 
-import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -98,7 +97,6 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static uk.gov.hmcts.juror.api.TestUtil.getValuesInJsonObject;
 import static uk.gov.hmcts.juror.api.TestUtils.objectMapper;
-import static uk.gov.hmcts.juror.api.moj.controller.LetterControllerITest.PrintCourtLettersPostponement.JUROR_NUMBER;
 import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetails;
 
 /**
@@ -6791,18 +6789,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getJurorNumber()).as("Expect juror number to be 5555555" + jurorPostfix)
                 .isEqualTo(JUROR_NUMBER + jurorPostfix);
 
-            assertThat(response.getNonAttendance())
-                .as("Expect non attendance to be Non Attendance")
-                .isEqualTo("Non Attendance");
-            assertThat(response.getLossOfEarnings())
-                .as("Expect loss of earnings to be 40.00")
-                .isEqualTo(new BigDecimal("40.00"));
-            assertThat(response.getChildCare())
-                .as("Expect child care to be 10.00")
-                .isEqualTo(new BigDecimal("10.00"));
-            assertThat(response.getMisc())
-                .as("Expect misc to be 10.00")
-                .isEqualTo(new BigDecimal("10.00"));
 
         }
 

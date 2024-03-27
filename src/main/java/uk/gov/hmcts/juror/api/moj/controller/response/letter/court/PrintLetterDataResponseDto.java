@@ -9,6 +9,7 @@ import lombok.Getter;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -49,13 +50,19 @@ public class PrintLetterDataResponseDto implements Serializable {
     String defendant;
     String judgeName;
     String periodOfExemption;
-    String nonAttendance;
-    BigDecimal lossOfEarnings;
-    BigDecimal childCare;
-    BigDecimal misc;
     String signature;
     String url;
+    List<AttendanceData> attendanceDataList;
 
     @Builder.Default
     Boolean welsh = Boolean.FALSE;
+
+    @Builder
+    public static class AttendanceData {
+        String nonAttendance;
+        BigDecimal lossOfEarnings;
+        BigDecimal childCare;
+        BigDecimal misc;
+    }
+
 }
