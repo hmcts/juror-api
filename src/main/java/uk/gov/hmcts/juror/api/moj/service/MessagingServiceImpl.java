@@ -7,9 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.controller.request.messages.ExportContactDetailsRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.messages.MessageSendRequest;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBase;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.ViewMessageTemplateDto;
+import uk.gov.hmcts.juror.api.moj.domain.CsvBuilder;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.messages.Message;
@@ -194,6 +196,22 @@ public class MessagingServiceImpl implements MessagingService {
                     englishTemplate, welshTemplate))
                 .toList()
         );
+    }
+
+    @Override
+    public String exportContactDetails(String locCode, ExportContactDetailsRequest exportContactDetailsRequest) {
+
+        List<List<String>> exportItems = messageTemplateRepository
+            .exportDetails(exportContactDetailsRequest, locCode);
+        CsvBuilder csvBuilder =
+            new CsvBuilder(
+                exportContactDetailsRequest.getExportItems()
+                    .stream()
+                    .map(ExportContactDetailsRequest.ExportItems::getTitle)
+                    .toList());
+
+        exportItems.forEach(csvBuilder::addRow);
+        return csvBuilder.build();
     }
 
     boolean doesTrialExist(String trialNumber, String locCode) {
