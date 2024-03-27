@@ -5,9 +5,10 @@ import com.querydsl.jpa.impl.JPAQuery;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReportTestSupport;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
@@ -19,7 +20,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @SuppressWarnings("PMD.LawOfDemeter")
-class NextAttendanceDayReportTest extends AbstractReportTestSupport<NextAttendanceDayReport> {
+class NextAttendanceDayReportTest extends AbstractStandardReportTestSupport<NextAttendanceDayReport> {
     public NextAttendanceDayReportTest() {
         super(QJurorPool.jurorPool,
             NextAttendanceDayReport.RequestValidator.class,
@@ -56,7 +57,7 @@ class NextAttendanceDayReportTest extends AbstractReportTestSupport<NextAttendan
     @Override
     public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
-        StandardReportResponse.TableData tableData,
+        AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
         List<LinkedHashMap<String, Object>> data) {
 
         Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);

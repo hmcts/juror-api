@@ -6,10 +6,11 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReportControllerITest;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
@@ -19,10 +20,10 @@ import java.util.List;
     "/db/mod/reports/CurrentPoolStatusReportControllerITest_typical.sql"
 })
 @SuppressWarnings("PMD.LawOfDemeter")
-class CurrentPoolStatusReportControllerITest extends AbstractReportControllerITest {
+class CurrentPoolStatusReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public CurrentPoolStatusReportControllerITest(TestRestTemplate template) {
+    public CurrentPoolStatusReportITest(TestRestTemplate template) {
         super(template, CurrentPoolStatusReport.class);
     }
 
@@ -108,7 +109,7 @@ class CurrentPoolStatusReportControllerITest extends AbstractReportControllerITe
                     .value("415230103")
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.builder()
+                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")

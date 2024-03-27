@@ -6,20 +6,21 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReportControllerITest;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
     "/db/truncate.sql",
     "/db/mod/truncate.sql",
     "/db/administration/createUsers.sql",
-    "/db/mod/reports/NextDayNonAttendanceReportITest_typical.sql"
+    "/db/mod/reports/NextAttendanceDayReportITest_typical.sql"
 })
 @SuppressWarnings("PMD.LawOfDemeter")
-class NextAttendanceDayReportITest extends AbstractReportControllerITest {
+class NextAttendanceDayReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public NextAttendanceDayReportITest(TestRestTemplate template) {
         super(template, NextAttendanceDayReport.class);
@@ -38,7 +39,9 @@ class NextAttendanceDayReportITest extends AbstractReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+    @SuppressWarnings({
+        "PMD.JUnitTestsShouldIncludeAssert"//False positive
+    })
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -47,7 +50,9 @@ class NextAttendanceDayReportITest extends AbstractReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+    @SuppressWarnings({
+        "PMD.JUnitTestsShouldIncludeAssert"//False positive
+    })
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -57,7 +62,9 @@ class NextAttendanceDayReportITest extends AbstractReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+    @SuppressWarnings({
+        "PMD.JUnitTestsShouldIncludeAssert"//False positive
+    })
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setPoolNumber(null);
@@ -68,7 +75,9 @@ class NextAttendanceDayReportITest extends AbstractReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+    @SuppressWarnings({
+        "PMD.JUnitTestsShouldIncludeAssert"//False positive
+    })
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getCourtJwt("414"))
@@ -100,7 +109,7 @@ class NextAttendanceDayReportITest extends AbstractReportControllerITest {
                     .value("CROWN COURT")
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.builder()
+                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")

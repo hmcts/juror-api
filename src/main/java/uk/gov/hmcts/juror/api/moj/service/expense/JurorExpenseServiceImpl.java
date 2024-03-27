@@ -565,10 +565,11 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     void checkDueIsMoreThanPaid(Appearance appearance) {
-        if (!appearance.isExpenseDetailsValid()) {
+        Map<String, Object> errors = appearance.getExpensesWhereDueIsLessThenPaid();
+        if (!errors.isEmpty()) {
             throw new MojException.BusinessRuleViolation(
                 "Updated expense values cannot be less than the paid amount",
-                MojException.BusinessRuleViolation.ErrorCode.EXPENSE_VALUES_REDUCED_LESS_THAN_PAID);
+                MojException.BusinessRuleViolation.ErrorCode.EXPENSE_VALUES_REDUCED_LESS_THAN_PAID, errors);
         }
     }
 

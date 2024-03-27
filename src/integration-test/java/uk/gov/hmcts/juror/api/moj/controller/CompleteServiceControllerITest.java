@@ -231,7 +231,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
             JurorPool jurorPool2 = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber("641500003",
                 "415220901");
-            assertEquals(IJurorStatus.DEFERRED, jurorPool2.getStatus().getStatus(),
+            assertEquals(IJurorStatus.FAILED_TO_ATTEND, jurorPool2.getStatus().getStatus(),
                 "Juror pool status should not change as transaction should rollback");
 
             Juror juror2 = jurorPool2.getJuror();
@@ -323,7 +323,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             CompleteServiceValidationResponseDto expected = CompleteServiceValidationResponseDto.builder()
                 .valid(List.of())
                 .invalidNotResponded(List.of(JurorStatusValidationResponseDto.builder()
-                    .status(7)
+                    .status(IJurorStatus.FAILED_TO_ATTEND)
                     .jurorNumber("641500003")
                     .firstName("FNAMEZEROTHREE")
                     .lastName("LNAMEZEROTHREE")
@@ -351,23 +351,23 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
             CompleteServiceValidationResponseDto expected = CompleteServiceValidationResponseDto.builder()
                 .valid(List.of(JurorStatusValidationResponseDto.builder()
-                    .status(2)
+                    .status(IJurorStatus.RESPONDED)
                     .jurorNumber("641500005")
                     .firstName("FNAMEZEROFIVE")
                     .lastName("LNAMEZEROFIVE")
                     .build(), JurorStatusValidationResponseDto.builder()
-                    .status(2)
+                    .status(IJurorStatus.RESPONDED)
                     .jurorNumber("641500004")
                     .firstName("FNAMEZEROFOUR")
                     .lastName("LNAMEZEROFOUR")
                     .build()))
                 .invalidNotResponded(List.of(JurorStatusValidationResponseDto.builder()
-                    .status(7)
+                    .status(IJurorStatus.FAILED_TO_ATTEND)
                     .jurorNumber("641500003")
                     .firstName("FNAMEZEROTHREE")
                     .lastName("LNAMEZEROTHREE")
                     .build(), JurorStatusValidationResponseDto.builder()
-                    .status(5)
+                    .status(IJurorStatus.TRANSFERRED)
                     .jurorNumber("641500002")
                     .firstName("FNAMEZEROTWO")
                     .lastName("LNAMEZEROTWO")
@@ -826,7 +826,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             assertThat(body.getTotalPages()).isEqualTo(1L);
             assertThat(body.getTotalItems()).isEqualTo(4L);
             assertThat(body.getCurrentPage()).isEqualTo(1L);
-            
+
             List<CompleteJurorResponse> data = body.getData();
             assertThat(data).isNotNull().hasSize(4);
             validateCompleteJurorResponse641500005(data.get(0));

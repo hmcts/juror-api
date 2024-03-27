@@ -5,10 +5,11 @@ import com.querydsl.jpa.impl.JPAQuery;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReportTestSupport;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
@@ -21,7 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("PMD.LawOfDemeter")
-class PostponedListByPoolReportTest extends AbstractReportTestSupport<PostponedListByPoolReport> {
+class PostponedListByPoolReportTest extends AbstractStandardReportTestSupport<PostponedListByPoolReport> {
 
     public PostponedListByPoolReportTest() {
         super(QJurorPool.jurorPool,
@@ -47,12 +48,13 @@ class PostponedListByPoolReportTest extends AbstractReportTestSupport<PostponedL
             .where(QJurorPool.jurorPool.pool.poolNumber.eq(TestConstants.VALID_POOL_NUMBER)
                 .and(QJurorPool.jurorPool.deferralDate.isNotNull())
                 .and(QJurorPool.jurorPool.deferralCode.eq(ExcusalCodeEnum.P.getCode())));
+        verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override
     public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
-        StandardReportResponse.TableData tableData,
+        AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
         List<LinkedHashMap<String, Object>> data) {
 
         when(data.size()).thenReturn(2);
