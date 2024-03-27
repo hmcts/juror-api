@@ -8,9 +8,9 @@ import org.springframework.util.Assert;
 import uk.gov.hmcts.juror.api.bureau.controller.request.JurorExpensesCalcRequestDto;
 import uk.gov.hmcts.juror.api.bureau.controller.request.JurorExpensesCalcTravelModeData;
 import uk.gov.hmcts.juror.api.bureau.controller.response.JurorExpensesCalcResults;
-import uk.gov.hmcts.juror.api.bureau.domain.ExpensesRates;
-import uk.gov.hmcts.juror.api.bureau.domain.ExpensesRatesRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorExpenseCalcException;
+import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesPublic;
+import uk.gov.hmcts.juror.api.moj.repository.ExpenseRatesPublicRepository;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -32,12 +32,12 @@ public class JurorExpenseCalcServiceImpl implements JurorExpenseCalcService {
     private static final String EARNING_TEN_DAYS_FOUR_HRS_MORE_KEY = "EARNING_TEN_DAYS_FOUR_HRS_MORE";
     private static final String EARNING_TEN_DAYS_FOUR_HRS_LESS_KEY = "EARNING_TEN_DAYS_FOUR_HRS_LESS";
 
-    private final ExpensesRatesRepository expensesRatesRepository;
+    private final ExpenseRatesPublicRepository expensesRatesRepository;
 
     @Autowired
     public JurorExpenseCalcServiceImpl(
-        final ExpensesRatesRepository expensesRatesRepository) {
-        Assert.notNull(expensesRatesRepository, "ExpensesRatesRepository cannot be null");
+        final ExpenseRatesPublicRepository expensesRatesRepository) {
+        Assert.notNull(expensesRatesRepository, "ExpenseRatesPublicRepository cannot be null");
         this.expensesRatesRepository = expensesRatesRepository;
     }
 
@@ -53,7 +53,7 @@ public class JurorExpenseCalcServiceImpl implements JurorExpenseCalcService {
         }
 
         //1. Load Expenses Rates
-        List<ExpensesRates> expenseRates = Lists.newArrayList(expensesRatesRepository.findAll());
+        List<ExpenseRatesPublic> expenseRates = Lists.newArrayList(expensesRatesRepository.findAll());
 
         if (expenseRates == null || expenseRates.isEmpty()) {
             log.error("Calculation cannot be performed. Missing Rates information.");
@@ -62,7 +62,7 @@ public class JurorExpenseCalcServiceImpl implements JurorExpenseCalcService {
 
         //      - Call method to transpose into a map. (Stream).
         final Map<String, Float> expensesRatesMap = expenseRates.stream()
-            .collect(Collectors.toMap(ExpensesRates::getExpenseType, ExpensesRates::getRate));
+            .collect(Collectors.toMap(ExpenseRatesPublic::getExpenseType, ExpenseRatesPublic::getRate));
 
         if (!validateRatesKeys(expensesRatesMap)) {
             log.error("Calculation cannot be performed. Missing some keys information.");

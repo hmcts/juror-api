@@ -1,9 +1,12 @@
 package uk.gov.hmcts.juror.api.moj.exception;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import java.util.Map;
 
 /**
  * A generic exceptions class for exceptions handled in the moj package.
@@ -30,15 +33,23 @@ public class MojException extends RuntimeException {
 
         private final ErrorCode errorCode;
 
+        @JsonProperty("meta_data")
+        private final Map<String, Object> metaData;
+
         public BusinessRuleViolation(String customErrorMessage, ErrorCode errorCode) {
             this(customErrorMessage, errorCode, null);
         }
 
-        public BusinessRuleViolation(String customErrorMessage, ErrorCode errorCode, Throwable cause) {
-            super(customErrorMessage, cause);
-            this.errorCode = errorCode;
+        public BusinessRuleViolation(String customErrorMessage, ErrorCode errorCode, Map<String,Object> metaData) {
+            this(customErrorMessage, errorCode, metaData, null);
         }
 
+        public BusinessRuleViolation(String customErrorMessage, ErrorCode errorCode, Map<String,Object> metaData,
+                                     Throwable cause) {
+            super(customErrorMessage, cause);
+            this.errorCode = errorCode;
+            this.metaData = metaData;
+        }
 
         public enum ErrorCode {
             COMPLETE_SERVICE_JUROR_IN_INVALID_STATE,

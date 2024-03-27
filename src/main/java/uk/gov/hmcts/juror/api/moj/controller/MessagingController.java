@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
+import uk.gov.hmcts.juror.api.moj.controller.request.messages.ExportContactDetailsRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.messages.MessageSendRequest;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBase;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.ViewMessageTemplateDto;
@@ -94,5 +96,24 @@ public class MessagingController {
     ) {
         messagingService.send(messageType, locCode, messageSendRequest);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping(value = "/csv/{loc_code}",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = "text/csv;")
+    @Operation(summary = "Convert message to CSV")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH + " or " + SecurityUtil.BUREAU_AUTH)
+    public ResponseEntity<String> toCsv(
+        @P("loc_code") @Size(min = 3, max = 3) @PathVariable("loc_code") @Valid String locCode,
+        @RequestBody @Valid @NotNull ExportContactDetailsRequest exportContactDetailsRequest
+    ) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=juror_export_details.csv");
+        return new ResponseEntity<>(
+            messagingService.exportContactDetails(locCode, exportContactDetailsRequest),
+            httpHeaders,
+            HttpStatus.OK
+        );
     }
 }

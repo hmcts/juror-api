@@ -6,10 +6,11 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReportControllerITest;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
@@ -19,7 +20,7 @@ import java.util.List;
     "/db/mod/reports/DeferredListByDateReportITest_typical.sql"
 })
 @SuppressWarnings("PMD.LawOfDemeter")
-class DeferredListByDateReportITest extends AbstractReportControllerITest {
+class DeferredListByDateReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
     public DeferredListByDateReportITest(TestRestTemplate template) {
@@ -71,11 +72,11 @@ class DeferredListByDateReportITest extends AbstractReportControllerITest {
                         .value(0)
                         .build()))
                 .tableData(
-                    StandardReportResponse.TableData.builder()
+                    StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
                         .headings(List.of(
                             StandardReportResponse.TableData.Heading.builder()
                                 .id("deferred_to")
-                                .name("Deferred To")
+                                .name("Deferred to")
                                 .dataType("LocalDate")
                                 .headings(null)
                                 .build(),
@@ -99,11 +100,11 @@ class DeferredListByDateReportITest extends AbstractReportControllerITest {
                     .value(7)
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.builder()
+                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("deferred_to")
-                            .name("Deferred To")
+                            .name("Deferred to")
                             .dataType("LocalDate")
                             .headings(null)
                             .build(),
@@ -139,11 +140,11 @@ class DeferredListByDateReportITest extends AbstractReportControllerITest {
                     .value(4)
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.builder()
+                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("deferred_to")
-                            .name("Deferred To")
+                            .name("Deferred to")
                             .dataType("LocalDate")
                             .headings(null)
                             .build(),

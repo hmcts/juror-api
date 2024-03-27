@@ -6,10 +6,11 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReportControllerITest;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({
@@ -19,7 +20,7 @@ import java.util.List;
     "/db/mod/reports/PostponedListByPoolReportITest_typical.sql"
 })
 @SuppressWarnings("PMD.LawOfDemeter")
-class PostponedListByPoolReportITest extends AbstractReportControllerITest {
+class PostponedListByPoolReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public PostponedListByPoolReportITest(TestRestTemplate template) {
         super(template, PostponedListByPoolReport.class);
@@ -106,7 +107,7 @@ class PostponedListByPoolReportITest extends AbstractReportControllerITest {
                     .value("CROWN COURT")
                     .build()))
             .tableData(
-                StandardReportResponse.TableData.builder()
+                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")
@@ -127,14 +128,14 @@ class PostponedListByPoolReportITest extends AbstractReportControllerITest {
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("postcode")
+                            .id("juror_postcode")
                             .name("Postcode")
                             .dataType("String")
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
                             .id("postponed_to")
-                            .name("Postcode")
+                            .name("Postponed to")
                             .dataType("LocalDate")
                             .headings(null)
                             .build()))
