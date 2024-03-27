@@ -76,3 +76,16 @@ create table juror_dashboard.survey_response (
 	created timestamp not null default (current_timestamp at time zone 'utc'::text),
 	constraint survey_response_pkey primary key (id, survey_id)
 );
+
+create or replace view juror_dashboard.stats_not_responded_totals as
+select  sum(coalesce(non_responsed_count, 0)) as not_responsed_total
+from    juror_dashboard.stats_not_responded s;
+
+
+create or replace view juror_dashboard.stats_response_times_totals as
+select  sum(coalesce(response_count, 0)) as all_responses_total,
+        sum(case
+                when response_method::text = 'Online'::text then coalesce(response_count, 0)
+                else 0
+            end) as online_responses_total
+from    juror_dashboard.stats_response_times s;
