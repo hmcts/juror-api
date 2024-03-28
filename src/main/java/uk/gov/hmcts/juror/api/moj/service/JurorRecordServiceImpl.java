@@ -675,7 +675,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
 
         return new ContactLogListDto(contactLogDataList, new JurorDetailsCommonResponseDto(jurorPool,
-            jurorStatusRepository, responseExcusalService, pendingJurorRepository));
+            jurorStatusRepository, pendingJurorRepository));
     }
 
     /**
@@ -734,7 +734,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         Juror juror = jurorPool.getJuror();
 
         return new JurorNotesDto(juror.getNotes(), new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
-            responseExcusalService, pendingJurorRepository));
+            pendingJurorRepository));
     }
 
     @Override

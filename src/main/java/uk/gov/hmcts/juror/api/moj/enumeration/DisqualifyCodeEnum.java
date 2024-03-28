@@ -24,4 +24,13 @@ public enum DisqualifyCodeEnum {
     private final String heritageCode;
     private final String heritageDescription;
 
+    public static DisqualifyCodeEnum fromCode(String code) {
+        for (DisqualifyCodeEnum disqualifyCodeEnum : DisqualifyCodeEnum.values()) {
+            if (disqualifyCodeEnum.getCode().equals(code)) {
+                return disqualifyCodeEnum;
+            }
+        }
+        return null;
+    }
+
 }

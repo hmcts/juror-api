@@ -74,7 +74,7 @@ public class JurorOverviewResponseDto {
                                     ResponseExcusalService responseExcusalService,
                                     PendingJurorRepository pendingJurorRepository) {
         this.commonDetails = new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
-            responseExcusalService, pendingJurorRepository);
+            pendingJurorRepository);
 
         Juror juror = jurorPool.getJuror();
         this.opticReference = juror.getOpticRef();
