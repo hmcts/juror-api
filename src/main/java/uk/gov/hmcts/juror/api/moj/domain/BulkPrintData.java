@@ -60,7 +60,7 @@ public class BulkPrintData {
     private String detailRec;
 
     @Column(name = "extracted_flag")
-    private Boolean extractedFlag;
+    private boolean extractedFlag = false;
 
     @Column(name = "digital_comms")
     private Boolean digitalComms;
