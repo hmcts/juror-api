@@ -103,9 +103,9 @@ public class JurorDetailsCommonResponseDto {
     @Schema(name = "Deferral Code", description = "Code indicating deferral reason selected by the user")
     private String deferralCode;
 
-    @JsonProperty("disqual_code")
+    @JsonProperty("disqualify_code")
     @Schema(name = "Disqualification Code", description = "Code indicating disqualification reason")
-    private String disqualCode;
+    private String disqualifyCode;
 
     @JsonProperty("policeCheck")
     @Schema(name = "Police Check Status")
@@ -151,7 +151,7 @@ public class JurorDetailsCommonResponseDto {
         this.deferralDate = jurorPool.getDeferralDate();
         this.deferredTo = jurorPool.getDeferralDate() != null ? jurorPool.getDeferralDate() : null;
         this.deferralCode = jurorPool.getDeferralCode();
-        this.disqualCode = juror.getDisqualifyCode();
+        this.disqualifyCode = juror.getDisqualifyCode();
         this.courtName = jurorPool.getCourt().getLocCourtName();
 
         if (this.excusalCode != null) {
@@ -163,9 +163,9 @@ public class JurorDetailsCommonResponseDto {
             this.excusalDescription = ExcusalCodeEnum.fromCode(this.deferralCode).getDescription();
         }
 
-        if (this.disqualCode != null) {
+        if (this.disqualifyCode != null) {
             // set the disqualification description as front end needs it to display the reason
-            this.excusalDescription = DisqualifyCodeEnum.fromCode(this.disqualCode).getDescription();
+            this.excusalDescription = DisqualifyCodeEnum.fromCode(this.disqualifyCode).getDescription();
         }
 
         if (jurorPool.getCourt() != null) {
