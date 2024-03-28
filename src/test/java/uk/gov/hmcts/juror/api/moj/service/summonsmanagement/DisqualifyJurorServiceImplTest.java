@@ -147,22 +147,29 @@ public class DisqualifyJurorServiceImplTest {
         assertThat(disqualifyReasonsListActual.get(2).getHeritageDescription())
             .isEqualTo("Has Been Convicted of an Offence");
 
-        assertThat(disqualifyReasonsListActual.get(3).getCode()).isEqualTo("N");
-        assertThat(disqualifyReasonsListActual.get(3).getDescription()).isEqualTo("Mental Capacity Act");
+        assertThat(disqualifyReasonsListActual.get(3).getCode()).isEqualTo("M");
+        assertThat(disqualifyReasonsListActual.get(3).getDescription())
+            .isEqualTo("Suffering From a Mental Disorder");
         assertThat(disqualifyReasonsListActual.get(3).getHeritageCode()).isEqualTo("M");
         assertThat(disqualifyReasonsListActual.get(3)
             .getHeritageDescription()).isEqualTo("Suffering From a Mental Disorder");
 
-        assertThat(disqualifyReasonsListActual.get(4).getCode()).isEqualTo("O");
-        assertThat(disqualifyReasonsListActual.get(4).getDescription()).isEqualTo("Mental Health Act");
+        assertThat(disqualifyReasonsListActual.get(4).getCode()).isEqualTo("N");
+        assertThat(disqualifyReasonsListActual.get(4).getDescription()).isEqualTo("Mental Capacity Act");
         assertThat(disqualifyReasonsListActual.get(4).getHeritageCode()).isEqualTo("M");
-        assertThat(disqualifyReasonsListActual.get(4).getHeritageDescription())
+        assertThat(disqualifyReasonsListActual.get(4)
+            .getHeritageDescription()).isEqualTo("Suffering From a Mental Disorder");
+
+        assertThat(disqualifyReasonsListActual.get(5).getCode()).isEqualTo("O");
+        assertThat(disqualifyReasonsListActual.get(5).getDescription()).isEqualTo("Mental Health Act");
+        assertThat(disqualifyReasonsListActual.get(5).getHeritageCode()).isEqualTo("M");
+        assertThat(disqualifyReasonsListActual.get(5).getHeritageDescription())
             .isEqualTo("Suffering From a Mental Disorder");
 
-        assertThat(disqualifyReasonsListActual.get(5).getCode()).isEqualTo("R");
-        assertThat(disqualifyReasonsListActual.get(5).getDescription()).isEqualTo("Residency");
-        assertThat(disqualifyReasonsListActual.get(5).getHeritageCode()).isEqualTo("R");
-        assertThat(disqualifyReasonsListActual.get(5).getHeritageDescription())
+        assertThat(disqualifyReasonsListActual.get(6).getCode()).isEqualTo("R");
+        assertThat(disqualifyReasonsListActual.get(6).getDescription()).isEqualTo("Residency");
+        assertThat(disqualifyReasonsListActual.get(6).getHeritageCode()).isEqualTo("R");
+        assertThat(disqualifyReasonsListActual.get(6).getHeritageDescription())
             .isEqualTo("Not Resident for the Appropriate Period");
 
         verify(jurorPoolRepository, never()).save(any());

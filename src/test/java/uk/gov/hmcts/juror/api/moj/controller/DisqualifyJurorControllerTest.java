@@ -81,12 +81,14 @@ class DisqualifyJurorControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()", is(1)))
-            .andExpect(jsonPath("$.disqualifyReasons.length()", is(6)))
-            .andExpect(jsonPath("$.disqualifyReasons[*].code").value(containsInAnyOrder("A", "B", "C", "N", "O", "R")))
+            .andExpect(jsonPath("$.disqualifyReasons.length()", is(7)))
+            .andExpect(jsonPath("$.disqualifyReasons[*].code").value(containsInAnyOrder("A", "B", "C", "M", "N", "O",
+                "R")))
             .andExpect(jsonPath("$.disqualifyReasons[*].description").value(containsInAnyOrder(
                 "Age",
                 "Bail",
                 "Conviction",
+                "Suffering From a Mental Disorder",
                 "Mental Capacity Act",
                 "Mental Health Act",
                 "Residency")));
@@ -108,12 +110,14 @@ class DisqualifyJurorControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()", is(1)))
-            .andExpect(jsonPath("$.disqualifyReasons.length()", is(6)))
-            .andExpect(jsonPath("$.disqualifyReasons[*].code").value(containsInAnyOrder("A", "B", "C", "N", "O", "R")))
+            .andExpect(jsonPath("$.disqualifyReasons.length()", is(7)))
+            .andExpect(jsonPath("$.disqualifyReasons[*].code").value(containsInAnyOrder("A", "B", "C", "M", "N", "O",
+                "R")))
             .andExpect(jsonPath("$.disqualifyReasons[*].description").value(containsInAnyOrder(
                 "Age",
                 "Bail",
                 "Conviction",
+                "Suffering From a Mental Disorder",
                 "Mental Capacity Act",
                 "Mental Health Act",
                 "Residency")));
