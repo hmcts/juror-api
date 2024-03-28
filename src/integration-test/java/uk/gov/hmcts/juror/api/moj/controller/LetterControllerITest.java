@@ -2866,9 +2866,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 "555555551",
                 FormCode.ENG_POSTPONE.getCode());
             assertThat(bulkPrintData).isPresent();
-            assertThat(bulkPrintData.get().getExtractedFlag())
-                .as("Expect extracted flag to be null")
-                .isNull();
+            assertThat(bulkPrintData.get().isExtractedFlag())
+                .as("Expect extracted flag to be false")
+                .isFalse();
 
             assertThat(bulkPrintData.get().getCreationDate())
                 .as("Expect creation date to be today")
@@ -2929,7 +2929,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .orElseThrow(() -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
             assertThat(bulkPrintData).isNotNull();
-            assertThat(bulkPrintData.getExtractedFlag()).isNull();
+            assertThat(bulkPrintData.isExtractedFlag()).isFalse();
         }
 
         @Test
@@ -2962,7 +2962,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .orElseThrow(() -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
             assertThat(bulkPrintData).as("Letter should have been added in bulk print table").isNotNull();
-            assertThat(bulkPrintData.getExtractedFlag()).as("Extracted flag should be null").isNull();
+            assertThat(bulkPrintData.isExtractedFlag()).as("Extracted flag should be false").isFalse();
 
             // verify history added
             updatedJurorHistoryList =
@@ -3009,7 +3009,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .orElseThrow(() -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
             assertThat(bulkPrintData).isNotNull();
-            assertThat(bulkPrintData.getExtractedFlag()).isNull();
+            assertThat(bulkPrintData.isExtractedFlag()).isFalse();
 
             // verify history added
             List<JurorHistory> updatedJurorHistoryList =
