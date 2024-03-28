@@ -300,7 +300,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             case EXCUSAL_GRANTED, WITHDRAWAL -> {
             } // do nothing as no additional fields are required }
             case CERTIFICATE_OF_ATTENDANCE -> {
-                List<PrintLetterDataResponseDto.AttendanceData> attendanceDataList = null;
+                List<PrintLetterDataResponseDto.AttendanceData> attendanceDataList = new ArrayList<>();
 
                 //run query to return appearance list
                 List<Appearance> appearanceList =

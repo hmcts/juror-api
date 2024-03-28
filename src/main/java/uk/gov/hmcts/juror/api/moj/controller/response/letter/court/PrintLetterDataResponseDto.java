@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -58,11 +60,13 @@ public class PrintLetterDataResponseDto implements Serializable {
     Boolean welsh = Boolean.FALSE;
 
     @Builder
+    @Getter
+    @Setter
     public static class AttendanceData {
-        String nonAttendance;
-        BigDecimal lossOfEarnings;
-        BigDecimal childCare;
-        BigDecimal misc;
+        private String nonAttendance;
+        private BigDecimal lossOfEarnings;
+        private BigDecimal childCare;
+        private BigDecimal misc;
     }
 
 }

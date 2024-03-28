@@ -1831,6 +1831,7 @@ public class CourtLetterPrintServiceTest {
             assertThat(dto.getWelsh())
                 .as("Expect welsh to be false")
                 .isFalse();
+            assertThat(dto.getAttendanceDataList()).isNotNull();
 
             ArgumentCaptor<JurorHistory> jurorHistoryArgumentCaptor = ArgumentCaptor.forClass(JurorHistory.class);
 
@@ -1941,6 +1942,8 @@ public class CourtLetterPrintServiceTest {
             assertThat(dto.getWelsh())
                 .as("Expect welsh to be true")
                 .isTrue();
+            assertThat(dto.getAttendanceDataList()).isNotNull();
+
 
 
             ArgumentCaptor<JurorHistory> jurorHistoryArgumentCaptor = ArgumentCaptor.forClass(JurorHistory.class);

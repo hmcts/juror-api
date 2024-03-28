@@ -6788,6 +6788,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo("CH1 2AN");
             assertThat(response.getJurorNumber()).as("Expect juror number to be 5555555" + jurorPostfix)
                 .isEqualTo(JUROR_NUMBER + jurorPostfix);
+            assertThat(response.getAttendanceDataList()).isNotNull();
 
 
         }
@@ -6837,6 +6838,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(JUROR_NUMBER + jurorPostfix);
 
             assertThat(response.getWelsh()).as("Expect welsh to be true").isTrue();
+            assertThat(response.getAttendanceDataList()).isNotNull();
+
         }
 
     }
