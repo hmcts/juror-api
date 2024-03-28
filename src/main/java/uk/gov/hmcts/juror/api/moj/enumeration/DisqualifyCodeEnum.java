@@ -15,6 +15,8 @@ public enum DisqualifyCodeEnum {
     A("A", "Age", "A", "Less Than Eighteen Years of Age or Over 75"),
     B("B", "Bail", "B", "On Bail"),
     C("C", "Conviction", "C", "Has Been Convicted of an Offence"),
+    M("M", "Suffering From a Mental Disorder", "M",
+        "Suffering From a Mental Disorder"),
     N("N", "Mental Capacity Act", "M", "Suffering From a Mental Disorder"),
     O("O", "Mental Health Act", "M", "Suffering From a Mental Disorder"),
     R("R", "Residency", "R", "Not Resident for the Appropriate Period");
@@ -23,5 +25,14 @@ public enum DisqualifyCodeEnum {
     private final String description;
     private final String heritageCode;
     private final String heritageDescription;
+
+    public static DisqualifyCodeEnum fromCode(String code) {
+        for (DisqualifyCodeEnum disqualifyCodeEnum : DisqualifyCodeEnum.values()) {
+            if (disqualifyCodeEnum.getCode().equals(code)) {
+                return disqualifyCodeEnum;
+            }
+        }
+        return null;
+    }
 
 }
