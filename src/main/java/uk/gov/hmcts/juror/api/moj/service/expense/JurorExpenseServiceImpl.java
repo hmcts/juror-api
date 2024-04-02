@@ -795,7 +795,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(jurorNumber,
                 firstAppearance.getCourtLocation().getLocCode(),
-                FinancialAuditDetails.Type.EDIT,
+                type.toEditType(),
                 appearances);
 
         appearances.forEach(appearance -> jurorHistoryService.createExpenseEditHistory(
@@ -1004,9 +1004,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(dto.getJurorNumber(),
                 firstAppearance.getCourtLocation().getLocCode(),
-                dto.getCashPayment()
-                    ? FinancialAuditDetails.Type.APPROVED_CASH
-                    : FinancialAuditDetails.Type.APPROVED_BACS,
+                dto.getApprovalType().toApproveType(dto.getCashPayment()),
                 appearances);
 
         LocalDate latestAppearanceDate = appearances.stream()

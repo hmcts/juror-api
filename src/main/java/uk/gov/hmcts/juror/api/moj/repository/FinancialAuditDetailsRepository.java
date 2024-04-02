@@ -11,14 +11,16 @@ import java.util.List;
 
 
 @Repository
-public interface FinancialAuditDetailsRepository extends CrudRepository<FinancialAuditDetails, Long> {
+public interface FinancialAuditDetailsRepository
+    extends CrudRepository<FinancialAuditDetails, Long>,
+    IFinancialAuditDetailsRepository {
 
     @Query("SELECT fad FROM FinancialAuditDetails fad "
         + "JOIN FinancialAuditDetailsAppearances fada on "
         + "fad.id = fada .financialAuditId "
-        + "WHERE fada.jurorNumber=?1 "
+        + "WHERE fad.jurorNumber=?1 "
         + "AND fada.attendanceDate=?2 "
-        + "AND fada.courtLocation.locCode=?3 "
+        + "AND fad.locCode=?3 "
         + "AND fada.appearanceVersion =?4")
     List<FinancialAuditDetails> findAllByAppearance(String jurorNumber, LocalDate attendanceDate,
                                                     String courtLocation, Long appearanceVersion);

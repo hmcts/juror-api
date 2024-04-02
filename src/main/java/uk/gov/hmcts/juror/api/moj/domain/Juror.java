@@ -180,7 +180,7 @@ public class Juror extends Address implements Serializable {
     @NotAudited
     @Column(name = "police_check")
     @Enumerated(EnumType.STRING)
-    private PoliceCheck policeCheck;
+    private PoliceCheck policeCheck = PoliceCheck.NOT_CHECKED;
 
     @NotAudited
     @Length(max = 20)

@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
+import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 
 import java.time.LocalDate;
@@ -67,6 +68,17 @@ public class ApproveExpenseDto extends JurorNumberAndPoolNumberDto {
 
         public boolean isApplicable(Appearance appearance) {
             return isApplicableFunction.apply(appearance);
+        }
+
+        public FinancialAuditDetails.Type toApproveType(boolean isCash) {
+            return switch (this) {
+                case FOR_APPROVAL -> isCash ?
+                    FinancialAuditDetails.Type.APPROVED_CASH :
+                    FinancialAuditDetails.Type.APPROVED_BACS;
+                case FOR_REAPPROVAL -> isCash ?
+                    FinancialAuditDetails.Type.REAPPROVED_CASH :
+                    FinancialAuditDetails.Type.REAPPROVED_BACS;
+            };
         }
     }
 

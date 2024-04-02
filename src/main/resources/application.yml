@@ -64,6 +64,7 @@ spring:
       org:
         hibernate:
           envers:
+            do_not_audit_optimistic_locking_field: false
             audit_table_suffix: _audit
             default_schema: juror_mod
             revision_field_name: revision
