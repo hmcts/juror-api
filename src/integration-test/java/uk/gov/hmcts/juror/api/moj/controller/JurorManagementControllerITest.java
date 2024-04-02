@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAtt
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -1652,6 +1653,50 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 + "before the service start date of the pool");
             assertThat(exceptionDetails.getString("code")).isEqualTo("APPEARANCE_RECORD_BEFORE_SERVICE_START_DATE");
 
+        }
+
+    }
+
+
+    @Nested
+    @DisplayName("Jurors on Trial tests")
+    class JurorsOnTrial {
+
+        @Test
+        @DisplayName("Get Jurors on Trials - happy path")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/JurorsOnTrial.sql"})
+        void jurorsOnTrialHappy() {
+
+            String attendanceDate = now().toString();
+            ResponseEntity<JurorsOnTrialResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
+                    URI.create("/api/v1/moj/juror-management/jurors-on-trial/415?attendanceDate=" + attendanceDate)),
+                    JurorsOnTrialResponseDto.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status OK expected").isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+
+            // verify returned data
+            JurorsOnTrialResponseDto jurorsOnTrialResponseDto = response.getBody();
+            assertThat(jurorsOnTrialResponseDto.getTrialsList().size()).as("Expect 2 records to be returned").isEqualTo(2);
+
+            JurorsOnTrialResponseDto.JurorsOnTrialResponseData first = jurorsOnTrialResponseDto.getTrialsList().get(0);
+            assertThat(first.getTrialNumber()).isEqualTo("T10000000");
+            assertThat(first.getParties()).isEqualTo("test trial");
+            assertThat(first.getTrialType()).isEqualTo("Civil");
+            assertThat(first.getJudge()).isEqualTo("judge dredd");
+            assertThat(first.getCourtroom()).isEqualTo("big room");
+            assertThat(first.getNumberAttended()).isEqualTo(8);
+            assertThat(first.getTotalJurors()).isEqualTo(13);
+
+            JurorsOnTrialResponseDto.JurorsOnTrialResponseData second = jurorsOnTrialResponseDto.getTrialsList().get(1);
+            assertThat(second.getTrialNumber()).isEqualTo("T10000001");
+            assertThat(second.getParties()).isEqualTo("test trial");
+            assertThat(second.getTrialType()).isEqualTo("Civil");
+            assertThat(second.getJudge()).isEqualTo("judge jose");
+            assertThat(second.getCourtroom()).isEqualTo("small room");
+            assertThat(second.getNumberAttended()).isEqualTo(0);
+            assertThat(second.getTotalJurors()).isEqualTo(4);
         }
 
     }

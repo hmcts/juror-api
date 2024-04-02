@@ -1,17 +1,22 @@
 package uk.gov.hmcts.juror.api.moj.repository.trial;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.PathBuilderFactory;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.Querydsl;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+
 
 @SuppressWarnings("PMD.LawOfDemeter")
 public class ITrialRepositoryImpl implements ITrialRepository {
@@ -20,6 +25,7 @@ public class ITrialRepositoryImpl implements ITrialRepository {
     EntityManager entityManager;
 
     private static final QTrial TRIAL = QTrial.trial;
+    private static final QJurorTrial JUROR_TRIAL = QJurorTrial.jurorTrial;
 
     private JPQLQuery<Trial> buildCommonQuery(String trialNumber, List<String> locCode, boolean isActiveFilter) {
         JPQLQuery<Trial> query = new JPAQuery<>(entityManager);
@@ -61,4 +67,22 @@ public class ITrialRepositoryImpl implements ITrialRepository {
         return query.fetchCount();
     }
 
+    @Override
+    public List<Tuple> getActiveTrialsWithJurorCount(String locationCode, LocalDate attendanceDate) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        return queryFactory.select(TRIAL.trialNumber,
+                TRIAL.description,
+                TRIAL.trialType.stringValue(),
+                TRIAL.courtroom.description,
+                TRIAL.judge.name,
+                JUROR_TRIAL.juror.count())
+            .from(TRIAL)
+            .join(JUROR_TRIAL)
+            .on(TRIAL.trialNumber.eq(JUROR_TRIAL.trialNumber))
+            .where(TRIAL.trialEndDate.isNull().and(TRIAL.courtLocation.locCode.eq(locationCode)))
+            .groupBy(TRIAL.trialNumber, TRIAL.description, TRIAL.trialType.stringValue(), TRIAL.courtroom.description,
+                TRIAL.judge.name)
+            .fetch();
+    }
 }

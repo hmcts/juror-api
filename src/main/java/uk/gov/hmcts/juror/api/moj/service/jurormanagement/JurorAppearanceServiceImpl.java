@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAtt
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -29,11 +30,13 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -60,6 +63,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils.unboxOptionalReco
 @Service
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class JurorAppearanceServiceImpl implements JurorAppearanceService {
+    private final TrialRepository trialRepository;
     private final JurorPoolRepository jurorPoolRepository;
     private final AppearanceRepository appearanceRepository;
     private final CourtLocationRepository courtLocationRepository;
@@ -377,7 +381,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             .nonAttendanceDay(Boolean.TRUE)
             .attendanceType(
                 jurorExpenseService.isLongTrialDay(request.getJurorNumber(), request.getPoolNumber(), nonAttendanceDate)
-                    ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL : AttendanceType.NON_ATTENDANCE)
+                    ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL
+                    : AttendanceType.NON_ATTENDANCE)
             .appearanceStage(AppearanceStage.EXPENSE_ENTERED)
             .isDraftExpense(true)
             .createdBy(payload.getLogin())
@@ -388,6 +393,53 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         appearanceRepository.saveAndFlush(appearance);
 
         log.debug("Completed adding a non attendance day for juror " + request.getJurorNumber());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public JurorsOnTrialResponseDto retrieveJurorsOnTrials(String locationCode, LocalDate attendanceDate) {
+
+        String owner = SecurityUtil.getActiveUsersBureauPayload().getOwner();
+
+        // check user has access to the location
+        CourtLocationUtils.validateAccessToCourtLocation(locationCode, owner, courtLocationRepository);
+
+        JurorsOnTrialResponseDto jurorsOnTrialResponseDto = new JurorsOnTrialResponseDto();
+        jurorsOnTrialResponseDto.setTrialsList(new ArrayList<>());
+
+        // run query to retrieve list of trials with juror count
+        List<Tuple> jurorsOnTrialsTuples = trialRepository.getActiveTrialsWithJurorCount(locationCode, attendanceDate);
+
+        // build the response
+        for (Tuple tuple : jurorsOnTrialsTuples) {
+            JurorsOnTrialResponseDto.JurorsOnTrialResponseData jurorsOnTrialData =
+                JurorsOnTrialResponseDto.JurorsOnTrialResponseData.builder()
+                    .trialNumber(tuple.get(0, String.class))
+                    .parties(tuple.get(1, String.class))
+                    .trialType(TrialType.valueOf(tuple.get(2, String.class)).getDescription())
+                    .courtroom(tuple.get(3, String.class))
+                    .judge(tuple.get(4, String.class))
+                    .totalJurors(tuple.get(5, Long.class))
+                    .build();
+
+            jurorsOnTrialResponseDto.getTrialsList().add(jurorsOnTrialData);
+        }
+
+        // run query to retrieve list of trials and number attended
+        List<Tuple> jurorsAttendanceCounts = appearanceRepository.getTrialsWithAttendanceCount(locationCode,
+            attendanceDate);
+
+        // update the response with the number of jurors attended
+        jurorsOnTrialResponseDto.getTrialsList().forEach(jurorsOnTrialData -> {
+            jurorsAttendanceCounts.forEach(tuple -> {
+                if (jurorsOnTrialData.getTrialNumber().equals(tuple.get(0, String.class))) {
+                    jurorsOnTrialData.setNumberAttended(tuple.get(1, Long.class));
+                }
+            });
+        });
+
+        // return the response
+        return jurorsOnTrialResponseDto;
     }
 
     private void checkExistingAttendance(JurorNonAttendanceDto request, LocalDate nonAttendanceDate) {
@@ -937,15 +989,18 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
             .contains(appearance.getAttendanceType())) {
             appearance.setAttendanceType(isLongTrailDay
-                ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL : AttendanceType.NON_ATTENDANCE
+                ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL
+                : AttendanceType.NON_ATTENDANCE
             );
         } else if (appearance.isFullDay()) {
             appearance.setAttendanceType(isLongTrailDay
-                ? AttendanceType.FULL_DAY_LONG_TRIAL : AttendanceType.FULL_DAY
+                ? AttendanceType.FULL_DAY_LONG_TRIAL
+                : AttendanceType.FULL_DAY
             );
         } else {
             appearance.setAttendanceType(isLongTrailDay
-                ? AttendanceType.HALF_DAY_LONG_TRIAL : AttendanceType.HALF_DAY);
+                ? AttendanceType.HALF_DAY_LONG_TRIAL
+                : AttendanceType.HALF_DAY);
         }
     }
 }
