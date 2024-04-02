@@ -66,6 +66,7 @@ import uk.gov.hmcts.juror.api.moj.repository.letter.RequestLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.PostponementLetterListRepository;
 import uk.gov.hmcts.juror.api.moj.repository.letter.court.ShowCauseLetterListRepository;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -6791,6 +6792,27 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getAttendanceDataList()).isNotNull().hasSize(4);
             assertThat(response.getAttendanceDataList().get(0).getNonAttendance()).as("Expected Non Attendance to be "
                 + "false").isEqualTo("false");
+            assertThat(response.getAttendanceDataList().get(0).getChildCare()).isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getAttendanceDataList().get(0).getMisc()).isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getAttendanceDataList().get(0).getLossOfEarnings()).isEqualTo(new BigDecimal("40.00"));
+
+            assertThat(response.getAttendanceDataList().get(1).getNonAttendance()).as("Expected Non Attendance to be "
+                + "false").isEqualTo("false");
+            assertThat(response.getAttendanceDataList().get(1).getChildCare()).isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getAttendanceDataList().get(1).getMisc()).isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getAttendanceDataList().get(1).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
+
+            assertThat(response.getAttendanceDataList().get(2).getNonAttendance()).as("Expected Non Attendance to be "
+                + "false").isEqualTo("false");
+            assertThat(response.getAttendanceDataList().get(2).getChildCare()).isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getAttendanceDataList().get(2).getMisc()).isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getAttendanceDataList().get(2).getLossOfEarnings()).isEqualTo(new BigDecimal("45.00"));
+
+            assertThat(response.getAttendanceDataList().get(3).getNonAttendance()).as("Expected Non Attendance to be "
+                + "false").isEqualTo("false");
+            assertThat(response.getAttendanceDataList().get(3).getChildCare()).isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getAttendanceDataList().get(3).getMisc()).isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getAttendanceDataList().get(3).getLossOfEarnings()).isEqualTo(new BigDecimal("38.00"));
 
 
         }
@@ -6840,9 +6862,31 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(JUROR_NUMBER + jurorPostfix);
 
             assertThat(response.getWelsh()).as("Expect welsh to be true").isTrue();
-            assertThat(response.getAttendanceDataList()).isNotNull().hasSize(1);
+
+            assertThat(response.getAttendanceDataList()).isNotNull().hasSize(4);
             assertThat(response.getAttendanceDataList().get(0).getNonAttendance()).as("Expected Non Attendance to be "
                 + "false").isEqualTo("false");
+            assertThat(response.getAttendanceDataList().get(0).getChildCare()).isEqualTo(new BigDecimal("30.00"));
+            assertThat(response.getAttendanceDataList().get(0).getMisc()).isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getAttendanceDataList().get(0).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
+
+            assertThat(response.getAttendanceDataList().get(1).getNonAttendance()).as("Expected Non Attendance to be "
+                + "false").isEqualTo("false");
+            assertThat(response.getAttendanceDataList().get(1).getChildCare()).isEqualTo(new BigDecimal("30.00"));
+            assertThat(response.getAttendanceDataList().get(1).getMisc()).isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getAttendanceDataList().get(1).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
+
+            assertThat(response.getAttendanceDataList().get(2).getNonAttendance()).as("Expected Non Attendance to be "
+                + "false").isEqualTo("false");
+            assertThat(response.getAttendanceDataList().get(2).getChildCare()).isEqualTo(new BigDecimal("30.00"));
+            assertThat(response.getAttendanceDataList().get(2).getMisc()).isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getAttendanceDataList().get(2).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
+
+            assertThat(response.getAttendanceDataList().get(3).getNonAttendance()).as("Expected Non Attendance to be "
+                + "false").isEqualTo("false");
+            assertThat(response.getAttendanceDataList().get(3).getChildCare()).isEqualTo(new BigDecimal("30.00"));
+            assertThat(response.getAttendanceDataList().get(3).getMisc()).isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getAttendanceDataList().get(3).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
 
         }
 
