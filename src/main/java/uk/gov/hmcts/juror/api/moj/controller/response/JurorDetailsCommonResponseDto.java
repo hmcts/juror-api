@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
-import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
+import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
@@ -103,6 +103,10 @@ public class JurorDetailsCommonResponseDto {
     @Schema(name = "Deferral Code", description = "Code indicating deferral reason selected by the user")
     private String deferralCode;
 
+    @JsonProperty("disqualify_code")
+    @Schema(name = "Disqualification Code", description = "Code indicating disqualification reason")
+    private String disqualifyCode;
+
     @JsonProperty("policeCheck")
     @Schema(name = "Police Check Status")
     private String policeCheck;
@@ -131,7 +135,6 @@ public class JurorDetailsCommonResponseDto {
     @Autowired
     public JurorDetailsCommonResponseDto(JurorPool jurorPool,
                                          JurorStatusRepository jurorStatusRepository,
-                                         ResponseExcusalService responseExcusalService,
                                          PendingJurorRepository pendingJurorRepository) {
         Juror juror = jurorPool.getJuror();
 
@@ -148,6 +151,7 @@ public class JurorDetailsCommonResponseDto {
         this.deferralDate = jurorPool.getDeferralDate();
         this.deferredTo = jurorPool.getDeferralDate() != null ? jurorPool.getDeferralDate() : null;
         this.deferralCode = jurorPool.getDeferralCode();
+        this.disqualifyCode = juror.getDisqualifyCode();
         this.courtName = jurorPool.getCourt().getLocCourtName();
 
         if (this.excusalCode != null) {
@@ -157,6 +161,11 @@ public class JurorDetailsCommonResponseDto {
         if (this.deferralCode != null) {
             // set the excusal description as front end needs it to display the deferral reason
             this.excusalDescription = ExcusalCodeEnum.fromCode(this.deferralCode).getDescription();
+        }
+
+        if (this.disqualifyCode != null) {
+            // set the disqualification description as front end needs it to display the reason
+            this.excusalDescription = DisqualifyCodeEnum.fromCode(this.disqualifyCode).getDescription();
         }
 
         if (jurorPool.getCourt() != null) {

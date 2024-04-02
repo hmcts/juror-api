@@ -128,7 +128,7 @@ public class JurorDetailsResponseDto {
         Juror juror = jurorPool.getJuror();
 
         this.commonDetails = new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
-            responseExcusalService, pendingJurorRepository);
+            pendingJurorRepository);
 
         this.dateOfBirth = juror.getDateOfBirth();
 

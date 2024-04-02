@@ -48,6 +48,6 @@ public class JurorSummonsReplyResponseDto {
                                         ResponseExcusalService responseExcusalService,
                                         PendingJurorRepository pendingJurorRepository) {
         this.commonDetails = new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
-            responseExcusalService, pendingJurorRepository);
+            pendingJurorRepository);
     }
 }
