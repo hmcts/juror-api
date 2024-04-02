@@ -304,8 +304,8 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
 
                 //run query to return appearance list
                 List<Appearance> appearanceList =
-                    appearanceRepository.findAllByJurorNumberAndPoolNumber(data.get(JUROR.jurorNumber),
-                        data.get(JUROR_POOL.pool.poolNumber));
+                    appearanceRepository.findAllByJurorNumberAndPoolNumber(data.get(JUROR_POOL.juror.jurorNumber),
+                        data.get(POOL_REQUEST.poolNumber));
 
                 //from appearance list create attendance data
                 for (Appearance appearance : appearanceList) {
