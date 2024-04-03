@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.controller;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
@@ -302,6 +304,30 @@ class PanelControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(asJsonString(dto)))
                 .andExpect(status().isOk()));
+    }
+
+    @Nested
+    @DisplayName("Add panel members")
+    class AddPanelMembers {
+        @Nested
+        class Positive {
+            @DisplayName("Add panel members - no pool number provided")
+            @Test
+            void addPanelMembersNoPoolNumberProvided() {
+
+            }
+
+            @DisplayName("Add panel members - Pool number provided")
+            @Test
+            void addPanelMembersPoolNumberProvided() {
+
+            }
+        }
+
+        @Nested
+        class Negative {
+
+        }
     }
 
     private EmpanelListDto createEmpaneledJuror() {

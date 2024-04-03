@@ -36,6 +36,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NO_PANEL_EXIST;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_AVAILABLE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_LIMITS;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.TRIAL_HAS_ENDED;
@@ -112,22 +113,31 @@ public class PanelServiceImpl implements PanelService {
                 trialNumber, courtLocationCode), null);
         }
 
-        if (numberRequested <= 0 || numberRequested > MAX_PANEL_MEMBERS) {
-            throw new MojException.BusinessRuleViolation(
-                "Cannot create panel - Number requested must be between 1 and 1000",
-                NUMBER_OF_JURORS_EXCEEDS_LIMITS);
-        }
-
         if (trial.getTrialEndDate() != null) {
             throw new MojException.BusinessRuleViolation(
                 "Cannot add panel members - Trial has ended", TRIAL_HAS_ENDED
             );
         }
+
+        List<Panel> members = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber,
+            courtLocationCode);
+
+        if (members.isEmpty()) {
+            throw new MojException.BusinessRuleViolation(
+                "Cannot add panel members - panel has not been created for trial",
+                NO_PANEL_EXIST);
+        }
+
+        if (numberRequested <= 0 || numberRequested > MAX_PANEL_MEMBERS) {
+            throw new MojException.BusinessRuleViolation(
+                "Cannot add panel members - Number requested must be between 1 and 1000",
+                NUMBER_OF_JURORS_EXCEEDS_LIMITS);
+        }
     }
 
     private List<PanelListDto> processPanelList(int numberRequested, String trialNumber, String courtLocationCode,
-                               BureauJwtPayload payload,
-                           List<JurorPool> appearanceList) {
+                                                BureauJwtPayload payload,
+                                                List<JurorPool> appearanceList) {
 
         if (numberRequested > appearanceList.size()) {
             throw new MojException.BusinessRuleViolation(
@@ -137,9 +147,10 @@ public class PanelServiceImpl implements PanelService {
 
         Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, courtLocationCode);
         List<PanelListDto> panelListDtosList = new ArrayList<>();
-        for (int i = 0; i < numberRequested; i++) {
-            Panel panel = createPanelEntity(appearanceList.get(i), trial.getTrialNumber(),
-                trial.getCourtLocation().getLocCode());
+        for (int i = 0;
+             i < numberRequested;
+             i++) {
+            Panel panel = createPanelEntity(appearanceList.get(i), trial);
             panel.getJurorPool().setLocation(trial.getCourtroom().getRoomNumber());
             if (panel.getJurorPool().getTimesSelected() == null) {
                 panel.getJurorPool().setTimesSelected(1);
@@ -289,8 +300,7 @@ public class PanelServiceImpl implements PanelService {
         return dto;
     }
 
-    private Panel createPanelEntity(JurorPool jurorPool, String trialNumber, String
-        courtLocationCode) {
+    private Panel createPanelEntity(JurorPool jurorPool, Trial trial) {
         //updating juror status
         JurorStatus status = new JurorStatus();
         status.setStatus(IJurorStatus.PANEL);
@@ -302,7 +312,7 @@ public class PanelServiceImpl implements PanelService {
         panel.setJurorPool(jurorPool);
         panel.setDateSelected(LocalDateTime.now());
         panel.setCompleted(false);
-        panel.setTrial(trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, courtLocationCode));
+        panel.setTrial(trial);
         return panel;
     }
 
@@ -334,7 +344,7 @@ public class PanelServiceImpl implements PanelService {
 
         appearanceList = appearanceList.stream().filter(jurorPool ->
             panelRepository.findByTrialTrialNumberAndJurorPoolJurorJurorNumber(trialNumber,
-            jurorPool.getJurorNumber()) == null).collect(Collectors.toCollection(ArrayList::new));
+                jurorPool.getJurorNumber()) == null).collect(Collectors.toCollection(ArrayList::new));
 
         Collections.shuffle(appearanceList);
 
