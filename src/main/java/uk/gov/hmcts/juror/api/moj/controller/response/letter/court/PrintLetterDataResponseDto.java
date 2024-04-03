@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -66,6 +67,7 @@ public class PrintLetterDataResponseDto implements Serializable {
         private BigDecimal lossOfEarnings;
         private BigDecimal childCare;
         private BigDecimal misc;
+        private LocalDate attendanceDate;
     }
 
 }
