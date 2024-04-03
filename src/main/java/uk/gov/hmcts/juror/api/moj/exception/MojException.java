@@ -81,7 +81,8 @@ public class MojException extends RuntimeException {
             NUMBER_OF_JURORS_EXCEEDS_AVAILABLE,
             APPORTION_SMART_CARD_NON_DRAFT_DAYS,
             NUMBER_OF_JURORS_EXCEEDS_LIMITS,
-            CANNOT_REFUSE_FIRST_DEFERRAL
+            CANNOT_REFUSE_FIRST_DEFERRAL,
+            TRIAL_HAS_ENDED
         }
     }
 

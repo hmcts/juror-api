@@ -23,4 +23,9 @@ public interface PanelService {
     List<PanelListDto> getPanelSummary(String trialId, String locCode);
 
     List<PanelListDto> getJurySummary(String trialId, String locCode);
+
+    List<PanelListDto> addPanelMembers(int numberRequested, String trialNumber,
+                                       Optional<List<String>> poolNumbers, String courtLocationCode,
+                                       BureauJwtPayload payload);
+
 }

@@ -59,6 +59,17 @@ public class PanelController {
         return ResponseEntity.ok(dto);
     }
 
+    @PostMapping("/add-panel-members")
+    @Operation(summary = "Add panel members to a existing trial")
+    public ResponseEntity<List<PanelListDto>> addPanelMembers(
+        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
+        @RequestBody CreatePanelDto createPanelDto) {
+        List<PanelListDto> dto = panelService.addPanelMembers(createPanelDto.getNumberRequested(),
+            createPanelDto.getTrialNumber(), createPanelDto.getPoolNumbers(),
+            createPanelDto.getCourtLocationCode(), payload);
+        return ResponseEntity.ok(dto);
+    }
+
     @GetMapping("/request-empanel")
     @Operation(summary = "Retrieves the juror list to be empanelled")
     public ResponseEntity<EmpanelListDto> requestEmpanel(
