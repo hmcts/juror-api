@@ -81,6 +81,7 @@ public class ITrialRepositoryImpl implements ITrialRepository {
             .join(JUROR_TRIAL)
             .on(TRIAL.trialNumber.eq(JUROR_TRIAL.trialNumber))
             .where(TRIAL.trialEndDate.isNull().and(TRIAL.courtLocation.locCode.eq(locationCode)))
+            .where(TRIAL.trialStartDate.loe(attendanceDate))
             .groupBy(TRIAL.trialNumber, TRIAL.description, TRIAL.trialType.stringValue(), TRIAL.courtroom.description,
                 TRIAL.judge.name)
             .fetch();

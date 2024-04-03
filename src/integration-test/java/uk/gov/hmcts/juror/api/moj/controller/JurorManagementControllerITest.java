@@ -1667,10 +1667,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/JurorsOnTrial.sql"})
         void jurorsOnTrialHappy() {
 
-            String attendanceDate = now().toString();
             ResponseEntity<JurorsOnTrialResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
-                    URI.create("/api/v1/moj/juror-management/jurors-on-trial/415?attendanceDate=" + attendanceDate)),
+                        URI.create("/api/v1/moj/juror-management/jurors-on-trial/415?attendanceDate="
+                            + now())),
                     JurorsOnTrialResponseDto.class);
 
             assertThat(response.getStatusCode()).as("HTTP status OK expected").isEqualTo(OK);
@@ -1678,7 +1678,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             // verify returned data
             JurorsOnTrialResponseDto jurorsOnTrialResponseDto = response.getBody();
-            assertThat(jurorsOnTrialResponseDto.getTrialsList().size()).as("Expect 2 records to be returned").isEqualTo(2);
+            assertThat(jurorsOnTrialResponseDto.getTrialsList().size()).as("Expect 2 records to be returned")
+                .isEqualTo(2);
 
             JurorsOnTrialResponseDto.JurorsOnTrialResponseData first = jurorsOnTrialResponseDto.getTrialsList().get(0);
             assertThat(first.getTrialNumber()).isEqualTo("T10000000");
@@ -1697,6 +1698,19 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(second.getCourtroom()).isEqualTo("small room");
             assertThat(second.getNumberAttended()).isEqualTo(0);
             assertThat(second.getTotalJurors()).isEqualTo(4);
+        }
+
+        @Test
+        @DisplayName("Get Jurors on Trials - Bureau User no access")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/JurorsOnTrial.sql"})
+        void jurorsOnTrialBureauUserNoAccess() {
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+            ResponseEntity<JurorsOnTrialResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
+                        URI.create("/api/v1/moj/juror-management/jurors-on-trial/415?attendanceDate=" + now())),
+                    JurorsOnTrialResponseDto.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status Forbidden expected").isEqualTo(FORBIDDEN);
         }
 
     }

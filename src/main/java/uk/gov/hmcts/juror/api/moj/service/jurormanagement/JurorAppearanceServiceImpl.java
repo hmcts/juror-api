@@ -989,18 +989,15 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
             .contains(appearance.getAttendanceType())) {
             appearance.setAttendanceType(isLongTrailDay
-                ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL
-                : AttendanceType.NON_ATTENDANCE
+                ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL : AttendanceType.NON_ATTENDANCE
             );
         } else if (appearance.isFullDay()) {
             appearance.setAttendanceType(isLongTrailDay
-                ? AttendanceType.FULL_DAY_LONG_TRIAL
-                : AttendanceType.FULL_DAY
+                ? AttendanceType.FULL_DAY_LONG_TRIAL : AttendanceType.FULL_DAY
             );
         } else {
             appearance.setAttendanceType(isLongTrailDay
-                ? AttendanceType.HALF_DAY_LONG_TRIAL
-                : AttendanceType.HALF_DAY);
+                ? AttendanceType.HALF_DAY_LONG_TRIAL : AttendanceType.HALF_DAY);
         }
     }
 }
