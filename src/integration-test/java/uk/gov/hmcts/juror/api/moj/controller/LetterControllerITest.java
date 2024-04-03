@@ -6795,7 +6795,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getAttendanceDataList().get(0).getChildCare()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(0).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(0).getLossOfEarnings()).isEqualTo(new BigDecimal("40.00"));
-            assertThat(response.getAttendanceDataList().get(0).getAttendanceDate()).isEqualTo(LocalDate.now().plusDays(10));
+            assertThat(response.getAttendanceDataList().get(0).getAttendanceDate()).isEqualTo(
+                LocalDate.now().plusDays(10));
 
 
             assertThat(response.getAttendanceDataList().get(1).getNonAttendance()).as("Expected Non Attendance to be "
@@ -6803,7 +6804,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getAttendanceDataList().get(1).getChildCare()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(1).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(1).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
-            assertThat(response.getAttendanceDataList().get(1).getAttendanceDate()).isEqualTo(LocalDate.now().plusDays(11));
+            assertThat(response.getAttendanceDataList().get(1).getAttendanceDate()).isEqualTo(
+                LocalDate.now().plusDays(11));
 
 
             assertThat(response.getAttendanceDataList().get(2).getNonAttendance()).as("Expected Non Attendance to be "
@@ -6811,7 +6813,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getAttendanceDataList().get(2).getChildCare()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(2).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(2).getLossOfEarnings()).isEqualTo(new BigDecimal("45.00"));
-            assertThat(response.getAttendanceDataList().get(2).getAttendanceDate()).isEqualTo(LocalDate.now().plusDays(12));
+            assertThat(response.getAttendanceDataList().get(2).getAttendanceDate()).isEqualTo(
+                LocalDate.now().plusDays(12));
 
 
             assertThat(response.getAttendanceDataList().get(3).getNonAttendance()).as("Expected Non Attendance to be "
@@ -6819,7 +6822,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getAttendanceDataList().get(3).getChildCare()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(3).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(3).getLossOfEarnings()).isEqualTo(new BigDecimal("38.00"));
-            assertThat(response.getAttendanceDataList().get(3).getAttendanceDate()).isEqualTo(LocalDate.now().plusDays(13));
+            assertThat(response.getAttendanceDataList().get(3).getAttendanceDate()).isEqualTo(
+                LocalDate.now().plusDays(13));
 
 
         }
@@ -6876,28 +6880,32 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getAttendanceDataList().get(0).getChildCare()).isEqualTo(new BigDecimal("30.00"));
             assertThat(response.getAttendanceDataList().get(0).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(0).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
-            assertThat(response.getAttendanceDataList().get(0).getAttendanceDate()).isEqualTo(LocalDate.now().plusDays(10));
+            assertThat(response.getAttendanceDataList().get(0).getAttendanceDate()).isEqualTo(
+                LocalDate.now().plusDays(10));
 
             assertThat(response.getAttendanceDataList().get(1).getNonAttendance()).as("Expected Non Attendance to be "
                 + "false").isEqualTo("false");
             assertThat(response.getAttendanceDataList().get(1).getChildCare()).isEqualTo(new BigDecimal("30.00"));
             assertThat(response.getAttendanceDataList().get(1).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(1).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
-            assertThat(response.getAttendanceDataList().get(1).getAttendanceDate()).isEqualTo(LocalDate.now().plusDays(11));
+            assertThat(response.getAttendanceDataList().get(1).getAttendanceDate()).isEqualTo(
+                LocalDate.now().plusDays(11));
 
             assertThat(response.getAttendanceDataList().get(2).getNonAttendance()).as("Expected Non Attendance to be "
                 + "false").isEqualTo("false");
             assertThat(response.getAttendanceDataList().get(2).getChildCare()).isEqualTo(new BigDecimal("30.00"));
             assertThat(response.getAttendanceDataList().get(2).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(2).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
-            assertThat(response.getAttendanceDataList().get(2).getAttendanceDate()).isEqualTo(LocalDate.now().plusDays(12));
+            assertThat(response.getAttendanceDataList().get(2).getAttendanceDate()).isEqualTo(
+                LocalDate.now().plusDays(12));
 
             assertThat(response.getAttendanceDataList().get(3).getNonAttendance()).as("Expected Non Attendance to be "
                 + "false").isEqualTo("false");
             assertThat(response.getAttendanceDataList().get(3).getChildCare()).isEqualTo(new BigDecimal("30.00"));
             assertThat(response.getAttendanceDataList().get(3).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(3).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
-            assertThat(response.getAttendanceDataList().get(3).getAttendanceDate()).isEqualTo(LocalDate.now().plusDays(13));
+            assertThat(response.getAttendanceDataList().get(3).getAttendanceDate()).isEqualTo(
+                LocalDate.now().plusDays(13));
 
         }
 
