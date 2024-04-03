@@ -31,6 +31,10 @@ module "postgresql_flexible" {
     {
       name  = "azure.extensions"
       value = "dblink,tablefunc"
+    },
+    {
+      "name" : "backslash_quote",
+      "value" : "on"
     }
   ]
   pgsql_version = "16"
