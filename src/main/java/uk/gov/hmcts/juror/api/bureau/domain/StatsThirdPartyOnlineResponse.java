@@ -22,7 +22,7 @@ import java.util.Date;
 @Data
 @Entity
 @Immutable
-@Table(name = "stats_thirdparty_online", schema = "juror_mod")
+@Table(name = "stats_thirdparty_online", schema = "juror_dashboard")
 @Builder
 public class StatsThirdPartyOnlineResponse implements Serializable {
 
