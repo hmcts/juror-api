@@ -266,6 +266,10 @@ public class JurorPaperResponseDetailDto {
     @Schema(description = "Juror notes")
     private String notes;
 
+    @JsonProperty("current_owner")
+    @Schema(name = "Current Owner", description = "Current owner (3 digit code) of the juror record")
+    private String currentOwner;
+
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
