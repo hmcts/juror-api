@@ -55,6 +55,4 @@ public interface IJurorPoolRepository {
     JPAQuery<Tuple> fetchFilteredPoolMembers(PoolMemberFilterRequestQuery search, String owner);
 
     List<String> fetchThinPoolMembers(String poolNumber, String owner);
-
-    Juror findJurorRecordByJurorNumberAndIsActive(String jurorNumber, Boolean isActive);
 }

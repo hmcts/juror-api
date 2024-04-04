@@ -328,18 +328,6 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
         );
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public Juror findJurorRecordByJurorNumberAndIsActive(String jurorNumber, Boolean isActive) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
-        return queryFactory.selectFrom(JUROR)
-            .where(JUROR.jurorNumber.eq(jurorNumber))
-            .join(JUROR_POOL).on(JUROR_POOL.juror.eq(JUROR))
-            .where(JUROR_POOL.isActive.eq(isActive))
-            .fetchOne();
-    }
-
     private static StringExpression getJurorAttendance() {
         return new CaseBuilder()
             .when(Expressions.asBoolean(JUROR_POOL.onCall.eq(true)))

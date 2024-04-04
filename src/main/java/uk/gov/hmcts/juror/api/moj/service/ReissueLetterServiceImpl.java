@@ -194,7 +194,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
                 // determine form code based on Welsh flag
                 String jurorNumber = datum.get(jurorNumberIndex).toString();
-                Juror juror = jurorPoolRepository.findJurorRecordByJurorNumberAndIsActive(jurorNumber, true);
+                Juror juror = JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, jurorNumber);
 
                 if (Boolean.TRUE.equals(juror.getWelsh())) {
                     newData.add(formCodeIndex, FormCode.BI_SUMMONS_REMINDER.getCode());
