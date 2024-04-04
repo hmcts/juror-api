@@ -27,7 +27,7 @@ import java.io.Serializable;
 public class StatsNotRespondedTotals implements Serializable {
 
     @Id
-    @Column(name = "NOT_RESPONSED_TOTAL")
+    @Column(name = "not_responsed_total")
     private Integer notRespondedTotals;
 
 }

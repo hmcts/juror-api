@@ -38,7 +38,7 @@ public class StatsNotResponded implements Serializable {
     @Column(name = "loc_code")
     private String locCode;
 
-    @Column(name = "non_responded_count")
+    @Column(name = "non_responsed_count")
     private Integer nonResponseCount;
 
 }
