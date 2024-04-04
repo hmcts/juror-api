@@ -152,6 +152,7 @@ public class JurorPaperResponseServiceImplTest {
 
         verifyPaperResponseIsCopiedToDto(jurorPaperResponse, responseDto);
         Assertions.assertThat(responseDto.isWelshCourt()).isFalse();
+        Assertions.assertThat(responseDto.getCurrentOwner()).isEqualTo("400");
     }
 
     @Test
@@ -214,6 +215,7 @@ public class JurorPaperResponseServiceImplTest {
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).findByJurorNumber("987654321");
 
         verifyPaperResponseIsCopiedToDto(jurorPaperResponse, responseDto);
+        Assertions.assertThat(responseDto.getCurrentOwner()).isEqualTo("415");
     }
 
     @Test
