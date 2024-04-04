@@ -835,6 +835,68 @@ class PanelServiceImplTest {
         }
     }
 
+    @Nested
+    @DisplayName("Panel Service - Panel status")
+    class PanelStatus {
+        @Nested
+        class Positive {
+            @DisplayName("Panel status - no panel created")
+            @Test
+            void noPanelCreated() {
+                String trialNumber = "T100000000";
+                String courtLocationCode = "415";
+                Boolean isCreated = panelService.getPanelStatus(trialNumber, courtLocationCode);
+
+                verify(panelRepository, times(1))
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, courtLocationCode);
+                assertThat(isCreated).as("Panel Created?").isFalse();
+            }
+
+            @DisplayName("Panel status - panel created")
+            @Test
+            void panelCreated() {
+                String trialNumber = "T100000000";
+                String courtLocationCode = "415";
+
+                doReturn(createPanelMembers(10)).when(panelRepository)
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000000", "415");
+
+                Boolean isCreated = panelService.getPanelStatus(trialNumber, courtLocationCode);
+
+                verify(panelRepository, times(1))
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, courtLocationCode);
+                assertThat(isCreated).as("Panel Created?").isTrue();
+            }
+        }
+
+        @Nested
+        class Negative {
+            @DisplayName("Panel status - no trial")
+            @Test
+            void noTrial() {
+                String trialNumber = "";
+                String courtLocationCode = "415";
+                Boolean isCreated = panelService.getPanelStatus(trialNumber, courtLocationCode);
+
+                verify(panelRepository, times(1))
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, courtLocationCode);
+                assertThat(isCreated).as("Panel Created?").isFalse();
+            }
+
+            @DisplayName("Panel status - no trial")
+            @Test
+            void noCourtLocationCode() {
+                String trialNumber = "T100000000";
+                String courtLocationCode = "";
+                Boolean isCreated = panelService.getPanelStatus(trialNumber, courtLocationCode);
+
+                verify(panelRepository, times(1))
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, courtLocationCode);
+                assertThat(isCreated).as("Panel Created?").isFalse();
+            }
+        }
+    }
+
     private static JurorListRequestDto createEmpanelledListRequestDto(List<Panel> panelMembers) {
         JurorListRequestDto jurorListRequestDto = new JurorListRequestDto();
         jurorListRequestDto.setJurors(createEmpanelDetailRequestDto(panelMembers));
