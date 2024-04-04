@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolMemberFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
@@ -325,6 +326,18 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             QJurorPool.jurorPool.nextDate,
             QJurorStatus.jurorStatus.statusDesc
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Juror findJurorRecordByJurorNumberAndIsActive(String jurorNumber, Boolean isActive) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        return queryFactory.selectFrom(JUROR)
+            .where(JUROR.jurorNumber.eq(jurorNumber))
+            .join(JUROR_POOL).on(JUROR_POOL.juror.eq(JUROR))
+            .where(JUROR_POOL.isActive.eq(isActive))
+            .fetchOne();
     }
 
     private static StringExpression getJurorAttendance() {
