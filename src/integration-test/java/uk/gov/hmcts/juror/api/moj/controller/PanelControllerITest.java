@@ -32,11 +32,13 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NO_PANEL_EXIST;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_AVAILABLE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_LIMITS;
 
@@ -223,7 +225,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         assert responseEntity.getBody() != null;
 
         assertThat(
-                responseEntity.getBody().getTotalJurorsForEmpanel()).as("Expected total jurors to be 3")
+            responseEntity.getBody().getTotalJurorsForEmpanel()).as("Expected total jurors to be 3")
             .isEqualTo(3);
         assertThat(
             responseEntity.getBody().getEmpanelList().size()
@@ -441,6 +443,299 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         assertThat(responseEntity.getStatusCode())
             .as("Expected status code to be forbidden")
             .isEqualTo(HttpStatus.FORBIDDEN);
+
+
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
+    public void addPanelMembersNoPool() {
+        createBureauJwt("court_user", "415");
+        CreatePanelDto createPanelDto = makeCreatePanelDto(null);
+        RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(createPanelDto, httpHeaders,
+            HttpMethod.POST, URI.create("/api/v1/moj/trial/panel/add-panel-members"));
+
+        ResponseEntity<PanelListDto[]> responseEntity =
+            restTemplate.exchange(requestEntity, PanelListDto[].class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("HTTP status")
+            .isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody())
+            .isNotNull();
+
+        PanelListDto[] panelListDtos = responseEntity.getBody();
+        assertThat(panelListDtos.length).as("Total added members").isEqualTo(13);
+
+        for (PanelListDto dto : responseEntity.getBody()) {
+            assertThat(dto.getJurorStatus())
+                .as("Expect the status to be panelled")
+                .isEqualTo("Panelled");
+            assertThat(dto.getFirstName())
+                .as("Expect first name to be FNAME")
+                .isEqualTo("FNAME");
+            assertThat(dto.getLastName())
+                .as("Expect last name to be LNAME")
+                .isEqualTo("LNAME");
+        }
+
+        assertThat(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(createPanelDto.getTrialNumber()
+            , createPanelDto.getCourtLocationCode()).size()).as("Total members").isEqualTo(26);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
+    public void addPanelMembersPoolProvided() {
+        createBureauJwt("court_user", "415");
+
+        final int numberRequested = 2;
+        CreatePanelDto createPanelDto = makeCreatePanelDto(Collections.singletonList(
+            "415231105"));
+        createPanelDto.setNumberRequested(numberRequested);
+
+        RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<CreatePanelDto>(createPanelDto,
+            httpHeaders,
+            HttpMethod.POST, URI.create("/api/v1/moj/trial/panel/add-panel-members"));
+
+        ResponseEntity<PanelListDto[]> responseEntity =
+            restTemplate.exchange(requestEntity, PanelListDto[].class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("HTTP status")
+            .isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody())
+            .isNotNull();
+
+        PanelListDto[] panelListDtos = responseEntity.getBody();
+        assertThat(panelListDtos.length).as("Total added members").isEqualTo(numberRequested);
+
+        for (PanelListDto dto : responseEntity.getBody()) {
+            assertThat(dto.getJurorStatus())
+                .as("Expect the status to be panelled")
+                .isEqualTo("Panelled");
+            assertThat(dto.getFirstName())
+                .as("Expect first name to be FNAME")
+                .isEqualTo("FNAME");
+            assertThat(dto.getLastName())
+                .as("Expect last name to be LNAME")
+                .isEqualTo("LNAME");
+        }
+
+        assertThat(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(createPanelDto.getTrialNumber()
+            , createPanelDto.getCourtLocationCode()).size()).as("Total members").isEqualTo(15);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
+    public void addPanelMembersBureauUser() {
+        initHeadersBureau();
+
+        final int numberRequested = 2;
+        CreatePanelDto createPanelDto = makeCreatePanelDto(Collections.singletonList(
+            "415231105"));
+        createPanelDto.setNumberRequested(numberRequested);
+
+        RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(createPanelDto,
+            httpHeaders,
+            HttpMethod.POST, URI.create("/api/v1/moj/trial/panel/add-panel-members"));
+
+        ResponseEntity<Void> responseEntity =
+            restTemplate.exchange(requestEntity, Void.class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("HTTP status")
+            .isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
+    public void addPanelMembersNoTrialNumber() {
+        createBureauJwt("court_user", "415");
+        CreatePanelDto createPanelDto = makeCreatePanelDto(null);
+        createPanelDto.setTrialNumber("");
+        RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(createPanelDto, httpHeaders,
+            HttpMethod.POST, URI.create("/api/v1/moj/trial/panel/add-panel-members"));
+
+        ResponseEntity<Void> responseEntity =
+            restTemplate.exchange(requestEntity, Void.class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("HTTP status")
+            .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
+    public void addPanelMembersNoCourtLocation() {
+        createBureauJwt("court_user", "415");
+        CreatePanelDto createPanelDto = makeCreatePanelDto(null);
+        createPanelDto.setCourtLocationCode("");
+        RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(createPanelDto, httpHeaders,
+            HttpMethod.POST, URI.create("/api/v1/moj/trial/panel/add-panel-members"));
+
+        ResponseEntity<Void> responseEntity =
+            restTemplate.exchange(requestEntity, Void.class);
+
+
+        assertThat(responseEntity.getStatusCode())
+            .as("HTTP status")
+            .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
+    public void addPanelMembersZeroNumberRequested() {
+        createBureauJwt("court_user", "415");
+        CreatePanelDto createPanelDto = makeCreatePanelDto(null);
+        createPanelDto.setNumberRequested(0);
+        RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(createPanelDto, httpHeaders,
+            HttpMethod.POST, URI.create("/api/v1/moj/trial/panel/add-panel-members"));
+
+        ResponseEntity<String> responseEntity =
+            restTemplate.exchange(requestEntity, String.class);
+
+        assertBusinessRuleViolation(responseEntity,
+            "Cannot add panel members - Number requested must be between 1 and 1000",
+            NUMBER_OF_JURORS_EXCEEDS_LIMITS);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
+    public void addPanelMembersOverOneThousandNumbersRequested() {
+        createBureauJwt("court_user", "415");
+        CreatePanelDto createPanelDto = makeCreatePanelDto(null);
+        createPanelDto.setNumberRequested(1001);
+        RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(createPanelDto, httpHeaders,
+            HttpMethod.POST, URI.create("/api/v1/moj/trial/panel/add-panel-members"));
+
+        ResponseEntity<String> responseEntity =
+            restTemplate.exchange(requestEntity, String.class);
+
+        assertBusinessRuleViolation(responseEntity,
+            "Cannot add panel members - Number requested must be between 1 and 1000",
+            NUMBER_OF_JURORS_EXCEEDS_LIMITS);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql"})
+    public void addPanelMembersNoPanelCreated() {
+        createBureauJwt("court_user", "415");
+        CreatePanelDto createPanelDto = makeCreatePanelDto(null);
+        createPanelDto.setTrialNumber("T10000002");
+        RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(createPanelDto, httpHeaders,
+            HttpMethod.POST, URI.create("/api/v1/moj/trial/panel/add-panel-members"));
+
+        ResponseEntity<String> responseEntity =
+            restTemplate.exchange(requestEntity, String.class);
+
+        assertBusinessRuleViolation(responseEntity, "Cannot add panel members - panel has not been created for trial"
+            , NO_PANEL_EXIST);
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
+    public void panelCreationStatusPanelExists() {
+        createBureauJwt("court_user", "415");
+        RequestEntity<Void> requestEntity = new RequestEntity<>(
+            httpHeaders,
+            HttpMethod.GET,
+            URI.create("/api/v1/moj/trial/panel/status?trial_number=T10000001&court_location_code=415")
+        );
+
+        ResponseEntity<Boolean> responseEntity = restTemplate.exchange(requestEntity, Boolean.class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("HTTP status")
+            .isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody())
+            .isNotNull();
+        assertThat(responseEntity.getBody())
+            .as("Panel creation flag")
+            .isTrue();
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
+    public void panelCreationStatusPanelDoesNotExists() {
+        createBureauJwt("court_user", "415");
+        RequestEntity<Void> requestEntity = new RequestEntity<>(
+            httpHeaders,
+            HttpMethod.GET,
+            URI.create("/api/v1/moj/trial/panel/status?trial_number=T10000002&court_location_code=415")
+        );
+
+        ResponseEntity<Boolean> responseEntity = restTemplate.exchange(requestEntity, Boolean.class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("HTTP status")
+            .isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody())
+            .isNotNull();
+        assertThat(responseEntity.getBody())
+            .as("Panel creation flag")
+            .isFalse();
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
+    public void panelCreationStatusPanelNoTrialNumberProvided() {
+        createBureauJwt("court_user", "415");
+        RequestEntity<Void> requestEntity = new RequestEntity<>(
+            httpHeaders,
+            HttpMethod.GET,
+            URI.create("/api/v1/moj/trial/panel/status?trial_number=&court_location_code=415")
+        );
+
+        ResponseEntity<Boolean> responseEntity = restTemplate.exchange(requestEntity, Boolean.class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("HTTP status")
+            .isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody())
+            .isNotNull();
+        assertThat(responseEntity.getBody())
+            .as("Panel creation flag")
+            .isFalse();
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
+    public void panelCreationStatusPanelNoCourtLocationCodeProvided() {
+        createBureauJwt("court_user", "415");
+        RequestEntity<Void> requestEntity = new RequestEntity<>(
+            httpHeaders,
+            HttpMethod.GET,
+            URI.create("/api/v1/moj/trial/panel/status?trial_number=T10000002&court_location_code=")
+        );
+
+        ResponseEntity<Boolean> responseEntity = restTemplate.exchange(requestEntity, Boolean.class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("HTTP status")
+            .isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody())
+            .isNotNull();
+        assertThat(responseEntity.getBody())
+            .as("Panel creation flag")
+            .isFalse();
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
+    public void panelCreationStatusBureauUser() {
+        initHeadersBureau();
+
+        RequestEntity<Void> requestEntity = new RequestEntity<>(
+            httpHeaders,
+            HttpMethod.GET,
+            URI.create("/api/v1/moj/trial/panel/status?trial_number=T10000002&court_location_code=415")
+        );
+
+        ResponseEntity<Void> responseEntity = restTemplate.exchange(requestEntity, Void.class);
+
+        assertThat(responseEntity.getStatusCode())
+            .as("HTTP status")
+            .isEqualTo(HttpStatus.FORBIDDEN);
     }
 
 
@@ -464,7 +759,9 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         dto.setNumberRequested(numberRequested);
         List<JurorDetailRequestDto> dtoList = new ArrayList<>();
 
-        for (int i = 0; i < totalJurors; i++) {
+        for (int i = 0;
+             i < totalJurors;
+             i++) {
             JurorDetailRequestDto detailDto = createEmpanelDetailDto(i + 1);
             if (i <= 3) {
                 detailDto.setResult(PanelResult.JUROR);
@@ -484,7 +781,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         JurorDetailRequestDto detailDto = new JurorDetailRequestDto();
         detailDto.setFirstName("FNAME");
         detailDto.setLastName("LNAME");
-        detailDto.setJurorNumber("4150000%02d".formatted(index));
+        detailDto.setJurorNumber("4150000%02d" .formatted(index));
         return detailDto;
     }
 
