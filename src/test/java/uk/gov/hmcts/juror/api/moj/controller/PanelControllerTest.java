@@ -1,13 +1,11 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -33,7 +31,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.EmpanelListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.controller.trial.PanelController;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.trial.PanelService;
 
 import java.time.LocalDate;
@@ -400,7 +397,7 @@ class PanelControllerTest {
                     .isThrownBy(() -> mockMvc.perform(get(BASE_URL + "/status?trial_number=T10000000"
                         + "&court_location_code=415")
                         .principal(mockPrincipal)).andExpect(content().string(
-                            "false")));
+                        "false")));
             }
         }
     }
@@ -436,7 +433,7 @@ class PanelControllerTest {
         return panelListDtos;
     }
 
-    public class  PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
+    public class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
 
         @Override
         public boolean supportsParameter(MethodParameter parameter) {

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.service.trial;
 
-import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.AvailableJurorsDto;

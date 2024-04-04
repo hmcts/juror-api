@@ -479,8 +479,8 @@ public class PanelControllerITest extends AbstractIntegrationTest {
                 .isEqualTo("LNAME");
         }
 
-        assertThat(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(createPanelDto.getTrialNumber()
-            , createPanelDto.getCourtLocationCode()).size()).as("Total members").isEqualTo(26);
+        assertThat(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(createPanelDto.getTrialNumber(),
+            createPanelDto.getCourtLocationCode()).size()).as("Total members").isEqualTo(26);
     }
 
     @Test
@@ -521,8 +521,8 @@ public class PanelControllerITest extends AbstractIntegrationTest {
                 .isEqualTo("LNAME");
         }
 
-        assertThat(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(createPanelDto.getTrialNumber()
-            , createPanelDto.getCourtLocationCode()).size()).as("Total members").isEqualTo(15);
+        assertThat(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(createPanelDto.getTrialNumber(),
+            createPanelDto.getCourtLocationCode()).size()).as("Total members").isEqualTo(15);
     }
 
     @Test
@@ -628,8 +628,8 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         ResponseEntity<String> responseEntity =
             restTemplate.exchange(requestEntity, String.class);
 
-        assertBusinessRuleViolation(responseEntity, "Cannot add panel members - panel has not been created for trial"
-            , NO_PANEL_EXIST);
+        assertBusinessRuleViolation(responseEntity, "Cannot add panel members - panel has not been created for trial",
+            NO_PANEL_EXIST);
     }
 
     @Test
@@ -781,7 +781,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         JurorDetailRequestDto detailDto = new JurorDetailRequestDto();
         detailDto.setFirstName("FNAME");
         detailDto.setLastName("LNAME");
-        detailDto.setJurorNumber("4150000%02d" .formatted(index));
+        detailDto.setJurorNumber("4150000%02d".formatted(index));
         return detailDto;
     }
 
