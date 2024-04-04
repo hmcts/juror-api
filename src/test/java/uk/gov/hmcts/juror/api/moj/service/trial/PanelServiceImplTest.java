@@ -525,8 +525,7 @@ class PanelServiceImplTest {
                 List<PanelListDto> dtoList = panelService.addPanelMembers(2,
                     "T100000025",
                     Optional.empty(),
-                    "415",
-                    buildPayload());
+                    "415");
 
                 verify(trialRepository, times(2))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
@@ -588,8 +587,7 @@ class PanelServiceImplTest {
                 List<PanelListDto> dtoList = panelService.addPanelMembers(2,
                     "T100000025",
                     Optional.of(Collections.singletonList("415231201")),
-                    "415",
-                    buildPayload());
+                    "415");
 
                 verify(trialRepository, times(2))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
@@ -625,8 +623,8 @@ class PanelServiceImplTest {
                     panelService.addPanelMembers(2,
                         "T100000025",
                         Optional.empty(),
-                        "415",
-                        buildPayload());
+                        "415"
+                        );
                 });
                 assertThat(exception.getMessage())
                     .as("Exception message")
@@ -655,8 +653,8 @@ class PanelServiceImplTest {
                         panelService.addPanelMembers(2,
                             "T100000025",
                             Optional.empty(),
-                            "415",
-                            buildPayload());
+                            "415"
+                            );
                     });
                 assertThat(exception.getMessage())
                     .isEqualTo("Cannot add panel members - panel has not been created for trial");
@@ -686,8 +684,8 @@ class PanelServiceImplTest {
                         panelService.addPanelMembers(0,
                             "T100000025",
                             Optional.empty(),
-                            "415",
-                            buildPayload());
+                            "415"
+                            );
                     });
                 assertThat(exception.getMessage())
                     .isEqualTo("Cannot add panel members - Number requested must be between 1 and 1000");
@@ -717,8 +715,8 @@ class PanelServiceImplTest {
                         panelService.addPanelMembers(0,
                             "T100000025",
                             Optional.empty(),
-                            "415",
-                            buildPayload());
+                            "415"
+                            );
                     });
                 assertThat(exception.getMessage())
                     .isEqualTo("Cannot add panel members - Number requested must be between 1 and 1000");
@@ -748,8 +746,8 @@ class PanelServiceImplTest {
                         panelService.addPanelMembers(3,
                             "T100000025",
                             Optional.empty(),
-                            "415",
-                            buildPayload());
+                            "415"
+                            );
                     });
                 assertThat(exception.getMessage())
                     .isEqualTo("Cannot create panel - Not enough jurors available");
@@ -779,8 +777,8 @@ class PanelServiceImplTest {
                         panelService.addPanelMembers(2,
                             "T100000025",
                             Optional.empty(),
-                            "415",
-                            buildPayload());
+                            "415"
+                            );
                     });
                 assertThat(exception.getMessage())
                     .isEqualTo("Cannot add panel members - Trial has ended");
@@ -816,8 +814,8 @@ class PanelServiceImplTest {
                         panelService.addPanelMembers(1,
                             "T100000025",
                             Optional.of(Collections.singletonList("1")),
-                            "415",
-                            buildPayload());
+                            "415"
+                            );
                     });
 
                 assertThat(exception.getMessage()).isEqualTo("Cannot create panel - Not enough jurors available");

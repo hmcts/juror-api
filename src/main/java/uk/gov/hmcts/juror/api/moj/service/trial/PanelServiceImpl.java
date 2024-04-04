@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service.trial;
 import com.querydsl.core.Tuple;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.utils.JurorHistoryUtils;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -78,12 +80,18 @@ public class PanelServiceImpl implements PanelService {
     }
 
     public List<PanelListDto> addPanelMembers(int numberRequested, String trialNumber,
-                                              Optional<List<String>> poolNumbers, String courtLocationCode,
-                                              BureauJwtPayload payload) {
+                                              Optional<List<String>> poolNumbers, String courtLocationCode) {
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         addPanelMembersValidationChecks(numberRequested, trialNumber, courtLocationCode);
         List<JurorPool> appearanceList = buildRandomJurorPoolList(poolNumbers, trialNumber);
         return processPanelList(numberRequested, trialNumber, courtLocationCode, payload, appearanceList);
 
+    }
+
+    @Override
+    public Boolean getPanelStatus(String trialNumber, String courtLocationCode) {
+        return !panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, courtLocationCode)
+            .isEmpty();
     }
 
     private void createPanelValidationChecks(int numberRequested, String trialNumber, String courtLocationCode) {

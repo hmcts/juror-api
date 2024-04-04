@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service.trial;
 
+import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.AvailableJurorsDto;
@@ -25,7 +26,7 @@ public interface PanelService {
     List<PanelListDto> getJurySummary(String trialId, String locCode);
 
     List<PanelListDto> addPanelMembers(int numberRequested, String trialNumber,
-                                       Optional<List<String>> poolNumbers, String courtLocationCode,
-                                       BureauJwtPayload payload);
+                                       Optional<List<String>> poolNumbers, String courtLocationCode);
 
+    Boolean getPanelStatus(String trialNumber, String courtLocationCode);
 }

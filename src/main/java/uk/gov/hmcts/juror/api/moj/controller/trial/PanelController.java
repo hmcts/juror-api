@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,8 +33,9 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/v1/moj/trial/panel", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Panel Management")
-@RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@Validated
 @PreAuthorize(SecurityUtil.COURT_AUTH)
+@RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class PanelController {
 
     @NonNull
@@ -62,11 +64,10 @@ public class PanelController {
     @PostMapping("/add-panel-members")
     @Operation(summary = "Add panel members to a existing trial")
     public ResponseEntity<List<PanelListDto>> addPanelMembers(
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody CreatePanelDto createPanelDto) {
         List<PanelListDto> dto = panelService.addPanelMembers(createPanelDto.getNumberRequested(),
             createPanelDto.getTrialNumber(), createPanelDto.getPoolNumbers(),
-            createPanelDto.getCourtLocationCode(), payload);
+            createPanelDto.getCourtLocationCode());
         return ResponseEntity.ok(dto);
     }
 
@@ -99,4 +100,14 @@ public class PanelController {
         List<PanelListDto> dto = panelService.getPanelSummary(trialNumber, courtLocationCode);
         return ResponseEntity.ok(dto);
     }
+
+    @GetMapping("/status")
+    @Operation(summary = "Gets the panel created status")
+    public ResponseEntity<Boolean> getCreatedPanelStatus(
+        @RequestParam("trial_number") @PathVariable("trialNumber") String trialNumber,
+        @RequestParam("court_location_code") @PathVariable("courtLocationCode") String courtLocationCode) {
+        return ResponseEntity.ok(panelService.getPanelStatus(trialNumber, courtLocationCode));
+    }
 }
+
+
