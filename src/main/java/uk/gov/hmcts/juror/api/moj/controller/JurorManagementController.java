@@ -12,10 +12,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,6 +35,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAtt
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -143,6 +146,17 @@ public class JurorManagementController {
 
         return ResponseEntity.ok(jurorAppearanceService.retrieveJurorsToDismiss(request));
     }
+
+    @GetMapping("/jurors-on-trial/{location-code}")
+    @Operation(description = "Retrieve a list of trials with jury attendance summary and audit reference number")
+    @IsCourtUser
+    public ResponseEntity<JurorsOnTrialResponseDto> retrieveJurorsToDismiss(
+        @P("location-code") @PathVariable("location-code") @CourtLocationCode @Valid String locationCode,
+        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate attendanceDate) {
+
+        return ResponseEntity.ok(jurorAppearanceService.retrieveJurorsOnTrials(locationCode, attendanceDate));
+    }
+
 
     private void validateOwner(BureauJwtPayload payload) {
         if (JUROR_OWNER.equalsIgnoreCase(payload.getOwner())) {

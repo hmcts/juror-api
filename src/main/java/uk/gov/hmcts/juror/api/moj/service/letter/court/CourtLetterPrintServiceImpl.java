@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CertificateOfExemptionRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.PrintLettersRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDataResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.SystemParameterRepositoryMod;
@@ -65,6 +67,9 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
 
     @NonNull
     private final CourtPrintLetterRepository courtPrintLetterRepository;
+
+    @NonNull
+    private final AppearanceRepository appearanceRepository;
 
 
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
@@ -295,13 +300,25 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             case EXCUSAL_GRANTED, WITHDRAWAL -> {
             } // do nothing as no additional fields are required }
             case CERTIFICATE_OF_ATTENDANCE -> {
-                builder.lossOfEarnings(data.get(APPEARANCE.lossOfEarningsDue))
-                    .childCare(data.get(APPEARANCE.childcareDue))
-                    .misc(data.get(APPEARANCE.miscAmountDue));
-                Boolean nonAttendance = data.get(APPEARANCE.nonAttendanceDay);
-                if (nonAttendance == null || nonAttendance.equals(false)) {
-                    builder.nonAttendance("Non Attendance");
+                List<PrintLetterDataResponseDto.AttendanceData> attendanceDataList = new ArrayList<>();
+
+                //run query to return appearance list
+                List<Appearance> appearanceList =
+                    appearanceRepository.findAllByJurorNumberAndPoolNumber(data.get(JUROR_POOL.juror.jurorNumber),
+                        data.get(POOL_REQUEST.poolNumber));
+
+                //from appearance list create attendance data
+                for (Appearance appearance : appearanceList) {
+                    attendanceDataList.add(PrintLetterDataResponseDto.AttendanceData.builder()
+                        .nonAttendance(appearance.getNonAttendanceDay().toString()).misc(appearance.getMiscAmountDue())
+                        .lossOfEarnings(appearance.getLossOfEarningsDue()).childCare(appearance.getChildcareDue())
+                        .attendanceDate(appearance.getAttendanceDate())
+                        .build());
                 }
+
+                //add attendance data list to response dto
+                builder.attendanceDataList(attendanceDataList);
+
             }
             case CERTIFICATE_OF_EXEMPTION -> {
                 CertificateOfExemptionRequestDto exemptionRequestDto = (CertificateOfExemptionRequestDto) dto;

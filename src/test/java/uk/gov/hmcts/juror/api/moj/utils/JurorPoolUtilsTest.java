@@ -136,9 +136,6 @@ public class JurorPoolUtilsTest {
 
     @Test
     public void test_getActiveJurorPoolRecords_noRecords() {
-        JurorPool jurorPoolOne = createJurorPool("111111111", "457");
-        JurorPool jurorPoolTwo = createJurorPool("222222222", "457");
-
         Mockito.doReturn(new ArrayList<JurorPool>()).when(jurorPoolPoolRepository)
             .findByJurorJurorNumberAndIsActive("333333333", true);
 
@@ -149,7 +146,6 @@ public class JurorPoolUtilsTest {
     @Test
     public void test_getActiveJurorRecord_singleRecord() {
         JurorPool jurorPoolOne = createJurorPool("111111111", "457");
-        JurorPool jurorPoolTwo = createJurorPool("222222222", "457");
 
         Mockito.doReturn(Collections.singletonList(jurorPoolOne)).when(jurorPoolPoolRepository)
             .findByJurorJurorNumberAndIsActive("111111111", true);
@@ -160,9 +156,6 @@ public class JurorPoolUtilsTest {
 
     @Test
     public void test_getActiveJurorRecord_noRecords() {
-        JurorPool jurorPoolOne = createJurorPool("111111111", "457");
-        JurorPool jurorPoolTwo = createJurorPool("222222222", "457");
-
         Mockito.doReturn(new ArrayList<JurorPool>()).when(jurorPoolPoolRepository)
             .findByJurorJurorNumberAndIsActive("333333333", true);
 
