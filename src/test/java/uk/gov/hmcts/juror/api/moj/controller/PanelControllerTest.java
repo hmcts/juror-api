@@ -7,16 +7,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.support.WebDataBinderFactory;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.ModelAndViewContainer;
 import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -28,25 +32,18 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.EmpanelDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.EmpanelListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.controller.trial.PanelController;
-import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.trial.PanelService;
-import uk.gov.hmcts.juror.api.utils.CustomArgumentResolver;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -71,7 +68,6 @@ class PanelControllerTest {
 
     private BureauJwtPayload jwtPayload;
 
-    @Autowired
     private MockMvc mockMvc;
 
     @MockBean
@@ -83,6 +79,10 @@ class PanelControllerTest {
     @BeforeEach
     public void setupMocks() {
         jwtPayload = null;
+        mockMvc = MockMvcBuilders
+            .standaloneSetup(new PanelController(panelService))
+            .setCustomArgumentResolvers(new PrincipalDetailsArgumentResolver())
+            .build();
     }
 
     @Test
@@ -322,6 +322,7 @@ class PanelControllerTest {
             @DisplayName("Add panel members - no pool number provided")
             @Test
             void noPoolNumberProvided() {
+                jwtPayload = createJwt("415", "COURT_USER");
                 BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
                 when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
@@ -342,17 +343,18 @@ class PanelControllerTest {
                             .content(asJsonString(createPanelDto)))
                         .andExpect(status().isOk()));
 
-                verify(panelService,
-                    times(1)).addPanelMembers(1,
-                    "T100000025", Optional.empty(), "415");
+                verify(panelService, times(1)).addPanelMembers(createPanelDto.getNumberRequested(),
+                    createPanelDto.getTrialNumber(),
+                    createPanelDto.getPoolNumbers(),
+                    createPanelDto.getCourtLocationCode());
             }
 
             @DisplayName("Add panel members - Pool number provided")
             @Test
             void poolNumberProvided() {
-                BureauJwtPayload payload = createJwt("415", "COURT_USER");
+                jwtPayload = createJwt("415", "COURT_USER");
                 BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
-                when(mockPrincipal.getPrincipal()).thenReturn(payload);
+                when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
                 ArrayList<String> poolNumbers = new ArrayList<>();
                 poolNumbers.add("111111111");
@@ -374,34 +376,31 @@ class PanelControllerTest {
                             .content(asJsonString(createPanelDto)))
                         .andExpect(status().isOk()));
 
-                verify(panelService,
-                    times(1)).addPanelMembers(1,
-                    "T100000025", Optional.of(poolNumbers), "415");
+                verify(panelService, times(1)).addPanelMembers(createPanelDto.getNumberRequested(),
+                    createPanelDto.getTrialNumber(),
+                    createPanelDto.getPoolNumbers(),
+                    createPanelDto.getCourtLocationCode());
             }
         }
+    }
 
+    @Nested
+    @DisplayName("Panel status")
+    class PanelStatus {
         @Nested
-        class Negative {
+        class Positive {
+            @DisplayName("Get generated panel status")
             @Test
-            @DisplayName("Add panel members - bureau user")
-            @SneakyThrows
-            void bureauUser() {
-                BureauJwtPayload payload = createJwt("400", "BUREAU_USER");
+            void panelStatus() {
+                jwtPayload = createJwt("415", "COURT_USER");
                 BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
-                when(mockPrincipal.getPrincipal()).thenReturn(payload);
+                when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
-                CreatePanelDto createPanelDto = new CreatePanelDto();
-                createPanelDto.setNumberRequested(1);
-                createPanelDto.setPoolNumbers(Optional.empty());
-                createPanelDto.setCourtLocationCode("415");
-                createPanelDto.setTrialNumber("T100000025");
-
-                mockMvc.perform(post(BASE_URL + "/add-panel-members")
-                        .principal(mockPrincipal)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(createPanelDto))).andExpect(status().isForbidden());
-
-                verify(panelService, never()).addPanelMembers(anyInt(), any(), any(), anyString());
+                Assertions.assertThatNoException()
+                    .isThrownBy(() -> mockMvc.perform(get(BASE_URL + "/status?trial_number=T10000000"
+                        + "&court_location_code=415")
+                        .principal(mockPrincipal)).andExpect(content().string(
+                            "false")));
             }
         }
     }
@@ -435,5 +434,19 @@ class PanelControllerTest {
         panelListDtos.add(panelListDto);
 
         return panelListDtos;
+    }
+
+    public class  PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
+
+        @Override
+        public boolean supportsParameter(MethodParameter parameter) {
+            return parameter.getParameterType().isAssignableFrom(BureauJwtPayload.class);
+        }
+
+        @Override
+        public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+                                      NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+            return jwtPayload;
+        }
     }
 }

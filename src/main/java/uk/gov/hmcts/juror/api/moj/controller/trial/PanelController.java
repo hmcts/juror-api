@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,13 +19,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.CreatePanelDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.AvailableJurorsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.EmpanelListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.service.trial.PanelService;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.List;
 
@@ -34,7 +33,7 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/moj/trial/panel", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Panel Management")
 @Validated
-@PreAuthorize(SecurityUtil.COURT_AUTH)
+@IsCourtUser
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class PanelController {
 
