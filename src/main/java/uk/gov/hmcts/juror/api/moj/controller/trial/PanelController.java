@@ -101,8 +101,8 @@ public class PanelController {
     }
 
     @GetMapping("/status")
-    @Operation(summary = "Gets the panel created status")
-    public ResponseEntity<Boolean> getCreatedPanelStatus(
+    @Operation(summary = "Gets the panel creation status")
+    public ResponseEntity<Boolean> getPanelCreationStatus(
         @RequestParam("trial_number") @PathVariable("trialNumber") String trialNumber,
         @RequestParam("court_location_code") @PathVariable("courtLocationCode") String courtLocationCode) {
         return ResponseEntity.ok(panelService.getPanelStatus(trialNumber, courtLocationCode));
