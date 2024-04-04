@@ -44,6 +44,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.UpdateAttendanceRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactEnquiryTypeListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
@@ -461,5 +462,13 @@ public class JurorRecordController {
     public ResponseEntity<Void> editJurorsBankDetails(@Valid @RequestBody RequestBankDetailsDto dto) {
         jurorRecordService.editJurorsBankDetails(dto);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PatchMapping("/confirm-identity")
+    @Operation(summary = "Confirm a jurors identity")
+    @ResponseStatus(HttpStatus.OK)
+    @IsCourtUser
+    public void confirmJurorsIdentity(@Valid @RequestBody ConfirmIdentityDto dto) {
+        jurorRecordService.confirmIdentity(dto);
     }
 }

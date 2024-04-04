@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.UpdateAttendanceRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactEnquiryTypeListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
@@ -87,5 +88,5 @@ public interface JurorRecordService {
 
     void editJurorsBankDetails(RequestBankDetailsDto dto);
 
-
+    void confirmIdentity(ConfirmIdentityDto dto);
 }

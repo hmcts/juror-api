@@ -63,5 +63,5 @@ public interface JurorHistoryService {
 
     void createPostponementLetterHistory(JurorPool jurorPool, String otherInfo);
 
-    void createSummonsLetterHistory(JurorPool jurorPool, String otherInfo);
+    void createIdentityConfirmedHistory(JurorPool jurorPool);
 }

@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
@@ -1198,6 +1199,21 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         jurorHistoryService.createEditBankAccountNumberHistory(dto.getJurorNumber());
         jurorHistoryService.createEditBankSortCodeHistory(dto.getJurorNumber());
 
+    }
+
+    @Override
+    @Transactional
+    public void confirmIdentity(ConfirmIdentityDto dto){
+        log.info("Confirming identity for juror {}", dto.getJurorNumber());
+
+        // confirm user has access to the juror record and get jurorPool record
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, dto.getJurorNumber(),
+            SecurityUtil.getActiveOwner());
+
+        jurorPool.setIdChecked(dto.getIdCheckCode().getCode());
+        jurorPoolRepository.save(jurorPool);
+
+        jurorHistoryService.createIdentityConfirmedHistory(jurorPool);
     }
 
     private JurorPool getJurorPool(String jurorNumber, String poolNumber) {
