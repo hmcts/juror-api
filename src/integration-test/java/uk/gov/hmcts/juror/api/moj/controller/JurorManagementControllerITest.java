@@ -45,6 +45,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -1713,5 +1714,39 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as("HTTP status Forbidden expected").isEqualTo(FORBIDDEN);
         }
 
+        @Test
+        @DisplayName("Confirm attendance for jurors on a trial - happy path")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/ConfirmJuryAttendance.sql",
+            "/db/JurorExpenseControllerITest_expenseRates.sql"})
+        void confirmAttendanceHappy() {
+
+            UpdateAttendanceDto request = buildUpdateAttendanceDto();
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create("/api/v1/moj/juror-management/confirm-jury-attendance")), Void.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status OK expected")
+                .isEqualTo(OK);
+
+        }
+
+        private UpdateAttendanceDto buildUpdateAttendanceDto() {
+            UpdateAttendanceDto.CommonData commonData = new UpdateAttendanceDto.CommonData();
+            commonData.setStatus(UpdateAttendanceStatus.CONFIRM_ATTENDANCE);
+            commonData.setAttendanceDate(now().minusDays(2));
+            commonData.setLocationCode("415");
+            commonData.setCheckInTime(LocalTime.of(9, 30));
+            commonData.setCheckOutTime(LocalTime.of(17, 00));
+            commonData.setSingleJuror(Boolean.FALSE);
+
+            UpdateAttendanceDto request = new UpdateAttendanceDto();
+            request.setCommonData(commonData);
+            request.setJuror(Arrays.asList("222222222", "333333333"));
+
+            return request;
+        }
+
     }
+
 }
