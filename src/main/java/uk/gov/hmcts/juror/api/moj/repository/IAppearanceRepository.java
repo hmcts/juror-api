@@ -33,4 +33,6 @@ public interface IAppearanceRepository {
     Integer countJurorExpenseForApproval(String jurorNumber, String poolNumber);
 
     long countPendingApproval(String locCode, boolean isCash);
+
+    List<Tuple> getTrialsWithAttendanceCount(String locationCode, LocalDate attendanceDate);
 }

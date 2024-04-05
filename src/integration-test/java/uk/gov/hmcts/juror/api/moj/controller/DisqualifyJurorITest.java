@@ -77,7 +77,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         DisqualifyReasonsDto disqualifyReasonsDto = templateExchangeDisqualifyReasons(BUREAU_USER, "400",
             HttpStatus.OK);
 
-        assertThat(disqualifyReasonsDto.getDisqualifyReasons().size()).isEqualTo(7);
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().size()).isEqualTo(10);
         assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(0).getCode()).isEqualTo("A");
         assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(0).getDescription()).isEqualTo("Age");
 
@@ -87,20 +87,32 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(2).getCode()).isEqualTo("C");
         assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(2).getDescription()).isEqualTo("Conviction");
 
-        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(3).getCode()).isEqualTo("M");
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(3).getCode()).isEqualTo("D");
         assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(3).getDescription())
+            .isEqualTo("Judicial Disqualification");
+
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(4).getCode()).isEqualTo("E");
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(4).getDescription())
+            .isEqualTo("Electronic Police Check Failure");
+
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(5).getCode()).isEqualTo("J");
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(5).getDescription())
+            .isEqualTo("Involved in Justice Administration or a Member of the Clergy");
+
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(6).getCode()).isEqualTo("M");
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(6).getDescription())
             .isEqualTo("Suffering From a Mental Disorder");
 
-        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(4).getCode()).isEqualTo("N");
-        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(4).getDescription())
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(7).getCode()).isEqualTo("N");
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(7).getDescription())
             .isEqualTo("Mental Capacity Act");
 
-        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(5).getCode()).isEqualTo("O");
-        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(5).getDescription())
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(8).getCode()).isEqualTo("O");
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(8).getDescription())
             .isEqualTo("Mental Health Act");
 
-        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(6).getCode()).isEqualTo("R");
-        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(6).getDescription()).isEqualTo("Residency");
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(9).getCode()).isEqualTo("R");
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(9).getDescription()).isEqualTo("Residency");
     }
 
     //Tests related to controller method: disqualifyJuror()

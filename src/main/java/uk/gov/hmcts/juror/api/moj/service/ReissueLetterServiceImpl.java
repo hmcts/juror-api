@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
@@ -31,6 +32,7 @@ import java.util.function.BiConsumer;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings({"PMD.LawOfDemeter"})
 public class ReissueLetterServiceImpl implements ReissueLetterService {
 
     private final JurorPoolRepository jurorPoolRepository;
@@ -57,8 +59,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         List<List<Object>> data = letters.stream()
             .map(tuple -> letterType.getReissueDataTypes().stream()
                 .map(dataType -> dataType.transform(tuple.get(dataType.getExpression())))
-                .toList()
-            ).toList();
+                .toList()).toList();
         final List<String> headings = letterType.getReissueDataTypes().stream()
             .map(DataType::getDisplayText)
             .toList();
@@ -67,6 +68,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             .toList();
 
         data = setStatusDesc(data, headings);
+        data = setFormCode(data, headings, request);
         return new ReissueLetterListResponseDto(headings, dataTypes, data);
     }
 
@@ -138,6 +140,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
      * @param headings - Letter list headings
      * @return data with status updated to correspond to code.
      */
+    @SuppressWarnings("PMD.LinguisticNaming")
     private List<List<Object>> setStatusDesc(List<List<Object>> data, List<String> headings) {
         int statusIndex = headings.indexOf("Status");
         int reasonIndex = headings.indexOf("Reason");
@@ -158,6 +161,46 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                 && newData.get(reasonIndex).equals("Postponement of service")) {
                 newData.remove(statusIndex);
                 newData.add(statusIndex, "Postponed");
+            }
+            newLetterData.add(newData);
+        }
+        return newLetterData;
+    }
+
+    // If the letter has not been printed previously, the form code will be null (no record in bulk print table),
+    // therefore need to set this value before returning the response
+    @SuppressWarnings("PMD.LinguisticNaming")
+    private List<List<Object>> setFormCode(List<List<Object>> data, List<String> headings,
+                                           ReissueLetterListRequestDto request) {
+
+        // only need to set default form code for SUMMOND_REMINDER letter if the code is missing
+        if (!LetterType.SUMMONED_REMINDER.equals(request.getLetterType())) {
+            return data;
+        }
+
+        // ensure the heading exists before adding the missing form code
+        final int formCodeIndex = headings.indexOf("hidden_form_code");
+        if (formCodeIndex < 0) {
+            return data;
+        }
+
+        final int jurorNumberIndex = headings.indexOf("Juror number");
+        List<List<Object>> newLetterData = new ArrayList<>();
+        for (List<Object> datum : data) {
+            ArrayList<Object> newData = new ArrayList<>(datum);
+
+            if (datum.get(formCodeIndex) == null) {
+                newData.remove(formCodeIndex);
+
+                // determine form code based on Welsh flag
+                String jurorNumber = datum.get(jurorNumberIndex).toString();
+                Juror juror = JurorPoolUtils.getActiveJurorRecord(jurorPoolRepository, jurorNumber);
+
+                if (Boolean.TRUE.equals(juror.getWelsh())) {
+                    newData.add(formCodeIndex, FormCode.BI_SUMMONS_REMINDER.getCode());
+                } else {
+                    newData.add(formCodeIndex, FormCode.ENG_SUMMONS_REMINDER.getCode());
+                }
             }
             newLetterData.add(newData);
         }
@@ -199,11 +242,9 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository,
                 letter.getJurorNumber());
 
-            // Add additional switch-case statements for other letter types
+            // add additional switch-case statements for other letter types
             switch (letter.getFormCode()) {
-                case "5228", "5228C" -> {
-                    jurorHistoryService.createSummonsReminderLetterHistory(jurorPool);
-                }
+                case "5228", "5228C" -> jurorHistoryService.createSummonsReminderLetterHistory(jurorPool);
                 default -> throw new MojException.NotImplemented("Letter type not implemented", null);
             }
         }

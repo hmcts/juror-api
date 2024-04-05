@@ -116,6 +116,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         jurorPaperResponseDetailDto.setJurorNumber(jurorPaperResponse.getJurorNumber());
         jurorPaperResponseDetailDto.setDateReceived(jurorPaperResponse.getDateReceived().toLocalDate());
+        jurorPaperResponseDetailDto.setCurrentOwner(jurorPool.getOwner());
 
         Juror juror = jurorPool.getJuror();
 

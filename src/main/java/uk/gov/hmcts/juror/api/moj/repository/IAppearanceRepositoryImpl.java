@@ -18,7 +18,9 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 
 import java.time.LocalDate;
@@ -39,7 +41,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
     private static final QJuror JUROR = QJuror.juror;
     private static final QAppearance APPEARANCE = QAppearance.appearance;
-
+    private static final QJurorTrial JUROR_TRIAL = QJurorTrial.jurorTrial;
     private static final QCourtLocation COURT_LOCATION = QCourtLocation.courtLocation;
 
     @Override
@@ -257,5 +259,19 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .groupBy(APPEARANCE.poolNumber)
             .groupBy(APPEARANCE.appearanceStage)
             .fetchCount();
+    }
+
+    @Override
+    public List<Tuple> getTrialsWithAttendanceCount(String locationCode, LocalDate attendanceDate) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        return queryFactory.select(JUROR_TRIAL.trialNumber, APPEARANCE.jurorNumber.count())
+            .from(APPEARANCE)
+            .join(JUROR_TRIAL).on(APPEARANCE.jurorNumber.eq(JUROR_TRIAL.juror.jurorNumber))
+            .where(APPEARANCE.attendanceDate.eq(attendanceDate))
+            .where(APPEARANCE.attendanceType.notIn(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE))
+            .where(APPEARANCE.courtLocation.locCode.eq(locationCode))
+            .groupBy(JUROR_TRIAL.trialNumber)
+            .fetch();
     }
 }
