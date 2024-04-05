@@ -38,7 +38,10 @@ public enum IdCheckCodeEnum {
         return code.description;
     }
 
-    public static IdCheckCodeEnum getIdCheckCodeEnum(String code) {
+    public static IdCheckCodeEnum getIdCheckCodeEnum(Character code) {
+        if (code == null) {
+            return null;
+        }
         for (IdCheckCodeEnum idCheckCode : IdCheckCodeEnum.values()) {
             if (idCheckCode.getCode().equals(code)) {
                 return idCheckCode;

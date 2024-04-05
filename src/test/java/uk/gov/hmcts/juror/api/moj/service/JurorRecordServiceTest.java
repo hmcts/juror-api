@@ -3723,11 +3723,11 @@ class JurorRecordServiceTest {
             when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true))
                 .thenReturn(Collections.singletonList(jurorPool));
 
-            MojException.NotFound exception
-                = assertThrows(MojException.NotFound.class, () -> jurorRecordService.confirmIdentity(dto),
-                "Not found");
+            MojException.Forbidden exception
+                = assertThrows(MojException.Forbidden.class, () -> jurorRecordService.confirmIdentity(dto),
+                "Forbidden exception");
 
-            assertEquals("Current user (%s) does not own any Juror "
+            assertEquals("Current user (416) does not own any Juror "
                     + "Pool associations for Juror Number: " + jurorNumber,
                 exception.getMessage(), "Exception message should match");
 
