@@ -56,7 +56,8 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
         query.join(JUROR_POOL).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
 
         if (request.getLetterType().equals(LetterType.SUMMONED_REMINDER)) {
-            // for this letter type need to ensure any letters not printed (don't exist in bulk table) are retrieved
+            // for this letter type need to ensure any letters not printed (i.e. don't exist in bulk table) are
+            // retrieved
             query.leftJoin(BULK_PRINT_DATA).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo)
                 .and(BULK_PRINT_DATA.formAttribute.formType.in(request.getLetterType().getFormCodes().stream()
                     .map(FormCode::getCode).toList())));
@@ -144,6 +145,19 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
             .where(BULK_PRINT_DATA.jurorNo.eq(jurorNumber))
             .where(BULK_PRINT_DATA.formAttribute.formType.eq(formCode))
             .where(BULK_PRINT_DATA.extractedFlag.isNull().or(BULK_PRINT_DATA.extractedFlag.eq(false)));
+
+        return Optional.ofNullable(query.fetchOne());
+    }
+
+    @Override
+    public Optional<BulkPrintData> findByJurorNumberFormCodeAndExtracted(String jurorNumber, String formCode,
+                                                                         Boolean extracted) {
+        JPAQueryFactory queryFactory = getQueryFactory();
+
+        JPAQuery<BulkPrintData> query = queryFactory.selectFrom(BULK_PRINT_DATA)
+            .where(BULK_PRINT_DATA.jurorNo.eq(jurorNumber))
+            .where(BULK_PRINT_DATA.formAttribute.formType.eq(formCode))
+            .where(BULK_PRINT_DATA.extractedFlag.eq(extracted));
 
         return Optional.ofNullable(query.fetchOne());
     }
