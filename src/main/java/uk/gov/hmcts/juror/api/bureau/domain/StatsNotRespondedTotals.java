@@ -21,13 +21,13 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "STATS_NOT_RESPONDED_TOTALS", schema = "JUROR_DIGITAL_USER")
+@Table(name = "stats_not_responded_totals", schema = "juror_dashboard")
 @Immutable
 @Builder
 public class StatsNotRespondedTotals implements Serializable {
 
     @Id
-    @Column(name = "NOT_RESPONSED_TOTAL")
+    @Column(name = "not_responsed_total")
     private Integer notRespondedTotals;
 
 }

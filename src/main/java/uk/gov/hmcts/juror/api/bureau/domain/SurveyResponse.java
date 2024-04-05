@@ -24,7 +24,7 @@ import java.util.Date;
 @Entity
 @Immutable
 @IdClass(SurveyResponseKey.class)
-@Table(name = "SURVEY_RESPONSE", schema = "JUROR_DIGITAL")
+@Table(name = "survey_response", schema = "juror_dashboard")
 @Builder
 public class SurveyResponse implements Serializable {
 

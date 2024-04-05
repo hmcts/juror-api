@@ -20,16 +20,16 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "STATS_RESPONSE_TIMES_TOTALS", schema = "JUROR_DIGITAL_USER")
+@Table(name = "stats_response_times_totals", schema = "juror_dashboard")
 @Immutable
 @Builder
 public class StatsResponseTimesTotals implements Serializable {
 
     @Id
-    @Column(name = "ONLINE_RESPONSES_TOTAL")
+    @Column(name = "online_responses_total")
     private Integer onlineResponsesTotal;
 
-    @Column(name = "ALL_RESPONSES_Total")
+    @Column(name = "all_responses_total")
     private Integer allResponsesTotal;
 
 
