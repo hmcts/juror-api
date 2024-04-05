@@ -63,7 +63,7 @@ public class JurorDashboardCalculateServiceImpl implements JurorDashboardCalcula
     @Override
     public Integer totalNoOfNotResponded(List<StatsNotResponded> notResponded) {
         return notResponded.stream()
-            .mapToInt(StatsNotResponded::getNonResponseCount)
+            .mapToInt(StatsNotResponded::getNotRespondedCount)
             .sum();
     }
 
