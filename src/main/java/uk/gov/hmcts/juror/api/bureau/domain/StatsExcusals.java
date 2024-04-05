@@ -35,7 +35,7 @@ public class StatsExcusals implements Serializable {
 
     @NotNull
     @Id
-    @Column(name = "exec_code")
+    @Column(name = "exc_code")
     private String execCode;
 
     @NotNull
