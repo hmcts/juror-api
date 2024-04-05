@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.bureau.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -359,6 +360,10 @@ public class BureauJurorDetailDto implements Serializable {
     @Schema(description = "List of change logs associated to Juror")
     private List<ChangeLogDto> changeLog;
 
+    @JsonProperty("current_owner")
+    @Schema(name = "Current Owner", description = "Current owner (3 digit code) of the juror record")
+    private String currentOwner;
+
     public BureauJurorDetailDto(final ModJurorDetail jurorDetails) {
         this.jurorNumber = jurorDetails.getJurorNumber();
         this.version = jurorDetails.getVersion();
@@ -442,6 +447,7 @@ public class BureauJurorDetailDto implements Serializable {
         this.superUrgent = jurorDetails.getSuperUrgent();
         this.slaOverdue = jurorDetails.getSlaOverdue();
         this.welsh = jurorDetails.getWelsh();
+        this.currentOwner = jurorDetails.getOwner();
         this.changeLog = jurorDetails.getChangeLogs().stream().map(cl -> {
             final List<ChangeLogItemDto> changeLogItemDtos = cl.getChangeLogItems()
                 .stream()
