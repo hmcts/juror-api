@@ -18,4 +18,7 @@ public interface IReissueLetterRepository {
                                                                  LocalDate datePrinted);
 
     Optional<BulkPrintData> findByJurorNumberFormCodeAndPending(String jurorNumber, String formCode);
+
+    Optional<BulkPrintData> findByJurorNumberFormCodeAndExtracted(String jurorNumber, String formCode,
+                                                                  Boolean extracted);
 }
