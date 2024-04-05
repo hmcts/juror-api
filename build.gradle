@@ -4,7 +4,7 @@ buildscript {
         notifyVersion = '5.0.0-RELEASE'
         springDocVersion = '2.5.0'
         queryDslVersion = '5.1.0'
-        flywayVersion = '10.10.0'
+        flywayVersion = '10.11.0'
         postgresVersion = '42.7.3'
     }
     dependencies {
