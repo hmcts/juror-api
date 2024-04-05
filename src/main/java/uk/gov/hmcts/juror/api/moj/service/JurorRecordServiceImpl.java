@@ -1203,7 +1203,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
-    public void confirmIdentity(ConfirmIdentityDto dto){
+    public void confirmIdentity(ConfirmIdentityDto dto) {
         log.info("Confirming identity for juror {}", dto.getJurorNumber());
 
         // confirm user has access to the juror record and get jurorPool record

@@ -4750,11 +4750,35 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be OK")
                 .isEqualTo(HttpStatus.OK);
+
+            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
+
+            assertThat(jurorPool.getIdChecked()).isEqualTo('C');
+
+        }
+
+        @Test
+        void confirmJurorIdentityBureauNoAccess() throws Exception {
+            final String url = BASE_URL + "/confirm-identity";
+            String jurorNumber = "111111111";
+
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.C)
+                .build();
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
+                    URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be FORBIDDEN")
+                .isEqualTo(HttpStatus.FORBIDDEN);
         }
 
     }
 
-        private void verifyBulkPrintData(String jurorNumber, String formCode) {
+    private void verifyBulkPrintData(String jurorNumber, String formCode) {
         List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
         assertThat(bulkPrintData).hasSize(1);
         assertThat(bulkPrintData.get(0).getFormAttribute().getFormType()).isEqualTo(formCode);

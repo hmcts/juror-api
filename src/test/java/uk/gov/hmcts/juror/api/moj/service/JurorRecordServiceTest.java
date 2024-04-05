@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
+import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
@@ -72,6 +73,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.IdCheckCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
@@ -3669,6 +3671,99 @@ class JurorRecordServiceTest {
             assertThat(exception.getMessage()).isNotNull().isEqualTo(
                 "Unable to find valid juror record for Juror Number: " + JUROR_NUMBER);
             assertThat(exception.getCause()).isNull();
+        }
+    }
+
+
+    @Nested
+    @DisplayName("Confirm juror identity")
+    class ConfirmJurorIdentity {
+
+        @Test
+        void happyPath() {
+            TestUtils.setUpMockAuthentication("415", "CourtUser", "1", List.of("415"));
+            String jurorNumber = "111111111";
+
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.L)
+                .build();
+
+            JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, "415");
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true))
+                .thenReturn(Collections.singletonList(jurorPool));
+            jurorRecordService.confirmIdentity(dto);
+
+            ArgumentCaptor<JurorPool> jurorPoolArgumentCaptor = ArgumentCaptor.forClass(JurorPool.class);
+
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            verify(jurorPoolRepository, times(1))
+                .save(jurorPoolArgumentCaptor.capture());
+
+            JurorPool updatedJurorPool = jurorPoolArgumentCaptor.getValue();
+            assertEquals(IdCheckCodeEnum.L.getCode(), updatedJurorPool.getIdChecked());
+
+            verify(jurorHistoryService, times(1)).createIdentityConfirmedHistory(jurorPool);
+
+        }
+
+        @Test
+        void wrongCourtUser() {
+            TestUtils.setUpMockAuthentication("416", "CourtUser", "1", List.of("416"));
+            String jurorNumber = "111111111";
+
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.L)
+                .build();
+
+            JurorPool jurorPool = createValidJurorPool(jurorNumber, "415");
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true))
+                .thenReturn(Collections.singletonList(jurorPool));
+
+            MojException.NotFound exception
+                = assertThrows(MojException.NotFound.class, () -> jurorRecordService.confirmIdentity(dto),
+                "Not found");
+
+            assertEquals("Current user (%s) does not own any Juror "
+                    + "Pool associations for Juror Number: " + jurorNumber,
+                exception.getMessage(), "Exception message should match");
+
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            verify(jurorPoolRepository, times(0)).save(any(JurorPool.class));
+            verify(jurorHistoryService, times(0)).createIdentityConfirmedHistory(any(JurorPool.class));
+
+        }
+
+
+        @Test
+        void jurorNotFound() {
+            TestUtils.setUpMockAuthentication("416", "CourtUser", "1", List.of("416"));
+            String jurorNumber = "111111111";
+
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.L)
+                .build();
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true))
+                .thenReturn(Collections.emptyList());
+
+            MojException.NotFound exception
+                = assertThrows(MojException.NotFound.class, () -> jurorRecordService.confirmIdentity(dto),
+                "Not found");
+
+            assertEquals("Unable to find any Juror Pool associations for juror number " + jurorNumber,
+                exception.getMessage(), "Exception message should match");
+
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            verify(jurorPoolRepository, times(0)).save(any(JurorPool.class));
+            verify(jurorHistoryService, times(0)).createIdentityConfirmedHistory(any(JurorPool.class));
+
         }
     }
 

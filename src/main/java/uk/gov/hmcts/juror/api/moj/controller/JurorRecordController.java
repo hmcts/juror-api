@@ -31,6 +31,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.config.security.IsSeniorCourtUser;
+import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
@@ -44,7 +45,6 @@ import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.UpdateAttendanceRequestDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactEnquiryTypeListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
