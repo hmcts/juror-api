@@ -39,4 +39,6 @@ public interface JurorAppearanceService {
     void addNonAttendance(JurorNonAttendanceDto request);
 
     JurorsOnTrialResponseDto retrieveJurorsOnTrials(String locationCode, LocalDate attendanceDate);
+
+    void confirmJuryAttendance(UpdateAttendanceDto request);
 }
