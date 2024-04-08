@@ -1729,6 +1729,39 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as("HTTP status OK expected")
                 .isEqualTo(OK);
 
+            // verify attendance records have been updated
+            Optional<Appearance> appearanceOpt =
+                appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate("222222222",
+                    "415230101", now().minusDays(2));
+            assertThat(appearanceOpt).isNotEmpty();
+            Appearance appearance = appearanceOpt.get();
+            assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
+            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
+            assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+
+            appearanceOpt = appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(
+                "333333333", "415230101", now().minusDays(2));
+            assertThat(appearanceOpt).isNotEmpty();
+            appearance = appearanceOpt.get();
+            assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
+            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
+            assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+
+        }
+
+        @Test
+        @DisplayName("Confirm attendance for jurors on a trial - Bureau no access")
+        void confirmAttendanceBureauNoAccess() {
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+            UpdateAttendanceDto request = buildUpdateAttendanceDto();
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create("/api/v1/moj/juror-management/confirm-jury-attendance")), Void.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status Forbidden expected")
+                .isEqualTo(FORBIDDEN);
+
         }
 
         private UpdateAttendanceDto buildUpdateAttendanceDto() {

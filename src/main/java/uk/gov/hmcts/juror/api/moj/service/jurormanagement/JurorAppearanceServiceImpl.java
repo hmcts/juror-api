@@ -448,6 +448,10 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
 
+        CourtLocation courtLocation =
+            courtLocationRepository.findByLocCode(request.getCommonData().getLocationCode())
+                .orElseThrow(() -> new MojException.NotFound("Court location not found", null));
+
         request.getJuror().stream().forEach(jurorNumber -> {
             // validate the juror record exists and user has ownership of the record
             validateJuror(payload.getOwner(), jurorNumber);
@@ -455,10 +459,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             // get the juror appearance record if it exists
             Appearance appearance = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
                 request.getCommonData().getAttendanceDate());
-
-            CourtLocation courtLocation =
-                courtLocationRepository.findByLocCode(request.getCommonData().getLocationCode())
-                    .orElseThrow(() -> new MojException.NotFound("Court location not found", null));
 
             JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber,
                 courtLocation);
