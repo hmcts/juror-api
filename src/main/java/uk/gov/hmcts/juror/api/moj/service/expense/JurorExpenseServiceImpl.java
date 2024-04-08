@@ -42,7 +42,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseR
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApproval;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.SimplifiedExpenseDetailDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.expense.SummaryExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
@@ -63,14 +62,12 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ExpenseRatesRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorExpenseTotalsRepository;
-import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PaymentDataRepository;
 import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
 import uk.gov.hmcts.juror.api.moj.service.FinancialAuditService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
-import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -107,7 +104,6 @@ import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
     "PMD.LawOfDemeter"
 })
 public class JurorExpenseServiceImpl implements JurorExpenseService {
-    private final JurorPoolRepository jurorPoolRepository;
 
     private final JurorExpenseTotalsRepository jurorExpenseTotalsRepository;
     private final AppearanceRepository appearanceRepository;
@@ -699,31 +695,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             throw new MojException.NotFound("Not all dates found", null);
         }
         return result;
-    }
-
-    @Override
-    public SummaryExpenseDetailsDto calculateSummaryTotals(String jurorNumber, String poolNumber) {
-
-        final String owner = SecurityUtil.getActiveOwner();
-
-        // check if the user has access to the juror pool for juror
-        JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,owner );
-
-        List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(jurorNumber,
-            poolNumber);
-
-        if (appearances.isEmpty()) {
-            throw new MojException.NotFound("No appearances found for juror: " + jurorNumber, null);
-        }
-
-        SummaryExpenseDetailsDto summaryExpenseDetailsDto = new SummaryExpenseDetailsDto();
-
-        for (Appearance appearance : appearances) {
-
-            // main core of the logic to calculate the totals
-        }
-
-        return summaryExpenseDetailsDto;
     }
 
     CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(List<Appearance> appearances) {
