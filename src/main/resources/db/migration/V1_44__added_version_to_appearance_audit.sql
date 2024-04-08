@@ -2,6 +2,7 @@ ALTER TABLE juror_mod.appearance_audit
     ADD COLUMN version bigint default 1 not null;
 
 ALTER TABLE juror_mod.juror
+    ALTER COLUMN police_check SET DEFAULT 'NOT_CHECKED',
     ALTER COLUMN police_check SET NOT NULL;
 
 ALTER TABLE juror_mod.financial_audit_details
