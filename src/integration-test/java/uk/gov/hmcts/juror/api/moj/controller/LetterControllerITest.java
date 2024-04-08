@@ -2910,8 +2910,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(() -> Failures.instance()
                     .failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(),
-                    LocalDate.now().plusDays(4), false);
+                verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(), null,false);
 
                 // verify history added
                 List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
@@ -2951,8 +2950,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
                         -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(),
-                    LocalDate.now().plusDays(4), false);
+                verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(), null,false);
 
                 // verify history added
                 updatedJurorHistoryList = jurorHistoryRepository
@@ -2981,8 +2979,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
                         -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(),
-                    LocalDate.now().plusDays(4), false);
+                verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(), null,false);
 
                 // verify history added
                 List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
@@ -3088,8 +3085,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     FormCode.BI_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
                         -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "575", Boolean.FALSE, LocalDate.now(),
-                    LocalDate.now().plusDays(4), true);
+                verifyDataResponse(bulkPrintData, "575", Boolean.FALSE, LocalDate.now(), null,true);
 
                 // verify history added
                 List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
@@ -3116,8 +3112,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     .orElseThrow(() -> Failures.instance().failure("Expected record exist in bulk print data table"));
 
                 verifyDataResponse(bulkPrintData, "576", true,
-                    LocalDate.of(2024, 1, 31),
-                    LocalDate.of(2024, 1, 18), true);
+                    LocalDate.of(2024, 1, 31), LocalDate.of(2024, 1, 18), true);
 
                 // invoke service to reissue letter
                 triggerValidBureau(
@@ -3133,8 +3128,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
                     .orElseThrow(() -> Failures.instance().failure("Expect record to exit in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "576", Boolean.FALSE, LocalDate.now(),
-                    LocalDate.now().plusDays(4), false);
+                verifyDataResponse(bulkPrintData, "576", Boolean.FALSE, LocalDate.now(), null, false);
 
                 // verify history added
                 List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
@@ -3194,8 +3188,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
                             -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(),
-                    LocalDate.now().plusDays(4), false);
+                verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(), null,false);
 
                 // verify history added
                 List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
@@ -3208,17 +3201,16 @@ class LetterControllerITest extends AbstractIntegrationTest {
             private void verifyDataResponse(BulkPrintData bulkPrintData,
                                             String jurorNumberPostfix,
                                             Boolean extractedFlag,
-                                            LocalDate creationDate, LocalDate recDate, Boolean isWelsh) {
+                                            LocalDate creationDate, LocalDate reprintRecDate, Boolean isWelsh) {
                 assertThat(bulkPrintData).isNotNull();
 
                 assertThat(bulkPrintData.isExtractedFlag()).isEqualTo(extractedFlag);
                 assertThat(bulkPrintData.getJurorNo()).isEqualTo("555555" + jurorNumberPostfix);
                 assertThat(bulkPrintData.getCreationDate()).isEqualTo(creationDate);
-                assertThat(bulkPrintData.getDetailRec())
-                    .contains(recDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")).toUpperCase());
                 assertThat(bulkPrintData.isExtractedFlag()).isEqualTo(extractedFlag);
                 assertThat(bulkPrintData.getDigitalComms()).isNull();
 
+                verifyRecDate(bulkPrintData, reprintRecDate);
                 if (isWelsh) {
                     assertThat(bulkPrintData.getFormAttribute().getDirectoryName()).isEqualTo("WEL_NON_RESP");
                     assertThat(bulkPrintData.getFormAttribute().getMaxRecLen()).isEqualTo(691);
@@ -3239,6 +3231,29 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(index.getOtherInformation()).isEqualTo("Reminder letter printed");
                 assertThat(index.getOtherInformationDate()).isNull();
                 assertThat(index.getOtherInformationRef()).isNull();
+            }
+
+            private void verifyRecDate(BulkPrintData bulkPrintData, LocalDate reprintRecDate) {
+                // for new reports (not reprints) the recDate will be based on Calendar day
+                if (reprintRecDate == null) {
+                    Calendar calendar = Calendar.getInstance();
+                    switch (calendar.get(Calendar.DAY_OF_WEEK)) {
+                        case MONDAY, TUESDAY, WEDNESDAY -> assertThat(bulkPrintData.getDetailRec()).contains(
+                            LocalDate
+                                .now()
+                                .plusDays(2)
+                                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy")).toUpperCase());
+                        case THURSDAY, FRIDAY -> assertThat(bulkPrintData.getDetailRec()).contains(
+                            LocalDate
+                                .now()
+                                .plusDays(4)
+                                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy")).toUpperCase());
+                        default -> fail("Unexpected day of the week");
+                    }
+                } else {
+                    assertThat(bulkPrintData.getDetailRec())
+                        .contains(reprintRecDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")).toUpperCase());
+                }
             }
         }
 
@@ -7393,4 +7408,3 @@ class LetterControllerITest extends AbstractIntegrationTest {
         }
     }
 }
-
