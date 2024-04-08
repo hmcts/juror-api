@@ -117,7 +117,7 @@ class JurorAppearanceServiceTest {
         jurorAppearanceService = spy(jurorAppearanceService);
 
         doReturn(null).when(jurorAppearanceService).processAppearance(any(), any(), anyBoolean());
-        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any());
+        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any(), null);
 
         Juror juror = new Juror();
         juror.setJurorNumber(JUROR_123456789);
@@ -145,7 +145,7 @@ class JurorAppearanceServiceTest {
             .findByJurorJurorNumberAndPoolPoolNumber(JUROR_123456789, "123456789");
         verify(jurorAppearanceService, times(1)).processAppearance(payloadArgumentCaptor.capture(),
             appearanceDtoCaptor.capture(), eq(true));
-        verify(jurorAppearanceService, times(1)).updateConfirmAttendance(attendanceDtoCaptor.capture());
+        verify(jurorAppearanceService, times(1)).updateConfirmAttendance(attendanceDtoCaptor.capture(), null);
 
         JurorAppearanceDto appearanceDto = appearanceDtoCaptor.getValue();
 
@@ -171,7 +171,7 @@ class JurorAppearanceServiceTest {
         jurorAppearanceService = spy(jurorAppearanceService);
 
         doReturn(null).when(jurorAppearanceService).processAppearance(any(), any(), anyBoolean());
-        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any());
+        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any(), null);
 
         Juror juror = new Juror();
         juror.setJurorNumber(JUROR_123456789);
@@ -196,7 +196,7 @@ class JurorAppearanceServiceTest {
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndPoolPoolNumber(JUROR_123456789, "123456789");
         verify(jurorAppearanceService, never()).processAppearance(any(), any(), anyBoolean());
-        verify(jurorAppearanceService, never()).updateConfirmAttendance(any());
+        verify(jurorAppearanceService, never()).updateConfirmAttendance(any(), null);
 
     }
 

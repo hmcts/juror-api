@@ -88,7 +88,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         processAppearance(payload, appearanceDto, true);
 
         UpdateAttendanceDto.CommonData commonData = dto.getUpdateAttendanceDtoCommonData();
-        updateConfirmAttendance(commonData);
+        updateConfirmAttendance(commonData, null);
 
     }
 
@@ -208,7 +208,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         // confirm-attendance
         if (status.equals(UpdateAttendanceStatus.CONFIRM_ATTENDANCE)) {
-            return updateConfirmAttendance(commonData);
+            return updateConfirmAttendance(commonData, request.getJuror());
         }
 
         // check-in jurors
@@ -621,7 +621,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         return AttendanceDetailsResponse.builder().details(details).summary(summary).build();
     }
 
-    AttendanceDetailsResponse updateConfirmAttendance(UpdateAttendanceDto.CommonData updateCommonData) {
+    AttendanceDetailsResponse updateConfirmAttendance(UpdateAttendanceDto.CommonData updateCommonData,
+                                                      List<String> jurors) {
         // 1. retrieve details of jurors who attended court for the given attendance date (checked-in)
         RetrieveAttendanceDetailsDto.CommonData retrieveCommonData = new RetrieveAttendanceDetailsDto.CommonData();
         retrieveCommonData.setAttendanceDate(updateCommonData.getAttendanceDate());
@@ -633,6 +634,12 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             .build();
 
         List<Tuple> checkedInJurors = appearanceRepository.retrieveAttendanceDetails(request);
+
+        if (jurors != null) {
+            checkedInJurors = checkedInJurors.stream()
+                .filter(tuple -> jurors.contains(tuple.get(0, String.class)))
+                .toList();
+        }
 
         // 2. checked-in jurors - update and save records
         List<AppearanceId> appearanceIds = new ArrayList<>();
