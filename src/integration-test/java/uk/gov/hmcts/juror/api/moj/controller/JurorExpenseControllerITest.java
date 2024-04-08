@@ -162,9 +162,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         long appearanceVersion) {
         assertThat(financialAuditDetailsAppearance).isNotNull();
         assertThat(financialAuditDetailsAppearance.getFinancialAuditId()).isEqualTo(id);
-        assertThat(financialAuditDetailsAppearance.getJurorNumber()).isEqualTo(ApproveExpenses.JUROR_NUMBER);
+        assertThat(financialAuditDetailsAppearance.getPoolNumber()).isEqualTo(ApproveExpenses.POOL_NUMBER);
         assertThat(financialAuditDetailsAppearance.getAttendanceDate()).isEqualTo(attendanceDate);
-        assertThat(financialAuditDetailsAppearance.getCourtLocation().getLocCode()).isEqualTo("415");
         assertThat(financialAuditDetailsAppearance.getAppearanceVersion()).isEqualTo(appearanceVersion);
     }
 
@@ -2376,6 +2375,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         public static final String URL = BASE_URL + "/approve";
 
         private static final String JUROR_NUMBER = "641500020";
+        private static final String POOL_NUMBER = "415230101";
 
         protected ApproveExpenses() {
 
@@ -2403,7 +2403,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             private long assertFinancialAuditDetailsApproved(FinancialAuditDetails financialAuditDetail,
                                                              LocalDateTime createdOn, boolean isCash) {
                 assertThat(financialAuditDetail.getJurorRevision()).isEqualTo(1L);
+                assertThat(financialAuditDetail.getJurorNumber()).isEqualTo(JUROR_NUMBER);
                 assertThat(financialAuditDetail.getCourtLocationRevision()).isEqualTo(6L);
+                assertThat(financialAuditDetail.getLocCode()).isEqualTo("415");
                 assertThat(financialAuditDetail.getType()).isEqualTo(isCash
                     ? FinancialAuditDetails.Type.APPROVED_CASH
                     : FinancialAuditDetails.Type.APPROVED_BACS);
