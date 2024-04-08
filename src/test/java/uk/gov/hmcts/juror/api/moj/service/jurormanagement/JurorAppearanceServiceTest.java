@@ -63,6 +63,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -117,7 +118,7 @@ class JurorAppearanceServiceTest {
         jurorAppearanceService = spy(jurorAppearanceService);
 
         doReturn(null).when(jurorAppearanceService).processAppearance(any(), any(), anyBoolean());
-        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any(), null);
+        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any(), anyList());
 
         Juror juror = new Juror();
         juror.setJurorNumber(JUROR_123456789);
@@ -145,7 +146,7 @@ class JurorAppearanceServiceTest {
             .findByJurorJurorNumberAndPoolPoolNumber(JUROR_123456789, "123456789");
         verify(jurorAppearanceService, times(1)).processAppearance(payloadArgumentCaptor.capture(),
             appearanceDtoCaptor.capture(), eq(true));
-        verify(jurorAppearanceService, times(1)).updateConfirmAttendance(attendanceDtoCaptor.capture(), null);
+        verify(jurorAppearanceService, times(1)).updateConfirmAttendance(attendanceDtoCaptor.capture(), anyList());
 
         JurorAppearanceDto appearanceDto = appearanceDtoCaptor.getValue();
 
@@ -171,7 +172,7 @@ class JurorAppearanceServiceTest {
         jurorAppearanceService = spy(jurorAppearanceService);
 
         doReturn(null).when(jurorAppearanceService).processAppearance(any(), any(), anyBoolean());
-        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any(), null);
+        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any(), anyList());
 
         Juror juror = new Juror();
         juror.setJurorNumber(JUROR_123456789);
@@ -196,7 +197,7 @@ class JurorAppearanceServiceTest {
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndPoolPoolNumber(JUROR_123456789, "123456789");
         verify(jurorAppearanceService, never()).processAppearance(any(), any(), anyBoolean());
-        verify(jurorAppearanceService, never()).updateConfirmAttendance(any(), null);
+        verify(jurorAppearanceService, never()).updateConfirmAttendance(any(), anyList());
 
     }
 
@@ -1021,7 +1022,7 @@ class JurorAppearanceServiceTest {
         // mock request and dependencies
         LocalTime checkInTime = LocalTime.of(9, 57);
 
-        UpdateAttendanceDto request = buildUpdateAttendanceDto(null);
+        UpdateAttendanceDto request = buildUpdateAttendanceDto(new ArrayList<>());
         request.getCommonData().setStatus(UpdateAttendanceStatus.CONFIRM_ATTENDANCE);
         request.getCommonData().setCheckOutTime(null);
 

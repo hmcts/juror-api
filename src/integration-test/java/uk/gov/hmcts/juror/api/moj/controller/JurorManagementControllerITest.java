@@ -845,7 +845,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql",
             "/db/JurorExpenseControllerITest_expenseRates.sql"})
         void updateAttendanceNoShow() {
-            UpdateAttendanceDto request = buildUpdateAttendanceDto(null);
+            UpdateAttendanceDto request = buildUpdateAttendanceDto(new ArrayList<>());
             request.getCommonData().setCheckInTime(null);
             request.getCommonData().setCheckOutTime(null);
             request.getCommonData().setStatus(UpdateAttendanceStatus.CONFIRM_ATTENDANCE);

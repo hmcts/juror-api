@@ -88,7 +88,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         processAppearance(payload, appearanceDto, true);
 
         UpdateAttendanceDto.CommonData commonData = dto.getUpdateAttendanceDtoCommonData();
-        updateConfirmAttendance(commonData, null);
+        updateConfirmAttendance(commonData, new ArrayList<>());
 
     }
 
@@ -635,7 +635,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         List<Tuple> checkedInJurors = appearanceRepository.retrieveAttendanceDetails(request);
 
-        if (jurors != null) {
+        if (!jurors.isEmpty()) {
             checkedInJurors = checkedInJurors.stream()
                 .filter(tuple -> jurors.contains(tuple.get(0, String.class)))
                 .toList();
