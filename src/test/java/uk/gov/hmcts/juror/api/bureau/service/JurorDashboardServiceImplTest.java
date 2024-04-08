@@ -97,11 +97,11 @@ public class JurorDashboardServiceImplTest {
 
         notRespondedList = new ArrayList<>(Arrays.asList(
             StatsNotResponded.builder().summonsMonth(getDate(today, 1))
-                .locCode("400").nonResponseCount(5).build(),
+                .locCode("400").notRespondedCount(5).build(),
             StatsNotResponded.builder().summonsMonth(getDate(today, 1))
-                .locCode("401").nonResponseCount(10).build(),
+                .locCode("401").notRespondedCount(10).build(),
             StatsNotResponded.builder().summonsMonth(getDate(today, 1))
-                .locCode("402").nonResponseCount(15).build()
+                .locCode("402").notRespondedCount(15).build()
         ));
 
         unprocessedList = new ArrayList<>(Arrays.asList(
