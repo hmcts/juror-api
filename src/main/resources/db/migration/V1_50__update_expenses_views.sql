@@ -67,7 +67,7 @@ AS SELECT jes.juror_number,
     jes.subsistence_due_total AS subsistence_unapproved,
     jes.subsistence_paid_total AS subsistence_approved,
     jes.smart_card_spend_total,
-    jes.public_transport_total_unpaid + hired_vehicle_total_unpaid + jes.motorcycle_total_unpaid + jes.car_total_unpaid + jes.pedal_cycle_total_unpaid + jes.parking_total_unpaid + jes.childcare_total_unpaid + jes.misc_total_unpaid + jes.loss_of_earnings_total_unpaid + jes.subsistence_total_unpaid AS total_unapproved,
+    jes.public_transport_total_unpaid + jes.hired_vehicle_total_unpaid + jes.motorcycle_total_unpaid + jes.car_total_unpaid + jes.pedal_cycle_total_unpaid + jes.parking_total_unpaid + jes.childcare_total_unpaid + jes.misc_total_unpaid + jes.loss_of_earnings_total_unpaid + jes.subsistence_total_unpaid AS total_unapproved,
     jes.public_transport_total_paid_total + jes.hired_vehicle_total_paid_total + jes.motorcycle_total_paid_total + jes.car_total_paid_total + jes.pedal_cycle_total_paid_total + jes.parking_total_paid_total + jes.childcare_total_paid_total + jes.misc_total_paid_total + jes.loss_of_earnings_paid_total + jes.subsistence_paid_total AS total_approved,
     jes.pending_approval_count
    FROM juror_mod.juror_expense_subtotals jes;
