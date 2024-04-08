@@ -2948,7 +2948,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 // verify letter added
                 BulkPrintData bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
                     FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
-                    -> Failures.instance().failure("Expected record to be found in bulk print data table"));
+                        -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
                 verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(), null,false);
 
@@ -2977,7 +2977,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 // verify letter added
                 BulkPrintData bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
                     FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
-                    -> Failures.instance().failure("Expected record to be found in bulk print data table"));
+                        -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
                 verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(), null,false);
 
@@ -3065,7 +3065,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 // verify a previous letter exists - should be english
                 BulkPrintData bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeAndExtracted(jurorNumber,
                     FormCode.ENG_SUMMONS_REMINDER.getCode(), true).orElseThrow(()
-                    -> Failures.instance().failure("Expected record to be found in bulk print data table"));
+                        -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
                 verifyDataResponse(bulkPrintData, "575", true,
                     LocalDate.of(2024, 1, 31),
@@ -3083,7 +3083,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 // verify letter added - should be welsh (welsh flag was updated - juror now wants welsh letters)
                 bulkPrintData = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
                     FormCode.BI_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
-                    -> Failures.instance().failure("Expected record to be found in bulk print data table"));
+                        -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
                 verifyDataResponse(bulkPrintData, "575", Boolean.FALSE, LocalDate.now(), null,true);
 
@@ -3186,7 +3186,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 BulkPrintData bulkPrintData = bulkPrintDataRepository
                     .findByJurorNumberFormCodeDatePrinted("555555561",
                         FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
-                        -> Failures.instance().failure("Expected record to be found in bulk print data table"));
+                            -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
                 verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(), null,false);
 
@@ -3234,8 +3234,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
             }
 
             private void verifyRecDate(BulkPrintData bulkPrintData, LocalDate reprintRecDate) {
-                // for new reports (not reprints) the recDate will be based on Calendar day)
-                if (reprintRecDate == null ) {
+                // for new reports (not reprints) the recDate will be based on Calendar day
+                if (reprintRecDate == null) {
                     Calendar calendar = Calendar.getInstance();
                     switch (calendar.get(Calendar.DAY_OF_WEEK)) {
                         case MONDAY, TUESDAY, WEDNESDAY -> assertThat(bulkPrintData.getDetailRec()).contains(
