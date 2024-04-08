@@ -312,6 +312,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
                     attendanceDataList.add(PrintLetterDataResponseDto.AttendanceData.builder()
                         .nonAttendance(appearance.getNonAttendanceDay().toString()).misc(appearance.getMiscAmountDue())
                         .lossOfEarnings(appearance.getLossOfEarningsDue()).childCare(appearance.getChildcareDue())
+                        .attendanceDate(appearance.getAttendanceDate())
                         .build());
                 }
 

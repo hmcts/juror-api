@@ -41,4 +41,6 @@ public interface IAppearanceRepository {
         String poolNumber,
         LocalDate attendanceDate,
         long appearanceVersion);
+
+    List<Tuple> getTrialsWithAttendanceCount(String locationCode, LocalDate attendanceDate);
 }

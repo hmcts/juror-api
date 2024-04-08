@@ -30,7 +30,6 @@ import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService
 import uk.gov.hmcts.juror.api.utils.CustomArgumentResolver;
 import uk.gov.hmcts.juror.api.utils.CustomArgumentResolverBureau;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -340,7 +339,7 @@ class JurorManagementControllerTest {
 
     AddAttendanceDayDto buildAddAttendanceDayDto() {
         AddAttendanceDayDto dto = new AddAttendanceDayDto();
-        dto.setAttendanceDate(LocalDate.now());
+        dto.setAttendanceDate(now());
         dto.setJurorNumber("123456789");
         dto.setPoolNumber("123456789");
         dto.setLocationCode("415");

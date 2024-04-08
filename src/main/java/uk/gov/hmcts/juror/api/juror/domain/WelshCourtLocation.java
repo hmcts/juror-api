@@ -3,6 +3,8 @@ package uk.gov.hmcts.juror.api.juror.domain;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +13,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Immutable;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * Entity representing standing data for a Welsh court location.
@@ -76,5 +79,18 @@ public class WelshCourtLocation implements Serializable {
      */
     @Column(name = "location_address")
     private String locationAddress;
+
+    @Column(name = "last_update")
+    private LocalDateTime lastUpdate;
+
+    @PrePersist
+    private void prePersist() {
+        preUpdate();
+    }
+
+    @PreUpdate
+    private void preUpdate() {
+        lastUpdate = LocalDateTime.now();
+    }
 
 }

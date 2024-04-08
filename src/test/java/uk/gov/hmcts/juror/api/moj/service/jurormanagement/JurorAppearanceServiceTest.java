@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAtt
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -41,6 +42,7 @@ import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 
 import java.math.BigDecimal;
@@ -91,6 +93,8 @@ class JurorAppearanceServiceTest {
     private CourtLocationRepository courtLocationRepository;
     @Mock
     private JurorExpenseService jurorExpenseService;
+    @Mock
+    private TrialRepository trialRepository;
 
     @InjectMocks
     JurorAppearanceServiceImpl jurorAppearanceService;
@@ -2774,4 +2778,122 @@ class JurorAppearanceServiceTest {
             verify(appearance, never()).setAttendanceType(any());
         }
     }
+
+    @Nested
+    @DisplayName("retrieveJurorsOnTrials")
+    class JurorsOnTrialsTest {
+
+        @Test
+        @DisplayName("Get Jurors On Trials happy path")
+        void getJurorsOnTrialHappy() {
+
+            TestUtils.setupAuthentication("415", "COURT_USER", "1");
+
+            final String locationCode = "415";
+            final LocalDate attendanceDate = now();
+
+            final CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setOwner("415");
+
+            doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(locationCode);
+
+            Tuple t1 = mock(Tuple.class);
+            doReturn("T10000000").when(t1).get(0, String.class);
+            doReturn("test defendants").when(t1).get(1, String.class);
+            doReturn("CIV").when(t1).get(2, String.class);
+            doReturn("Big Court Room").when(t1).get(3, String.class);
+            doReturn("Big Judge").when(t1).get(4, String.class);
+            doReturn(8L).when(t1).get(5, Long.class);
+
+            List<Tuple> jurorsOnTrialTuples = new ArrayList<>();
+            jurorsOnTrialTuples.add(t1);
+
+            when(trialRepository.getActiveTrialsWithJurorCount(locationCode, attendanceDate))
+                .thenReturn(jurorsOnTrialTuples);
+
+            Tuple t2 = mock(Tuple.class);
+            doReturn("T10000000").when(t2).get(0, String.class);
+            doReturn(6L).when(t2).get(1, Long.class);
+
+            List<Tuple> jurorsOnTrialsAttended = new ArrayList<>();
+            jurorsOnTrialsAttended.add(t2);
+
+            when(appearanceRepository.getTrialsWithAttendanceCount(locationCode,
+                attendanceDate)).thenReturn(jurorsOnTrialsAttended);
+
+            JurorsOnTrialResponseDto
+                response = jurorAppearanceService.retrieveJurorsOnTrials(locationCode, attendanceDate);
+
+            assertThat(response.getTrialsList().size()).isEqualTo(1);
+
+            verify(courtLocationRepository, times(1)).findById(locationCode);
+            verify(trialRepository, times(1)).getActiveTrialsWithJurorCount(locationCode, attendanceDate);
+            verify(appearanceRepository, times(1)).getTrialsWithAttendanceCount(locationCode, attendanceDate);
+
+        }
+
+        @Test
+        @DisplayName("Get Jurors On Trials - wrong court")
+        void getJurorsOnTrialWrongCourt() {
+
+            TestUtils.setupAuthentication("415", "COURT_USER", "1");
+
+            final String locationCode = "416";
+            final LocalDate attendanceDate = now();
+
+            final CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setOwner("416");
+
+            doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(locationCode);
+
+            assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+                    jurorAppearanceService.retrieveJurorsOnTrials(locationCode, attendanceDate))
+                .as("User does not have access to court location")
+                .withMessageContaining("Cannot access court details for this location "
+                    + locationCode);
+
+            verify(courtLocationRepository, times(1)).findById(locationCode);
+            verify(trialRepository, times(0)).getActiveTrialsWithJurorCount(locationCode, attendanceDate);
+            verify(appearanceRepository, times(0)).getTrialsWithAttendanceCount(locationCode, attendanceDate);
+
+        }
+
+        @Test
+        @DisplayName("Get Jurors On Trials No Records found")
+        void getJurorsOnTrialNoRecordsFound() {
+
+            TestUtils.setupAuthentication("415", "COURT_USER", "1");
+
+            final String locationCode = "415";
+            final LocalDate attendanceDate = now();
+
+            final CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setOwner("415");
+
+            doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(locationCode);
+
+            List<Tuple> jurorsOnTrialTuples = new ArrayList<>();
+
+            when(trialRepository.getActiveTrialsWithJurorCount(locationCode, attendanceDate))
+                .thenReturn(jurorsOnTrialTuples);
+
+            List<Tuple> jurorsOnTrialsAttended = new ArrayList<>();
+
+            when(appearanceRepository.getTrialsWithAttendanceCount(locationCode,
+                attendanceDate)).thenReturn(jurorsOnTrialsAttended);
+
+            JurorsOnTrialResponseDto
+                response = jurorAppearanceService.retrieveJurorsOnTrials(locationCode, attendanceDate);
+
+            assertThat(response.getTrialsList().size()).isEqualTo(0);
+
+            verify(courtLocationRepository, times(1)).findById(locationCode);
+            verify(trialRepository, times(1)).getActiveTrialsWithJurorCount(locationCode, attendanceDate);
+            verify(appearanceRepository, times(1)).getTrialsWithAttendanceCount(locationCode, attendanceDate);
+
+        }
+
+
+    }
+
 }
