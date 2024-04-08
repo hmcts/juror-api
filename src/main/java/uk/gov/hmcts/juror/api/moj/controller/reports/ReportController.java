@@ -36,7 +36,7 @@ public class ReportController {
     private final FinancialAuditReportService financialAuditReportService;
 
     @PostMapping("/standard")
-    @Operation(summary = "View a give report")
+    @Operation(summary = "View a given report")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<AbstractReportResponse<?>> viewReportStandard(
         @RequestBody
@@ -46,7 +46,7 @@ public class ReportController {
     }
 
     @GetMapping("/financial-audit")
-    @Operation(summary = "View a give report")
+    @Operation(summary = "View a given report")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<FinancialAuditReportResponse> viewFinancialAuditReport(
         @RequestParam(name = "audit-number")
