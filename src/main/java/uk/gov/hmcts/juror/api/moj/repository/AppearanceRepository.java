@@ -48,4 +48,5 @@ public interface AppearanceRepository extends
 
     List<Appearance> findAllByJurorNumberAndPoolNumberAndAttendanceDateIn(String jurorNumber, String poolNumber,
                                                                           List<LocalDate> dates);
+
 }
