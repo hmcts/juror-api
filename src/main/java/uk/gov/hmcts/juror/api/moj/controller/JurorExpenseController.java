@@ -280,14 +280,14 @@ public class JurorExpenseController {
             fromInclusive, toInclusive));
     }
 
-    @GetMapping("/summary/totals/{juror_number}/{pool_number}")
+    @GetMapping("/summary/totals/{juror-number}/{pool-number}")
     @Operation(summary = "Summarise the total expenses for a juror in draft, for approval and approved "
-        + "at a given location")
+        + "in a given pool.")
     @ResponseStatus(HttpStatus.OK)
     @IsCourtUser
     public ResponseEntity<SummaryExpenseDetailsDto> calculateSummaryTotals(
-        @P("pool_number") @PathVariable("pool_number") @Valid @NotBlank @CourtLocationCode String pool_number,
-        @PathVariable("juror_number") @Valid @NotBlank @JurorNumber String jurorNumber) {
-        return ResponseEntity.ok(jurorExpenseService.calculateSummaryTotals(jurorNumber, pool_number));
+        @P("pool-number") @PathVariable("pool-number") @Valid @NotBlank @PoolNumber String poolNumber,
+        @P("juror-number") @PathVariable("juror-number") @Valid @NotBlank @JurorNumber String jurorNumber) {
+        return ResponseEntity.ok(jurorExpenseService.calculateSummaryTotals(jurorNumber, poolNumber));
     }
 }

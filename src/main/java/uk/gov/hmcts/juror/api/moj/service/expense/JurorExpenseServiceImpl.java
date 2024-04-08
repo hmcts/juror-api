@@ -702,12 +702,13 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SummaryExpenseDetailsDto calculateSummaryTotals(String jurorNumber, String poolNumber) {
 
         final String owner = SecurityUtil.getActiveOwner();
 
         // check if the user has access to the juror pool for juror
-        JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,owner );
+        JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,owner);
 
         List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(jurorNumber,
             poolNumber);
@@ -726,6 +727,17 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         return summaryExpenseDetailsDto;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public CombinedExpenseDetailsDto<ExpenseDetailsDto> getDraftExpenses(String jurorNumber, String poolNumber) {
+        return getExpenses(
+            appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(jurorNumber, poolNumber)
+                .stream()
+                .filter(appearance -> AppearanceStage.EXPENSE_ENTERED.equals(appearance.getAppearanceStage()))
+                .sorted(Comparator.comparing(Appearance::getAttendanceDate))
+                .toList());
+    }
+
     CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(List<Appearance> appearances) {
         if (appearances.isEmpty()) {
             return new CombinedExpenseDetailsDto<>();
@@ -738,17 +750,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         appearances.forEach(
             appearance -> combinedExpenseDetailsDto.addExpenseDetail(mapAppearanceToExpenseDetailsDto(appearance)));
         return combinedExpenseDetailsDto;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public CombinedExpenseDetailsDto<ExpenseDetailsDto> getDraftExpenses(String jurorNumber, String poolNumber) {
-        return getExpenses(
-            appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(jurorNumber, poolNumber)
-                .stream()
-                .filter(appearance -> AppearanceStage.EXPENSE_ENTERED.equals(appearance.getAppearanceStage()))
-                .sorted(Comparator.comparing(Appearance::getAttendanceDate))
-                .toList());
     }
 
     @Override
