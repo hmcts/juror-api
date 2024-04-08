@@ -2899,11 +2899,11 @@ class JurorAppearanceServiceTest {
         @DisplayName("Confirm Juror attendance happy path")
         void confirmAttendanceHappy() {
 
-            TestUtils.setupAuthentication("416", "COURT_USER", "1");
-            final String locationCode = "416";
+            TestUtils.setupAuthentication("415", "COURT_USER", "1");
+            final String locationCode = "415";
 
             final CourtLocation courtLocation = new CourtLocation();
-            courtLocation.setOwner("416");
+            courtLocation.setOwner("415");
             courtLocation.setLocCode(locationCode);
 
             doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findByLocCode(locationCode);
@@ -2913,11 +2913,11 @@ class JurorAppearanceServiceTest {
 
             final PoolRequest poolRequest = new PoolRequest();
             poolRequest.setPoolNumber("987654321");
-            poolRequest.setOwner("416");
+            poolRequest.setOwner("415");
 
             final JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
             jurorPool.setPool(poolRequest);
-            jurorPool.setOwner("416");
+            jurorPool.setOwner("415");
 
             doReturn(jurorPool).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(
                     JUROR_123456789, true, courtLocation);

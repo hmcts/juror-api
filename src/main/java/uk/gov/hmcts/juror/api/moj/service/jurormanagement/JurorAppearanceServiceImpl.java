@@ -446,7 +446,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     public void confirmJuryAttendance(UpdateAttendanceDto request) {
         log.info("Confirming jury attendance for jurors on trial");
 
-        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        final String owner = SecurityUtil.getActiveOwner();
 
         CourtLocation courtLocation =
             courtLocationRepository.findByLocCode(request.getCommonData().getLocationCode())
@@ -454,7 +454,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         request.getJuror().stream().forEach(jurorNumber -> {
             // validate the juror record exists and user has ownership of the record
-            validateJuror(payload.getOwner(), jurorNumber);
+            validateJuror(owner, jurorNumber);
 
             // get the juror appearance record if it exists
             Appearance appearance = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
