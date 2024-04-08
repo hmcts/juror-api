@@ -1,17 +1,21 @@
 package uk.gov.hmcts.juror.api.moj.controller.reports.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.validation.PoolNumber;
+import uk.gov.hmcts.juror.api.validation.TrialNumber;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
@@ -33,6 +37,7 @@ public class StandardReportRequest {
         "NonRespondedReport",
         "PostponedListByPoolReport",
         "UndeliverableListReport",
+        "PanelSummaryReport",
         //Grouped
         "PostponedListByDateReport"
     })
@@ -41,6 +46,10 @@ public class StandardReportRequest {
     @PoolNumber(groups = AbstractReport.Validators.RequirePoolNumber.class)
     @NotNull(groups = AbstractReport.Validators.RequirePoolNumber.class)
     private String poolNumber;
+
+    @NotBlank(groups = AbstractReport.Validators.RequireTrialNumber.class)
+    @Length(max = 16, groups = AbstractReport.Validators.RequireTrialNumber.class)
+    private String trialNumber;
 
     @NotNull(groups = AbstractReport.Validators.RequireFromDate.class)
     @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)

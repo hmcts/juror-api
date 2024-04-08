@@ -17,9 +17,12 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -65,6 +68,11 @@ public abstract class AbstractReport<T> {
             QJurorPool.jurorPool, new Predicate[]{
                 QJurorPool.jurorPool.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber),
                 QJurorPool.jurorPool.pool.poolNumber.eq(QAppearance.appearance.poolNumber)
+            }
+        ));
+        CLASS_TO_JOIN.put(QJurorTrial.jurorTrial, Map.of(
+            QJuror.juror, new Predicate[]{
+                QJurorTrial.jurorTrial.juror.eq(QJuror.juror)
             }
         ));
     }
@@ -314,6 +322,41 @@ public abstract class AbstractReport<T> {
         ));
     }
 
+    public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadTrialHeaders(
+        StandardReportRequest request, TrialRepository trialRepository) {
+
+        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(request.getTrialNumber(),
+            SecurityUtil.getActiveOwner());
+        return new ConcurrentHashMap<>(Map.of(
+            "trial_number", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Trial Number")
+                .dataType(String.class.getSimpleName())
+                .value(request.getTrialNumber())
+                .build(),
+            "names", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Names")
+                .dataType(String.class.getSimpleName())
+                .value(trial.getDescription())
+                .build(),
+            "court_room", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Court Room")
+                .dataType(String.class.getSimpleName())
+                .value(trial.getCourtLocation().getAssemblyRoom())
+                .build(),
+            "judge", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Judge")
+                .dataType(String.class.getSimpleName())
+                .value(trial.getJudge())
+                .build(),
+            "court_name", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Court Name")
+                .dataType(String.class.getSimpleName())
+                .value(
+                    trial.getCourtLocation().getName() + " (" + trial.getCourtLocation().getLocCode() + ")")
+                .build()
+        ));
+    }
+
     PoolRequest getPoolRequest(String poolNumber) {
         Optional<PoolRequest> poolRequest = poolRequestRepository.findByPoolNumber(poolNumber);
         if (poolRequest.isEmpty()) {
@@ -341,6 +384,9 @@ public abstract class AbstractReport<T> {
         }
 
         public interface RequirePoolNumber {
+
+        }
+        public interface RequireTrialNumber {
 
         }
 

@@ -23,9 +23,13 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -71,6 +75,7 @@ import static org.mockito.Mockito.withSettings;
 class AbstractReportTest {
 
     private PoolRequestRepository poolRequestRepository;
+    private TrialRepository trialRepository;
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     @BeforeEach
@@ -915,7 +920,59 @@ class AbstractReportTest {
     }
 
 
-    @Test
+    @Nested
+    @DisplayName("HashMap<String, AbstractReportResponse.DataTypeValue> loadStandardPoolHeaders("
+        + "        StandardReportRequest request)")
+    class LoadTrialHeaders {
+        @Test
+        void positiveTypical() {
+            Trial trial = mock(Trial.class);
+
+           doReturn(trial).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(any(), any());
+
+           AbstractReport<Object> report = createTrialReport();
+
+            StandardReportRequest request = mock(StandardReportRequest.class);
+
+            assertThat(report.loadTrialHeaders(request, ))
+                .isEqualTo(Map.of(
+                    "pool_number",
+                    AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Pool Number")
+                        .dataType(String.class.getSimpleName())
+                        .value(TestConstants.VALID_POOL_NUMBER)
+                        .build(),
+                    "pool_type", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Pool Type")
+                        .dataType(String.class.getSimpleName())
+                        .value("Pool Type desc")
+                        .build(),
+                    "service_start_date", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Service Start Date")
+                        .dataType(LocalDate.class.getSimpleName())
+                        .value("2023-02-01")
+                        .build(),
+                    "court_name", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Court Name")
+                        .dataType(String.class.getSimpleName())
+                        .value("Court Name (LOC)")
+                        .build()
+
+                ));
+
+            verify(request, times(2)).getPoolNumber();
+            verify(poolRequest, times(1)).getPoolType();
+            verify(poolType, times(1)).getDescription();
+            verify(poolRequest, times(1)).getReturnDate();
+            verify(courtLocation, times(1)).getName();
+            verify(courtLocation, times(1)).getLocCode();
+            verify(poolRequest, times(2)).getCourtLocation();
+            verify(report, never()).checkOwnership(any(), anyBoolean());
+            verifyNoMoreInteractions(poolRequest, poolType, courtLocation, request);
+        }
+
+    }
+        @Test
     void positiveAddAuthenticationConsumer() {
         Consumer<StandardReportRequest> consumer = mock(Consumer.class);
         AbstractReport<Object> report = createReport();
@@ -1015,6 +1072,11 @@ class AbstractReportTest {
     private AbstractReport<Object> createReport() {
         return createReport(QJuror.juror, DataType.JUROR_NUMBER);
     }
+
+    private AbstractReport<Object> createTrialReport() {
+        return createReport(QJurorTrial.jurorTrial, DataType.JUROR_NUMBER);
+    }
+
 
     private static class AbstractReportTestImpl extends AbstractReport<Object> {
 
