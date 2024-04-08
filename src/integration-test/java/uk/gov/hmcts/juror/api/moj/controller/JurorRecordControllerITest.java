@@ -2506,8 +2506,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .as("Expect the HTTP GET request to be successful")
             .isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getCommonDetails().getPoliceCheck()).as("Expected police check: 'Not Checked - "
-            + "There was a problem'").isEqualTo("Not Checked - There was a problem");
+        assertThat(response.getBody().getCommonDetails().getPoliceCheck()).as("Police check status").isEqualTo(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED);
     }
 
     @ParameterizedTest
@@ -2528,7 +2527,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck())
             .as("Expected police check: 'In Progress'")
-            .isEqualTo("In Progress");
+            .isEqualTo(PoliceCheck.IN_PROGRESS);
     }
 
     @Test
@@ -2543,7 +2542,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getCommonDetails().getPoliceCheck()).as("Expected police check: 'Passed'")
-            .isEqualTo("Passed");
+            .isEqualTo(PoliceCheck.ELIGIBLE);
     }
 
     @Test
@@ -2561,7 +2560,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(jurorOverviewResponseDto).isNotNull();
 
         assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Expected police check: 'Failed'")
-            .isEqualTo("Failed");
+            .isEqualTo(PoliceCheck.INELIGIBLE);
     }
 
     @Test

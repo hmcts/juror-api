@@ -1486,7 +1486,7 @@ class JurorRecordServiceTest {
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
         assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Excepted status to be 'Not "
-            + "Checked'").isEqualTo("Not Checked");
+            + "Checked'").isEqualTo(policeCheck);
     }
 
     @Test
