@@ -22,6 +22,8 @@ public class SummaryExpenseDetailsDto {
 
     BigDecimal totalApproved;
 
+    BigDecimal totalSmartCard;
+
     public void addToTotalDraft(BigDecimal totalDraft) {
         this.totalDraft = this.totalDraft.add(totalDraft);
     }
@@ -32,5 +34,9 @@ public class SummaryExpenseDetailsDto {
 
     public void addToTotalApproved(BigDecimal totalApproved) {
         this.totalApproved = this.totalApproved.add(totalApproved);
+    }
+
+    public void addToTotalSmartCard(BigDecimal totalSmartCard) {
+        this.totalSmartCard = this.totalSmartCard.add(totalSmartCard);
     }
 }
