@@ -157,6 +157,14 @@ public class JurorManagementController {
         return ResponseEntity.ok(jurorAppearanceService.retrieveJurorsOnTrials(locationCode, attendanceDate));
     }
 
+    @PatchMapping("/confirm-jury-attendance")
+    @Operation(description = "Confirm attendance for jurors who are on a trial")
+    @IsCourtUser
+    @ResponseStatus(HttpStatus.OK)
+    public void confirmJuryAttendance(
+        @RequestBody @Valid UpdateAttendanceDto request) {
+        jurorAppearanceService.confirmJuryAttendance(request);
+    }
 
     private void validateOwner(BureauJwtPayload payload) {
         if (JUROR_OWNER.equalsIgnoreCase(payload.getOwner())) {

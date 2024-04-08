@@ -442,6 +442,61 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         return jurorsOnTrialResponseDto;
     }
 
+    @Override
+    public void confirmJuryAttendance(UpdateAttendanceDto request) {
+        log.info("Confirming jury attendance for jurors on trial");
+
+        final String owner = SecurityUtil.getActiveOwner();
+
+        CourtLocation courtLocation =
+            courtLocationRepository.findByLocCode(request.getCommonData().getLocationCode())
+                .orElseThrow(() -> new MojException.NotFound("Court location not found", null));
+
+        request.getJuror().stream().forEach(jurorNumber -> {
+            // validate the juror record exists and user has ownership of the record
+            validateJuror(owner, jurorNumber);
+
+            // get the juror appearance record if it exists
+            Appearance appearance = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
+                request.getCommonData().getAttendanceDate());
+
+            JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber,
+                courtLocation);
+
+            if (appearance == null) {
+                // create a new appearance record
+                appearance = Appearance.builder()
+                    .jurorNumber(jurorNumber)
+                    .attendanceDate(request.getCommonData().getAttendanceDate())
+                    .courtLocation(courtLocation)
+                    .poolNumber(jurorPool.getPool().getPoolNumber())
+                    .build();
+            }
+
+            // update the check-in time if there is none
+            if (appearance.getTimeIn() == null) {
+                appearance.setTimeIn(request.getCommonData().getCheckInTime());
+            }
+
+            // update the check-out time if there is none
+            if (appearance.getTimeOut() == null) {
+                appearance.setTimeOut(request.getCommonData().getCheckOutTime());
+            }
+
+            appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+            realignAttendanceType(appearance);
+
+            appearanceRepository.saveAndFlush(appearance);
+            jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
+
+            // update the juror next date and clear on call flag in case it is set
+            jurorPool.setNextDate(request.getCommonData().getAttendanceDate());
+            jurorPool.setOnCall(false);
+            jurorPoolRepository.saveAndFlush(jurorPool);
+
+        });
+    }
+
     private void checkExistingAttendance(JurorNonAttendanceDto request, LocalDate nonAttendanceDate) {
         // check if there is already an appearance record for the juror for the non-attendance date
         final String jurorNumber = request.getJurorNumber();
