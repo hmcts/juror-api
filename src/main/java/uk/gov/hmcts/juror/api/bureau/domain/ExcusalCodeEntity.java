@@ -25,7 +25,7 @@ import java.io.Serializable;
 public class ExcusalCodeEntity implements Serializable {
     @Id
     @Column(name = "EXC_CODE")
-    @Length(max = 1)
+    @Length(max = 2)
     private String excusalCode;
 
     @NotEmpty
