@@ -1,10 +1,10 @@
 buildscript {
     ext {
         springBootVersion = '3.2.4'
-        notifyVersion = '5.0.0-RELEASE'
+        notifyVersion = '5.0.1-RELEASE'
         springDocVersion = '2.5.0'
         queryDslVersion = '5.1.0'
-        flywayVersion = '10.10.0'
+        flywayVersion = '10.11.0'
         postgresVersion = '42.7.3'
     }
     dependencies {
@@ -50,7 +50,7 @@ bootJar {
 }
 
 jacoco {
-    toolVersion = "0.8.11"
+    toolVersion = "0.8.12"
 }
 
 version = '0.0.1'

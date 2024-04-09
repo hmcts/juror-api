@@ -1830,6 +1830,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository,
             responseDetailDto.getJurorNumber(), owner);
 
+        assertThat(jurorPool.getOwner().equals(responseDetailDto.getCurrentOwner()));
+
         assertThat(jurorPool).isNotNull();
 
         SummonsSnapshot summonsSnapshot = summonsSnapshotRepository.findById(jurorPool.getJurorNumber())

@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAtt
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -44,6 +45,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -844,7 +846,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql",
             "/db/JurorExpenseControllerITest_expenseRates.sql"})
         void updateAttendanceNoShow() {
-            UpdateAttendanceDto request = buildUpdateAttendanceDto(null);
+            UpdateAttendanceDto request = buildUpdateAttendanceDto(new ArrayList<>());
             request.getCommonData().setCheckInTime(null);
             request.getCommonData().setCheckOutTime(null);
             request.getCommonData().setStatus(UpdateAttendanceStatus.CONFIRM_ATTENDANCE);
@@ -1655,4 +1657,129 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         }
 
     }
+
+
+    @Nested
+    @DisplayName("Jurors on Trial tests")
+    class JurorsOnTrial {
+
+        @Test
+        @DisplayName("Get Jurors on Trials - happy path")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/JurorsOnTrial.sql"})
+        void jurorsOnTrialHappy() {
+
+            ResponseEntity<JurorsOnTrialResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
+                        URI.create("/api/v1/moj/juror-management/jurors-on-trial/415?attendanceDate="
+                            + now())),
+                    JurorsOnTrialResponseDto.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status OK expected").isEqualTo(OK);
+            assertThat(response.getBody()).isNotNull();
+
+            // verify returned data
+            JurorsOnTrialResponseDto jurorsOnTrialResponseDto = response.getBody();
+            assertThat(jurorsOnTrialResponseDto.getTrialsList().size()).as("Expect 2 records to be returned")
+                .isEqualTo(2);
+
+            JurorsOnTrialResponseDto.JurorsOnTrialResponseData first = jurorsOnTrialResponseDto.getTrialsList().get(0);
+            assertThat(first.getTrialNumber()).isEqualTo("T10000000");
+            assertThat(first.getParties()).isEqualTo("test trial");
+            assertThat(first.getTrialType()).isEqualTo("Civil");
+            assertThat(first.getJudge()).isEqualTo("judge dredd");
+            assertThat(first.getCourtroom()).isEqualTo("big room");
+            assertThat(first.getNumberAttended()).isEqualTo(8);
+            assertThat(first.getTotalJurors()).isEqualTo(13);
+
+            JurorsOnTrialResponseDto.JurorsOnTrialResponseData second = jurorsOnTrialResponseDto.getTrialsList().get(1);
+            assertThat(second.getTrialNumber()).isEqualTo("T10000001");
+            assertThat(second.getParties()).isEqualTo("test trial");
+            assertThat(second.getTrialType()).isEqualTo("Civil");
+            assertThat(second.getJudge()).isEqualTo("judge jose");
+            assertThat(second.getCourtroom()).isEqualTo("small room");
+            assertThat(second.getNumberAttended()).isEqualTo(0);
+            assertThat(second.getTotalJurors()).isEqualTo(4);
+        }
+
+        @Test
+        @DisplayName("Get Jurors on Trials - Bureau User no access")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/JurorsOnTrial.sql"})
+        void jurorsOnTrialBureauUserNoAccess() {
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+            ResponseEntity<JurorsOnTrialResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
+                        URI.create("/api/v1/moj/juror-management/jurors-on-trial/415?attendanceDate=" + now())),
+                    JurorsOnTrialResponseDto.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status Forbidden expected").isEqualTo(FORBIDDEN);
+        }
+
+        @Test
+        @DisplayName("Confirm attendance for jurors on a trial - happy path")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/ConfirmJuryAttendance.sql",
+            "/db/JurorExpenseControllerITest_expenseRates.sql"})
+        void confirmAttendanceHappy() {
+
+            UpdateAttendanceDto request = buildUpdateAttendanceDto();
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create("/api/v1/moj/juror-management/confirm-jury-attendance")), Void.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status OK expected")
+                .isEqualTo(OK);
+
+            // verify attendance records have been updated
+            Optional<Appearance> appearanceOpt =
+                appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate("222222222",
+                    "415230101", now().minusDays(2));
+            assertThat(appearanceOpt).isNotEmpty();
+            Appearance appearance = appearanceOpt.get();
+            assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
+            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
+            assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+
+            appearanceOpt = appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(
+                "333333333", "415230101", now().minusDays(2));
+            assertThat(appearanceOpt).isNotEmpty();
+            appearance = appearanceOpt.get();
+            assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
+            assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
+            assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+
+        }
+
+        @Test
+        @DisplayName("Confirm attendance for jurors on a trial - Bureau no access")
+        void confirmAttendanceBureauNoAccess() {
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+            UpdateAttendanceDto request = buildUpdateAttendanceDto();
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create("/api/v1/moj/juror-management/confirm-jury-attendance")), Void.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status Forbidden expected")
+                .isEqualTo(FORBIDDEN);
+
+        }
+
+        private UpdateAttendanceDto buildUpdateAttendanceDto() {
+            UpdateAttendanceDto.CommonData commonData = new UpdateAttendanceDto.CommonData();
+            commonData.setStatus(UpdateAttendanceStatus.CONFIRM_ATTENDANCE);
+            commonData.setAttendanceDate(now().minusDays(2));
+            commonData.setLocationCode("415");
+            commonData.setCheckInTime(LocalTime.of(9, 30));
+            commonData.setCheckOutTime(LocalTime.of(17, 00));
+            commonData.setSingleJuror(Boolean.FALSE);
+
+            UpdateAttendanceDto request = new UpdateAttendanceDto();
+            request.setCommonData(commonData);
+            request.setJuror(Arrays.asList("222222222", "333333333"));
+
+            return request;
+        }
+
+    }
+
 }

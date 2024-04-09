@@ -81,13 +81,16 @@ class DisqualifyJurorControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()", is(1)))
-            .andExpect(jsonPath("$.disqualifyReasons.length()", is(7)))
-            .andExpect(jsonPath("$.disqualifyReasons[*].code").value(containsInAnyOrder("A", "B", "C", "M", "N", "O",
-                "R")))
+            .andExpect(jsonPath("$.disqualifyReasons.length()", is(10)))
+            .andExpect(jsonPath("$.disqualifyReasons[*].code")
+                .value(containsInAnyOrder("A", "B", "C", "D", "E", "J", "M", "N", "O", "R")))
             .andExpect(jsonPath("$.disqualifyReasons[*].description").value(containsInAnyOrder(
                 "Age",
                 "Bail",
                 "Conviction",
+                "Judicial Disqualification",
+                "Electronic Police Check Failure",
+                "Involved in Justice Administration or a Member of the Clergy",
                 "Suffering From a Mental Disorder",
                 "Mental Capacity Act",
                 "Mental Health Act",
@@ -110,13 +113,16 @@ class DisqualifyJurorControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()", is(1)))
-            .andExpect(jsonPath("$.disqualifyReasons.length()", is(7)))
-            .andExpect(jsonPath("$.disqualifyReasons[*].code").value(containsInAnyOrder("A", "B", "C", "M", "N", "O",
-                "R")))
+            .andExpect(jsonPath("$.disqualifyReasons.length()", is(10)))
+            .andExpect(jsonPath("$.disqualifyReasons[*].code")
+                .value(containsInAnyOrder("A", "B", "C", "D", "E", "J", "M", "N", "O", "R")))
             .andExpect(jsonPath("$.disqualifyReasons[*].description").value(containsInAnyOrder(
                 "Age",
                 "Bail",
                 "Conviction",
+                "Judicial Disqualification",
+                "Electronic Police Check Failure",
+                "Involved in Justice Administration or a Member of the Clergy",
                 "Suffering From a Mental Disorder",
                 "Mental Capacity Act",
                 "Mental Health Act",

@@ -55,11 +55,11 @@ public class JurorDashboardCalculateServiceImplTest {
 
         notRespondedList = new ArrayList<>(Arrays.asList(
             StatsNotResponded.builder().summonsMonth(getDate(today, 1))
-                .locCode("400").nonResponseCount(5).build(),
+                .locCode("400").notRespondedCount(5).build(),
             StatsNotResponded.builder().summonsMonth(getDate(today, 1))
-                .locCode("401").nonResponseCount(10).build(),
+                .locCode("401").notRespondedCount(10).build(),
             StatsNotResponded.builder().summonsMonth(getDate(today, 1))
-                .locCode("402").nonResponseCount(15).build()
+                .locCode("402").notRespondedCount(15).build()
         ));
 
         unprocessedList = new ArrayList<>(Arrays.asList(
@@ -112,7 +112,7 @@ public class JurorDashboardCalculateServiceImplTest {
     public void calculateTotalNotResponded() {
 
         Integer expectedNotRespondedTotal = notRespondedList.stream()
-            .mapToInt(StatsNotResponded::getNonResponseCount)
+            .mapToInt(StatsNotResponded::getNotRespondedCount)
             .sum();
 
         Integer notRespondedTotal = jurorDashboardCalculateService.totalNoOfNotResponded(notRespondedList);
@@ -144,7 +144,7 @@ public class JurorDashboardCalculateServiceImplTest {
             .sum();
 
         Integer expectedNotRespondedTotal = notRespondedList.stream()
-            .mapToInt(StatsNotResponded::getNonResponseCount)
+            .mapToInt(StatsNotResponded::getNotRespondedCount)
             .sum();
 
         Integer summonedTotal = jurorDashboardCalculateService.totalNoOfSummoned(
