@@ -77,7 +77,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
 
         List<ExcusalCodeDto> data = responseEntity.getBody().getData();
         assertThat(data.size()).isGreaterThan(0);
-        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM JUROR.EXC_CODE WHERE ENABLED='Y'", Integer.class))
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.t_exc_code WHERE ENABLED='Y'", Integer.class))
             .as("Excusal code list retrieved should match count of excusal codes in db")
             .isEqualTo(data.size());
     }
