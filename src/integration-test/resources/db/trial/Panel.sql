@@ -133,5 +133,6 @@ insert into juror_mod.courtroom (loc_code, room_number, description) values
 
 insert into juror_mod.trial (trial_number,loc_code,description,courtroom,judge,trial_type,trial_start_date,anonymous) values
 ('T10000000', '415', 'test trial', 1, 1, 'CIV', current_date, false),
-('T10000001', '415', 'test trial', 1, 1, 'CIV', current_date, false);
+('T10000001', '415', 'test trial', 1, 1, 'CIV', current_date, false),
+('T10000002', '415', 'test trial', 1, 1, 'CIV', current_date, false);
 
