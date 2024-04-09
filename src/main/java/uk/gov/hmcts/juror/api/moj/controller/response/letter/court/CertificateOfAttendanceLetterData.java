@@ -10,8 +10,7 @@ import lombok.Getter;
 import java.time.LocalDate;
 
 @Getter
-@JsonPropertyOrder({"jurorNumber", "firstName", "lastName", "postcode", "datePrinted", "poolNumber", "startDate",
-    "completionDate"})
+@JsonPropertyOrder({"jurorNumber", "firstName", "lastName", "poolNumber", "startDate", "completionDate", "datePrinted"})
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CertificateOfAttendanceLetterData extends LetterResponseData {
 
