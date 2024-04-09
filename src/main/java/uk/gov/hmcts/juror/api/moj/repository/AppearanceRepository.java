@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.history.RevisionRepository;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -48,4 +49,8 @@ public interface AppearanceRepository extends
 
     List<Appearance> findAllByJurorNumberAndPoolNumberAndAttendanceDateIn(String jurorNumber, String poolNumber,
                                                                           List<LocalDate> dates);
+
+    @Query(value = "select nextval('juror_mod.attendance_audit_seq')", nativeQuery = true)
+    Long getNextAttendanceAuditNumber();
+
 }

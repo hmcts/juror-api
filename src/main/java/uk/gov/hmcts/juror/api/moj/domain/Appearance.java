@@ -242,6 +242,13 @@ public class Appearance implements Serializable {
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private ExpenseRates expenseRates;
 
+    /**
+     * Sequence generated number to group jurors by when their attendance is confirmed. Uses either a 'P' prefix for
+     * pool attendance (Jurors in waiting) or a 'J' prefix for jury attendance (serving on jury for a trial)
+     */
+    @Column(name = "attendance_audit_number")
+    private String attendanceAuditNumber;
+
     public String getIdString() {
         return "JurorNumber: " + this.jurorNumber + ", "
             + "AttendanceDate: " + this.attendanceDate + ", "
