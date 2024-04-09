@@ -927,49 +927,45 @@ class AbstractReportTest {
         @Test
         void positiveTypical() {
             Trial trial = mock(Trial.class);
+            AbstractReport<Object> report = createTrialReport();
 
-           doReturn(trial).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(any(), any());
+            doReturn(trial).when(report).getTrial(any(), any());
 
-           AbstractReport<Object> report = createTrialReport();
+          when(trialRepository.findByTrialNumberAndCourtLocationLocCode(any(), any())).thenReturn(trial);
 
             StandardReportRequest request = mock(StandardReportRequest.class);
 
-            assertThat(report.loadTrialHeaders(request, ))
+            assertThat(report.loadTrialHeaders(request, trialRepository))
                 .isEqualTo(Map.of(
-                    "pool_number",
+                    "trial_number",
                     AbstractReportResponse.DataTypeValue.builder()
-                        .displayName("Pool Number")
+                        .displayName("Trial Number")
                         .dataType(String.class.getSimpleName())
-                        .value(TestConstants.VALID_POOL_NUMBER)
+                        .value(TestConstants.VALID_TRIAL_NUMBER)
                         .build(),
-                    "pool_type", AbstractReportResponse.DataTypeValue.builder()
-                        .displayName("Pool Type")
+                    "names", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Names")
                         .dataType(String.class.getSimpleName())
-                        .value("Pool Type desc")
+                        .value("Someone Name")
                         .build(),
-                    "service_start_date", AbstractReportResponse.DataTypeValue.builder()
-                        .displayName("Service Start Date")
+                    "court_room", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Court Room")
                         .dataType(LocalDate.class.getSimpleName())
-                        .value("2023-02-01")
+                        .value("Court 3")
+                        .build(),
+                    "judge", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Judge")
+                        .dataType(String.class.getSimpleName())
+                        .value("Judge Dredd")
                         .build(),
                     "court_name", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Court Name")
-                        .dataType(String.class.getSimpleName())
-                        .value("Court Name (LOC)")
+                        .dataType(LocalDate.class.getSimpleName())
+                        .value("Chester (415)")
                         .build()
-
                 ));
 
-            verify(request, times(2)).getPoolNumber();
-            verify(poolRequest, times(1)).getPoolType();
-            verify(poolType, times(1)).getDescription();
-            verify(poolRequest, times(1)).getReturnDate();
-            verify(courtLocation, times(1)).getName();
-            verify(courtLocation, times(1)).getLocCode();
-            verify(poolRequest, times(2)).getCourtLocation();
-            verify(report, never()).checkOwnership(any(), anyBoolean());
-            verifyNoMoreInteractions(poolRequest, poolType, courtLocation, request);
-        }
+            }
 
     }
         @Test

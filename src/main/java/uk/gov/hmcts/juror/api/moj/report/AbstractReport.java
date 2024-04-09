@@ -325,8 +325,7 @@ public abstract class AbstractReport<T> {
     public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadTrialHeaders(
         StandardReportRequest request, TrialRepository trialRepository) {
 
-        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(request.getTrialNumber(),
-            SecurityUtil.getActiveOwner());
+        Trial trial = getTrial(request.getTrialNumber(), trialRepository);
         return new ConcurrentHashMap<>(Map.of(
             "trial_number", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Trial Number")
@@ -336,7 +335,7 @@ public abstract class AbstractReport<T> {
             "names", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Names")
                 .dataType(String.class.getSimpleName())
-                .value(trial.getDescription())
+                .value(trial.getAnonymous())
                 .build(),
             "court_room", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Court Room")
@@ -363,6 +362,15 @@ public abstract class AbstractReport<T> {
             throw new MojException.NotFound("Pool not found", null);
         }
         return poolRequest.get();
+    }
+
+    Trial getTrial(String trialNumber, TrialRepository trialRepository) {
+        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
+            SecurityUtil.getActiveOwner());
+        if (trial == null) {
+            throw new MojException.NotFound("Trial not found", null);
+        }
+        return trial;
     }
 
     protected List<LinkedHashMap<String, Object>> getTableDataAsList(List<Tuple> data) {
