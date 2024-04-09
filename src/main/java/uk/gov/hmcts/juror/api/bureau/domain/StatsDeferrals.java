@@ -37,7 +37,7 @@ public class StatsDeferrals implements Serializable {
 
     @Id
     @NotNull
-    @Column(name = "exec_code")
+    @Column(name = "exc_code")
     private String execCode;
 
 
@@ -58,8 +58,8 @@ public class StatsDeferrals implements Serializable {
     private String week;
 
     @NotNull
-    @Column(name = "excusal_count")
-    private Integer excusalCount;
+    @Column(name = "deferral_count")
+    private Integer deferralCount;
 
 
 }
