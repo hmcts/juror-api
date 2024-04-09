@@ -62,15 +62,13 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
 
     @Override
     public List<ExcusalCodeDto> getExcusalReasons() throws ExcusalException.UnableToRetrieveExcusalCodeList {
-        Iterable<ExcusalCodeEntity> excusalReasonsList = excusalCodeRepository.findAll();
+        Iterable<uk.gov.hmcts.juror.api.moj.domain.ExcusalCode> excusalReasonsList = excusalCodeRepository.findAll();
         if (!excusalReasonsList.iterator().hasNext()) {
             throw new ExcusalException.UnableToRetrieveExcusalCodeList();
         }
 
         List<ResponseExcusalController.ExcusalCodeDto> myList = new ArrayList<>();
-        for (ExcusalCodeEntity excusalCodeEntity : excusalReasonsList) {
-            myList.add(new ResponseExcusalController.ExcusalCodeDto(excusalCodeEntity));
-        }
+        excusalReasonsList.forEach(excusalCode -> myList.add(new ResponseExcusalController.ExcusalCodeDto(excusalCode)));
         return myList;
     }
 

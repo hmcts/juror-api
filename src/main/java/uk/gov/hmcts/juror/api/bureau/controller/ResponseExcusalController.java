@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.bureau.exception.ExcusalException;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.domain.ExcusalCode;
 
 import java.util.List;
 import java.util.Objects;
@@ -142,9 +143,17 @@ public class ResponseExcusalController {
         @Schema(description = "Description of excusal code", example = "Student")
         private String description;
 
+        @Deprecated(forRemoval = true)
         public ExcusalCodeDto(ExcusalCodeEntity excusalCodeEntity) {
             if (!Objects.isNull(excusalCodeEntity)) {
                 this.excusalCode = excusalCodeEntity.getExcusalCode();
+                this.description = excusalCodeEntity.getDescription();
+            }
+        }
+
+        public ExcusalCodeDto(ExcusalCode excusalCodeEntity) {
+            if (!Objects.isNull(excusalCodeEntity)) {
+                this.excusalCode = excusalCodeEntity.getCode();
                 this.description = excusalCodeEntity.getDescription();
             }
         }
