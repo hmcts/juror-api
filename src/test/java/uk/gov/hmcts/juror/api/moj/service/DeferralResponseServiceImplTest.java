@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.DeferralDecision;
+import uk.gov.hmcts.juror.api.moj.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
@@ -59,7 +60,7 @@ public class DeferralResponseServiceImplTest {
 
     @Before
     public void setUpMocks() {
-        ExcusalCodeEntity excusalCodeEntity = new ExcusalCodeEntity("B", "Description of B");
+        ExcusalCode excusalCodeEntity = new ExcusalCode("B", "Description of B",false,true,false,false);
         when(excusalCodeRepository.findAll()).thenReturn(Collections.singletonList(excusalCodeEntity));
 
         doReturn(Collections.singletonList(createTestJurorPool("400", "123456789"))).when(jurorPoolRepository)

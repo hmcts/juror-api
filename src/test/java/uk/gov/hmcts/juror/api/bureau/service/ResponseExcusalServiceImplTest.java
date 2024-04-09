@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.juror.domain.ExcusalDeniedLetterRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ExcusalLetter;
 import uk.gov.hmcts.juror.api.juror.domain.ExcusalLetterRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -85,16 +86,14 @@ public class ResponseExcusalServiceImplTest {
 
     @Test
     public void getExcusalReasons_happy() throws Exception {
-        List<ExcusalCodeEntity> excusalReasonsList = new ArrayList<>();
-        excusalReasonsList.add(new ExcusalCodeEntity("A", "Description"));
-        excusalReasonsList.add(new ExcusalCodeEntity("B", "Description"));
-        excusalReasonsList.add(new ExcusalCodeEntity("C", "Description"));
+        List<ExcusalCode> excusalReasonsList = new ArrayList<>();
+        excusalReasonsList.add(new ExcusalCode("A", "Description",false,true,false,false));
+        excusalReasonsList.add(new ExcusalCode("B", "Description",false,true,false,false));
+        excusalReasonsList.add(new ExcusalCode("C", "Description",false,true,false,false));
         given(excusalCodeRepository.findAll()).willReturn(excusalReasonsList);
 
         List<ExcusalCodeDto> excusalReasonsListDto = new ArrayList<>();
-        for (ExcusalCodeEntity excusalCodeEntity : excusalReasonsList) {
-            excusalReasonsListDto.add(new ExcusalCodeDto(excusalCodeEntity));
-        }
+        excusalReasonsList.forEach(excusalCode -> excusalReasonsListDto.add(new ExcusalCodeDto(excusalCode)));
 
         List<ExcusalCodeDto> retrievedExcusalReasonsList = responseExcusalService.getExcusalReasons();
 
@@ -119,9 +118,9 @@ public class ResponseExcusalServiceImplTest {
         given(poolRepository.findByJurorJurorNumber(any(String.class))).willReturn(poolDetails);
 
         String excusalCode = "B";
-        List<ExcusalCodeEntity> excusalCodeEntityList = new ArrayList<>();
-        excusalCodeEntityList.add(new ExcusalCodeEntity("C", "Description of code"));
-        excusalCodeEntityList.add(new ExcusalCodeEntity(excusalCode, "Description of another code"));
+        List<ExcusalCode> excusalCodeEntityList = new ArrayList<>();
+        excusalCodeEntityList.add(new ExcusalCode("C", "Description of code",false,true,false,false));
+        excusalCodeEntityList.add(new ExcusalCode(excusalCode, "Description of another code",false,true,false,false));
         given(excusalCodeRepository.findAll()).willReturn(excusalCodeEntityList);
 
         String login = "login";
@@ -161,10 +160,10 @@ public class ResponseExcusalServiceImplTest {
         DigitalResponse jurorResponse = mock(DigitalResponse.class);
         JurorPool poolDetails = mock(JurorPool.class);
 
-        List<ExcusalCodeEntity> excusalCodeEntityList = new ArrayList<>();
+        List<ExcusalCode> excusalCodeEntityList = new ArrayList<>();
         // Add codes to list, but not the one we are using in this test
-        excusalCodeEntityList.add(new ExcusalCodeEntity("B", "Description of code"));
-        excusalCodeEntityList.add(new ExcusalCodeEntity("C", "Description of another code"));
+        excusalCodeEntityList.add(new ExcusalCode("B", "Description of code",false,true,false,false));
+        excusalCodeEntityList.add(new ExcusalCode("C", "Description of another code",false,true,false,false));
         given(excusalCodeRepository.findAll()).willReturn(excusalCodeEntityList);
 
         // run process
@@ -204,9 +203,9 @@ public class ResponseExcusalServiceImplTest {
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(null);
         JurorPool poolDetails = mock(JurorPool.class);
 
-        List<ExcusalCodeEntity> excusalCodeEntityList = new ArrayList<>();
-        excusalCodeEntityList.add(new ExcusalCodeEntity("B", "Description of code"));
-        excusalCodeEntityList.add(new ExcusalCodeEntity(excusalCode, "Description of another code"));
+        List<ExcusalCode> excusalCodeEntityList = new ArrayList<>();
+        excusalCodeEntityList.add(new ExcusalCode("B", "Description of code",false,true,false,false));
+        excusalCodeEntityList.add(new ExcusalCode(excusalCode, "Description of another code",false,true,false,false));
         given(excusalCodeRepository.findAll()).willReturn(excusalCodeEntityList);
 
         // run process
@@ -253,9 +252,9 @@ public class ResponseExcusalServiceImplTest {
         given(poolRepository.findByJurorJurorNumber(any(String.class))).willReturn(poolDetails);
 
         String excusalCode = "B";
-        List<ExcusalCodeEntity> excusalCodeEntityList = new ArrayList<>();
-        excusalCodeEntityList.add(new ExcusalCodeEntity("C", "Description of code"));
-        excusalCodeEntityList.add(new ExcusalCodeEntity(excusalCode, "Description of another code"));
+        List<ExcusalCode> excusalCodeEntityList = new ArrayList<>();
+        excusalCodeEntityList.add(new ExcusalCode("C", "Description of code",false,true,false,false));
+        excusalCodeEntityList.add(new ExcusalCode(excusalCode, "Description of another code",false,true,false,false));
         given(excusalCodeRepository.findAll()).willReturn(excusalCodeEntityList);
         String login = "login";
         ExcusalCodeDto excusalCodeDto = new ExcusalCodeDto(1, excusalCode, "Description");
@@ -296,10 +295,10 @@ public class ResponseExcusalServiceImplTest {
         DigitalResponse jurorResponse = mock(DigitalResponse.class);
         JurorPool poolDetails = mock(JurorPool.class);
 
-        List<ExcusalCodeEntity> excusalCodeEntityList = new ArrayList<>();
+        List<ExcusalCode> excusalCodeEntityList = new ArrayList<>();
         // Add codes to list, but not the one we are using in this test
-        excusalCodeEntityList.add(new ExcusalCodeEntity("B", "Description of code"));
-        excusalCodeEntityList.add(new ExcusalCodeEntity("C", "Description of another code"));
+        excusalCodeEntityList.add(new ExcusalCode("B", "Description of code",false,true,false,false));
+        excusalCodeEntityList.add(new ExcusalCode("C", "Description of another code",false,true,false,false));
         given(excusalCodeRepository.findAll()).willReturn(excusalCodeEntityList);
 
         // run process
@@ -337,9 +336,9 @@ public class ResponseExcusalServiceImplTest {
         DigitalResponse jurorResponse = mock(DigitalResponse.class);
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(null);
         JurorPool poolDetails = mock(JurorPool.class);
-        List<ExcusalCodeEntity> excusalCodeEntityList = new ArrayList<>();
-        excusalCodeEntityList.add(new ExcusalCodeEntity("B", "Description of code"));
-        excusalCodeEntityList.add(new ExcusalCodeEntity(excusalCode, "Description of another code"));
+        List<ExcusalCode> excusalCodeEntityList = new ArrayList<>();
+        excusalCodeEntityList.add(new ExcusalCode("B", "Description of code",false,true,false,false));
+        excusalCodeEntityList.add(new ExcusalCode(excusalCode, "Description of another code",false,true,false,false));
         given(excusalCodeRepository.findAll()).willReturn(excusalCodeEntityList);
 
         // run process

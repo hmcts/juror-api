@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalCodeDto;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCode;
-import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeEntity;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.ExcusalException;
 import uk.gov.hmcts.juror.api.juror.domain.ExcusalDeniedLetter;
@@ -68,7 +67,8 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
         }
 
         List<ResponseExcusalController.ExcusalCodeDto> myList = new ArrayList<>();
-        excusalReasonsList.forEach(excusalCode -> myList.add(new ResponseExcusalController.ExcusalCodeDto(excusalCode)));
+        excusalReasonsList.forEach(excusalCode -> myList
+            .add(new ResponseExcusalController.ExcusalCodeDto(excusalCode)));
         return myList;
     }
 
