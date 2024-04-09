@@ -9,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeEntity;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
@@ -81,9 +80,9 @@ public class ExcusalResponseServiceImplTest {
     @Before
     public void setUpMocks() {
         List<ExcusalCode> excusalCodes = new ArrayList<>();
-        ExcusalCode excusalCodeEntity = new ExcusalCode("A", "MOVED FROM AREA",false,true,false,false);
+        ExcusalCode excusalCodeEntity = new ExcusalCode("A", "MOVED FROM AREA", false, true, false, false);
         excusalCodes.add(excusalCodeEntity);
-        ExcusalCode excusalCodeEntity1 = new ExcusalCode("D", "DECEASED",false,true,false,false);
+        ExcusalCode excusalCodeEntity1 = new ExcusalCode("D", "DECEASED", false, true, false, false);
         excusalCodes.add(excusalCodeEntity1);
         Mockito.when(excusalCodeRepository.findAll()).thenReturn(excusalCodes);
 
@@ -675,7 +674,8 @@ public class ExcusalResponseServiceImplTest {
 
     private void verifyHappyExcusalLetter(JurorPool jurorPool,
                                           ExcusalDecisionDto excusalDecisionDto) {
-        if (uk.gov.hmcts.juror.api.bureau.domain.ExcusalCode.DECEASED.equals(excusalDecisionDto.getExcusalReasonCode())) {
+        if (uk.gov.hmcts.juror.api.bureau.domain.ExcusalCode
+            .DECEASED.equals(excusalDecisionDto.getExcusalReasonCode())) {
             Mockito.verify(printDataService, Mockito.never())
                 .printExcusalLetter(jurorPool);
         } else {
