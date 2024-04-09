@@ -210,13 +210,21 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             log.info("No appearances found with matching criteria");
             return;
         }
+
         appearances.forEach(appearance -> applyDefaultExpenses(appearance, getJuror(appearance.getJurorNumber())));
-        saveAppearancesWithExpenseRateIdUpdate(appearances);
+        List<Appearance> filteredAppearances = appearances.stream()
+            .filter(appearance -> !AttendanceType.ABSENT.equals(appearance.getAttendanceType())).toList();
+
+        saveAppearancesWithExpenseRateIdUpdate(filteredAppearances);
     }
 
     @Transactional
     @Override
     public void applyDefaultExpenses(Appearance appearance, Juror juror) {
+        if (AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
+            return;
+        }
+
         appearance.setTravelTime(juror.getTravelTime());
         appearance.setPayAttendanceType(calculatePayAttendanceType(appearance));
 
