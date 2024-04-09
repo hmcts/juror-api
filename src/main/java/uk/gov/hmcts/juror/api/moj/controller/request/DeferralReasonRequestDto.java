@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Schema(description = "payload for processing a deferral request")
+@ToString
 public class DeferralReasonRequestDto {
 
     @JsonProperty("deferralDate")
@@ -27,7 +29,7 @@ public class DeferralReasonRequestDto {
 
     @JsonProperty("excusalReasonCode")
     @Schema(description = "Deferral reason code", requiredMode = Schema.RequiredMode.REQUIRED)
-    @Length(max = 1)
+    @Length(max = 2)
     @NotEmpty
     @NotNull
     public String excusalReasonCode;
