@@ -67,8 +67,13 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
         }
 
         List<ResponseExcusalController.ExcusalCodeDto> myList = new ArrayList<>();
-        excusalReasonsList.forEach(excusalCode -> myList
-            .add(new ResponseExcusalController.ExcusalCodeDto(excusalCode)));
+        excusalReasonsList.forEach(excusalCode -> {
+            if (!excusalCode.isEnabled()) {
+                return;
+            }
+            myList
+                .add(new ResponseExcusalController.ExcusalCodeDto(excusalCode));
+        });
         return myList;
     }
 
