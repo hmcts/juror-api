@@ -201,7 +201,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         List<String> excusalCodes = new ArrayList<>();
         // Extract just the excusal code from the ExcusalCodeEntity objects stored in ExcusalCodeRepository
         RepositoryUtils.retrieveAllRecordsFromDatabase(excusalCodeRepository)
-            .forEach(excusalCodeEntity -> excusalCodes.add(excusalCodeEntity.getExcusalCode()));
+            .forEach(excusalCodeEntity -> excusalCodes.add(excusalCodeEntity.getCode()));
 
         if (excusalCodes.isEmpty()) {
             log.info("Unable to retrieve list of excusal codes from database");

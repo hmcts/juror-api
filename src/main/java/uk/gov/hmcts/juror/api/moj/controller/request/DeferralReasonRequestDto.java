@@ -27,7 +27,7 @@ public class DeferralReasonRequestDto {
 
     @JsonProperty("excusalReasonCode")
     @Schema(description = "Deferral reason code", requiredMode = Schema.RequiredMode.REQUIRED)
-    @Length(max = 1)
+    @Length(max = 2)
     @NotEmpty
     @NotNull
     public String excusalReasonCode;
