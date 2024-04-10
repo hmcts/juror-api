@@ -335,7 +335,7 @@ public abstract class AbstractReport<T> {
             "names", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Names")
                 .dataType(String.class.getSimpleName())
-                .value(trial.getAnonymous())
+                .value(trial.getDescription())
                 .build(),
             "court_room", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Court Room")

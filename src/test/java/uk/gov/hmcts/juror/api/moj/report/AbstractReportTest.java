@@ -946,6 +946,8 @@ class AbstractReportTest {
             when(trial.getCourtLocation().getName()).thenReturn("Chester");
             when(trial.getCourtroom().getDescription()).thenReturn("COURT 3");
 
+            when(trial.getDescription()).thenReturn("Someone Name");
+
             when(trial.getJudge()).thenReturn(judge);
 
             when(trial.getJudge().getName()).thenReturn("Judge Dredd");
@@ -971,8 +973,8 @@ class AbstractReportTest {
                         .build(),
                     "court_room", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Court Room")
-                        .dataType(LocalDate.class.getSimpleName())
-                        .value("Court 3")
+                        .dataType(String.class.getSimpleName())
+                        .value("COURT 3")
                         .build(),
                     "judge", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Judge")
@@ -981,11 +983,18 @@ class AbstractReportTest {
                         .build(),
                     "court_name", AbstractReportResponse.DataTypeValue.builder()
                         .displayName("Court Name")
-                        .dataType(LocalDate.class.getSimpleName())
+                        .dataType(String.class.getSimpleName())
                         .value("Chester (415)")
                         .build()
                 ));
 
+            verify(report, times(1))
+                .getTrial(TestConstants.VALID_TRIAL_NUMBER, trialRepository);
+            verify(request, times(2)).getTrialNumber();
+            verify(trial, times(2)).getCourtroom();
+            verify(trial, times(1)).getDescription();
+            verify(courtLocation, times(1)).getLocCode();
+            verify(trial, times(4)).getCourtLocation();
         }
 
     }
