@@ -394,6 +394,7 @@ public abstract class AbstractReport<T> {
         public interface RequirePoolNumber {
 
         }
+
         public interface RequireTrialNumber {
 
         }
