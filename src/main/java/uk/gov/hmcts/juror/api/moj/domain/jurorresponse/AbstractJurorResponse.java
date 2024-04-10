@@ -9,6 +9,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.EqualsAndHashCode;
@@ -174,6 +175,13 @@ public class AbstractJurorResponse extends Address implements Serializable {
      */
     @Column(name = "welsh")
     private Boolean welsh = Boolean.FALSE;
+
+    @Version
+    @Column(name = "version")
+    private Integer version;
+
+    @Column(name = "staff_assignment_date")
+    private LocalDate staffAssignmentDate;
 
     @ManyToOne
     @NotNull

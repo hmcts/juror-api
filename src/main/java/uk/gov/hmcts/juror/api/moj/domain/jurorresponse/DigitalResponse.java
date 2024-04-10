@@ -72,11 +72,6 @@ public class DigitalResponse extends AbstractJurorResponse {
     @Column(name = "excusal_reason")
     private String excusalReason;
 
-
-    @Version
-    @Column(name = "version")
-    private Integer version;
-
     @Column(name = "thirdparty_fname")
     private String thirdPartyFName;
 
@@ -103,10 +98,6 @@ public class DigitalResponse extends AbstractJurorResponse {
     @Column(name = "juror_email_details")
     @Builder.Default
     private Boolean jurorEmailDetails = Boolean.TRUE;
-
-    @Column(name = "staff_assignment_date")
-    private LocalDate staffAssignmentDate;
-
 
     /**
      * Holder for switching fields during a merge operation.
