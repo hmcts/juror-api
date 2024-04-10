@@ -3,18 +3,17 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,6 +26,9 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings("PMD.LawOfDemeter")
 class PanelSummaryTest extends AbstractStandardReportTestSupport<PanelSummaryReport> {
 
+    @Mock
+    private TrialRepository trialRepository;
+
     public PanelSummaryTest() {
         super(QJurorTrial.jurorTrial,
             PanelSummaryReport.RequestValidator.class,
@@ -37,7 +39,7 @@ class PanelSummaryTest extends AbstractStandardReportTestSupport<PanelSummaryRep
 
 
     @Override
-    public PanelSummaryReport createReport(PoolRequestRepository poolRequestRepository, TrialRepository trialRepository) {
+    public PanelSummaryReport createReport(PoolRequestRepository poolRequestRepository) {
         return new PanelSummaryReport(poolRequestRepository, trialRepository);
     }
 
@@ -51,9 +53,6 @@ class PanelSummaryTest extends AbstractStandardReportTestSupport<PanelSummaryRep
         verify(query, times(1))
             .where(QJurorTrial.jurorTrial.locCode.eq(TestConstants.VALID_COURT_LOCATION));
         verify(query, times(1));
-
-        verify(query, times(1))
-            .orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override
@@ -68,9 +67,9 @@ class PanelSummaryTest extends AbstractStandardReportTestSupport<PanelSummaryRep
             request,
             true,
             Map.of(
-                "total_non_responded",
+                "panel_summary",
                 StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Total non-responded")
+                    .displayName("Panel Summary")
                     .dataType(Long.class.getSimpleName())
                     .value(2)
                     .build()
@@ -84,21 +83,15 @@ class PanelSummaryTest extends AbstractStandardReportTestSupport<PanelSummaryRep
     protected StandardReportRequest getValidRequest() {
         return StandardReportRequest.builder()
             .reportType(report.getName())
-            .poolNumber(TestConstants.VALID_POOL_NUMBER)
+            .trialNumber(TestConstants.VALID_TRIAL_NUMBER)
             .build();
     }
 
     @Test
-    void negativeMissingPoolNumber() {
+    void negativeMissingTrialNumber() {
         StandardReportRequest request = getValidRequest();
-        request.setPoolNumber(null);
-        assertValidationFails(request, new ValidationFailure("tiralNumber", "must not be null"));
+        request.setTrialNumber(null);
+        assertValidationFails(request, new ValidationFailure("trialNumber", "must not be blank"));
     }
 
-    @Test
-    void negativeInvalidPoolNumber() {
-        StandardReportRequest request = getValidRequest();
-        request.setPoolNumber(TestConstants.INVALID_POOL_NUMBER);
-        assertValidationFails(request, new ValidationFailure("poolNumber", "must match \"^\\d{9}$\""));
-    }
 }

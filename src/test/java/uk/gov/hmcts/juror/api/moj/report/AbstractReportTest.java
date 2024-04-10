@@ -25,7 +25,8 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
-import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
@@ -82,6 +83,8 @@ class AbstractReportTest {
     void beforeEach() {
         this.poolRequestRepository = mock(PoolRequestRepository.class);
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
+        this.trialRepository = mock(TrialRepository.class);
+
     }
 
     @AfterEach
@@ -931,9 +934,27 @@ class AbstractReportTest {
 
             doReturn(trial).when(report).getTrial(any(), any());
 
-          when(trialRepository.findByTrialNumberAndCourtLocationLocCode(any(), any())).thenReturn(trial);
+            CourtLocation courtLocation = mock(CourtLocation.class);
+
+            Courtroom courtroom = mock(Courtroom.class);
+
+            Judge judge = mock(Judge.class);
+
+            when(trial.getCourtLocation()).thenReturn(courtLocation);
+            when(trial.getCourtroom()).thenReturn(courtroom);
+            when(trial.getCourtLocation().getLocCode()).thenReturn("415");
+            when(trial.getCourtLocation().getName()).thenReturn("Chester");
+            when(trial.getCourtroom().getDescription()).thenReturn("COURT 3");
+
+            when(trial.getJudge()).thenReturn(judge);
+
+            when(trial.getJudge().getName()).thenReturn("Judge Dredd");
+
+            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(any(), any())).thenReturn(trial);
 
             StandardReportRequest request = mock(StandardReportRequest.class);
+
+            when(request.getTrialNumber()).thenReturn("T000000001");
 
             assertThat(report.loadTrialHeaders(request, trialRepository))
                 .isEqualTo(Map.of(
@@ -965,10 +986,11 @@ class AbstractReportTest {
                         .build()
                 ));
 
-            }
+        }
 
     }
-        @Test
+
+    @Test
     void positiveAddAuthenticationConsumer() {
         Consumer<StandardReportRequest> consumer = mock(Consumer.class);
         AbstractReport<Object> report = createReport();

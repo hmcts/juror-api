@@ -340,12 +340,12 @@ public abstract class AbstractReport<T> {
             "court_room", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Court Room")
                 .dataType(String.class.getSimpleName())
-                .value(trial.getCourtLocation().getAssemblyRoom())
+                .value(trial.getCourtroom().getDescription())
                 .build(),
             "judge", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Judge")
                 .dataType(String.class.getSimpleName())
-                .value(trial.getJudge())
+                .value(trial.getJudge().getName())
                 .build(),
             "court_name", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Court Name")
