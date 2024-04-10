@@ -51,7 +51,6 @@ class PanelSummaryTest extends AbstractStandardReportTestSupport<PanelSummaryRep
         verify(query, times(1));
         verify(query, times(1))
             .where(QJurorTrial.jurorTrial.locCode.eq(TestConstants.VALID_COURT_LOCATION));
-        verify(query, times(1));
     }
 
     @Override
