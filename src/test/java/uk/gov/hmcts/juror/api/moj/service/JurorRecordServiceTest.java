@@ -138,7 +138,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.LawOfDemeter", "PMD.CouplingBetweenObjects",
     "PMD.TooManyMethods", "PMD.TooManyFields", "PMD.NcssCount"})
@@ -1099,6 +1098,7 @@ class JurorRecordServiceTest {
         jurorPool.setOwner(owner);
         jurorPool.setPool(poolRequest);
         jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
+        jurorPool.setDateCreated(LocalDateTime.now().minusDays(3));
 
         juror.setAssociatedPools(Set.of(jurorPool));
         jurorPool.setJuror(juror);
@@ -1129,6 +1129,7 @@ class JurorRecordServiceTest {
         jurorPool.setOwner(owner);
         jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
         jurorPool.setPool(poolRequest);
+        jurorPool.setDateCreated(LocalDateTime.now().minusDays(5));
 
         juror.setAssociatedPools(Set.of(jurorPool));
         jurorPool.setJuror(juror);
@@ -1393,12 +1394,12 @@ class JurorRecordServiceTest {
         doReturn(createJurorPoolList(jurorNumber, bureauOwnerCode)).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
         doReturn(Optional.of(new ModJurorDetail())).when(jurorDetailRepositoryMod).findById(jurorNumber);
-        doReturn(new BureauJurorDetailDto()).when(bureauService).mapJurorDetailsToDto(any());
+        doReturn(createBureauJurorDetailDto(jurorNumber)).when(bureauService).mapJurorDetailsToDto(any());
 
         jurorRecordService.getBureauDetailsByJurorNumber(jurorNumber, bureauOwnerCode);
 
         // current user is bureau so no need to query records and check ownership for read only permission
-        verify(jurorPoolRepository, times(1))
+        verify(jurorPoolRepository, times(2))
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
 
         verify(jurorDetailRepositoryMod, times(1)).findById(jurorNumber);
@@ -1412,15 +1413,14 @@ class JurorRecordServiceTest {
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, courtOwnerCode);
         jurorPools.add(createValidJurorPool(jurorNumber, "435"));
 
-        doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPools).when(jurorPoolRepository).findByJurorJurorNumberAndIsActive(jurorNumber, true);
         doReturn(Optional.of(new ModJurorDetail())).when(jurorDetailRepositoryMod).findById(jurorNumber);
-        doReturn(new BureauJurorDetailDto()).when(bureauService).mapJurorDetailsToDto(any());
+
+        doReturn(createBureauJurorDetailDto(jurorNumber)).when(bureauService).mapJurorDetailsToDto(any());
 
         jurorRecordService.getBureauDetailsByJurorNumber(jurorNumber, courtOwnerCode);
 
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolRepository, times(2)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
         verify(jurorDetailRepositoryMod, times(1)).findById(jurorNumber);
         verify(bureauService, times(1)).mapJurorDetailsToDto(any());
     }
@@ -3672,4 +3672,11 @@ class JurorRecordServiceTest {
         }
     }
 
+    private BureauJurorDetailDto createBureauJurorDetailDto(String jurorNumber) {
+
+        BureauJurorDetailDto bureauJurorDetailDto = new BureauJurorDetailDto();
+        bureauJurorDetailDto.setJurorNumber(jurorNumber);
+
+        return bureauJurorDetailDto;
+    }
 }
