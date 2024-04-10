@@ -451,7 +451,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         final String owner = SecurityUtil.getActiveOwner();
 
         // one attendance audit number applies to ALL jurors in this batch of attendances being confirmed
-        final String juryAttendanceNumber = setJuryAttendanceNumber();
+        final String juryAttendanceNumber = getJuryAttendanceNumber();
 
         CourtLocation courtLocation =
             courtLocationRepository.findByLocCode(request.getCommonData().getLocationCode())
@@ -504,7 +504,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         });
     }
 
-    private String setJuryAttendanceNumber() {
+    private String getJuryAttendanceNumber() {
         final String juryAttendancePrefix = "J";
 
         // get the next available attendance number from the database sequence
