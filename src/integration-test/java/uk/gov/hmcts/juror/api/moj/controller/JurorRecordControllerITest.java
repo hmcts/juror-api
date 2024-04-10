@@ -2615,6 +2615,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .as("Police check status")
                 .isEqualTo(PoliceCheck.ERROR_RETRY_OTHER_ERROR_CODE);
         }
+
         @DisplayName("Error Retry -  No Error Reason")
         @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
         @Test
@@ -2636,6 +2637,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .as("Police check status")
                 .isEqualTo(PoliceCheck.ERROR_RETRY_NO_ERROR_REASON);
         }
+
         @DisplayName("Error Retry - Unexpected Exception")
         @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
         @Test
