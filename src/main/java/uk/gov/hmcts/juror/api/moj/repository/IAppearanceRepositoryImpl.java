@@ -265,13 +265,20 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     public List<Tuple> getTrialsWithAttendanceCount(String locationCode, LocalDate attendanceDate) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
-        return queryFactory.select(JUROR_TRIAL.trialNumber, APPEARANCE.jurorNumber.count())
+        return queryFactory.select(JUROR_TRIAL.trialNumber,
+                APPEARANCE.jurorNumber.count(),
+                APPEARANCE.attendanceAuditNumber)
             .from(APPEARANCE)
-            .join(JUROR_TRIAL).on(APPEARANCE.jurorNumber.eq(JUROR_TRIAL.juror.jurorNumber))
+            .join(JUROR_TRIAL).on(APPEARANCE.jurorNumber.eq(JUROR_TRIAL.juror.jurorNumber)
+                .and(APPEARANCE.trialNumber.eq(JUROR_TRIAL.trialNumber)))
             .where(APPEARANCE.attendanceDate.eq(attendanceDate))
-            .where(APPEARANCE.attendanceType.notIn(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE))
+            .where(APPEARANCE.attendanceType.notIn(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE,
+                AttendanceType.NON_ATTENDANCE_LONG_TRIAL))
+            .where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_AUTHORISED,
+                AppearanceStage.EXPENSE_EDITED))
             .where(APPEARANCE.courtLocation.locCode.eq(locationCode))
-            .groupBy(JUROR_TRIAL.trialNumber)
+            .groupBy(JUROR_TRIAL.trialNumber,
+                APPEARANCE.attendanceAuditNumber)
             .fetch();
     }
 }

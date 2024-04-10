@@ -436,6 +436,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             jurorsAttendanceCounts.forEach(tuple -> {
                 if (jurorsOnTrialData.getTrialNumber().equals(tuple.get(0, String.class))) {
                     jurorsOnTrialData.setNumberAttended(tuple.get(1, Long.class));
+                    jurorsOnTrialData.setAttendanceAudit(tuple.get(2, String.class));
                 }
             });
         });
