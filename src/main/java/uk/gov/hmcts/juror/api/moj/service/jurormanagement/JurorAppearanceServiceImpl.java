@@ -501,7 +501,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             jurorPool.setNextDate(request.getCommonData().getAttendanceDate());
             jurorPool.setOnCall(false);
             jurorPoolRepository.saveAndFlush(jurorPool);
-
         });
     }
 
@@ -511,7 +510,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         // get the next available attendance number from the database sequence
         final long attendanceAuditNumber = appearanceRepository.getNextAttendanceAuditNumber();
 
-        // pad to 8 digits and add 'J' prefix for Jury Attendance
+        // left pad with 0's up to 8 digits and add 'J' prefix for Jury Attendance
         return juryAttendancePrefix + String.format("%08d", attendanceAuditNumber);
     }
 
