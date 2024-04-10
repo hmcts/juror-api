@@ -37,6 +37,7 @@ import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -69,6 +70,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     private final CourtLocationRepository courtLocationRepository;
     private final JurorRepository jurorRepository;
     private final JurorExpenseService jurorExpenseService;
+    private final JurorHistoryServiceImpl jurorHistoryService;
 
     @Override
     public void addAttendanceDay(BureauJwtPayload payload, AddAttendanceDayDto dto) {
@@ -448,11 +450,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         final String owner = SecurityUtil.getActiveOwner();
 
+        // one attendance audit number applies to ALL jurors in this batch of attendances being confirmed
+        final String juryAttendanceNumber = setJuryAttendanceNumber();
+
         CourtLocation courtLocation =
             courtLocationRepository.findByLocCode(request.getCommonData().getLocationCode())
                 .orElseThrow(() -> new MojException.NotFound("Court location not found", null));
 
-        request.getJuror().stream().forEach(jurorNumber -> {
+        request.getJuror().forEach(jurorNumber -> {
             // validate the juror record exists and user has ownership of the record
             validateJuror(owner, jurorNumber);
 
@@ -486,6 +491,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
             realignAttendanceType(appearance);
 
+            appearance.setAttendanceAuditNumber(juryAttendanceNumber);
+            jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance.getAttendanceAuditNumber());
+
             appearanceRepository.saveAndFlush(appearance);
             jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
 
@@ -495,6 +503,16 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             jurorPoolRepository.saveAndFlush(jurorPool);
 
         });
+    }
+
+    private String setJuryAttendanceNumber() {
+        final String juryAttendancePrefix = "J";
+
+        // get the next available attendance number from the database sequence
+        final long attendanceAuditNumber = appearanceRepository.getNextAttendanceAuditNumber();
+
+        // pad to 8 digits and add 'J' prefix for Jury Attendance
+        return juryAttendancePrefix + String.format("%08d", attendanceAuditNumber);
     }
 
     private void checkExistingAttendance(JurorNonAttendanceDto request, LocalDate nonAttendanceDate) {
