@@ -140,7 +140,7 @@ public class CourtLetterServiceImpl implements CourtLetterService {
                 DATE_PRINTED);
 
         List<String> dataTypes =
-            List.of(STRING, STRING, STRING, STRING, DATE, DATE, DATE); //
+            List.of(STRING, STRING, STRING, STRING, DATE, DATE, DATE);
 
         List<CertificateOfAttendanceLetterData> certificateOfAttendanceLetterData =
             serialiseCertificateOfAttendanceLetterData(eligibleJurorRecords,

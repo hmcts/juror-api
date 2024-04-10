@@ -21,11 +21,10 @@ public class CertificateOfAttendanceLetterData extends LetterResponseData {
 
 
     @Builder
-    CertificateOfAttendanceLetterData(String jurorNumber, String firstName, String lastName, String postcode,
-                                      String status,
+    CertificateOfAttendanceLetterData(String jurorNumber, String firstName, String lastName,
                                       LocalDate datePrinted, String poolNumber, LocalDate startDate,
                                       LocalDate completionDate) {
-        super(jurorNumber, firstName, lastName, postcode, status, datePrinted, poolNumber);
+        super(jurorNumber, firstName, lastName, null, null, datePrinted, poolNumber);
         this.startDate = startDate;
         this.completionDate = completionDate;
     }
