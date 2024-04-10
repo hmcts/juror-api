@@ -1688,22 +1688,24 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(2);
 
             JurorsOnTrialResponseDto.JurorsOnTrialResponseData first = jurorsOnTrialResponseDto.getTrialsList().get(0);
-            assertThat(first.getTrialNumber()).isEqualTo("T10000000");
+            assertThat(first.getTrialNumber()).isEqualTo("T10000001");
             assertThat(first.getParties()).isEqualTo("test trial");
             assertThat(first.getTrialType()).isEqualTo("Civil");
-            assertThat(first.getJudge()).isEqualTo("judge dredd");
-            assertThat(first.getCourtroom()).isEqualTo("big room");
-            assertThat(first.getNumberAttended()).isEqualTo(8);
-            assertThat(first.getTotalJurors()).isEqualTo(13);
+            assertThat(first.getJudge()).isEqualTo("judge jose");
+            assertThat(first.getCourtroom()).isEqualTo("small room");
+            assertThat(first.getNumberAttended()).isEqualTo(2);
+            assertThat(first.getTotalJurors()).isEqualTo(4);
+            assertThat(first.getAttendanceAudit()).isEqualTo("J00000002");
 
             JurorsOnTrialResponseDto.JurorsOnTrialResponseData second = jurorsOnTrialResponseDto.getTrialsList().get(1);
-            assertThat(second.getTrialNumber()).isEqualTo("T10000001");
+            assertThat(second.getTrialNumber()).isEqualTo("T10000002");
             assertThat(second.getParties()).isEqualTo("test trial");
             assertThat(second.getTrialType()).isEqualTo("Civil");
-            assertThat(second.getJudge()).isEqualTo("judge jose");
-            assertThat(second.getCourtroom()).isEqualTo("small room");
-            assertThat(second.getNumberAttended()).isEqualTo(0);
-            assertThat(second.getTotalJurors()).isEqualTo(4);
+            assertThat(second.getJudge()).isEqualTo("judge June");
+            assertThat(second.getCourtroom()).isEqualTo("other room");
+            assertThat(second.getNumberAttended()).isEqualTo(2);
+            assertThat(second.getTotalJurors()).isEqualTo(3);
+            assertThat(second.getAttendanceAudit()).isEqualTo("J00000003");
         }
 
         @Test
