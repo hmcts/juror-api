@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
@@ -61,6 +62,13 @@ public abstract class AbstractReport<T> {
             new Predicate[]{QPoolRequest.poolRequest.poolNumber.eq(QJurorPool.jurorPool.pool.poolNumber)}
         ));
         CLASS_TO_JOIN.put(QAppearance.appearance, Map.of(
+            QJuror.juror, new Predicate[]{QAppearance.appearance.jurorNumber.eq(QJuror.juror.jurorNumber)},
+            QJurorPool.jurorPool, new Predicate[]{
+                QJurorPool.jurorPool.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber),
+                QJurorPool.jurorPool.pool.poolNumber.eq(QAppearance.appearance.poolNumber)
+            }
+        ));
+        CLASS_TO_JOIN.put(QJurorTrial.jurorTrial, Map.of(
             QJuror.juror, new Predicate[]{QAppearance.appearance.jurorNumber.eq(QJuror.juror.jurorNumber)},
             QJurorPool.jurorPool, new Predicate[]{
                 QJurorPool.jurorPool.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber),
