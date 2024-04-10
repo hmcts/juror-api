@@ -33,10 +33,12 @@ import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.Attendance
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 
@@ -101,6 +103,9 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     @Autowired
     private JurorAppearanceService jurorAppearanceService;
+
+    @Autowired
+    private JurorHistoryRepository jurorHistoryRepository;
 
     private HttpHeaders httpHeaders;
 
@@ -1738,6 +1743,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J00123456");
 
             appearanceOpt = appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(
                 "333333333", "415230101", now().minusDays(2));
@@ -1746,7 +1752,16 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J00123456");
 
+            // verify juror history records have been created
+            assertThat(jurorHistoryRepository.findByJurorNumber("222222222")
+                .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE) &&
+                    jh.getOtherInformation().equalsIgnoreCase("J00123456"))).isTrue();
+
+            assertThat(jurorHistoryRepository.findByJurorNumber("333333333")
+                .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE) &&
+                    jh.getOtherInformation().equalsIgnoreCase("J00123456"))).isTrue();
         }
 
         @Test
