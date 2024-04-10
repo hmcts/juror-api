@@ -32,4 +32,7 @@ public abstract class LetterResponseData {
 
     @JsonProperty("pool_number")
     String poolNumber;
+
+    protected LetterResponseData() {
+    }
 }

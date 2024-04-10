@@ -24,7 +24,11 @@ public class CertificateOfAttendanceLetterData extends LetterResponseData {
     CertificateOfAttendanceLetterData(String jurorNumber, String firstName, String lastName,
                                       LocalDate datePrinted, String poolNumber, LocalDate startDate,
                                       LocalDate completionDate) {
-        super(jurorNumber, firstName, lastName, null, null, datePrinted, poolNumber);
+        this.jurorNumber = jurorNumber;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.datePrinted = datePrinted;
+        this.poolNumber = poolNumber;
         this.startDate = startDate;
         this.completionDate = completionDate;
     }
