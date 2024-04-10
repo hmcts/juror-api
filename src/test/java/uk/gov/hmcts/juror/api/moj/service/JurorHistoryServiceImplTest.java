@@ -468,6 +468,22 @@ class JurorHistoryServiceImplTest {
                 "Reminder letter printed"));
     }
 
+    @Test
+    void createJuryAttendanceHistory() {
+        String attendanceAuditNumber = "J00000001";
+        JurorPool jurorPool = createJurorPool();
+        jurorPool.setIsActive(true);
+
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.JUROR);
+        jurorPool.setStatus(jurorStatus);
+
+        jurorHistoryService.createJuryAttendanceHistory(jurorPool, attendanceAuditNumber);
+        assertValuesAdditional(jurorPool, "SYSTEM", null, null,
+            new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.JURY_ATTENDANCE,
+                attendanceAuditNumber));
+    }
+
     private void assertValuesAdditional(JurorPool jurorPool, String userId,
                                         LocalDate additionalDateInfo, String additionalReferenceInfo,
                                         JurorHistoryPartHistoryJurorHistoryExpectedValues... expectedValues) {
