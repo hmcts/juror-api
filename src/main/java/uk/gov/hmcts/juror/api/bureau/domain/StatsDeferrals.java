@@ -59,7 +59,7 @@ public class StatsDeferrals implements Serializable {
 
     @NotNull
     @Column(name = "deferral_count")
-    private Integer deferralCount;
+    private Integer excusalCount;
 
 
 }
