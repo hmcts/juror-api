@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -41,7 +42,7 @@ public class PanelSummaryReport extends AbstractStandardReport {
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorTrial.jurorTrial.trialNumber.eq(request.getTrialNumber()));
         query.where(QJurorTrial.jurorTrial.locCode.eq(SecurityUtil.getActiveOwner()));
-        query.orderBy(QJurorTrial.jurorTrial.juror.jurorNumber.asc());
+        query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override
@@ -49,7 +50,7 @@ public class PanelSummaryReport extends AbstractStandardReport {
         StandardReportRequest request,
         StandardReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
 
-        Map<String, StandardReportResponse.DataTypeValue> map = loadTrialHeaders(request, trialRepository);
+        Map<String, StandardReportResponse.DataTypeValue> map = loadPanelHeaders(request, trialRepository);
         map.put("panel_summary", StandardReportResponse.DataTypeValue.builder()
             .displayName("Panel Summary")
             .dataType(Long.class.getSimpleName())

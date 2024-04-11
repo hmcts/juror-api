@@ -923,7 +923,6 @@ class AbstractReportTest {
         }
     }
 
-
     @Nested
     @DisplayName("HashMap<String, AbstractReportResponse.DataTypeValue> loadTrialHeaders("
         + "        StandardReportRequest request)")
@@ -959,7 +958,7 @@ class AbstractReportTest {
 
             when(request.getTrialNumber()).thenReturn("T000000001");
 
-            assertThat(report.loadTrialHeaders(request, trialRepository))
+            assertThat(report.loadPanelHeaders(request, trialRepository))
                 .isEqualTo(Map.of(
                     "trial_number",
                     AbstractReportResponse.DataTypeValue.builder()
