@@ -2523,6 +2523,35 @@ class JurorAppearanceServiceTest {
         }
 
         @Test
+        void negativeNonAttendanceDayInFuture() {
+
+            TestUtils.setUpMockAuthentication(courtOwner, username, "1", List.of(courtOwner));
+
+            final JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
+                .jurorNumber(jurorNumber)
+                .nonAttendanceDate(now().plusDays(1))
+                .poolNumber(poolNumber)
+                .locationCode(courtLocationCode)
+                .build();
+
+            assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
+                    jurorAppearanceService.addNonAttendance(request))
+                .withMessage("Requested date is in the future.");
+
+            verify(courtLocationRepository, times(0)).findByLocCode(any());
+            verify(courtLocationRepository, times(0)).findById(anyString());
+            verify(jurorPoolRepository, times(0))
+                .findByJurorJurorNumberAndPoolPoolNumber(Mockito.anyString(), anyString());
+            verify(appearanceRepository, times(0))
+                .findByJurorNumberAndPoolNumberAndAttendanceDate(anyString(), anyString(), any());
+            verify(appearanceRepository, times(0)).saveAndFlush(any());
+        }
+
+
+
+
+
+        @Test
         void negativeNonAttendanceForbiddenCourtUser() {
 
             TestUtils.setUpMockAuthentication(courtOwner, username, "1", List.of(courtOwner));
