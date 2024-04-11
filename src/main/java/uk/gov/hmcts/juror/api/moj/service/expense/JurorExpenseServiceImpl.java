@@ -729,17 +729,25 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             
             if (appearance.isDraftExpense()) {
                 // calculate the total for draft
-                summaryExpenseDetailsDto.addToTotalDraft(appearance.getTotalDue());
+                if (appearance.getTotalDue() != null) {
+                    summaryExpenseDetailsDto.addToTotalDraft(appearance.getTotalDue());
+                }
             } else {
+
+                // calculate the total approved
+                if (appearance.getTotalPaid() != null) {
+                    summaryExpenseDetailsDto.addToTotalApproved(
+                        appearance.getTotalPaid());
+                }
+
                 // calculate the total for approval
-                summaryExpenseDetailsDto.addToTotalForApproval(
-                    appearance.getTotalDue().subtract(appearance.getTotalPaid()));
-
-                // calculate the total for approved
-                summaryExpenseDetailsDto.addToTotalApproved(
-                    appearance.getTotalPaid());
+                if (appearance.getTotalPaid() != null && appearance.getTotalDue() != null) {
+                    summaryExpenseDetailsDto.addToTotalForApproval(
+                        appearance.getTotalDue().subtract(appearance.getTotalPaid()));
+                } else if (appearance.getTotalDue() != null) {
+                    summaryExpenseDetailsDto.addToTotalForApproval(appearance.getTotalDue());
+                }
             }
-
         }
 
         return summaryExpenseDetailsDto;

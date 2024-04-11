@@ -24,16 +24,23 @@ public class SummaryExpenseDetailsDto {
 
     BigDecimal totalSmartCard;
 
-    public void addToTotalDraft(BigDecimal totalDraft) {
-        this.totalDraft = this.totalDraft.add(totalDraft);
+    public void SummaryExpenseDetailsDto() {
+        this.totalDraft = BigDecimal.ZERO;
+        this.totalForApproval = BigDecimal.ZERO;
+        this.totalApproved = BigDecimal.ZERO;
+        this.totalSmartCard = BigDecimal.ZERO;
     }
 
-    public void addToTotalForApproval(BigDecimal totalForApproval) {
-        this.totalForApproval = this.totalForApproval.add(totalForApproval);
+    public void addToTotalDraft(BigDecimal draft) {
+        this.totalDraft = this.totalDraft.add(draft);
     }
 
-    public void addToTotalApproved(BigDecimal totalApproved) {
-        this.totalApproved = this.totalApproved.add(totalApproved);
+    public void addToTotalForApproval(BigDecimal forApproval) {
+        this.totalForApproval = this.totalForApproval.add(forApproval);
+    }
+
+    public void addToTotalApproved(BigDecimal approved) {
+        this.totalApproved = this.totalApproved.add(approved);
     }
 
     public void addToTotalSmartCard(BigDecimal totalSmartCard) {
