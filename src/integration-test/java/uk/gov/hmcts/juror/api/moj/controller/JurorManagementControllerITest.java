@@ -33,10 +33,12 @@ import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.Attendance
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 
@@ -101,6 +103,9 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     @Autowired
     private JurorAppearanceService jurorAppearanceService;
+
+    @Autowired
+    private JurorHistoryRepository jurorHistoryRepository;
 
     private HttpHeaders httpHeaders;
 
@@ -180,6 +185,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         assertThat(appearance.getTimeOut()).isEqualTo(requestDto.getCheckOutTime());
     }
 
+
     @Test
     @DisplayName("POST addAttendanceDay() - happy path")
     @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
@@ -201,6 +207,30 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).as(HTTP_STATUS_BAD_REQUEST_MESSAGE).isEqualTo(BAD_REQUEST);
 
     }
+
+    @Test
+    @DisplayName("POST addBadPayloadAttendanceDayInFuture() - sad path")
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    void addBadPayloadAttendanceDayInFuture() {
+        AddAttendanceDayDto requestDto = AddAttendanceDayDto.builder()
+            .jurorNumber(JUROR1)
+            .poolNumber("415230101")
+            .locationCode("415")
+            //attendance day one day in future - edge case
+            .attendanceDate(now().plusDays(1))
+            .checkInTime(LocalTime.of(9, 30))
+            .checkOutTime(LocalTime.of(17, 30))
+            .build();
+
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                URI.create("/api/v1/moj/juror-management/add-attendance-day")), String.class);
+
+        assertThat(response.getStatusCode()).as("HTTP status created expected").isEqualTo(BAD_REQUEST);
+    }
+
+
 
     @Test
     @DisplayName("POST addAttendanceDay() - happy path")
@@ -1683,22 +1713,24 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(2);
 
             JurorsOnTrialResponseDto.JurorsOnTrialResponseData first = jurorsOnTrialResponseDto.getTrialsList().get(0);
-            assertThat(first.getTrialNumber()).isEqualTo("T10000000");
+            assertThat(first.getTrialNumber()).isEqualTo("T10000001");
             assertThat(first.getParties()).isEqualTo("test trial");
             assertThat(first.getTrialType()).isEqualTo("Civil");
-            assertThat(first.getJudge()).isEqualTo("judge dredd");
-            assertThat(first.getCourtroom()).isEqualTo("big room");
-            assertThat(first.getNumberAttended()).isEqualTo(8);
-            assertThat(first.getTotalJurors()).isEqualTo(13);
+            assertThat(first.getJudge()).isEqualTo("judge jose");
+            assertThat(first.getCourtroom()).isEqualTo("small room");
+            assertThat(first.getNumberAttended()).isEqualTo(2);
+            assertThat(first.getTotalJurors()).isEqualTo(4);
+            assertThat(first.getAttendanceAudit()).isEqualTo("J00000002");
 
             JurorsOnTrialResponseDto.JurorsOnTrialResponseData second = jurorsOnTrialResponseDto.getTrialsList().get(1);
-            assertThat(second.getTrialNumber()).isEqualTo("T10000001");
+            assertThat(second.getTrialNumber()).isEqualTo("T10000002");
             assertThat(second.getParties()).isEqualTo("test trial");
             assertThat(second.getTrialType()).isEqualTo("Civil");
-            assertThat(second.getJudge()).isEqualTo("judge jose");
-            assertThat(second.getCourtroom()).isEqualTo("small room");
-            assertThat(second.getNumberAttended()).isEqualTo(0);
-            assertThat(second.getTotalJurors()).isEqualTo(4);
+            assertThat(second.getJudge()).isEqualTo("judge June");
+            assertThat(second.getCourtroom()).isEqualTo("other room");
+            assertThat(second.getNumberAttended()).isEqualTo(2);
+            assertThat(second.getTotalJurors()).isEqualTo(3);
+            assertThat(second.getAttendanceAudit()).isEqualTo("J00000003");
         }
 
         @Test
@@ -1738,6 +1770,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J00123456");
 
             appearanceOpt = appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(
                 "333333333", "415230101", now().minusDays(2));
@@ -1746,7 +1779,16 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J00123456");
 
+            // verify juror history records have been created
+            assertThat(jurorHistoryRepository.findByJurorNumber("222222222")
+                .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
+                    && jh.getOtherInformation().equalsIgnoreCase("J00123456"))).isTrue();
+
+            assertThat(jurorHistoryRepository.findByJurorNumber("333333333")
+                .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
+                    && jh.getOtherInformation().equalsIgnoreCase("J00123456"))).isTrue();
         }
 
         @Test

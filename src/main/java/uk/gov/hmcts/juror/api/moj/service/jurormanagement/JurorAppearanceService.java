@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.Attendance
 
 import java.time.LocalDate;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public interface JurorAppearanceService {
 
     void addAttendanceDay(BureauJwtPayload payload, AddAttendanceDayDto dto);
