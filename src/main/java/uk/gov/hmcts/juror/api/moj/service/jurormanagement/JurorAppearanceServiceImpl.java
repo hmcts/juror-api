@@ -75,6 +75,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     @Override
     public void addAttendanceDay(BureauJwtPayload payload, AddAttendanceDayDto dto) {
 
+        //check that the appearance date is not in the future
+        checkAttendanceDateIsNotAFutureDate(dto.getAttendanceDate());
+
         JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(
             dto.getJurorNumber(), dto.getPoolNumber());
 
@@ -124,6 +127,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         // check juror status to make sure they can be checked in
         final JurorPool jurorPool = validateJurorStatus(juror);
 
+
         Appearance appearance = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
             appearanceDate);
 
@@ -164,6 +168,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         }
 
         return appearanceDataList.get(0);
+    }
+
+
+    private void checkAttendanceDateIsNotAFutureDate(LocalDate attendanceDate) {
+        if (attendanceDate.isAfter(LocalDate.now())) {
+            log.error("Requested attendance date is in the future.");
+            throw new MojException.BadRequest("Requested attendance date is in the future.", null);
+        }
     }
 
     @Override

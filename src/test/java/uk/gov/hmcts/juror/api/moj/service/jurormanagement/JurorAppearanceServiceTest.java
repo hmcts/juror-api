@@ -118,6 +118,8 @@ class JurorAppearanceServiceTest {
     private static final String OWNER_415 = "415";
     private static final String LOC_415 = "415";
 
+    private static final String JUROR_POOL_1 = "123456789";
+
     @Test
     void addAttendanceDayHappyPath() {
         jurorAppearanceService = spy(jurorAppearanceService);
@@ -129,14 +131,14 @@ class JurorAppearanceServiceTest {
         juror.setJurorNumber(JUROR_123456789);
 
         PoolRequest poolRequest = new PoolRequest();
-        poolRequest.setPoolNumber("123456789");
+        poolRequest.setPoolNumber(JUROR_POOL_1);
 
         JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
         jurorPool.setPool(poolRequest);
 
         doReturn(jurorPool).when(jurorPoolRepository)
             .findByJurorJurorNumberAndPoolPoolNumber(
-                JUROR_123456789, "123456789");
+                JUROR_123456789, JUROR_POOL_1);
 
         AddAttendanceDayDto dto = buildAddAttendanceDayDto();
         jurorAppearanceService.addAttendanceDay(buildPayload(OWNER_415, Arrays.asList("415", "462", "767")),
@@ -173,6 +175,34 @@ class JurorAppearanceServiceTest {
     }
 
     @Test
+    void addAttendanceDayBadPayloadDayInFuture() {
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_123456789);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber(JUROR_POOL_1);
+
+        JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
+        jurorPool.setPool(poolRequest);
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndPoolPoolNumber(
+                JUROR_123456789, JUROR_POOL_1);
+
+        AddAttendanceDayDto dto = buildAddAttendanceDayDto();
+        dto.setAttendanceDate(now().plusDays(1));
+
+        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
+            jurorAppearanceService.addAttendanceDay(buildPayload(OWNER_415, List.of("415", "462", "767")),
+                dto)).as("Requested attendance date is in the future.");
+
+        verify(appearanceRepository, never()).findByJurorNumberAndPoolNumberAndAttendanceDate(any(), any(), any());
+        verify(jurorRepository, never()).findByJurorNumber(any());
+        verify(jurorPoolRepository, never()).save(any());
+    }
+
+
+    @Test
     void addAttendanceDayWrongAccess() {
         jurorAppearanceService = spy(jurorAppearanceService);
 
@@ -183,14 +213,14 @@ class JurorAppearanceServiceTest {
         juror.setJurorNumber(JUROR_123456789);
 
         PoolRequest poolRequest = new PoolRequest();
-        poolRequest.setPoolNumber("123456789");
+        poolRequest.setPoolNumber(JUROR_POOL_1);
 
         JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
         jurorPool.setPool(poolRequest);
 
         doReturn(jurorPool).when(jurorPoolRepository)
             .findByJurorJurorNumberAndPoolPoolNumber(
-                JUROR_123456789, "123456789");
+                JUROR_123456789, JUROR_POOL_1);
 
         AddAttendanceDayDto dto = buildAddAttendanceDayDto();
 
@@ -236,7 +266,7 @@ class JurorAppearanceServiceTest {
         juror.setJurorNumber(JUROR_123456789);
 
         PoolRequest poolRequest = new PoolRequest();
-        poolRequest.setPoolNumber("123456789");
+        poolRequest.setPoolNumber(JUROR_POOL_1);
         JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
         jurorPool.setPool(poolRequest);
         juror.setAssociatedPools(Collections.singleton(jurorPool));
@@ -306,7 +336,7 @@ class JurorAppearanceServiceTest {
         juror.setJurorNumber(JUROR_123456789);
 
         PoolRequest poolRequest = new PoolRequest();
-        poolRequest.setPoolNumber("123456789");
+        poolRequest.setPoolNumber(JUROR_POOL_1);
         JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
         jurorPool.setPool(poolRequest);
         juror.setAssociatedPools(Collections.singleton(jurorPool));
@@ -351,7 +381,7 @@ class JurorAppearanceServiceTest {
         juror.setJurorNumber(JUROR_123456789);
 
         PoolRequest poolRequest = new PoolRequest();
-        poolRequest.setPoolNumber("123456789");
+        poolRequest.setPoolNumber(JUROR_POOL_1);
         JurorPool jurorPool = getJurorPool(juror, IJurorStatus.RESPONDED);
         jurorPool.setPool(poolRequest);
         juror.setAssociatedPools(Collections.singleton(jurorPool));
