@@ -1882,15 +1882,22 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
     void createJurorContactLogBureauUserCourtOwnedJuror() {
-        ContactLogRequestDto requestDto = createContactLogRequestDto("123456789", "LS",
+        String jurorNumber = "123456789";
+        ContactLogRequestDto requestDto = createContactLogRequestDto(jurorNumber, "LS",
             "Enquiry Notes", false);
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
                 URI.create(CONTACT_LOG_URL)), String.class);
 
         assertThat(response.getStatusCode())
-            .as("Expect the HTTP POST request to be unsuccessful")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+            .as("Expect the HTTP POST request to be successful")
+            .isEqualTo(HttpStatus.CREATED);
+
+        List<ContactLog> contactLogs = contactLogRepository.findByJurorNumber(jurorNumber);
+
+        assertThat(contactLogs.size())
+            .as("Expect a new contact log to be created")
+            .isEqualTo(3);
     }
 
     @Test
