@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "All Details available on a juror in the system ")
+@SuppressWarnings("PMD.TooManyFields")
 //TODO: validation
 public class BureauJurorDetailDto implements Serializable {
 
@@ -373,7 +374,8 @@ public class BureauJurorDetailDto implements Serializable {
         this.newFirstName = jurorDetails.getNewFirstName();
         this.lastName = jurorDetails.getLastName();
         this.newLastName = jurorDetails.getNewLastName();
-        this.replyMethod = jurorDetails.getReplyType().equals("Paper") ? ReplyMethod.PAPER : ReplyMethod.DIGITAL;
+        this.replyMethod = "Paper".equals(jurorDetails.getReplyType()) ? ReplyMethod.PAPER :
+            ReplyMethod.DIGITAL;
         this.processingStatus = jurorDetails.getProcessingStatus();
         this.completedAt = jurorDetails.getCompletedAt();
         this.status = jurorDetails.getStatus();
@@ -480,13 +482,6 @@ public class BureauJurorDetailDto implements Serializable {
     @AllArgsConstructor
     @Schema(description = "Request body for a single change log item")
     public static class ChangeLogItemDto implements Serializable {
-        public ChangeLogItemDto(ChangeLogItem entity) {
-            this.oldKeyName = entity.getOldKeyName();
-            this.oldValue = entity.getOldValue();
-            this.newKeyName = entity.getNewKeyName();
-            this.newValue = entity.getNewValue();
-        }
-
         @Schema(description = "Old key name", requiredMode = Schema.RequiredMode.REQUIRED)
         private String oldKeyName;
 
@@ -498,5 +493,13 @@ public class BureauJurorDetailDto implements Serializable {
 
         @Schema(description = "New value", requiredMode = Schema.RequiredMode.REQUIRED)
         private String newValue;
+
+        public ChangeLogItemDto(ChangeLogItem entity) {
+            this.oldKeyName = entity.getOldKeyName();
+            this.oldValue = entity.getOldValue();
+            this.newKeyName = entity.getNewKeyName();
+            this.newValue = entity.getNewValue();
+        }
+
     }
 }
