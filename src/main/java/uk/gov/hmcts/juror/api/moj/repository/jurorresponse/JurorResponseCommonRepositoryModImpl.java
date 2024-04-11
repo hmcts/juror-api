@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.JurorResponseRetrieveRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCommon;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QJurorResponseCommon;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QPaperResponse;

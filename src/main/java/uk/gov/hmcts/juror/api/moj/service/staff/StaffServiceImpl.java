@@ -53,6 +53,11 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     @Transactional
+    @SuppressWarnings({"PMD.NcssCount",
+        "PMD.CognitiveComplexity",
+        "PMD.NPathComplexity",
+        "PMD.LawOfDemeter",
+        "PMD.CyclomaticComplexity"})
     public StaffAssignmentResponseDto changeAssignment(final StaffAssignmentRequestDto staffAssignmentRequestDto,
                                                        final String currentUser) {
         // 1. validate input

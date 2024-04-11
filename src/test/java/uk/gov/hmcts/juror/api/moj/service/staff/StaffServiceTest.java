@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.moj.service.staff;
 
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -14,7 +13,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.bureau.controller.request.StaffAssignmentRequestDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffAssignmentResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
-import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
@@ -29,8 +27,6 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
 
-import java.awt.print.Paper;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -42,9 +38,9 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(SpringExtension.class)
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class StaffServiceTest {
     @Mock
     private UserRepository mockuserRepository;
@@ -103,9 +99,9 @@ public class StaffServiceTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"Paper", "Digital"})
-    public void changeAssignment_happy(String replyType) {
+    void happy(String replyType) {
         AbstractJurorResponse jurorResponse;
-        if (replyType.equals("Digital")) {
+        if ("Digital".equals(replyType)) {
             jurorResponse = DigitalResponse.builder()
                 .jurorNumber(JUROR_NUMBER)
                 .replyType(ReplyType.builder().type(replyType).build())
@@ -142,11 +138,11 @@ public class StaffServiceTest {
         verify(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
         verify(mockuserRepository).findByUsername(TARGET_LOGIN);
         verify(mockStaffJurorResponseAuditRepository).save(any(StaffJurorResponseAuditMod.class));
-        if(replyType.equals("Digital")) {
+        if ("Digital".equals(replyType)) {
             verify(mockEntityManager).detach(any());
         }
 
-        if (replyType.equals("Digital")) {
+        if ("Digital".equals(replyType)) {
             ArgumentCaptor<DigitalResponse> digitalResponseArgumentCaptor =
                 ArgumentCaptor.forClass(DigitalResponse.class);
 
@@ -167,11 +163,11 @@ public class StaffServiceTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"Paper", "Digital"})
-    public void changeAssignment_happy_nullStaffAssignment(String replyType) {
+    void happyNullStaffAssignment(String replyType) {
 
 
         AbstractJurorResponse jurorResponse;
-        if (replyType.equals("Digital")) {
+        if ("Digital".equals(replyType)) {
             jurorResponse = DigitalResponse.builder()
                 .jurorNumber(JUROR_NUMBER)
                 .replyType(ReplyType.builder().type(replyType).build())
@@ -210,7 +206,7 @@ public class StaffServiceTest {
         verify(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         verify(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
         verify(mockStaffJurorResponseAuditRepository).save(any(StaffJurorResponseAuditMod.class));
-        if (replyType.equals("Digital")) {
+        if ("Digital".equals(replyType)) {
             ArgumentCaptor<DigitalResponse> digitalResponseArgumentCaptor =
                 ArgumentCaptor.forClass(DigitalResponse.class);
 
@@ -227,9 +223,9 @@ public class StaffServiceTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"Paper", "Digital"})
-    public void changeAssignment_unhappy_nullStaffAssignmentNotTeamLeader(String replyType) {
+    void unhappyNullStaffAssignmentNotTeamLeader(String replyType) {
         AbstractJurorResponse jurorResponse;
-        if (replyType.equals("Digital")) {
+        if ("Digital".equals(replyType)) {
             jurorResponse = DigitalResponse.builder()
                 .jurorNumber(JUROR_NUMBER)
                 .replyType(ReplyType.builder().type(replyType).build())
@@ -265,31 +261,31 @@ public class StaffServiceTest {
         doReturn(normalUser).when(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         MojException.Forbidden exception = Assertions.assertThrows(MojException.Forbidden.class,
             () -> staffService.changeAssignment(dto,
-            ASSIGNING_LOGIN));
+                ASSIGNING_LOGIN));
         assertThat(exception.getMessage())
             .as("Exception message")
             .isEqualTo("Unable to assign response for Juror 123456789 to backlog as user assigner does not have "
                 + "rights");
 
-                verify(mockJurorResponseRepository,times(0)).save(any());
-        verify(paperResponseRepositoryMod,times(0)).save(any());
+        verify(mockJurorResponseRepository, times(0)).save(any());
+        verify(paperResponseRepositoryMod, times(0)).save(any());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"Paper", "Digital"})
-    public void changeAssignment_unhappy_throwsExceptionOnNoStaffRecord() {
+    void unhappyThrowsExceptionOnNoStaffRecord() {
         doReturn(null).when(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         Assertions.assertThrows(MojException.NotFound.class, () -> staffService.changeAssignment(DTO, ASSIGNING_LOGIN));
 
-                verify(mockJurorResponseRepository,times(0)).save(any());
-        verify(paperResponseRepositoryMod,times(0)).save(any());
+        verify(mockJurorResponseRepository, times(0)).save(any());
+        verify(paperResponseRepositoryMod, times(0)).save(any());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"Paper", "Digital"})
-    public void changeAssignment_unhappy_throwsExceptionOnNoJurorResponse(String replyType) {
+    void unhappyThrowsExceptionOnNoJurorResponse(String replyType) {
         AbstractJurorResponse jurorResponse;
-        if (replyType.equals("Digital")) {
+        if ("Digital".equals(replyType)) {
             jurorResponse = DigitalResponse.builder()
                 .jurorNumber(JUROR_NUMBER)
                 .replyType(ReplyType.builder().type(replyType).build())
@@ -313,19 +309,19 @@ public class StaffServiceTest {
         doReturn(jurorResponse).when(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
         Assertions.assertThrows(MojException.NotFound.class, () -> staffService.changeAssignment(DTO, ASSIGNING_LOGIN));
 
-                verify(mockJurorResponseRepository,times(0)).save(any());
-        verify(paperResponseRepositoryMod,times(0)).save(any());
+        verify(mockJurorResponseRepository, times(0)).save(any());
+        verify(paperResponseRepositoryMod, times(0)).save(any());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"Paper", "Digital"})
-    public void changeAssignment_unhappy_throwsExceptionOnNoAssignmentTargetStaffRecord(String replyType) {
+    void unhappyThrowsExceptionOnNoAssignmentTargetStaffRecord(String replyType) {
         given(mockuserRepository.findByUsername(anyString()))
             .willReturn(ASSIGNER_STAFF_ENTITY)  // 1st call
             .willReturn(null);
 
         AbstractJurorResponse jurorResponse;
-        if (replyType.equals("Digital")) {
+        if ("Digital".equals(replyType)) {
             jurorResponse = DigitalResponse.builder()
                 .jurorNumber(JUROR_NUMBER)
                 .replyType(ReplyType.builder().type(replyType).build())
@@ -347,16 +343,16 @@ public class StaffServiceTest {
 
         given(jurorResponseCommonRepositoryMod.findByJurorNumber(JUROR_NUMBER)).willReturn(jurorResponse);
         Assertions.assertThrows(MojException.NotFound.class, () -> staffService.changeAssignment(DTO, ASSIGNING_LOGIN));
-                verify(mockJurorResponseRepository,times(0)).save(any());
-        verify(paperResponseRepositoryMod,times(0)).save(any());
+        verify(mockJurorResponseRepository, times(0)).save(any());
+        verify(paperResponseRepositoryMod, times(0)).save(any());
 
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"Paper", "Digital"})
-    public void changeAssignment_unhappy_throwsExceptionOnAutoUser(String replyType) {
+    void unhappyThrowsExceptionOnAutoUser(String replyType) {
         AbstractJurorResponse jurorResponse;
-        if (replyType.equals("Digital")) {
+        if ("Digital".equals(replyType)) {
             jurorResponse = DigitalResponse.builder()
                 .jurorNumber(JUROR_NUMBER)
                 .replyType(ReplyType.builder().type(replyType).build())
@@ -387,24 +383,24 @@ public class StaffServiceTest {
         doReturn(jurorResponse).when(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
         MojException.BusinessRuleViolation exception = Assertions.assertThrows(MojException.BusinessRuleViolation.class,
             () -> staffService.changeAssignment(dto,
-            ASSIGNING_LOGIN));
+                ASSIGNING_LOGIN));
 
         assertThat(exception.getMessage())
             .as("Exception message")
             .isEqualTo("Cannot change assignment to user AUTO");
 
-                verify(mockJurorResponseRepository,times(0)).save(any());
-        verify(paperResponseRepositoryMod,times(0)).save(any());
+        verify(mockJurorResponseRepository, times(0)).save(any());
+        verify(paperResponseRepositoryMod, times(0)).save(any());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"Paper", "Digital"})
-    public void changeAssignment_unhappy_urgentJurorResponse(String replyType) {
+    void unhappyUrgentJurorResponse(String replyType) {
         doReturn(ASSIGNER_STAFF_ENTITY).when(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         doReturn(TARGET_LOGIN_ENTITY).when(mockuserRepository).findByUsername(TARGET_LOGIN);
 
         AbstractJurorResponse jurorResponse;
-        if (replyType.equals("Digital")) {
+        if ("Digital".equals(replyType)) {
             jurorResponse = DigitalResponse.builder()
                 .jurorNumber(JUROR_NUMBER)
                 .replyType(ReplyType.builder().type(replyType).build())
@@ -432,23 +428,23 @@ public class StaffServiceTest {
         doReturn(jurorResponse).when(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
         MojException.BusinessRuleViolation exception = Assertions.assertThrows(MojException.BusinessRuleViolation.class,
             () -> staffService.changeAssignment(dto,
-            ASSIGNING_LOGIN));
+                ASSIGNING_LOGIN));
         assertThat(exception.getMessage())
             .as("Exception Message")
             .isEqualTo("Unable to assign response for Juror 123456789 to backlog as it is urgent");
 
-                verify(mockJurorResponseRepository,times(0)).save(any());
-        verify(paperResponseRepositoryMod,times(0)).save(any());
+        verify(mockJurorResponseRepository, times(0)).save(any());
+        verify(paperResponseRepositoryMod, times(0)).save(any());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"Paper", "Digital"})
-    public void changeAssignment_unhappy_superUrgentJurorResponse(String replyType) {
+    void unhappySuperUrgentJurorResponse(String replyType) {
         doReturn(ASSIGNER_STAFF_ENTITY).when(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         doReturn(TARGET_LOGIN_ENTITY).when(mockuserRepository).findByUsername(TARGET_LOGIN);
 
         AbstractJurorResponse jurorResponse;
-        if (replyType.equals("Digital")) {
+        if ("Digital".equals(replyType)) {
             jurorResponse = DigitalResponse.builder()
                 .jurorNumber(JUROR_NUMBER)
                 .replyType(ReplyType.builder().type(replyType).build())
@@ -481,19 +477,19 @@ public class StaffServiceTest {
             .as("Exception Message")
             .isEqualTo("Unable to assign response for Juror 123456789 to backlog as it is super-urgent");
 
-                verify(mockJurorResponseRepository,times(0)).save(any());
-        verify(paperResponseRepositoryMod,times(0)).save(any());
+        verify(mockJurorResponseRepository, times(0)).save(any());
+        verify(paperResponseRepositoryMod, times(0)).save(any());
     }
 
     @ParameterizedTest
     @MethodSource("generator")
-    public void changeAssignment_unhappy_incorrectProcessingStatus(Map<String, ProcessingStatus> statusMap) {
+    void unhappyIncorrectProcessingStatus(Map<String, ProcessingStatus> statusMap) {
         doReturn(ASSIGNER_STAFF_ENTITY).when(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         doReturn(TARGET_LOGIN_ENTITY).when(mockuserRepository).findByUsername(TARGET_LOGIN);
         String replyType = statusMap.keySet().toArray(new String[1])[0];
 
         AbstractJurorResponse jurorResponse;
-        if (replyType.equals("Digital")) {
+        if ("Digital".equals(replyType)) {
             jurorResponse = DigitalResponse.builder()
                 .jurorNumber(JUROR_NUMBER)
                 .replyType(ReplyType.builder().type(replyType).build())
@@ -527,18 +523,18 @@ public class StaffServiceTest {
             .isEqualTo("Unable to assign response for Juror 123456789 to backlog as the processing status is "
                 + statusMap.get(replyType));
 
-                verify(mockJurorResponseRepository,times(0)).save(any());
-        verify(paperResponseRepositoryMod,times(0)).save(any());
+        verify(mockJurorResponseRepository, times(0)).save(any());
+        verify(paperResponseRepositoryMod, times(0)).save(any());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"Paper", "Digital"})
-    public void changeAssignment_unhappy_processingStatusComplete(String replyType) {
+    void unhappyProcessingStatusComplete(String replyType) {
         doReturn(ASSIGNER_STAFF_ENTITY).when(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         doReturn(TARGET_LOGIN_ENTITY).when(mockuserRepository).findByUsername(TARGET_LOGIN);
 
         AbstractJurorResponse jurorResponse;
-        if (replyType.equals("Digital")) {
+        if ("Digital".equals(replyType)) {
             jurorResponse = DigitalResponse.builder()
                 .jurorNumber(JUROR_NUMBER)
                 .replyType(ReplyType.builder().type(replyType).build())
@@ -572,18 +568,18 @@ public class StaffServiceTest {
             .as("Exception Message")
             .isEqualTo("Rejected assignment as the response is already closed: 123456789");
 
-        verify(mockJurorResponseRepository,times(0)).save(any());
-        verify(paperResponseRepositoryMod,times(0)).save(any());
+        verify(mockJurorResponseRepository, times(0)).save(any());
+        verify(paperResponseRepositoryMod, times(0)).save(any());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"Paper", "Digital"})
-    public void changeAssignment_unhappy_processingStatusClosed(String replyType) {
+    void unhappyProcessingStatusClosed(String replyType) {
         doReturn(ASSIGNER_STAFF_ENTITY).when(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         doReturn(TARGET_LOGIN_ENTITY).when(mockuserRepository).findByUsername(TARGET_LOGIN);
 
         AbstractJurorResponse jurorResponse;
-        if (replyType.equals("Digital")) {
+        if ("Digital".equals(replyType)) {
             jurorResponse = DigitalResponse.builder()
                 .jurorNumber(JUROR_NUMBER)
                 .replyType(ReplyType.builder().type(replyType).build())
@@ -617,8 +613,8 @@ public class StaffServiceTest {
             .as("Exception Message")
             .isEqualTo("Rejected assignment as the response is already closed: 123456789");
 
-                verify(mockJurorResponseRepository,times(0)).save(any());
-        verify(paperResponseRepositoryMod,times(0)).save(any());
+        verify(mockJurorResponseRepository, times(0)).save(any());
+        verify(paperResponseRepositoryMod, times(0)).save(any());
     }
 
     private static Stream<Map<String, ProcessingStatus>> generator() {

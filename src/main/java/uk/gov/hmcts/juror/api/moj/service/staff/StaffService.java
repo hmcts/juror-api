@@ -4,6 +4,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.request.StaffAssignmentRequestDt
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffAssignmentResponseDto;
 
 public interface StaffService {
-    StaffAssignmentResponseDto changeAssignment(final StaffAssignmentRequestDto staffAssignmentRequestDto,
-                                                final String currentUser);
+    StaffAssignmentResponseDto changeAssignment(StaffAssignmentRequestDto staffAssignmentRequestDto,
+                                                String currentUser);
 }

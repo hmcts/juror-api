@@ -34,10 +34,12 @@ import static org.springframework.http.HttpMethod.POST;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DisplayName("Controller: " + AdministrationCourtRoomControllerITest.BASE_URL)
+@DisplayName("Controller: " + StaffControllerITest.BASE_URL)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@Sql(scripts = "/db/mod/truncate.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
+@SuppressWarnings("PMD.TooManyMethods")
 public class StaffControllerITest extends AbstractIntegrationTest {
-    private final String BASE_URL = "/api/v1/moj/staff";
+    static final String BASE_URL = "/api/v1/moj/staff";
 
     private HttpHeaders httpHeaders;
     @Autowired
@@ -56,6 +58,7 @@ public class StaffControllerITest extends AbstractIntegrationTest {
         super.setUp();
         initHeadersTeamLeader();
     }
+
 
     private void initHeadersTeamLeader() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
@@ -119,8 +122,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
         @Nested
         class Positive {
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void assignToUser() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void assignToUser() {
                 String jurorNumber = "586856852";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo("jmcbob")
@@ -141,8 +144,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void nullStaffAssignment() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void nullStaffAssignment() {
                 String jurorNumber = "586856851";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo(null)
@@ -167,8 +170,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
         @Nested
         class Negative {
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void nullStaffAssignmentNotTeamLeader() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void nullStaffAssignmentNotTeamLeader() {
                 initHeadersNormalUser();
                 String jurorNumber = "586856851";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
@@ -190,8 +193,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void noStaffRecord() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void noStaffRecord() {
                 initHeadersBadUsername();
                 String jurorNumber = "586856852";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
@@ -213,8 +216,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void noJurorResponse() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void noJurorResponse() {
                 String jurorNumber = "999999999";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo("jmcbob")
@@ -232,8 +235,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void noAssignmentTargetStaffRecord() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void noAssignmentTargetStaffRecord() {
                 String jurorNumber = "586856852";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo("jmccbob")
@@ -256,8 +259,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
             @Test
             @SneakyThrows
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void refuseAutoUser() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void refuseAutoUser() {
                 String jurorNumber = "586856852";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo("AUTO")
@@ -278,8 +281,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void urgentJurorResponse() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void urgentJurorResponse() {
                 String jurorNumber = "586856853";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo(null)
@@ -301,8 +304,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void superUrgentJurorResponse() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void superUrgentJurorResponse() {
                 String jurorNumber = "586856854";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo(null)
@@ -324,8 +327,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
             @Test
             @SneakyThrows
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void incorrectProcessingStatus() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void incorrectProcessingStatus() {
                 String jurorNumber = "586856855";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo(null)
@@ -346,8 +349,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void processingStatusComplete() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void processingStatusComplete() {
                 String jurorNumber = "586856856";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo("jmcbob")
@@ -369,8 +372,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void processingStatusClosed() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void processingStatusClosed() {
                 String jurorNumber = "586856857";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo("jmcbob")
@@ -391,8 +394,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void courtUser() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void courtUser() {
                 initHeadersCourtUser();
                 String jurorNumber = "586856857";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
@@ -420,8 +423,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
         @Nested
         class Positive {
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void assignToUser() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void assignToUser() {
                 String jurorNumber = "686856852";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo("jmcbob")
@@ -442,8 +445,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void nullStaffAssignment() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void nullStaffAssignment() {
                 String jurorNumber = "686856851";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo(null)
@@ -468,8 +471,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
         @Nested
         class Negative {
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void nullStaffAssignmentNotTeamLeader() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void nullStaffAssignmentNotTeamLeader() {
                 initHeadersNormalUser();
                 String jurorNumber = "686856851";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
@@ -491,8 +494,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void noStaffRecord() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void noStaffRecord() {
                 initHeadersBadUsername();
                 String jurorNumber = "686856852";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
@@ -514,8 +517,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void noJurorResponse() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void noJurorResponse() {
                 String jurorNumber = "999999999";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo("jmcbob")
@@ -533,8 +536,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void noAssignmentTargetStaffRecord() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void noAssignmentTargetStaffRecord() {
                 String jurorNumber = "686856852";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo("jmccbob")
@@ -557,8 +560,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
             @Test
             @SneakyThrows
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void refuseAutoUser() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void refuseAutoUser() {
                 String jurorNumber = "686856852";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo("AUTO")
@@ -579,8 +582,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void urgentJurorResponse() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void urgentJurorResponse() {
                 String jurorNumber = "686856853";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo(null)
@@ -602,8 +605,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void superUrgentJurorResponse() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void superUrgentJurorResponse() {
                 String jurorNumber = "686856854";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo(null)
@@ -625,8 +628,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
             @Test
             @SneakyThrows
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void incorrectProcessingStatus() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void incorrectProcessingStatus() {
                 String jurorNumber = "686856855";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo(null)
@@ -647,8 +650,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void processingStatusComplete() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void processingStatusComplete() {
                 String jurorNumber = "686856856";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo("jmcbob")
@@ -670,8 +673,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void processingStatusClosed() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void processingStatusClosed() {
                 String jurorNumber = "686856857";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
                     .assignTo("jmcbob")
@@ -692,8 +695,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @Sql({"/db/mod/truncate.sql", "/db/staff/changeAssignment.sql"})
-            public void courtUser() {
+            @Sql({"/db/staff/changeAssignment.sql"})
+            void courtUser() {
                 initHeadersCourtUser();
                 String jurorNumber = "686856857";
                 StaffAssignmentRequestDto requestDto = StaffAssignmentRequestDto.builder()
