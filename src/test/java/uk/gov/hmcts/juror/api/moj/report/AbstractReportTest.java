@@ -98,7 +98,8 @@ class AbstractReportTest {
     class ClassToJoinTest {
         @Test
         void sizeCheck() {
-            assertThat(AbstractReport.CLASS_TO_JOIN).hasSize(4);
+            assertThat(AbstractReport.CLASS_TO_JOIN).hasSize(5);
+            assertThat(AbstractReport.CLASS_TO_JOIN.get(QJurorTrial.jurorTrial)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QJuror.juror)).hasSize(2);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QJurorPool.jurorPool)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest)).hasSize(1);
