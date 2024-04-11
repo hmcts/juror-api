@@ -995,7 +995,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     private void validateTheNumberOfJurorsToUpdate(UpdateAttendanceDto request) {
         UpdateAttendanceDto.CommonData commonData = request.getCommonData();
 
-        if (commonData.getSingleJuror().equals(Boolean.TRUE) && (request.getJuror().size() > 1)) {
+        if (commonData.getSingleJuror().equals(Boolean.TRUE) && request.getJuror().size() > 1) {
             throw new MojException.BadRequest("Multiple jurors not allowed for single record "
                 + "update", null);
         }
