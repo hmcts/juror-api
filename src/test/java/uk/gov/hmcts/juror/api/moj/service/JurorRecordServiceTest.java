@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
+import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
@@ -72,6 +73,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.IdCheckCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
@@ -137,7 +139,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.LawOfDemeter", "PMD.CouplingBetweenObjects",
@@ -1099,6 +1100,7 @@ class JurorRecordServiceTest {
         jurorPool.setOwner(owner);
         jurorPool.setPool(poolRequest);
         jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
+        jurorPool.setDateCreated(LocalDateTime.now().minusDays(3));
 
         juror.setAssociatedPools(Set.of(jurorPool));
         jurorPool.setJuror(juror);
@@ -1129,6 +1131,7 @@ class JurorRecordServiceTest {
         jurorPool.setOwner(owner);
         jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
         jurorPool.setPool(poolRequest);
+        jurorPool.setDateCreated(LocalDateTime.now().minusDays(5));
 
         juror.setAssociatedPools(Set.of(jurorPool));
         jurorPool.setJuror(juror);
@@ -1393,12 +1396,12 @@ class JurorRecordServiceTest {
         doReturn(createJurorPoolList(jurorNumber, bureauOwnerCode)).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
         doReturn(Optional.of(new ModJurorDetail())).when(jurorDetailRepositoryMod).findById(jurorNumber);
-        doReturn(new BureauJurorDetailDto()).when(bureauService).mapJurorDetailsToDto(any());
+        doReturn(createBureauJurorDetailDto(jurorNumber)).when(bureauService).mapJurorDetailsToDto(any());
 
         jurorRecordService.getBureauDetailsByJurorNumber(jurorNumber, bureauOwnerCode);
 
         // current user is bureau so no need to query records and check ownership for read only permission
-        verify(jurorPoolRepository, times(1))
+        verify(jurorPoolRepository, times(2))
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
 
         verify(jurorDetailRepositoryMod, times(1)).findById(jurorNumber);
@@ -1412,15 +1415,14 @@ class JurorRecordServiceTest {
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, courtOwnerCode);
         jurorPools.add(createValidJurorPool(jurorNumber, "435"));
 
-        doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPools).when(jurorPoolRepository).findByJurorJurorNumberAndIsActive(jurorNumber, true);
         doReturn(Optional.of(new ModJurorDetail())).when(jurorDetailRepositoryMod).findById(jurorNumber);
-        doReturn(new BureauJurorDetailDto()).when(bureauService).mapJurorDetailsToDto(any());
+
+        doReturn(createBureauJurorDetailDto(jurorNumber)).when(bureauService).mapJurorDetailsToDto(any());
 
         jurorRecordService.getBureauDetailsByJurorNumber(jurorNumber, courtOwnerCode);
 
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolRepository, times(2)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
         verify(jurorDetailRepositoryMod, times(1)).findById(jurorNumber);
         verify(bureauService, times(1)).mapJurorDetailsToDto(any());
     }
@@ -3671,4 +3673,103 @@ class JurorRecordServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("Confirm juror identity")
+    class ConfirmJurorIdentity {
+
+        @Test
+        void happyPath() {
+            TestUtils.setUpMockAuthentication("415", "CourtUser", "1", List.of("415"));
+            String jurorNumber = "111111111";
+
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.L)
+                .build();
+
+            JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, "415");
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true))
+                .thenReturn(Collections.singletonList(jurorPool));
+            jurorRecordService.confirmIdentity(dto);
+
+            ArgumentCaptor<JurorPool> jurorPoolArgumentCaptor = ArgumentCaptor.forClass(JurorPool.class);
+
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            verify(jurorPoolRepository, times(1))
+                .save(jurorPoolArgumentCaptor.capture());
+
+            JurorPool updatedJurorPool = jurorPoolArgumentCaptor.getValue();
+            assertEquals(IdCheckCodeEnum.L.getCode(), updatedJurorPool.getIdChecked());
+
+            verify(jurorHistoryService, times(1)).createIdentityConfirmedHistory(jurorPool);
+
+        }
+
+        @Test
+        void wrongCourtUser() {
+            TestUtils.setUpMockAuthentication("416", "CourtUser", "1", List.of("416"));
+            String jurorNumber = "111111111";
+
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.L)
+                .build();
+
+            JurorPool jurorPool = createValidJurorPool(jurorNumber, "415");
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true))
+                .thenReturn(Collections.singletonList(jurorPool));
+
+            MojException.Forbidden exception
+                = assertThrows(MojException.Forbidden.class, () -> jurorRecordService.confirmIdentity(dto),
+                "Forbidden exception");
+
+            assertEquals("Current user (416) does not own any Juror "
+                    + "Pool associations for Juror Number: " + jurorNumber,
+                exception.getMessage(), "Exception message should match");
+
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            verify(jurorPoolRepository, times(0)).save(any(JurorPool.class));
+            verify(jurorHistoryService, times(0)).createIdentityConfirmedHistory(any(JurorPool.class));
+
+        }
+
+
+        @Test
+        void jurorNotFound() {
+            TestUtils.setUpMockAuthentication("416", "CourtUser", "1", List.of("416"));
+            String jurorNumber = "111111111";
+
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.L)
+                .build();
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true))
+                .thenReturn(Collections.emptyList());
+
+            MojException.NotFound exception
+                = assertThrows(MojException.NotFound.class, () -> jurorRecordService.confirmIdentity(dto),
+                "Not found");
+
+            assertEquals("Unable to find any Juror Pool associations for juror number " + jurorNumber,
+                exception.getMessage(), "Exception message should match");
+
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            verify(jurorPoolRepository, times(0)).save(any(JurorPool.class));
+            verify(jurorHistoryService, times(0)).createIdentityConfirmedHistory(any(JurorPool.class));
+
+        }
+    }
+
+    private BureauJurorDetailDto createBureauJurorDetailDto(String jurorNumber) {
+
+        BureauJurorDetailDto bureauJurorDetailDto = new BureauJurorDetailDto();
+        bureauJurorDetailDto.setJurorNumber(jurorNumber);
+
+        return bureauJurorDetailDto;
+    }
 }
