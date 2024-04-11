@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetterRepository;
+import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
@@ -75,6 +76,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.IdCheckCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -4851,6 +4853,59 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             return requestDto;
         }
+    }
+
+    @Nested
+    @DisplayName("Confirm Juror Identity")
+    class ConfirmJurorIdentity {
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_InitConfirmJurorIdentity.sql"})
+        void confirmJurorIdentityHappyPath() throws Exception {
+            final String url = BASE_URL + "/confirm-identity";
+            String jurorNumber = "111111111";
+
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.C)
+                .build();
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+                JURY_OFFICER_LEVEL));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
+                    URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be OK")
+                .isEqualTo(HttpStatus.OK);
+
+            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
+
+            assertThat(jurorPool.getIdChecked()).isEqualTo('C');
+
+        }
+
+        @Test
+        void confirmJurorIdentityBureauNoAccess() throws Exception {
+            final String url = BASE_URL + "/confirm-identity";
+            String jurorNumber = "111111111";
+
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.C)
+                .build();
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
+                    URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be FORBIDDEN")
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        }
+
     }
 
     private void verifyBulkPrintData(String jurorNumber, String formCode) {
