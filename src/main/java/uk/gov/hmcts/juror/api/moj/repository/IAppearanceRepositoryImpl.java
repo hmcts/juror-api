@@ -138,8 +138,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .join(JUROR_POOL)
             .on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber))
             .join(APPEARANCE)
-            .on(JUROR.jurorNumber.eq(APPEARANCE.jurorNumber).
-                and(APPEARANCE.courtLocation.eq(JUROR_POOL.pool.courtLocation)))
+            .on(JUROR.jurorNumber.eq(APPEARANCE.jurorNumber)
+                .and(APPEARANCE.courtLocation.eq(JUROR_POOL.pool.courtLocation)))
             .where(APPEARANCE.courtLocation.locCode.eq(locCode))
             .where(APPEARANCE.attendanceDate.eq(date))
             .where(JUROR_POOL.status.status.in(jurorStatuses))
