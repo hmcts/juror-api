@@ -47,7 +47,10 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.GodClass"})
+@SuppressWarnings({"PMD.TooManyMethods",
+    "PMD.ExcessiveImports",
+    "PMD.GodClass",
+    "PMD.PotentialLawOfDemeterViolation"})
 public class JurorManagementServiceImpl implements JurorManagementService {
 
     @NonNull
