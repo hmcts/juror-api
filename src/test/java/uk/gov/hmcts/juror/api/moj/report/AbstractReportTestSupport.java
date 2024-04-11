@@ -51,7 +51,6 @@ public abstract class AbstractReportTestSupport<
     private final Class<?> validatorClass;
     protected R report;
     private PoolRequestRepository poolRequestRepository;
-
     private final Validator validator;
 
     public abstract R createReport(PoolRequestRepository poolRequestRepository);
@@ -132,7 +131,6 @@ public abstract class AbstractReportTestSupport<
         doReturn(data).when(tableData).getData();
         Map<String, AbstractReportResponse.DataTypeValue> standardPoolMappings = getStandardPoolHeaders();
         doReturn(standardPoolMappings).when(report).loadStandardPoolHeaders(request, true, true);
-
         Map<String, AbstractReportResponse.DataTypeValue> headings =
             positiveGetHeadingsTypical(request, tableData, data);
         //Is set via getStandardReportResponse so should not be set here

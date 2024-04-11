@@ -925,7 +925,7 @@ class AbstractReportTest {
 
 
     @Nested
-    @DisplayName("HashMap<String, AbstractReportResponse.DataTypeValue> loadStandardPoolHeaders("
+    @DisplayName("HashMap<String, AbstractReportResponse.DataTypeValue> loadTrialHeaders("
         + "        StandardReportRequest request)")
     class LoadTrialHeaders {
         @Test

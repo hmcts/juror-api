@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -42,7 +41,7 @@ public class PanelSummaryReport extends AbstractStandardReport {
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorTrial.jurorTrial.trialNumber.eq(request.getTrialNumber()));
         query.where(QJurorTrial.jurorTrial.locCode.eq(SecurityUtil.getActiveOwner()));
-        query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
+        query.orderBy(QJurorTrial.jurorTrial.juror.jurorNumber.asc());
     }
 
     @Override

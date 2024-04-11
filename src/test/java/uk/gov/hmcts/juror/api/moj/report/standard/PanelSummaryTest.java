@@ -2,22 +2,40 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import uk.gov.hmcts.juror.api.TestConstants;
+import uk.gov.hmcts.juror.api.TestUtils;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
+import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,8 +43,18 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings("PMD.LawOfDemeter")
 class PanelSummaryTest extends AbstractStandardReportTestSupport<PanelSummaryReport> {
 
-    @Mock
+    private MockedStatic<SecurityUtil> securityUtilMockedStatic;
+
     private TrialRepository trialRepository;
+
+
+
+    private void mockCurrentUser(String owner) {
+        securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
+        securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
+            .thenReturn(owner);
+    }
+
 
     public PanelSummaryTest() {
         super(QJurorTrial.jurorTrial,
@@ -44,32 +72,85 @@ class PanelSummaryTest extends AbstractStandardReportTestSupport<PanelSummaryRep
 
     @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+        BureauJwtPayload payload = TestUtils.createJwt("415", "COURT_USER");
+        mockCurrentUser(payload.getOwner());
+
         request.setTrialNumber(TestConstants.VALID_TRIAL_NUMBER);
         report.preProcessQuery(query, request);
         verify(query, times(1))
             .where(QJurorTrial.jurorTrial.trialNumber.eq(TestConstants.VALID_TRIAL_NUMBER));
-        verify(query, times(1));
         verify(query, times(1))
             .where(QJurorTrial.jurorTrial.locCode.eq(TestConstants.VALID_COURT_LOCATION));
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
-        StandardReportRequest request,
+    public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(StandardReportRequest request,
         AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
         List<LinkedHashMap<String, Object>> data) {
-        
+
+        BureauJwtPayload payload = TestUtils.createJwt("415", "COURT_USER");
+        mockCurrentUser(payload.getOwner());
+
+        Trial trial = mock(Trial.class);
+
+        doReturn(trial).when(report).getTrial(any(), any());
+
+        CourtLocation courtLocation = mock(CourtLocation.class);
+
+        Courtroom courtroom = mock(Courtroom.class);
+
+        Judge judge = mock(Judge.class);
+
+        when(trial.getCourtLocation()).thenReturn(courtLocation);
+        when(trial.getCourtroom()).thenReturn(courtroom);
+        when(trial.getCourtLocation().getLocCode()).thenReturn("415");
+        when(trial.getCourtLocation().getName()).thenReturn("Chester");
+        when(trial.getCourtroom().getDescription()).thenReturn("COURT 3");
+
+        when(trial.getDescription()).thenReturn("Someone Name");
+
+        when(trial.getJudge()).thenReturn(judge);
+
+        when(trial.getJudge().getName()).thenReturn("Judge Dredd");
+
+        when(request.getTrialNumber()).thenReturn("T000000001");
+
+
         when(data.size()).thenReturn(2);
         Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);
         assertHeadingContains(map,
             request,
-            true,
+            false,
             Map.of(
-                "panel_summary",
-                StandardReportResponse.DataTypeValue.builder()
+                "panel_summary", AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Panel Summary")
                     .dataType(Long.class.getSimpleName())
                     .value(2)
+                    .build(),
+                "trial_number", AbstractReportResponse.DataTypeValue.builder()
+                    .displayName("Trial Number")
+                    .dataType(String.class.getSimpleName())
+                    .value(TestConstants.VALID_TRIAL_NUMBER)
+                    .build(),
+                "names", AbstractReportResponse.DataTypeValue.builder()
+                    .displayName("Names")
+                    .dataType(String.class.getSimpleName())
+                    .value("Someone Name")
+                    .build(),
+                "court_room", AbstractReportResponse.DataTypeValue.builder()
+                    .displayName("Court Room")
+                    .dataType(String.class.getSimpleName())
+                    .value("COURT 3")
+                    .build(),
+                "judge", AbstractReportResponse.DataTypeValue.builder()
+                    .displayName("Judge")
+                    .dataType(String.class.getSimpleName())
+                    .value("Judge Dredd")
+                    .build(),
+                "court_name", AbstractReportResponse.DataTypeValue.builder()
+                    .displayName("Court Name")
+                    .dataType(String.class.getSimpleName())
+                    .value("Chester (415)")
                     .build()
             ));
         verify(tableData, times(1)).getData();

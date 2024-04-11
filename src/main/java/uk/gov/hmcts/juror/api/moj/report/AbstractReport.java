@@ -364,7 +364,7 @@ public abstract class AbstractReport<T> {
         return poolRequest.get();
     }
 
-    Trial getTrial(String trialNumber, TrialRepository trialRepository) {
+    public Trial getTrial(String trialNumber, TrialRepository trialRepository) {
         Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
             SecurityUtil.getActiveOwner());
         if (trial == null) {
