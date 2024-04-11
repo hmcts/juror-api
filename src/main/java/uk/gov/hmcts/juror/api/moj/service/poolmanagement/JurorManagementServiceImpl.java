@@ -47,6 +47,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.GodClass"})
 public class JurorManagementServiceImpl implements JurorManagementService {
 
     @NonNull
@@ -106,7 +107,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                     jurorManagementRequestDto.getReceivingPoolNumber()
                 );
         } else {
-            if (owner.equals(JurorDigitalApplication.JUROR_OWNER)) {
+            if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
                 throw new MojException.BadRequest("Receiving Pool Number is required for Bureau users", null);
             }
             // create a new pool in the same court location for court users only
@@ -167,7 +168,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                     .build());
 
                 // queue a summons confirmation letter (Bureau only!)
-                if (payload.getOwner().equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)) {
+                if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())) {
                     ConfirmationLetter confirmationLetter = confirmationLetterService.getLetterToEnqueue(owner,
                         jurorNumber);
                     confirmationLetterService.enqueueLetter(confirmationLetter);
@@ -440,7 +441,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
     private void validateTransferRequest(String owner, JurorManagementRequestDto requestDto) {
 
-        if (owner.equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)) {
+        if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
             // transferring jurors between courts can only be actioned by the court, never by the Bureau
             throw new MojException.Forbidden("Current user has insufficient permission to "
                 + "transfer pool members", null);
