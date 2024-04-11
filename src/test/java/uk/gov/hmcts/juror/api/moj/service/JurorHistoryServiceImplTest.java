@@ -470,7 +470,6 @@ class JurorHistoryServiceImplTest {
 
     @Test
     void createJuryAttendanceHistory() {
-        String attendanceAuditNumber = "J00000001";
         JurorPool jurorPool = createJurorPool();
         jurorPool.setIsActive(true);
 
@@ -478,6 +477,7 @@ class JurorHistoryServiceImplTest {
         when(jurorStatus.getStatus()).thenReturn(IJurorStatus.JUROR);
         jurorPool.setStatus(jurorStatus);
 
+        String attendanceAuditNumber = "J00000001";
         jurorHistoryService.createJuryAttendanceHistory(jurorPool, attendanceAuditNumber);
         assertValuesAdditional(jurorPool, "SYSTEM", null, null,
             new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.JURY_ATTENDANCE,
