@@ -23,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeEntity;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.AdditionalInformationDto;
@@ -44,6 +43,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.WithdrawalLet
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JurorForExemptionListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialExemptionListDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
+import uk.gov.hmcts.juror.api.moj.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
@@ -591,7 +591,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
                 assertThat(data.getStatus()).isEqualTo("Deferred");
                 assertThat(data.getDeferredTo()).isEqualTo(LocalDate.now().plusDays(10));
-                String reason = excusalCodeRepository.findById("A").orElse(new ExcusalCodeEntity()).getDescription();
+                String reason = excusalCodeRepository.findById("A").orElse(new ExcusalCode()).getDescription();
                 assertThat(data.getReason()).isEqualToIgnoringCase(reason);
                 assertThat(data.getDatePrinted()).isEqualTo(LocalDate.now().minusDays(9));
                 assertThat(data.getPoolNumber()).isEqualTo("415220401");
@@ -665,7 +665,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
                 assertThat(data.getStatus()).isEqualTo("Deferred");
                 assertThat(data.getDeferredTo()).isEqualTo(LocalDate.now().plusDays(25));
-                String reason = excusalCodeRepository.findById("T").orElse(new ExcusalCodeEntity()).getDescription();
+                String reason = excusalCodeRepository.findById("T").orElse(new ExcusalCode()).getDescription();
                 assertThat(data.getReason()).isEqualToIgnoringCase(reason);
                 assertThat(data.getDatePrinted()).isNull();
                 assertThat(data.getPoolNumber()).isEqualTo("415220404");
@@ -1007,7 +1007,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
                 assertThat(data.getStatus()).isEqualTo("Responded");
                 assertThat(data.getDateRefused()).isEqualTo(LocalDate.now().minusDays(8));
-                String reason = excusalCodeRepository.findById("A").orElse(new ExcusalCodeEntity()).getDescription();
+                String reason = excusalCodeRepository.findById("A").orElse(new ExcusalCode()).getDescription();
                 assertThat(data.getReason()).isEqualToIgnoringCase(reason);
                 assertThat(data.getDatePrinted()).isEqualTo(LocalDate.now().minusDays(8));
                 assertThat(data.getPoolNumber()).isEqualTo("415220401");
@@ -1081,7 +1081,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
                 assertThat(data.getStatus()).isEqualTo("Deferred");
                 assertThat(data.getDateRefused()).isEqualTo(LocalDate.now().minusDays(8));
-                String reason = excusalCodeRepository.findById("A").orElse(new ExcusalCodeEntity()).getDescription();
+                String reason = excusalCodeRepository.findById("A").orElse(new ExcusalCode()).getDescription();
                 assertThat(data.getReason()).isEqualToIgnoringCase(reason);
                 assertThat(data.getDatePrinted()).isNull();
                 assertThat(data.getPoolNumber()).isEqualTo("415220402");
@@ -5521,7 +5521,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
             assertThat(data.getStatus()).isEqualTo("Postponed");
             assertThat(data.getPostponedTo()).isEqualTo(LocalDate.now().plusDays(10));
-            String reason = excusalCodeRepository.findById("P").orElse(new ExcusalCodeEntity()).getDescription();
+            String reason = excusalCodeRepository.findById("P").orElse(new ExcusalCode()).getDescription();
             assertThat(data.getReason()).isEqualToIgnoringCase(reason);
             assertThat(data.getDatePrinted()).isEqualTo(LocalDate.now().minusDays(9));
             assertThat(data.getPoolNumber()).isEqualTo("415220401");
@@ -5588,7 +5588,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
             assertThat(data.getStatus()).isEqualTo("Postponed");
             assertThat(data.getPostponedTo()).isEqualTo(LocalDate.now().plusDays(13));
-            String reason = excusalCodeRepository.findById("P").orElse(new ExcusalCodeEntity()).getDescription();
+            String reason = excusalCodeRepository.findById("P").orElse(new ExcusalCode()).getDescription();
             assertThat(data.getReason()).isEqualToIgnoringCase(reason);
             assertThat(data.getDatePrinted()).isNull();
             assertThat(data.getPoolNumber()).isEqualTo("415220401");

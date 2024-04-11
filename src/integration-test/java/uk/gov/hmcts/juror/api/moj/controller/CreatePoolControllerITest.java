@@ -1216,12 +1216,15 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         RequestEntity<NilPoolRequestDto> requestEntity = new RequestEntity<>(nilPoolCheckRequest, httpHeaders,
             HttpMethod.POST, uri);
 
-        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        ResponseEntity<NilPoolResponseDto> response = template.exchange(requestEntity, NilPoolResponseDto.class);
 
         assertThat(response.getStatusCode())
-            .as("Expect the HTTP POST request to be forbidden")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+            .as("Expect the HTTP POST request to be successful")
+            .isEqualTo(HttpStatus.OK);
 
+        assertThat(response.getBody().getDeferrals())
+            .as("Expect there to be one deferral on this date (3/10/2022)")
+            .isEqualTo(1);
     }
 
     private NilPoolRequestDto setUpNilPoolCheckRequestDto() {
@@ -1339,8 +1342,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
 
         assertThat(response.getStatusCode())
-            .as("Expect the HTTP POST request to be forbidden")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+            .as("Expect the HTTP POST request to be successful")
+            .isEqualTo(HttpStatus.CREATED);
 
     }
 

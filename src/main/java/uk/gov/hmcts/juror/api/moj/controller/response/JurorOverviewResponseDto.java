@@ -11,7 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.SpecialNeeds;
+import uk.gov.hmcts.juror.api.moj.enumeration.IdCheckCodeEnum;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurorresponse.ReasonableAdjustmentsEnum;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
 
@@ -61,6 +62,8 @@ public class JurorOverviewResponseDto {
     @Schema(description = "Welsh flag")
     private Boolean welshLanguageRequired;
 
+    @Schema(description = "Identity check code")
+    private IdCheckCodeEnum idCheckCode;
 
 
     /**
@@ -79,11 +82,12 @@ public class JurorOverviewResponseDto {
         Juror juror = jurorPool.getJuror();
         this.opticReference = juror.getOpticRef();
         this.welshLanguageRequired = juror.getWelsh();
+        this.idCheckCode = IdCheckCodeEnum.getIdCheckCodeEnum(jurorPool.getIdChecked());
 
         if (juror.getReasonableAdjustmentCode() != null) {
             this.specialNeed = juror.getReasonableAdjustmentCode();
             this.specialNeedMessage = juror.getReasonableAdjustmentMessage();
-            Arrays.stream(SpecialNeeds.values())
+            Arrays.stream(ReasonableAdjustmentsEnum.values())
                 .filter(sn -> sn.getCode().equalsIgnoreCase(juror.getReasonableAdjustmentCode())).findFirst()
                 .ifPresent(s -> this.specialNeedDescription = s.getDescription());
         }

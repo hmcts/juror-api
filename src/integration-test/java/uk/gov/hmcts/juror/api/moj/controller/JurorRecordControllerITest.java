@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetterRepository;
+import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
@@ -75,6 +76,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.IdCheckCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -2397,6 +2399,34 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauDigitalDetail.sql"})
+    void testRetrieveJurorDetailsLatestTransferred() {
+        final String jurorNumber = "641500001";
+        ResponseEntity<BureauJurorDetailDto> response =
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                URI.create("/api/v1/moj/juror-record/digital-detail/" + jurorNumber)), BureauJurorDetailDto.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP GET to return OK 200")
+            .isEqualTo(HttpStatus.OK);
+
+        BureauJurorDetailDto dto = response.getBody();
+        assertThat(dto).isNotNull();
+
+        JurorPool jurorPool =
+            jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).stream().findFirst().get();
+
+        assertThat(dto.getCurrentOwner())
+            .as("Expect current owner to be the owner of the transferred to pool")
+            .isEqualToIgnoringCase("471");
+
+        validateJurorDetailsMapping(dto, jurorPool, "415240601");
+        validateCourtDetails(dto, "415");
+        validateResponseDetails(dto);
+        assertThat(dto.isWelshCourt()).isFalse();
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauDigitalDetail.sql"})
     void testRetrieveJurorDetailsByIdBureauUserHappyPathWelshCourt() {
         final String jurorNumber = "555555555";
         final String poolNumber = "457230801";
@@ -2479,7 +2509,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"111111111", "111111116", "111111122"})
+    @ValueSource(strings = {"111111116"})
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
     void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusNotChecked(String jurorNumber) {
         ResponseEntity<JurorOverviewResponseDto> response =
@@ -2491,8 +2521,25 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .as("Expect the HTTP GET request to be successful")
             .isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getCommonDetails().getPoliceCheck()).as("Expected police check: 'Not Checked'")
-            .isEqualTo("Not Checked");
+        assertThat(response.getBody().getCommonDetails().getPoliceCheck()).as("Police check status")
+            .isEqualTo(PoliceCheck.NOT_CHECKED);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"111111122"})
+    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
+    void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusInsufficientInformation(String jurorNumber) {
+        ResponseEntity<JurorOverviewResponseDto> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                    URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
+                JurorOverviewResponseDto.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP GET request to be successful")
+            .isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getCommonDetails().getPoliceCheck()).as("Police check status")
+            .isEqualTo(PoliceCheck.INSUFFICIENT_INFORMATION);
     }
 
     @Test
@@ -2506,12 +2553,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .as("Expect the HTTP GET request to be successful")
             .isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getCommonDetails().getPoliceCheck()).as("Expected police check: 'Not Checked - "
-            + "There was a problem'").isEqualTo("Not Checked - There was a problem");
+        assertThat(response.getBody().getCommonDetails().getPoliceCheck()).as("Police check status")
+            .isEqualTo(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"111111113", "111111117", "111111118", "111111119", "111111120", "111111121"})
+    @ValueSource(strings = {"111111113"})
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
     void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusInProgress(String jurorNumber) {
         ResponseEntity<JurorOverviewResponseDto> response =
@@ -2528,7 +2575,120 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck())
             .as("Expected police check: 'In Progress'")
-            .isEqualTo("In Progress");
+            .isEqualTo(PoliceCheck.IN_PROGRESS);
+    }
+
+
+    @Nested
+    class PoliceCheckErrors {
+        @DisplayName("Error Retry - Connection Error")
+        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
+        void connectionError() {
+            final String jurorNumber = "111111117";
+            ResponseEntity<JurorOverviewResponseDto> response =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
+                    JurorOverviewResponseDto.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP GET request to be successful")
+                .isEqualTo(HttpStatus.OK);
+
+            JurorOverviewResponseDto jurorOverviewResponseDto = response.getBody();
+            assertThat(jurorOverviewResponseDto).isNotNull();
+
+            assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck())
+                .as("Police check status")
+                .isEqualTo(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+        }
+
+        @DisplayName("Error Retry - Name has numerics")
+        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
+        @Test
+        void nameHasNumerics() {
+            final String jurorNumber = "111111118";
+            ResponseEntity<JurorOverviewResponseDto> response =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
+                    JurorOverviewResponseDto.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP GET request to be successful")
+                .isEqualTo(HttpStatus.OK);
+
+            JurorOverviewResponseDto jurorOverviewResponseDto = response.getBody();
+            assertThat(jurorOverviewResponseDto).isNotNull();
+
+            assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck())
+                .as("Police check status")
+                .isEqualTo(PoliceCheck.ERROR_RETRY_NAME_HAS_NUMERICS);
+        }
+
+        @DisplayName("Error Retry - Other Error Code")
+        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
+        @Test
+        void otherErrorCode() {
+            final String jurorNumber = "111111119";
+            ResponseEntity<JurorOverviewResponseDto> response =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
+                    JurorOverviewResponseDto.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP GET request to be successful")
+                .isEqualTo(HttpStatus.OK);
+
+            JurorOverviewResponseDto jurorOverviewResponseDto = response.getBody();
+            assertThat(jurorOverviewResponseDto).isNotNull();
+
+            assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck())
+                .as("Police check status")
+                .isEqualTo(PoliceCheck.ERROR_RETRY_OTHER_ERROR_CODE);
+        }
+
+        @DisplayName("Error Retry -  No Error Reason")
+        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
+        @Test
+        void noErrorReason() {
+            final String jurorNumber = "111111120";
+            ResponseEntity<JurorOverviewResponseDto> response =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
+                    JurorOverviewResponseDto.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP GET request to be successful")
+                .isEqualTo(HttpStatus.OK);
+
+            JurorOverviewResponseDto jurorOverviewResponseDto = response.getBody();
+            assertThat(jurorOverviewResponseDto).isNotNull();
+
+            assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck())
+                .as("Police check status")
+                .isEqualTo(PoliceCheck.ERROR_RETRY_NO_ERROR_REASON);
+        }
+
+        @DisplayName("Error Retry - Unexpected Exception")
+        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
+        @Test
+        void errorRetryUnexpectedException() {
+            final String jurorNumber = "111111121";
+            ResponseEntity<JurorOverviewResponseDto> response =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
+                    JurorOverviewResponseDto.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP GET request to be successful")
+                .isEqualTo(HttpStatus.OK);
+
+            JurorOverviewResponseDto jurorOverviewResponseDto = response.getBody();
+            assertThat(jurorOverviewResponseDto).isNotNull();
+
+            assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck())
+                .as("Police check status")
+                .isEqualTo(PoliceCheck.ERROR_RETRY_UNEXPECTED_EXCEPTION);
+        }
     }
 
     @Test
@@ -2543,7 +2703,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getCommonDetails().getPoliceCheck()).as("Expected police check: 'Passed'")
-            .isEqualTo("Passed");
+            .isEqualTo(PoliceCheck.ELIGIBLE);
     }
 
     @Test
@@ -2561,7 +2721,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(jurorOverviewResponseDto).isNotNull();
 
         assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Expected police check: 'Failed'")
-            .isEqualTo("Failed");
+            .isEqualTo(PoliceCheck.INELIGIBLE);
     }
 
     @Test
@@ -4721,6 +4881,59 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             return requestDto;
         }
+    }
+
+    @Nested
+    @DisplayName("Confirm Juror Identity")
+    class ConfirmJurorIdentity {
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_InitConfirmJurorIdentity.sql"})
+        void confirmJurorIdentityHappyPath() throws Exception {
+            final String url = BASE_URL + "/confirm-identity";
+            String jurorNumber = "111111111";
+
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.C)
+                .build();
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+                JURY_OFFICER_LEVEL));
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
+                    URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be OK")
+                .isEqualTo(HttpStatus.OK);
+
+            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
+
+            assertThat(jurorPool.getIdChecked()).isEqualTo('C');
+
+        }
+
+        @Test
+        void confirmJurorIdentityBureauNoAccess() throws Exception {
+            final String url = BASE_URL + "/confirm-identity";
+            String jurorNumber = "111111111";
+
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.C)
+                .build();
+
+            ResponseEntity<Void> response =
+                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
+                    URI.create(url)), Void.class);
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request to be FORBIDDEN")
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        }
+
     }
 
     private void verifyBulkPrintData(String jurorNumber, String formCode) {

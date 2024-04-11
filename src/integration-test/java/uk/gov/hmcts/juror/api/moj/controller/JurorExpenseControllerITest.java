@@ -194,8 +194,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             CustomPageImpl<Void> responseBody = response.getBody();
             assertNotNull(responseBody, "Response must be present");
 
-            assertThat(responseBody.getTotalPages()).isEqualTo(2);
-            assertThat(responseBody.getTotalElements()).isEqualTo(26);
+            assertThat(responseBody.getTotalPages()).isEqualTo(1);
+            assertThat(responseBody.getTotalElements()).isEqualTo(25);
             assertThat(responseBody.getContent().size()).isEqualTo(25);
         }
 
@@ -247,8 +247,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertNotNull(responseBody, "Response must be present");
 
             assertThat(responseBody.getTotalPages()).isEqualTo(1);
-            assertThat(responseBody.getTotalElements()).isEqualTo(11);
-            assertThat(responseBody.getContent().size()).isEqualTo(11);
+            assertThat(responseBody.getTotalElements()).isEqualTo(10);
+            assertThat(responseBody.getContent().size()).isEqualTo(10);
         }
 
         @Test

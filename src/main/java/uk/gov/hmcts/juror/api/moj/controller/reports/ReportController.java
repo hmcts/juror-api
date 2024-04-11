@@ -28,7 +28,7 @@ public class ReportController {
     private final ReportService reportService;
 
     @PostMapping("/standard")
-    @Operation(summary = "View a give report")
+    @Operation(summary = "View a given report")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<AbstractReportResponse<?>> viewReportStandard(
         @RequestBody

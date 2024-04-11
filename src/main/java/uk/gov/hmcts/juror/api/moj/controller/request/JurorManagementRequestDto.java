@@ -71,6 +71,7 @@ public class JurorManagementRequestDto {
                                      LocalDate serviceStartDate, List<String> jurorNumbers) {
         this.sourcePoolNumber = sourcePoolNumber;
         this.sendingCourtLocCode = sendingCourtLocCode;
+        this.sourceCourtLocCode = sendingCourtLocCode;
         this.receivingCourtLocCode = receivingCourtLocCode;
         this.serviceStartDate = serviceStartDate;
         this.jurorNumbers = jurorNumbers;

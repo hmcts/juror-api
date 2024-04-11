@@ -311,61 +311,26 @@ public class JurorManagementServiceImplTest {
         reassignedStatus.setStatus(8);
         reassignedStatus.setStatusDesc("Reassigned");
 
-        List<JurorPool> poolMemberList = createJurorPoolList(courtOwner);
-
         when(poolRequestRepository.findByPoolNumber(sourcePoolNumber)).thenReturn(Optional.of(sourcePoolRequest));
         when(poolRequestRepository.findByPoolNumber(targetPoolNumber)).thenReturn(Optional.of(targetpoolRequest));
         when(courtLocationRepository.findByLocCode(courtOwner)).thenReturn(Optional.of(primaryCourtLocation));
-        when(jurorStatusRepository.findById(2)).thenReturn(Optional.of(respondedStatus));
-        when(jurorStatusRepository.findById(8)).thenReturn(Optional.of(reassignedStatus));
-        when(jurorPoolRepository.findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
-            anyList(), anyBoolean(), anyString(), any(CourtLocation.class),
-            anyList())).thenReturn(poolMemberList);
-        when(jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(anyString(),
-            anyString(), anyString()))
-            .thenReturn(Optional.empty());
-        when(poolMemberSequenceService
-            .getPoolMemberSequenceNumber(anyString())).thenReturn(1);
-
         BureauJwtPayload payload = buildPayload(courtOwner);
         JurorManagementRequestDto jurorManagementRequestDto = new JurorManagementRequestDto(sourcePoolNumber,
             courtOwner, List.of("123456789"), targetPoolNumber, courtOwner, LocalDate.now());
 
-        int jurorsMoved = jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
-
-        Assertions.assertThat(jurorsMoved).isEqualTo(1);
+        assertThatExceptionOfType(MojException.BadRequest.class)
+            .isThrownBy(() -> jurorManagementService.reassignJurors(payload, jurorManagementRequestDto));
 
         verify(poolRequestRepository, times(2))
             .findByPoolNumber(anyString());
         verify(courtLocationRepository, times(2))
             .findByLocCode(anyString());
-        verify(jurorStatusRepository, times(1))
-            .findById(anyInt());
-        verify(jurorPoolRepository, times(1))
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
-                anyList(), anyBoolean(), anyString(),
-                any(CourtLocation.class), anyList());
-        verify(jurorPoolRepository, times(1))
-            .findByOwnerAndJurorJurorNumberAndPoolPoolNumber(anyString(), anyString(),
-                anyString());
-        verify(poolMemberSequenceService, times(1))
-            .getPoolMemberSequenceNumber(anyString());
-        verify(jurorHistoryRepository, times(1))
+        verify(jurorHistoryRepository, never())
             .save(any(JurorHistory.class));
         verify(confirmationLetterService, never())
             .enqueueLetter(any());
-
-        ArgumentCaptor<JurorPool> jurorPoolArgumentCaptor = ArgumentCaptor.forClass(JurorPool.class);
-        verify(jurorPoolRepository, times(2)).save(jurorPoolArgumentCaptor.capture());
-
-        JurorPool newJurorPool =
-            jurorPoolArgumentCaptor.getAllValues().stream().filter(jurorPool ->
-                jurorPool.getPoolNumber().equalsIgnoreCase(targetPoolNumber)).findFirst().orElse(null);
-        Assertions.assertThat(newJurorPool).isNotNull();
-        Assertions.assertThat(newJurorPool.getOwner()).as("The new juror pool record "
-                + "should have the same owner value as the source juror pool record - even when reassigning to a "
-                + "bureau owned pool as a jury officer (from a court owned pool)")
-            .isEqualTo("415");
+        verify(jurorPoolRepository, never())
+            .save(any());
     }
 
     @Test
@@ -380,9 +345,9 @@ public class JurorManagementServiceImplTest {
         assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> jurorManagementService.reassignJurors(payload, jurorManagementRequestDto));
 
-        verify(poolRequestRepository, times(1))
+        verify(poolRequestRepository, times(0))
             .findByPoolNumber(anyString());
-        verify(courtLocationRepository, times(0))
+        verify(courtLocationRepository, times(1))
             .findByLocCode(anyString());
         verify(jurorStatusRepository, times(0))
             .findById(anyInt());
@@ -411,7 +376,7 @@ public class JurorManagementServiceImplTest {
         assertThatExceptionOfType(MojException.NotFound.class)
             .isThrownBy(() -> jurorManagementService.reassignJurors(payload, jurorManagementRequestDto));
 
-        verify(poolRequestRepository, times(2))
+        verify(poolRequestRepository, times(0))
             .findByPoolNumber(anyString());
         verify(courtLocationRepository, times(1))
             .findByLocCode(anyString());
@@ -445,18 +410,12 @@ public class JurorManagementServiceImplTest {
         when(courtLocationRepository.findByLocCode(anyString()))
             .thenReturn(Optional.of(courtLocation));
         when(jurorStatusRepository.findById(anyInt())).thenReturn(Optional.of(jurorStatus));
-        when(jurorPoolRepository
-            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
-                anyList(), anyBoolean(), anyString(),
-                any(CourtLocation.class), anyList()
-            )).thenReturn(poolMemberList);
 
         BureauJwtPayload payload = buildPayload("400");
         JurorManagementRequestDto jurorManagementRequestDto = createValidJurorManagementRequestDto();
 
-        int jurorsMoved = jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
-
-        Assertions.assertThat(jurorsMoved).isEqualTo(0);
+        assertThatExceptionOfType(MojException.NotFound.class)
+            .isThrownBy(() -> jurorManagementService.reassignJurors(payload, jurorManagementRequestDto));
 
         verify(poolRequestRepository, times(2))
             .findByPoolNumber(anyString());
@@ -464,7 +423,7 @@ public class JurorManagementServiceImplTest {
             .findByLocCode(anyString());
         verify(jurorStatusRepository, times(0))
             .findById(anyInt());
-        verify(jurorPoolRepository, times(1))
+        verify(jurorPoolRepository, times(0))
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
                 anyList(), anyBoolean(), any(),
                 any(CourtLocation.class), anyList()

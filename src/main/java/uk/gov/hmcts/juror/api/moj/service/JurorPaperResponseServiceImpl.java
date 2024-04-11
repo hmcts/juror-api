@@ -20,9 +20,9 @@ import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorPaperResponseDetailDto;
 import uk.gov.hmcts.juror.api.moj.domain.CjsEmploymentType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.SpecialNeeds;
 import uk.gov.hmcts.juror.api.moj.domain.SummonsSnapshot;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsDto;
@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurorresponse.ReasonableAdjustmentsEnum;
 import uk.gov.hmcts.juror.api.moj.exception.JurorPaperResponseException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -50,7 +51,11 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+
+import static java.util.function.Predicate.not;
 
 /**
  * Juror Paper Response service.
@@ -96,9 +101,14 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber, owner);
         JurorPoolUtils.checkReadAccessForCurrentUser(jurorPool, owner);
 
-
-        return copyPaperResponseRecordIntoDto(
+        JurorPaperResponseDetailDto responseDto = copyPaperResponseRecordIntoDto(
             DataUtils.getJurorPaperResponse(jurorNumber, paperResponseRepository), jurorPool);
+
+        // set the current owner.  Need to ensure the current owner is returned as the owner can change if, for
+        // example, the juror is transferred to a different pool
+        updateCurrentOwnerInResponseDto(jurorPoolRepository, responseDto);
+
+        return responseDto;
     }
 
     private PaperResponse getJurorPaperResponse(final String jurorNumber) {
@@ -536,9 +546,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     }
 
     private static List<String> getReasonableAdjustmentTypes() {
-        List<String> types = new ArrayList<>();
-        Arrays.stream(SpecialNeeds.values()).forEach(s -> types.add(s.getCode()));
-        return types;
+        return Arrays.stream(ReasonableAdjustmentsEnum.values())
+            .map(ReasonableAdjustmentsEnum::getCode).toList();
     }
 
     @Override
@@ -887,4 +896,19 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         log.trace("Exit processStraightThroughResponse for {}", jurorPool.getJurorNumber());
     }
 
+    private void updateCurrentOwnerInResponseDto(JurorPoolRepository jurorPoolRepository,
+                                                 JurorPaperResponseDetailDto responseDto) {
+
+        // set the current owner.  Need to ensure the current owner is returned as the owner can change if, for
+        // example, the juror is transferred to a different pool
+        List<JurorPool> jurorPools =
+            JurorPoolUtils.getActiveJurorPoolRecords(jurorPoolRepository, responseDto.getJurorNumber());
+
+        Optional<JurorPool> jurorPool = jurorPools.stream()
+            .filter(not(jp -> jp.getStatus().getCode().equals(IJurorStatus.TRANSFERRED)))
+            .sorted(Comparator.comparing(JurorPool::getDateCreated).reversed())
+            .toList().stream().findFirst();
+
+        jurorPool.ifPresent(pool -> responseDto.setCurrentOwner(pool.getOwner()));
+    }
 }

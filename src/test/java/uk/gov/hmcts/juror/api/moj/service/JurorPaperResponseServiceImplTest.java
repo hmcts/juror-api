@@ -27,13 +27,13 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
-import uk.gov.hmcts.juror.api.moj.domain.SpecialNeeds;
 import uk.gov.hmcts.juror.api.moj.domain.SummonsSnapshot;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurorresponse.ReasonableAdjustmentsEnum;
 import uk.gov.hmcts.juror.api.moj.exception.JurorPaperResponseException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -229,7 +229,7 @@ public class JurorPaperResponseServiceImplTest {
         JurorPaperResponseDetailDto responseDto = jurorPaperResponseService
             .getJurorPaperResponse(VALID_JUROR_NUMBER_COURT, payload);
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
+        Mockito.verify(jurorPoolRepository, Mockito.times(2))
             .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER_COURT, true);
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1))
             .findByJurorNumber(VALID_JUROR_NUMBER_COURT);
@@ -480,7 +480,7 @@ public class JurorPaperResponseServiceImplTest {
         BureauJwtPayload payload = buildPayload();
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
         List<JurorPaperResponseDto.ReasonableAdjustment> specialNeeds =
-            Collections.singletonList(buildSpecialNeeds(SpecialNeeds.VISUAL_IMPAIRMENT.getCode()));
+            Collections.singletonList(buildSpecialNeeds(ReasonableAdjustmentsEnum.VISUAL_IMPAIRMENT.getCode()));
         responseDto.setReasonableAdjustments(specialNeeds);
 
         jurorPaperResponseService.saveResponse(payload, responseDto);
@@ -506,7 +506,7 @@ public class JurorPaperResponseServiceImplTest {
             Collections.singletonList(buildCjsEmployment(CjsEmploymentType.POLICE.getEmployer()));
         responseDto.setCjsEmployment(cjsEmployment);
         List<JurorPaperResponseDto.ReasonableAdjustment> specialNeeds =
-            Collections.singletonList(buildSpecialNeeds(SpecialNeeds.VISUAL_IMPAIRMENT.getCode()));
+            Collections.singletonList(buildSpecialNeeds(ReasonableAdjustmentsEnum.VISUAL_IMPAIRMENT.getCode()));
         responseDto.setReasonableAdjustments(specialNeeds);
 
         jurorPaperResponseService.saveResponse(payload, responseDto);
@@ -567,7 +567,7 @@ public class JurorPaperResponseServiceImplTest {
         final BureauJwtPayload payload = buildPayload();
         JurorPaperResponseDto responseDto = buildJurorPaperResponseDto();
         JurorPaperResponseDto.ReasonableAdjustment specialNeed
-            = buildSpecialNeeds(SpecialNeeds.VISUAL_IMPAIRMENT.getCode());
+            = buildSpecialNeeds(ReasonableAdjustmentsEnum.VISUAL_IMPAIRMENT.getCode());
         List<JurorPaperResponseDto.ReasonableAdjustment> specialNeedsList = new ArrayList<>();
         specialNeedsList.add(specialNeed);
         specialNeedsList.add(specialNeed);

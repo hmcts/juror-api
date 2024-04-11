@@ -1,7 +1,7 @@
 buildscript {
     ext {
         springBootVersion = '3.2.4'
-        notifyVersion = '5.0.0-RELEASE'
+        notifyVersion = '5.0.1-RELEASE'
         springDocVersion = '2.5.0'
         queryDslVersion = '5.1.0'
         flywayVersion = '10.11.0'
@@ -284,7 +284,7 @@ pmdTest {
     maxFailures = 381
 }
 pmdMain {
-    maxFailures = 1137
+    maxFailures = 1136
 }
 pmd {
     maxFailures = 0

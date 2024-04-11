@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.support.Querydsl;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -82,6 +83,7 @@ public class ITrialRepositoryImpl implements ITrialRepository {
             .on(TRIAL.trialNumber.eq(JUROR_TRIAL.trialNumber))
             .where(TRIAL.trialEndDate.isNull().and(TRIAL.courtLocation.locCode.eq(locationCode)))
             .where(TRIAL.trialStartDate.loe(attendanceDate))
+            .where(JUROR_TRIAL.result.equalsIgnoreCase(PanelResult.JUROR.getCode()))
             .groupBy(TRIAL.trialNumber, TRIAL.description, TRIAL.trialType.stringValue(), TRIAL.courtroom.description,
                 TRIAL.judge.name)
             .fetch();
