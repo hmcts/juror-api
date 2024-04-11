@@ -739,6 +739,10 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         checkedInAttendances.forEach(appearance -> {
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
             appearance.setAttendanceAuditNumber(poolAttendanceNumber);
+
+            JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, appearance.getJurorNumber(),
+                    appearance.getCourtLocation());
+            jurorHistoryService.createPoolAttendanceHistory(jurorPool, poolAttendanceNumber);
         });
 
         jurorExpenseService.applyDefaultExpenses(checkedInAttendances);
