@@ -105,6 +105,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.function.Predicate.not;
 import static org.springframework.transaction.annotation.Propagation.REQUIRED;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_COMPLETION_DATE;
@@ -841,6 +842,11 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         BureauJurorDetailDto responseDto = bureauService.mapJurorDetailsToDto(jurorDetails);
         responseDto.setWelshCourt(jurorDetails.isWelshCourt());
+
+        // set the current owner.  Need to ensure the current owner is returned as the owner can change if, for
+        // example, the juror is transferred to a different pool
+        updateCurrentOwnerInResponseDto(jurorPoolRepository, responseDto);
+
         return responseDto;
     }
 
@@ -1222,6 +1228,22 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             throw new MojException.NotFound("Juror number " + jurorNumber + " not found in pool " + poolNumber, null);
         }
         return jurorPool;
+    }
+
+    private void updateCurrentOwnerInResponseDto(JurorPoolRepository jurorPoolRepository,
+                                                 BureauJurorDetailDto responseDto) {
+
+        // set the current owner.  Need to ensure the current owner is returned as the owner can change if, for
+        // example, the juror is transferred to a different pool
+        List<JurorPool> jurorPools =
+            JurorPoolUtils.getActiveJurorPoolRecords(jurorPoolRepository, responseDto.getJurorNumber());
+
+        Optional<JurorPool> jurorPool = jurorPools.stream()
+            .filter(not(jp -> jp.getStatus().getCode().equals(IJurorStatus.TRANSFERRED)))
+            .sorted(Comparator.comparing(JurorPool::getDateCreated).reversed())
+            .toList().stream().findFirst();
+
+        jurorPool.ifPresent(pool -> responseDto.setCurrentOwner(pool.getOwner()));
     }
 }
 

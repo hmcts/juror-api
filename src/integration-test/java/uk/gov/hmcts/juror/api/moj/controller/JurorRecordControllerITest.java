@@ -2399,6 +2399,34 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauDigitalDetail.sql"})
+    void testRetrieveJurorDetailsLatestTransferred() {
+        final String jurorNumber = "641500001";
+        ResponseEntity<BureauJurorDetailDto> response =
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                URI.create("/api/v1/moj/juror-record/digital-detail/" + jurorNumber)), BureauJurorDetailDto.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP GET to return OK 200")
+            .isEqualTo(HttpStatus.OK);
+
+        BureauJurorDetailDto dto = response.getBody();
+        assertThat(dto).isNotNull();
+
+        JurorPool jurorPool =
+            jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).stream().findFirst().get();
+
+        assertThat(dto.getCurrentOwner())
+            .as("Expect current owner to be the owner of the transferred to pool")
+            .isEqualToIgnoringCase("471");
+
+        validateJurorDetailsMapping(dto, jurorPool, "415240601");
+        validateCourtDetails(dto, "415");
+        validateResponseDetails(dto);
+        assertThat(dto.isWelshCourt()).isFalse();
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauDigitalDetail.sql"})
     void testRetrieveJurorDetailsByIdBureauUserHappyPathWelshCourt() {
         final String jurorNumber = "555555555";
         final String poolNumber = "457230801";

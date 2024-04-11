@@ -229,7 +229,7 @@ public class JurorPaperResponseServiceImplTest {
         JurorPaperResponseDetailDto responseDto = jurorPaperResponseService
             .getJurorPaperResponse(VALID_JUROR_NUMBER_COURT, payload);
 
-        Mockito.verify(jurorPoolRepository, Mockito.times(1))
+        Mockito.verify(jurorPoolRepository, Mockito.times(2))
             .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER_COURT, true);
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1))
             .findByJurorNumber(VALID_JUROR_NUMBER_COURT);
