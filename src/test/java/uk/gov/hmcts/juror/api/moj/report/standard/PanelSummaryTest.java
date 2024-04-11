@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -29,6 +31,7 @@ import java.util.Map;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,13 +42,17 @@ class PanelSummaryTest extends AbstractStandardReportTestSupport<PanelSummaryRep
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     private TrialRepository trialRepository;
+    
+    @AfterEach
+    void afterEach() {
+        securityUtilMockedStatic.close();
+    }
 
-
-
-    private void mockCurrentUser(String owner) {
-        securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
-        securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
-            .thenReturn(owner);
+    @BeforeEach
+    @Override
+    public void beforeEach() {
+        super.beforeEach();
+        securityUtilMockedStatic = mockStatic(SecurityUtil.class);
     }
 
 
@@ -65,8 +72,6 @@ class PanelSummaryTest extends AbstractStandardReportTestSupport<PanelSummaryRep
 
     @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
-        BureauJwtPayload payload = TestUtils.createJwt("415", "COURT_USER");
-        mockCurrentUser(payload.getOwner());
 
         request.setTrialNumber(TestConstants.VALID_TRIAL_NUMBER);
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
@@ -83,9 +88,6 @@ class PanelSummaryTest extends AbstractStandardReportTestSupport<PanelSummaryRep
     public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(StandardReportRequest request,
         AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
         List<LinkedHashMap<String, Object>> data) {
-
-        BureauJwtPayload payload = TestUtils.createJwt("415", "COURT_USER");
-        mockCurrentUser(payload.getOwner());
 
         Trial trial = mock(Trial.class);
 
