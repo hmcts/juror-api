@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -249,10 +250,10 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     public long countPendingApproval(String locCode, boolean isCash) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         return queryFactory
-            .select(APPEARANCE.jurorNumber,APPEARANCE.poolNumber,APPEARANCE.appearanceStage)
+            .select(APPEARANCE.jurorNumber, APPEARANCE.poolNumber, APPEARANCE.appearanceStage)
             .from(APPEARANCE)
             .where(APPEARANCE.courtLocation.locCode.eq(locCode))
-            .where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED,AppearanceStage.EXPENSE_EDITED))
+            .where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED))
             .where(APPEARANCE.isDraftExpense.isFalse())
             .where(APPEARANCE.payCash.eq(isCash))
             .groupBy(APPEARANCE.jurorNumber)
@@ -277,6 +278,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_AUTHORISED,
                 AppearanceStage.EXPENSE_EDITED))
             .where(APPEARANCE.courtLocation.locCode.eq(locationCode))
+            .where(JUROR_TRIAL.result.equalsIgnoreCase(PanelResult.JUROR.getCode()))
             .groupBy(JUROR_TRIAL.trialNumber,
                 APPEARANCE.attendanceAuditNumber)
             .fetch();
