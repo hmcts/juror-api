@@ -720,8 +720,20 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         SummaryExpenseDetailsDto summaryExpenseDetailsDto = new SummaryExpenseDetailsDto();
 
         for (Appearance appearance : appearances) {
+            
+            if(appearance.isDraftExpense()){
+                // calculate the total for draft
+                summaryExpenseDetailsDto.addToTotalDraft(appearance.getTotalDue());
+            } else {
+                // calculate the total for approval
+                summaryExpenseDetailsDto.addToTotalForApproval(
+                    appearance.getTotalDue().subtract(appearance.getTotalPaid()));
 
-            // main core of the logic to calculate the totals
+                // calculate the total for approved
+                summaryExpenseDetailsDto.addToTotalApproved(
+                    appearance.getTotalPaid());
+            }
+
         }
 
         return summaryExpenseDetailsDto;
