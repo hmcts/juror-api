@@ -180,6 +180,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         assertThat(appearance.getTimeOut()).isEqualTo(requestDto.getCheckOutTime());
     }
 
+
     @Test
     @DisplayName("POST addAttendanceDay() - happy path")
     @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
@@ -201,6 +202,30 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).as(HTTP_STATUS_BAD_REQUEST_MESSAGE).isEqualTo(BAD_REQUEST);
 
     }
+
+    @Test
+    @DisplayName("POST addBadPayloadAttendanceDayInFuture() - sad path")
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    void addBadPayloadAttendanceDayInFuture() {
+        AddAttendanceDayDto requestDto = AddAttendanceDayDto.builder()
+            .jurorNumber(JUROR1)
+            .poolNumber("415230101")
+            .locationCode("415")
+            //attendance day one day in future - edge case
+            .attendanceDate(now().plusDays(1))
+            .checkInTime(LocalTime.of(9, 30))
+            .checkOutTime(LocalTime.of(17, 30))
+            .build();
+
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                URI.create("/api/v1/moj/juror-management/add-attendance-day")), String.class);
+
+        assertThat(response.getStatusCode()).as("HTTP status created expected").isEqualTo(BAD_REQUEST);
+    }
+
+
 
     @Test
     @DisplayName("POST addAttendanceDay() - happy path")
