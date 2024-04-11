@@ -51,8 +51,8 @@ public class StaffServiceImpl implements StaffService {
     @Autowired
     private EntityManager entityManager;
 
-    @Transactional
     @Override
+    @Transactional
     public StaffAssignmentResponseDto changeAssignment(final StaffAssignmentRequestDto staffAssignmentRequestDto,
                                                        final String currentUser) {
         // 1. validate input

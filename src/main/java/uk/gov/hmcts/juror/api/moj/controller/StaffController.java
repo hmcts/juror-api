@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffAssignmentResponse
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.moj.service.staff.StaffService;
 
 @RestController
@@ -27,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.service.staff.StaffService;
 @Tag(name = "Staff Management")
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@IsBureauUser
 public class StaffController {
 
     private final StaffService staffService;
