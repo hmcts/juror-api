@@ -2310,6 +2310,8 @@ class JurorAppearanceServiceTest {
         checkedInAttendances.add(appearance7);
 
         CourtLocation courtLocation = mock(CourtLocation.class);
+        courtLocation.setOwner("415");
+        courtLocation.setLocCode("415");
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findByLocCode(OWNER_415);
 
         List<AppearanceId> appearanceIds = new ArrayList<>();
@@ -2337,6 +2339,32 @@ class JurorAppearanceServiceTest {
         when(appearanceRepository.retrieveNonAttendanceDetails(any())).thenReturn(absentJurorsTuples);
 
         when(appearanceRepository.saveAllAndFlush(any())).thenReturn(new ArrayList<>());
+
+        Juror juror1 = Juror.builder().jurorNumber(JUROR1).firstName("TEST").lastName("ONE").build();
+        Juror juror2 = Juror.builder().jurorNumber(JUROR2).firstName("TEST").lastName("TWO").build();
+        Juror juror3 = Juror.builder().jurorNumber(JUROR3).firstName("TEST").lastName("THREE").build();
+        Juror juror6 = Juror.builder().jurorNumber(JUROR6).firstName("TEST").lastName("SIX").build();
+        Juror juror7 = Juror.builder().jurorNumber(JUROR7).firstName("TEST").lastName("SEVEN").build();
+
+        PoolRequest poolRequest =
+            PoolRequest.builder().owner("415").poolNumber("415000001").courtLocation(courtLocation).build();
+
+        JurorPool jurorPool1 = JurorPool.builder().juror(juror1).pool(poolRequest).build();
+        JurorPool jurorPool2 = JurorPool.builder().juror(juror2).pool(poolRequest).build();
+        JurorPool jurorPool3 = JurorPool.builder().juror(juror3).pool(poolRequest).build();
+        JurorPool jurorPool6 = JurorPool.builder().juror(juror6).pool(poolRequest).build();
+        JurorPool jurorPool7 = JurorPool.builder().juror(juror7).pool(poolRequest).build();
+
+        doReturn(jurorPool1).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(JUROR1), eq(true),
+            Mockito.any());
+        doReturn(jurorPool2).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(JUROR2), eq(true),
+            Mockito.any());
+        doReturn(jurorPool3).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(JUROR3), eq(true),
+            Mockito.any());
+        doReturn(jurorPool6).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(JUROR6), eq(true),
+            Mockito.any());
+        doReturn(jurorPool7).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(JUROR7), eq(true),
+            Mockito.any());
     }
 
     private void deleteAttendanceMockSetup(Boolean noAttendanceRecord) {

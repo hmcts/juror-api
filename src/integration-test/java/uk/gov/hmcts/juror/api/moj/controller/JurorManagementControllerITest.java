@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.Attendance
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
@@ -229,7 +230,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         assertThat(response.getStatusCode()).as("HTTP status created expected").isEqualTo(BAD_REQUEST);
     }
-
 
 
     @Test
@@ -671,7 +671,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("PATCH Update attendance - - check out all panelled jurors")
+        @DisplayName("PATCH Update attendance - check out all panelled jurors")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
         void updateAttendanceCheckOutAllPanelledJurors() {
             UpdateAttendanceDto request = buildUpdateAttendanceDto(null);
@@ -872,7 +872,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("PATCH Update attendance - confirm attendance")
+        @DisplayName("PATCH Update attendance - confirm attendance (no shows)")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql",
             "/db/JurorExpenseControllerITest_expenseRates.sql"})
         void updateAttendanceNoShow() {
@@ -934,6 +934,44 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .as("Expect 2 records to be returned with isNoShow = true")
                 .extracting(AttendanceDetailsResponse.Details::getIsNoShow)
                 .containsExactlyInAnyOrder(Boolean.TRUE, Boolean.TRUE);
+        }
+
+        @Test
+        @DisplayName("PATCH Update attendance - confirm attendance")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql",
+            "/db/JurorExpenseControllerITest_expenseRates.sql"})
+        void updateAttendanceConfirmAttendance() {
+            UpdateAttendanceDto request = buildUpdateAttendanceDto(List.of(JUROR1, JUROR6));
+            request.getCommonData().setStatus(UpdateAttendanceStatus.CONFIRM_ATTENDANCE);
+
+            ResponseEntity<AttendanceDetailsResponse> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+            AttendanceDetailsResponse responseBody = response.getBody();
+            assert responseBody != null;
+
+            AttendanceDetailsResponse.Summary summary = responseBody.getSummary();
+            assert summary != null;
+
+            assertThat(summary)
+                .extracting(AttendanceDetailsResponse.Summary::getCheckedIn)
+                .isEqualTo(2L);
+
+            // verify attendance details have been updated x 2 checked in
+            Appearance appearance1 =
+                appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR1, request.getCommonData()
+                    .getAttendanceDate());
+            assertThat(appearance1.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+            assertThat(appearance1.getAttendanceAuditNumber()).isEqualTo("P10000000");
+
+            Appearance appearance2 =
+                appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR6, request.getCommonData()
+                    .getAttendanceDate());
+            assertThat(appearance2.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+            assertThat(appearance2.getAttendanceAuditNumber()).isEqualTo("P10000000");
         }
 
         @Test

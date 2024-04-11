@@ -1,3 +1,5 @@
+alter sequence attendance_audit_seq restart with 10000000;
+
 --JUROR_MOD.POOL
 insert into juror_mod.pool (owner, pool_no, return_date, total_no_required, no_requested, pool_type,loc_code, new_request, last_update) values
 ('415', '415230101', current_date - interval '2 weeks', 10, 10, 'CRO','415', 'N', TIMESTAMP'2022-02-02 09:22:09.0'),
