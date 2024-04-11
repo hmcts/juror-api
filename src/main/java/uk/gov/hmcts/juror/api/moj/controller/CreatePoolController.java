@@ -185,7 +185,7 @@ public class CreatePoolController {
      */
     @PostMapping("/nil-pool-check")
     @Operation(summary = "GET With Body", description = "Check number of deferred jurors for this court/date")
-    @PreAuthorize(SecurityUtil.COURT_AUTH)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NilPoolResponseDto> checkNilPoolRequest(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Validated @RequestBody NilPoolRequestDto nilPoolRequestDto) {
@@ -207,7 +207,7 @@ public class CreatePoolController {
      */
     @PostMapping("/nil-pool-create")
     @Operation(summary = "create a Nil Pool for this court/date")
-    @PreAuthorize(SecurityUtil.COURT_AUTH)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> createNilPool(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Validated @RequestBody NilPoolRequestDto nilPoolRequestDto) {

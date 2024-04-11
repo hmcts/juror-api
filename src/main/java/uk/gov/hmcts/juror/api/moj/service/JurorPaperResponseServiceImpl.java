@@ -22,7 +22,6 @@ import uk.gov.hmcts.juror.api.moj.domain.CjsEmploymentType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.SpecialNeeds;
 import uk.gov.hmcts.juror.api.moj.domain.SummonsSnapshot;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsDto;
@@ -30,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurorresponse.ReasonableAdjustmentsEnum;
 import uk.gov.hmcts.juror.api.moj.exception.JurorPaperResponseException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -536,9 +536,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     }
 
     private static List<String> getReasonableAdjustmentTypes() {
-        List<String> types = new ArrayList<>();
-        Arrays.stream(SpecialNeeds.values()).forEach(s -> types.add(s.getCode()));
-        return types;
+        return Arrays.stream(ReasonableAdjustmentsEnum.values())
+            .map(ReasonableAdjustmentsEnum::getCode).toList();
     }
 
     @Override

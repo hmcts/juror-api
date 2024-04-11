@@ -22,16 +22,16 @@ import java.util.Date;
 @Data
 @Entity
 @Immutable
-@Table(name = "STATS_AUTO_PROCESSED", schema = "JUROR_DIGITAL")
+@Table(name = "stats_auto_processed", schema = "juror_dashboard")
 @Builder
 public class StatsAutoProcessed implements Serializable {
 
     @Id
     @NotNull
-    @Column(name = "PROCESSED_DATE")
+    @Column(name = "processed_date")
     private Date processedDate;
 
-    @Column(name = "PROCESSED_COUNT")
+    @Column(name = "processed_count")
     private Integer processedCount;
 
 }

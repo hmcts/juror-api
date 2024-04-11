@@ -1488,7 +1488,7 @@ class JurorRecordServiceTest {
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
         assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Excepted status to be 'Not "
-            + "Checked'").isEqualTo("Not Checked");
+            + "Checked'").isEqualTo(policeCheck);
     }
 
     @Test
@@ -1515,14 +1515,13 @@ class JurorRecordServiceTest {
 
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
-        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Excepted status to be 'Not "
-            + "Checked - There was a problem'").isEqualTo("Not Checked - There was a problem");
+        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Police check status")
+            .isEqualTo(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED);
     }
 
     @ParameterizedTest
     @EnumSource(value = PoliceCheck.class, mode = EnumSource.Mode.INCLUDE,
-        names = {"IN_PROGRESS", "ERROR_RETRY_NAME_HAS_NUMERICS", "ERROR_RETRY_CONNECTION_ERROR",
-            "ERROR_RETRY_OTHER_ERROR_CODE", "ERROR_RETRY_NO_ERROR_REASON", "ERROR_RETRY_UNEXPECTED_EXCEPTION"})
+        names = {"IN_PROGRESS"})
     void testBureauGetJurorOverviewPoliceCheckStatusInProgress(PoliceCheck policeCheck) {
         final String jurorNumber = "111111111";
         final String locCode = "415";
@@ -1547,7 +1546,7 @@ class JurorRecordServiceTest {
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
         assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Excepted status to be 'In "
-            + "Progress'").isEqualTo("In Progress");
+            + "Progress'").isEqualTo(PoliceCheck.IN_PROGRESS);
     }
 
     @Test
@@ -1575,8 +1574,8 @@ class JurorRecordServiceTest {
 
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
-        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Excepted status to be 'Passed'")
-            .isEqualTo("Passed");
+        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Police Check status")
+            .isEqualTo(PoliceCheck.ELIGIBLE);
     }
 
     @Test
@@ -1632,8 +1631,8 @@ class JurorRecordServiceTest {
 
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
-        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Excepted status to be 'Failed'")
-            .isEqualTo("Failed");
+        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Police check status")
+            .isEqualTo(PoliceCheck.INELIGIBLE);
     }
 
     @Test

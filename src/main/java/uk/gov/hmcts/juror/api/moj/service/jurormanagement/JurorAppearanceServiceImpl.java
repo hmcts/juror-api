@@ -37,6 +37,7 @@ import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
+import uk.gov.hmcts.juror.api.moj.service.JurorHistoryServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -69,9 +70,13 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     private final CourtLocationRepository courtLocationRepository;
     private final JurorRepository jurorRepository;
     private final JurorExpenseService jurorExpenseService;
+    private final JurorHistoryServiceImpl jurorHistoryService;
 
     @Override
     public void addAttendanceDay(BureauJwtPayload payload, AddAttendanceDayDto dto) {
+
+        //check that the appearance date is not in the future
+        checkAttendanceDateIsNotAFutureDate(dto.getAttendanceDate());
 
         JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(
             dto.getJurorNumber(), dto.getPoolNumber());
@@ -88,7 +93,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         processAppearance(payload, appearanceDto, true);
 
         UpdateAttendanceDto.CommonData commonData = dto.getUpdateAttendanceDtoCommonData();
-        updateConfirmAttendance(commonData);
+        updateConfirmAttendance(commonData, new ArrayList<>());
 
     }
 
@@ -121,6 +126,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         // check juror status to make sure they can be checked in
         final JurorPool jurorPool = validateJurorStatus(juror);
+
 
         Appearance appearance = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
             appearanceDate);
@@ -162,6 +168,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         }
 
         return appearanceDataList.get(0);
+    }
+
+
+    private void checkAttendanceDateIsNotAFutureDate(LocalDate attendanceDate) {
+        if (attendanceDate.isAfter(LocalDate.now())) {
+            log.error("Requested attendance date is in the future.");
+            throw new MojException.BadRequest("Requested attendance date is in the future.", null);
+        }
     }
 
     @Override
@@ -208,7 +222,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         // confirm-attendance
         if (status.equals(UpdateAttendanceStatus.CONFIRM_ATTENDANCE)) {
-            return updateConfirmAttendance(commonData);
+            return updateConfirmAttendance(commonData, request.getJuror());
         }
 
         // check-in jurors
@@ -434,12 +448,83 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             jurorsAttendanceCounts.forEach(tuple -> {
                 if (jurorsOnTrialData.getTrialNumber().equals(tuple.get(0, String.class))) {
                     jurorsOnTrialData.setNumberAttended(tuple.get(1, Long.class));
+                    jurorsOnTrialData.setAttendanceAudit(tuple.get(2, String.class));
                 }
             });
         });
 
         // return the response
         return jurorsOnTrialResponseDto;
+    }
+
+    @Override
+    public void confirmJuryAttendance(UpdateAttendanceDto request) {
+        log.info("Confirming jury attendance for jurors on trial");
+
+        final String owner = SecurityUtil.getActiveOwner();
+
+        // one attendance audit number applies to ALL jurors in this batch of attendances being confirmed
+        final String juryAttendanceNumber = getJuryAttendanceNumber();
+
+        CourtLocation courtLocation =
+            courtLocationRepository.findByLocCode(request.getCommonData().getLocationCode())
+                .orElseThrow(() -> new MojException.NotFound("Court location not found", null));
+
+        request.getJuror().forEach(jurorNumber -> {
+            // validate the juror record exists and user has ownership of the record
+            validateJuror(owner, jurorNumber);
+
+            // get the juror appearance record if it exists
+            Appearance appearance = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
+                request.getCommonData().getAttendanceDate());
+
+            JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber,
+                courtLocation);
+
+            if (appearance == null) {
+                // create a new appearance record
+                appearance = Appearance.builder()
+                    .jurorNumber(jurorNumber)
+                    .attendanceDate(request.getCommonData().getAttendanceDate())
+                    .courtLocation(courtLocation)
+                    .poolNumber(jurorPool.getPool().getPoolNumber())
+                    .build();
+            }
+
+            // update the check-in time if there is none
+            if (appearance.getTimeIn() == null) {
+                appearance.setTimeIn(request.getCommonData().getCheckInTime());
+            }
+
+            // update the check-out time if there is none
+            if (appearance.getTimeOut() == null) {
+                appearance.setTimeOut(request.getCommonData().getCheckOutTime());
+            }
+
+            appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+            realignAttendanceType(appearance);
+
+            appearance.setAttendanceAuditNumber(juryAttendanceNumber);
+            jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance.getAttendanceAuditNumber());
+
+            appearanceRepository.saveAndFlush(appearance);
+            jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
+
+            // update the juror next date and clear on call flag in case it is set
+            jurorPool.setNextDate(request.getCommonData().getAttendanceDate());
+            jurorPool.setOnCall(false);
+            jurorPoolRepository.saveAndFlush(jurorPool);
+        });
+    }
+
+    private String getJuryAttendanceNumber() {
+        final String juryAttendancePrefix = "J";
+
+        // get the next available attendance number from the database sequence
+        final long attendanceAuditNumber = appearanceRepository.getNextAttendanceAuditNumber();
+
+        // left pad with 0's up to 8 digits and add 'J' prefix for Jury Attendance
+        return juryAttendancePrefix + String.format("%08d", attendanceAuditNumber);
     }
 
     private void checkExistingAttendance(JurorNonAttendanceDto request, LocalDate nonAttendanceDate) {
@@ -621,7 +706,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         return AttendanceDetailsResponse.builder().details(details).summary(summary).build();
     }
 
-    AttendanceDetailsResponse updateConfirmAttendance(UpdateAttendanceDto.CommonData updateCommonData) {
+    AttendanceDetailsResponse updateConfirmAttendance(UpdateAttendanceDto.CommonData updateCommonData,
+                                                      List<String> jurors) {
         // 1. retrieve details of jurors who attended court for the given attendance date (checked-in)
         RetrieveAttendanceDetailsDto.CommonData retrieveCommonData = new RetrieveAttendanceDetailsDto.CommonData();
         retrieveCommonData.setAttendanceDate(updateCommonData.getAttendanceDate());
@@ -633,6 +719,12 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             .build();
 
         List<Tuple> checkedInJurors = appearanceRepository.retrieveAttendanceDetails(request);
+
+        if (!jurors.isEmpty()) {
+            checkedInJurors = checkedInJurors.stream()
+                .filter(tuple -> jurors.contains(tuple.get(0, String.class)))
+                .toList();
+        }
 
         // 2. checked-in jurors - update and save records
         List<AppearanceId> appearanceIds = new ArrayList<>();
@@ -915,7 +1007,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     private void validateTheNumberOfJurorsToUpdate(UpdateAttendanceDto request) {
         UpdateAttendanceDto.CommonData commonData = request.getCommonData();
 
-        if (commonData.getSingleJuror().equals(Boolean.TRUE) && (request.getJuror().size() > 1)) {
+        if (commonData.getSingleJuror().equals(Boolean.TRUE) && request.getJuror().size() > 1) {
             throw new MojException.BadRequest("Multiple jurors not allowed for single record "
                 + "update", null);
         }

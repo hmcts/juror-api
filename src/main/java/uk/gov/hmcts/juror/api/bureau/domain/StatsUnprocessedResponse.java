@@ -21,16 +21,16 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Entity
 @Immutable
-@Table(name = "STATS_UNPROCESSED_RESPONSES", schema = "JUROR_DIGITAL")
+@Table(name = "stats_unprocessed_responses", schema = "juror_dashboard")
 @Builder
 public class StatsUnprocessedResponse implements Serializable {
 
     @NotNull
     @Id
-    @Column(name = "LOC_CODE")
+    @Column(name = "loc_code")
     private String locCode;
 
-    @Column(name = "UNPROCESSED_COUNT")
+    @Column(name = "unprocessed_count")
     private Integer unprocessedCount;
 
 }

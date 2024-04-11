@@ -24,7 +24,7 @@ public class ExcusalDecisionDto {
 
     @JsonProperty("excusalReasonCode")
     @Schema(description = "Excusal Reason Code for Juror's excusal reason", requiredMode = Schema.RequiredMode.REQUIRED)
-    @Length(max = 1)
+    @Length(max = 2)
     @NotEmpty
     @NotNull
     private String excusalReasonCode;

@@ -24,21 +24,21 @@ import java.util.Date;
 @Entity
 @IdClass(StatsNotRespondedKey.class)
 @Immutable
-@Table(name = "STATS_NOT_RESPONDED", schema = "JUROR_DIGITAL")
+@Table(name = "stats_not_responded", schema = "juror_dashboard")
 @Builder
 public class StatsNotResponded implements Serializable {
 
     @NotNull
     @Id
-    @Column(name = "SUMMONS_MONTH")
+    @Column(name = "summons_month")
     private Date summonsMonth;
 
     @NotNull
     @Id
-    @Column(name = "LOC_CODE")
+    @Column(name = "loc_code")
     private String locCode;
 
-    @Column(name = "NON_RESPONSED_COUNT")
-    private Integer nonResponseCount;
+    @Column(name = "not_responded_count")
+    private Integer notRespondedCount;
 
 }
