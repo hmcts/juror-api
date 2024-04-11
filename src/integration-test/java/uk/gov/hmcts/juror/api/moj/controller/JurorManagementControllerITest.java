@@ -1686,6 +1686,23 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         }
 
+        @Test
+        @DisplayName("Add non attendance - add a non attendance record date in the future")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql"})
+        void addBadPayloadNonAttendanceDayInFuture() {
+            JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
+                .jurorNumber("111111111")
+                .nonAttendanceDate(now().plusDays(1))
+                .poolNumber("415230101")
+                .locationCode("415")
+                .build();
+
+            ResponseEntity<String> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
+                    URI.create("/api/v1/moj/juror-management/non-attendance")), String.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status created expected").isEqualTo(BAD_REQUEST);
+        }
     }
 
 
