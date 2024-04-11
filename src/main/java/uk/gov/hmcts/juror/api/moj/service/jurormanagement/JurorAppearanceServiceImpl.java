@@ -452,7 +452,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         final String owner = SecurityUtil.getActiveOwner();
 
         // one attendance audit number applies to ALL jurors in this batch of attendances being confirmed
-        final String juryAttendanceNumber = getJuryAttendanceNumber();
+        final String juryAttendancePrefix = "J";
+        final String juryAttendanceNumber = getAttendanceAuditNumber(juryAttendancePrefix);
 
         CourtLocation courtLocation =
             courtLocationRepository.findByLocCode(request.getCommonData().getLocationCode())
@@ -503,16 +504,6 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             jurorPool.setOnCall(false);
             jurorPoolRepository.saveAndFlush(jurorPool);
         });
-    }
-
-    private String getJuryAttendanceNumber() {
-        final String juryAttendancePrefix = "J";
-
-        // get the next available attendance number from the database sequence
-        final long attendanceAuditNumber = appearanceRepository.getNextAttendanceAuditNumber();
-
-        // left pad with 0's up to 8 digits and add 'J' prefix for Jury Attendance
-        return juryAttendancePrefix + String.format("%08d", attendanceAuditNumber);
     }
 
     private void checkExistingAttendance(JurorNonAttendanceDto request, LocalDate nonAttendanceDate) {
@@ -728,8 +719,15 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             appearanceIds.add(appearanceId);
         });
 
+        // one attendance audit number applies to ALL jurors in this batch of attendances being confirmed
+        final String poolAttendancePrefix = "P";
+        final String poolAttendanceNumber = getAttendanceAuditNumber(poolAttendancePrefix);
+
         List<Appearance> checkedInAttendances = appearanceRepository.findAllById(appearanceIds);
-        checkedInAttendances.forEach(appearance -> appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED));
+        checkedInAttendances.forEach(appearance -> {
+            appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+            appearance.setAttendanceAuditNumber(poolAttendanceNumber);
+        });
 
         jurorExpenseService.applyDefaultExpenses(checkedInAttendances);
 
@@ -762,6 +760,15 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         response.setSummary(summary);
 
         return response;
+    }
+
+    private String getAttendanceAuditNumber(String prefix) {
+
+        // get the next available attendance number from the database sequence
+        final long attendanceAuditNumber = appearanceRepository.getNextAttendanceAuditNumber();
+
+        // left pad with 0's up to 8 digits and add 'J' prefix for Jury Attendance
+        return prefix + String.format("%08d", attendanceAuditNumber);
     }
 
     private AttendanceDetailsResponse updateCheckIn(UpdateAttendanceDto request, String owner) {
