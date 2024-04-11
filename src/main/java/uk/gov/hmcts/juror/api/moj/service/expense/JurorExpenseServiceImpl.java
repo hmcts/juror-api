@@ -681,22 +681,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         return combinedSimplifiedExpenseDetailDto;
     }
 
-    SimplifiedExpenseDetailDto mapCombinedSimplifiedExpenseDetailDto(Appearance appearance) {
-        return SimplifiedExpenseDetailDto.builder()
-            .attendanceDate(appearance.getAttendanceDate())
-            .financialAuditNumber(appearance.getFinancialAuditDetails().getFinancialAuditNumber())
-            .attendanceType(appearance.getAttendanceType())
-            .financialLoss(appearance.getTotalFinancialLossDue())
-            .travel(appearance.getTotalTravelDue())
-            .foodAndDrink(getOrZero(appearance.getSubsistenceDue()))
-            .smartcard(getOrZero(appearance.getSmartCardAmountDue()))
-            .totalDue(appearance.getTotalDue())
-            .totalPaid(appearance.getTotalPaid())
-            .balanceToPay(appearance.getBalanceToPay())
-            .auditCreatedOn(appearance.getFinancialAuditDetails().getCreatedOn())
-            .build();
-    }
-
     @Override
     @Transactional(readOnly = true)
     public CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(String jurorNumber, String poolNumber,
@@ -707,6 +691,20 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             throw new MojException.NotFound("Not all dates found", null);
         }
         return result;
+    }
+
+    CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(List<Appearance> appearances) {
+        if (appearances.isEmpty()) {
+            return new CombinedExpenseDetailsDto<>();
+        }
+        final String owner = SecurityUtil.getActiveOwner();
+        if (appearances.stream().noneMatch(appearance -> owner.equals(appearance.getCourtLocation().getOwner()))) {
+            throw new MojException.Forbidden("User cannot access this juror pool", null);
+        }
+        CombinedExpenseDetailsDto<ExpenseDetailsDto> combinedExpenseDetailsDto = new CombinedExpenseDetailsDto<>();
+        appearances.forEach(
+            appearance -> combinedExpenseDetailsDto.addExpenseDetail(mapAppearanceToExpenseDetailsDto(appearance)));
+        return combinedExpenseDetailsDto;
     }
 
     @Override
@@ -729,7 +727,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         for (Appearance appearance : appearances) {
             
-            if(appearance.isDraftExpense()){
+            if (appearance.isDraftExpense()) {
                 // calculate the total for draft
                 summaryExpenseDetailsDto.addToTotalDraft(appearance.getTotalDue());
             } else {
@@ -756,20 +754,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 .filter(appearance -> AppearanceStage.EXPENSE_ENTERED.equals(appearance.getAppearanceStage()))
                 .sorted(Comparator.comparing(Appearance::getAttendanceDate))
                 .toList());
-    }
-
-    CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(List<Appearance> appearances) {
-        if (appearances.isEmpty()) {
-            return new CombinedExpenseDetailsDto<>();
-        }
-        final String owner = SecurityUtil.getActiveOwner();
-        if (appearances.stream().noneMatch(appearance -> owner.equals(appearance.getCourtLocation().getOwner()))) {
-            throw new MojException.Forbidden("User cannot access this juror pool", null);
-        }
-        CombinedExpenseDetailsDto<ExpenseDetailsDto> combinedExpenseDetailsDto = new CombinedExpenseDetailsDto<>();
-        appearances.forEach(
-            appearance -> combinedExpenseDetailsDto.addExpenseDetail(mapAppearanceToExpenseDetailsDto(appearance)));
-        return combinedExpenseDetailsDto;
     }
 
     @Override
@@ -852,6 +836,22 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             financialAuditDetails,
             appearance
         ));
+    }
+
+    SimplifiedExpenseDetailDto mapCombinedSimplifiedExpenseDetailDto(Appearance appearance) {
+        return SimplifiedExpenseDetailDto.builder()
+            .attendanceDate(appearance.getAttendanceDate())
+            .financialAuditNumber(appearance.getFinancialAuditDetails().getFinancialAuditNumber())
+            .attendanceType(appearance.getAttendanceType())
+            .financialLoss(appearance.getTotalFinancialLossDue())
+            .travel(appearance.getTotalTravelDue())
+            .foodAndDrink(getOrZero(appearance.getSubsistenceDue()))
+            .smartcard(getOrZero(appearance.getSmartCardAmountDue()))
+            .totalDue(appearance.getTotalDue())
+            .totalPaid(appearance.getTotalPaid())
+            .balanceToPay(appearance.getBalanceToPay())
+            .auditCreatedOn(appearance.getFinancialAuditDetails().getCreatedOn())
+            .build();
     }
 
 
