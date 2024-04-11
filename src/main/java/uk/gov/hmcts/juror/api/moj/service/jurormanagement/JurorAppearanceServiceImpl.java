@@ -252,7 +252,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     @Transactional
-    @SuppressWarnings("PMD.LawOfDemeter")
+    @SuppressWarnings({"PMD.LawOfDemeter", "PMD.ConfusingTernary"})
     public String updateAttendanceDate(UpdateAttendanceDateDto request) {
         log.trace(String.format("Entered method: updateAttendanceDate(). There are %s jurors to update",
             request.getJurorNumbers().size()));
