@@ -76,35 +76,54 @@ public class JurorManagementServiceImpl implements JurorManagementService {
     public int reassignJurors(BureauJwtPayload payload, JurorManagementRequestDto jurorManagementRequestDto) {
         log.trace("Entered reassignJurors method");
 
+        final String owner = payload.getOwner();
 
         // validate the request DTO, cannot reassign to the same pool in the same court - bad request.
         validateRequest(jurorManagementRequestDto);
 
-        PoolRequest sourcePoolRequest =
-            RepositoryUtils.unboxOptionalRecord(
-                poolRequestRepository.findByPoolNumber(jurorManagementRequestDto.getSourcePoolNumber()
-                ), jurorManagementRequestDto.getSourcePoolNumber());
-
-        PoolRequest targetPoolRequest =
-            RepositoryUtils.unboxOptionalRecord(
-                poolRequestRepository.findByPoolNumber(
-                    jurorManagementRequestDto.getReceivingPoolNumber()),
-                jurorManagementRequestDto.getReceivingPoolNumber()
-            );
-
-        CourtLocation sendingCourtLocation =
+        final CourtLocation sendingCourtLocation =
             RepositoryUtils.unboxOptionalRecord(courtLocationRepository.findByLocCode(
                 jurorManagementRequestDto.getSourceCourtLocCode()), jurorManagementRequestDto.getSourceCourtLocCode());
 
-        CourtLocation receivingCourtLocation =
+        final CourtLocation receivingCourtLocation =
             RepositoryUtils.unboxOptionalRecord(
                 courtLocationRepository.findByLocCode(
                     jurorManagementRequestDto.getReceivingCourtLocCode()),
                 jurorManagementRequestDto.getReceivingCourtLocCode()
             );
 
-        String sourcePoolNumber = sourcePoolRequest.getPoolNumber();
-        String targetPoolNumber = targetPoolRequest.getPoolNumber();
+        final PoolRequest sourcePoolRequest =
+            RepositoryUtils.unboxOptionalRecord(
+                poolRequestRepository.findByPoolNumber(jurorManagementRequestDto.getSourcePoolNumber()
+                ), jurorManagementRequestDto.getSourcePoolNumber());
+
+        PoolRequest targetPoolRequest;
+        if (jurorManagementRequestDto.getReceivingPoolNumber() != null) {
+            targetPoolRequest =
+                RepositoryUtils.unboxOptionalRecord(
+                    poolRequestRepository.findByPoolNumber(
+                        jurorManagementRequestDto.getReceivingPoolNumber()),
+                    jurorManagementRequestDto.getReceivingPoolNumber()
+                );
+        } else {
+            if (owner.equals(JurorDigitalApplication.JUROR_OWNER)) {
+                throw new MojException.BadRequest("Receiving Pool Number is required for Bureau users", null);
+            }
+            // create a new pool in the same court location for court users only
+            targetPoolRequest = createTargetPoolRequest(jurorManagementRequestDto, sourcePoolRequest,
+                sendingCourtLocation);
+        }
+
+        final String sourcePoolNumber = sourcePoolRequest.getPoolNumber();
+        final String targetPoolNumber = targetPoolRequest.getPoolNumber();
+
+        if (sourcePoolNumber == null || targetPoolNumber == null) {
+            throw new MojException.NotFound("Could not find Source or Target Pool request", null);
+        }
+
+        if (!sourcePoolRequest.getOwner().equals(owner) || !targetPoolRequest.getOwner().equals(owner)) {
+            throw new MojException.BadRequest("Users can only reassign between owned pools", null);
+        }
 
         List<String> jurorNumbersList = jurorManagementRequestDto.getJurorNumbers();
 
@@ -119,7 +138,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         log.debug("{} Pool Members found for the {} juror numbers provided", sourceJurorPools.size(),
             jurorManagementRequestDto.getJurorNumbers().stream().distinct().count()
         );
-        final String owner = payload.getOwner();
+
         final String currentUser = payload.getLogin();
         int reassignedJurorsCount = 0;
         for (JurorPool sourceJurorPool : sourceJurorPools) {
@@ -482,7 +501,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
     private PoolRequest createTargetPoolRequest(JurorManagementRequestDto requestDto, PoolRequest sourcePoolRequest,
                                                 CourtLocation receivingCourtLocation) {
-        log.trace("Create target pool request for transferring pool members to {}",
+        log.trace("Create target pool request for transferring/reassigning pool members to {}",
             requestDto.getReceivingCourtLocCode());
         PoolRequest targetPoolRequest = new PoolRequest();
         targetPoolRequest.setOwner(requestDto.getReceivingCourtLocCode());
