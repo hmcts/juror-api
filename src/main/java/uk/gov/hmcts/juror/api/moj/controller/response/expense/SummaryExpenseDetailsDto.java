@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 @Data
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SummaryExpenseDetailsDto {
     BigDecimal totalDraft;
@@ -24,7 +23,7 @@ public class SummaryExpenseDetailsDto {
 
     BigDecimal totalSmartCard;
 
-    public void SummaryExpenseDetailsDto() {
+    public SummaryExpenseDetailsDto() {
         this.totalDraft = BigDecimal.ZERO;
         this.totalForApproval = BigDecimal.ZERO;
         this.totalApproved = BigDecimal.ZERO;
