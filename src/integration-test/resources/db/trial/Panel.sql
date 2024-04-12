@@ -1,8 +1,5 @@
-
-ALTER SEQUENCE juror_mod.judge_id_seq
-RESTART WITH 1;
-ALTER SEQUENCE juror_mod.courtroom_id_seq
-RESTART WITH 1;
+alter sequence juror_mod.judge_id_seq restart with 1;
+alter sequence juror_mod.courtroom_id_seq restart with 1;
 
 delete from juror_mod.juror_history;
 delete from juror_mod.appearance ;
@@ -85,11 +82,11 @@ values
 ('415', '415000025', '415231104', 2, true,'415',0),
 ('415', '415000026', '415231104', 2, true,'415',0),
 ('415', '415000027', '415231104', 2, true,'415',0),
-('415', '415000028', '415231105', 3, true,'415',0),
-('415', '415000029', '415231105', 3, true,'415',0),
-('415', '415000030', '415231105', 3, true,'415',0),
+('415', '415000028', '415231105', 2, true,'415',0),
+('415', '415000029', '415231105', 2, true,'415',0),
+('415', '415000030', '415231105', 2, true,'415',0),
 ('415', '415000031', '415231105', 3, true,'415',0),
-('415', '415000032', '415231105', 3, true,'415',0);
+('415', '415000032', '415231105', 4, true,'415',0);
 
 insert into juror_mod.appearance (attendance_date,juror_number,loc_code, time_in, misc_total_paid, appearance_stage, non_attendance) values
 (current_date, '415000001', '415', current_time,0,'CHECKED_IN',false),

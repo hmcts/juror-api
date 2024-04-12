@@ -1,11 +1,3 @@
-DELETE FROM juror_mod.user_roles;
-DELETE FROM juror_mod.users;
-DELETE FROM juror_mod.juror_pool;
-delete from juror_mod.staff_juror_response_audit ;
-DELETE FROM juror_mod.juror_response;
-DELETE FROM juror_mod.pool;
-DELETE FROM juror_mod.juror;
-
 --staff
 INSERT INTO juror_mod.users (owner, username,email, name, active,team_id,version)
 VALUES ('400','jmcbob','jmcbob@email.gov.uk','Joe McBob',true,1,0),
