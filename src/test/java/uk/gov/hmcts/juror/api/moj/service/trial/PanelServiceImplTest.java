@@ -62,7 +62,8 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.GodClass"
 })
 class PanelServiceImplTest {
     @Mock

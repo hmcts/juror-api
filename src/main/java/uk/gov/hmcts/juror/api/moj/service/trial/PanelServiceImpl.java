@@ -82,6 +82,7 @@ public class PanelServiceImpl implements PanelService {
         return processPanelList(numberRequested, trialNumber, courtLocationCode, payload, appearanceList);
     }
 
+    @Override
     public List<PanelListDto> addPanelMembers(int numberRequested, String trialNumber,
                                               List<String> poolNumbers, String courtLocationCode) {
 
@@ -118,17 +119,24 @@ public class PanelServiceImpl implements PanelService {
         }
     }
 
-    private void addPanelMembersValidationChecks(int numberRequested, String trialNumber, String courtLocationCode) {
+    private void addPanelMembersTrialValidationChecks(String trialNumber,
+                                                      String courtLocationCode) {
+        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, courtLocationCode);
 
-        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
-            courtLocationCode).orElseThrow(() -> new MojException.NotFound(String.format("Cannot find trial with "
-            + "number: %s for court location %s", trialNumber, courtLocationCode), null));
+        if (trial == null) {
+            throw new MojException.NotFound(String.format("Cannot find trial with number: %s for court location %s",
+                trialNumber, courtLocationCode), null);
+        }
 
         if (trial.getTrialEndDate() != null) {
             throw new MojException.BusinessRuleViolation(
                 "Cannot add panel members - Trial has ended", TRIAL_HAS_ENDED
             );
         }
+    }
+
+    private void addPanelMembersValidationChecks(int numberRequested, String trialNumber, String courtLocationCode) {
+        addPanelMembersTrialValidationChecks(trialNumber, courtLocationCode);
 
         List<Panel> members = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber,
             courtLocationCode);
