@@ -20,7 +20,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorPaperResponseDetailDto;
 import uk.gov.hmcts.juror.api.moj.domain.CjsEmploymentType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
-import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.SummonsSnapshot;
@@ -44,6 +43,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmplo
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 
 import java.time.LocalDate;
@@ -51,11 +51,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
-
-import static java.util.function.Predicate.not;
 
 /**
  * Juror Paper Response service.
@@ -106,7 +102,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         // set the current owner.  Need to ensure the current owner is returned as the owner can change if, for
         // example, the juror is transferred to a different pool
-        updateCurrentOwnerInResponseDto(jurorPoolRepository, responseDto);
+        JurorResponseUtils.updateCurrentOwnerInResponseDto(jurorPoolRepository, responseDto);
 
         return responseDto;
     }
@@ -350,7 +346,6 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         processStraightThroughResponse(jurorPaperResponse, jurorPool, jurorPool.getReturnDate(), payload);
     }
-
 
     private PaperResponse updateWelshFlagBasedOnResponse(PaperResponse jurorPaperResponse, JurorPool jurorPool) {
         Juror juror = jurorPool.getJuror();
@@ -894,21 +889,5 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         }
 
         log.trace("Exit processStraightThroughResponse for {}", jurorPool.getJurorNumber());
-    }
-
-    private void updateCurrentOwnerInResponseDto(JurorPoolRepository jurorPoolRepository,
-                                                 JurorPaperResponseDetailDto responseDto) {
-
-        // set the current owner.  Need to ensure the current owner is returned as the owner can change if, for
-        // example, the juror is transferred to a different pool
-        List<JurorPool> jurorPools =
-            JurorPoolUtils.getActiveJurorPoolRecords(jurorPoolRepository, responseDto.getJurorNumber());
-
-        Optional<JurorPool> jurorPool = jurorPools.stream()
-            .filter(not(jp -> jp.getStatus().getCode().equals(IJurorStatus.TRANSFERRED)))
-            .sorted(Comparator.comparing(JurorPool::getDateCreated).reversed())
-            .toList().stream().findFirst();
-
-        jurorPool.ifPresent(pool -> responseDto.setCurrentOwner(pool.getOwner()));
     }
 }

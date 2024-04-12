@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
+import uk.gov.hmcts.juror.api.moj.controller.response.jurorresponse.IJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsDto;
 import uk.gov.hmcts.juror.api.validation.LocalDateOfBirth;
 
@@ -32,7 +33,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 @Getter
 @Setter
 @Schema(description = "Juror paper response details submitted by an Officer.")
-public class JurorPaperResponseDetailDto {
+public class JurorPaperResponseDetailDto implements IJurorResponse {
 
     @JsonProperty("jurorNumber")
     @Pattern(regexp = JUROR_NUMBER)
