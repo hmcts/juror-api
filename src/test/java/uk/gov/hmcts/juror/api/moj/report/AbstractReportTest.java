@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
@@ -172,6 +173,17 @@ class AbstractReportTest {
             assertThat(map.get(QJurorPool.jurorPool)).isEqualTo(
                 new Predicate[]{QJurorPool.jurorPool.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber),
                     QJurorPool.jurorPool.pool.poolNumber.eq(QAppearance.appearance.poolNumber)}
+            );
+        }
+
+        @Test
+        void jurorTrialToJuror() {
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJurorTrial.jurorTrial)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QJurorTrial.jurorTrial);
+
+            assertThat(map.containsKey(QJuror.juror)).isTrue();
+            assertThat(map.get(QJuror.juror)).isEqualTo(
+                new Predicate[]{QJurorTrial.jurorTrial.juror.eq(QJuror.juror)}
             );
         }
     }
