@@ -1239,6 +1239,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         jurorPool.setUserEdtq(SecurityUtil.getActiveLogin());
         jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));
         // TODO check if a letter needs to be queued for juror as well
+
         jurorPoolRepository.save(jurorPool);
     }
 
