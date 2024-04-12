@@ -1822,7 +1822,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J00123456");
+            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
 
             appearanceOpt = appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(
                 "333333333", "415230101", now().minusDays(2));
@@ -1831,16 +1831,16 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J00123456");
+            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
 
             // verify juror history records have been created
             assertThat(jurorHistoryRepository.findByJurorNumber("222222222")
                 .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
-                    && jh.getOtherInformation().equalsIgnoreCase("J00123456"))).isTrue();
+                    && jh.getOtherInformation().equalsIgnoreCase("J10123456"))).isTrue();
 
             assertThat(jurorHistoryRepository.findByJurorNumber("333333333")
                 .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
-                    && jh.getOtherInformation().equalsIgnoreCase("J00123456"))).isTrue();
+                    && jh.getOtherInformation().equalsIgnoreCase("J10123456"))).isTrue();
         }
 
         @Test

@@ -789,8 +789,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         // get the next available attendance number from the database sequence
         final long attendanceAuditNumber = appearanceRepository.getNextAttendanceAuditNumber();
 
-        // left pad with 0's up to 8 digits and add 'J' prefix for Jury Attendance
-        return prefix + String.format("%08d", attendanceAuditNumber);
+        //  add a single character prefix to the audit number, "J" for jury attendance, "P" for pool attendance
+        return prefix + attendanceAuditNumber;
     }
 
     private AttendanceDetailsResponse updateCheckIn(UpdateAttendanceDto request, String owner) {
