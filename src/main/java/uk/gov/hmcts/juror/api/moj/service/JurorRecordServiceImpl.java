@@ -698,8 +698,10 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             contactLogRequestDto.getJurorNumber(), payload.getOwner());
         // check whether the current user has permissions to create new contact logs against the currently active
         // juror record
-        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
-
+        if (!("400".equals(payload.getOwner()) || jurorPool.getOwner().equals(payload.getOwner()))) {
+            throw new MojException.Forbidden("Current user does not have sufficient permission to "
+                                                 + "view the juror pool record(s)", null);
+        }
 
         ContactCode enquiryType = RepositoryUtils.retrieveFromDatabase(
             IContactCode.fromCode(contactLogRequestDto.getEnquiryType()).getCode(), contactCodeRepository);
