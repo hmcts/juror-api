@@ -478,8 +478,8 @@ class JurorHistoryServiceImplTest {
         jurorPool.setStatus(jurorStatus);
 
         String attendanceAuditNumber = "J00000001";
-        jurorHistoryService.createJuryAttendanceHistory(jurorPool, attendanceAuditNumber);
-        assertValuesAdditional(jurorPool, "SYSTEM", null, null,
+        jurorHistoryService.createJuryAttendanceHistory(jurorPool, attendanceAuditNumber, "TEST_USER");
+        assertValuesAdditional(jurorPool, "TEST_USER", null, null,
             new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.JURY_ATTENDANCE,
                 attendanceAuditNumber));
     }
@@ -494,8 +494,8 @@ class JurorHistoryServiceImplTest {
         jurorPool.setStatus(jurorStatus);
 
         String attendanceAuditNumber = "P00000001";
-        jurorHistoryService.createPoolAttendanceHistory(jurorPool, attendanceAuditNumber);
-        assertValuesAdditional(jurorPool, "SYSTEM", null, null,
+        jurorHistoryService.createPoolAttendanceHistory(jurorPool, attendanceAuditNumber, "TEST_USER");
+        assertValuesAdditional(jurorPool, "TEST_USER", null, null,
             new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.POOL_ATTENDANCE,
                 attendanceAuditNumber));
     }

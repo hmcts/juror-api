@@ -510,7 +510,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             realignAttendanceType(appearance);
 
             appearance.setAttendanceAuditNumber(juryAttendanceNumber);
-            jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance.getAttendanceAuditNumber());
+            jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance.getAttendanceAuditNumber(),
+                SecurityUtil.getActiveUsersBureauPayload().getLogin());
 
             appearanceRepository.saveAndFlush(appearance);
             jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
@@ -745,8 +746,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             appearance.setAttendanceAuditNumber(poolAttendanceNumber);
 
             JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, appearance.getJurorNumber(),
-                    appearance.getCourtLocation());
-            jurorHistoryService.createPoolAttendanceHistory(jurorPool, poolAttendanceNumber);
+                appearance.getCourtLocation());
+            jurorHistoryService.createPoolAttendanceHistory(jurorPool, poolAttendanceNumber,
+                SecurityUtil.getActiveUsersBureauPayload().getLogin());
         });
 
         jurorExpenseService.applyDefaultExpenses(checkedInAttendances);
