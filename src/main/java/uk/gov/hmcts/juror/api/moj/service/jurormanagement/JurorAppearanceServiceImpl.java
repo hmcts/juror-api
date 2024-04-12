@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ModifyConfirmedAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
@@ -326,6 +327,74 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         response.setSummary(summary);
 
         return response;
+    }
+
+    @Override
+    @Transactional
+    public void modifyConfirmedAttendance(ModifyConfirmedAttendanceDto request) {
+
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+
+        final LocalDate attendanceDate = request.getAttendanceDate();
+        final String jurorNumber = request.getJurorNumber();
+        final String poolNumber = request.getPoolNumber();
+        final ModifyConfirmedAttendanceDto.ModifyAttendanceType modifyAttendanceType = request.getModifyAttendanceType();
+        final LocalTime checkInTime = request.getCheckInTime();
+        final LocalTime checkOutTime = request.getCheckOutTime();
+
+        log.debug(String.format("User %s is modifying attendance for juror %s", payload.getLogin(), jurorNumber));
+
+        JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber,
+            poolNumber);
+
+        if (jurorPool == null) {
+            throw new MojException.NotFound("No valid juror pool found for juror " + jurorNumber, null);
+        }
+
+        // validate the court user has access to the juror and pool
+        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
+
+        // get the appearance record if it exists
+        Appearance appearance =
+            appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber, poolNumber,
+                attendanceDate).orElseThrow(() -> new MojException.NotFound("No valid appearance record found", null));
+
+        if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.ATTENDANCE)) {
+
+            // update the check-in time
+            if (checkInTime != null) {
+                appearance.setTimeIn(checkInTime);
+            }
+
+            // update the check-out time
+            if (checkOutTime != null) {
+                appearance.setTimeOut(checkOutTime);
+            }
+
+            appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+            realignAttendanceType(appearance);
+
+            appearanceRepository.saveAndFlush(appearance);
+            jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
+
+        } else if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.NON_ATTENDANCE)) {
+            appearance.setNonAttendanceDay(Boolean.TRUE);
+            appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+            appearance.setAttendanceType(AttendanceType.NON_ATTENDANCE);
+            appearanceRepository.saveAndFlush(appearance);
+
+
+        } else if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.ABSENCE)) {
+            appearance.setNonAttendanceDay(Boolean.TRUE);
+            appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+            appearance.setAttendanceType(AttendanceType.ABSENT);
+            appearanceRepository.saveAndFlush(appearance);
+            jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
+
+        } else if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE)) {
+            appearanceRepository.delete(appearance);
+        }
+
     }
 
     @Override

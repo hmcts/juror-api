@@ -31,6 +31,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ModifyConfirmedAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
@@ -116,6 +117,15 @@ public class JurorManagementController {
     public ResponseEntity<String> updateAttendanceDate(
         @RequestBody @Valid UpdateAttendanceDateDto request) {
         return ResponseEntity.ok(jurorAppearanceService.updateAttendanceDate(request));
+    }
+
+    @PatchMapping("/attendance/modify-attendance")
+    @Operation(description = "Modify a jurors confirmed attendance for a given date")
+    @ResponseStatus(HttpStatus.OK)
+    @IsCourtUser
+    public void modifyAttendance(
+        @RequestBody @Valid ModifyConfirmedAttendanceDto request) {
+        jurorAppearanceService.modifyConfirmedAttendance(request);
     }
 
     @DeleteMapping("/attendance")
