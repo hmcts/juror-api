@@ -89,6 +89,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustments
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -111,7 +112,6 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_STATUS_MUST_BE_FAILED_TO_ATTEND;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_STATUS_MUST_BE_RESPONDED;
 import static uk.gov.hmcts.juror.api.moj.service.PoolCreateService.DISQUALIFIED_ON_SELECTION;
-import static uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils.updateCurrentOwnerInResponseDto;
 import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkReadAccessForCurrentUser;
 
 /**
@@ -845,7 +845,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         // set the current owner.  Need to ensure the current owner is returned as the owner can change if, for
         // example, the juror is transferred to a different pool
-        updateCurrentOwnerInResponseDto(jurorPoolRepository, responseDto);
+        JurorResponseUtils.updateCurrentOwnerInResponseDto(jurorPoolRepository, responseDto);
 
         return responseDto;
     }

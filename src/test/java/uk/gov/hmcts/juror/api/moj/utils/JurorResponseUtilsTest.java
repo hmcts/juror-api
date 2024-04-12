@@ -12,12 +12,14 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -81,7 +83,18 @@ public class JurorResponseUtilsTest {
         JurorResponseUtils.updateCurrentOwnerInResponseDto(jurorPoolRepository, responseDto);
 
         assertThat(responseDto.getCurrentOwner()).isEqualTo("457");
+    }
 
+    @Test
+    public void updateCurrentOwnerInResponseDtoJurorPoolIsEmpty() {
+        JurorPaperResponseDetailDto responseDto = new JurorPaperResponseDetailDto();
+        responseDto.setJurorNumber(JUROR_NUMBER_123456789);
+
+        Mockito.doReturn(new ArrayList<JurorPool>()).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(JUROR_NUMBER_123456789, true);
+
+        Assertions.assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+            JurorResponseUtils.updateCurrentOwnerInResponseDto(jurorPoolRepository, responseDto));
     }
 
     private JurorPool createJurorPool(String poolNumber, String owner, LocalDateTime dateCreated, int status) {

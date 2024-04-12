@@ -43,6 +43,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmplo
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 
 import java.time.LocalDate;
@@ -51,8 +52,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils.updateCurrentOwnerInResponseDto;
 
 /**
  * Juror Paper Response service.
@@ -103,7 +102,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         // set the current owner.  Need to ensure the current owner is returned as the owner can change if, for
         // example, the juror is transferred to a different pool
-        updateCurrentOwnerInResponseDto(jurorPoolRepository, responseDto);
+        JurorResponseUtils.updateCurrentOwnerInResponseDto(jurorPoolRepository, responseDto);
 
         return responseDto;
     }
