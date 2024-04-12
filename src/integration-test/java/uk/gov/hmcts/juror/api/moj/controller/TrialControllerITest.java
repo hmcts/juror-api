@@ -681,7 +681,7 @@ public class TrialControllerITest extends AbstractIntegrationTest {
 
         assertThat(responseEntity.getStatusCode()).as("Expect status code to be 200 (ok)").isEqualTo(OK);
 
-        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, locationCode);
+        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, locationCode).get();
         assertThat(trial.getTrialEndDate()).as("Expect trial end date to not be null").isNotNull();
         assertThat(trial.getTrialEndDate()).as("Expect trial end date to equal " + dto.getTrialEndDate())
             .isEqualTo(dto.getTrialEndDate());

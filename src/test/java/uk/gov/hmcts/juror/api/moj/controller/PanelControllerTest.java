@@ -36,7 +36,6 @@ import uk.gov.hmcts.juror.api.moj.service.trial.PanelService;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -121,13 +120,13 @@ class PanelControllerTest {
 
         CreatePanelDto createPanelDto = new CreatePanelDto();
         createPanelDto.setNumberRequested(1);
-        createPanelDto.setPoolNumbers(Optional.of(poolNumbers));
+        createPanelDto.setPoolNumbers(poolNumbers);
         createPanelDto.setCourtLocationCode("415");
         createPanelDto.setTrialNumber("T100000025");
 
         when(panelService.createPanel(1,
             "T100000025",
-            Optional.of(poolNumbers),
+            poolNumbers,
             "415",
             createJwt("415", "COURT_USER"))).thenReturn(panelListDtos());
 
@@ -140,7 +139,7 @@ class PanelControllerTest {
 
         verify(panelService, times(1)).createPanel(1,
             "T100000025",
-            Optional.of(poolNumbers), "415",
+            poolNumbers, "415",
             jwtPayload);
     }
 
@@ -325,13 +324,13 @@ class PanelControllerTest {
 
                 CreatePanelDto createPanelDto = new CreatePanelDto();
                 createPanelDto.setNumberRequested(1);
-                createPanelDto.setPoolNumbers(Optional.empty());
+                createPanelDto.setPoolNumbers(new ArrayList<>());
                 createPanelDto.setCourtLocationCode("415");
                 createPanelDto.setTrialNumber("T100000025");
 
                 when(panelService.addPanelMembers(1,
                     "T100000025",
-                    Optional.empty(),
+                    new ArrayList<>(),
                     "415")).thenReturn(panelListDtos());
 
                 Assertions.assertThatNoException().isThrownBy(() ->
@@ -358,13 +357,13 @@ class PanelControllerTest {
 
                 CreatePanelDto createPanelDto = new CreatePanelDto();
                 createPanelDto.setNumberRequested(1);
-                createPanelDto.setPoolNumbers(Optional.of(poolNumbers));
+                createPanelDto.setPoolNumbers(poolNumbers);
                 createPanelDto.setCourtLocationCode("415");
                 createPanelDto.setTrialNumber("T100000025");
 
                 when(panelService.addPanelMembers(1,
                     "T100000025",
-                    Optional.of(poolNumbers),
+                    poolNumbers,
                     "415")).thenReturn(panelListDtos());
 
                 Assertions.assertThatNoException().isThrownBy(() ->

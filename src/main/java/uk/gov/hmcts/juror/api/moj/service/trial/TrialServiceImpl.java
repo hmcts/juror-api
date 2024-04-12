@@ -124,7 +124,11 @@ public class TrialServiceImpl implements TrialService {
 
     @Override
     public TrialSummaryDto getTrialSummary(BureauJwtPayload payload, String trialNo, String locCode) {
-        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNo, locCode);
+
+        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNo, locCode)
+            .orElseThrow(() -> new MojException.NotFound(String.format("Cannot find trial with "
+            + "number: %s for court location %s", trialNo, locCode), null));
+
         if (trial == null) {
             throw new MojException.NotFound("Cannot find trial %s for court location %s.".formatted(trialNo, locCode),
                 null);
@@ -228,7 +232,9 @@ public class TrialServiceImpl implements TrialService {
         }
 
         Trial trial = trialRepository
-            .findByTrialNumberAndCourtLocationLocCode(dto.getTrialNumber(), dto.getLocationCode());
+            .findByTrialNumberAndCourtLocationLocCode(dto.getTrialNumber(), dto.getLocationCode())
+            .orElseThrow(() -> new MojException.NotFound(String.format("Cannot find trial with "
+                + "number: %s for court location %s", dto.getTrialNumber(), dto.getLocationCode()), null));
 
         if (trial == null) {
             throw new MojException.NotFound(
