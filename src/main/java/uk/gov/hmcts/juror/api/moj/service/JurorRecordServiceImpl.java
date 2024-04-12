@@ -105,13 +105,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static java.util.function.Predicate.not;
 import static org.springframework.transaction.annotation.Propagation.REQUIRED;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_COMPLETION_DATE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_STATUS_MUST_BE_FAILED_TO_ATTEND;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_STATUS_MUST_BE_RESPONDED;
 import static uk.gov.hmcts.juror.api.moj.service.PoolCreateService.DISQUALIFIED_ON_SELECTION;
+import static uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils.updateCurrentOwnerInResponseDto;
 import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkReadAccessForCurrentUser;
 
 /**
@@ -1229,21 +1229,4 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
         return jurorPool;
     }
-
-    private void updateCurrentOwnerInResponseDto(JurorPoolRepository jurorPoolRepository,
-                                                 BureauJurorDetailDto responseDto) {
-
-        // set the current owner.  Need to ensure the current owner is returned as the owner can change if, for
-        // example, the juror is transferred to a different pool
-        List<JurorPool> jurorPools =
-            JurorPoolUtils.getActiveJurorPoolRecords(jurorPoolRepository, responseDto.getJurorNumber());
-
-        Optional<JurorPool> jurorPool = jurorPools.stream()
-            .filter(not(jp -> jp.getStatus().getCode().equals(IJurorStatus.TRANSFERRED)))
-            .sorted(Comparator.comparing(JurorPool::getDateCreated).reversed())
-            .toList().stream().findFirst();
-
-        jurorPool.ifPresent(pool -> responseDto.setCurrentOwner(pool.getOwner()));
-    }
 }
-

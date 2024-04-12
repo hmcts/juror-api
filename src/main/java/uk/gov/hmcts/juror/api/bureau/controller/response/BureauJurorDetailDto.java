@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.juror.api.bureau.domain.ChangeLogItem;
+import uk.gov.hmcts.juror.api.moj.controller.response.jurorresponse.IJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Schema(description = "All Details available on a juror in the system ")
 //TODO: validation
-public class BureauJurorDetailDto implements Serializable {
+public class BureauJurorDetailDto implements Serializable, IJurorResponse {
 
     @Schema(description = "Juror number")
     private String jurorNumber;
