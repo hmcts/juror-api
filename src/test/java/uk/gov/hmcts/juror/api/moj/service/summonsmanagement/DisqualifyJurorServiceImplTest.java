@@ -73,6 +73,9 @@ public class DisqualifyJurorServiceImplTest {
     private AssignOnUpdateServiceMod assignOnUpdateService;
     @Mock
     private SummonsReplyMergeService summonsReplyMergeService;
+    @Mock
+    private PrintDataService printDataService;
+
 
     @InjectMocks
     private DisqualifyJurorServiceImpl disqualifyJurorService;
