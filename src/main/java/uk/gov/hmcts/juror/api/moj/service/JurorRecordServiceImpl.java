@@ -89,6 +89,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustments
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -105,7 +106,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static java.util.function.Predicate.not;
 import static org.springframework.transaction.annotation.Propagation.REQUIRED;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_COMPLETION_DATE;
@@ -698,8 +698,10 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             contactLogRequestDto.getJurorNumber(), payload.getOwner());
         // check whether the current user has permissions to create new contact logs against the currently active
         // juror record
-        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
-
+        if (!("400".equals(payload.getOwner()) || jurorPool.getOwner().equals(payload.getOwner()))) {
+            throw new MojException.Forbidden("Current user does not have sufficient permission to "
+                                                 + "view the juror pool record(s)", null);
+        }
 
         ContactCode enquiryType = RepositoryUtils.retrieveFromDatabase(
             IContactCode.fromCode(contactLogRequestDto.getEnquiryType()).getCode(), contactCodeRepository);
@@ -845,7 +847,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         // set the current owner.  Need to ensure the current owner is returned as the owner can change if, for
         // example, the juror is transferred to a different pool
-        updateCurrentOwnerInResponseDto(jurorPoolRepository, responseDto);
+        JurorResponseUtils.updateCurrentOwnerInResponseDto(jurorPoolRepository, responseDto);
 
         return responseDto;
     }
@@ -1229,21 +1231,4 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
         return jurorPool;
     }
-
-    private void updateCurrentOwnerInResponseDto(JurorPoolRepository jurorPoolRepository,
-                                                 BureauJurorDetailDto responseDto) {
-
-        // set the current owner.  Need to ensure the current owner is returned as the owner can change if, for
-        // example, the juror is transferred to a different pool
-        List<JurorPool> jurorPools =
-            JurorPoolUtils.getActiveJurorPoolRecords(jurorPoolRepository, responseDto.getJurorNumber());
-
-        Optional<JurorPool> jurorPool = jurorPools.stream()
-            .filter(not(jp -> jp.getStatus().getCode().equals(IJurorStatus.TRANSFERRED)))
-            .sorted(Comparator.comparing(JurorPool::getDateCreated).reversed())
-            .toList().stream().findFirst();
-
-        jurorPool.ifPresent(pool -> responseDto.setCurrentOwner(pool.getOwner()));
-    }
 }
-

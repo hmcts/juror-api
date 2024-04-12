@@ -173,8 +173,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     private void checkAttendanceDateIsNotAFutureDate(LocalDate attendanceDate) {
         if (attendanceDate.isAfter(LocalDate.now())) {
-            log.error("Requested attendance date is in the future.");
-            throw new MojException.BadRequest("Requested attendance date is in the future.", null);
+            log.error("Requested date is in the future.");
+            throw new MojException.BadRequest("Requested date is in the future.",
+                null);
         }
     }
 
@@ -374,6 +375,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         final String locationCode = request.getLocationCode();
         final LocalDate nonAttendanceDate = request.getNonAttendanceDate();
+
+        //check that the appearance date is not in the future
+        checkAttendanceDateIsNotAFutureDate(nonAttendanceDate);
 
         log.debug(String.format("User %s is adding a non attendance day for juror %s", payload.getLogin(),
             request.getJurorNumber()));

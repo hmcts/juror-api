@@ -42,6 +42,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseR
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApproval;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.SimplifiedExpenseDetailDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.SummaryExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
@@ -62,12 +63,14 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ExpenseRatesRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorExpenseTotalsRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PaymentDataRepository;
 import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
 import uk.gov.hmcts.juror.api.moj.service.FinancialAuditService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -108,6 +111,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     private final JurorExpenseTotalsRepository jurorExpenseTotalsRepository;
     private final AppearanceRepository appearanceRepository;
     private final JurorRepository jurorRepository;
+    private final JurorPoolRepository jurorPoolRepository;
     private final FinancialAuditService financialAuditService;
     private final UserService userService;
     private final JurorHistoryService jurorHistoryService;
@@ -677,22 +681,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         return combinedSimplifiedExpenseDetailDto;
     }
 
-    SimplifiedExpenseDetailDto mapCombinedSimplifiedExpenseDetailDto(Appearance appearance) {
-        return SimplifiedExpenseDetailDto.builder()
-            .attendanceDate(appearance.getAttendanceDate())
-            .financialAuditNumber(appearance.getFinancialAuditDetails().getFinancialAuditNumber())
-            .attendanceType(appearance.getAttendanceType())
-            .financialLoss(appearance.getTotalFinancialLossDue())
-            .travel(appearance.getTotalTravelDue())
-            .foodAndDrink(getOrZero(appearance.getSubsistenceDue()))
-            .smartcard(getOrZero(appearance.getSmartCardAmountDue()))
-            .totalDue(appearance.getTotalDue())
-            .totalPaid(appearance.getTotalPaid())
-            .balanceToPay(appearance.getBalanceToPay())
-            .auditCreatedOn(appearance.getFinancialAuditDetails().getCreatedOn())
-            .build();
-    }
-
     @Override
     @Transactional(readOnly = true)
     public CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(String jurorNumber, String poolNumber,
@@ -717,6 +705,52 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         appearances.forEach(
             appearance -> combinedExpenseDetailsDto.addExpenseDetail(mapAppearanceToExpenseDetailsDto(appearance)));
         return combinedExpenseDetailsDto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SummaryExpenseDetailsDto calculateSummaryTotals(String jurorNumber, String poolNumber) {
+
+        final String owner = SecurityUtil.getActiveOwner();
+
+        // check if the user has access to the juror pool for juror
+        JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,owner);
+
+        List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(jurorNumber,
+            poolNumber);
+
+        if (appearances.isEmpty()) {
+            throw new MojException.NotFound("No appearances found for juror: " + jurorNumber, null);
+        }
+
+        SummaryExpenseDetailsDto summaryExpenseDetailsDto = new SummaryExpenseDetailsDto();
+
+        for (Appearance appearance : appearances) {
+            
+            if (appearance.isDraftExpense()) {
+                // calculate the total for draft
+                if (appearance.getTotalDue() != null) {
+                    summaryExpenseDetailsDto.addToTotalDraft(appearance.getTotalDue());
+                }
+            } else {
+
+                // calculate the total approved
+                if (appearance.getTotalPaid() != null) {
+                    summaryExpenseDetailsDto.addToTotalApproved(
+                        appearance.getTotalPaid());
+                }
+
+                // calculate the total for approval
+                if (appearance.getTotalPaid() != null && appearance.getTotalDue() != null) {
+                    summaryExpenseDetailsDto.addToTotalForApproval(
+                        appearance.getTotalDue().subtract(appearance.getTotalPaid()));
+                } else if (appearance.getTotalDue() != null) {
+                    summaryExpenseDetailsDto.addToTotalForApproval(appearance.getTotalDue());
+                }
+            }
+        }
+
+        return summaryExpenseDetailsDto;
     }
 
     @Override
@@ -810,6 +844,22 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             financialAuditDetails,
             appearance
         ));
+    }
+
+    SimplifiedExpenseDetailDto mapCombinedSimplifiedExpenseDetailDto(Appearance appearance) {
+        return SimplifiedExpenseDetailDto.builder()
+            .attendanceDate(appearance.getAttendanceDate())
+            .financialAuditNumber(appearance.getFinancialAuditDetails().getFinancialAuditNumber())
+            .attendanceType(appearance.getAttendanceType())
+            .financialLoss(appearance.getTotalFinancialLossDue())
+            .travel(appearance.getTotalTravelDue())
+            .foodAndDrink(getOrZero(appearance.getSubsistenceDue()))
+            .smartcard(getOrZero(appearance.getSmartCardAmountDue()))
+            .totalDue(appearance.getTotalDue())
+            .totalPaid(appearance.getTotalPaid())
+            .balanceToPay(appearance.getBalanceToPay())
+            .auditCreatedOn(appearance.getFinancialAuditDetails().getCreatedOn())
+            .build();
     }
 
 

@@ -8,7 +8,10 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.JurorResponseRetrieveRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QJurorResponseCommon;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QPaperResponse;
 
 import java.util.List;
 
@@ -25,7 +28,10 @@ import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.isNotEmptyOrNull;
 public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommonRepositoryMod {
 
     private static final QJurorResponseCommon JUROR_RESPONSE_COMMON = QJurorResponseCommon.jurorResponseCommon;
+    private static final QDigitalResponse DIGITAL_RESPONSE = QDigitalResponse.digitalResponse;
+    private static final QPaperResponse PAPER_RESPONSE = QPaperResponse.paperResponse;
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
+
 
     @PersistenceContext
     EntityManager entityManager;
@@ -38,6 +44,20 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
 
         // fetch the data
         return fetchQueryResults(query, resultsLimit);
+    }
+
+    @Override
+    public AbstractJurorResponse findByJurorNumber(String jurorNumber) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        AbstractJurorResponse response = queryFactory.select(DIGITAL_RESPONSE).from(DIGITAL_RESPONSE)
+            .where(DIGITAL_RESPONSE.jurorNumber.eq(jurorNumber).and(DIGITAL_RESPONSE.replyType.type.eq("Digital")))
+            .fetchOne();
+        if (response == null) {
+            return queryFactory.select(PAPER_RESPONSE).from(PAPER_RESPONSE)
+                .where(PAPER_RESPONSE.jurorNumber.eq(jurorNumber).and(PAPER_RESPONSE.replyType.type.eq("Paper")))
+                .fetchOne();
+        }
+        return response;
     }
 
     private List<Tuple> fetchQueryResults(JPAQuery<Tuple> query, int resultsLimit) {
