@@ -314,6 +314,8 @@ class TrialServiceImplTest {
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).as("Sat on Jury").isTrue();
 
     }
 
@@ -393,8 +395,8 @@ class TrialServiceImplTest {
         verify(completeService, times(panelMembers.size())).completeService(anyString(), any());
         verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
         ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
-
         verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).as("Sat on Jury").isTrue();
     }
 
     @Test
