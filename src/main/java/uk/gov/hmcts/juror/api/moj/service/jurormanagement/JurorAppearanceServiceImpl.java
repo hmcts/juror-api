@@ -368,6 +368,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.ATTENDANCE)) {
 
+            appearance.setNonAttendanceDay(Boolean.FALSE);
+
             // update the check-in time
             if (checkInTime != null) {
                 appearance.setTimeIn(checkInTime);
@@ -385,17 +387,22 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
 
         } else if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.NON_ATTENDANCE)) {
+            appearance.setTimeIn(null);
+            appearance.setTimeOut(null);
             appearance.setNonAttendanceDay(Boolean.TRUE);
-            appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+            appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED); // confirmed attendance
             appearance.setAttendanceType(AttendanceType.NON_ATTENDANCE);
             appearanceRepository.saveAndFlush(appearance);
             // placeholder method for applying default expenses
             jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
 
         } else if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.ABSENCE)) {
-            appearance.setNonAttendanceDay(Boolean.TRUE);
-            appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+            appearance.setTimeIn(null);
+            appearance.setTimeOut(null);
+            appearance.setNonAttendanceDay(Boolean.FALSE);
+            appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED); // confirmed attendance
             appearance.setAttendanceType(AttendanceType.ABSENT);
+            appearance.setNoShow(Boolean.TRUE);
             appearanceRepository.saveAndFlush(appearance);
             // placeholder method for applying default expenses
             jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
