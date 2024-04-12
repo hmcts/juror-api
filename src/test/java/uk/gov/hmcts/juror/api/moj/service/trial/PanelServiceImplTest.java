@@ -53,6 +53,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_AVAILABLE;
@@ -111,35 +112,38 @@ class PanelServiceImplTest {
     @Test
     void createPanelHappyPathSelectedPools() {
 
+        final String locCode = "415";
+
         ArrayList<String> poolNumbers = new ArrayList<>();
         poolNumbers.add("415231201");
 
         doReturn(true).when(trialRepository)
-            .existsByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-        doReturn(createTrial()).when(trialRepository)
-            .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
+            .existsByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
+        doReturn(Optional.of(createTrial())).when(trialRepository)
+            .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
 
         List<String> jurorNumbers = new ArrayList<>();
         jurorNumbers.add("121212121");
         jurorNumbers.add("111111111");
 
-        doReturn(createJurorPool(jurorNumbers, "415231201")).when(appearanceRepository).retrieveAllJurors();
+        doReturn(createJurorPool(jurorNumbers, "415231201")).when(appearanceRepository)
+            .retrieveAllJurors(locCode);
 
         doReturn(createJurorPool(jurorNumbers, poolNumbers.get(0))).when(appearanceRepository)
-            .getJurorsInPools(poolNumbers);
+            .getJurorsInPools(locCode, poolNumbers);
         doReturn(createAppearance("121212121")).when(appearanceRepository).findByJurorNumber("121212121");
         doReturn(createAppearance("111111111")).when(appearanceRepository).findByJurorNumber("111111111");
 
         List<PanelListDto> dtoList = panelService.createPanel(2,
             "T100000025",
-            Optional.of(poolNumbers),
-            "415",
+            poolNumbers,
+            locCode,
             buildPayload());
 
-        verify(appearanceRepository, times(1)).getJurorsInPools(any());
-        verify(appearanceRepository, times(0)).retrieveAllJurors();
+        verify(appearanceRepository, times(1)).getJurorsInPools(locCode, poolNumbers);
+        verify(appearanceRepository, never()).retrieveAllJurors(locCode);
         verify(panelRepository, times(2)).saveAndFlush(any());
-        assertThat(dtoList.size()).as("Expected size to be two").isEqualTo(2);
+        assertThat(dtoList).as("Expected size to be two").hasSize(2);
         assertThat(dtoList.get(0).getFirstName()).as("Expected first name to be FNAME").isEqualTo("FNAME");
         assertThat(dtoList.get(0).getLastName()).as("Expected first name to be LNAME").isEqualTo("LNAME");
         assertThat(dtoList.get(0).getJurorStatus()).as("Expected status to be Panelled").isEqualTo("Panelled");
@@ -148,29 +152,31 @@ class PanelServiceImplTest {
 
     @Test
     void createPanelHappyPathNoPoolsSelected() {
+        final String locCode = "415";
+
         doReturn(true).when(trialRepository)
-            .existsByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-        doReturn(createTrial()).when(trialRepository)
-            .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
+            .existsByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
+        doReturn(Optional.of(createTrial())).when(trialRepository)
+            .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
 
         List<String> jurorNumbers = new ArrayList<>();
         jurorNumbers.add("121212121");
         jurorNumbers.add("111111111");
 
-        doReturn(createJurorPool(jurorNumbers, "415231201")).when(appearanceRepository).retrieveAllJurors();
+        doReturn(createJurorPool(jurorNumbers, "415231201")).when(appearanceRepository).retrieveAllJurors(locCode);
         doReturn(createAppearance("111111111")).when(appearanceRepository).findByJurorNumber("111111111");
         doReturn(createAppearance("121212121")).when(appearanceRepository).findByJurorNumber("121212121");
 
         List<PanelListDto> dtoList = panelService.createPanel(2,
             "T100000025",
-            Optional.empty(),
-            "415",
+            new ArrayList<>(),
+            locCode,
             buildPayload());
 
-        verify(appearanceRepository, times(0)).getJurorsInPools(any());
-        verify(appearanceRepository, times(1)).retrieveAllJurors();
+        verify(appearanceRepository, never()).getJurorsInPools(locCode, new ArrayList<>());
+        verify(appearanceRepository, times(1)).retrieveAllJurors(locCode);
         verify(panelRepository, times(2)).saveAndFlush(any());
-        assertThat(dtoList.size()).as("Expected size to be two").isEqualTo(2);
+        assertThat(dtoList).as("Expected size to be two").hasSize(2);
         assertThat(dtoList.get(0).getFirstName()).as("Expected first name to be FNAME").isEqualTo("FNAME");
         assertThat(dtoList.get(0).getLastName()).as("Expected first name to be LNAME").isEqualTo("LNAME");
         assertThat(dtoList.get(0).getJurorStatus()).as("Expected status to be Panelled").isEqualTo("Panelled");
@@ -181,28 +187,31 @@ class PanelServiceImplTest {
     void createPanelHappyPathEmptyPoolSelection() {
         doReturn(true).when(trialRepository)
             .existsByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-        doReturn(createTrial()).when(trialRepository)
+        doReturn(Optional.of(createTrial())).when(trialRepository)
             .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
 
         List<String> jurorNumbers = new ArrayList<>();
         jurorNumbers.add("121212121");
         jurorNumbers.add("111111111");
 
-        doReturn(createJurorPool(jurorNumbers, "415231201")).when(appearanceRepository).retrieveAllJurors();
+        final String locCode = "415";
+
+        doReturn(createJurorPool(jurorNumbers, "415231201")).when(appearanceRepository)
+            .retrieveAllJurors(locCode);
         doReturn(createAppearance("121212121")).when(appearanceRepository).findByJurorNumber("121212121");
         doReturn(createAppearance("111111111")).when(appearanceRepository).findByJurorNumber("111111111");
 
         ArrayList<String> poolNumbers = new ArrayList<>();
         List<PanelListDto> dtoList = panelService.createPanel(2,
             "T100000025",
-            Optional.of(poolNumbers),
+            poolNumbers,
             "415",
             buildPayload());
 
-        verify(appearanceRepository, times(0)).getJurorsInPools(any());
-        verify(appearanceRepository, times(1)).retrieveAllJurors();
+        verify(appearanceRepository, never()).getJurorsInPools(locCode, poolNumbers);
+        verify(appearanceRepository, times(1)).retrieveAllJurors(locCode);
         verify(panelRepository, times(2)).saveAndFlush(any());
-        assertThat(dtoList.size()).as("Expected size to be two").isEqualTo(2);
+        assertThat(dtoList).as("Expected size to be two").hasSize(2);
         assertThat(dtoList.get(0).getFirstName()).as("Expected first name to be FNAME").isEqualTo("FNAME");
         assertThat(dtoList.get(0).getLastName()).as("Expected first name to be LNAME").isEqualTo("LNAME");
         assertThat(dtoList.get(0).getJurorStatus()).as("Expected status to be Panelled").isEqualTo("Panelled");
@@ -217,7 +226,7 @@ class PanelServiceImplTest {
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(
             () -> panelService.createPanel(1,
                 "T100000025",
-                Optional.of(new ArrayList<>()),
+                new ArrayList<>(),
                 anyString(),
                 any()));
 
@@ -235,7 +244,7 @@ class PanelServiceImplTest {
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(
             () -> panelService.createPanel(1,
                 "T100000025",
-                Optional.of(new ArrayList<>()),
+                new ArrayList<>(),
                 anyString(),
                 any()));
 
@@ -253,7 +262,7 @@ class PanelServiceImplTest {
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(
             () -> panelService.createPanel(1,
                 "T100000025",
-                Optional.of(new ArrayList<>()),
+                new ArrayList<>(),
                 anyString(),
                 any()));
 
@@ -268,7 +277,7 @@ class PanelServiceImplTest {
         MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
             () -> panelService.createPanel(0,
                 "T100000025",
-                Optional.of(new ArrayList<>()),
+                new ArrayList<>(),
                 anyString(),
                 any()),
             "Expected exception to be thrown when not enough jurors");
@@ -290,7 +299,7 @@ class PanelServiceImplTest {
         MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
             () -> panelService.createPanel(1001,
                 "T100000025",
-                Optional.of(new ArrayList<>()),
+                new ArrayList<>(),
                 anyString(),
                 any()),
             "Expected exception to be thrown when not enough jurors");
@@ -306,6 +315,7 @@ class PanelServiceImplTest {
 
     @Test
     void createPanelTrialNotEnoughJurors() {
+        final String locCode = "415";
 
         List<JurorPool> appearanceList;
 
@@ -315,7 +325,7 @@ class PanelServiceImplTest {
         appearanceList = createJurorPool(jurorNumbers, "415231201");
 
         doReturn(appearanceList).when(appearanceRepository)
-            .retrieveAllJurors();
+            .retrieveAllJurors(locCode);
         doReturn(true).when(trialRepository)
             .existsByTrialNumberAndCourtLocationLocCode(anyString(), anyString());
         doReturn(false).when(panelRepository)
@@ -324,9 +334,9 @@ class PanelServiceImplTest {
         MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
             () -> panelService.createPanel(50,
                 "T100000025",
-                Optional.of(new ArrayList<>()),
-                anyString(),
-                any()),
+                new ArrayList<>(),
+                locCode,
+                buildPayload()),
             "Expected exception to be thrown when not enough jurors");
 
         assertEquals("Cannot create panel - Not enough jurors available",
@@ -334,11 +344,11 @@ class PanelServiceImplTest {
             "Expected exception message to be: Cannot create panel - Not enough jurors available");
         assertEquals(NUMBER_OF_JURORS_EXCEEDS_AVAILABLE, exception.getErrorCode());
         verify(trialRepository, times(1))
-            .existsByTrialNumberAndCourtLocationLocCode("T100000025", "");
+            .existsByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
         verify(panelRepository, times(1))
             .existsByTrialTrialNumber("T100000025");
         verify(appearanceRepository, times(1))
-            .retrieveAllJurors();
+            .retrieveAllJurors(locCode);
     }
 
     @Test
@@ -378,7 +388,7 @@ class PanelServiceImplTest {
             }
         }
 
-        doReturn(createTrial()).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(anyString(),
+        doReturn(Optional.of(createTrial())).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(anyString(),
             anyString());
 
         JurorListRequestDto jurorListRequestDto =
@@ -497,25 +507,23 @@ class PanelServiceImplTest {
                 final String jurorNumberFormat = "1111112%02d";
                 doReturn(true).when(trialRepository)
                     .existsByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-                doReturn(createTrial()).when(trialRepository)
+                doReturn(Optional.of(createTrial())).when(trialRepository)
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
 
                 doReturn(createPanelMembers(10)).when(panelRepository)
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
 
                 List<String> jurorNumbers = new ArrayList<>();
-                for (int i = 0;
-                     i < maxJurors;
-                     i++) {
+                for (int i = 0; i < maxJurors; i++) {
                     jurorNumbers.add(jurorNumberFormat.formatted(i));
                 }
 
-                doReturn(createJurorPool(jurorNumbers, "415231201")).when(appearanceRepository).retrieveAllJurors();
+                final String locCode = "415";
+                doReturn(createJurorPool(jurorNumbers, "415231201")).when(appearanceRepository)
+                    .retrieveAllJurors(locCode);
 
                 List<Appearance> appearanceList = new ArrayList<>();
-                for (int i = 0;
-                     i < maxJurors;
-                     i++) {
+                for (int i = 0; i < maxJurors; i++) {
                     String jurorNumber = jurorNumbers.get(i);
                     Appearance appearance = createAppearance(jurorNumber);
                     doReturn(appearance).when(appearanceRepository).findByJurorNumber(jurorNumber);
@@ -524,17 +532,17 @@ class PanelServiceImplTest {
 
                 List<PanelListDto> dtoList = panelService.addPanelMembers(2,
                     "T100000025",
-                    Optional.empty(),
+                    new ArrayList<>(),
                     "415");
 
                 verify(trialRepository, times(2))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-                verify(panelRepository, times(1))
+                verify(panelRepository, times(2))
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
-                verify(appearanceRepository, times(0)).getJurorsInPools(any());
-                verify(appearanceRepository, times(1)).retrieveAllJurors();
+                verify(appearanceRepository, never()).getJurorsInPools(locCode, new ArrayList<>());
+                verify(appearanceRepository, times(1)).retrieveAllJurors(locCode);
                 verify(panelRepository, times(2)).saveAndFlush(any());
-                assertThat(dtoList.size()).as("panel members added to be 2").isEqualTo(2);
+                assertThat(dtoList).as("panel members added to be 2").hasSize(2);
                 assertThat(panelRepository
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415").size() + dtoList.size())
                     .as("Total panel members")
@@ -554,13 +562,15 @@ class PanelServiceImplTest {
             @Test
             @DisplayName("Add panel members - included pool number")
             void addPanelMembersPoolNumberProvided() {
-                TestUtils.setUpMockAuthentication("415", "COURT_USER", "99", Collections.singletonList("415"));
+                String locCode = "415";
+
+                TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
                 final int maxJuror = 10;
                 final String jurorNumberFormat = "1111112%02d";
                 doReturn(true).when(trialRepository)
-                    .existsByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-                doReturn(createTrial()).when(trialRepository)
-                    .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
+                    .existsByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
+                doReturn(Optional.of(createTrial())).when(trialRepository)
+                    .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
 
                 doReturn(createPanelMembers(10)).when(panelRepository)
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
@@ -573,7 +583,7 @@ class PanelServiceImplTest {
                 }
 
                 doReturn(createJurorPool(jurorNumbers, "415231201")).when(appearanceRepository)
-                    .getJurorsInPools(Collections.singletonList("415231201"));
+                    .getJurorsInPools(locCode, Collections.singletonList("415231201"));
 
                 List<Appearance> appearanceList = new ArrayList<>();
                 for (int i = 0;
@@ -587,19 +597,20 @@ class PanelServiceImplTest {
 
                 List<PanelListDto> dtoList = panelService.addPanelMembers(2,
                     "T100000025",
-                    Optional.of(Collections.singletonList("415231201")),
-                    "415");
+                    Collections.singletonList("415231201"),
+                    locCode);
 
                 verify(trialRepository, times(2))
-                    .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-                verify(panelRepository, times(1))
-                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
-                verify(appearanceRepository, times(1)).getJurorsInPools(any());
-                verify(appearanceRepository, times(0)).retrieveAllJurors();
+                    .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
+                verify(panelRepository, times(2))
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
+                verify(appearanceRepository, times(1)).getJurorsInPools(locCode,
+                    Collections.singletonList("415231201"));
+                verify(appearanceRepository, never()).retrieveAllJurors(locCode);
                 verify(panelRepository, times(2)).saveAndFlush(any());
-                assertThat(dtoList.size()).as("panel members added to be 2").isEqualTo(2);
+                assertThat(dtoList).as("panel members added to be 2").hasSize(2);
                 assertThat(panelRepository
-                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415").size() + dtoList.size())
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode).size() + dtoList.size())
                     .as("Total panel members")
                     .isEqualTo(12);
 
@@ -620,12 +631,13 @@ class PanelServiceImplTest {
             @Test
             @DisplayName("Add panel members - no trial")
             void noTrial() {
-                TestUtils.setUpMockAuthentication("415", "COURT_USER", "99", Collections.singletonList("415"));
+                String locCode = "415";
+                TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
                 MojException.NotFound exception = assertThrows(MojException.NotFound.class, () -> {
                     panelService.addPanelMembers(2,
                         "T100000025",
-                        Optional.empty(),
-                        "415"
+                        new ArrayList<>(),
+                        locCode
                     );
                 });
                 assertThat(exception.getMessage())
@@ -633,212 +645,218 @@ class PanelServiceImplTest {
                     .isEqualTo("Cannot find trial with number: T100000025 for court location 415");
 
                 verify(trialRepository, times(1))
-                    .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-                verify(panelRepository, times(0))
-                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
-                verify(appearanceRepository, times(0))
-                    .getJurorsInPools(Collections.singletonList(""));
-                verify(appearanceRepository, times(0))
-                    .retrieveAllJurors();
-                verify(panelRepository, times(0)).saveAndFlush(any());
-                verify(jurorHistoryRepository, times(0)).save(any());
-                verify(appearanceRepository, times(0)).save(any());
+                    .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
+                verify(panelRepository, never())
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
+                verify(appearanceRepository, never())
+                    .getJurorsInPools(locCode, Collections.singletonList(""));
+                verify(appearanceRepository, never())
+                    .retrieveAllJurors(locCode);
+                verify(panelRepository, never()).saveAndFlush(any());
+                verify(jurorHistoryRepository, never()).save(any());
+                verify(appearanceRepository, never()).save(any());
             }
 
             @Test
             @DisplayName("Add panel members - no panel members")
             void noPanelMembers() {
-                TestUtils.setUpMockAuthentication("415", "COURT_USER", "99", Collections.singletonList("415"));
-                doReturn(createTrial()).when(trialRepository)
-                    .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
+                String locCode = "415";
+                TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
+                doReturn(Optional.of(createTrial())).when(trialRepository)
+                    .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
                     () -> {
                         panelService.addPanelMembers(2,
                             "T100000025",
-                            Optional.empty(),
-                            "415"
+                            new ArrayList<>(),
+                            locCode
                         );
                     });
                 assertThat(exception.getMessage())
                     .isEqualTo("Cannot add panel members - panel has not been created for trial");
 
                 verify(trialRepository, times(1))
-                    .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
+                    .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
                 verify(panelRepository, times(1))
-                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
-                verify(appearanceRepository, times(0))
-                    .getJurorsInPools(Collections.singletonList(""));
-                verify(appearanceRepository, times(0))
-                    .retrieveAllJurors();
-                verify(panelRepository, times(0)).saveAndFlush(any());
-                verify(jurorHistoryRepository, times(0)).save(any());
-                verify(appearanceRepository, times(0)).save(any());
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
+                verify(appearanceRepository, never())
+                    .getJurorsInPools(locCode, Collections.singletonList(""));
+                verify(appearanceRepository, never())
+                    .retrieveAllJurors(locCode);
+                verify(panelRepository, never()).saveAndFlush(any());
+                verify(jurorHistoryRepository, never()).save(any());
+                verify(appearanceRepository, never()).save(any());
             }
 
             @Test
             @DisplayName("Add panel members - none requested")
             void zeroRequested() {
-                TestUtils.setUpMockAuthentication("415", "COURT_USER", "99", Collections.singletonList("415"));
-                doReturn(createTrial()).when(trialRepository)
-                    .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-                Mockito.when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415"))
+                String locCode = "415";
+                TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
+                doReturn(Optional.of(createTrial())).when(trialRepository)
+                    .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
+                Mockito.when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode))
                     .thenReturn(createPanelMembers(2));
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
                     () -> {
                         panelService.addPanelMembers(0,
                             "T100000025",
-                            Optional.empty(),
-                            "415"
+                            new ArrayList<>(),
+                            locCode
                         );
                     });
                 assertThat(exception.getMessage())
                     .isEqualTo("Cannot add panel members - Number requested must be between 1 and 1000");
 
                 verify(trialRepository, times(1))
-                    .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
+                    .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
                 verify(panelRepository, times(1))
-                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
-                verify(appearanceRepository, times(0))
-                    .getJurorsInPools(Collections.singletonList(""));
-                verify(appearanceRepository, times(0))
-                    .retrieveAllJurors();
-                verify(panelRepository, times(0)).saveAndFlush(any());
-                verify(jurorHistoryRepository, times(0)).save(any());
-                verify(appearanceRepository, times(0)).save(any());
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
+                verify(appearanceRepository, never())
+                    .getJurorsInPools(locCode, Collections.singletonList(""));
+                verify(appearanceRepository, never())
+                    .retrieveAllJurors(locCode);
+                verify(panelRepository, never()).saveAndFlush(any());
+                verify(jurorHistoryRepository, never()).save(any());
+                verify(appearanceRepository, never()).save(any());
             }
 
             @Test
             @DisplayName("Add panel members - too many requested")
             void tooManyRequested() {
-                TestUtils.setUpMockAuthentication("415", "COURT_USER", "99", Collections.singletonList("415"));
-                doReturn(createTrial()).when(trialRepository)
-                    .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-                Mockito.when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415"))
+                String locCode = "415";
+                TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
+                doReturn(Optional.of(createTrial())).when(trialRepository)
+                    .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
+                Mockito.when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode))
                     .thenReturn(createPanelMembers(1000));
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
                     () -> {
                         panelService.addPanelMembers(0,
                             "T100000025",
-                            Optional.empty(),
-                            "415"
+                            new ArrayList<>(),
+                            locCode
                         );
                     });
                 assertThat(exception.getMessage())
                     .isEqualTo("Cannot add panel members - Number requested must be between 1 and 1000");
 
                 verify(trialRepository, times(1))
-                    .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
+                    .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
                 verify(panelRepository, times(1))
-                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
-                verify(appearanceRepository, times(0))
-                    .getJurorsInPools(Collections.singletonList(""));
-                verify(appearanceRepository, times(0))
-                    .retrieveAllJurors();
-                verify(panelRepository, times(0)).saveAndFlush(any());
-                verify(jurorHistoryRepository, times(0)).save(any());
-                verify(appearanceRepository, times(0)).save(any());
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
+                verify(appearanceRepository, never())
+                    .getJurorsInPools(locCode, Collections.singletonList(""));
+                verify(appearanceRepository, never())
+                    .retrieveAllJurors(locCode);
+                verify(panelRepository, never()).saveAndFlush(any());
+                verify(jurorHistoryRepository, never()).save(any());
+                verify(appearanceRepository, never()).save(any());
             }
 
             @Test
             @DisplayName("Add panel members - not enough available jurors")
             void notEnoughAvailableJurors() {
-                TestUtils.setUpMockAuthentication("415", "COURT_USER", "99", Collections.singletonList("415"));
-                doReturn(createTrial()).when(trialRepository)
-                    .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-                Mockito.when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415"))
+                String locCode = "415";
+                TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
+                doReturn(Optional.of(createTrial())).when(trialRepository)
+                    .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
+                Mockito.when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode))
                     .thenReturn(createPanelMembers(2));
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
                     () -> {
                         panelService.addPanelMembers(3,
                             "T100000025",
-                            Optional.empty(),
-                            "415"
+                            new ArrayList<>(),
+                            locCode
                         );
                     });
                 assertThat(exception.getMessage())
                     .isEqualTo("Cannot create panel - Not enough jurors available");
 
                 verify(trialRepository, times(1))
-                    .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-                verify(panelRepository, times(1))
-                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
-                verify(appearanceRepository, times(0))
-                    .getJurorsInPools(Collections.singletonList(""));
+                    .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
+                verify(panelRepository, times(2))
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
+                verify(appearanceRepository, never())
+                    .getJurorsInPools(locCode, Collections.singletonList(""));
                 verify(appearanceRepository, times(1))
-                    .retrieveAllJurors();
-                verify(panelRepository, times(0)).saveAndFlush(any());
-                verify(jurorHistoryRepository, times(0)).save(any());
-                verify(appearanceRepository, times(0)).save(any());
+                    .retrieveAllJurors(locCode);
+                verify(panelRepository, never()).saveAndFlush(any());
+                verify(jurorHistoryRepository, never()).save(any());
+                verify(appearanceRepository, never()).save(any());
             }
 
             @Test
             @DisplayName("Add panel members - trial has ended")
             void trialHasEnded() {
-                TestUtils.setUpMockAuthentication("415", "COURT_USER", "99", Collections.singletonList("415"));
+                String locCode = "415";
+                TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
                 Trial trial = createTrial();
                 trial.setTrialEndDate(LocalDate.now());
-                doReturn(trial).when(trialRepository)
-                    .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
+                doReturn(Optional.of(trial)).when(trialRepository)
+                    .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
                     () -> {
                         panelService.addPanelMembers(2,
                             "T100000025",
-                            Optional.empty(),
-                            "415"
+                            new ArrayList<>(),
+                            locCode
                         );
                     });
                 assertThat(exception.getMessage())
                     .isEqualTo("Cannot add panel members - Trial has ended");
 
                 verify(trialRepository, times(1))
-                    .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-                verify(panelRepository, times(0))
-                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
-                verify(appearanceRepository, times(0))
-                    .getJurorsInPools(Collections.singletonList(""));
-                verify(appearanceRepository, times(0))
-                    .retrieveAllJurors();
-                verify(panelRepository, times(0)).saveAndFlush(any());
-                verify(jurorHistoryRepository, times(0)).save(any());
-                verify(appearanceRepository, times(0)).save(any());
+                    .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
+                verify(panelRepository, never())
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
+                verify(appearanceRepository, never())
+                    .getJurorsInPools(locCode, Collections.singletonList(""));
+                verify(appearanceRepository, never())
+                    .retrieveAllJurors(locCode);
+                verify(panelRepository, never()).saveAndFlush(any());
+                verify(jurorHistoryRepository, never()).save(any());
+                verify(appearanceRepository, never()).save(any());
             }
 
             @Test
             @DisplayName("Add panel members - no pool found")
             void noPoolFound() {
-                TestUtils.setUpMockAuthentication("415", "COURT_USER", "99", Collections.singletonList("415"));
+                String locCode = "415";
+                TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
                 doReturn(true).when(trialRepository)
-                    .existsByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-                doReturn(createTrial()).when(trialRepository)
-                    .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
+                    .existsByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
+                doReturn(Optional.of(createTrial())).when(trialRepository)
+                    .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
                 doReturn(createPanelMembers(10)).when(panelRepository)
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
                 doReturn(createJurorPool(Collections.singletonList("111111111"), "415231201")).when(
-                    appearanceRepository).retrieveAllJurors();
+                    appearanceRepository).retrieveAllJurors(locCode);
                 doReturn(createAppearance("111111111")).when(appearanceRepository).findByJurorNumber("111111111");
 
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
                     () -> {
                         panelService.addPanelMembers(1,
                             "T100000025",
-                            Optional.of(Collections.singletonList("1")),
-                            "415"
+                            Collections.singletonList("1"),
+                            locCode
                         );
                     });
 
                 assertThat(exception.getMessage()).isEqualTo("Cannot create panel - Not enough jurors available");
 
                 verify(trialRepository, times(1))
-                    .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-                verify(panelRepository, times(1))
-                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
+                    .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
+                verify(panelRepository, times(2))
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 verify(appearanceRepository, times(1))
-                    .getJurorsInPools(Collections.singletonList("1"));
-                verify(appearanceRepository, times(0))
-                    .retrieveAllJurors();
-                verify(panelRepository, times(0)).saveAndFlush(any());
-                verify(jurorHistoryRepository, times(0)).save(any());
-                verify(appearanceRepository, times(0)).save(any());
+                    .getJurorsInPools(locCode, Collections.singletonList("1"));
+                verify(appearanceRepository, never())
+                    .retrieveAllJurors(locCode);
+                verify(panelRepository, never()).saveAndFlush(any());
+                verify(jurorHistoryRepository, never()).save(any());
+                verify(appearanceRepository, never()).save(any());
             }
         }
     }

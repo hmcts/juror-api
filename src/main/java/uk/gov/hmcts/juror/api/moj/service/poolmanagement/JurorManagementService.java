@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service.poolmanagement;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
 
 public interface JurorManagementService {
 
@@ -11,6 +12,6 @@ public interface JurorManagementService {
     JurorManagementResponseDto validatePoolMembers(BureauJwtPayload payload,
                                                    JurorManagementRequestDto requestDto);
 
-    int reassignJurors(BureauJwtPayload payload, JurorManagementRequestDto requestDto);
+    ReassignPoolMembersResultDto reassignJurors(BureauJwtPayload payload, JurorManagementRequestDto requestDto);
 
 }
