@@ -216,6 +216,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .join(JUROR_POOL)
             .on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber))
             .where(APPEARANCE.courtLocation.locCode.eq(locCode))
+            .where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode))
             .where(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED))
             .where(JUROR_POOL.isActive.isTrue());
     }

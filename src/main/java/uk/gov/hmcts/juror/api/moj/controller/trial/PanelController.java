@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.AvailableJurorsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.EmpanelListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.service.trial.PanelService;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.List;
 
@@ -63,6 +64,8 @@ public class PanelController {
     @PostMapping("/add-panel-members")
     @Operation(summary = "Add panel members to a existing trial")
     public ResponseEntity<List<PanelListDto>> addPanelMembers(@RequestBody CreatePanelDto createPanelDto) {
+
+        SecurityUtil.validateCourtLocationPermitted(createPanelDto.getCourtLocationCode());
 
         List<PanelListDto> dto = panelService.addPanelMembers(createPanelDto.getNumberRequested(),
             createPanelDto.getTrialNumber(), createPanelDto.getPoolNumbers(),
