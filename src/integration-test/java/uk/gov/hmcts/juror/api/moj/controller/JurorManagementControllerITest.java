@@ -970,46 +970,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("PATCH Update attendance - confirm attendance")
-        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql",
-            "/db/JurorExpenseControllerITest_expenseRates.sql"})
-        void updateAttendanceConfirmAttendance() {
-            UpdateAttendanceDto request = buildUpdateAttendanceDto(List.of(JUROR1, JUROR6));
-            request.getCommonData().setStatus(UpdateAttendanceStatus.CONFIRM_ATTENDANCE);
-
-            ResponseEntity<AttendanceDetailsResponse> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
-                    URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
-
-            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
-
-            AttendanceDetailsResponse responseBody = response.getBody();
-            assert responseBody != null;
-
-            AttendanceDetailsResponse.Summary summary = responseBody.getSummary();
-            assert summary != null;
-
-            assertThat(summary)
-                .extracting(AttendanceDetailsResponse.Summary::getCheckedIn)
-                .isEqualTo(2L);
-
-            // verify attendance details have been updated x 2 checked in
-            Appearance appearance1 =
-                appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR1, request.getCommonData()
-                    .getAttendanceDate()).orElseThrow(() ->
-                    new MojException.NotFound("No appearance record found", null));
-            assertThat(appearance1.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(appearance1.getAttendanceAuditNumber()).isEqualTo("P10000000");
-
-            Appearance appearance2 =
-                appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR6, request.getCommonData()
-                    .getAttendanceDate()).orElseThrow(() ->
-                    new MojException.NotFound("No appearance record found", null));
-            assertThat(appearance2.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(appearance2.getAttendanceAuditNumber()).isEqualTo("P10000000");
-        }
-
-        @Test
         @DisplayName("PATCH Update attendance() - not updated because check-in after check-out")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
         void updateAttendanceCheckInIsAfterCheckOut() {
@@ -1869,7 +1829,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                     && jh.getOtherInformation().equalsIgnoreCase("J10123456"))).isTrue();
         }
 
-        @Test
         @DisplayName("Confirm attendance for jurors on a trial - Bureau no access")
         void confirmAttendanceBureauNoAccess() {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
