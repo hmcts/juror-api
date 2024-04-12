@@ -965,25 +965,35 @@ class JurorRecordServiceTest {
 
     @Test
     void testCreateJurorContactLogBureauUserCourtOwnedRecord() {
+        final ArgumentCaptor<ContactLog> contactArgumentCaptor = ArgumentCaptor.forClass(ContactLog.class);
         final BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, COURT_OWNER));
 
-        ContactEnquiryType contactEnquiryType = new ContactEnquiryType(ContactEnquiryCode.GE, "General Enquiry");
-        ContactLog contactLog = new ContactLog();
+        ContactCode contactEnquiryType = new ContactCode(IContactCode.GENERAL.getCode(),
+                                                         IContactCode.GENERAL.getDescription());
         ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, IContactCode.GENERAL);
+        LocalDateTime startCall = LocalDateTime.now();
+        requestDto.setStartCall(startCall);
 
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
-        doReturn(Optional.of(contactEnquiryType)).when(contactEnquiryTypeRepository)
-            .findById(ContactEnquiryCode.GE);
+        doReturn(Optional.of(contactEnquiryType)).when(contactCodeRepository)
+            .findById(IContactCode.GENERAL.getCode());
+
+        ContactLog contactLog = new ContactLog();
         doReturn(contactLog).when(contactLogRepository)
             .saveAndFlush(any());
 
-        assertThatExceptionOfType(MojException.Forbidden.class)
-            .isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
+        assertThatNoException().isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
 
-        verify(contactLogRepository, never()).saveAndFlush(any());
+        verify(contactLogRepository, times(1))
+            .saveAndFlush(contactArgumentCaptor.capture());
+        ContactLog contactCaptor = contactArgumentCaptor.getValue();
+
+        assertThat(contactCaptor.getEnquiryType()).isEqualTo(contactEnquiryType);
+        assertThat(contactCaptor.getJurorNumber()).isEqualTo(VALID_JUROR_NUMBER);
+        assertThat(contactCaptor.getStartCall()).isEqualTo(startCall);
     }
 
     @Test

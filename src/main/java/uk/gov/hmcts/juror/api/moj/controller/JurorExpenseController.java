@@ -46,6 +46,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.ExpenseCount;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.ExpenseDetailsForTotals;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.SummaryExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
 import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
@@ -277,5 +278,16 @@ public class JurorExpenseController {
             locCode,
             paymentMethod,
             fromInclusive, toInclusive));
+    }
+
+    @GetMapping("/summary/totals/{juror-number}/{pool-number}")
+    @Operation(summary = "Summarise the total expenses for a juror in draft, for approval and approved "
+        + "in a given pool.")
+    @ResponseStatus(HttpStatus.OK)
+    @IsCourtUser
+    public ResponseEntity<SummaryExpenseDetailsDto> calculateSummaryTotals(
+        @P("pool-number") @PathVariable("pool-number") @Valid @NotBlank @PoolNumber String poolNumber,
+        @P("juror-number") @PathVariable("juror-number") @Valid @NotBlank @JurorNumber String jurorNumber) {
+        return ResponseEntity.ok(jurorExpenseService.calculateSummaryTotals(jurorNumber, poolNumber));
     }
 }
