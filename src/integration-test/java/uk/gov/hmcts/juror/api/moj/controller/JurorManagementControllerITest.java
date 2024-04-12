@@ -233,8 +233,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("POST addAttendanceDay() - happy path")
-    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
-        "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql"})
     void addAttendanceBadPayloadMissingAttendanceDate() {
         AddAttendanceDayDto requestDto = AddAttendanceDayDto.builder()
             .jurorNumber(JUROR1)
@@ -255,8 +254,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("POST addAttendanceDay() - happy path")
-    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
-        "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql"})
     void addAttendanceForbiddenAccess() {
         AddAttendanceDayDto requestDto = AddAttendanceDayDto.builder()
             .jurorNumber(JUROR1)
