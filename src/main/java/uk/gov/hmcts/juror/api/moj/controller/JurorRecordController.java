@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.config.security.IsSeniorCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
@@ -470,5 +471,13 @@ public class JurorRecordController {
     @IsCourtUser
     public void confirmJurorsIdentity(@Valid @RequestBody ConfirmIdentityDto dto) {
         jurorRecordService.confirmIdentity(dto);
+    }
+
+    @PatchMapping("/mark-responded/{juror_number}")
+    @Operation(summary = "Mark a juror as responded")
+    @ResponseStatus(HttpStatus.OK)
+    public void markResponded(@Valid @JurorNumber @P("juror_number") @PathVariable("juror_number")
+                                  @Parameter(description = "jurorNumber", required = true) String jurorNumber) {
+        jurorRecordService.markResponded(jurorNumber);
     }
 }

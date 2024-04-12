@@ -1224,6 +1224,24 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         jurorHistoryService.createIdentityConfirmedHistory(jurorPool);
     }
 
+    @Override
+    @Transactional
+    public void markResponded(String jurorNumber) {
+        log.info("Marking juror {} as responded", jurorNumber);
+
+        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
+            SecurityUtil.getActiveOwner());
+
+        Juror juror = jurorPool.getJuror();
+        juror.setResponded(true);
+        jurorRepository.save(juror);
+
+        jurorPool.setUserEdtq(SecurityUtil.getActiveLogin());
+        jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));
+
+        jurorPoolRepository.save(jurorPool);
+    }
+
     private JurorPool getJurorPool(String jurorNumber, String poolNumber) {
         JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
         if (jurorPool == null) {
