@@ -1596,7 +1596,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         ReassignPoolMembersResultDto resultDto = response.getBody();
 
-        assertThat(resultDto.getNumberReassigned()).isEqualTo("3");
+        assertThat(resultDto.getNumberReassigned()).isEqualTo(3);
 
         for (String jurorNumber : jurorNumbers) {
             validateReassignedJuror(jurorNumber, "415220401", "416220502");
@@ -1625,7 +1625,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         ReassignPoolMembersResultDto resultDto = response.getBody();
 
-        assertThat(resultDto.getNumberReassigned()).isEqualTo("2");
+        assertThat(resultDto.getNumberReassigned()).isEqualTo(2);
 
         for (String jurorNumber : goodJurorNumbers) {
             validateReassignedJuror(jurorNumber, "415220401", "416220502");
@@ -1669,7 +1669,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(response.getBody()).isNotNull();
         ReassignPoolMembersResultDto resultDto = response.getBody();
 
-        assertThat(resultDto.getNumberReassigned()).isEqualTo("2");
+        assertThat(resultDto.getNumberReassigned()).isEqualTo(2);
 
         for (String jurorNumber : jurorNumbers) {
             validateReassignedJuror(jurorNumber, "415220401", "415220503");
