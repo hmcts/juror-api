@@ -389,13 +389,15 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
             appearance.setAttendanceType(AttendanceType.NON_ATTENDANCE);
             appearanceRepository.saveAndFlush(appearance);
-
+            // placeholder method for applying default expenses
+            jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
 
         } else if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.ABSENCE)) {
             appearance.setNonAttendanceDay(Boolean.TRUE);
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
             appearance.setAttendanceType(AttendanceType.ABSENT);
             appearanceRepository.saveAndFlush(appearance);
+            // placeholder method for applying default expenses
             jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
 
         } else if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE)) {
