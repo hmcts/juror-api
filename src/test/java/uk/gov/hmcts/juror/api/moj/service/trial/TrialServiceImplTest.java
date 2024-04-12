@@ -162,7 +162,7 @@ class TrialServiceImplTest {
     @Test
     void testGetTrialSummary() {
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode("T100000025", "415"))
-            .thenReturn(createTrial("T100000025"));
+            .thenReturn(Optional.of(createTrial("T100000025")));
 
         TrialSummaryDto trialSummary = trialService.getTrialSummary(
             createJwtPayload("415", "COURT_USER"), "T100000025", "415");
@@ -193,7 +193,7 @@ class TrialServiceImplTest {
         Trial inactiveTrial = createTrial("T100000025");
         inactiveTrial.setTrialEndDate(now());
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode("T100000025", "415"))
-            .thenReturn(inactiveTrial);
+            .thenReturn(Optional.of(inactiveTrial));
 
         TrialSummaryDto trialSummary = trialService.getTrialSummary(
             createJwtPayload("415", "COURT_USER"), "T100000025", "415");
@@ -222,7 +222,7 @@ class TrialServiceImplTest {
     @Test
     void testIsEmpanelledWithNoPanelledJurors() {
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode("T100000025", "415"))
-            .thenReturn(createTrial("T100000025"));
+            .thenReturn(Optional.of(createTrial("T100000025")));
         when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415"))
             .thenReturn(createJurors(0, PanelResult.JUROR));
         TrialSummaryDto trialSummary = trialService.getTrialSummary(payload, "T100000025", "415");
@@ -233,7 +233,7 @@ class TrialServiceImplTest {
     @Test
     void testIsEmpanelledWithOneJurorStatusJuror() {
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode("T100000025", "415"))
-            .thenReturn(createTrial("T100000025"));
+            .thenReturn(Optional.of(createTrial("T100000025")));
         when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415"))
             .thenReturn(createJurors(1, PanelResult.JUROR));
         TrialSummaryDto trialSummary = trialService.getTrialSummary(payload, "T100000025", "415");
@@ -244,7 +244,7 @@ class TrialServiceImplTest {
     @Test
     void testIsEmpanelledWithNoJurorStatusJurors() {
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode("T100000025", "415"))
-            .thenReturn(createTrial("T100000025"));
+            .thenReturn(Optional.of(createTrial("T100000025")));
         when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415"))
             .thenReturn(createJurors(12, PanelResult.NOT_USED));
 
@@ -256,7 +256,7 @@ class TrialServiceImplTest {
     @Test
     void testIsEmpanelledWithMixedStatusesWithOneJurorStatusJuror() {
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode("T100000025", "415"))
-            .thenReturn(createTrial("T100000025"));
+            .thenReturn(Optional.of(createTrial("T100000025")));
         when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415"))
             .thenReturn(createJurors(12, PanelResult.JUROR));
 
@@ -397,7 +397,7 @@ class TrialServiceImplTest {
     void testEndTrialHappyPath() {
         final String trialNumber = "T100000000";
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, "415"))
-            .thenReturn(createTrial(trialNumber));
+            .thenReturn(Optional.of(createTrial(trialNumber)));
         when(panelRepository.retrieveMembersOnTrial(trialNumber, "415"))
             .thenReturn(new ArrayList<>());
 
@@ -422,7 +422,7 @@ class TrialServiceImplTest {
     void testEndTrialCannotFindTrial() {
         final String trialNumber = "T100000000";
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, "415"))
-            .thenReturn(createTrial(trialNumber));
+            .thenReturn(Optional.of(createTrial(trialNumber)));
         EndTrialDto dto = createEndTrialDto();
         dto.setTrialNumber("T1");
         Assertions.assertThrows(MojException.NotFound.class, () -> trialService.endTrial(dto));

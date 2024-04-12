@@ -62,11 +62,12 @@ public class PanelController {
 
     @PostMapping("/add-panel-members")
     @Operation(summary = "Add panel members to a existing trial")
-    public ResponseEntity<List<PanelListDto>> addPanelMembers(
-        @RequestBody CreatePanelDto createPanelDto) {
+    public ResponseEntity<List<PanelListDto>> addPanelMembers(@RequestBody CreatePanelDto createPanelDto) {
+
         List<PanelListDto> dto = panelService.addPanelMembers(createPanelDto.getNumberRequested(),
             createPanelDto.getTrialNumber(), createPanelDto.getPoolNumbers(),
             createPanelDto.getCourtLocationCode());
+
         return ResponseEntity.ok(dto);
     }
 

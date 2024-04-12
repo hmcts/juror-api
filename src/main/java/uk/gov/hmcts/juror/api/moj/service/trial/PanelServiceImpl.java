@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NO_PANEL_EXIST;
@@ -71,18 +70,20 @@ public class PanelServiceImpl implements PanelService {
 
     @Override
     public List<PanelListDto> createPanel(int numberRequested, String trialNumber,
-                                          Optional<List<String>> poolNumbers, String courtLocationCode,
+                                          List<String> poolNumbers, String courtLocationCode,
                                           BureauJwtPayload payload) {
         createPanelValidationChecks(numberRequested, trialNumber, courtLocationCode);
-        List<JurorPool> appearanceList = buildRandomJurorPoolList(poolNumbers, trialNumber);
+        List<JurorPool> appearanceList = buildRandomJurorPoolList(courtLocationCode, poolNumbers, trialNumber);
         return processPanelList(numberRequested, trialNumber, courtLocationCode, payload, appearanceList);
     }
 
     public List<PanelListDto> addPanelMembers(int numberRequested, String trialNumber,
-                                              Optional<List<String>> poolNumbers, String courtLocationCode) {
-        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+                                              List<String> poolNumbers, String courtLocationCode) {
+
         addPanelMembersValidationChecks(numberRequested, trialNumber, courtLocationCode);
-        List<JurorPool> appearanceList = buildRandomJurorPoolList(poolNumbers, trialNumber);
+        List<JurorPool> appearanceList = buildRandomJurorPoolList(courtLocationCode, poolNumbers, trialNumber);
+
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         return processPanelList(numberRequested, trialNumber, courtLocationCode, payload, appearanceList);
 
     }
@@ -113,12 +114,9 @@ public class PanelServiceImpl implements PanelService {
 
     private void addPanelMembersValidationChecks(int numberRequested, String trialNumber, String courtLocationCode) {
 
-        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, courtLocationCode);
-
-        if (trial == null) {
-            throw new MojException.NotFound(String.format("Cannot find trial with number: %s for court location %s",
-                trialNumber, courtLocationCode), null);
-        }
+        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
+            courtLocationCode).orElseThrow(() -> new MojException.NotFound(String.format("Cannot find trial with "
+            + "number: %s for court location %s", trialNumber, courtLocationCode), null));
 
         if (trial.getTrialEndDate() != null) {
             throw new MojException.BusinessRuleViolation(
@@ -131,7 +129,7 @@ public class PanelServiceImpl implements PanelService {
 
         if (members.isEmpty()) {
             throw new MojException.BusinessRuleViolation(
-                "Cannot add panel members - panel has not been created for trial",
+                "Cannot add panel members - no panel has been created for this trial",
                 NO_PANEL_EXIST);
         }
 
@@ -152,11 +150,12 @@ public class PanelServiceImpl implements PanelService {
                 NUMBER_OF_JURORS_EXCEEDS_AVAILABLE);
         }
 
-        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, courtLocationCode);
+        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, courtLocationCode)
+            .orElseThrow(() -> new MojException.NotFound(String.format("Cannot find trial with "
+            + "number: %s for court location %s", trialNumber, courtLocationCode), null));
+
         List<PanelListDto> panelListDtosList = new ArrayList<>();
-        for (int i = 0;
-             i < numberRequested;
-             i++) {
+        for (int i = 0; i < numberRequested; i++) {
             Panel panel = createPanelEntity(appearanceList.get(i), trial);
             panel.getJurorPool().setLocation(trial.getCourtroom().getRoomNumber());
             if (panel.getJurorPool().getTimesSelected() == null) {
@@ -341,12 +340,13 @@ public class PanelServiceImpl implements PanelService {
         return dto;
     }
 
-    private List<JurorPool> buildRandomJurorPoolList(Optional<List<String>> poolNumbers, String trialNumber) {
+    private List<JurorPool> buildRandomJurorPoolList(String locCode, List<String> poolNumbers, String trialNumber) {
         List<JurorPool> appearanceList;
-        if (poolNumbers.isPresent() && !poolNumbers.get().isEmpty()) {
-            appearanceList = appearanceRepository.getJurorsInPools(poolNumbers.get());
+
+        if (poolNumbers.isEmpty()) {
+            appearanceList = appearanceRepository.retrieveAllJurors(locCode);
         } else {
-            appearanceList = appearanceRepository.retrieveAllJurors();
+            appearanceList = appearanceRepository.getJurorsInPools(locCode, poolNumbers);
         }
 
         appearanceList = appearanceList.stream().filter(jurorPool ->

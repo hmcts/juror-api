@@ -193,13 +193,13 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     }
 
     @Override
-    public List<JurorPool> retrieveAllJurors() {
-        return buildJurorPoolQuery().fetch();
+    public List<JurorPool> retrieveAllJurors(String locCode) {
+        return buildJurorPoolQuery(locCode).fetch();
     }
 
     @Override
-    public List<JurorPool> getJurorsInPools(List<String> poolNumbers) {
-        JPAQuery<JurorPool> query = buildJurorPoolQuery();
+    public List<JurorPool> getJurorsInPools(String locCode, List<String> poolNumbers) {
+        JPAQuery<JurorPool> query = buildJurorPoolQuery(locCode);
         return query.where(JUROR_POOL.pool.poolNumber.in(poolNumbers)).fetch();
     }
 
@@ -209,21 +209,15 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
      * @return JPAQuery
      */
     @Override
-    public JPAQuery<JurorPool> buildJurorPoolQuery() {
-        ArrayList<Integer> activeStatuses = new ArrayList<>();
-        activeStatuses.add(IJurorStatus.RESPONDED);
-        activeStatuses.add(IJurorStatus.PANEL);
-        activeStatuses.add(IJurorStatus.JUROR);
-
+    public JPAQuery<JurorPool> buildJurorPoolQuery(String locCode) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-        return queryFactory.select(
-                JUROR_POOL
-            )
+        return queryFactory.select(JUROR_POOL)
             .from(APPEARANCE)
             .join(JUROR_POOL)
-            .on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber)
-                .and(JUROR_POOL.status.status.in(activeStatuses))
-                .and(JUROR_POOL.isActive.isTrue()));
+            .on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber))
+            .where(APPEARANCE.courtLocation.locCode.eq(locCode))
+            .where(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED))
+            .where(JUROR_POOL.isActive.isTrue());
     }
 
     @Override

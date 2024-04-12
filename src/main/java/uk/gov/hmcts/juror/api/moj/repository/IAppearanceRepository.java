@@ -24,11 +24,11 @@ public interface IAppearanceRepository {
 
     List<Tuple> getAvailableJurors(String locCode);
 
-    List<JurorPool> retrieveAllJurors();
+    List<JurorPool> retrieveAllJurors(String locCode);
 
-    List<JurorPool> getJurorsInPools(List<String> poolNumber);
+    List<JurorPool> getJurorsInPools(String locCode, List<String> poolNumber);
 
-    JPAQuery<JurorPool> buildJurorPoolQuery();
+    JPAQuery<JurorPool> buildJurorPoolQuery(String locCode);
 
     Integer countJurorExpenseForApproval(String jurorNumber, String poolNumber);
 
