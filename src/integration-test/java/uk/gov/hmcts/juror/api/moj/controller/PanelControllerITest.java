@@ -1,9 +1,9 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.CreatePanelDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
@@ -42,10 +42,8 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_LIMITS;
 
 
-@RunWith(SpringRunner.class)
-@SuppressWarnings({
-    "PMD.TooManyMethods",
-    "PMD.ExcessiveImports"})
+@ExtendWith(SpringExtension.class)
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class PanelControllerITest extends AbstractIntegrationTest {
 
@@ -67,7 +65,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
     private AppearanceRepository appearanceRepository;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         initHeadersCourt();
@@ -126,7 +124,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql"})
     public void createPanelCourtUserNotEnoughJurors() {
-        CreatePanelDto createPanelDto = makeCreatePanelDto(null);
+        CreatePanelDto createPanelDto = makeCreatePanelDto(new ArrayList<>());
         createPanelDto.setNumberRequested(45);
         RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(createPanelDto, httpHeaders,
             HttpMethod.POST, URI.create("/api/v1/moj/trial/panel/create-panel"));
@@ -223,25 +221,32 @@ public class PanelControllerITest extends AbstractIntegrationTest {
             .as("Expected status code to be ok")
             .isEqualTo(HttpStatus.OK);
 
-        assert responseEntity.getBody() != null;
+        EmpanelListDto responseBody = responseEntity.getBody();
+        assert responseBody != null;
 
-        assertThat(
-            responseEntity.getBody().getTotalJurorsForEmpanel()).as("Expected total jurors to be 3")
+        assertThat(responseBody.getTotalJurorsForEmpanel())
+            .as("Expected total jurors to be 3")
             .isEqualTo(3);
-        assertThat(
-            responseEntity.getBody().getEmpanelList().size()
-        ).as("Expected size to be five").isEqualTo(5);
+        assertThat(responseBody.getEmpanelList().stream().filter(list ->
+            list.getStatus().equalsIgnoreCase("Responded")))
+            .as("Expected size to be three (responded)")
+            .hasSize(3);
+        assertThat(responseBody.getEmpanelList().stream().filter(list ->
+            list.getStatus().equalsIgnoreCase("Panel")))
+            .as("Expected size to be one (panel)")
+            .hasSize(1);
+        assertThat(responseBody.getEmpanelList().stream().filter(list ->
+            list.getStatus().equalsIgnoreCase("Juror")))
+            .as("Expected size to be one (juror)")
+            .hasSize(1);
 
-        for (EmpanelDetailsDto dto : responseEntity.getBody().getEmpanelList()) {
+        for (EmpanelDetailsDto dto : responseBody.getEmpanelList()) {
             assertThat(dto.getFirstName())
                 .as("Expect first name to be FNAME")
                 .isEqualTo("FNAME");
             assertThat(dto.getLastName())
                 .as("Expect last name to be LNAME")
                 .isEqualTo("LNAME");
-            assertThat(dto.getStatus())
-                .as("Expect status to be Panelled")
-                .isEqualTo("Panel");
         }
     }
 
@@ -490,11 +495,10 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         createBureauJwt(COURT_USER_NAME, "415");
 
         final int numberRequested = 2;
-        CreatePanelDto createPanelDto = makeCreatePanelDto(Collections.singletonList(
-            "415231105"));
+        CreatePanelDto createPanelDto = makeCreatePanelDto(Collections.singletonList("415231105"));
         createPanelDto.setNumberRequested(numberRequested);
 
-        RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<CreatePanelDto>(createPanelDto,
+        RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(createPanelDto,
             httpHeaders,
             HttpMethod.POST, URI.create("/api/v1/moj/trial/panel/add-panel-members"));
 
@@ -508,6 +512,8 @@ public class PanelControllerITest extends AbstractIntegrationTest {
             .isNotNull();
 
         PanelListDto[] panelListDtos = responseEntity.getBody();
+        assert panelListDtos != null;
+
         assertThat(panelListDtos.length).as("Total added members").isEqualTo(numberRequested);
 
         for (PanelListDto dto : responseEntity.getBody()) {
@@ -621,7 +627,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql"})
     public void addPanelMembersNoPanelCreated() {
         createBureauJwt(COURT_USER_NAME, "415");
-        CreatePanelDto createPanelDto = makeCreatePanelDto(null);
+        CreatePanelDto createPanelDto = makeCreatePanelDto(new ArrayList<>());
         createPanelDto.setTrialNumber("T10000002");
         RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(createPanelDto, httpHeaders,
             HttpMethod.POST, URI.create("/api/v1/moj/trial/panel/add-panel-members"));

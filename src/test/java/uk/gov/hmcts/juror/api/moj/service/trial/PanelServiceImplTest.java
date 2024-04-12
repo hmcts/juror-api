@@ -152,7 +152,7 @@ class PanelServiceImplTest {
 
     @Test
     void createPanelHappyPathNoPoolsSelected() {
-        String locCode = "415";
+        final String locCode = "415";
 
         doReturn(true).when(trialRepository)
             .existsByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
@@ -185,8 +185,6 @@ class PanelServiceImplTest {
 
     @Test
     void createPanelHappyPathEmptyPoolSelection() {
-        String locCode = "415";
-
         doReturn(true).when(trialRepository)
             .existsByTrialNumberAndCourtLocationLocCode("T100000025", "415");
         doReturn(Optional.of(createTrial())).when(trialRepository)
@@ -195,6 +193,8 @@ class PanelServiceImplTest {
         List<String> jurorNumbers = new ArrayList<>();
         jurorNumbers.add("121212121");
         jurorNumbers.add("111111111");
+
+        final String locCode = "415";
 
         doReturn(createJurorPool(jurorNumbers, "415231201")).when(appearanceRepository)
             .retrieveAllJurors(locCode);
@@ -315,7 +315,7 @@ class PanelServiceImplTest {
 
     @Test
     void createPanelTrialNotEnoughJurors() {
-        String locCode = "415";
+        final String locCode = "415";
 
         List<JurorPool> appearanceList;
 
@@ -502,7 +502,6 @@ class PanelServiceImplTest {
             @Test
             @DisplayName("Add panel members - no pool number provided")
             void addPanelMembersNoPoolProvided() {
-                String locCode = "415";
                 TestUtils.setUpMockAuthentication("415", "COURT_USER", "99", Collections.singletonList("415"));
                 final int maxJurors = 10;
                 final String jurorNumberFormat = "1111112%02d";
@@ -519,6 +518,7 @@ class PanelServiceImplTest {
                     jurorNumbers.add(jurorNumberFormat.formatted(i));
                 }
 
+                final String locCode = "415";
                 doReturn(createJurorPool(jurorNumbers, "415231201")).when(appearanceRepository)
                     .retrieveAllJurors(locCode);
 
@@ -537,7 +537,7 @@ class PanelServiceImplTest {
 
                 verify(trialRepository, times(2))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-                verify(panelRepository, times(1))
+                verify(panelRepository, times(2))
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
                 verify(appearanceRepository, never()).getJurorsInPools(locCode, new ArrayList<>());
                 verify(appearanceRepository, times(1)).retrieveAllJurors(locCode);
@@ -602,7 +602,7 @@ class PanelServiceImplTest {
 
                 verify(trialRepository, times(2))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
-                verify(panelRepository, times(1))
+                verify(panelRepository, times(2))
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 verify(appearanceRepository, times(1)).getJurorsInPools(locCode,
                     Collections.singletonList("415231201"));
@@ -673,7 +673,7 @@ class PanelServiceImplTest {
                         );
                     });
                 assertThat(exception.getMessage())
-                    .isEqualTo("Cannot add panel members - no panel has been created for this trial");
+                    .isEqualTo("Cannot add panel members - panel has not been created for trial");
 
                 verify(trialRepository, times(1))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
@@ -776,7 +776,7 @@ class PanelServiceImplTest {
 
                 verify(trialRepository, times(1))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
-                verify(panelRepository, times(1))
+                verify(panelRepository, times(2))
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 verify(appearanceRepository, never())
                     .getJurorsInPools(locCode, Collections.singletonList(""));
@@ -848,7 +848,7 @@ class PanelServiceImplTest {
 
                 verify(trialRepository, times(1))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
-                verify(panelRepository, times(1))
+                verify(panelRepository, times(2))
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 verify(appearanceRepository, times(1))
                     .getJurorsInPools(locCode, Collections.singletonList("1"));
