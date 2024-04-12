@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.data.domain.Page;
@@ -307,15 +308,12 @@ class TrialServiceImplTest {
         trialService.returnJury(payload, trialNumber, "415",
             createReturnJuryDto(false, "09:00", "10:00"));
 
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+
         verify(panelRepository, times(1))
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
-        if ("null".equals(checkInTime)) {
-            verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(any());
-        } else {
-            verify(appearanceRepository, times(0)).saveAndFlush(any());
-        }
 
     }
 
@@ -341,7 +339,9 @@ class TrialServiceImplTest {
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
-        verify(appearanceRepository, times(0)).saveAndFlush(any());
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+            assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).isTrue();
     }
 
     @Test
@@ -366,7 +366,9 @@ class TrialServiceImplTest {
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
-        verify(appearanceRepository, times(0)).saveAndFlush(any());
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+            assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).isTrue();
     }
 
     @Test
@@ -390,7 +392,9 @@ class TrialServiceImplTest {
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(completeService, times(panelMembers.size())).completeService(anyString(), any());
         verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
-        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(any());
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
     }
 
     @Test

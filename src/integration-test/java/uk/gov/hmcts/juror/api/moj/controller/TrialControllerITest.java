@@ -575,6 +575,8 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeOut()).as("Expect time out to not be null").isNotNull();
             assertThat(appearance.getTimeOut()).as("Expect time out to be 10:00").isEqualTo(LocalTime.parse(
                 "10:00"));
+
+            assertThat(appearance.getSatOnJury()).isTrue();
         }
     }
 
@@ -614,6 +616,7 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             Appearance appearance = appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber());
             assertThat(appearance.getTimeIn()).as("Expect time in to be null").isNull();
             assertThat(appearance.getTimeOut()).as("Expect time out to be null").isNull();
+            assertThat(appearance.getSatOnJury()).isTrue();
         }
     }
 
@@ -659,9 +662,10 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeOut()).as("Expect time out to be 10:00").isEqualTo(LocalTime.parse(
                 "10:00"));
 
+            assertThat(appearance.getSatOnJury()).isTrue();
+
             assertThat(panel.getJurorPool().getJuror().getCompletionDate()).as("Expect completion date to not be "
                 + "null").isNotNull();
-
         }
     }
 

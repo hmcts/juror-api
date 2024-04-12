@@ -1788,6 +1788,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J00123456");
+            assertThat(appearance.getSatOnJury()).isTrue();
 
             appearanceOpt = appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(
                 "333333333", "415230101", now().minusDays(2));
@@ -1797,6 +1798,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J00123456");
+            assertThat(appearance.getSatOnJury()).isTrue();
+
 
             // verify juror history records have been created
             assertThat(jurorHistoryRepository.findByJurorNumber("222222222")
