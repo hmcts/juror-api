@@ -6,6 +6,7 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
+import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -997,6 +999,37 @@ class AbstractReportTest {
             verify(trial, times(4)).getCourtLocation();
         }
 
+        @Test
+        void negativeTrialNotFound() {
+            TrialRepository trialRepository = mock(TrialRepository.class);
+
+            AbstractReport<Object> report = createReport();
+
+            Assertions.assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+                report.getTrial(TestConstants.VALID_TRIAL_NUMBER, trialRepository));
+        }
+
+        @Test
+        void negativeInvalidAccess() {
+            TrialRepository trialRepository = mock(TrialRepository.class);
+
+            Trial trial = mock(Trial.class);
+            AbstractReport<Object> report = createReport();
+
+            doReturn(trial).when(report).getTrial(any(), any());
+            securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(false);
+
+            report.isCourtUserOnly();
+            assertThat(report.authenticationConsumers).hasSize(1);
+            Consumer<StandardReportRequest> authenticationConsumer = report.authenticationConsumers.get(0);
+
+            MojException.Forbidden exception = assertThrows(
+                MojException.Forbidden.class,
+                () -> authenticationConsumer.accept(mock(StandardReportRequest.class)),
+                "Expected exception to be thrown when not court user");
+            assertThat(exception.getMessage()).isEqualTo("User not allowed to access this report");
+            assertThat(exception.getCause()).isNull();
+        }
     }
 
     @Test
