@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.DeletePoolService;
 import uk.gov.hmcts.juror.api.moj.service.EditPoolService;
@@ -161,10 +162,11 @@ public class ManagePoolController {
      */
     @PutMapping(path = "/reassign-jurors")
     @Operation(summary = "Reassign Jurors from current pool to another pool")
-    public ResponseEntity<Integer> reassignJurors(
+    public ResponseEntity<ReassignPoolMembersResultDto> reassignJurors(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid JurorManagementRequestDto jurorManagementRequestDto) {
-        int jurorsReassigned = jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
+        ReassignPoolMembersResultDto jurorsReassigned = jurorManagementService.reassignJurors(payload,
+            jurorManagementRequestDto);
         return ResponseEntity.ok().body(jurorsReassigned);
     }
 

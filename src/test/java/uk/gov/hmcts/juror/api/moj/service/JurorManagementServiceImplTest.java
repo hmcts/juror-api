@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
@@ -169,9 +170,10 @@ public class JurorManagementServiceImplTest {
         BureauJwtPayload payload = buildPayload("400");
         JurorManagementRequestDto jurorManagementRequestDto = createValidJurorManagementRequestDto();
 
-        int jurorsMoved = jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
+        ReassignPoolMembersResultDto
+            jurorsMoved = jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
 
-        Assertions.assertThat(jurorsMoved).isEqualTo(1);
+        Assertions.assertThat(jurorsMoved.getNumberReassigned()).isEqualTo(1);
 
         verify(poolRequestRepository, times(2)).findByPoolNumber(anyString());
         verify(courtLocationRepository, times(2)).findByLocCode(anyString());
@@ -248,7 +250,8 @@ public class JurorManagementServiceImplTest {
         JurorManagementRequestDto jurorManagementRequestDto = new JurorManagementRequestDto(sourcePoolNumber,
             courtOwner, List.of("123456789"), targetPoolNumber, satelliteCourtCode, LocalDate.now());
 
-        int jurorsMoved = jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
+        ReassignPoolMembersResultDto jurorsMoved =
+            jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
 
         Assertions.assertThat(jurorsMoved).isEqualTo(1);
 
