@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
@@ -34,6 +35,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("PMD.LawOfDemeter")
@@ -42,7 +44,7 @@ class PanelSummaryTest extends AbstractStandardReportTestSupport<PanelSummaryRep
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     private TrialRepository trialRepository;
-    
+
     @AfterEach
     void afterEach() {
         securityUtilMockedStatic.close();
@@ -81,7 +83,9 @@ class PanelSummaryTest extends AbstractStandardReportTestSupport<PanelSummaryRep
         verify(query, times(1))
             .where(QJurorTrial.jurorTrial.trialNumber.eq(TestConstants.VALID_TRIAL_NUMBER));
         verify(query, times(1))
-            .where(QJurorTrial.jurorTrial.locCode.eq(TestConstants.VALID_COURT_LOCATION));
+            .where(QJurorTrial.jurorTrial.locCode.eq(SecurityUtil.getActiveOwner()));
+        verify(query, times(1))
+            .orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override
