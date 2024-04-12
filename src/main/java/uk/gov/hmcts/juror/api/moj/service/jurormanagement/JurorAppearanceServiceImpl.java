@@ -333,16 +333,13 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     @Transactional
     public void modifyConfirmedAttendance(ModifyConfirmedAttendanceDto request) {
 
-        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
-
         final LocalDate attendanceDate = request.getAttendanceDate();
         final String jurorNumber = request.getJurorNumber();
         final String poolNumber = request.getPoolNumber();
-        final ModifyConfirmedAttendanceDto.ModifyAttendanceType modifyAttendanceType = request.getModifyAttendanceType();
-        final LocalTime checkInTime = request.getCheckInTime();
-        final LocalTime checkOutTime = request.getCheckOutTime();
 
-        log.debug(String.format("User %s is modifying attendance for juror %s", payload.getLogin(), jurorNumber));
+
+        log.debug(
+            String.format("User %s is modifying attendance for juror %s", SecurityUtil.getActiveLogin(), jurorNumber));
 
         JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber,
             poolNumber);
@@ -352,24 +349,40 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         }
 
         // validate the court user has access to the juror and pool
-        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
+        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, SecurityUtil.getActiveOwner());
 
         // get the appearance record if it exists
         Appearance appearance =
             appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber, poolNumber,
                 attendanceDate).orElseThrow(() -> new MojException.NotFound("No valid appearance record found", null));
 
-        // check the appearance stage and make sure it is not an approved expenses stage
-        if (appearance.getAppearanceStage().equals(AppearanceStage.EXPENSE_AUTHORISED) ||
-            appearance.getAppearanceStage().equals(AppearanceStage.EXPENSE_EDITED)) {
-            // this needs to be a BVR
-            throw new MojException.BadRequest("Cannot modify an approved expenses attendance record", null);
+        modifyConfirmedAttendance(appearance,
+            request.getModifyAttendanceType(),
+            request.getCheckInTime(),
+            request.getCheckOutTime());
+    }
+
+    private void modifyConfirmedAttendance(Appearance appearance,
+                                           ModifyConfirmedAttendanceDto.ModifyAttendanceType modifyAttendanceType,
+                                           LocalTime checkInTime,
+                                           LocalTime checkOutTime
+    ) {
+        boolean isLongTrail = jurorExpenseService.isLongTrialDay(
+            appearance.getJurorNumber(),
+            appearance.getPoolNumber(),
+            appearance.getAttendanceDate());
+
+        final AppearanceStage oldAppearanceStage = appearance.getAppearanceStage();
+        if (!Set.of(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
+            .contains(appearance.getAppearanceStage())) {
+            throw new MojException.BusinessRuleViolation(
+                "Can only modify confirmed attendances that have no approved expenses",
+                MojException.BusinessRuleViolation.ErrorCode.APPEARANCE_MUST_BE_CONFIRMED_WITH_NO_APPROVED_EXPENSES);
         }
 
-        if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.ATTENDANCE)) {
-
+        appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+        if (ModifyConfirmedAttendanceDto.ModifyAttendanceType.ATTENDANCE.equals(modifyAttendanceType)) {
             appearance.setNonAttendanceDay(Boolean.FALSE);
-
             // update the check-in time
             if (checkInTime != null) {
                 appearance.setTimeIn(checkInTime);
@@ -379,39 +392,37 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             if (checkOutTime != null) {
                 appearance.setTimeOut(checkOutTime);
             }
-
-            appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
-            realignAttendanceType(appearance);
-
+            boolean isFulLDay = appearance.isFullDay();
+            if (appearance.isDraftExpense() || !AppearanceStage.EXPENSE_ENTERED.equals(oldAppearanceStage)) {
+                appearance.setAttendanceType(isFulLDay ?
+                    (isLongTrail ? AttendanceType.FULL_DAY_LONG_TRIAL : AttendanceType.FULL_DAY) :
+                    (isLongTrail ? AttendanceType.HALF_DAY_LONG_TRIAL : AttendanceType.HALF_DAY));
+            }
             appearanceRepository.saveAndFlush(appearance);
-            jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
 
         } else if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.NON_ATTENDANCE)) {
             appearance.setTimeIn(null);
             appearance.setTimeOut(null);
             appearance.setNonAttendanceDay(Boolean.TRUE);
-            appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED); // confirmed attendance
-            appearance.setAttendanceType(AttendanceType.NON_ATTENDANCE);
+            appearance.setAttendanceType(isLongTrail ?
+                AttendanceType.NON_ATTENDANCE_LONG_TRIAL :
+                AttendanceType.NON_ATTENDANCE);
             appearanceRepository.saveAndFlush(appearance);
-            // placeholder method for applying default expenses
-            jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
 
         } else if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.ABSENCE)) {
             appearance.setTimeIn(null);
             appearance.setTimeOut(null);
             appearance.setNonAttendanceDay(Boolean.FALSE);
-            appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED); // confirmed attendance
             appearance.setAttendanceType(AttendanceType.ABSENT);
             appearance.setNoShow(Boolean.TRUE);
             appearanceRepository.saveAndFlush(appearance);
-            // placeholder method for applying default expenses
-            jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
 
-        } else if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE)) {
+        } else if (ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE.equals(modifyAttendanceType)) {
             appearanceRepository.delete(appearance);
         }
-
+        jurorExpenseService.realignExpenseDetails(appearance,ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE.equals(modifyAttendanceType));
     }
+
 
     @Override
     @Transactional(readOnly = true)

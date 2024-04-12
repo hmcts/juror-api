@@ -754,6 +754,11 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     @Override
+    public void realignExpenseDetails(Appearance appearance, boolean isDeleted) {
+        //TODO
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public CombinedExpenseDetailsDto<ExpenseDetailsDto> getDraftExpenses(String jurorNumber, String poolNumber) {
         return getExpenses(

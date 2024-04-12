@@ -84,6 +84,7 @@ public class MojException extends RuntimeException {
             CANNOT_REFUSE_FIRST_DEFERRAL,
             TRIAL_HAS_ENDED,
             NO_PANEL_EXIST,
+            APPEARANCE_MUST_BE_CONFIRMED_WITH_NO_APPROVED_EXPENSES
         }
     }
 
