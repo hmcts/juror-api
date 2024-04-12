@@ -1845,7 +1845,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
+            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J00123456");
             assertThat(appearance.getSatOnJury()).isTrue();
 
             appearanceOpt = appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(
@@ -1855,7 +1855,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
+            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J00123456");
             assertThat(appearance.getSatOnJury()).isTrue();
 
 
