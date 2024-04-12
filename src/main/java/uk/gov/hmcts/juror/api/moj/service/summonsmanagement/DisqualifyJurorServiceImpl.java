@@ -11,7 +11,6 @@ import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
-import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetterRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.DisqualifyJurorDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.DisqualifyReasonsDto;
@@ -50,6 +49,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils.createMinimalP
 
 @Slf4j
 @Service
+@SuppressWarnings({"PMD.TooManyImports", "PMD.LawOfDemeter"})
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
 
@@ -57,16 +57,12 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
     private final JurorPoolRepository jurorPoolRepository;
     @NonNull
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-
     @NonNull
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
-
     @NotNull
     private final JurorResponseAuditRepository jurorResponseAuditRepository;
     @NonNull
     private final JurorHistoryRepository jurorHistoryRepository;
-    @NonNull
-    private final DisqualificationLetterRepository disqualificationLetterRepository;
     @NotNull
     private final AssignOnUpdateServiceMod assignOnUpdateService;
     @NotNull

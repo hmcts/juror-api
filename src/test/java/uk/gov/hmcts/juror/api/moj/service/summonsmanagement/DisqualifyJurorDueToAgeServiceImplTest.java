@@ -22,7 +22,6 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
-import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -93,8 +92,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         MockitoAnnotations.initMocks(this);
         disqualifyJurorServiceImpl = new DisqualifyJurorServiceImpl(jurorPoolRepository,
             jurorPaperResponseRepository, jurorDigitalResponseRepository, jurorResponseAuditRepository,
-            jurorHistoryRepository, disqualificationLetterRepository, assignOnUpdateService,
-            summonsReplyMergeService, printDateService);
+            jurorHistoryRepository, assignOnUpdateService, summonsReplyMergeService, printDateService);
     }
 
 
@@ -106,8 +104,8 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         final ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
         final ArgumentCaptor<JurorPool> jurorPoolEntityCaptor = ArgumentCaptor.forClass(JurorPool.class);
         final ArgumentCaptor<JurorHistory> jurorHistoryEntityCaptor = ArgumentCaptor.forClass(JurorHistory.class);
-        final ArgumentCaptor<DisqualificationLetter> disqLetterEntityCaptor =
-            ArgumentCaptor.forClass(DisqualificationLetter.class);
+        //        final ArgumentCaptor<PrintDataService> printDataServiceArgumentCaptor =
+        //            ArgumentCaptor.forClass(PrintDataService.class);
 
         BureauJwtPayload courtPayload = buildBureauPayload();
         List<JurorPool> jurorPoolList = createJurorPoolList(JUROR_NUMBER, courtPayload.getOwner());
@@ -145,8 +143,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
             BUREAU_USER, POOL_NUMBER, OTHER_INFORMATION);
 
         //verification of the DisqualificationLetterRepository invocation
-        verifyDisqualificationLetterRepository(disqLetterEntityCaptor, JUROR_NUMBER,
-            String.valueOf(DisqualifyCodeEnum.A));
+        // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
 
         //verify that the below services are never invoked
         verify(assignOnUpdateService, never()).assignToCurrentLogin(any(DigitalResponse.class),
@@ -164,8 +161,8 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         final ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
         final ArgumentCaptor<JurorPool> jurorPoolEntityCaptor = ArgumentCaptor.forClass(JurorPool.class);
         final ArgumentCaptor<JurorHistory> jurorHistoryEntityCaptor = ArgumentCaptor.forClass(JurorHistory.class);
-        final ArgumentCaptor<DisqualificationLetter> disqLetterEntityCaptor =
-            ArgumentCaptor.forClass(DisqualificationLetter.class);
+        //        final ArgumentCaptor<PrintDataService> printDataServiceArgumentCaptor =
+        //            ArgumentCaptor.forClass(PrintDataService.class);
         final ArgumentCaptor<JurorResponseAudit> jurorResponseAuditArgumentCaptor =
             ArgumentCaptor.forClass(JurorResponseAudit.class);
 
@@ -220,8 +217,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
             BUREAU_USER, POOL_NUMBER, OTHER_INFORMATION);
 
         //verification of the DisqualificationLetterRepository
-        verifyDisqualificationLetterRepository(disqLetterEntityCaptor, JUROR_NUMBER,
-            String.valueOf(DisqualifyCodeEnum.A));
+        // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
 
         //verification of the JurorResponseAuditRepository
         verify(jurorResponseAuditRepository, times(1))
@@ -245,8 +241,8 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         final ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
         final ArgumentCaptor<JurorPool> jurorPoolEntityCaptor = ArgumentCaptor.forClass(JurorPool.class);
         final ArgumentCaptor<JurorHistory> jurorHistoryEntityCaptor = ArgumentCaptor.forClass(JurorHistory.class);
-        final ArgumentCaptor<DisqualificationLetter> disqLetterEntityCaptor =
-            ArgumentCaptor.forClass(DisqualificationLetter.class);
+        //        final ArgumentCaptor<PrintDataService> printDataServiceArgumentCaptor =
+        //            ArgumentCaptor.forClass(PrintDataService.class);
         final ArgumentCaptor<JurorResponseAudit> jurorResponseAuditArgumentCaptor =
             ArgumentCaptor.forClass(JurorResponseAudit.class);
 
@@ -286,8 +282,7 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
             BUREAU_USER, POOL_NUMBER, OTHER_INFORMATION);
 
         //verification of the DisqualificationLetterRepository invocation
-        verifyDisqualificationLetterRepository(disqLetterEntityCaptor, JUROR_NUMBER,
-            String.valueOf(DisqualifyCodeEnum.A));
+        // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
 
         //verification of the JurorResponseAuditRepository
         verify(jurorResponseAuditRepository, times(0)).save(jurorResponseAuditArgumentCaptor.capture());
@@ -435,15 +430,6 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         assertThat(jurorHistoryEntityCaptor.getValue().getCreatedBy()).isEqualTo(bureauUser);
         assertThat(jurorHistoryEntityCaptor.getValue().getPoolNumber()).isEqualTo(poolNumber);
         assertThat(jurorHistoryEntityCaptor.getValue().getOtherInformation()).isEqualTo(otherInformation);
-    }
-
-    private void verifyDisqualificationLetterRepository(final ArgumentCaptor<DisqualificationLetter>
-                                                            disqLetterEntityCaptor, String jurorNumber,
-                                                        String disqualifyCodeEnum) {
-        verify(disqualificationLetterRepository, times(1)).save(disqLetterEntityCaptor.capture());
-        assertThat(disqLetterEntityCaptor.getValue().getJurorNumber()).isEqualTo(jurorNumber);
-        assertThat(disqLetterEntityCaptor.getValue().getDisqCode()).isEqualTo(disqualifyCodeEnum);
-        assertThat(disqLetterEntityCaptor.getValue().getDateDisq()).isNotNull();
     }
 
     private PaperResponse createPaperResponse(String jurorNumber) {
