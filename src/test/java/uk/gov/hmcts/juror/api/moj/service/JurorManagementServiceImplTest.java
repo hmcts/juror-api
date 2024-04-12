@@ -253,7 +253,7 @@ public class JurorManagementServiceImplTest {
         ReassignPoolMembersResultDto jurorsMoved =
             jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
 
-        Assertions.assertThat(jurorsMoved).isEqualTo(1);
+        Assertions.assertThat(jurorsMoved.getNumberReassigned()).isEqualTo(1);
 
         verify(poolRequestRepository, times(2))
             .findByPoolNumber(anyString());
