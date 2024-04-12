@@ -4,12 +4,20 @@ import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.controller.response.jurorresponse.IJurorResponse;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
+
+import static java.util.function.Predicate.not;
 
 @Slf4j
 public final class JurorResponseUtils {
@@ -40,8 +48,7 @@ public final class JurorResponseUtils {
      * @param disqualifiedComment Disqualified comment
      * @return Return a paper response object
      */
-    public static PaperResponse createMinimalPaperSummonsRecord(Juror juror,
-                                                                String disqualifiedComment) {
+    public static PaperResponse createMinimalPaperSummonsRecord(Juror juror, String disqualifiedComment) {
         PaperResponse jurorPaperResponse = new PaperResponse();
         jurorPaperResponse.setJurorNumber(juror.getJurorNumber());
         // setting the received date to now
@@ -61,8 +68,23 @@ public final class JurorResponseUtils {
         return jurorPaperResponse;
     }
 
-    private static void setUpAddress(PaperResponse jurorPaperResponse,
-                                     Juror juror) {
+    public static void updateCurrentOwnerInResponseDto(JurorPoolRepository jurorPoolRepository,
+                                                       IJurorResponse responseDto) {
+
+        // set the current owner.  Need to ensure the current owner is returned as the owner can change if, for
+        // example, the juror is transferred to a different pool
+        List<JurorPool> jurorPools =
+            JurorPoolUtils.getActiveJurorPoolRecords(jurorPoolRepository, responseDto.getJurorNumber());
+
+        Optional<JurorPool> jurorPool = jurorPools.stream()
+            .filter(not(jp -> jp.getStatus().getCode().equals(IJurorStatus.TRANSFERRED)))
+            .sorted(Comparator.comparing(JurorPool::getDateCreated).reversed())
+            .toList().stream().findFirst();
+
+        jurorPool.ifPresent(pool -> responseDto.setCurrentOwner(pool.getOwner()));
+    }
+
+    private static void setUpAddress(PaperResponse jurorPaperResponse, Juror juror) {
         jurorPaperResponse.setAddressLine1(juror.getAddressLine1());
         jurorPaperResponse.setAddressLine2(juror.getAddressLine2());
         jurorPaperResponse.setAddressLine3(juror.getAddressLine3());

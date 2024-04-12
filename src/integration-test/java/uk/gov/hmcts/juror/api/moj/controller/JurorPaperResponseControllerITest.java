@@ -647,6 +647,30 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPaperResponse.sql"})
+    public void retrieveJurorByIdForATransferredJuror() {
+        final String owner = "415";
+        final String bureauJwt = createBureauJwt("MODTESTCOURT", owner);
+        final URI uri = URI.create("/api/v1/moj/juror-paper-response/juror/641500001");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri);
+        ResponseEntity<JurorPaperResponseDetailDto> response = template.exchange(requestEntity,
+            JurorPaperResponseDetailDto.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        JurorPaperResponseDetailDto responseDetailDto = response.getBody();
+        assertThat(responseDetailDto).isNotNull();
+
+        assertThat(responseDetailDto.getCurrentOwner())
+            .as("Expect current owner to be the owner of the transferred to pool")
+            .isEqualToIgnoringCase("471");
+
+        verifyResponseDtoMapping(responseDetailDto, owner);
+    }
+
+    @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPaperResponse_summonsSnapshot.sql"})
     public void retrieveJurorById_courtUser_happyPath_summonsSnapshot() throws Exception {
         final String owner = "435";

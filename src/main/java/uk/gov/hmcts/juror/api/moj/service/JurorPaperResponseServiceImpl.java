@@ -43,6 +43,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCjsEmplo
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 
 import java.time.LocalDate;
@@ -96,9 +97,14 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber, owner);
         JurorPoolUtils.checkReadAccessForCurrentUser(jurorPool, owner);
 
-
-        return copyPaperResponseRecordIntoDto(
+        JurorPaperResponseDetailDto responseDto = copyPaperResponseRecordIntoDto(
             DataUtils.getJurorPaperResponse(jurorNumber, paperResponseRepository), jurorPool);
+
+        // set the current owner.  Need to ensure the current owner is returned as the owner can change if, for
+        // example, the juror is transferred to a different pool
+        JurorResponseUtils.updateCurrentOwnerInResponseDto(jurorPoolRepository, responseDto);
+
+        return responseDto;
     }
 
     private PaperResponse getJurorPaperResponse(final String jurorNumber) {
@@ -340,7 +346,6 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         processStraightThroughResponse(jurorPaperResponse, jurorPool, jurorPool.getReturnDate(), payload);
     }
-
 
     private PaperResponse updateWelshFlagBasedOnResponse(PaperResponse jurorPaperResponse, JurorPool jurorPool) {
         Juror juror = jurorPool.getJuror();
@@ -885,5 +890,4 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         log.trace("Exit processStraightThroughResponse for {}", jurorPool.getJurorNumber());
     }
-
 }

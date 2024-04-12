@@ -185,6 +185,9 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(poolDetails.isNilPool())
             .as("Is nil pool should be mapped from the nil_pool value in the POOL_REQUEST view")
             .isFalse();
+        assertThat(poolDetails.getCurrentOwner())
+            .as("Current owner of the pool should be returned")
+            .isEqualTo("400");
         assertThat(bureauSummoning.getTotalSummoned())
             .as("Total summoned should be mapped from the TOTAL_SUMMONED value in the POOL_STATS view and represents "
                 + "the total number of bureau owned members in a pool (regardless of status)")
@@ -264,7 +267,9 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(poolDetails.isNilPool())
             .as("Is nil pool should be mapped from the nil_pool value in the POOL_REQUEST view")
             .isFalse();
-
+        assertThat(poolDetails.getCurrentOwner())
+            .as("Current owner of the pool should be returned")
+            .isEqualTo("400");
         assertThat(bureauSummoning.getTotalSummoned())
             .as("Total summoned should be mapped from the TOTAL_SUMMONED value in the POOL_STATS view and represents "
                 + "the total number of bureau owned members in a pool (regardless of status)")
@@ -353,6 +358,9 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(poolDetails.isNilPool())
             .as("Is nil pool should be mapped from the nil_pool value in the POOL_REQUEST view")
             .isFalse();
+        assertThat(poolDetails.getCurrentOwner())
+            .as("Current owner of the pool should be returned")
+            .isEqualTo("400");
         assertThat(bureauSummoning.getTotalSummoned())
             .as("Total summoned should be mapped from the TOTAL_SUMMONED value"
                 + " in the POOL_STATS view and represents "

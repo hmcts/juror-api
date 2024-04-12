@@ -44,6 +44,8 @@ public class PoolStatisticsServiceImpl implements PoolStatisticsService {
         populatePoolSummaryData(poolSummaryResponse, poolStatistics, poolRequest.getTotalNoRequired());
         populateAdditionalStatsData(poolSummaryResponse, poolStatistics);
 
+        poolSummaryResponse.getPoolDetails().setCurrentOwner(poolRequest.getOwner());
+
         return poolSummaryResponse;
     }
 
