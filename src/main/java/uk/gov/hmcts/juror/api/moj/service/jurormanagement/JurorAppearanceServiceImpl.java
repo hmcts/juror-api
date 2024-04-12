@@ -253,7 +253,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     @Transactional
-    @SuppressWarnings({"PMD.LawOfDemeter", "PMD.ConfusingTernary"})
+    @SuppressWarnings("PMD.LawOfDemeter")
     public String updateAttendanceDate(UpdateAttendanceDateDto request) {
         log.trace(String.format("Entered method: updateAttendanceDate(). There are %s jurors to update",
             request.getJurorNumbers().size()));
@@ -268,17 +268,17 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             if (jurorPool == null) {
                 log.trace(String.format("In method: updateAttendanceDate().  No juror pool found matching criteria "
                     + "for juror %s.  Attendance date not updated", jurorNumber));
-            } else if (jurorPool.getStatus().getStatus() != IJurorStatus.RESPONDED
-                && jurorPool.getStatus().getStatus() != IJurorStatus.PANEL
-                && jurorPool.getStatus().getStatus() != IJurorStatus.JUROR) {
-                log.trace(String.format("In method: updateAttendanceDate(). Status is %s for juror %s. "
-                    + "Attendance date not updated", jurorPool.getStatus().getStatus(), jurorNumber));
-            } else {
+            }  else if (List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL, IJurorStatus.JUROR)
+                .contains(jurorPool.getStatus().getStatus())) {
+
                 // update the juror next (attendance) date and clear on call flag in case it is set
                 jurorPool.setNextDate(request.getAttendanceDate());
                 jurorPool.setOnCall(Boolean.FALSE);
 
                 updatedJurorPools.add(jurorPool);
+            } else {
+                log.trace(String.format("In method: updateAttendanceDate(). Status is %s for juror %s. "
+                    + "Attendance date not updated", jurorPool.getStatus().getStatus(), jurorNumber));
             }
         }
 
