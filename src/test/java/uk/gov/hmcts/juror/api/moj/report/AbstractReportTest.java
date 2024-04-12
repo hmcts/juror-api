@@ -1011,7 +1011,6 @@ class AbstractReportTest {
 
         @Test
         void negativeInvalidAccess() {
-            TrialRepository trialRepository = mock(TrialRepository.class);
 
             Trial trial = mock(Trial.class);
             AbstractReport<Object> report = createReport();
@@ -1029,6 +1028,38 @@ class AbstractReportTest {
                 "Expected exception to be thrown when not court user");
             assertThat(exception.getMessage()).isEqualTo("User not allowed to access this report");
             assertThat(exception.getCause()).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("PoolRequest getTrial(String trialNumber, TrialRepository trialRepository)")
+    class GetTrial {
+        @Test
+        void positiveTypical() {
+            TrialRepository trialRepository = mock(TrialRepository.class);
+            Trial trial = mock(Trial.class);
+            AbstractReport<Object> report = createReport();
+
+            doReturn(trial).when(report).getTrial(any(), any());
+
+            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(any(), any())).thenReturn(trial);
+
+            assertThat(createReport().getTrial(TestConstants.VALID_TRIAL_NUMBER, trialRepository))
+                .isEqualTo(trial);
+        }
+
+        @Test
+        void negativeNotFound() {
+            TrialRepository trialRepository = mock(TrialRepository.class);
+            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(TestConstants.VALID_TRIAL_NUMBER, "415"))
+                .thenReturn(null);
+
+            MojException.NotFound notFoundException =
+                assertThrows(MojException.NotFound.class,
+                    () -> createReport().getTrial(TestConstants.VALID_TRIAL_NUMBER, trialRepository),
+                    "Expected exception to be thrown when trial not found");
+            assertThat(notFoundException.getMessage()).isEqualTo("Trial not found");
+            assertThat(notFoundException.getCause()).isNull();
         }
     }
 
