@@ -322,7 +322,7 @@ public abstract class AbstractReport<T> {
         ));
     }
 
-    public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadPanelHeaders(
+    public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadStandardTrailHeaders(
         StandardReportRequest request, TrialRepository trialRepository) {
 
         Trial trial = getTrial(request.getTrialNumber(), trialRepository);

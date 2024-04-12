@@ -35,7 +35,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("PMD.LawOfDemeter")
-class PanelSummaryTest extends AbstractStandardReportTestSupport<PanelSummaryReport> {
+class PanelSummaryReportTest extends AbstractStandardReportTestSupport<PanelSummaryReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
@@ -51,10 +51,11 @@ class PanelSummaryTest extends AbstractStandardReportTestSupport<PanelSummaryRep
     public void beforeEach() {
         super.beforeEach();
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
+        this.trialRepository = mock(TrialRepository.class);
     }
 
 
-    public PanelSummaryTest() {
+    public PanelSummaryReportTest() {
         super(QJurorTrial.jurorTrial,
             PanelSummaryReport.RequestValidator.class,
             DataType.JUROR_NUMBER,

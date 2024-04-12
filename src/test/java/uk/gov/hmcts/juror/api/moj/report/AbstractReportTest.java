@@ -76,14 +76,12 @@ import static org.mockito.Mockito.withSettings;
 class AbstractReportTest {
 
     private PoolRequestRepository poolRequestRepository;
-    private TrialRepository trialRepository;
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     @BeforeEach
     void beforeEach() {
         this.poolRequestRepository = mock(PoolRequestRepository.class);
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
-        this.trialRepository = mock(TrialRepository.class);
 
     }
 
@@ -929,8 +927,10 @@ class AbstractReportTest {
     class LoadTrialHeaders {
         @Test
         void positiveTypical() {
+            TrialRepository trialRepository = mock(TrialRepository.class);
+
             Trial trial = mock(Trial.class);
-            AbstractReport<Object> report = createTrialReport();
+            AbstractReport<Object> report = createReport();
 
             doReturn(trial).when(report).getTrial(any(), any());
 
@@ -956,9 +956,9 @@ class AbstractReportTest {
 
             StandardReportRequest request = mock(StandardReportRequest.class);
 
-            when(request.getTrialNumber()).thenReturn("T000000001");
+            when(request.getTrialNumber()).thenReturn(TestConstants.VALID_TRIAL_NUMBER);
 
-            assertThat(report.loadPanelHeaders(request, trialRepository))
+            assertThat(report.loadStandardTrailHeaders(request, trialRepository))
                 .isEqualTo(Map.of(
                     "trial_number",
                     AbstractReportResponse.DataTypeValue.builder()
@@ -1099,11 +1099,6 @@ class AbstractReportTest {
     private AbstractReport<Object> createReport() {
         return createReport(QJuror.juror, DataType.JUROR_NUMBER);
     }
-
-    private AbstractReport<Object> createTrialReport() {
-        return createReport(QJurorTrial.jurorTrial, DataType.JUROR_NUMBER);
-    }
-
 
     private static class AbstractReportTestImpl extends AbstractReport<Object> {
 
