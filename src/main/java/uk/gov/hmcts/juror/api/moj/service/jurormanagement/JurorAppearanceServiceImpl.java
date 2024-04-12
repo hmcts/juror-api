@@ -359,6 +359,13 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber, poolNumber,
                 attendanceDate).orElseThrow(() -> new MojException.NotFound("No valid appearance record found", null));
 
+        // check the appearance stage and make sure it is not an approved expenses stage
+        if (appearance.getAppearanceStage().equals(AppearanceStage.EXPENSE_AUTHORISED) ||
+            appearance.getAppearanceStage().equals(AppearanceStage.EXPENSE_EDITED)) {
+            // this needs to be a BVR
+            throw new MojException.BadRequest("Cannot modify an approved expenses attendance record", null);
+        }
+
         if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.ATTENDANCE)) {
 
             // update the check-in time
