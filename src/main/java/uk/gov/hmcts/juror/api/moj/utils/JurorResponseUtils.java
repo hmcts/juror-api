@@ -48,8 +48,7 @@ public final class JurorResponseUtils {
      * @param disqualifiedComment Disqualified comment
      * @return Return a paper response object
      */
-    public static PaperResponse createMinimalPaperSummonsRecord(Juror juror,
-                                                                String disqualifiedComment) {
+    public static PaperResponse createMinimalPaperSummonsRecord(Juror juror, String disqualifiedComment) {
         PaperResponse jurorPaperResponse = new PaperResponse();
         jurorPaperResponse.setJurorNumber(juror.getJurorNumber());
         // setting the received date to now
@@ -85,8 +84,7 @@ public final class JurorResponseUtils {
         jurorPool.ifPresent(pool -> responseDto.setCurrentOwner(pool.getOwner()));
     }
 
-    private static void setUpAddress(PaperResponse jurorPaperResponse,
-                                     Juror juror) {
+    private static void setUpAddress(PaperResponse jurorPaperResponse, Juror juror) {
         jurorPaperResponse.setAddressLine1(juror.getAddressLine1());
         jurorPaperResponse.setAddressLine2(juror.getAddressLine2());
         jurorPaperResponse.setAddressLine3(juror.getAddressLine3());

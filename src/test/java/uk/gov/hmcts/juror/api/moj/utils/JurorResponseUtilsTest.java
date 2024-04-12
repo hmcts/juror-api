@@ -6,33 +6,42 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.gov.hmcts.juror.api.moj.controller.response.JurorPaperResponseDetailDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.BDDAssertions.within;
 
 @RunWith(SpringRunner.class)
 public class JurorResponseUtilsTest {
+    private static final String JUROR_NUMBER_123456789 = "123456789";
 
     @Mock
     JurorPaperResponseRepositoryMod jurorPaperResponseRepositoryMod;
 
+    @Mock
+    JurorPoolRepository jurorPoolRepository;
 
     @Test
     public void test_createMinimalPaperSummonsRecord() {
-        String jurorNumber = "123456789";
         String disqualifiedComment = "Disqualified due to age.";
-        Juror mockJuror = createMockJuror(jurorNumber);
+        Juror mockJuror = createMockJuror(JUROR_NUMBER_123456789);
         LocalDateTime mockLocalDate = LocalDateTime.now();
         PaperResponse mockPaperResponse = createMockPaperResponse(mockJuror, mockLocalDate, disqualifiedComment);
 
-        Mockito.doReturn(mockPaperResponse).when(jurorPaperResponseRepositoryMod).findByJurorNumber(jurorNumber);
+        Mockito.doReturn(mockPaperResponse).when(jurorPaperResponseRepositoryMod)
+            .findByJurorNumber(JUROR_NUMBER_123456789);
 
         PaperResponse actualPaperResponse = JurorResponseUtils.createMinimalPaperSummonsRecord(mockJuror,
             disqualifiedComment);
@@ -55,6 +64,48 @@ public class JurorResponseUtilsTest {
         assertThat(actualPaperResponse.getProcessingComplete()).isEqualTo(mockPaperResponse.getProcessingComplete());
         assertThat(actualPaperResponse.getCompletedAt()).isCloseTo(mockPaperResponse.getCompletedAt(),
             within(10, ChronoUnit.SECONDS));
+    }
+
+    @Test
+    public void updateCurrentOwnerInResponseDto() {
+        JurorPaperResponseDetailDto responseDto = new JurorPaperResponseDetailDto();
+        responseDto.setJurorNumber(JUROR_NUMBER_123456789);
+
+        JurorPool jurorPoolOne = createJurorPool("111111111", "457", LocalDateTime.now().minusDays(3),
+            2);
+        JurorPool jurorPoolThree = createJurorPool("222222222", "400", LocalDateTime.now().minusDays(5),
+            10);
+        Mockito.doReturn(Arrays.asList(jurorPoolOne, jurorPoolThree)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(JUROR_NUMBER_123456789, true);
+
+        JurorResponseUtils.updateCurrentOwnerInResponseDto(jurorPoolRepository, responseDto);
+
+        assertThat(responseDto.getCurrentOwner()).isEqualTo("457");
+
+    }
+
+    private JurorPool createJurorPool(String poolNumber, String owner, LocalDateTime dateCreated, int status) {
+        Juror juror = new Juror();
+        juror.setJurorNumber(JUROR_NUMBER_123456789);
+
+        PoolRequest pool = new PoolRequest();
+        pool.setPoolNumber(poolNumber);
+        pool.setDateCreated(dateCreated);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(status);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner(owner);
+        jurorPool.setJuror(juror);
+        jurorPool.setPool(pool);
+        jurorPool.setStatus(jurorStatus);
+
+        return jurorPool;
+    }
+
+    private Object mockJurorPools() {
+        return null;
     }
 
     private PaperResponse createMockPaperResponse(Juror juror, LocalDateTime mockLocalDate,
