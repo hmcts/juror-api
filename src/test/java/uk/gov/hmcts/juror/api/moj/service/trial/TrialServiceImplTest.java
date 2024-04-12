@@ -341,7 +341,7 @@ class TrialServiceImplTest {
         verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
         ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
         verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
-            assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).isTrue();
+        assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).as("Sat on Jury").isTrue();
     }
 
     @Test
@@ -368,7 +368,7 @@ class TrialServiceImplTest {
         verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
         ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
         verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
-            assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).isTrue();
+        assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).as("Sat on Jury").isTrue();
     }
 
     @Test
