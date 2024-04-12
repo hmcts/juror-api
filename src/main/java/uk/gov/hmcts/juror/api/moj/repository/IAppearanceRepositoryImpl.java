@@ -194,28 +194,31 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
 
     @Override
     public List<JurorPool> retrieveAllJurors(String locCode) {
-        return buildJurorPoolQuery(locCode).fetch();
+        return buildJurorPoolsCheckedInTodayQuery(locCode).fetch();
     }
 
     @Override
     public List<JurorPool> getJurorsInPools(String locCode, List<String> poolNumbers) {
-        JPAQuery<JurorPool> query = buildJurorPoolQuery(locCode);
+        JPAQuery<JurorPool> query = buildJurorPoolsCheckedInTodayQuery(locCode);
         return query.where(JUROR_POOL.pool.poolNumber.in(poolNumbers)).fetch();
     }
 
     /**
-     * Builds query for getting juror pool information using the appearance table.
+     * Builds query for getting the juror pool record for jurors at a given court location with an appearance record
+     * today showing they have been checked in and are available to be selected for a panel.
      *
      * @return JPAQuery
      */
     @Override
-    public JPAQuery<JurorPool> buildJurorPoolQuery(String locCode) {
+    public JPAQuery<JurorPool> buildJurorPoolsCheckedInTodayQuery(String locCode) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         return queryFactory.select(JUROR_POOL)
             .from(APPEARANCE)
             .join(JUROR_POOL)
             .on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber))
             .where(APPEARANCE.courtLocation.locCode.eq(locCode))
+            .where(APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN))
+            .where(APPEARANCE.attendanceDate.eq(LocalDate.now()))
             .where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode))
             .where(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED))
             .where(JUROR_POOL.isActive.isTrue());

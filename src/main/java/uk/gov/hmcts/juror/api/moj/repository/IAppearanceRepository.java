@@ -28,7 +28,7 @@ public interface IAppearanceRepository {
 
     List<JurorPool> getJurorsInPools(String locCode, List<String> poolNumber);
 
-    JPAQuery<JurorPool> buildJurorPoolQuery(String locCode);
+    JPAQuery<JurorPool> buildJurorPoolsCheckedInTodayQuery(String locCode);
 
     Integer countJurorExpenseForApproval(String jurorNumber, String poolNumber);
 
