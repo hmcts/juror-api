@@ -7,10 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAudit;
 import uk.gov.hmcts.juror.api.bureau.domain.JurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
-import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetter;
 import uk.gov.hmcts.juror.api.juror.domain.DisqualificationLetterRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.DisqualifyJurorDto;
@@ -31,14 +31,13 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
+import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static java.util.Objects.isNull;
@@ -72,6 +71,8 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
     private final AssignOnUpdateServiceMod assignOnUpdateService;
     @NotNull
     private final SummonsReplyMergeService summonsReplyMergeService;
+    @NotNull
+    private final PrintDataService printDataService;
 
     @Override
     public DisqualifyReasonsDto getDisqualifyReasons(BureauJwtPayload payload) {
@@ -104,40 +105,45 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
         log.trace("Juror Number {} - Api service method disqualifyJuror() started with code {}", jurorNumber,
             disqualifyJurorDto.getCode());
 
-        AbstractJurorResponse jurorResponse;
+        AbstractJurorResponse jurorResponse = null;
 
         //Check if the current user has access to the Juror record
         final JurorPool jurorPool = checkOfficerIsAuthorisedToAccessJurorRecord(jurorNumber, payload);
 
         //Get the existing juror response for the appropriate reply method, and map to the generic juror response pojo
-        if (disqualifyJurorDto.getReplyMethod().equals(ReplyMethod.PAPER)) {
+        if (ReplyMethod.PAPER.equals(disqualifyJurorDto.getReplyMethod())) {
             jurorResponse = getJurorPaperResponse(jurorNumber, jurorPaperResponseRepository);
-        } else {
+        } else if (ReplyMethod.DIGITAL.equals(disqualifyJurorDto.getReplyMethod())) {
             jurorResponse = getJurorDigitalResponse(jurorNumber, jurorDigitalResponseRepository);
         }
 
-        //Check the status of the juror response to ensure only responses in the correct status can be updated
-        checkJurorResponseStatus(jurorResponse);
+        if (!ReplyMethod.NONE.equals(disqualifyJurorDto.getReplyMethod())) {
+            //Check the status of the juror response to ensure only responses in the correct status can be updated
+            checkJurorResponseStatus(jurorResponse);
 
-        //Set the new status - need to copy the old status as required for the auditing steps
-        final ProcessingStatus oldProcessingStatus = setJurorResponseProcessingStatus(jurorResponse);
+            //Set the new status - need to copy the old status as required for the auditing steps
+            final ProcessingStatus oldProcessingStatus = setJurorResponseProcessingStatus(jurorResponse);
 
-        //Save the updated juror response
-        if (disqualifyJurorDto.getReplyMethod().equals(ReplyMethod.PAPER)) {
-            saveJurorPaperResponse(payload.getLogin(), (PaperResponse) jurorResponse);
-        } else {
-            saveJurorDigitalResponse(payload.getLogin(), oldProcessingStatus, (DigitalResponse) jurorResponse);
+            //Save the updated juror response
+            if (disqualifyJurorDto.getReplyMethod().equals(ReplyMethod.PAPER)) {
+                saveJurorPaperResponse(payload.getLogin(), (PaperResponse) jurorResponse);
+            } else if (disqualifyJurorDto.getReplyMethod().equals(ReplyMethod.DIGITAL)) {
+                saveJurorDigitalResponse(payload.getLogin(), oldProcessingStatus, (DigitalResponse) jurorResponse);
+            }
         }
 
         //Update juror pool record to reflect juror has been disqualified
-        saveJurorPoolRecord(jurorPool, jurorResponse.getJurorNumber(), disqualifyJurorDto.getCode(),
+        saveJurorPoolRecord(jurorPool, jurorPool.getJurorNumber(), disqualifyJurorDto.getCode(),
             payload.getLogin());
 
         //Create audit history record to reflect changes to juror pool record related to disqualification
         createAuditHistory(payload.getLogin(), jurorNumber, jurorPool.getPoolNumber(), disqualifyJurorDto.getCode());
 
-        //Queue request for a letter to be sent to the juror (disq_lett)
-        queueRequestForDisqLetter(jurorNumber, disqualifyJurorDto.getCode());
+        if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())) {
+            //Queue request for a letter to be sent to the juror
+            // TODO need to check if this is the right letter to send
+            printDataService.printWithdrawalLetter(jurorPool);
+        }
 
         log.trace("Juror {} - Api service method disqualifyJuror() finished.  Juror disqualified with code {}",
             jurorNumber, disqualifyJurorDto.getCode());
@@ -186,19 +192,14 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
             bureauJwtPayload.getLogin());
         createAuditHistory(bureauJwtPayload.getLogin(), response.getJurorNumber(), jurorPool.getPoolNumber(),
             disqualifyCodeEnum);
-        queueRequestForDisqLetter(response.getJurorNumber(), disqualifyCodeEnum);
+
+        if (JurorDigitalApplication.JUROR_OWNER.equals(bureauJwtPayload.getOwner())) {
+            // TODO need to check if this is the right letter to send
+            printDataService.printWithdrawalLetter(jurorPool);
+        }
+
         log.trace("Juror {} - Api service method disqualifyJuror() finished.  Juror disqualified with code {}",
             response.getJurorNumber(), disqualifyCodeEnum);
-    }
-
-    private void queueRequestForDisqLetter(String jurorNumber, DisqualifyCodeEnum disqualifyCode) {
-        log.trace("Juror {} - Service method queueRequestForDisqLetter() invoked", jurorNumber);
-        DisqualificationLetter disqualificationLetter = new DisqualificationLetter();
-        disqualificationLetter.setJurorNumber(jurorNumber);
-        disqualificationLetter.setDisqCode(disqualifyCode.getHeritageCode());
-        disqualificationLetter.setDateDisq(Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
-
-        disqualificationLetterRepository.save(disqualificationLetter);
     }
 
     private void createAuditHistory(String userId, String jurorNumber, String poolNumber,

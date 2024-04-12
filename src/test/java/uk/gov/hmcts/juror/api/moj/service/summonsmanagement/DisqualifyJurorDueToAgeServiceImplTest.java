@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
+import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
 
 import java.time.LocalDate;
@@ -82,6 +83,9 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
     @Mock
     private AssignOnUpdateServiceMod assignOnUpdateService;
 
+    @Mock
+    private PrintDataService printDateService;
+
     private DisqualifyJurorServiceImpl disqualifyJurorServiceImpl;
 
     @Before
@@ -89,7 +93,8 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         MockitoAnnotations.initMocks(this);
         disqualifyJurorServiceImpl = new DisqualifyJurorServiceImpl(jurorPoolRepository,
             jurorPaperResponseRepository, jurorDigitalResponseRepository, jurorResponseAuditRepository,
-            jurorHistoryRepository, disqualificationLetterRepository, assignOnUpdateService, summonsReplyMergeService);
+            jurorHistoryRepository, disqualificationLetterRepository, assignOnUpdateService,
+            summonsReplyMergeService, printDateService);
     }
 
 
