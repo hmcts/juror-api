@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,6 +46,8 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class PanelControllerITest extends AbstractIntegrationTest {
 
+    static final String COURT_USER_NAME = "court_user";
+
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -71,11 +72,9 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         initHeadersCourt();
     }
 
-    static final String COURT_USER_NAME = "court_user";
-
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql"})
-    public void createPanelCourtUserAllPools() {
+    void createPanelCourtUserAllPools() {
         RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(makeCreatePanelDto(null), httpHeaders,
             HttpMethod.POST, URI.create("/api/v1/moj/trial/panel/create-panel"));
 
@@ -107,7 +106,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql"})
-    public void createPanelCourtUserJurorsExceedLimit() {
+    void createPanelCourtUserJurorsExceedLimit() {
         CreatePanelDto createPanelDto = makeCreatePanelDto(null);
         createPanelDto.setNumberRequested(1001);
         RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(createPanelDto, httpHeaders,
@@ -123,7 +122,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql"})
-    public void createPanelCourtUserNotEnoughJurors() {
+    void createPanelCourtUserNotEnoughJurors() {
         CreatePanelDto createPanelDto = makeCreatePanelDto(new ArrayList<>());
         createPanelDto.setNumberRequested(45);
         RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(createPanelDto, httpHeaders,
@@ -138,7 +137,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql"})
-    public void createPanelCourtUserAllPoolsWrongTrialNumber() {
+    void createPanelCourtUserAllPoolsWrongTrialNumber() {
         CreatePanelDto dto = makeCreatePanelDto(null);
         dto.setTrialNumber("T2");
         RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(dto, httpHeaders,
@@ -154,7 +153,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql"})
-    public void createPanelCourtUserSelectedPool() {
+    void createPanelCourtUserSelectedPool() {
         List<String> poolNumbers = new ArrayList<>();
         poolNumbers.add("415231104");
 
@@ -189,7 +188,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql"})
-    public void createPanelBureauUserAllPools() {
+    void createPanelBureauUserAllPools() {
         initHeadersBureau();
         RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(makeCreatePanelDto(null), httpHeaders,
             HttpMethod.POST, URI.create("/api/v1/moj/trial/panel/create-panel"));
@@ -205,7 +204,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void requestEmpanelCourtUser() {
+    void requestEmpanelCourtUser() {
         initHeadersCourt();
         RequestEntity<Void> requestEntity =
             new RequestEntity<>(
@@ -228,15 +227,15 @@ public class PanelControllerITest extends AbstractIntegrationTest {
             .as("Expected total jurors to be 3")
             .isEqualTo(3);
         assertThat(responseBody.getEmpanelList().stream().filter(list ->
-            list.getStatus().equalsIgnoreCase("Responded")))
+            "Responded".equalsIgnoreCase(list.getStatus())))
             .as("Expected size to be three (responded)")
             .hasSize(3);
         assertThat(responseBody.getEmpanelList().stream().filter(list ->
-            list.getStatus().equalsIgnoreCase("Panel")))
+            "Panel".equalsIgnoreCase(list.getStatus())))
             .as("Expected size to be one (panel)")
             .hasSize(1);
         assertThat(responseBody.getEmpanelList().stream().filter(list ->
-            list.getStatus().equalsIgnoreCase("Juror")))
+            "Juror".equalsIgnoreCase(list.getStatus())))
             .as("Expected size to be one (juror)")
             .hasSize(1);
 
@@ -252,7 +251,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql"})
-    public void requestEmpanelBureauUser() {
+    void requestEmpanelBureauUser() {
         initHeadersBureau();
         RequestEntity<Void> requestEntity =
             new RequestEntity<>(
@@ -271,7 +270,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void panelSummary() {
+    void panelSummary() {
         RequestEntity<PanelListDto[]> requestEntity =
             new RequestEntity<>(
                 httpHeaders,
@@ -287,15 +286,14 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
         assert responseEntity.getBody() != null;
 
-        Assertions
-            .assertThat(responseEntity.getBody().length)
+        assertThat(responseEntity.getBody().length)
             .as("Expected length to be 13")
             .isEqualTo(13);
     }
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void empanelJurorsCourtUserHappyPath() {
+    void empanelJurorsCourtUserHappyPath() {
         JurorListRequestDto dto = createEmpanelledListRequestDto();
         RequestEntity<JurorListRequestDto> requestEntity =
             new RequestEntity<>(dto,
@@ -376,7 +374,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void empanelJurorsBureauUser() {
+    void empanelJurorsBureauUser() {
         initHeadersBureau();
         RequestEntity<JurorListRequestDto> requestEntity =
             new RequestEntity<>(
@@ -395,7 +393,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void empanelJurorsNoResultSet() {
+    void empanelJurorsNoResultSet() {
 
         JurorListRequestDto dto = createEmpanelledListRequestDto();
         dto.getJurors().get(0).setResult(null);
@@ -418,7 +416,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql"})
-    public void availableJurors() {
+    void availableJurors() {
         RequestEntity<Void> requestEntity = new RequestEntity<>(
             httpHeaders,
             HttpMethod.GET,
@@ -435,7 +433,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql"})
-    public void availableJurorsBureauUser() {
+    void availableJurorsBureauUser() {
         initHeadersBureau();
         RequestEntity<Void> requestEntity = new RequestEntity<>(
             httpHeaders,
@@ -455,7 +453,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void addPanelMembersNoPool() {
+    void addPanelMembersNoPool() {
         createBureauJwt(COURT_USER_NAME, "415");
         CreatePanelDto createPanelDto = makeCreatePanelDto(null);
         RequestEntity<CreatePanelDto> requestEntity = new RequestEntity<>(createPanelDto, httpHeaders,
@@ -491,7 +489,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void addPanelMembersPoolProvided() {
+    void addPanelMembersPoolProvided() {
         createBureauJwt(COURT_USER_NAME, "415");
 
         final int numberRequested = 2;
@@ -534,7 +532,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void addPanelMembersBureauUser() {
+    void addPanelMembersBureauUser() {
         initHeadersBureau();
 
         final int numberRequested = 2;
@@ -556,7 +554,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void addPanelMembersNoTrialNumber() {
+    void addPanelMembersNoTrialNumber() {
         createBureauJwt(COURT_USER_NAME, "415");
         CreatePanelDto createPanelDto = makeCreatePanelDto(null);
         createPanelDto.setTrialNumber("");
@@ -573,7 +571,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void addPanelMembersNoCourtLocation() {
+    void addPanelMembersNoCourtLocation() {
         createBureauJwt(COURT_USER_NAME, "415");
         CreatePanelDto createPanelDto = makeCreatePanelDto(null);
         createPanelDto.setCourtLocationCode("");
@@ -591,7 +589,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void addPanelMembersZeroNumberRequested() {
+    void addPanelMembersZeroNumberRequested() {
         createBureauJwt(COURT_USER_NAME, "415");
         CreatePanelDto createPanelDto = makeCreatePanelDto(null);
         createPanelDto.setNumberRequested(0);
@@ -608,7 +606,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void addPanelMembersOverOneThousandNumbersRequested() {
+    void addPanelMembersOverOneThousandNumbersRequested() {
         createBureauJwt(COURT_USER_NAME, "415");
         CreatePanelDto createPanelDto = makeCreatePanelDto(null);
         createPanelDto.setNumberRequested(1001);
@@ -625,7 +623,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql"})
-    public void addPanelMembersNoPanelCreated() {
+    void addPanelMembersNoPanelCreated() {
         createBureauJwt(COURT_USER_NAME, "415");
         CreatePanelDto createPanelDto = makeCreatePanelDto(new ArrayList<>());
         createPanelDto.setTrialNumber("T10000002");
@@ -641,7 +639,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void panelCreationStatusPanelExists() {
+    void panelCreationStatusPanelExists() {
         createBureauJwt(COURT_USER_NAME, "415");
         RequestEntity<Void> requestEntity = new RequestEntity<>(
             httpHeaders,
@@ -663,7 +661,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void panelCreationStatusPanelDoesNotExists() {
+    void panelCreationStatusPanelDoesNotExists() {
         createBureauJwt(COURT_USER_NAME, "415");
         RequestEntity<Void> requestEntity = new RequestEntity<>(
             httpHeaders,
@@ -685,7 +683,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void panelCreationStatusPanelNoTrialNumberProvided() {
+    void panelCreationStatusPanelNoTrialNumberProvided() {
         createBureauJwt(COURT_USER_NAME, "415");
         RequestEntity<Void> requestEntity = new RequestEntity<>(
             httpHeaders,
@@ -707,7 +705,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void panelCreationStatusPanelNoCourtLocationCodeProvided() {
+    void panelCreationStatusPanelNoCourtLocationCodeProvided() {
         createBureauJwt(COURT_USER_NAME, "415");
         RequestEntity<Void> requestEntity = new RequestEntity<>(
             httpHeaders,
@@ -729,7 +727,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/Panel.sql", "/db/trial/CreatedPanel.sql"})
-    public void panelCreationStatusBureauUser() {
+    void panelCreationStatusBureauUser() {
         initHeadersBureau();
 
         RequestEntity<Void> requestEntity = new RequestEntity<>(
