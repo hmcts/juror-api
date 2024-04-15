@@ -1829,6 +1829,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                     && jh.getOtherInformation().equalsIgnoreCase("J10123456"))).isTrue();
         }
 
+        @Test
         @DisplayName("Confirm attendance for jurors on a trial - Bureau no access")
         void confirmAttendanceBureauNoAccess() {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
