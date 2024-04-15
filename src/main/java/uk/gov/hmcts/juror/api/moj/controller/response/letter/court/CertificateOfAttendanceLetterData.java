@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller.response.letter.court;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 
 @Getter
 @JsonPropertyOrder({"jurorNumber", "firstName", "lastName", "poolNumber", "startDate", "completionDate", "datePrinted"})
+@JsonIgnoreProperties({"postcode", "status"})
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CertificateOfAttendanceLetterData extends LetterResponseData {
 
