@@ -50,4 +50,6 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
     @Query(value = "select nextval('juror_mod.attendance_audit_seq')", nativeQuery = true)
     Long getNextAttendanceAuditNumber();
 
+    long countByJurorNumberAndAppearanceStageNotNull(String jurorNumber);
+
 }

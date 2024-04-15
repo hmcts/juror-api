@@ -1075,7 +1075,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             juror.setDisqualifyDate(null);
 
             jurorHistoryService.createPoliceCheckQualifyHistory(jurorPool, newPoliceCheckValue.isChecked());
-            if (jurorPool.getOwner().equals(SecurityUtil.BUREAU_OWNER)) {
+            if (SecurityUtil.BUREAU_OWNER.equals(jurorPool.getOwner())) {
                 printDataService.printConfirmationLetter(jurorPool);
                 jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Confirmation Letter Auto");
             }
@@ -1087,7 +1087,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             juror.setDisqualifyDate(LocalDate.now(clock));
 
             jurorHistoryService.createPoliceCheckDisqualifyHistory(jurorPool);
-            if (jurorPool.getOwner().equals(SecurityUtil.BUREAU_OWNER)) {
+            if (SecurityUtil.BUREAU_OWNER.equals(jurorPool.getOwner())) {
                 printDataService.printWithdrawalLetter(jurorPool);
                 jurorHistoryService.createWithdrawHistory(jurorPool, "Withdrawal Letter Auto");
             }
@@ -1119,7 +1119,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                 FAILED_TO_ATTEND_HAS_COMPLETION_DATE);
         }
 
-        if (jurorAppearanceService.hasAppearances(jurorNumber)) {
+        if (jurorAppearanceService.hasAttendances(jurorNumber)) {
             throw new MojException.BusinessRuleViolation(
                 "This juror cannot be given a Failed To Attend status because they have had attendances recorded."
                     + " The Failed To Attend status is only for jurors who have not attended at all",

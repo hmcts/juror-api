@@ -34,5 +34,5 @@ INSERT INTO JUROR_MOD.JUROR_POOL (OWNER, JUROR_NUMBER, POOL_NUMBER, DEF_DATE, ST
 VALUES ('400', '641500002', '415220901', '2022-12-04 00:00:00', 2,
         TRUE, TRUE);
 
-INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,time_out,non_attendance) VALUES
-    (current_date - interval '1 day','641500002','415','09:30:00',NULL,false);
+INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,time_in,time_out,non_attendance,appearance_stage)
+VALUES (current_date - interval '1 day','641500002','415','09:30:00',NULL,false,'CHECKED_IN');

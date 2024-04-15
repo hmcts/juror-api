@@ -42,4 +42,6 @@ public interface JurorAppearanceService {
     JurorsOnTrialResponseDto retrieveJurorsOnTrials(String locationCode, LocalDate attendanceDate);
 
     void confirmJuryAttendance(UpdateAttendanceDto request);
+
+    boolean hasAttendances(String jurorNumber);
 }
