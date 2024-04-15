@@ -46,8 +46,8 @@ public class PoolCreateITest extends ContainerTest {
         try {
             // load voters from the database
             List<String> resultSet = votersRepository.callGetVoters(5,
-                LocalDate.now().minusYears(75).toString(),
-                LocalDate.now().minusYears(18).toString(),
+                LocalDate.now().minusYears(75),
+                LocalDate.now().minusYears(18),
                     "415",
                     "CH1,CH2,CH3",
                     "N");
@@ -73,8 +73,8 @@ public class PoolCreateITest extends ContainerTest {
             try {
                 // load voters from the database
                 List<String> resultSet = votersRepository.callGetVoters(5,
-                        LocalDate.now().minusYears(75).toString(),
-                        LocalDate.now().minusYears(18).toString(),
+                        LocalDate.now().minusYears(75),
+                        LocalDate.now().minusYears(18),
                         "415",
                         "CH1,CH2,CH3",
                         "N");
