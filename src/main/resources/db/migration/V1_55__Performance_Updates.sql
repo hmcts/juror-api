@@ -26,3 +26,6 @@ begin
 END;
 $function$
 ;
+
+CREATE INDEX juror_response_processing_status_idx ON juror_mod.juror_response USING btree (processing_status);
+CREATE INDEX juror_response_staff_login_idx ON juror_mod.juror_response USING btree (staff_login, processing_status);
