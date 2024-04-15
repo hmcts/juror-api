@@ -32,6 +32,8 @@ public final class SecurityUtil {
 
     public static final String USER_TYPE_ADMINISTRATOR = "principal.userType.name() == 'ADMINISTRATOR'";
     public static final String USER_TYPE_COURT = "principal.userType.name() == 'COURT'";
+    public static final String USER_TYPE_BUREAU = "principal.userType.name() == 'BUREAU'";;
+    public static final String IS_TEAM_LEADER = "hasRole('TEAM_LEADER')";;
 
 
     private SecurityUtil() {

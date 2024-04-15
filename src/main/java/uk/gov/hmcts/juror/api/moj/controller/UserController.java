@@ -45,7 +45,10 @@ public class UserController {
 
     @PostMapping
     @Operation(summary = "View all users")
-    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR + " or " + SecurityUtil.IS_MANAGER)
+    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR
+        + " or (" + SecurityUtil.USER_TYPE_COURT + " and " + SecurityUtil.IS_MANAGER + ")"
+        + " or (" + SecurityUtil.USER_TYPE_BUREAU + " and " + SecurityUtil.IS_TEAM_LEADER + ")"
+    )
     public ResponseEntity<PaginatedList<UserDetailsDto>> viewAllUsers(
         @RequestBody @Valid UserSearchDto userSearchDto
     ) {
@@ -63,7 +66,10 @@ public class UserController {
 
     @GetMapping("/{username}")
     @Operation(summary = "View user")
-    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR + " or " + SecurityUtil.IS_MANAGER)
+    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR
+        + " or (" + SecurityUtil.USER_TYPE_COURT + " and " + SecurityUtil.IS_MANAGER + ")"
+        + " or (" + SecurityUtil.USER_TYPE_BUREAU + " and " + SecurityUtil.IS_TEAM_LEADER + ")"
+    )
     public ResponseEntity<UserDetailsDto> getUser(
         @PathVariable("username")
         @Parameter(description = "username", required = true)
@@ -73,7 +79,10 @@ public class UserController {
 
     @PutMapping("/{username}")
     @Operation(summary = "Update a new user")
-    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR + " or " + SecurityUtil.IS_MANAGER)
+    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR
+        + " or (" + SecurityUtil.USER_TYPE_COURT + " and " + SecurityUtil.IS_MANAGER + ")"
+        + " or (" + SecurityUtil.USER_TYPE_BUREAU + " and " + SecurityUtil.IS_TEAM_LEADER + ")"
+    )
     public ResponseEntity<Void> updateUser(
         @PathVariable("username")
         @Parameter(description = "username", required = true)
