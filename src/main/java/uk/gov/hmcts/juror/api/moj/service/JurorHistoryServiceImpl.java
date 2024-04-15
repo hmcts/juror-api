@@ -238,7 +238,11 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     public void createJuryAttendanceHistory(JurorPool jurorPool, String otherInfo) {
-        registerHistorySystem(jurorPool, HistoryCodeMod.JURY_ATTENDANCE, otherInfo);
+        registerHistory(jurorPool, HistoryCodeMod.JURY_ATTENDANCE, otherInfo, SecurityUtil.getActiveLogin());
+    }
+
+    public void createPoolAttendanceHistory(JurorPool jurorPool, String otherInfo) {
+        registerHistory(jurorPool, HistoryCodeMod.POOL_ATTENDANCE, otherInfo, SecurityUtil.getActiveLogin());
     }
 
     private void save(JurorHistory jurorHistory) {

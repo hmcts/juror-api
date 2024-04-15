@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -77,7 +78,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public int reassignJurors(BureauJwtPayload payload, JurorManagementRequestDto jurorManagementRequestDto) {
+    public ReassignPoolMembersResultDto reassignJurors(BureauJwtPayload payload,
+                                                       JurorManagementRequestDto jurorManagementRequestDto) {
         log.trace("Entered reassignJurors method");
 
         final String owner = payload.getOwner();
@@ -188,7 +190,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
         log.trace("Finished reassignJurors method");
 
-        return reassignedJurorsCount;
+        return new ReassignPoolMembersResultDto(reassignedJurorsCount, targetPoolNumber);
     }
 
     private void validateRequest(JurorManagementRequestDto jurorManagementRequestDto) {

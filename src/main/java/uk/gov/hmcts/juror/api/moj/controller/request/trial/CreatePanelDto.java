@@ -9,9 +9,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
+import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,8 +21,8 @@ import java.util.Optional;
 @Schema(description = "create panel request information")
 public class CreatePanelDto {
     @JsonProperty("trial_number")
-    @NotBlank
     @Length(max = 16)
+    @NotBlank
     private String trialNumber;
 
     @JsonProperty("number_requested")
@@ -29,11 +30,11 @@ public class CreatePanelDto {
     private int numberRequested;
 
     @JsonProperty("pool_numbers")
-    private Optional<List<String>> poolNumbers;
+    private List<String> poolNumbers = new ArrayList<>();
 
     @JsonProperty("court_location_code")
+    @CourtLocationCode
     @NotBlank
-    @Length(min = 3, max = 3)
     private String courtLocationCode;
 
 }

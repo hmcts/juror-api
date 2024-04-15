@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -185,6 +186,9 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(poolDetails.isNilPool())
             .as("Is nil pool should be mapped from the nil_pool value in the POOL_REQUEST view")
             .isFalse();
+        assertThat(poolDetails.getCurrentOwner())
+            .as("Current owner of the pool should be returned")
+            .isEqualTo("400");
         assertThat(bureauSummoning.getTotalSummoned())
             .as("Total summoned should be mapped from the TOTAL_SUMMONED value in the POOL_STATS view and represents "
                 + "the total number of bureau owned members in a pool (regardless of status)")
@@ -264,7 +268,9 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(poolDetails.isNilPool())
             .as("Is nil pool should be mapped from the nil_pool value in the POOL_REQUEST view")
             .isFalse();
-
+        assertThat(poolDetails.getCurrentOwner())
+            .as("Current owner of the pool should be returned")
+            .isEqualTo("400");
         assertThat(bureauSummoning.getTotalSummoned())
             .as("Total summoned should be mapped from the TOTAL_SUMMONED value in the POOL_STATS view and represents "
                 + "the total number of bureau owned members in a pool (regardless of status)")
@@ -353,6 +359,9 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(poolDetails.isNilPool())
             .as("Is nil pool should be mapped from the nil_pool value in the POOL_REQUEST view")
             .isFalse();
+        assertThat(poolDetails.getCurrentOwner())
+            .as("Current owner of the pool should be returned")
+            .isEqualTo("400");
         assertThat(bureauSummoning.getTotalSummoned())
             .as("Total summoned should be mapped from the TOTAL_SUMMONED value"
                 + " in the POOL_STATS view and represents "
@@ -1579,12 +1588,15 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
             HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/reassign-jurors"));
-        ResponseEntity<?> response = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<ReassignPoolMembersResultDto> response = restTemplate.exchange(requestEntity,
+            ReassignPoolMembersResultDto.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
 
-        assertThat(response.getBody()).isEqualTo("3");
+        ReassignPoolMembersResultDto resultDto = response.getBody();
+
+        assertThat(resultDto.getNumberReassigned()).isEqualTo(3);
 
         for (String jurorNumber : jurorNumbers) {
             validateReassignedJuror(jurorNumber, "415220401", "416220502");
@@ -1605,12 +1617,15 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
             HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/reassign-jurors"));
-        ResponseEntity<?> response = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<ReassignPoolMembersResultDto> response = restTemplate.exchange(requestEntity,
+            ReassignPoolMembersResultDto.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
 
-        assertThat(response.getBody()).isEqualTo("2");
+        ReassignPoolMembersResultDto resultDto = response.getBody();
+
+        assertThat(resultDto.getNumberReassigned()).isEqualTo(2);
 
         for (String jurorNumber : goodJurorNumbers) {
             validateReassignedJuror(jurorNumber, "415220401", "416220502");
@@ -1647,12 +1662,14 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
         RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
             HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/reassign-jurors"));
-        ResponseEntity<?> response = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<ReassignPoolMembersResultDto> response = restTemplate.exchange(requestEntity,
+            ReassignPoolMembersResultDto.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
+        ReassignPoolMembersResultDto resultDto = response.getBody();
 
-        assertThat(response.getBody()).isEqualTo("2");
+        assertThat(resultDto.getNumberReassigned()).isEqualTo(2);
 
         for (String jurorNumber : jurorNumbers) {
             validateReassignedJuror(jurorNumber, "415220401", "415220503");

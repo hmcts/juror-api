@@ -89,4 +89,6 @@ public interface JurorRecordService {
     void editJurorsBankDetails(RequestBankDetailsDto dto);
 
     void confirmIdentity(ConfirmIdentityDto dto);
+
+    void markResponded(String jurorNumber);
 }

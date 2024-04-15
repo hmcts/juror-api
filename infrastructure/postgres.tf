@@ -16,7 +16,7 @@ module "postgresql_flexible" {
   component           = var.component
   business_area       = "sds"
   location            = var.location
-  pgsql_sku           = "GP_Standard_D2s_v3"
+  pgsql_sku           = "GP_Standard_D4s_v3"
   pgsql_storage_mb    = var.pgsql_storage_mb
   pgsql_storage_tier  = var.pgsql_storage_tier
 

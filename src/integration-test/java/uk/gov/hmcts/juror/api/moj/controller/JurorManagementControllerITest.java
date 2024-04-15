@@ -36,6 +36,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -75,7 +76,7 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     private static final String JUROR1 = "111111111";
@@ -116,7 +117,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         initHeaders();
     }
 
-    private void initHeaders() throws Exception {
+    @SuppressWarnings("PMD.LawOfDemeter")
+    private void initHeaders() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
@@ -231,11 +233,9 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     }
 
 
-
     @Test
     @DisplayName("POST addAttendanceDay() - happy path")
-    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
-        "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql"})
     void addAttendanceBadPayloadMissingAttendanceDate() {
         AddAttendanceDayDto requestDto = AddAttendanceDayDto.builder()
             .jurorNumber(JUROR1)
@@ -256,8 +256,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("POST addAttendanceDay() - happy path")
-    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
-        "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql"})
     void addAttendanceForbiddenAccess() {
         AddAttendanceDayDto requestDto = AddAttendanceDayDto.builder()
             .jurorNumber(JUROR1)
@@ -543,6 +542,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(retrievedDetails)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_OUT, CHECKED_OUT, CHECKED_OUT, CHECKED_IN);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         @Test
@@ -597,6 +600,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .as("app-stage time should have been updated")
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_OUT);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         @Test
@@ -647,6 +654,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(retrievedDetails)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_OUT, CHECKED_OUT);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         @Test
@@ -671,7 +682,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("PATCH Update attendance - - check out all panelled jurors")
+        @DisplayName("PATCH Update attendance - check out all panelled jurors")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
         void updateAttendanceCheckOutAllPanelledJurors() {
             UpdateAttendanceDto request = buildUpdateAttendanceDto(null);
@@ -714,6 +725,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(retrievedDetails)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_OUT);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         @Test
@@ -764,6 +779,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(retrievedDetails)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_OUT, CHECKED_OUT);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         @Test
@@ -821,6 +840,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(retrievedDetails)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_IN, CHECKED_IN, CHECKED_IN, CHECKED_IN, CHECKED_IN, CHECKED_IN);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         @Test
@@ -869,10 +892,14 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(retrievedDetails)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_OUT);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         @Test
-        @DisplayName("PATCH Update attendance - confirm attendance")
+        @DisplayName("PATCH Update attendance - confirm attendance (no shows)")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql",
             "/db/JurorExpenseControllerITest_expenseRates.sql"})
         void updateAttendanceNoShow() {
@@ -934,6 +961,50 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .as("Expect 2 records to be returned with isNoShow = true")
                 .extracting(AttendanceDetailsResponse.Details::getIsNoShow)
                 .containsExactlyInAnyOrder(Boolean.TRUE, Boolean.TRUE);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
+        }
+
+        @Test
+        @DisplayName("PATCH Update attendance - confirm attendance")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql",
+            "/db/JurorExpenseControllerITest_expenseRates.sql"})
+        void updateAttendanceConfirmAttendance() {
+            UpdateAttendanceDto request = buildUpdateAttendanceDto(List.of(JUROR1, JUROR6));
+            request.getCommonData().setStatus(UpdateAttendanceStatus.CONFIRM_ATTENDANCE);
+
+            ResponseEntity<AttendanceDetailsResponse> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+            AttendanceDetailsResponse responseBody = response.getBody();
+            assert responseBody != null;
+
+            AttendanceDetailsResponse.Summary summary = responseBody.getSummary();
+            assert summary != null;
+
+            assertThat(summary)
+                .extracting(AttendanceDetailsResponse.Summary::getCheckedIn)
+                .isEqualTo(2L);
+
+            // verify attendance details have been updated x 2 checked in
+            Appearance appearance1 =
+                appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR1, request.getCommonData()
+                    .getAttendanceDate()).orElseThrow(() ->
+                    new MojException.NotFound("No appearance record found", null));
+            assertThat(appearance1.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+            assertThat(appearance1.getAttendanceAuditNumber()).isEqualTo("P10000000");
+
+            Appearance appearance2 =
+                appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR6, request.getCommonData()
+                    .getAttendanceDate()).orElseThrow(() ->
+                    new MojException.NotFound("No appearance record found", null));
+            assertThat(appearance2.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+            assertThat(appearance2.getAttendanceAuditNumber()).isEqualTo("P10000000");
         }
 
         @Test
@@ -975,6 +1046,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(details)
                 .extracting(AttendanceDetailsResponse.Details::getCheckOutTime)
                 .containsExactlyInAnyOrder(LocalTime.of(12, 30));
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         private UpdateAttendanceDto buildUpdateAttendanceDto(List<String> jurors) {
@@ -1787,7 +1862,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J00123456");
+            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
+            assertThat(appearance.getSatOnJury()).isTrue();
 
             appearanceOpt = appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(
                 "333333333", "415230101", now().minusDays(2));
@@ -1796,16 +1872,18 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J00123456");
+            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
+            assertThat(appearance.getSatOnJury()).isTrue();
+
 
             // verify juror history records have been created
             assertThat(jurorHistoryRepository.findByJurorNumber("222222222")
                 .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
-                    && jh.getOtherInformation().equalsIgnoreCase("J00123456"))).isTrue();
+                    && jh.getOtherInformation().equalsIgnoreCase("J10123456"))).isTrue();
 
             assertThat(jurorHistoryRepository.findByJurorNumber("333333333")
                 .stream().anyMatch(jh -> jh.getHistoryCode().equals(HistoryCodeMod.JURY_ATTENDANCE)
-                    && jh.getOtherInformation().equalsIgnoreCase("J00123456"))).isTrue();
+                    && jh.getOtherInformation().equalsIgnoreCase("J10123456"))).isTrue();
         }
 
         @Test
@@ -1820,7 +1898,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             assertThat(response.getStatusCode()).as("HTTP status Forbidden expected")
                 .isEqualTo(FORBIDDEN);
-
         }
 
         private UpdateAttendanceDto buildUpdateAttendanceDto() {

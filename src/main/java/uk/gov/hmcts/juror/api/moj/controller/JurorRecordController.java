@@ -471,4 +471,12 @@ public class JurorRecordController {
     public void confirmJurorsIdentity(@Valid @RequestBody ConfirmIdentityDto dto) {
         jurorRecordService.confirmIdentity(dto);
     }
+
+    @PatchMapping("/mark-responded/{juror_number}")
+    @Operation(summary = "Mark a juror as responded")
+    @ResponseStatus(HttpStatus.OK)
+    public void markResponded(@Valid @JurorNumber @P("juror_number") @PathVariable("juror_number")
+                                  @Parameter(description = "jurorNumber", required = true) String jurorNumber) {
+        jurorRecordService.markResponded(jurorNumber);
+    }
 }

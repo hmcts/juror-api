@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.data.domain.Page;
@@ -42,6 +43,7 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceServiceImpl;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -162,7 +164,7 @@ class TrialServiceImplTest {
     @Test
     void testGetTrialSummary() {
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode("T100000025", "415"))
-            .thenReturn(createTrial("T100000025"));
+            .thenReturn(Optional.of(createTrial("T100000025")));
 
         TrialSummaryDto trialSummary = trialService.getTrialSummary(
             createJwtPayload("415", "COURT_USER"), "T100000025", "415");
@@ -193,7 +195,7 @@ class TrialServiceImplTest {
         Trial inactiveTrial = createTrial("T100000025");
         inactiveTrial.setTrialEndDate(now());
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode("T100000025", "415"))
-            .thenReturn(inactiveTrial);
+            .thenReturn(Optional.of(inactiveTrial));
 
         TrialSummaryDto trialSummary = trialService.getTrialSummary(
             createJwtPayload("415", "COURT_USER"), "T100000025", "415");
@@ -222,7 +224,7 @@ class TrialServiceImplTest {
     @Test
     void testIsEmpanelledWithNoPanelledJurors() {
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode("T100000025", "415"))
-            .thenReturn(createTrial("T100000025"));
+            .thenReturn(Optional.of(createTrial("T100000025")));
         when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415"))
             .thenReturn(createJurors(0, PanelResult.JUROR));
         TrialSummaryDto trialSummary = trialService.getTrialSummary(payload, "T100000025", "415");
@@ -233,7 +235,7 @@ class TrialServiceImplTest {
     @Test
     void testIsEmpanelledWithOneJurorStatusJuror() {
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode("T100000025", "415"))
-            .thenReturn(createTrial("T100000025"));
+            .thenReturn(Optional.of(createTrial("T100000025")));
         when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415"))
             .thenReturn(createJurors(1, PanelResult.JUROR));
         TrialSummaryDto trialSummary = trialService.getTrialSummary(payload, "T100000025", "415");
@@ -244,7 +246,7 @@ class TrialServiceImplTest {
     @Test
     void testIsEmpanelledWithNoJurorStatusJurors() {
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode("T100000025", "415"))
-            .thenReturn(createTrial("T100000025"));
+            .thenReturn(Optional.of(createTrial("T100000025")));
         when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415"))
             .thenReturn(createJurors(12, PanelResult.NOT_USED));
 
@@ -256,7 +258,7 @@ class TrialServiceImplTest {
     @Test
     void testIsEmpanelledWithMixedStatusesWithOneJurorStatusJuror() {
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode("T100000025", "415"))
-            .thenReturn(createTrial("T100000025"));
+            .thenReturn(Optional.of(createTrial("T100000025")));
         when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415"))
             .thenReturn(createJurors(12, PanelResult.JUROR));
 
@@ -300,22 +302,21 @@ class TrialServiceImplTest {
                 appearance.setTimeOut(LocalTime.parse(checkInTime));
             }
 
-            when(appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber()))
-                .thenReturn(appearance);
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+                LocalDate.now())).thenReturn(Optional.of(appearance));
         }
 
         trialService.returnJury(payload, trialNumber, "415",
             createReturnJuryDto(false, "09:00", "10:00"));
 
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+
         verify(panelRepository, times(1))
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
-        if ("null".equals(checkInTime)) {
-            verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(any());
-        } else {
-            verify(appearanceRepository, times(0)).saveAndFlush(any());
-        }
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).as("Sat on Jury").isTrue();
 
     }
 
@@ -329,8 +330,8 @@ class TrialServiceImplTest {
         for (Panel panel : panelMembers) {
             Appearance appearance = createAppearance(panel.getJurorPool().getJurorNumber());
             appearance.setTimeIn(null);
-            when(appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber()))
-                .thenReturn(appearance);
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+                LocalDate.now())).thenReturn(Optional.of(appearance));
         }
 
         trialService
@@ -341,7 +342,9 @@ class TrialServiceImplTest {
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
-        verify(appearanceRepository, times(0)).saveAndFlush(any());
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).as("Sat on Jury").isTrue();
     }
 
     @Test
@@ -354,8 +357,8 @@ class TrialServiceImplTest {
         for (Panel panel : panelMembers) {
             Appearance appearance = createAppearance(panel.getJurorPool().getJurorNumber());
             appearance.setTimeIn(null);
-            when(appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber()))
-                .thenReturn(appearance);
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+                LocalDate.now())).thenReturn(Optional.of(appearance));
         }
 
         trialService
@@ -366,7 +369,9 @@ class TrialServiceImplTest {
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
-        verify(appearanceRepository, times(0)).saveAndFlush(any());
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).as("Sat on Jury").isTrue();
     }
 
     @Test
@@ -378,8 +383,8 @@ class TrialServiceImplTest {
 
         for (Panel panel : panelMembers) {
             Appearance appearance = createAppearance(panel.getJurorPool().getJurorNumber());
-            when(appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber()))
-                .thenReturn(appearance);
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+                LocalDate.now())).thenReturn(Optional.of(appearance));
         }
 
         trialService.returnJury(payload, trialNumber, "415",
@@ -390,14 +395,16 @@ class TrialServiceImplTest {
         verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
         verify(completeService, times(panelMembers.size())).completeService(anyString(), any());
         verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
-        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(any());
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).as("Sat on Jury").isTrue();
     }
 
     @Test
     void testEndTrialHappyPath() {
         final String trialNumber = "T100000000";
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, "415"))
-            .thenReturn(createTrial(trialNumber));
+            .thenReturn(Optional.of(createTrial(trialNumber)));
         when(panelRepository.retrieveMembersOnTrial(trialNumber, "415"))
             .thenReturn(new ArrayList<>());
 
@@ -422,7 +429,7 @@ class TrialServiceImplTest {
     void testEndTrialCannotFindTrial() {
         final String trialNumber = "T100000000";
         when(trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, "415"))
-            .thenReturn(createTrial(trialNumber));
+            .thenReturn(Optional.of(createTrial(trialNumber)));
         EndTrialDto dto = createEndTrialDto();
         dto.setTrialNumber("T1");
         Assertions.assertThrows(MojException.NotFound.class, () -> trialService.endTrial(dto));

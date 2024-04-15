@@ -49,7 +49,7 @@ import static uk.gov.hmcts.juror.api.JurorDigitalApplication.JUROR_OWNER;
 
 @RestController
 @Validated
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 @RequestMapping(value = "/api/v1/moj/juror-management", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Juror Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
