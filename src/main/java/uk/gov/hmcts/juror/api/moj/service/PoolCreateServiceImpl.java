@@ -556,7 +556,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         return PaginationUtil.toPaginatedList(
             jurorPoolRepository.fetchFilteredPoolMembers(search, payload.getOwner()),
             search,
-            JurorPoolSearch.SortField.JUROR_NUMBER,
+            PoolMemberFilterRequestQuery.SortField.JUROR_NUMBER,
             SortMethod.ASC,
             tuple -> {
                 FilterPoolMember.FilterPoolMemberBuilder builder = FilterPoolMember.builder()

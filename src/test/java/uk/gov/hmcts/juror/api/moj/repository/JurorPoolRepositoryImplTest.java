@@ -149,6 +149,7 @@ class JurorPoolRepositoryImplTest {
             Mockito.when(jpaQuery.on(Mockito.any(Predicate.class))).thenReturn(jpaQuery);
             Mockito.when(jpaQuery.leftJoin(Mockito.any(EntityPath.class))).thenReturn(jpaQuery);
             Mockito.when(jpaQuery.select(Mockito.any(Expression[].class))).thenReturn(jpaQuery);
+            Mockito.when(jpaQuery.distinct()).thenReturn(jpaQuery);
         }
 
         @Test
