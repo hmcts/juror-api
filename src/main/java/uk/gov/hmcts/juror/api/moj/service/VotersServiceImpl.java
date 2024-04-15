@@ -43,8 +43,8 @@ public class VotersServiceImpl implements VotersService {
         LocalDate minDateOfBirth = calculateDateLimit(attendanceDate, AGE_UPPER_SP_ID, 76);
 
         List<String> voters = votersRepository.callGetVoters(poolCreateRequestDto.getCitizensToSummon(),
-                minDateOfBirth.toString(),
-                maxDateOfBirth.toString(),
+                minDateOfBirth,
+                maxDateOfBirth,
                 poolCreateRequestDto.getCatchmentArea(),
                 postcodeString,
                 "N");
@@ -70,8 +70,8 @@ public class VotersServiceImpl implements VotersService {
 
         List<String> voters = votersRepository.callGetVoters(
             number,
-            minDateOfBirth.toString(),
-            maxDateOfBirth.toString(),
+            minDateOfBirth,
+            maxDateOfBirth,
             locCode,
             postcode, "C");
 

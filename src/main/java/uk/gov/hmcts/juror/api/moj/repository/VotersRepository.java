@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.domain.Voters;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -22,8 +23,8 @@ public interface VotersRepository extends JpaRepository<Voters, Voters.VotersId>
     @Query(nativeQuery = true, value = "SELECT * from juror_mod.get_voters( :required, :minDate, :maxDate, :LocCode, "
         + ":areaCodeList, :poolType)")
     List<String> callGetVoters(@Param("required") Integer required,
-                               @Param("minDate") String minDate,
-                               @Param("maxDate") String maxDate,
+                               @Param("minDate") LocalDate minDate,
+                               @Param("maxDate") LocalDate maxDate,
                                @Param("LocCode") String locCode,
                                @Param("areaCodeList") String areaCodeList,
                                @Param("poolType") String poolType) throws SQLException;
