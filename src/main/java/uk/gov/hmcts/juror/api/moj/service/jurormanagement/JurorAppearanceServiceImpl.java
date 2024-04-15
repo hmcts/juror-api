@@ -564,6 +564,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
+    @SuppressWarnings("PMD.CognitiveComplexity")
     public void confirmJuryAttendance(UpdateAttendanceDto request) {
         log.info("Confirming jury attendance for jurors on trial");
 

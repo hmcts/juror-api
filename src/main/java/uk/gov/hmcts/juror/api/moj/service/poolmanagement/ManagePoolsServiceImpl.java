@@ -189,10 +189,10 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
             listStats.add(createSummoningProgressStat(
                 t.get(0, LocalDate.class),
                 t.get(1, String.class),
-                NumberUtils.unboxIntegerValues(t.get(7, int.class)),
-                NumberUtils.unboxIntegerValues(t.get(6, int.class)),
-                NumberUtils.unboxIntegerValues(t.get(4, int.class)),
-                NumberUtils.unboxIntegerValues(t.get(5, int.class))));
+                unboxIntegerValues(t.get(7, int.class)),
+                unboxIntegerValues(t.get(6, int.class)),
+                unboxIntegerValues(t.get(4, int.class)),
+                unboxIntegerValues(t.get(5, int.class))));
         }
     }
 
@@ -209,7 +209,7 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
             listStats.add(createSummoningProgressStat(
                 t.get(2, LocalDate.class),
                 t.get(0, String.class),
-                NumberUtils.unboxIntegerValues(t.get(1, int.class)),
+                unboxIntegerValues(t.get(1, int.class)),
                 0, 0, 0));
         }
     }
