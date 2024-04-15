@@ -2582,8 +2582,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     new BigDecimal("57.00"), new BigDecimal("90.00"));
             }
 
-            private void assertApproved(Appearance appearance) {
-                assertThat(appearance).isNotNull();
+            private void assertApproved(Optional<Appearance> appearanceOpt) {
+                assertThat(appearanceOpt.isPresent()).isTrue();
+                Appearance appearance = appearanceOpt.get();
                 assertThat(appearance.getAppearanceStage())
                     .isEqualTo(AppearanceStage.EXPENSE_AUTHORISED);
             }

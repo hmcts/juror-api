@@ -2548,9 +2548,6 @@ class JurorAppearanceServiceTest {
         }
 
 
-
-
-
         @Test
         void negativeNonAttendanceForbiddenCourtUser() {
 
@@ -3024,9 +3021,9 @@ class JurorAppearanceServiceTest {
                 .build();
 
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR1,
-                now().minusDays(1))).thenReturn(appearance1);
+                now().minusDays(1))).thenReturn(Optional.of(appearance1));
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR2,
-                now().minusDays(1))).thenReturn(appearance2);
+                now().minusDays(1))).thenReturn(Optional.of(appearance2));
             when(appearanceRepository.getNextAttendanceAuditNumber()).thenReturn(123456L);
 
             jurorAppearanceService.confirmJuryAttendance(request);

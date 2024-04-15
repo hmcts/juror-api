@@ -15,15 +15,14 @@ import java.util.Set;
 
 
 @Repository
-public interface AppearanceRepository extends
-    IAppearanceRepository, JpaRepository<Appearance, AppearanceId>,
+public interface AppearanceRepository extends IAppearanceRepository, JpaRepository<Appearance, AppearanceId>,
     RevisionRepository<Appearance, AppearanceId, Long> {
 
     long countByJurorNumber(String jurorNumber);
 
     Appearance findByJurorNumber(String jurorNumber);
 
-    Appearance findByJurorNumberAndAttendanceDate(String jurorNumber, LocalDate attendanceDate);
+    Optional<Appearance> findByJurorNumberAndAttendanceDate(String jurorNumber, LocalDate attendanceDate);
 
     List<Appearance> findAllByJurorNumberAndPoolNumber(String jurorNumber, String poolNumber);
 
