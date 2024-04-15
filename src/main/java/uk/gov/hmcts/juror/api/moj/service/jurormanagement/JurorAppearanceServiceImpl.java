@@ -509,6 +509,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             realignAttendanceType(appearance);
 
             appearance.setAttendanceAuditNumber(juryAttendanceNumber);
+            appearance.setSatOnJury(true);
             jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance.getAttendanceAuditNumber());
 
             appearanceRepository.saveAndFlush(appearance);

@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NO_PANEL_EXIST;
@@ -43,7 +44,11 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 
 @Slf4j
 @Service
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.TooManyMethods",
+    "PMD.GodClass"
+})
 public class PanelServiceImpl implements PanelService {
 
     @Autowired
@@ -82,6 +87,7 @@ public class PanelServiceImpl implements PanelService {
         return processPanelList(numberRequested, trialNumber, courtLocationCode, payload, appearanceList);
     }
 
+    @Override
     public List<PanelListDto> addPanelMembers(int numberRequested, String trialNumber,
                                               List<String> poolNumbers, String courtLocationCode) {
 
@@ -118,17 +124,25 @@ public class PanelServiceImpl implements PanelService {
         }
     }
 
-    private void addPanelMembersValidationChecks(int numberRequested, String trialNumber, String courtLocationCode) {
+    private void addPanelMembersTrialValidationChecks(String trialNumber,
+                                                      String courtLocationCode) {
+        Optional<Trial> trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
+            courtLocationCode);
 
-        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
-            courtLocationCode).orElseThrow(() -> new MojException.NotFound(String.format("Cannot find trial with "
-            + "number: %s for court location %s", trialNumber, courtLocationCode), null));
+        if (!trial.isPresent()) {
+            throw new MojException.NotFound(String.format("Cannot find trial with number: %s for court location %s",
+                trialNumber, courtLocationCode), null);
+        }
 
-        if (trial.getTrialEndDate() != null) {
+        if (trial.get().getTrialEndDate() != null) {
             throw new MojException.BusinessRuleViolation(
                 "Cannot add panel members - Trial has ended", TRIAL_HAS_ENDED
             );
         }
+    }
+
+    private void addPanelMembersValidationChecks(int numberRequested, String trialNumber, String courtLocationCode) {
+        addPanelMembersTrialValidationChecks(trialNumber, courtLocationCode);
 
         List<Panel> members = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber,
             courtLocationCode);
