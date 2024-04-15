@@ -2747,7 +2747,7 @@ class JurorRecordServiceTest {
             when(jurorStatusRepository.findById(IJurorStatus.FAILED_TO_ATTEND))
                 .thenReturn(Optional.of(failedToAttendStatus));
 
-            when(jurorAppearanceService.hasAppearances(TestConstants.VALID_JUROR_NUMBER))
+            when(jurorAppearanceService.hasAttendances(TestConstants.VALID_JUROR_NUMBER))
                 .thenReturn(true);
 
             JurorStatus status = mock(JurorStatus.class);

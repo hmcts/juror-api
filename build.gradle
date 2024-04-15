@@ -200,13 +200,11 @@ tasks.withType(Test).configureEach() {
 
 // Flyway must align with application.yml
 flyway {
-    def dbHost = System.getenv("DB_HOST") ?: "localhost"
-    def dbPort = System.getenv("DB_PORT") ?: "5432"
-    def dbName = System.getenv("DB_NAME") ?: "juror"
-    def dbUserName = System.getenv("DB_USER_NAME") ?: "system"
+    def dbUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/juror"
+    def dbUserName = System.getenv("DB_USERNAME") ?: "system"
     def dbPassword = System.getenv("DB_PASSWORD") ?: "postgres"
 
-    url = "jdbc:postgresql://$dbHost:$dbPort/$dbName"
+    url = "$dbUrl"
     user = "$dbUserName"
     password = "$dbPassword"
     schemas = ['juror', 'juror_digital', 'juror_digital_user', 'juror_dashboard', 'hk', 'juror_mod']
