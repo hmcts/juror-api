@@ -35,6 +35,10 @@ module "postgresql_flexible" {
     {
       "name" : "backslash_quote",
       "value" : "on"
+    },
+    {
+      name  = "azure.enable_temp_tablespaces_on_local_ssd"
+      value = "off"
     }
   ]
   pgsql_version = "16"
