@@ -547,7 +547,7 @@ class PanelServiceImplTest {
 
                 verify(trialRepository, times(2))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-                verify(panelRepository, times(2))
+                verify(panelRepository, times(1))
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
                 verify(appearanceRepository, never()).getJurorsInPools(locCode, new ArrayList<>());
                 verify(appearanceRepository, times(1)).retrieveAllJurors(locCode);
@@ -613,7 +613,7 @@ class PanelServiceImplTest {
 
                 verify(trialRepository, times(2))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
-                verify(panelRepository, times(2))
+                verify(panelRepository, times(1))
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 verify(appearanceRepository, times(1)).getJurorsInPools(locCode,
                     Collections.singletonList("415231201"));
@@ -787,7 +787,7 @@ class PanelServiceImplTest {
 
                 verify(trialRepository, times(1))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
-                verify(panelRepository, times(2))
+                verify(panelRepository, times(1))
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 verify(appearanceRepository, never())
                     .getJurorsInPools(locCode, Collections.singletonList(""));
@@ -860,7 +860,7 @@ class PanelServiceImplTest {
 
                 verify(trialRepository, times(1))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
-                verify(panelRepository, times(2))
+                verify(panelRepository, times(1))
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 verify(appearanceRepository, times(1))
                     .getJurorsInPools(locCode, Collections.singletonList("1"));
