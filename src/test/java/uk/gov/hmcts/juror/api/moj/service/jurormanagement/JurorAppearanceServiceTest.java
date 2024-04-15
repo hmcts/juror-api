@@ -3077,6 +3077,8 @@ class JurorAppearanceServiceTest {
             assertThat(capturedAppearance1.getAttendanceType()).isEqualTo(AttendanceType.FULL_DAY);
             assertThat(capturedAppearance1.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(capturedAppearance1.getAttendanceAuditNumber()).isEqualTo("J10123456");
+            assertThat(capturedAppearance1.getSatOnJury()).isTrue();
+
 
             Appearance capturedAppearance2 =
                 appearanceCaptor.getAllValues().stream()
@@ -3089,6 +3091,7 @@ class JurorAppearanceServiceTest {
             assertThat(capturedAppearance2.getAttendanceType()).isEqualTo(AttendanceType.FULL_DAY);
             assertThat(capturedAppearance2.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(capturedAppearance2.getAttendanceAuditNumber()).isEqualTo("J10123456");
+            assertThat(capturedAppearance2.getSatOnJury()).isTrue();
 
             verify(jurorPoolRepository, times(2)).saveAndFlush(Mockito.any());
 

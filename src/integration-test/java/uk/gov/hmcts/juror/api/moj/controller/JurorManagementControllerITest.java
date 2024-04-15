@@ -540,6 +540,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(retrievedDetails)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_OUT, CHECKED_OUT, CHECKED_OUT, CHECKED_IN);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         @Test
@@ -594,6 +598,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .as("app-stage time should have been updated")
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_OUT);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         @Test
@@ -644,6 +652,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(retrievedDetails)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_OUT, CHECKED_OUT);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         @Test
@@ -711,6 +723,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(retrievedDetails)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_OUT);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         @Test
@@ -761,6 +777,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(retrievedDetails)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_OUT, CHECKED_OUT);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         @Test
@@ -818,6 +838,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(retrievedDetails)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_IN, CHECKED_IN, CHECKED_IN, CHECKED_IN, CHECKED_IN, CHECKED_IN);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         @Test
@@ -866,6 +890,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(retrievedDetails)
                 .extracting(AttendanceDetailsResponse.Details::getAppearanceStage)
                 .containsExactlyInAnyOrder(CHECKED_OUT);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         @Test
@@ -931,6 +959,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .as("Expect 2 records to be returned with isNoShow = true")
                 .extracting(AttendanceDetailsResponse.Details::getIsNoShow)
                 .containsExactlyInAnyOrder(Boolean.TRUE, Boolean.TRUE);
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         @Test
@@ -1010,6 +1042,10 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(details)
                 .extracting(AttendanceDetailsResponse.Details::getCheckOutTime)
                 .containsExactlyInAnyOrder(LocalTime.of(12, 30));
+
+            for (Appearance appearance : appearanceRepository.findAll()) {
+                assertThat(appearance.getSatOnJury()).isNull();
+            }
         }
 
         private UpdateAttendanceDto buildUpdateAttendanceDto(List<String> jurors) {
@@ -1823,6 +1859,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
+            assertThat(appearance.getSatOnJury()).isTrue();
 
             appearanceOpt = appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(
                 "333333333", "415230101", now().minusDays(2));
@@ -1832,6 +1869,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
+            assertThat(appearance.getSatOnJury()).isTrue();
+
 
             // verify juror history records have been created
             assertThat(jurorHistoryRepository.findByJurorNumber("222222222")
@@ -1855,7 +1894,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             assertThat(response.getStatusCode()).as("HTTP status Forbidden expected")
                 .isEqualTo(FORBIDDEN);
-
         }
 
         private UpdateAttendanceDto buildUpdateAttendanceDto() {

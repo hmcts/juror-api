@@ -177,7 +177,6 @@ public class TrialServiceImpl implements TrialService {
 
         JurorStatus jurorStatus = new JurorStatus();
         jurorStatus.setStatus(IJurorStatus.RESPONDED);
-        boolean appearanceAltered = false;
         for (Panel panel : juryMembersToBeReturned) {
             final String jurorNumber = panel.getJurorPool().getJurorNumber();
             Appearance appearance = appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber());
@@ -185,23 +184,20 @@ public class TrialServiceImpl implements TrialService {
             if (appearance.getTimeIn() == null && StringUtils.isNotEmpty(returnJuryDto.getCheckIn())) {
                 appearance.setTimeIn(LocalTime.parse(returnJuryDto.getCheckIn()));
                 log.debug("setting time in for juror %s".formatted(jurorNumber));
-                appearanceAltered = true;
             }
 
             if (appearance.getTimeOut() == null && StringUtils.isNotEmpty(returnJuryDto.getCheckOut())) {
                 appearance.setTimeOut(LocalTime.parse(returnJuryDto.getCheckOut()));
                 log.debug("setting time out for juror %s".formatted(jurorNumber));
-                appearanceAltered = true;
             }
+
+            appearance.setSatOnJury(true);
 
             panel.setResult(PanelResult.RETURNED);
             panel.setCompleted(true);
             panel.getJurorPool().setStatus(jurorStatus);
 
-            if (appearanceAltered) {
-                appearanceRepository.saveAndFlush(appearance);
-                log.debug(String.format("updated appearance record for juror %s", jurorNumber));
-            }
+            appearanceRepository.saveAndFlush(appearance);
 
             panelRepository.saveAndFlush(panel);
             log.debug(String.format("updated juror trial record for juror %s", jurorNumber));

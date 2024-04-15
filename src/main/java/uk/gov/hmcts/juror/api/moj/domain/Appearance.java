@@ -51,7 +51,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 @Getter
 @Setter
 @Audited
-@SuppressWarnings({"PMD.TooManyFields", "PMD.LawOfDemeter"})
+@SuppressWarnings({"PMD.TooManyFields", "PMD.LawOfDemeter", "PMD.TooManyImports"})
 public class Appearance implements Serializable {
 
     @Version
@@ -386,8 +386,8 @@ public class Appearance implements Serializable {
         addExpenseToErrors(errors, "childcare", this.getChildcareDue(), this.getChildcarePaid());
         addExpenseToErrors(errors, "miscAmount", this.getMiscAmountDue(), this.getMiscAmountPaid());
         addExpenseToErrors(errors, "total", this.getTotalDue(), this.getTotalPaid());
-        if ((AppearanceStage.EXPENSE_EDITED.equals(this.getAppearanceStage())
-            || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage()))) {
+        if (AppearanceStage.EXPENSE_EDITED.equals(this.getAppearanceStage())
+            || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage())) {
             if (BigDecimalUtils.isLessThan(getOrZero(this.getSmartCardAmountPaid()),
                 getOrZero(this.getSmartCardAmountDue()))) {
                 errors.put("smartCardAmount",
