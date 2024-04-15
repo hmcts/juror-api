@@ -36,6 +36,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -992,13 +993,15 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             // verify attendance details have been updated x 2 checked in
             Appearance appearance1 =
                 appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR1, request.getCommonData()
-                    .getAttendanceDate());
+                    .getAttendanceDate()).orElseThrow(() ->
+                    new MojException.NotFound("No appearance record found", null));
             assertThat(appearance1.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(appearance1.getAttendanceAuditNumber()).isEqualTo("P10000000");
 
             Appearance appearance2 =
                 appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR6, request.getCommonData()
-                    .getAttendanceDate());
+                    .getAttendanceDate()).orElseThrow(() ->
+                    new MojException.NotFound("No appearance record found", null));
             assertThat(appearance2.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
             assertThat(appearance2.getAttendanceAuditNumber()).isEqualTo("P10000000");
         }
