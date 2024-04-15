@@ -17,7 +17,8 @@ import java.util.Set;
 
 @Repository
 @Transactional(readOnly = true)
-public interface JurorCommonResponseRepositoryMod extends JurorResponseRepositoryMod<JurorCommonResponseRepositoryMod.AbstractResponse> {
+public interface JurorCommonResponseRepositoryMod
+    extends JurorResponseRepositoryMod<JurorCommonResponseRepositoryMod.AbstractResponse> {
 
     Set<ProcessingStatus> PENDING_STATUS = Set.of(
         ProcessingStatus.AWAITING_CONTACT,
