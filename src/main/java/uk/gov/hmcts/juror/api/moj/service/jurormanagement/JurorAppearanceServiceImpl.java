@@ -131,19 +131,21 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         final JurorPool jurorPool = validateJurorStatus(juror);
 
 
-        Appearance appearance = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
+        Optional<Appearance> appearanceOpt = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
             appearanceDate);
+        Appearance appearance;
 
-        if (appearance == null) {
+        if (appearanceOpt.isPresent()) {
+            appearance = appearanceOpt.get();
+            // validate the current record and the new appearance stage
+            validateAppearanceStage(jurorNumber, appearanceStage, appearance);
+        } else {
             appearance = Appearance.builder()
                 .jurorNumber(jurorNumber)
                 .attendanceDate(appearanceDate)
                 .courtLocation(courtLocation)
                 .poolNumber(jurorPool.getPool().getPoolNumber())
                 .build();
-        } else {
-            // validate the current record and the new appearance stage
-            validateAppearanceStage(jurorNumber, appearanceStage, appearance);
         }
 
         if (appearanceStage == AppearanceStage.CHECKED_IN || allowBothCheckInAndOut) {
@@ -484,22 +486,18 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             // validate the juror record exists and user has ownership of the record
             validateJuror(owner, jurorNumber);
 
-            // get the juror appearance record if it exists
-            Appearance appearance = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
-                request.getCommonData().getAttendanceDate());
-
             JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, jurorNumber,
                 courtLocation);
 
-            if (appearance == null) {
-                // create a new appearance record
-                appearance = Appearance.builder()
+            // get the juror appearance record if it exists
+            Appearance appearance = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
+                request.getCommonData().getAttendanceDate())
+                .orElse(Appearance.builder()
                     .jurorNumber(jurorNumber)
                     .attendanceDate(request.getCommonData().getAttendanceDate())
                     .courtLocation(courtLocation)
                     .poolNumber(jurorPool.getPool().getPoolNumber())
-                    .build();
-            }
+                    .build());
 
             // update the check-in time if there is none
             if (appearance.getTimeIn() == null) {

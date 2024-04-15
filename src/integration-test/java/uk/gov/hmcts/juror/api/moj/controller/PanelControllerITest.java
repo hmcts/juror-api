@@ -25,12 +25,14 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -368,7 +370,9 @@ public class PanelControllerITest extends AbstractIntegrationTest {
                 "Expected history code to be VRET")
             .isEqualTo("VRET");
         Appearance appearance =
-            appearanceRepository.findByJurorNumber(panelMember.getJurorPool().getJurorNumber());
+            appearanceRepository.findByJurorNumberAndAttendanceDate(panelMember.getJurorPool().getJurorNumber(),
+                LocalDate.now()).orElseThrow(() ->
+                new MojException.NotFound("No appearance record found", null));
         assertThat(appearance.getPoolNumber())
             .as("Expected value to be the current juror's pool number")
             .isEqualTo(panelMember.getJurorPool().getPoolNumber());

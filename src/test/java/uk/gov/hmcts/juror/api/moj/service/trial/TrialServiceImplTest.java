@@ -43,6 +43,7 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceServiceImpl;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -301,8 +302,8 @@ class TrialServiceImplTest {
                 appearance.setTimeOut(LocalTime.parse(checkInTime));
             }
 
-            when(appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber()))
-                .thenReturn(appearance);
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+                LocalDate.now())).thenReturn(Optional.of(appearance));
         }
 
         trialService.returnJury(payload, trialNumber, "415",
@@ -329,8 +330,8 @@ class TrialServiceImplTest {
         for (Panel panel : panelMembers) {
             Appearance appearance = createAppearance(panel.getJurorPool().getJurorNumber());
             appearance.setTimeIn(null);
-            when(appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber()))
-                .thenReturn(appearance);
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+                LocalDate.now())).thenReturn(Optional.of(appearance));
         }
 
         trialService
@@ -356,8 +357,8 @@ class TrialServiceImplTest {
         for (Panel panel : panelMembers) {
             Appearance appearance = createAppearance(panel.getJurorPool().getJurorNumber());
             appearance.setTimeIn(null);
-            when(appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber()))
-                .thenReturn(appearance);
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+                LocalDate.now())).thenReturn(Optional.of(appearance));
         }
 
         trialService
@@ -382,8 +383,8 @@ class TrialServiceImplTest {
 
         for (Panel panel : panelMembers) {
             Appearance appearance = createAppearance(panel.getJurorPool().getJurorNumber());
-            when(appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber()))
-                .thenReturn(appearance);
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+                LocalDate.now())).thenReturn(Optional.of(appearance));
         }
 
         trialService.returnJury(payload, trialNumber, "415",
