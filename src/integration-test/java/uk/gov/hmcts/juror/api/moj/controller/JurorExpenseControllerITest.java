@@ -2378,6 +2378,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
         private static final String JUROR_NUMBER = "641500020";
 
+        protected ApproveExpenses() {
+
+        }
+
         @Nested
         class Positive {
             protected ResponseEntity<String> triggerValid(ApproveExpenseDto... expenseDto) throws Exception {
