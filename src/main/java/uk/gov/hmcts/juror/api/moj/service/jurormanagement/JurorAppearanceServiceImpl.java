@@ -377,7 +377,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             .contains(appearance.getAppearanceStage())) {
             throw new MojException.BusinessRuleViolation(
                 "Can only modify confirmed attendances that have no approved expenses",
-                MojException.BusinessRuleViolation.ErrorCode.APPEARANCE_MUST_BE_CONFIRMED_WITH_NO_APPROVED_EXPENSES);
+                MojException.BusinessRuleViolation.ErrorCode.APPEARANCE_MUST_HAVE_NO_APPROVED_EXPENSES);
         }
 
         appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
@@ -420,7 +420,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         } else if (ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE.equals(modifyAttendanceType)) {
             appearanceRepository.delete(appearance);
         }
-        jurorExpenseService.realignExpenseDetails(appearance,ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE.equals(modifyAttendanceType));
+        jurorExpenseService.realignExpenseDetails(appearance,
+            ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE.equals(modifyAttendanceType));
     }
 
 
