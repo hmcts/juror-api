@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.querydsl.core.types.Predicate;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,12 +13,14 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseOverviewDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
+import uk.gov.hmcts.juror.api.bureau.controller.response.BureauYourWorkCounts;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetailQueries;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.QModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.repository.JurorDetailRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
 import java.time.LocalDate;
@@ -42,6 +46,7 @@ public class BureauServiceImpl implements BureauService {
     private static final String PENDING = "pending";
     private static final String COMPLETED = "completed";
     private final JurorDetailRepositoryMod bureauJurorDetailRepository;
+    private final JurorCommonResponseRepositoryMod jurorCommonResponseRepositoryMod;
     private final UrgencyService urgencyCalculator;
     private final BureauTransformsService bureauTransformsService;
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
@@ -109,22 +114,39 @@ public class BureauServiceImpl implements BureauService {
 
     @Override
     @Transactional(readOnly = true)
-    public BureauResponseSummaryWrapper getTodo(String staffLogin) {
+    public BureauYourWorkCounts getCounts(String staffLogin) {
+        long todoCount = getTodoCount(staffLogin);
+        return BureauYourWorkCounts.builder()
+            .todoCount(todoCount)
+            .workCount(todoCount + getPendingCount(staffLogin))
+            .build();
+    }
 
+    long getTodoCount(String staffLogin) {
+        return jurorCommonResponseRepositoryMod.countTodo(staffLogin);
+    }
+
+    long getPendingCount(String staffLogin) {
+        return jurorCommonResponseRepositoryMod.countPending(staffLogin);
+    }
+
+    long getCompleteCount(String staffLogin, LocalDateTime start, LocalDateTime end) {
+        return jurorCommonResponseRepositoryMod.countComplete(staffLogin, start, end);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BureauResponseSummaryWrapper getTodo(String staffLogin) {
         log.debug("Getting todo responses assigned to {}", staffLogin);
         final BureauResponseSummaryWrapper wrapper = bureauTransformsService.prepareOutput(getInDisplayOrder(
             BureauJurorDetailQueries.byAssignmentAndProcessingStatus(staffLogin, queryableStatusList(TODO))));
+
         wrapper.setTodoCount((long) wrapper.getResponses().size());
-        wrapper.setRepliesPendingCount(
-            bureauJurorDetailRepository.count(BureauJurorDetailQueries.byAssignmentAndProcessingStatus(
-                staffLogin,
-                queryableStatusList(PENDING)
-            )));
-        wrapper.setCompletedCount(bureauJurorDetailRepository.count(BureauJurorDetailQueries.byCompletedAt(
-            staffLogin,
-            startOfToday(),
-            endOfToday()
-        )));
+        wrapper.setRepliesPendingCount(getPendingCount(staffLogin));
+
+        StopWatch countCompleteStopWatch = StopWatch.createStarted();
+        wrapper.setCompletedCount(getCompleteCount(staffLogin, startOfToday(), endOfToday()));
+        countCompleteStopWatch.stop();
 
         return wrapper;
     }

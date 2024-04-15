@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.request.ReassignResponsesDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.AutoAssignResponse;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseOverviewDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
+import uk.gov.hmcts.juror.api.bureau.controller.response.BureauYourWorkCounts;
 import uk.gov.hmcts.juror.api.bureau.controller.response.JurorResponseSearchResults;
 import uk.gov.hmcts.juror.api.bureau.exception.AutoAssignException;
 import uk.gov.hmcts.juror.api.bureau.exception.ReassignException;
@@ -34,6 +35,7 @@ import uk.gov.hmcts.juror.api.bureau.service.JurorResponseSearchService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 /**
  * API endpoints controller for response-related operations.
@@ -61,6 +63,13 @@ public class BureauResponsesController {
         BureauResponseSummaryWrapper wrapper = bureauService.getDetailsByProcessingStatus(filterBy);
         return ResponseEntity.ok().body(wrapper);
     }
+
+    @GetMapping(path = "/counts")
+    @Operation(summary = "Retrieve counts of responses assigned to the current user")
+    public ResponseEntity<BureauYourWorkCounts> getCurrentUserTodo() {
+        return ResponseEntity.ok().body(bureauService.getCounts(SecurityUtil.getActiveLogin()));
+    }
+
 
     @GetMapping(path = "/todo")
     @Operation(summary = "Retrieve all todo responses assigned to the current user")
