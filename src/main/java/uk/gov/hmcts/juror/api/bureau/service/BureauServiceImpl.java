@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.querydsl.core.types.Predicate;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -102,12 +101,15 @@ public class BureauServiceImpl implements BureauService {
         BureauResponseSummaryWrapper wrapper = new BureauResponseSummaryWrapper();
 
         wrapper.setResponses(filteredResponses);
-        wrapper.setTodoCount(bureauJurorDetailRepository.count(BureauJurorDetailQueries.byStatus(queryableStatusList(
-            TODO))));
-        wrapper.setRepliesPendingCount(bureauJurorDetailRepository.count(BureauJurorDetailQueries.byStatus(
-            queryableStatusList(PENDING))));
-        wrapper.setCompletedCount(bureauJurorDetailRepository.count(BureauJurorDetailQueries.byStatus(
-            queryableStatusList(COMPLETED))));
+        wrapper.setTodoCount(
+            jurorCommonResponseRepositoryMod.countByProcessingStatusIn(JurorCommonResponseRepositoryMod.TODO_STATUS));
+
+        wrapper.setRepliesPendingCount(
+            jurorCommonResponseRepositoryMod.countByProcessingStatusIn(
+                JurorCommonResponseRepositoryMod.PENDING_STATUS));
+        wrapper.setCompletedCount(
+            jurorCommonResponseRepositoryMod.countByProcessingStatusIn(
+                JurorCommonResponseRepositoryMod.COMPLETE_STATUS));
 
         return wrapper;
     }
@@ -158,15 +160,9 @@ public class BureauServiceImpl implements BureauService {
         final BureauResponseSummaryWrapper wrapper = bureauTransformsService.prepareOutput(getInDisplayOrder(
             BureauJurorDetailQueries.byAssignmentAndProcessingStatus(staffLogin, queryableStatusList(PENDING))));
         wrapper.setRepliesPendingCount((long) wrapper.getResponses().size());
-        wrapper.setTodoCount(bureauJurorDetailRepository.count(BureauJurorDetailQueries.byAssignmentAndProcessingStatus(
-            staffLogin,
-            queryableStatusList(TODO)
-        )));
-        wrapper.setCompletedCount(bureauJurorDetailRepository.count(BureauJurorDetailQueries.byCompletedAt(
-            staffLogin,
-            startOfToday(),
-            endOfToday()
-        )));
+        wrapper.setTodoCount(jurorCommonResponseRepositoryMod.countTodo(staffLogin));
+        wrapper.setCompletedCount(
+            jurorCommonResponseRepositoryMod.countComplete(staffLogin, startOfToday(), endOfToday()));
         return wrapper;
     }
 
@@ -177,15 +173,10 @@ public class BureauServiceImpl implements BureauService {
         final BureauResponseSummaryWrapper wrapper = bureauTransformsService.prepareOutput(getInDisplayOrder(
             BureauJurorDetailQueries.byCompletedAt(staffLogin, startOfToday(), endOfToday())));
         wrapper.setCompletedCount((long) wrapper.getResponses().size());
-        wrapper.setTodoCount(bureauJurorDetailRepository.count(BureauJurorDetailQueries.byAssignmentAndProcessingStatus(
-            staffLogin,
-            queryableStatusList(TODO)
-        )));
+        wrapper.setTodoCount(
+            jurorCommonResponseRepositoryMod.countTodo(staffLogin));
         wrapper.setRepliesPendingCount(
-            bureauJurorDetailRepository.count(BureauJurorDetailQueries.byAssignmentAndProcessingStatus(
-                staffLogin,
-                queryableStatusList(PENDING)
-            )));
+            jurorCommonResponseRepositoryMod.countPending(staffLogin));
         return wrapper;
     }
 
@@ -257,17 +248,16 @@ public class BureauServiceImpl implements BureauService {
         if (category != null) {
             switch (category.toLowerCase().trim()) {
                 case TODO:
-                    statuses = Collections.singletonList(ProcessingStatus.TODO.name());
+                    statuses = JurorCommonResponseRepositoryMod.TODO_STATUS
+                        .stream().map(Enum::name).collect(Collectors.toList());
                     break;
                 case PENDING:
-                    statuses = Arrays.asList(
-                        ProcessingStatus.AWAITING_CONTACT.name(),
-                        ProcessingStatus.AWAITING_TRANSLATION.name(),
-                        ProcessingStatus.AWAITING_COURT_REPLY.name()
-                    );
+                    statuses = JurorCommonResponseRepositoryMod.PENDING_STATUS
+                        .stream().map(Enum::name).collect(Collectors.toList());
                     break;
                 case COMPLETED:
-                    statuses = Collections.singletonList(ProcessingStatus.CLOSED.name());
+                    statuses = JurorCommonResponseRepositoryMod.COMPLETE_STATUS
+                        .stream().map(Enum::name).collect(Collectors.toList());
                     break;
                 default:
                     log.warn("No category filter matched '{}'", category);

@@ -18,6 +18,20 @@ import java.util.Set;
 @Repository
 @Transactional(readOnly = true)
 public interface JurorCommonResponseRepositoryMod extends JurorResponseRepositoryMod<JurorCommonResponseRepositoryMod.AbstractResponse> {
+
+    Set<ProcessingStatus> PENDING_STATUS = Set.of(
+        ProcessingStatus.AWAITING_CONTACT,
+        ProcessingStatus.AWAITING_TRANSLATION,
+        ProcessingStatus.AWAITING_COURT_REPLY
+    );
+    Set<ProcessingStatus> TODO_STATUS = Set.of(
+        ProcessingStatus.TODO
+    );
+
+    Set<ProcessingStatus> COMPLETE_STATUS = Set.of(
+        ProcessingStatus.CLOSED
+    );
+
     @Entity
     @AllArgsConstructor
     @SuperBuilder
@@ -31,6 +45,8 @@ public interface JurorCommonResponseRepositoryMod extends JurorResponseRepositor
 
     long countByStaffUsernameEqualsAndProcessingStatusIn(String username, Set<ProcessingStatus> status);
 
+    long countByProcessingStatusIn(Set<ProcessingStatus> status);
+
     long countByStaffUsernameEqualsAndProcessingStatusInAndCompletedAtIsBetween(String username,
                                                                                 Set<ProcessingStatus> status,
                                                                                 LocalDateTime fromDate,
@@ -39,26 +55,22 @@ public interface JurorCommonResponseRepositoryMod extends JurorResponseRepositor
 
 
     default long countTodo(String username) {
-        return countByStaffUsernameEqualsAndProcessingStatusIn(username, Set.of(ProcessingStatus.TODO));
+        return countByStaffUsernameEqualsAndProcessingStatusIn(username, TODO_STATUS);
     }
 
 
     default long countPending(String username) {
-        return countByStaffUsernameEqualsAndProcessingStatusIn(username, Set.of(
-            ProcessingStatus.AWAITING_CONTACT,
-            ProcessingStatus.AWAITING_TRANSLATION,
-            ProcessingStatus.AWAITING_COURT_REPLY
-        ));
+        return countByStaffUsernameEqualsAndProcessingStatusIn(username,PENDING_STATUS);
     }
 
     default long countComplete(String username) {
-        return countByStaffUsernameEqualsAndProcessingStatusIn(username, Set.of(ProcessingStatus.CLOSED));
+        return countByStaffUsernameEqualsAndProcessingStatusIn(username, COMPLETE_STATUS);
     }
 
     default long countComplete(String username, LocalDateTime from, LocalDateTime to) {
         return countByStaffUsernameEqualsAndProcessingStatusInAndCompletedAtIsBetween(
             username,
-            Set.of(ProcessingStatus.CLOSED),
+            COMPLETE_STATUS,
             from,
             to);
     }
