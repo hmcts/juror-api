@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.domain.AppearanceId;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
@@ -36,6 +37,7 @@ import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryServiceImpl;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
@@ -71,6 +73,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     private final JurorRepository jurorRepository;
     private final JurorExpenseService jurorExpenseService;
     private final JurorHistoryServiceImpl jurorHistoryService;
+    private final PanelRepository panelRepository;
 
     @Override
     public void addAttendanceDay(BureauJwtPayload payload, AddAttendanceDayDto dto) {
@@ -150,6 +153,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         if (appearanceStage == AppearanceStage.CHECKED_OUT || allowBothCheckInAndOut) {
             appearance.setTimeOut(jurorAppearanceDto.getCheckOutTime());
         }
+
         appearance.setAppearanceStage(appearanceStage);
         realignAttendanceType(appearance);
         appearanceRepository.saveAndFlush(appearance);
@@ -466,13 +470,14 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         log.info("Confirming jury attendance for jurors on trial");
 
         final String owner = SecurityUtil.getActiveOwner();
+        final String locCode = request.getCommonData().getLocationCode();
 
         // one attendance audit number applies to ALL jurors in this batch of attendances being confirmed
         final String juryAttendancePrefix = "J";
         final String juryAttendanceNumber = getAttendanceAuditNumber(juryAttendancePrefix);
 
         CourtLocation courtLocation =
-            courtLocationRepository.findByLocCode(request.getCommonData().getLocationCode())
+            courtLocationRepository.findByLocCode(locCode)
                 .orElseThrow(() -> new MojException.NotFound("Court location not found", null));
 
         request.getJuror().forEach(jurorNumber -> {
@@ -512,6 +517,17 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             appearance.setAttendanceAuditNumber(juryAttendanceNumber);
             appearance.setSatOnJury(true);
             jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance.getAttendanceAuditNumber());
+
+            // update appearance by adding the trial number
+            if (IJurorStatus.JUROR == jurorPool.getStatus().getStatus()) {
+                // get the currently active trial the juror is on
+                Panel panel = panelRepository
+                    .findByTrialCourtLocationLocCodeAndJurorPoolPoolPoolNumberAndJurorPoolJurorJurorNumberAndCompleted(
+                        locCode, jurorNumber, jurorPool.getPool().getPoolNumber(), false);
+                if (panel != null) {
+                    appearance.setTrialNumber(panel.getTrial().getTrialNumber());
+                }
+            }
 
             appearanceRepository.saveAndFlush(appearance);
             jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
