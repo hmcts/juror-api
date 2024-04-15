@@ -95,7 +95,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         return queryFactory.select(JUROR.jurorNumber.as("juror_number"),
                 JUROR.firstName.as("first_name"),
                 JUROR.lastName.as("last_name"),
-                JUROR_POOL.status.status.as("status"))
+                JUROR_POOL.status.status.as("status"),
+                JUROR_POOL.pool.poolNumber.as("pool_number"))
             .from(JUROR)
             .join(JUROR_POOL)
             .on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber))

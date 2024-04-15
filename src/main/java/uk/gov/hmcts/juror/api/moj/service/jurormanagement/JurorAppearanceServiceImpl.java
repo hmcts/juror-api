@@ -762,6 +762,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         absentTuples.forEach(tuple -> {
             Appearance appearance = Appearance.builder()
                 .jurorNumber(tuple.get(0, String.class))
+                .poolNumber(tuple.get(4, String.class))
                 .attendanceDate(updateCommonData.getAttendanceDate())
                 .courtLocation(courtLocation)
                 .noShow(Boolean.TRUE)
