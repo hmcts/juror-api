@@ -523,7 +523,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 Panel panel = panelRepository
                     .findByTrialCourtLocationLocCodeAndJurorPoolPoolPoolNumberAndJurorPoolJurorJurorNumberAndCompleted(
                         locCode, jurorNumber, jurorPool.getPool().getPoolNumber(), false);
-                appearance.setTrialNumber(panel.getTrial().getTrialNumber());
+                if (panel != null) {
+                    appearance.setTrialNumber(panel.getTrial().getTrialNumber());
+                }
             }
 
             appearanceRepository.saveAndFlush(appearance);
