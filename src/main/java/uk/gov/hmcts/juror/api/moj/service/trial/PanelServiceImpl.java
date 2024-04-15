@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.utils.JurorHistoryUtils;
+import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -172,30 +173,38 @@ public class PanelServiceImpl implements PanelService {
 
         Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, courtLocationCode)
             .orElseThrow(() -> new MojException.NotFound(String.format("Cannot find trial with "
-            + "number: %s for court location %s", trialNumber, courtLocationCode), null));
+                + "number: %s for court location %s", trialNumber, courtLocationCode), null));
 
         List<PanelListDto> panelListDtosList = new ArrayList<>();
         for (int i = 0; i < numberRequested; i++) {
+
             Panel panel = createPanelEntity(appearanceList.get(i), trial);
-            panel.getJurorPool().setLocation(trial.getCourtroom().getRoomNumber());
-            if (panel.getJurorPool().getTimesSelected() == null) {
-                panel.getJurorPool().setTimesSelected(1);
+            JurorPool jurorPool = panel.getJurorPool();
+            jurorPool.setLocation(trial.getCourtroom().getRoomNumber());
+
+            if (jurorPool.getTimesSelected() == null) {
+                jurorPool.setTimesSelected(1);
             } else {
-                panel.getJurorPool().setTimesSelected(panel.getJurorPool().getTimesSelected() + 1);
+                jurorPool.setTimesSelected(jurorPool.getTimesSelected() + 1);
             }
 
             panelRepository.saveAndFlush(panel);
 
+            String jurorNumber = jurorPool.getJurorNumber();
+
             //update appearance record with trial number
-            Appearance appearance = appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber());
+            Appearance appearance =
+                RepositoryUtils.unboxOptionalRecord(
+                    appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber, LocalDate.now()), jurorNumber);
+
             appearance.setTrialNumber(trial.getTrialNumber());
             appearanceRepository.saveAndFlush(appearance);
 
             JurorHistoryUtils.saveJurorHistory(HistoryCodeMod.CREATE_NEW_PANEL,
-                panel.getJurorPool().getJurorNumber(), panel.getJurorPool().getPoolNumber(), payload,
-                jurorHistoryRepository);
+                jurorNumber, jurorPool.getPoolNumber(), payload, jurorHistoryRepository);
             panelListDtosList.add(createPanelListDto(panel));
         }
+
         return panelListDtosList;
     }
 
@@ -237,11 +246,15 @@ public class PanelServiceImpl implements PanelService {
 
             if (Objects.requireNonNull(panelMember.getResult()) == PanelResult.NOT_USED
                 || panelMember.getResult() == PanelResult.CHALLENGED) {
-                JurorHistoryUtils.saveJurorHistory(HistoryCodeMod.RETURN_PANEL,
-                    panelMember.getJurorPool().getJurorNumber(), panelMember.getJurorPool().getPoolNumber(), payload,
-                    jurorHistoryRepository);
-                Appearance appearance =
-                    appearanceRepository.findByJurorNumber(panelMember.getJurorPool().getJurorNumber());
+
+                JurorPool jurorPool = panelMember.getJurorPool();
+                String jurorNumber = jurorPool.getJurorNumber();
+
+                JurorHistoryUtils.saveJurorHistory(HistoryCodeMod.RETURN_PANEL, jurorNumber,
+                    jurorPool.getPoolNumber(), payload, jurorHistoryRepository);
+
+                Appearance appearance = RepositoryUtils.unboxOptionalRecord(
+                    appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber, LocalDate.now()), jurorNumber);
                 appearance.setPoolNumber(panelMember.getJurorPool().getPoolNumber());
                 appearanceRepository.saveAndFlush(appearance);
             } else {

@@ -20,8 +20,6 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
 
     long countByJurorNumber(String jurorNumber);
 
-    Appearance findByJurorNumber(String jurorNumber);
-
     Optional<Appearance> findByJurorNumberAndAttendanceDate(String jurorNumber, LocalDate attendanceDate);
 
     List<Appearance> findAllByJurorNumberAndPoolNumber(String jurorNumber, String poolNumber);

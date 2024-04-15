@@ -550,7 +550,8 @@ class JurorAppearanceServiceTest {
         Appearance appearance = new Appearance();
         appearance.setJurorNumber(JUROR_123456789);
         appearance.setAppearanceStage(CHECKED_IN);
-        doReturn(appearance).when(appearanceRepository).findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
+        doReturn(Optional.of(appearance)).when(appearanceRepository)
+            .findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
                 jurorAppearanceService.processAppearance(buildPayload(OWNER_415, List.of(LOC_415)),
@@ -582,7 +583,8 @@ class JurorAppearanceServiceTest {
         Appearance appearance = new Appearance();
         appearance.setJurorNumber(JUROR_123456789);
         appearance.setAppearanceStage(CHECKED_OUT);
-        doReturn(appearance).when(appearanceRepository).findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
+        doReturn(Optional.of(appearance)).when(appearanceRepository)
+            .findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
                 jurorAppearanceService.processAppearance(buildPayload(OWNER_415, List.of(LOC_415)),
@@ -614,7 +616,8 @@ class JurorAppearanceServiceTest {
         Appearance appearance = new Appearance();
         appearance.setJurorNumber(JUROR_123456789);
         appearance.setAppearanceStage(EXPENSE_ENTERED);
-        doReturn(appearance).when(appearanceRepository).findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
+        doReturn(Optional.of(appearance)).when(appearanceRepository)
+            .findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
                 jurorAppearanceService.processAppearance(buildPayload(OWNER_415, List.of(LOC_415)),
@@ -643,13 +646,13 @@ class JurorAppearanceServiceTest {
         juror.setAssociatedPools(Collections.singleton(jurorPool));
         doReturn(Optional.of(juror)).when(jurorRepository).findById(JUROR_123456789);
         doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(
-                JUROR_123456789, true);
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(JUROR_123456789, true);
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
         Appearance appearance = new Appearance();
         appearance.setJurorNumber(JUROR_123456789);
         appearance.setAppearanceStage(CHECKED_OUT);
-        doReturn(appearance).when(appearanceRepository).findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
+        doReturn(Optional.of(appearance)).when(appearanceRepository)
+            .findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
                 jurorAppearanceService.processAppearance(buildPayload(OWNER_415, List.of(LOC_415)),
@@ -684,7 +687,8 @@ class JurorAppearanceServiceTest {
         Appearance appearance = new Appearance();
         appearance.setJurorNumber(JUROR_123456789);
         appearance.setAppearanceStage(EXPENSE_ENTERED);
-        doReturn(appearance).when(appearanceRepository).findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
+        doReturn(Optional.of(appearance)).when(appearanceRepository)
+            .findByJurorNumberAndAttendanceDate(JUROR_123456789, now());
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
                 jurorAppearanceService.processAppearance(buildPayload(OWNER_415, List.of(LOC_415)),
