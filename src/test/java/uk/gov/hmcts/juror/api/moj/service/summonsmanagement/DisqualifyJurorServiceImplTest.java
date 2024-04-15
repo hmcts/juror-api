@@ -32,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
+import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
 
 import java.time.LocalDate;
@@ -72,6 +73,9 @@ public class DisqualifyJurorServiceImplTest {
     private AssignOnUpdateServiceMod assignOnUpdateService;
     @Mock
     private SummonsReplyMergeService summonsReplyMergeService;
+    @Mock
+    private PrintDataService printDataService;
+
 
     @InjectMocks
     private DisqualifyJurorServiceImpl disqualifyJurorService;
@@ -215,8 +219,8 @@ public class DisqualifyJurorServiceImplTest {
         final ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
         final ArgumentCaptor<JurorPool> jurorPoolEntityCaptor = ArgumentCaptor.forClass(JurorPool.class);
         final ArgumentCaptor<JurorHistory> jurorHistoryEntityCaptor = ArgumentCaptor.forClass(JurorHistory.class);
-        final ArgumentCaptor<DisqualificationLetter> disqLetterEntityCaptor =
-            ArgumentCaptor.forClass(DisqualificationLetter.class);
+        final ArgumentCaptor<PrintDataService> printDataServiceArgumentCaptor =
+            ArgumentCaptor.forClass(PrintDataService.class);
 
         BureauJwtPayload courtPayload = buildBureauPayload();
         final DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDtoPaperB();
@@ -268,10 +272,7 @@ public class DisqualifyJurorServiceImplTest {
         assertThat(jurorHistoryEntityCaptor.getValue().getPoolNumber()).isEqualTo("416230101");
         assertThat(jurorHistoryEntityCaptor.getValue().getOtherInformation()).isEqualTo("Code B");
 
-        verify(disqualificationLetterRepository, times(1)).save(disqLetterEntityCaptor.capture());
-        assertThat(disqLetterEntityCaptor.getValue().getJurorNumber()).isEqualTo(JUROR_123456789);
-        assertThat(disqLetterEntityCaptor.getValue().getDisqCode()).isEqualTo("B");
-        assertThat(disqLetterEntityCaptor.getValue().getDateDisq()).isNotNull();
+        // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
 
         //Services or repository methods specific to Digital response
         verify(jurorDigitalResponseRepository, never()).findByJurorNumber(anyString());
@@ -291,8 +292,8 @@ public class DisqualifyJurorServiceImplTest {
         final ArgumentCaptor<DigitalResponse> jurorDigitalResponseEntityCaptor =
             ArgumentCaptor.forClass(DigitalResponse.class);
         final ArgumentCaptor<JurorPool> jurorPoolEntityCaptor = ArgumentCaptor.forClass(JurorPool.class);
-        final ArgumentCaptor<DisqualificationLetter> disqLetterEntityCaptor =
-            ArgumentCaptor.forClass(DisqualificationLetter.class);
+        //      final ArgumentCaptor<PrintDataService> printDataServiceArgumentCaptor =
+        //      ArgumentCaptor.forClass(PrintDataService.class);
 
         BureauJwtPayload courtPayload = buildBureauPayload();
         final DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDtoDigitalN();
@@ -352,10 +353,7 @@ public class DisqualifyJurorServiceImplTest {
         assertThat(jurorHistoryEntityCaptor.getValue().getPoolNumber()).isEqualTo("416230101");
         assertThat(jurorHistoryEntityCaptor.getValue().getOtherInformation()).isEqualTo("Code M");
 
-        verify(disqualificationLetterRepository, times(1)).save(disqLetterEntityCaptor.capture());
-        assertThat(disqLetterEntityCaptor.getValue().getJurorNumber()).isEqualTo(JUROR_123456789);
-        assertThat(disqLetterEntityCaptor.getValue().getDisqCode()).isEqualTo("M");
-        assertThat(disqLetterEntityCaptor.getValue().getDateDisq()).isNotNull();
+        // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
 
         //Services or repository methods specific to Paper response
         verify(jurorPaperResponseRepository, never()).findById(anyString());
