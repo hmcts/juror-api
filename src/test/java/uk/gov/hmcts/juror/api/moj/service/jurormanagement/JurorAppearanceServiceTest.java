@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service.jurormanagement;
 
 import com.querydsl.core.Tuple;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -119,6 +120,11 @@ class JurorAppearanceServiceTest {
     private static final String LOC_415 = "415";
 
     private static final String JUROR_POOL_1 = "123456789";
+
+    @BeforeEach
+    public void setUp() {
+        TestUtils.setUpMockAuthentication("415", "COURT_USER", "1", List.of("415"));
+    }
 
     @Test
     void addAttendanceDayHappyPath() {
@@ -1319,7 +1325,6 @@ class JurorAppearanceServiceTest {
             jurorNumbers.add(JUROR2);
             final UpdateAttendanceDateDto request = buildUpdateAttendanceDateDto(jurorNumbers);
 
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
 
             when(jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumberAndIsActive(
                 TestConstants.VALID_COURT_LOCATION, JUROR1, POOL_NUMBER_415230101, Boolean.TRUE))
@@ -1349,7 +1354,6 @@ class JurorAppearanceServiceTest {
             jurorNumbers.add(JUROR1);
             final UpdateAttendanceDateDto request = buildUpdateAttendanceDateDto(jurorNumbers);
 
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
 
             when(jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumberAndIsActive(
                 TestConstants.VALID_COURT_LOCATION, JUROR1, POOL_NUMBER_415230101, Boolean.TRUE))
@@ -1383,7 +1387,6 @@ class JurorAppearanceServiceTest {
             jurorNumbers.add(JUROR1);
             final UpdateAttendanceDateDto request = buildUpdateAttendanceDateDto(jurorNumbers);
 
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
 
             when(jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumberAndIsActive(
                 TestConstants.VALID_COURT_LOCATION, JUROR1, POOL_NUMBER_415230101, Boolean.TRUE))
@@ -1419,7 +1422,6 @@ class JurorAppearanceServiceTest {
 
             final UpdateAttendanceDateDto request = buildUpdateAttendanceDateDto(jurorNumbers);
 
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
 
             when(jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumberAndIsActive(
                 TestConstants.VALID_COURT_LOCATION, JUROR1, POOL_NUMBER_415230101, Boolean.TRUE))
@@ -1451,7 +1453,6 @@ class JurorAppearanceServiceTest {
 
             final UpdateAttendanceDateDto request = buildUpdateAttendanceDateDto(jurorNumbers);
 
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
 
             when(jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumberAndIsActive(
                 TestConstants.VALID_COURT_LOCATION, JUROR1, POOL_NUMBER_415230101, Boolean.TRUE))
@@ -1477,7 +1478,6 @@ class JurorAppearanceServiceTest {
 
             final UpdateAttendanceDateDto request = buildUpdateAttendanceDateDto(jurorNumbers);
 
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
 
             JurorPool jurorPool = buildJurorPool();
             JurorStatus jurorStatus = new JurorStatus();
@@ -1605,7 +1605,6 @@ class JurorAppearanceServiceTest {
                 Mockito.anyString()))
                 .thenReturn(jurorsToDismissTuples);
 
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
 
             JurorsToDismissResponseDto jurorsToDismissResponseDto =
                 jurorAppearanceService.retrieveJurorsToDismiss(jurorsToDismissRequestDto);
@@ -1679,7 +1678,6 @@ class JurorAppearanceServiceTest {
                 Mockito.anyString()))
                 .thenReturn(jurorsToDismissTuples);
 
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
 
             JurorsToDismissResponseDto jurorsToDismissResponseDto =
                 jurorAppearanceService.retrieveJurorsToDismiss(jurorsToDismissRequestDto);
@@ -1756,7 +1754,6 @@ class JurorAppearanceServiceTest {
                 Mockito.anyString()))
                 .thenReturn(jurorsToDismissTuples);
 
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
 
             JurorsToDismissResponseDto jurorsToDismissResponseDto =
                 jurorAppearanceService.retrieveJurorsToDismiss(jurorsToDismissRequestDto);
@@ -1814,7 +1811,6 @@ class JurorAppearanceServiceTest {
                 Mockito.anyString()))
                 .thenReturn(jurorsToDismissTuples);
 
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
 
             JurorsToDismissResponseDto jurorsToDismissResponseDto =
                 jurorAppearanceService.retrieveJurorsToDismiss(jurorsToDismissRequestDto);
@@ -1865,7 +1861,6 @@ class JurorAppearanceServiceTest {
                 TestConstants.VALID_COURT_LOCATION, pools))
                 .thenReturn(new ArrayList<>());
 
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
 
             JurorsToDismissResponseDto jurorsToDismissResponseDto =
                 jurorAppearanceService.retrieveJurorsToDismiss(jurorsToDismissRequestDto);
@@ -2314,6 +2309,8 @@ class JurorAppearanceServiceTest {
         checkedInAttendances.add(appearance7);
 
         CourtLocation courtLocation = mock(CourtLocation.class);
+        courtLocation.setOwner("415");
+        courtLocation.setLocCode("415");
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findByLocCode(OWNER_415);
 
         List<AppearanceId> appearanceIds = new ArrayList<>();
@@ -2341,6 +2338,32 @@ class JurorAppearanceServiceTest {
         when(appearanceRepository.retrieveNonAttendanceDetails(any())).thenReturn(absentJurorsTuples);
 
         when(appearanceRepository.saveAllAndFlush(any())).thenReturn(new ArrayList<>());
+
+        Juror juror1 = Juror.builder().jurorNumber(JUROR1).firstName("TEST").lastName("ONE").build();
+        Juror juror2 = Juror.builder().jurorNumber(JUROR2).firstName("TEST").lastName("TWO").build();
+        Juror juror3 = Juror.builder().jurorNumber(JUROR3).firstName("TEST").lastName("THREE").build();
+        Juror juror6 = Juror.builder().jurorNumber(JUROR6).firstName("TEST").lastName("SIX").build();
+        Juror juror7 = Juror.builder().jurorNumber(JUROR7).firstName("TEST").lastName("SEVEN").build();
+
+        PoolRequest poolRequest =
+            PoolRequest.builder().owner("415").poolNumber("415000001").courtLocation(courtLocation).build();
+
+        JurorPool jurorPool1 = JurorPool.builder().juror(juror1).pool(poolRequest).build();
+        JurorPool jurorPool2 = JurorPool.builder().juror(juror2).pool(poolRequest).build();
+        JurorPool jurorPool3 = JurorPool.builder().juror(juror3).pool(poolRequest).build();
+        JurorPool jurorPool6 = JurorPool.builder().juror(juror6).pool(poolRequest).build();
+        JurorPool jurorPool7 = JurorPool.builder().juror(juror7).pool(poolRequest).build();
+
+        doReturn(jurorPool1).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(JUROR1), eq(true),
+            Mockito.any());
+        doReturn(jurorPool2).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(JUROR2), eq(true),
+            Mockito.any());
+        doReturn(jurorPool3).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(JUROR3), eq(true),
+            Mockito.any());
+        doReturn(jurorPool6).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(JUROR6), eq(true),
+            Mockito.any());
+        doReturn(jurorPool7).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(JUROR7), eq(true),
+            Mockito.any());
     }
 
     private void deleteAttendanceMockSetup(Boolean noAttendanceRecord) {
@@ -2853,7 +2876,6 @@ class JurorAppearanceServiceTest {
         @DisplayName("Get Jurors On Trials happy path")
         void getJurorsOnTrialHappy() {
 
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
 
             final String locationCode = "415";
             final LocalDate attendanceDate = now();
@@ -2902,7 +2924,6 @@ class JurorAppearanceServiceTest {
         @DisplayName("Get Jurors On Trials - wrong court")
         void getJurorsOnTrialWrongCourt() {
 
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
 
             final String locationCode = "416";
             final LocalDate attendanceDate = now();
@@ -2928,7 +2949,6 @@ class JurorAppearanceServiceTest {
         @DisplayName("Get Jurors On Trials No Records found")
         void getJurorsOnTrialNoRecordsFound() {
 
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
 
             final String locationCode = "415";
             final LocalDate attendanceDate = now();
@@ -2962,8 +2982,6 @@ class JurorAppearanceServiceTest {
         @Test
         @DisplayName("Confirm Juror attendance happy path")
         void confirmAttendanceHappy() {
-
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
             final String locationCode = "415";
 
             final CourtLocation courtLocation = new CourtLocation();
@@ -3028,7 +3046,7 @@ class JurorAppearanceServiceTest {
                 now().minusDays(1))).thenReturn(Optional.of(appearance1));
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR2,
                 now().minusDays(1))).thenReturn(Optional.of(appearance2));
-            when(appearanceRepository.getNextAttendanceAuditNumber()).thenReturn(123456L);
+            when(appearanceRepository.getNextAttendanceAuditNumber()).thenReturn(10123456L);
 
             jurorAppearanceService.confirmJuryAttendance(request);
 
@@ -3062,7 +3080,7 @@ class JurorAppearanceServiceTest {
             assertThat(capturedAppearance1.getPoolNumber()).isEqualTo(jurorPool1.getPool().getPoolNumber());
             assertThat(capturedAppearance1.getAttendanceType()).isEqualTo(AttendanceType.FULL_DAY);
             assertThat(capturedAppearance1.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(capturedAppearance1.getAttendanceAuditNumber()).isEqualTo("J00123456");
+            assertThat(capturedAppearance1.getAttendanceAuditNumber()).isEqualTo("J10123456");
             assertThat(capturedAppearance1.getSatOnJury()).isTrue();
 
 
@@ -3076,7 +3094,7 @@ class JurorAppearanceServiceTest {
             assertThat(capturedAppearance2.getPoolNumber()).isEqualTo(jurorPool1.getPool().getPoolNumber());
             assertThat(capturedAppearance2.getAttendanceType()).isEqualTo(AttendanceType.FULL_DAY);
             assertThat(capturedAppearance2.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(capturedAppearance2.getAttendanceAuditNumber()).isEqualTo("J00123456");
+            assertThat(capturedAppearance2.getAttendanceAuditNumber()).isEqualTo("J10123456");
             assertThat(capturedAppearance2.getSatOnJury()).isTrue();
 
             verify(jurorPoolRepository, times(2)).saveAndFlush(Mockito.any());
@@ -3091,7 +3109,7 @@ class JurorAppearanceServiceTest {
         @DisplayName("Confirm Juror attendance - Juror owner invalid")
         void confirmAttendanceInvalidJurorOwner() {
 
-            TestUtils.setupAuthentication("415", "COURT_USER", "1");
+
             final String locationCode = "416";
             final CourtLocation courtLocation = new CourtLocation();
             courtLocation.setOwner("416");
@@ -3134,7 +3152,7 @@ class JurorAppearanceServiceTest {
         @DisplayName("Confirm Juror attendance - juror record not found")
         void confirmAttendanceNoJurorsFound() {
 
-            TestUtils.setupAuthentication("416", "COURT_USER", "1");
+            TestUtils.setUpMockAuthentication("416", "COURT_USER", "1", List.of("416"));
             final String locationCode = "416";
 
             final CourtLocation courtLocation = new CourtLocation();
@@ -3164,7 +3182,7 @@ class JurorAppearanceServiceTest {
         @DisplayName("Confirm Juror attendance - Invalid court location")
         void confirmAttendanceInvalidCourtLocation() {
 
-            TestUtils.setupAuthentication("999", "COURT_USER", "1");
+            TestUtils.setUpMockAuthentication("999", "COURT_USER", "1", List.of("999"));
             final String locationCode = "999";
 
             doReturn(Optional.empty()).when(courtLocationRepository).findByLocCode(locationCode);
