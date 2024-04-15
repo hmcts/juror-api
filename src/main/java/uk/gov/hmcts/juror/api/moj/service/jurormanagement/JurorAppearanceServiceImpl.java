@@ -268,7 +268,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             if (jurorPool == null) {
                 log.trace(String.format("In method: updateAttendanceDate().  No juror pool found matching criteria "
                     + "for juror %s.  Attendance date not updated", jurorNumber));
-            }  else if (List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL, IJurorStatus.JUROR)
+            } else if (List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL, IJurorStatus.JUROR)
                 .contains(jurorPool.getStatus().getStatus())) {
 
                 // update the juror next (attendance) date and clear on call flag in case it is set
@@ -510,8 +510,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             realignAttendanceType(appearance);
 
             appearance.setAttendanceAuditNumber(juryAttendanceNumber);
-            jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance.getAttendanceAuditNumber(),
-                SecurityUtil.getActiveUsersBureauPayload().getLogin());
+            jurorHistoryService.createJuryAttendanceHistory(jurorPool, appearance.getAttendanceAuditNumber());
 
             appearanceRepository.saveAndFlush(appearance);
             jurorExpenseService.applyDefaultExpenses(appearance, jurorPool.getJuror());
@@ -747,8 +746,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
             JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, appearance.getJurorNumber(),
                 appearance.getCourtLocation());
-            jurorHistoryService.createPoolAttendanceHistory(jurorPool, poolAttendanceNumber,
-                SecurityUtil.getActiveUsersBureauPayload().getLogin());
+            jurorHistoryService.createPoolAttendanceHistory(jurorPool, poolAttendanceNumber);
         });
 
         jurorExpenseService.applyDefaultExpenses(checkedInAttendances);

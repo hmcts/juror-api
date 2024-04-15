@@ -3093,9 +3093,9 @@ class JurorAppearanceServiceTest {
             verify(jurorPoolRepository, times(2)).saveAndFlush(Mockito.any());
 
             verify(jurorHistoryService, times(1)).createJuryAttendanceHistory(jurorPool1,
-                capturedAppearance1.getAttendanceAuditNumber(), "COURT_USER");
+                capturedAppearance1.getAttendanceAuditNumber());
             verify(jurorHistoryService, times(1)).createJuryAttendanceHistory(jurorPool2,
-                capturedAppearance1.getAttendanceAuditNumber(), "COURT_USER");
+                capturedAppearance1.getAttendanceAuditNumber());
         }
 
         @Test
