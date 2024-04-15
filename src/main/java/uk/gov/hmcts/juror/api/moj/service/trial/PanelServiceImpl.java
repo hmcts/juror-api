@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NO_PANEL_EXIST;
@@ -43,7 +44,11 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 
 @Slf4j
 @Service
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.TooManyMethods",
+    "PMD.GodClass"
+})
 public class PanelServiceImpl implements PanelService {
 
     @Autowired
@@ -121,14 +126,15 @@ public class PanelServiceImpl implements PanelService {
 
     private void addPanelMembersTrialValidationChecks(String trialNumber,
                                                       String courtLocationCode) {
-        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, courtLocationCode);
+        Optional<Trial> trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
+            courtLocationCode);
 
-        if (trial == null) {
+        if (!trial.isPresent()) {
             throw new MojException.NotFound(String.format("Cannot find trial with number: %s for court location %s",
                 trialNumber, courtLocationCode), null);
         }
 
-        if (trial.getTrialEndDate() != null) {
+        if (trial.get().getTrialEndDate() != null) {
             throw new MojException.BusinessRuleViolation(
                 "Cannot add panel members - Trial has ended", TRIAL_HAS_ENDED
             );
