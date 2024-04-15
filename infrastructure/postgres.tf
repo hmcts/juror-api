@@ -33,7 +33,7 @@ module "postgresql_flexible" {
       value = "dblink,tablefunc"
     },
     {
-      name  = "backslash_quote",
+      name  = "backslash_quote"
       value = "on"
     },
     {
