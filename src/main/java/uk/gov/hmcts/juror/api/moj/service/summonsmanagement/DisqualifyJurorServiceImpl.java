@@ -114,6 +114,11 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
         }
 
         if (!ReplyMethod.NONE.equals(disqualifyJurorDto.getReplyMethod())) {
+
+            if (jurorResponse == null) {
+                throw new MojException.NotFound("Juror response not found", null);
+            }
+
             //Check the status of the juror response to ensure only responses in the correct status can be updated
             checkJurorResponseStatus(jurorResponse);
 
@@ -121,9 +126,9 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
             final ProcessingStatus oldProcessingStatus = setJurorResponseProcessingStatus(jurorResponse);
 
             //Save the updated juror response
-            if (disqualifyJurorDto.getReplyMethod().equals(ReplyMethod.PAPER)) {
+            if (ReplyMethod.PAPER.equals(disqualifyJurorDto.getReplyMethod())) {
                 saveJurorPaperResponse(payload.getLogin(), (PaperResponse) jurorResponse);
-            } else if (disqualifyJurorDto.getReplyMethod().equals(ReplyMethod.DIGITAL)) {
+            } else if (ReplyMethod.DIGITAL.equals(disqualifyJurorDto.getReplyMethod())) {
                 saveJurorDigitalResponse(payload.getLogin(), oldProcessingStatus, (DigitalResponse) jurorResponse);
             }
         }
@@ -137,7 +142,6 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
 
         if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())) {
             //Queue request for a letter to be sent to the juror
-            // TODO need to check if this is the right letter to send
             printDataService.printWithdrawalLetter(jurorPool);
         }
 

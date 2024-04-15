@@ -65,6 +65,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
@@ -1229,18 +1230,26 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     public void markResponded(String jurorNumber) {
         log.info("Marking juror {} as responded", jurorNumber);
 
-        JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
+        final JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
             SecurityUtil.getActiveOwner());
+        final String auditorUsername = SecurityUtil.getActiveLogin();
+        final Juror juror = jurorPool.getJuror();
 
-        Juror juror = jurorPool.getJuror();
         juror.setResponded(true);
         jurorRepository.save(juror);
-
-        jurorPool.setUserEdtq(SecurityUtil.getActiveLogin());
+        jurorPool.setUserEdtq(auditorUsername);
         jurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));
-        // TODO check if a letter needs to be queued for juror as well
-
         jurorPoolRepository.save(jurorPool);
+
+        final JurorHistory history = JurorHistory.builder()
+            .jurorNumber(jurorNumber)
+            .historyCode(HistoryCodeMod.RESPONDED_POSITIVELY)
+            .createdBy(auditorUsername)
+            .otherInformation(JurorHistory.RESPONDED)
+            .poolNumber(jurorPool.getPoolNumber())
+            .dateCreated(LocalDateTime.now())
+            .build();
+        jurorHistoryRepository.save(history);
     }
 
     private JurorPool getJurorPool(String jurorNumber, String poolNumber) {
