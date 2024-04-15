@@ -400,8 +400,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             }
             boolean isFulLDay = appearance.isFullDay();
             if (appearance.isDraftExpense() || !AppearanceStage.EXPENSE_ENTERED.equals(oldAppearanceStage)) {
-                appearance.setAttendanceType(isFulLDay ?
-                    (isLongTrail ? AttendanceType.FULL_DAY_LONG_TRIAL : AttendanceType.FULL_DAY) :
+                appearance.setAttendanceType(isFulLDay
+                    ? (isLongTrail ? AttendanceType.FULL_DAY_LONG_TRIAL : AttendanceType.FULL_DAY) :
                     (isLongTrail ? AttendanceType.HALF_DAY_LONG_TRIAL : AttendanceType.HALF_DAY));
             }
             appearanceRepository.saveAndFlush(appearance);
@@ -410,9 +410,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             appearance.setTimeIn(null);
             appearance.setTimeOut(null);
             appearance.setNonAttendanceDay(Boolean.TRUE);
-            appearance.setAttendanceType(isLongTrail ?
-                AttendanceType.NON_ATTENDANCE_LONG_TRIAL :
-                AttendanceType.NON_ATTENDANCE);
+            appearance.setAttendanceType(isLongTrail
+                ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL : AttendanceType.NON_ATTENDANCE);
             appearanceRepository.saveAndFlush(appearance);
 
         } else if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.ABSENCE)) {
@@ -1200,22 +1199,22 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             return;
         }
 
-        boolean isLongTrailDay =
+        boolean isLongTrialDay =
             jurorExpenseService.isLongTrialDay(appearance.getJurorNumber(), appearance.getPoolNumber(),
                 appearance.getAttendanceDate());
 
         if (appearance.getAttendanceType() != null && Set.of(AttendanceType.NON_ATTENDANCE,
                 AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
             .contains(appearance.getAttendanceType())) {
-            appearance.setAttendanceType(isLongTrailDay
+            appearance.setAttendanceType(isLongTrialDay
                 ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL : AttendanceType.NON_ATTENDANCE
             );
         } else if (appearance.isFullDay()) {
-            appearance.setAttendanceType(isLongTrailDay
+            appearance.setAttendanceType(isLongTrialDay
                 ? AttendanceType.FULL_DAY_LONG_TRIAL : AttendanceType.FULL_DAY
             );
         } else {
-            appearance.setAttendanceType(isLongTrailDay
+            appearance.setAttendanceType(isLongTrialDay
                 ? AttendanceType.HALF_DAY_LONG_TRIAL : AttendanceType.HALF_DAY);
         }
     }
