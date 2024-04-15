@@ -33,8 +33,8 @@ module "postgresql_flexible" {
       value = "dblink,tablefunc"
     },
     {
-      "name" : "backslash_quote",
-      "value" : "on"
+      name  = "backslash_quote",
+      value = "on"
     },
     {
       name  = "azure.enable_temp_tablespaces_on_local_ssd"
