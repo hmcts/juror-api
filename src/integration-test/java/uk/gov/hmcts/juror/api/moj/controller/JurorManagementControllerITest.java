@@ -76,7 +76,7 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     private static final String JUROR1 = "111111111";
@@ -117,7 +117,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         initHeaders();
     }
 
-    private void initHeaders() throws Exception {
+    @SuppressWarnings("PMD.LawOfDemeter")
+    private void initHeaders() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)

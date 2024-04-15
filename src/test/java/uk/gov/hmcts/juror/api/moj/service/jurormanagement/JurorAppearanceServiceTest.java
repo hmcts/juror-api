@@ -2874,7 +2874,7 @@ class JurorAppearanceServiceTest {
 
         @Test
         @DisplayName("Get Jurors On Trials happy path")
-        void getJurorsOnTrialHappy() {
+        void jurorsOnTrialHappy() {
 
 
             final String locationCode = "415";
@@ -2922,7 +2922,7 @@ class JurorAppearanceServiceTest {
 
         @Test
         @DisplayName("Get Jurors On Trials - wrong court")
-        void getJurorsOnTrialWrongCourt() {
+        void jurorsOnTrialWrongCourt() {
 
 
             final String locationCode = "416";
@@ -2947,7 +2947,7 @@ class JurorAppearanceServiceTest {
 
         @Test
         @DisplayName("Get Jurors On Trials No Records found")
-        void getJurorsOnTrialNoRecordsFound() {
+        void jurorsOnTrialNoRecordsFound() {
 
 
             final String locationCode = "415";
@@ -3046,7 +3046,7 @@ class JurorAppearanceServiceTest {
                 now().minusDays(1))).thenReturn(Optional.of(appearance1));
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(JUROR2,
                 now().minusDays(1))).thenReturn(Optional.of(appearance2));
-            when(appearanceRepository.getNextAttendanceAuditNumber()).thenReturn(10123456L);
+            when(appearanceRepository.getNextAttendanceAuditNumber()).thenReturn(10_123_456L);
 
             jurorAppearanceService.confirmJuryAttendance(request);
 
@@ -3072,9 +3072,9 @@ class JurorAppearanceServiceTest {
 
             Appearance capturedAppearance1 =
                 appearanceCaptor.getAllValues().stream()
-                    .filter(app -> app.getJurorNumber().equalsIgnoreCase(JUROR1))
+                    .filter(app -> JUROR1.equalsIgnoreCase(app.getJurorNumber()))
                     .findFirst().get();
-            assertThat(capturedAppearance1.getJurorNumber()).isEqualTo(JUROR1);
+            assertThat(JUROR1).isEqualTo(capturedAppearance1.getJurorNumber());
             assertThat(capturedAppearance1.getAttendanceDate()).isEqualTo(request.getCommonData().getAttendanceDate());
             assertThat(capturedAppearance1.getCourtLocation()).isEqualTo(courtLocation);
             assertThat(capturedAppearance1.getPoolNumber()).isEqualTo(jurorPool1.getPool().getPoolNumber());
@@ -3086,9 +3086,9 @@ class JurorAppearanceServiceTest {
 
             Appearance capturedAppearance2 =
                 appearanceCaptor.getAllValues().stream()
-                    .filter(app -> app.getJurorNumber().equalsIgnoreCase(JUROR2))
+                    .filter(app -> JUROR2.equalsIgnoreCase(app.getJurorNumber()))
                     .findFirst().get();
-            assertThat(capturedAppearance2.getJurorNumber()).isEqualTo(JUROR2);
+            assertThat(JUROR2).isEqualTo(capturedAppearance2.getJurorNumber());
             assertThat(capturedAppearance2.getAttendanceDate()).isEqualTo(request.getCommonData().getAttendanceDate());
             assertThat(capturedAppearance2.getCourtLocation()).isEqualTo(courtLocation);
             assertThat(capturedAppearance2.getPoolNumber()).isEqualTo(jurorPool1.getPool().getPoolNumber());

@@ -1236,6 +1236,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(financialLoss.getOtherCostsDescription()).isEqualTo(otherDescription);
             }
 
+            @SuppressWarnings("PMD.ExcessiveParameterList")
             private void validateTravel(DailyExpenseTravel travel,
                                         Boolean travelByCar, Integer jurorsByCar,
                                         Boolean travelByMotorcycle, Integer jurorsByMotorcycle,
@@ -2376,10 +2377,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         public static final String URL = BASE_URL + "/approve";
 
         private static final String JUROR_NUMBER = "641500020";
-
-        protected ApproveExpenses() {
-
-        }
 
         @Nested
         class Positive {
