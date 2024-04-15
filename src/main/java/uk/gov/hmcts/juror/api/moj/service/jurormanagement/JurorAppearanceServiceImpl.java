@@ -197,6 +197,11 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
+    public boolean hasAttendances(String jurorNumber) {
+        return appearanceRepository.countByJurorNumberAndAppearanceStageNotNull(jurorNumber) > 0;
+    }
+
+    @Override
     public AttendanceDetailsResponse retrieveAttendanceDetails(BureauJwtPayload payload,
                                                                RetrieveAttendanceDetailsDto request) {
         final RetrieveAttendanceDetailsDto.CommonData commonData = request.getCommonData();
