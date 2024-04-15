@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ModifyConfirmedAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
@@ -340,6 +341,101 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
+    @Transactional
+    public void modifyConfirmedAttendance(ModifyConfirmedAttendanceDto request) {
+
+        final LocalDate attendanceDate = request.getAttendanceDate();
+        final String jurorNumber = request.getJurorNumber();
+        final String poolNumber = request.getPoolNumber();
+
+
+        log.debug(
+            String.format("User %s is modifying attendance for juror %s", SecurityUtil.getActiveLogin(), jurorNumber));
+
+        JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber,
+            poolNumber);
+
+        if (jurorPool == null) {
+            throw new MojException.NotFound("No valid juror pool found for juror " + jurorNumber, null);
+        }
+
+        // validate the court user has access to the juror and pool
+        JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, SecurityUtil.getActiveOwner());
+
+        // get the appearance record if it exists
+        Appearance appearance =
+            appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(jurorNumber, poolNumber,
+                attendanceDate).orElseThrow(() -> new MojException.NotFound("No valid appearance record found", null));
+
+        modifyConfirmedAttendance(appearance,
+            request.getModifyAttendanceType(),
+            request.getCheckInTime(),
+            request.getCheckOutTime());
+    }
+
+    private void modifyConfirmedAttendance(Appearance appearance,
+                                           ModifyConfirmedAttendanceDto.ModifyAttendanceType modifyAttendanceType,
+                                           LocalTime checkInTime,
+                                           LocalTime checkOutTime
+    ) {
+        boolean isLongTrial = jurorExpenseService.isLongTrialDay(
+            appearance.getJurorNumber(),
+            appearance.getPoolNumber(),
+            appearance.getAttendanceDate());
+
+        final AppearanceStage oldAppearanceStage = appearance.getAppearanceStage();
+        if (!Set.of(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
+            .contains(appearance.getAppearanceStage())) {
+            throw new MojException.BusinessRuleViolation(
+                "Can only modify confirmed attendances that have no approved expenses",
+                MojException.BusinessRuleViolation.ErrorCode.APPEARANCE_MUST_HAVE_NO_APPROVED_EXPENSES);
+        }
+
+        appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+        if (ModifyConfirmedAttendanceDto.ModifyAttendanceType.ATTENDANCE.equals(modifyAttendanceType)) {
+            appearance.setNonAttendanceDay(Boolean.FALSE);
+            // update the check-in time
+            if (checkInTime != null) {
+                appearance.setTimeIn(checkInTime);
+            }
+
+            // update the check-out time
+            if (checkOutTime != null) {
+                appearance.setTimeOut(checkOutTime);
+            }
+            boolean isFulLDay = appearance.isFullDay();
+            if (appearance.isDraftExpense() || !AppearanceStage.EXPENSE_ENTERED.equals(oldAppearanceStage)) {
+                appearance.setAttendanceType(isFulLDay
+                    ? (isLongTrial ? AttendanceType.FULL_DAY_LONG_TRIAL : AttendanceType.FULL_DAY) :
+                    (isLongTrial ? AttendanceType.HALF_DAY_LONG_TRIAL : AttendanceType.HALF_DAY));
+            }
+            appearanceRepository.saveAndFlush(appearance);
+
+        } else if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.NON_ATTENDANCE)) {
+            appearance.setTimeIn(null);
+            appearance.setTimeOut(null);
+            appearance.setNonAttendanceDay(Boolean.TRUE);
+            appearance.setAttendanceType(isLongTrial
+                ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL : AttendanceType.NON_ATTENDANCE);
+            appearanceRepository.saveAndFlush(appearance);
+
+        } else if (modifyAttendanceType.equals(ModifyConfirmedAttendanceDto.ModifyAttendanceType.ABSENCE)) {
+            appearance.setTimeIn(null);
+            appearance.setTimeOut(null);
+            appearance.setNonAttendanceDay(Boolean.FALSE);
+            appearance.setAttendanceType(AttendanceType.ABSENT);
+            appearance.setNoShow(Boolean.TRUE);
+            appearanceRepository.saveAndFlush(appearance);
+
+        } else if (ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE.equals(modifyAttendanceType)) {
+            appearanceRepository.delete(appearance);
+        }
+        jurorExpenseService.realignExpenseDetails(appearance,
+            ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE.equals(modifyAttendanceType));
+    }
+
+
+    @Override
     @Transactional(readOnly = true)
     public JurorsToDismissResponseDto retrieveJurorsToDismiss(JurorsToDismissRequestDto request) {
 
@@ -473,6 +569,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     @Override
+    @SuppressWarnings("PMD.CognitiveComplexity")
     public void confirmJuryAttendance(UpdateAttendanceDto request) {
         log.info("Confirming jury attendance for jurors on trial");
 
@@ -1109,22 +1206,22 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             return;
         }
 
-        boolean isLongTrailDay =
+        boolean isLongTrialDay =
             jurorExpenseService.isLongTrialDay(appearance.getJurorNumber(), appearance.getPoolNumber(),
                 appearance.getAttendanceDate());
 
         if (appearance.getAttendanceType() != null && Set.of(AttendanceType.NON_ATTENDANCE,
                 AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
             .contains(appearance.getAttendanceType())) {
-            appearance.setAttendanceType(isLongTrailDay
+            appearance.setAttendanceType(isLongTrialDay
                 ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL : AttendanceType.NON_ATTENDANCE
             );
         } else if (appearance.isFullDay()) {
-            appearance.setAttendanceType(isLongTrailDay
+            appearance.setAttendanceType(isLongTrialDay
                 ? AttendanceType.FULL_DAY_LONG_TRIAL : AttendanceType.FULL_DAY
             );
         } else {
-            appearance.setAttendanceType(isLongTrailDay
+            appearance.setAttendanceType(isLongTrialDay
                 ? AttendanceType.HALF_DAY_LONG_TRIAL : AttendanceType.HALF_DAY);
         }
     }
