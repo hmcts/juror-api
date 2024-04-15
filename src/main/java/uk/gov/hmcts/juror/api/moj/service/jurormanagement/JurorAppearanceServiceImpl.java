@@ -373,7 +373,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                                            LocalTime checkInTime,
                                            LocalTime checkOutTime
     ) {
-        boolean isLongTrail = jurorExpenseService.isLongTrialDay(
+        boolean isLongTrial = jurorExpenseService.isLongTrialDay(
             appearance.getJurorNumber(),
             appearance.getPoolNumber(),
             appearance.getAttendanceDate());
@@ -401,8 +401,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             boolean isFulLDay = appearance.isFullDay();
             if (appearance.isDraftExpense() || !AppearanceStage.EXPENSE_ENTERED.equals(oldAppearanceStage)) {
                 appearance.setAttendanceType(isFulLDay
-                    ? (isLongTrail ? AttendanceType.FULL_DAY_LONG_TRIAL : AttendanceType.FULL_DAY) :
-                    (isLongTrail ? AttendanceType.HALF_DAY_LONG_TRIAL : AttendanceType.HALF_DAY));
+                    ? (isLongTrial ? AttendanceType.FULL_DAY_LONG_TRIAL : AttendanceType.FULL_DAY) :
+                    (isLongTrial ? AttendanceType.HALF_DAY_LONG_TRIAL : AttendanceType.HALF_DAY));
             }
             appearanceRepository.saveAndFlush(appearance);
 
@@ -410,7 +410,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             appearance.setTimeIn(null);
             appearance.setTimeOut(null);
             appearance.setNonAttendanceDay(Boolean.TRUE);
-            appearance.setAttendanceType(isLongTrail
+            appearance.setAttendanceType(isLongTrial
                 ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL : AttendanceType.NON_ATTENDANCE);
             appearanceRepository.saveAndFlush(appearance);
 
