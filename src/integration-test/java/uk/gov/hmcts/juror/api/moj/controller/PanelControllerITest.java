@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.CreatePanelDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorDetailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorListRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.trial.AvailableJurorsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.EmpanelDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.EmpanelListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
@@ -432,12 +434,46 @@ public class PanelControllerITest extends AbstractIntegrationTest {
             URI.create("/api/v1/moj/trial/panel/available-jurors?court_location_code=415")
         );
 
-        ResponseEntity<PanelListDto[]> responseEntity =
-            restTemplate.exchange(requestEntity, PanelListDto[].class);
+        ResponseEntity<List<AvailableJurorsDto>> responseEntity =
+            restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>() {
+            });
 
         assertThat(responseEntity.getStatusCode())
             .as("Expected status code to be ok")
             .isEqualTo(HttpStatus.OK);
+
+        List<AvailableJurorsDto> responseBody = responseEntity.getBody();
+
+        assert responseBody != null;
+
+        assertThat(responseBody)
+            .as("Expect jurors to be available across 5 pools")
+            .hasSize(5);
+
+        AvailableJurorsDto pool1 =
+            responseBody.stream().filter(summary -> "415231101".equalsIgnoreCase(summary.getPoolNumber())).findFirst()
+                .orElse(new AvailableJurorsDto());
+        assertAvailableJurorsData(pool1, 3);
+
+        AvailableJurorsDto pool2 =
+            responseBody.stream().filter(summary -> "415231102".equalsIgnoreCase(summary.getPoolNumber())).findFirst()
+                .orElse(new AvailableJurorsDto());
+        assertAvailableJurorsData(pool2, 5);
+
+        AvailableJurorsDto pool3 =
+            responseBody.stream().filter(summary -> "415231103".equalsIgnoreCase(summary.getPoolNumber())).findFirst()
+                .orElse(new AvailableJurorsDto());
+        assertAvailableJurorsData(pool3, 5);
+
+        AvailableJurorsDto pool4 =
+            responseBody.stream().filter(summary -> "415231104".equalsIgnoreCase(summary.getPoolNumber())).findFirst()
+                .orElse(new AvailableJurorsDto());
+        assertAvailableJurorsData(pool4, 14);
+
+        AvailableJurorsDto pool5 =
+            responseBody.stream().filter(summary -> "415231105".equalsIgnoreCase(summary.getPoolNumber())).findFirst()
+                .orElse(new AvailableJurorsDto());
+        assertAvailableJurorsData(pool5, 3);
     }
 
     @Test
@@ -808,4 +844,21 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         httpHeaders = initialiseHeaders("99", false, "BUREAU_USER", 89,
             "400");
     }
+
+    private void assertAvailableJurorsData(AvailableJurorsDto dto, int count) {
+
+        assertThat(dto.getAvailableJurors())
+            .as(String.format("%d responded jurors associated with this pool are checked in today", count))
+            .isEqualTo(count);
+        assertThat(dto.getServiceStartDate())
+            .as("Pool was requested for today")
+            .isEqualTo(LocalDate.now());
+        assertThat(dto.getCourtLocation())
+            .as("Court location name should be chester")
+            .isEqualToIgnoringCase("CHESTER");
+        assertThat(dto.getCourtLocationCode())
+            .as("Pool was requested for chester")
+            .isEqualToIgnoringCase("415");
+    }
+
 }

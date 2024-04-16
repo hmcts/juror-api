@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
+import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
@@ -40,6 +41,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     EntityManager entityManager;
 
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
+    private static final QPoolRequest POOL = QPoolRequest.poolRequest;
     private static final QJuror JUROR = QJuror.juror;
     private static final QAppearance APPEARANCE = QAppearance.appearance;
     private static final QJurorTrial JUROR_TRIAL = QJurorTrial.jurorTrial;
@@ -178,19 +180,29 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     public List<Tuple> getAvailableJurors(String locCode) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         return queryFactory.select(
-                JUROR_POOL.pool.poolNumber,
+                POOL.poolNumber,
                 APPEARANCE.count(),
-                JUROR_POOL.pool.returnDate,
+                POOL.returnDate,
                 COURT_LOCATION.name,
                 COURT_LOCATION.locCode
             )
-            .from(APPEARANCE)
-            .join(JUROR_POOL).on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber))
-            .join(COURT_LOCATION).on(COURT_LOCATION.locCode.eq(locCode))
+            .from(POOL)
+            .join(JUROR_POOL).on(JUROR_POOL.pool.eq(POOL))
+            .join(APPEARANCE).on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber))
+            .on(POOL.courtLocation.eq(APPEARANCE.courtLocation))
+            .join(COURT_LOCATION)
+            .on(APPEARANCE.courtLocation.eq(COURT_LOCATION))
+            .on(POOL.courtLocation.eq(COURT_LOCATION))
+            .where(COURT_LOCATION.locCode.eq(locCode))
+            .where(JUROR_POOL.isActive.eq(true))
             .where(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED))
             .where(APPEARANCE.timeIn.isNotNull())
-            .groupBy(JUROR_POOL.pool.poolNumber)
-            .groupBy(JUROR_POOL.pool.returnDate)
+            .where(APPEARANCE.timeOut.isNull())
+            .where(APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN))
+            .where(APPEARANCE.attendanceDate.eq(LocalDate.now()))
+            .where(APPEARANCE.trialNumber.isNull().or(APPEARANCE.trialNumber.isEmpty()))
+            .groupBy(POOL.poolNumber)
+            .groupBy(POOL.returnDate)
             .groupBy(COURT_LOCATION.locCode)
             .fetch();
     }
