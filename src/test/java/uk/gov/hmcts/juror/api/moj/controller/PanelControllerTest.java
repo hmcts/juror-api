@@ -128,6 +128,7 @@ class PanelControllerTest {
             "T100000025",
             poolNumbers,
             "415",
+            LocalDate.now(),
             createJwt("415", "COURT_USER"))).thenReturn(panelListDtos());
 
         mockMvc.perform(post(BASE_URL + "/create-panel")
@@ -140,6 +141,7 @@ class PanelControllerTest {
         verify(panelService, times(1)).createPanel(1,
             "T100000025",
             poolNumbers, "415",
+            LocalDate.now(),
             jwtPayload);
     }
 
@@ -152,7 +154,7 @@ class PanelControllerTest {
         mockMvc.perform(post(BASE_URL + "/creaate").principal(mockPrincipal))
             .andExpect(status().isNotFound());
 
-        verify(panelService, never()).createPanel(anyInt(), any(), any(), anyString(), any());
+        verify(panelService, never()).createPanel(anyInt(), any(), any(), anyString(),any(), any());
     }
 
     @Test
@@ -164,7 +166,7 @@ class PanelControllerTest {
         mockMvc.perform(get(BASE_URL + "/create-panel").principal(mockPrincipal))
             .andExpect(status().isMethodNotAllowed());
 
-        verify(panelService, never()).createPanel(anyInt(), any(), any(), anyString(), any());
+        verify(panelService, never()).createPanel(anyInt(), any(), any(), anyString(), any(), any());
     }
 
 
@@ -318,6 +320,7 @@ class PanelControllerTest {
             @DisplayName("Add panel members - no pool number provided")
             @Test
             void noPoolNumberProvided() {
+                final LocalDate date = LocalDate.now();
                 jwtPayload = createJwt("415", "COURT_USER");
                 BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
                 when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -331,7 +334,7 @@ class PanelControllerTest {
                 when(panelService.addPanelMembers(1,
                     "T100000025",
                     new ArrayList<>(),
-                    "415")).thenReturn(panelListDtos());
+                    "415", date)).thenReturn(panelListDtos());
 
                 Assertions.assertThatNoException().isThrownBy(() ->
                     mockMvc.perform(post(BASE_URL + "/add-panel-members").principal(mockPrincipal)
@@ -342,12 +345,14 @@ class PanelControllerTest {
                 verify(panelService, times(1)).addPanelMembers(createPanelDto.getNumberRequested(),
                     createPanelDto.getTrialNumber(),
                     createPanelDto.getPoolNumbers(),
-                    createPanelDto.getCourtLocationCode());
+                    createPanelDto.getCourtLocationCode(),
+                    date);
             }
 
             @DisplayName("Add panel members - Pool number provided")
             @Test
             void poolNumberProvided() {
+                final LocalDate date = LocalDate.now();
                 jwtPayload = createJwt("415", "COURT_USER");
                 BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
                 when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
@@ -364,7 +369,7 @@ class PanelControllerTest {
                 when(panelService.addPanelMembers(1,
                     "T100000025",
                     poolNumbers,
-                    "415")).thenReturn(panelListDtos());
+                    "415", date)).thenReturn(panelListDtos());
 
                 Assertions.assertThatNoException().isThrownBy(() ->
                     mockMvc.perform(post(BASE_URL + "/add-panel-members").principal(mockPrincipal)
@@ -375,7 +380,8 @@ class PanelControllerTest {
                 verify(panelService, times(1)).addPanelMembers(createPanelDto.getNumberRequested(),
                     createPanelDto.getTrialNumber(),
                     createPanelDto.getPoolNumbers(),
-                    createPanelDto.getCourtLocationCode());
+                    createPanelDto.getCourtLocationCode(),
+                    date);
             }
         }
     }
