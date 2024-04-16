@@ -52,6 +52,7 @@ import java.util.stream.IntStream;
 
 import static java.time.LocalDate.now;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -67,27 +68,21 @@ import static uk.gov.hmcts.juror.api.TestUtils.staffBuilder;
     "PMD.TooManyMethods"
 })
 class TrialServiceImplTest {
+
     @Mock
     private TrialRepository trialRepository;
-
     @Mock
     private JudgeRepository judgeRepository;
-
     @Mock
     private CourtroomRepository courtroomRepository;
-
     @Mock
     private CourtLocationRepository courtLocationRepository;
-
     @Mock
     private PanelRepository panelRepository;
-
     @Mock
     private AppearanceRepository appearanceRepository;
-
     @Mock
     private JurorHistoryRepository jurorHistoryRepository;
-
     @Mock
     private CompleteServiceServiceImpl completeService;
 
@@ -100,6 +95,9 @@ class TrialServiceImplTest {
     void testCreateTrial() {
         TrialDto trialDto = createTrialDto();
 
+        when(trialRepository.existsByTrialNumberAndCourtLocationLocCode(trialDto.getCaseNumber(),
+            trialDto.getCourtLocation())).thenReturn(false);
+
         when(courtroomRepository.findById(trialDto.getCourtroomId())).thenReturn(Optional.of(createCourtroom()));
 
         when(courtLocationRepository.findByLocCode(trialDto.getCourtLocation())).thenReturn(
@@ -110,6 +108,8 @@ class TrialServiceImplTest {
         TrialSummaryDto trialSummary = trialService.createTrial(
             createJwtPayload("415", "COURT_USER"), trialDto);
 
+        verify(trialRepository, times(1))
+            .existsByTrialNumberAndCourtLocationLocCode(trialDto.getCaseNumber(), trialDto.getCourtLocation());
         verify(courtroomRepository, times(1)).findById(anyLong());
         verify(courtLocationRepository, times(1)).findByLocCode(anyString());
         verify(judgeRepository, times(1)).findById(anyLong());
@@ -126,6 +126,22 @@ class TrialServiceImplTest {
         assertThat(trialSummary.getCourtroomsDto().getDescription()).isEqualTo("Courtroom 1");
         assertThat(trialSummary.getProtectedTrial()).isEqualTo(Boolean.TRUE);
         assertThat(trialSummary.getIsActive()).isEqualTo(Boolean.TRUE);
+    }
+
+    @Test
+    void testCreateTrialAlreadyExists() {
+        TrialDto trialDto = createTrialDto();
+
+        when(trialRepository.existsByTrialNumberAndCourtLocationLocCode(trialDto.getCaseNumber(),
+            trialDto.getCourtLocation())).thenReturn(true);
+
+        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() -> trialService.createTrial(
+            createJwtPayload("415", "COURT_USER"), trialDto));
+
+        verify(courtroomRepository, never()).findById(anyLong());
+        verify(courtLocationRepository, never()).findByLocCode(anyString());
+        verify(judgeRepository, never()).findById(anyLong());
+        verify(trialRepository, never()).save(any(Trial.class));
     }
 
     @Test

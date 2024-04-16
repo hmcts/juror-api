@@ -188,11 +188,12 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             restTemplate.exchange(new RequestEntity<>(trialRequest2, httpHeaders, POST,
                 URI.create(URL_CREATE)), TrialSummaryDto.class);
 
-        assertThat(responseEntity.getStatusCode()).as(ASSERT_POST_IS_SUCCESSFUL).isEqualTo(OK);
+        assertThat(responseEntity.getStatusCode()).as("Expect the POST request to be unsuccessful - "
+            + "bad request sending duplicate case number for the same location").isEqualTo(BAD_REQUEST);
 
         long countAfter = trialRepository.count();
         assertThat(countAfter)
-            .as("Expect number of trial records remain unchanged")
+            .as("Expect number of trial records increase by 1")
             .isEqualTo(countBefore + 1);
     }
 

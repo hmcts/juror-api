@@ -100,7 +100,7 @@ public class TrialServiceImpl implements TrialService {
         Trial trial = convertDtoToTrial(trialDto, courtroom, judge, courtLocation);
         trialRepository.save(trial);
 
-        //TODo confirm
+        //TODO confirm
         judge.setLastUsed(LocalDateTime.now());
         judgeRepository.save(judge);
         return createTrialSummary(trial, courtroom, judge);
