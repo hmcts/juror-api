@@ -3080,7 +3080,7 @@ class JurorAppearanceServiceTest {
             assertThat(capturedAppearance1.getPoolNumber()).isEqualTo(jurorPool1.getPool().getPoolNumber());
             assertThat(capturedAppearance1.getAttendanceType()).isEqualTo(AttendanceType.FULL_DAY);
             assertThat(capturedAppearance1.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(capturedAppearance1.getAttendanceAuditNumber()).isEqualTo("J00123456");
+            assertThat(capturedAppearance1.getAttendanceAuditNumber()).isEqualTo("J10123456");
             assertThat(capturedAppearance1.getSatOnJury()).isTrue();
 
 
@@ -3094,7 +3094,7 @@ class JurorAppearanceServiceTest {
             assertThat(capturedAppearance2.getPoolNumber()).isEqualTo(jurorPool1.getPool().getPoolNumber());
             assertThat(capturedAppearance2.getAttendanceType()).isEqualTo(AttendanceType.FULL_DAY);
             assertThat(capturedAppearance2.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(capturedAppearance2.getAttendanceAuditNumber()).isEqualTo("J00123456");
+            assertThat(capturedAppearance2.getAttendanceAuditNumber()).isEqualTo("J10123456");
             assertThat(capturedAppearance2.getSatOnJury()).isTrue();
 
             verify(jurorPoolRepository, times(2)).saveAndFlush(Mockito.any());

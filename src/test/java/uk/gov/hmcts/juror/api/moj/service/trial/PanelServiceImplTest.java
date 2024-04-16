@@ -437,8 +437,9 @@ class PanelServiceImplTest {
             doReturn(member).when(panelRepository).findByTrialTrialNumberAndJurorPoolJurorJurorNumber(
                 "T100000025",
                 member.getJurorPool().getJurorNumber());
-            doReturn(createAppearance(member.getJurorPool().getJurorNumber()))
-                .when(appearanceRepository).findByJurorNumber(member.getJurorPool().getJurorNumber());
+            doReturn(Optional.of(createAppearance(member.getJurorPool().getJurorNumber())))
+                .when(appearanceRepository).findByJurorNumberAndAttendanceDate(member.getJurorPool().getJurorNumber(),
+                    now());
         }
 
         doReturn(Optional.of(createTrial())).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(anyString(),
@@ -569,7 +570,9 @@ class PanelServiceImplTest {
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
 
                 List<String> jurorNumbers = new ArrayList<>();
-                for (int i = 0; i < maxJurors; i++) {
+                for (int i = 0;
+                     i < maxJurors;
+                     i++) {
                     jurorNumbers.add(jurorNumberFormat.formatted(i));
                 }
 
@@ -578,7 +581,9 @@ class PanelServiceImplTest {
                     .retrieveAllJurors(locCode, date);
 
                 List<Appearance> appearanceList = new ArrayList<>();
-                for (int i = 0; i < maxJurors; i++) {
+                for (int i = 0;
+                     i < maxJurors;
+                     i++) {
                     String jurorNumber = jurorNumbers.get(i);
                     Appearance appearance = createAppearance(jurorNumber);
                     doReturn(Optional.of(appearance)).when(appearanceRepository)

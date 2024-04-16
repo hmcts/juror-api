@@ -36,7 +36,6 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -1805,7 +1804,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J00123456");
+            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
             assertThat(appearance.getSatOnJury()).isTrue();
 
             appearanceOpt = appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(
@@ -1815,7 +1814,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeIn()).isEqualTo(LocalTime.of(9, 30));
             assertThat(appearance.getTimeOut()).isEqualTo(LocalTime.of(17, 00));
             assertThat(appearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
-            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J00123456");
+            assertThat(appearance.getAttendanceAuditNumber()).isEqualTo("J10123456");
             assertThat(appearance.getSatOnJury()).isTrue();
 
 
