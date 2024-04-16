@@ -112,7 +112,7 @@ class PanelServiceImplTest {
 
     @Test
     void createPanelHappyPathSelectedPools() {
-        final LocalDate date = LocalDate.now();
+        final LocalDate date = now();
         final String locCode = "415";
 
         ArrayList<String> poolNumbers = new ArrayList<>();
@@ -160,7 +160,7 @@ class PanelServiceImplTest {
     @Test
     void createPanelHappyPathNoPoolsSelected() {
         final String locCode = "415";
-        final LocalDate date = LocalDate.now();
+        final LocalDate date = now();
         doReturn(true).when(trialRepository)
             .existsByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
         doReturn(Optional.of(createTrial())).when(trialRepository)
@@ -196,7 +196,7 @@ class PanelServiceImplTest {
 
     @Test
     void createPanelHappyPathEmptyPoolSelection() {
-        final LocalDate date = LocalDate.now();
+        final LocalDate date = now();
         doReturn(true).when(trialRepository)
             .existsByTrialNumberAndCourtLocationLocCode("T100000025", "415");
         doReturn(Optional.of(createTrial())).when(trialRepository)
@@ -242,7 +242,7 @@ class PanelServiceImplTest {
                 "T100000025",
                 new ArrayList<>(),
                 anyString(),
-                LocalDate.now(),
+                now(),
                 any()));
 
         verify(trialRepository, times(1))
@@ -261,7 +261,7 @@ class PanelServiceImplTest {
                 "T100000025",
                 new ArrayList<>(),
                 anyString(),
-                LocalDate.now(),
+                now(),
                 any()));
 
         verify(trialRepository, times(1))
@@ -280,7 +280,7 @@ class PanelServiceImplTest {
                 "T100000025",
                 new ArrayList<>(),
                 anyString(),
-                LocalDate.now(),
+                now(),
                 any()));
 
         verify(trialRepository, times(1))
@@ -296,7 +296,7 @@ class PanelServiceImplTest {
                 "T100000025",
                 new ArrayList<>(),
                 anyString(),
-                LocalDate.now(),
+                now(),
                 any()),
             "Expected exception to be thrown when not enough jurors");
 
@@ -319,7 +319,7 @@ class PanelServiceImplTest {
                 "T100000025",
                 new ArrayList<>(),
                 anyString(),
-                LocalDate.now(),
+                now(),
                 any()),
             "Expected exception to be thrown when not enough jurors");
 
@@ -334,7 +334,7 @@ class PanelServiceImplTest {
 
     @Test
     void createPanelTrialNotEnoughJurors() {
-        final LocalDate date = LocalDate.now();
+        final LocalDate date = now();
         final String locCode = "415";
 
         List<JurorPool> appearanceList;
@@ -523,7 +523,7 @@ class PanelServiceImplTest {
             @Test
             @DisplayName("Add panel members - no pool number provided")
             void addPanelMembersNoPoolProvided() {
-                final LocalDate date = LocalDate.now();
+                final LocalDate date = now();
                 TestUtils.setUpMockAuthentication("415", "COURT_USER", "99", Collections.singletonList("415"));
                 final int maxJurors = 10;
                 final String jurorNumberFormat = "1111112%02d";
@@ -585,7 +585,7 @@ class PanelServiceImplTest {
             @Test
             @DisplayName("Add panel members - included pool number")
             void addPanelMembersPoolNumberProvided() {
-                final LocalDate date = LocalDate.now();
+                final LocalDate date = now();
                 String locCode = "415";
 
                 TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
@@ -656,7 +656,7 @@ class PanelServiceImplTest {
             @Test
             @DisplayName("Add panel members - no trial")
             void noTrial() {
-                final LocalDate date = LocalDate.now();
+                final LocalDate date = now();
                 String locCode = "415";
                 TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
                 MojException.NotFound exception = assertThrows(MojException.NotFound.class, () -> {
@@ -687,7 +687,7 @@ class PanelServiceImplTest {
             @Test
             @DisplayName("Add panel members - no panel members")
             void noPanelMembers() {
-                final LocalDate date = LocalDate.now();
+                final LocalDate date = now();
                 String locCode = "415";
                 TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
                 doReturn(Optional.of(createTrial())).when(trialRepository)
@@ -720,7 +720,7 @@ class PanelServiceImplTest {
             @Test
             @DisplayName("Add panel members - none requested")
             void zeroRequested() {
-                final LocalDate date = LocalDate.now();
+                final LocalDate date = now();
                 String locCode = "415";
                 TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
                 doReturn(Optional.of(createTrial())).when(trialRepository)
@@ -755,7 +755,7 @@ class PanelServiceImplTest {
             @Test
             @DisplayName("Add panel members - too many requested")
             void tooManyRequested() {
-                final LocalDate date = LocalDate.now();
+                final LocalDate date = now();
                 String locCode = "415";
                 TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
                 doReturn(Optional.of(createTrial())).when(trialRepository)
@@ -790,7 +790,7 @@ class PanelServiceImplTest {
             @Test
             @DisplayName("Add panel members - not enough available jurors")
             void notEnoughAvailableJurors() {
-                final LocalDate date = LocalDate.now();
+                final LocalDate date = now();
                 String locCode = "415";
                 TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
                 doReturn(Optional.of(createTrial())).when(trialRepository)
@@ -825,11 +825,11 @@ class PanelServiceImplTest {
             @Test
             @DisplayName("Add panel members - trial has ended")
             void trialHasEnded() {
-                final LocalDate date = LocalDate.now();
+                final LocalDate date = now();
                 String locCode = "415";
                 TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
                 Trial trial = createTrial();
-                trial.setTrialEndDate(LocalDate.now());
+                trial.setTrialEndDate(now());
                 doReturn(Optional.of(trial)).when(trialRepository)
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
@@ -860,7 +860,7 @@ class PanelServiceImplTest {
             @Test
             @DisplayName("Add panel members - no pool found")
             void noPoolFound() {
-                final LocalDate date = LocalDate.now();
+                final LocalDate date = now();
                 String locCode = "415";
                 TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
                 doReturn(true).when(trialRepository)
