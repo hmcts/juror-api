@@ -127,6 +127,46 @@ class JurorAppearanceServiceTest {
     }
 
     @Test
+    void markJurorAsAbsentHappyPath() {
+        // mock request and dependencies
+        List<String> jurors = new ArrayList<>();
+        jurors.add(JUROR1);
+
+        CourtLocation courtLocation = getCourtLocation();
+
+        when(courtLocationRepository.findByLocCode(anyString())).thenReturn(Optional.of(courtLocation));
+
+        UpdateAttendanceDto request = buildUpdateAttendanceDto(jurors);
+        request.getCommonData().setStatus(UpdateAttendanceStatus.CONFIRM_ATTENDANCE);
+        request.getCommonData().setCheckOutTime(null);
+        request.getCommonData().setSingleJuror(Boolean.TRUE);
+
+        RetrieveAttendanceDetailsDto dto = buildRetrieveAttendanceDetailsDto(jurors);
+
+        Tuple t3 = mock(Tuple.class);
+        mockQueryResultAbsent(t3, JUROR8, "TEST", "EIGHT", 2);
+
+        Tuple t4 = mock(Tuple.class);
+        mockQueryResultAbsent(t4, JUROR9, "TEST", "NINE", 2);
+
+        List<Tuple> absentTuples = new ArrayList<>();
+        absentTuples.add(t3);
+        absentTuples.add(t4);
+        doReturn(absentTuples).when(appearanceRepository).retrieveNonAttendanceDetails(dto.getCommonData());        //
+        // invoke actual service method under test
+        jurorAppearanceService.markJurorAsAbsent(buildPayload(OWNER_415, List.of(LOC_415)), request.getCommonData());
+
+        ArgumentCaptor<RetrieveAttendanceDetailsDto.CommonData> commonDataArgumentCaptor =
+            ArgumentCaptor.forClass(RetrieveAttendanceDetailsDto.CommonData.class);
+
+        verify(courtLocationRepository, times(1)).findByLocCode(TestConstants.VALID_COURT_LOCATION);
+        verify(appearanceRepository, times(1))
+            .retrieveNonAttendanceDetails(commonDataArgumentCaptor.capture());
+        verify(appearanceRepository, times(1)).saveAllAndFlush(any());
+
+    }
+
+    @Test
     void addAttendanceDayHappyPath() {
         jurorAppearanceService = spy(jurorAppearanceService);
 
@@ -1994,6 +2034,19 @@ class JurorAppearanceServiceTest {
             .checkInTime(LocalTime.of(9, 30))
             .checkOutTime(LocalTime.of(17, 0))
             .build();
+    }
+
+    private UpdateAttendanceDto.CommonData buildCommonData(LocalDate attendanceDate, LocalTime checkIn,
+                                                           LocalTime checkOut, Boolean singleJuror) {
+        UpdateAttendanceDto.CommonData commonData = new UpdateAttendanceDto.CommonData();
+        commonData.setLocationCode(TestConstants.VALID_COURT_LOCATION);
+        commonData.setAttendanceDate(attendanceDate);
+        commonData.setStatus(UpdateAttendanceStatus.CONFIRM_ATTENDANCE);
+        commonData.setCheckInTime(checkIn);
+        commonData.setCheckOutTime(checkOut);
+        commonData.setSingleJuror(singleJuror);
+
+        return commonData;
     }
 
     private BureauJwtPayload buildPayload(String owner, List<String> courts) {

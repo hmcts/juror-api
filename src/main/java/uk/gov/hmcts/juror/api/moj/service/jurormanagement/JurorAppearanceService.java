@@ -36,6 +36,8 @@ public interface JurorAppearanceService {
 
     AttendanceDetailsResponse deleteAttendance(BureauJwtPayload payload, UpdateAttendanceDto request);
 
+    void markJurorAsAbsent(BureauJwtPayload payload, UpdateAttendanceDto.CommonData request);
+
     JurorsToDismissResponseDto retrieveJurorsToDismiss(JurorsToDismissRequestDto request);
 
     void addNonAttendance(JurorNonAttendanceDto request);
