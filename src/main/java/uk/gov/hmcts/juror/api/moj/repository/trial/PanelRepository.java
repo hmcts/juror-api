@@ -17,7 +17,8 @@ public interface PanelRepository extends IPanelRepository, JpaRepository<Panel, 
     Panel findByTrialTrialNumberAndJurorPoolJurorJurorNumber(String trialNumber, String jurorNumber);
 
     Panel findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(String trialNumber,
-     String locCode, String jurorNumber);
+                                                                                         String locCode,
+                                                                                         String jurorNumber);
 
     boolean existsByTrialTrialNumber(String trialNumber);
 
