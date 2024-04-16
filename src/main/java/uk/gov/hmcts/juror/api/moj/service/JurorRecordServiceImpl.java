@@ -768,6 +768,11 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         AbstractJurorResponse response =
             jurorResponseCommonRepositoryMod.findByJurorNumber(opticsRefRequestDto.getJurorNumber());
 
+        if (response == null) {
+            throw new MojException.NotFound("Cannot find juror response record for juror "
+                + opticsRefRequestDto.getJurorNumber(), null);
+        }
+
         if (response.getProcessingComplete().equals(true) || response.getProcessingStatus()
             .equals(ProcessingStatus.CLOSED)) {
             throw new MojException.BusinessRuleViolation("Cannot check court accommodation - Response has been "
@@ -787,7 +792,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         jurorRepository.save(juror);
         response.setProcessingStatus(ProcessingStatus.AWAITING_COURT_REPLY);
 
-        if (response.getReplyType().getType().equals(ReplyMethod.DIGITAL.getDescription())) {
+        if (ReplyMethod.DIGITAL.getDescription().equals(response.getReplyType().getType())) {
             jurorResponseRepository.save((DigitalResponse) response);
             log.debug("Finished adding optics reference for juror {}", jurorNumber);
         } else {

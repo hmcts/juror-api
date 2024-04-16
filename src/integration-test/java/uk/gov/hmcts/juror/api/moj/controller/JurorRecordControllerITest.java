@@ -683,6 +683,24 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
+    void createJurorOpticReferenceWrongJurorNumber() throws Exception {
+        String poolNumber = "415220502";
+        String opticRef = "12345678";
+        JurorOpticRefRequestDto requestDto = createOpticRefRequestDto("900000000", poolNumber, opticRef);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+            JURY_OFFICER_LEVEL));
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP POST request to be NOT_FOUND ")
+            .isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).contains(
+            "Cannot find juror response record for juror 900000000");
+    }
+
+    @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorGetOpticalReferenceBureau.sql"})
     void getOpticReferenceBureauUser() {
         ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
