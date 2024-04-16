@@ -112,18 +112,20 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                         .jurorStatus(jurorPool.getStatus())
                         .build();
                 response.getJurors().add(jurorData);
+
+            } else {
+
+                BiConsumer<PrintDataService, JurorPool> letterPrinter = formCode.getLetterPrinter();
+                if (letterPrinter == null) {
+                    throw new MojException.InternalServerError(
+                        "Attempting to send a letter without a resend letter function", null);
+                }
+
+                letterPrinter.accept(printDataService, jurorPools.get(0));
+
+                // create letter history
+                createLetterHistory(letter);
             }
-
-            BiConsumer<PrintDataService, JurorPool> letterPrinter = formCode.getLetterPrinter();
-            if (letterPrinter == null) {
-                throw new MojException.InternalServerError(
-                    "Attempting to send a letter without a resend letter function", null);
-            }
-
-            letterPrinter.accept(printDataService, jurorPools.get(0));
-
-            // create letter history
-            createLetterHistory(letter);
         });
 
         return response;
