@@ -3259,8 +3259,8 @@ class JurorRecordServiceTest {
                 jurorRecordService.getJurorAttendanceDetails(TestConstants.VALID_JUROR_NUMBER,
                     TestConstants.VALID_POOL_NUMBER, buildPayload(owner));
 
-            assertEquals(1, jurorAttendanceDetailsResponseDto.getData().size(),
-                "One attendance record should be returned");
+            assertEquals(2, jurorAttendanceDetailsResponseDto.getData().size(),
+                "Two attendance record should be returned");
 
             verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
