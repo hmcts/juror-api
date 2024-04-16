@@ -424,6 +424,37 @@ class PanelServiceImplTest {
     }
 
     @Test
+    void processEmpanlledChallenged() {
+        final int totalPanelMembers = 10;
+        List<Panel> panelMembers = createPanelMembers(totalPanelMembers);
+
+
+        for (Panel panelMember : panelMembers) {
+            panelMember.setResult(PanelResult.CHALLENGED);
+        }
+
+        for (Panel member : panelMembers) {
+            doReturn(member).when(panelRepository).findByTrialTrialNumberAndJurorPoolJurorJurorNumber(
+                "T100000025",
+                member.getJurorPool().getJurorNumber());
+            doReturn(createAppearance(member.getJurorPool().getJurorNumber()))
+                .when(appearanceRepository).findByJurorNumber(member.getJurorPool().getJurorNumber());
+        }
+
+        doReturn(Optional.of(createTrial())).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(anyString(),
+            anyString());
+
+        JurorListRequestDto jurorListRequestDto =
+            createEmpanelledListRequestDto(panelMembers);
+
+        BureauJwtPayload payload = buildPayload();
+        panelService.processEmpanelled(jurorListRequestDto, payload);
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(any());
+        verify(panelRepository, times(totalPanelMembers)).saveAndFlush(any());
+        verify(jurorHistoryRepository, times(totalPanelMembers)).save(any());
+    }
+
+    @Test
     void processEmpanelledAsJurorNumberRequestedNotEnough() {
         JurorListRequestDto jurorListRequestDto =
             createEmpanelledListRequestDto(Collections.singletonList(createSinglePanelData()));
