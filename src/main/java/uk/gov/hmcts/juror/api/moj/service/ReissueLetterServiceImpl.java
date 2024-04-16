@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -74,9 +75,12 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
     @Override
     @Transactional
-    public void reissueLetter(ReissueLetterRequestDto request) {
+    public ReissueLetterReponseDto reissueLetter(ReissueLetterRequestDto request) {
         String login = SecurityUtil.getActiveUsersBureauPayload().getLogin();
         log.debug("Reissue letters request received from Bureau user {}", login);
+
+        ReissueLetterReponseDto response = new ReissueLetterReponseDto();
+        response.setJurors(new ArrayList<>());
 
         request.getLetters().stream().forEach(letter -> {
             // ensure the request to reprint the letter meets criteria
@@ -84,7 +88,6 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
             FormCode formCode = FormCode.getFormCode(letter.getFormCode());
 
-            // TODO: history to show letter requested by bureau user
             log.debug("Printing letter for juror number {} with form code {}", letter.getJurorNumber(),
                 letter.getFormCode());
 
@@ -92,16 +95,27 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                 formCode.getJurorStatus(), jurorStatusRepository);
 
             List<JurorPool> jurorPools = jurorPoolRepository
-                .findByJurorJurorNumberAndStatusOrderByDateCreatedDesc(letter.getJurorNumber(),
-                    jurorStatus);
+                .findByJurorJurorNumberOrderByDateCreatedDesc(letter.getJurorNumber());
 
             if (jurorPools.isEmpty()) {
                 throw new MojException.NotFound("Juror not found for juror number "
                     + letter.getJurorNumber(), null);
             }
 
+            if (!jurorStatus.equals(jurorPools.get(0).getStatus())) {
+                JurorPool jurorPool = jurorPools.get(0);
+                ReissueLetterReponseDto.ReissueLetterResponseData jurorData =
+                    ReissueLetterReponseDto.ReissueLetterResponseData.builder()
+                        .jurorNumber(letter.getJurorNumber())
+                        .firstName(jurorPool.getJuror().getFirstName())
+                        .lastName(jurorPool.getJuror().getLastName())
+                        .jurorStatus(jurorPool.getStatus())
+                        .build();
+                response.getJurors().add(jurorData);
+            }
+
             BiConsumer<PrintDataService, JurorPool> letterPrinter = formCode.getLetterPrinter();
-            if (letterPrinter.equals(null)) {
+            if (letterPrinter == null) {
                 throw new MojException.InternalServerError(
                     "Attempting to send a letter without a resend letter function", null);
             }
@@ -111,6 +125,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             // create letter history
             createLetterHistory(letter);
         });
+
+        return response;
     }
 
     @Override
