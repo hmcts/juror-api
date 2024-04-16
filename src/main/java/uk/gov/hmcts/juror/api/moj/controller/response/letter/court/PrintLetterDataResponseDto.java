@@ -67,6 +67,7 @@ public class PrintLetterDataResponseDto implements Serializable {
         private BigDecimal lossOfEarnings;
         private BigDecimal childCare;
         private BigDecimal misc;
+        @JsonFormat(pattern = "yyyy-MM-dd")
         private LocalDate attendanceDate;
     }
 
