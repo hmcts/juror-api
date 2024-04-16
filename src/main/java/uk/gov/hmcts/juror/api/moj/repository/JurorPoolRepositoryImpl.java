@@ -35,8 +35,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.querydsl.core.group.GroupBy.max;
-
 /**
  * Custom Repository implementation for the JurorPool entity.
  */
