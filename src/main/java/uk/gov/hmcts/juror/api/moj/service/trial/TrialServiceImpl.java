@@ -57,26 +57,21 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
     "PMD.TooManyMethods"
 })
 public class TrialServiceImpl implements TrialService {
+
     @Autowired
     private TrialRepository trialRepository;
     @Autowired
     private JudgeRepository judgeRepository;
-
     @Autowired
     private CourtroomRepository courtroomRepository;
-
     @Autowired
     private CourtLocationRepository courtLocationRepository;
-
     @Autowired
     private PanelRepository panelRepository;
-
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
-
     @Autowired
     private AppearanceRepository appearanceRepository;
-
     @Autowired
     private CompleteServiceService completeService;
 
@@ -84,6 +79,14 @@ public class TrialServiceImpl implements TrialService {
 
     @Override
     public TrialSummaryDto createTrial(BureauJwtPayload payload, TrialDto trialDto) {
+
+        if (trialRepository.existsByTrialNumberAndCourtLocationLocCode(trialDto.getCaseNumber(),
+            trialDto.getCourtLocation())) {
+            throw new MojException.BadRequest(String.format("Unable to create trial with case number: %s at "
+                    + "location code %s (case number already in use at this location)", trialDto.getCaseNumber(),
+                trialDto.getCourtLocation()), null);
+        }
+
         Courtroom courtroom =
             RepositoryUtils.unboxOptionalRecord(courtroomRepository.findById(trialDto.getCourtroomId()),
                 trialDto.getCourtroomId().toString());
@@ -93,11 +96,11 @@ public class TrialServiceImpl implements TrialService {
         Judge judge =
             RepositoryUtils.unboxOptionalRecord(judgeRepository.findById(trialDto.getJudgeId()),
                 trialDto.getJudgeId().toString());
-        
+
         Trial trial = convertDtoToTrial(trialDto, courtroom, judge, courtLocation);
         trialRepository.save(trial);
 
-        //TODo confirm
+        //TODO confirm
         judge.setLastUsed(LocalDateTime.now());
         judgeRepository.save(judge);
         return createTrialSummary(trial, courtroom, judge);
@@ -127,7 +130,7 @@ public class TrialServiceImpl implements TrialService {
 
         Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNo, locCode)
             .orElseThrow(() -> new MojException.NotFound(String.format("Cannot find trial with "
-            + "number: %s for court location %s", trialNo, locCode), null));
+                + "number: %s for court location %s", trialNo, locCode), null));
 
         if (trial == null) {
             throw new MojException.NotFound("Cannot find trial %s for court location %s.".formatted(trialNo, locCode),
