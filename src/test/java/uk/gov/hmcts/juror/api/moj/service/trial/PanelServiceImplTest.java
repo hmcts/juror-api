@@ -132,8 +132,12 @@ class PanelServiceImplTest {
 
         doReturn(createJurorPool(jurorNumbers, poolNumbers.get(0))).when(appearanceRepository)
             .getJurorsInPools(locCode, poolNumbers);
-        doReturn(createAppearance("121212121")).when(appearanceRepository).findByJurorNumber("121212121");
-        doReturn(createAppearance("111111111")).when(appearanceRepository).findByJurorNumber("111111111");
+        doReturn(Optional.of(createAppearance("121212121"))).when(appearanceRepository)
+            .findByJurorNumberAndAttendanceDate("121212121", now());
+        doReturn(Optional.of(createAppearance("121212121"))).when(appearanceRepository)
+            .findByJurorNumberAndAttendanceDate("121212121", now());
+        doReturn(Optional.of(createAppearance("111111111"))).when(appearanceRepository)
+            .findByJurorNumberAndAttendanceDate("111111111", now());
 
         List<PanelListDto> dtoList = panelService.createPanel(2,
             "T100000025",
@@ -165,8 +169,10 @@ class PanelServiceImplTest {
         jurorNumbers.add("111111111");
 
         doReturn(createJurorPool(jurorNumbers, "415231201")).when(appearanceRepository).retrieveAllJurors(locCode);
-        doReturn(createAppearance("111111111")).when(appearanceRepository).findByJurorNumber("111111111");
-        doReturn(createAppearance("121212121")).when(appearanceRepository).findByJurorNumber("121212121");
+        doReturn(Optional.of(createAppearance("111111111"))).when(appearanceRepository)
+            .findByJurorNumberAndAttendanceDate("111111111", now());
+        doReturn(Optional.of(createAppearance("121212121"))).when(appearanceRepository)
+            .findByJurorNumberAndAttendanceDate("121212121", now());
 
         List<PanelListDto> dtoList = panelService.createPanel(2,
             "T100000025",
@@ -199,8 +205,10 @@ class PanelServiceImplTest {
 
         doReturn(createJurorPool(jurorNumbers, "415231201")).when(appearanceRepository)
             .retrieveAllJurors(locCode);
-        doReturn(createAppearance("121212121")).when(appearanceRepository).findByJurorNumber("121212121");
-        doReturn(createAppearance("111111111")).when(appearanceRepository).findByJurorNumber("111111111");
+        doReturn(Optional.of(createAppearance("121212121"))).when(appearanceRepository)
+            .findByJurorNumberAndAttendanceDate("121212121", now());
+        doReturn(Optional.of(createAppearance("111111111"))).when(appearanceRepository)
+            .findByJurorNumberAndAttendanceDate("111111111", now());
 
         ArrayList<String> poolNumbers = new ArrayList<>();
         List<PanelListDto> dtoList = panelService.createPanel(2,
@@ -382,8 +390,9 @@ class PanelServiceImplTest {
             doReturn(member).when(panelRepository).findByTrialTrialNumberAndJurorPoolJurorJurorNumber(
                 "T100000025",
                 member.getJurorPool().getJurorNumber());
-            doReturn(createAppearance(member.getJurorPool().getJurorNumber()))
-                .when(appearanceRepository).findByJurorNumber(member.getJurorPool().getJurorNumber());
+            doReturn(Optional.of(createAppearance(member.getJurorPool().getJurorNumber())))
+                .when(appearanceRepository).findByJurorNumberAndAttendanceDate(member.getJurorPool().getJurorNumber(),
+                    now());
             if (member.getResult() != PanelResult.JUROR) {
                 totalUnusedJurors++;
             }
@@ -400,7 +409,6 @@ class PanelServiceImplTest {
         verify(appearanceRepository, times(totalUnusedJurors)).saveAndFlush(any());
         verify(panelRepository, times(totalPanelMembers)).saveAndFlush(any());
         verify(jurorHistoryRepository, times(totalPanelMembers)).save(any());
-
     }
 
     @Test
@@ -527,7 +535,8 @@ class PanelServiceImplTest {
                 for (int i = 0; i < maxJurors; i++) {
                     String jurorNumber = jurorNumbers.get(i);
                     Appearance appearance = createAppearance(jurorNumber);
-                    doReturn(appearance).when(appearanceRepository).findByJurorNumber(jurorNumber);
+                    doReturn(Optional.of(appearance)).when(appearanceRepository)
+                        .findByJurorNumberAndAttendanceDate(jurorNumber, now());
                     appearanceList.add(appearance);
                 }
 
@@ -538,7 +547,7 @@ class PanelServiceImplTest {
 
                 verify(trialRepository, times(2))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", "415");
-                verify(panelRepository, times(2))
+                verify(panelRepository, times(1))
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
                 verify(appearanceRepository, never()).getJurorsInPools(locCode, new ArrayList<>());
                 verify(appearanceRepository, times(1)).retrieveAllJurors(locCode);
@@ -592,7 +601,8 @@ class PanelServiceImplTest {
                      i++) {
                     String jurorNumber = jurorNumbers.get(i);
                     Appearance appearance = createAppearance(jurorNumber);
-                    doReturn(appearance).when(appearanceRepository).findByJurorNumber(jurorNumber);
+                    doReturn(Optional.of(appearance)).when(appearanceRepository)
+                        .findByJurorNumberAndAttendanceDate(jurorNumber, now());
                     appearanceList.add(appearance);
                 }
 
@@ -603,7 +613,7 @@ class PanelServiceImplTest {
 
                 verify(trialRepository, times(2))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
-                verify(panelRepository, times(2))
+                verify(panelRepository, times(1))
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 verify(appearanceRepository, times(1)).getJurorsInPools(locCode,
                     Collections.singletonList("415231201"));
@@ -777,7 +787,7 @@ class PanelServiceImplTest {
 
                 verify(trialRepository, times(1))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
-                verify(panelRepository, times(2))
+                verify(panelRepository, times(1))
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 verify(appearanceRepository, never())
                     .getJurorsInPools(locCode, Collections.singletonList(""));
@@ -834,7 +844,8 @@ class PanelServiceImplTest {
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
                 doReturn(createJurorPool(Collections.singletonList("111111111"), "415231201")).when(
                     appearanceRepository).retrieveAllJurors(locCode);
-                doReturn(createAppearance("111111111")).when(appearanceRepository).findByJurorNumber("111111111");
+                doReturn(Optional.of(createAppearance("111111111"))).when(appearanceRepository)
+                    .findByJurorNumberAndAttendanceDate("111111111", now());
 
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
                     () -> {
@@ -849,7 +860,7 @@ class PanelServiceImplTest {
 
                 verify(trialRepository, times(1))
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
-                verify(panelRepository, times(2))
+                verify(panelRepository, times(1))
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 verify(appearanceRepository, times(1))
                     .getJurorsInPools(locCode, Collections.singletonList("1"));
@@ -948,6 +959,7 @@ class PanelServiceImplTest {
         return listDto;
     }
 
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private List<JurorPool> createJurorPool(List<String> jurorNumbers, String poolNumber) {
         PoolRequest poolRequest = new PoolRequest();
         poolRequest.setPoolNumber(poolNumber);

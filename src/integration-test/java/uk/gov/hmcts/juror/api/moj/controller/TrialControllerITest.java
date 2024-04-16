@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -566,7 +567,10 @@ public class TrialControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(1);
             assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
 
-            Appearance appearance = appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber());
+            Appearance appearance =
+                appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+                    LocalDate.now()).orElseThrow(() ->
+                    new MojException.NotFound("No appearance record found", null));
 
             assertThat(appearance.getTimeIn()).as("Expect time in to not be null").isNotNull();
             assertThat(appearance.getTimeIn()).as("Expect time in to be 09:00").isEqualTo(LocalTime.parse(
@@ -608,13 +612,14 @@ public class TrialControllerITest extends AbstractIntegrationTest {
                 jurorHistoryRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber()).size())
                 .as("Expect one history item for juror " + panel.getJurorPool().getJurorNumber())
                 .isEqualTo(1);
-            assertThat(
-                appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber()).getTimeIn())
-                .as("Expect time to be null").isNull();
-            assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
 
-            Appearance appearance = appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber());
+            Appearance appearance =
+                appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+                    LocalDate.now()).orElseThrow(() ->
+                    new MojException.NotFound("No appearance record found", null));
             assertThat(appearance.getTimeIn()).as("Expect time in to be null").isNull();
+            assertThat(appearance.getTimeIn()).as("Expect time to be null").isNull();
+            assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
             assertThat(appearance.getTimeOut()).as("Expect time out to be null").isNull();
             assertThat(appearance.getSatOnJury()).isTrue();
         }
@@ -652,7 +657,10 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(panel.getJurorPool().getJuror().getCompletionDate()).as(
                 "Expect completion date to be " + LocalDate.now()).isEqualTo(LocalDate.now());
 
-            Appearance appearance = appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber());
+            Appearance appearance =
+                appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+                    LocalDate.now()).orElseThrow(() ->
+                    new MojException.NotFound("No appearance record found", null));
 
             assertThat(appearance.getTimeIn()).as("Expect time in to not be null").isNotNull();
             assertThat(appearance.getTimeIn()).as("Expect time in to be 09:00").isEqualTo(LocalTime.parse(

@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.bureau.service;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseOverviewDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
+import uk.gov.hmcts.juror.api.bureau.controller.response.BureauYourWorkCounts;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 
 /**
@@ -12,6 +13,8 @@ public interface BureauService {
     BureauJurorDetailDto getDetailsByJurorNumber(String jurorNumber);
 
     BureauResponseSummaryWrapper getDetailsByProcessingStatus(String status);
+
+    BureauYourWorkCounts getCounts(String staffLogin);
 
     BureauResponseSummaryWrapper getTodo(String staffLogin);
 

@@ -179,7 +179,8 @@ public class TrialServiceImpl implements TrialService {
         jurorStatus.setStatus(IJurorStatus.RESPONDED);
         for (Panel panel : juryMembersToBeReturned) {
             final String jurorNumber = panel.getJurorPool().getJurorNumber();
-            Appearance appearance = appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber());
+            Appearance appearance = RepositoryUtils.unboxOptionalRecord(
+                appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber, LocalDate.now()), jurorNumber);
             // only apply check in time for those that have not been checked in yet
             if (appearance.getTimeIn() == null && StringUtils.isNotEmpty(returnJuryDto.getCheckIn())) {
                 appearance.setTimeIn(LocalTime.parse(returnJuryDto.getCheckIn()));

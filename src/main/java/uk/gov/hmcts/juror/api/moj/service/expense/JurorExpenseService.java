@@ -81,4 +81,6 @@ public interface JurorExpenseService {
         String jurorNumber, String poolNumber, List<LocalDate> dates);
 
     SummaryExpenseDetailsDto calculateSummaryTotals(String jurorNumber, String poolNumber);
+
+    void realignExpenseDetails(Appearance appearance, boolean isDeleted);
 }
