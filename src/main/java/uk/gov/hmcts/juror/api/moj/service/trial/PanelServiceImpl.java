@@ -77,6 +77,7 @@ public class PanelServiceImpl implements PanelService {
     @Override
     public List<PanelListDto> createPanel(int numberRequested, String trialNumber,
                                           List<String> poolNumbers, String courtLocationCode,
+                                          LocalDate attendanceDate,
                                           BureauJwtPayload payload) {
         if (poolNumbers == null) {
             // initialise an empty list to prevent null pointer exceptions
@@ -84,13 +85,16 @@ public class PanelServiceImpl implements PanelService {
         }
 
         createPanelValidationChecks(numberRequested, trialNumber, courtLocationCode);
-        List<JurorPool> appearanceList = buildRandomJurorPoolList(courtLocationCode, poolNumbers, new ArrayList<>());
-        return processPanelList(numberRequested, trialNumber, courtLocationCode, payload, appearanceList);
+        List<JurorPool> appearanceList = buildRandomJurorPoolList(courtLocationCode, attendanceDate,
+            poolNumbers, new ArrayList<>());
+        return processPanelList(numberRequested, trialNumber, courtLocationCode, attendanceDate, payload,
+            appearanceList);
     }
 
     @Override
     public List<PanelListDto> addPanelMembers(int numberRequested, String trialNumber,
-                                              List<String> poolNumbers, String courtLocationCode) {
+                                              List<String> poolNumbers, String courtLocationCode,
+                                              LocalDate attendanceDate) {
 
         addPanelMembersTrialValidationChecks(trialNumber, courtLocationCode);
 
@@ -98,11 +102,12 @@ public class PanelServiceImpl implements PanelService {
             courtLocationCode);
         addPanelMembersValidationChecks(members, numberRequested);
 
-        List<JurorPool> appearanceList = buildRandomJurorPoolList(courtLocationCode, poolNumbers,
+        List<JurorPool> appearanceList = buildRandomJurorPoolList(courtLocationCode, attendanceDate, poolNumbers,
             members.stream().map(juror -> juror.getJurorPool().getJurorNumber()).toList());
 
         BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
-        return processPanelList(numberRequested, trialNumber, courtLocationCode, payload, appearanceList);
+        return processPanelList(numberRequested, trialNumber, courtLocationCode, attendanceDate, payload,
+            appearanceList);
 
     }
 
@@ -163,6 +168,7 @@ public class PanelServiceImpl implements PanelService {
     }
 
     private List<PanelListDto> processPanelList(int numberRequested, String trialNumber, String courtLocationCode,
+                                                LocalDate attendanceDate,
                                                 BureauJwtPayload payload,
                                                 List<JurorPool> appearanceList) {
 
@@ -196,7 +202,7 @@ public class PanelServiceImpl implements PanelService {
             //update appearance record with trial number
             Appearance appearance =
                 RepositoryUtils.unboxOptionalRecord(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber, LocalDate.now()), jurorNumber);
+                    appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber, attendanceDate), jurorNumber);
 
             appearance.setTrialNumber(trial.getTrialNumber());
             appearanceRepository.saveAndFlush(appearance);
@@ -256,7 +262,8 @@ public class PanelServiceImpl implements PanelService {
                     jurorPool.getPoolNumber(), payload, jurorHistoryRepository);
 
                 Appearance appearance = RepositoryUtils.unboxOptionalRecord(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber, LocalDate.now()), jurorNumber);
+                    appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber, dto.getAttendanceDate()),
+                    jurorNumber);
                 appearance.setPoolNumber(panelMember.getJurorPool().getPoolNumber());
                 appearanceRepository.saveAndFlush(appearance);
             } else {
@@ -375,14 +382,14 @@ public class PanelServiceImpl implements PanelService {
         return dto;
     }
 
-    private List<JurorPool> buildRandomJurorPoolList(String locCode, List<String> poolNumbers,
+    private List<JurorPool> buildRandomJurorPoolList(String locCode, LocalDate attendanceDate, List<String> poolNumbers,
                                                      List<String> previousPanelMembers) {
         List<JurorPool> appearanceList;
 
         if (poolNumbers == null || poolNumbers.isEmpty()) {
-            appearanceList = appearanceRepository.retrieveAllJurors(locCode);
+            appearanceList = appearanceRepository.retrieveAllJurors(locCode, attendanceDate);
         } else {
-            appearanceList = appearanceRepository.getJurorsInPools(locCode, poolNumbers);
+            appearanceList = appearanceRepository.getJurorsInPools(locCode, poolNumbers, attendanceDate);
         }
 
         appearanceList = appearanceList.stream()

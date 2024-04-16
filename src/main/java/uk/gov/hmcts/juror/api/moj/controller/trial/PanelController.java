@@ -57,7 +57,9 @@ public class PanelController {
         @RequestBody CreatePanelDto createPanelDto) {
         List<PanelListDto> dto = panelService.createPanel(createPanelDto.getNumberRequested(),
             createPanelDto.getTrialNumber(), createPanelDto.getPoolNumbers(),
-            createPanelDto.getCourtLocationCode(), payload);
+            createPanelDto.getCourtLocationCode(),
+            createPanelDto.getAttendanceDate(),
+            payload);
         return ResponseEntity.ok(dto);
     }
 
@@ -69,7 +71,8 @@ public class PanelController {
 
         List<PanelListDto> dto = panelService.addPanelMembers(createPanelDto.getNumberRequested(),
             createPanelDto.getTrialNumber(), createPanelDto.getPoolNumbers(),
-            createPanelDto.getCourtLocationCode());
+            createPanelDto.getCourtLocationCode(),
+            createPanelDto.getAttendanceDate());
 
         return ResponseEntity.ok(dto);
     }

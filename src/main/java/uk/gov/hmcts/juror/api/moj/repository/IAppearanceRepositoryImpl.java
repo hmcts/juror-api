@@ -208,13 +208,13 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     }
 
     @Override
-    public List<JurorPool> retrieveAllJurors(String locCode) {
-        return buildJurorPoolsCheckedInTodayQuery(locCode).fetch();
+    public List<JurorPool> retrieveAllJurors(String locCode, LocalDate attendanceDate) {
+        return buildJurorPoolsCheckedInTodayQuery(locCode, attendanceDate).fetch();
     }
 
     @Override
-    public List<JurorPool> getJurorsInPools(String locCode, List<String> poolNumbers) {
-        JPAQuery<JurorPool> query = buildJurorPoolsCheckedInTodayQuery(locCode);
+    public List<JurorPool> getJurorsInPools(String locCode, List<String> poolNumbers, LocalDate attendanceDate) {
+        JPAQuery<JurorPool> query = buildJurorPoolsCheckedInTodayQuery(locCode, attendanceDate);
         return query.where(JUROR_POOL.pool.poolNumber.in(poolNumbers)).fetch();
     }
 
@@ -225,7 +225,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
      * @return JPAQuery
      */
     @Override
-    public JPAQuery<JurorPool> buildJurorPoolsCheckedInTodayQuery(String locCode) {
+    public JPAQuery<JurorPool> buildJurorPoolsCheckedInTodayQuery(String locCode, LocalDate attendanceDate) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         return queryFactory.select(JUROR_POOL)
             .from(APPEARANCE)
@@ -233,7 +233,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber))
             .where(APPEARANCE.courtLocation.locCode.eq(locCode))
             .where(APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN))
-            .where(APPEARANCE.attendanceDate.eq(LocalDate.now()))
+            .where(APPEARANCE.attendanceDate.eq(attendanceDate))
             .where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode))
             .where(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED))
             .where(JUROR_POOL.isActive.isTrue());

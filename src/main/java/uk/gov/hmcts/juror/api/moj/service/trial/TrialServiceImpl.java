@@ -183,7 +183,9 @@ public class TrialServiceImpl implements TrialService {
         for (Panel panel : juryMembersToBeReturned) {
             final String jurorNumber = panel.getJurorPool().getJurorNumber();
             Appearance appearance = RepositoryUtils.unboxOptionalRecord(
-                appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber, LocalDate.now()), jurorNumber);
+                appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
+                    returnJuryDto.getAttendanceDate()),
+                jurorNumber);
             // only apply check in time for those that have not been checked in yet
             if (appearance.getTimeIn() == null && StringUtils.isNotEmpty(returnJuryDto.getCheckIn())) {
                 appearance.setTimeIn(LocalTime.parse(returnJuryDto.getCheckIn()));
