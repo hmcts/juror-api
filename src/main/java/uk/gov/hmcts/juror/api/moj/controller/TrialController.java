@@ -52,7 +52,8 @@ public class TrialController {
 
     /**
      * Enable the officer to create a trial.
-     * @param  payload - login information
+     *
+     * @param payload - login information
      * @throws MojException.BadRequest - thrown if there is an validation issue?
      */
     @PostMapping("/create")
@@ -73,11 +74,11 @@ public class TrialController {
         @RequestParam("page_number") @PathVariable("pageNumber") @Valid int pageNumber,
         @RequestParam("sort_by") @PathVariable("sortBy") @Valid String sortBy,
         @RequestParam("sort_order") @PathVariable("sortOrder") @Valid String sortOrder,
-        @RequestParam(value = "trial_number",required = false)
+        @RequestParam(value = "trial_number", required = false)
         @TrialNumber @Valid String trialNumber,
         @RequestParam("is_active") @PathVariable("isActive") @Valid Boolean isActive) {
         Page<TrialListDto> trials = trialService
-            .getTrials(payload, pageNumber, sortBy, sortOrder, isActive,trialNumber);
+            .getTrials(payload, pageNumber, sortBy, sortOrder, isActive, trialNumber);
         return ResponseEntity.ok().body(new PageDto<>(trials));
     }
 
