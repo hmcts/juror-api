@@ -498,7 +498,7 @@ public class ReissueLetterServiceTest {
 
             final BulkPrintData bulkPrintData = getBulkPrintData(reissueLetterRequestData);
 
-            ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
+            final ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
                 .letters(List.of(reissueLetterRequestData))
                 .build();
 
