@@ -450,89 +450,30 @@ public class PanelControllerITest extends AbstractIntegrationTest {
             .as("Expect jurors to be available across 5 pools")
             .hasSize(5);
 
-        final String poolRetDateAssertionDesc =  "Pool was requested for today";
-        final String locationNameAssertionDesc =  "Court location name should be chester";
-        final String locationCodeAssertionDesc =  "Pool was requested for chester";
-
         AvailableJurorsDto pool1 =
             responseBody.stream().filter(summary -> "415231101".equalsIgnoreCase(summary.getPoolNumber())).findFirst()
                 .orElse(new AvailableJurorsDto());
-        assertThat(pool1.getAvailableJurors())
-            .as("3 responded jurors associated with this pool are checked in today")
-            .isEqualTo(3);
-        assertThat(pool1.getServiceStartDate())
-            .as(poolRetDateAssertionDesc)
-            .isEqualTo(LocalDate.now());
-        assertThat(pool1.getCourtLocation())
-            .as(locationNameAssertionDesc)
-            .isEqualToIgnoringCase("CHESTER");
-        assertThat(pool1.getCourtLocationCode())
-            .as(locationCodeAssertionDesc)
-            .isEqualToIgnoringCase("415");
+        assertAvailableJurorsData(pool1, 3);
 
         AvailableJurorsDto pool2 =
             responseBody.stream().filter(summary -> "415231102".equalsIgnoreCase(summary.getPoolNumber())).findFirst()
                 .orElse(new AvailableJurorsDto());
-        assertThat(pool2.getAvailableJurors())
-            .as("5 responded jurors associated with this pool are checked in today")
-            .isEqualTo(5);
-        assertThat(pool2.getServiceStartDate())
-            .as(poolRetDateAssertionDesc)
-            .isEqualTo(LocalDate.now());
-        assertThat(pool2.getCourtLocation())
-            .as(locationNameAssertionDesc)
-            .isEqualToIgnoringCase("CHESTER");
-        assertThat(pool2.getCourtLocationCode())
-            .as(locationCodeAssertionDesc)
-            .isEqualToIgnoringCase("415");
+        assertAvailableJurorsData(pool2, 5);
 
         AvailableJurorsDto pool3 =
             responseBody.stream().filter(summary -> "415231103".equalsIgnoreCase(summary.getPoolNumber())).findFirst()
                 .orElse(new AvailableJurorsDto());
-        assertThat(pool3.getAvailableJurors())
-            .as("5 responded jurors associated with this pool are checked in today")
-            .isEqualTo(5);
-        assertThat(pool3.getServiceStartDate())
-            .as(poolRetDateAssertionDesc)
-            .isEqualTo(LocalDate.now());
-        assertThat(pool3.getCourtLocation())
-            .as(locationNameAssertionDesc)
-            .isEqualToIgnoringCase("CHESTER");
-        assertThat(pool3.getCourtLocationCode())
-            .as(locationCodeAssertionDesc)
-            .isEqualToIgnoringCase("415");
+        assertAvailableJurorsData(pool3, 5);
 
         AvailableJurorsDto pool4 =
             responseBody.stream().filter(summary -> "415231104".equalsIgnoreCase(summary.getPoolNumber())).findFirst()
                 .orElse(new AvailableJurorsDto());
-        assertThat(pool4.getAvailableJurors())
-            .as("14 responded jurors associated with this pool are checked in today")
-            .isEqualTo(14);
-        assertThat(pool4.getServiceStartDate())
-            .as(poolRetDateAssertionDesc)
-            .isEqualTo(LocalDate.now());
-        assertThat(pool4.getCourtLocation())
-            .as(locationNameAssertionDesc)
-            .isEqualToIgnoringCase("CHESTER");
-        assertThat(pool4.getCourtLocationCode())
-            .as(locationCodeAssertionDesc)
-            .isEqualToIgnoringCase("415");
+        assertAvailableJurorsData(pool4, 14);
 
         AvailableJurorsDto pool5 =
             responseBody.stream().filter(summary -> "415231105".equalsIgnoreCase(summary.getPoolNumber())).findFirst()
                 .orElse(new AvailableJurorsDto());
-        assertThat(pool5.getAvailableJurors())
-            .as("3 responded jurors associated with this pool are checked in today")
-            .isEqualTo(3);
-        assertThat(pool5.getServiceStartDate())
-            .as(poolRetDateAssertionDesc)
-            .isEqualTo(LocalDate.now());
-        assertThat(pool5.getCourtLocation())
-            .as(locationNameAssertionDesc)
-            .isEqualToIgnoringCase("CHESTER");
-        assertThat(pool5.getCourtLocationCode())
-            .as(locationCodeAssertionDesc)
-            .isEqualToIgnoringCase("415");
+        assertAvailableJurorsData(pool5, 3);
     }
 
     @Test
@@ -903,4 +844,21 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         httpHeaders = initialiseHeaders("99", false, "BUREAU_USER", 89,
             "400");
     }
+
+    private void assertAvailableJurorsData(AvailableJurorsDto dto, int count) {
+
+        assertThat(dto.getAvailableJurors())
+            .as(String.format("%d responded jurors associated with this pool are checked in today", count))
+            .isEqualTo(count);
+        assertThat(dto.getServiceStartDate())
+            .as("Pool was requested for today")
+            .isEqualTo(LocalDate.now());
+        assertThat(dto.getCourtLocation())
+            .as("Court location name should be chester")
+            .isEqualToIgnoringCase("CHESTER");
+        assertThat(dto.getCourtLocationCode())
+            .as("Pool was requested for chester")
+            .isEqualToIgnoringCase("415");
+    }
+
 }
