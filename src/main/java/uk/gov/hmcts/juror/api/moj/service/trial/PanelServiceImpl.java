@@ -124,7 +124,7 @@ public class PanelServiceImpl implements PanelService {
                 NUMBER_OF_JURORS_EXCEEDS_LIMITS);
         }
 
-        if (panelRepository.existsByTrialTrialNumber(trialNumber)) {
+        if (panelRepository.existsByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, courtLocationCode)) {
             throw new MojException.BadRequest(
                 "Cannot create panel - Trial already has a panel", null);
         }
@@ -237,8 +237,9 @@ public class PanelServiceImpl implements PanelService {
 
         for (JurorDetailRequestDto detail : dto.getJurors()) {
             Panel panelMember =
-                panelRepository.findByTrialTrialNumberAndJurorPoolJurorJurorNumber(dto.getTrialNumber(),
-                    detail.getJurorNumber());
+                panelRepository
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(
+                        dto.getTrialNumber(), dto.getCourtLocationCode(), detail.getJurorNumber());
 
             panelMember.setResult(detail.getResult());
             setJurorStatus(panelMember);

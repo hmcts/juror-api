@@ -245,23 +245,23 @@ class PanelServiceImplTest {
 
     @Test
     void createPanelTrialExistsForPanel() {
+        BureauJwtPayload payload = buildPayload();
         doReturn(true).when(trialRepository)
             .existsByTrialNumberAndCourtLocationLocCode(anyString(), anyString());
         doReturn(true).when(panelRepository)
-            .existsByTrialTrialNumber(anyString());
+            .existsByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
 
         assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(
             () -> panelService.createPanel(1,
                 "T100000025",
                 new ArrayList<>(),
-                anyString(),
-                any()));
+                "415",
+                payload));
 
         verify(trialRepository, times(1))
             .existsByTrialNumberAndCourtLocationLocCode(anyString(), anyString());
         verify(panelRepository, times(1))
-            .existsByTrialTrialNumber(anyString());
-
+            .existsByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
     }
 
     @Test
@@ -338,7 +338,7 @@ class PanelServiceImplTest {
         doReturn(true).when(trialRepository)
             .existsByTrialNumberAndCourtLocationLocCode(anyString(), anyString());
         doReturn(false).when(panelRepository)
-            .existsByTrialTrialNumber("T100000025");
+            .existsByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
 
         MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
             () -> panelService.createPanel(50,
@@ -355,7 +355,7 @@ class PanelServiceImplTest {
         verify(trialRepository, times(1))
             .existsByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
         verify(panelRepository, times(1))
-            .existsByTrialTrialNumber("T100000025");
+            .existsByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
         verify(appearanceRepository, times(1))
             .retrieveAllJurors(locCode);
     }
@@ -387,9 +387,9 @@ class PanelServiceImplTest {
         BureauJwtPayload payload = buildPayload();
 
         for (Panel member : panelMembers) {
-            doReturn(member).when(panelRepository).findByTrialTrialNumberAndJurorPoolJurorJurorNumber(
-                "T100000025",
-                member.getJurorPool().getJurorNumber());
+            doReturn(member).when(panelRepository)
+                .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(
+                    "T100000025", "415", member.getJurorPool().getJurorNumber());
             doReturn(Optional.of(createAppearance(member.getJurorPool().getJurorNumber())))
                 .when(appearanceRepository).findByJurorNumberAndAttendanceDate(member.getJurorPool().getJurorNumber(),
                     now());
@@ -426,8 +426,9 @@ class PanelServiceImplTest {
     void processEmpanelledNoJurorStatusSet() {
         Panel panel = createSinglePanelData();
         panel.setResult(null);
-        doReturn(panel).when(panelRepository).findByTrialTrialNumberAndJurorPoolJurorJurorNumber(anyString(),
-            anyString());
+        doReturn(panel).when(panelRepository)
+            .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(anyString(), anyString(),
+                anyString());
         JurorListRequestDto jurorListRequestDto =
             createEmpanelledListRequestDto(Collections.singletonList(panel));
         jurorListRequestDto.setNumberRequested(1);
@@ -441,8 +442,9 @@ class PanelServiceImplTest {
     void processEmpanelledWrongJurorStatusSet() {
         Panel panel = createSinglePanelData();
         panel.setResult(PanelResult.RETURNED);
-        doReturn(panel).when(panelRepository).findByTrialTrialNumberAndJurorPoolJurorJurorNumber(anyString(),
-            anyString());
+        doReturn(panel).when(panelRepository)
+            .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(anyString(), anyString(),
+                anyString());
         JurorListRequestDto jurorListRequestDto =
             createEmpanelledListRequestDto(Collections.singletonList(panel));
         jurorListRequestDto.setNumberRequested(1);
