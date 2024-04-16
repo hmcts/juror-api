@@ -58,6 +58,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
@@ -67,6 +68,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
@@ -86,6 +88,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolTypeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeService;
@@ -103,7 +106,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -142,6 +144,9 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private final JurorHistoryRepository jurorHistoryRepository;
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
+
+    private final JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
+
     private final CourtLocationService courtLocationService;
     private final ContactLogRepository contactLogRepository;
     private final ContactEnquiryTypeRepository contactEnquiryTypeRepository;
@@ -319,9 +324,9 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         //check if juror was summoned or disqualified
         if (Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.SUMMONED)
-            || (Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)
+            || Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)
             && juror.getSummonsFile() != null
-            && juror.getSummonsFile().equals(DISQUALIFIED_ON_SELECTION))) {
+            && juror.getSummonsFile().equals(DISQUALIFIED_ON_SELECTION)) {
             //return just the common details
             return new JurorOverviewResponseDto(jurorPool, jurorStatusRepository, responseExcusalService,
                 pendingJurorRepository);
@@ -701,7 +706,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         // juror record
         if (!("400".equals(payload.getOwner()) || jurorPool.getOwner().equals(payload.getOwner()))) {
             throw new MojException.Forbidden("Current user does not have sufficient permission to "
-                                                 + "view the juror pool record(s)", null);
+                + "view the juror pool record(s)", null);
         }
 
         ContactCode enquiryType = RepositoryUtils.retrieveFromDatabase(
@@ -754,13 +759,28 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Override
     @Transactional
     public void createJurorOpticReference(BureauJwtPayload payload, JurorOpticRefRequestDto opticsRefRequestDto) {
-
         final String jurorNumber = opticsRefRequestDto.getJurorNumber();
         final String poolNumber = opticsRefRequestDto.getPoolNumber();
-        final String opticsRef = opticsRefRequestDto.getOpticReference();
-        final String owner = payload.getOwner();
+
         log.info("Creating an Optics reference for Juror {} in pool {} by user {}", jurorNumber, poolNumber,
             payload.getLogin());
+
+        AbstractJurorResponse response =
+            jurorResponseCommonRepositoryMod.findByJurorNumber(opticsRefRequestDto.getJurorNumber());
+
+        if (response == null) {
+            throw new MojException.NotFound("Cannot find juror response record for juror "
+                + opticsRefRequestDto.getJurorNumber(), null);
+        }
+
+        if (response.getProcessingComplete().equals(true) || response.getProcessingStatus()
+            .equals(ProcessingStatus.CLOSED)) {
+            throw new MojException.BusinessRuleViolation("Cannot check court accommodation - Response has been "
+                + "completed/closed", null);
+        }
+
+        final String opticsRef = opticsRefRequestDto.getOpticReference();
+        final String owner = payload.getOwner();
 
         Juror juror = jurorRepository.findById(jurorNumber).orElseThrow(() ->
             new MojException.NotFound(String.format("Unable to find valid juror record for Juror Number: %s",
@@ -768,23 +788,15 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         // only allow access if the owner of record is same as users owner
         JurorUtils.checkOwnershipForCurrentUser(juror, owner);
-
         juror.setOpticRef(opticsRef);
         jurorRepository.save(juror);
+        response.setProcessingStatus(ProcessingStatus.AWAITING_COURT_REPLY);
 
-        Optional<DigitalResponse> digitalResponse = jurorResponseRepository.findById(jurorNumber);
-        if (digitalResponse.isPresent()) {
-            DigitalResponse response = digitalResponse.get();
-            response.setProcessingStatus(ProcessingStatus.AWAITING_COURT_REPLY);
-            jurorResponseRepository.save(response);
+        if (ReplyMethod.DIGITAL.getDescription().equals(response.getReplyType().getType())) {
+            jurorResponseRepository.save((DigitalResponse) response);
             log.debug("Finished adding optics reference for juror {}", jurorNumber);
-            return;
-        }
-
-        PaperResponse paperResponse = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
-        if (paperResponse != null) {
-            paperResponse.setProcessingStatus(ProcessingStatus.AWAITING_COURT_REPLY);
-            jurorPaperResponseRepository.save(paperResponse);
+        } else {
+            jurorPaperResponseRepository.save((PaperResponse) response);
             log.debug("Finished adding optics reference for juror {}", jurorNumber);
         }
     }

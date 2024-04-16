@@ -622,10 +622,10 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     }
 
 
-    @Test
+    @ParameterizedTest
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorOpticReference.sql"})
-    void createJurorOpticReferenceWrongAccess() throws Exception {
-        String jurorNumber = "123456789";
+    @ValueSource(strings = {"123456789", "987654321"})
+    void createJurorOpticReferenceWrongAccess(String jurorNumber) throws Exception {
         String poolNumber = "415220502";
         String opticRef = "12345678";
         JurorOpticRefRequestDto requestDto = createOpticRefRequestDto(jurorNumber, poolNumber, opticRef);
@@ -639,6 +639,65 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             .as("Expect the HTTP POST request to be FORBIDDEN ")
             .isEqualTo(HttpStatus.FORBIDDEN);
 
+    }
+
+    @ParameterizedTest
+    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorOpticReference.sql"})
+    @ValueSource(strings = {"111111111", "211111111"})
+    void createJurorOpticReferencProcessStatusClosed() throws Exception {
+        String jurorNumber = "111111111";
+        String poolNumber = "415220502";
+        String opticRef = "12345678";
+        JurorOpticRefRequestDto requestDto = createOpticRefRequestDto(jurorNumber, poolNumber, opticRef);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+            JURY_OFFICER_LEVEL));
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP POST request to be FORBIDDEN ")
+            .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(response.getBody()).contains(
+            "Cannot check court accommodation - Response has been completed/closed");
+
+    }
+
+    @ParameterizedTest
+    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorOpticReference.sql"})
+    @ValueSource(strings = {"111111112", "211111112"})
+    void createJurorOpticReferenceProcessingCompleted(String jurorNumber) throws Exception {
+        String poolNumber = "415220502";
+        String opticRef = "12345678";
+        JurorOpticRefRequestDto requestDto = createOpticRefRequestDto(jurorNumber, poolNumber, opticRef);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+            JURY_OFFICER_LEVEL));
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP POST request to be FORBIDDEN ")
+            .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(response.getBody()).contains(
+            "Cannot check court accommodation - Response has been completed/closed");
+    }
+
+    @Test
+    void createJurorOpticReferenceWrongJurorNumber() throws Exception {
+        String poolNumber = "415220502";
+        String opticRef = "12345678";
+        JurorOpticRefRequestDto requestDto = createOpticRefRequestDto("900000000", poolNumber, opticRef);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
+            JURY_OFFICER_LEVEL));
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
+
+        assertThat(response.getStatusCode())
+            .as("Expect the HTTP POST request to be NOT_FOUND ")
+            .isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).contains(
+            "Cannot find juror response record for juror 900000000");
     }
 
     @Test
