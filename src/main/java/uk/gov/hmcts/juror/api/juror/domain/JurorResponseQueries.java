@@ -97,7 +97,8 @@ public class JurorResponseQueries {
      */
 
     private static BooleanExpression backlogUrgent() {
-        return jurorResponse.urgent.isTrue().and(jurorResponse.superUrgent.isNull());
+        return jurorResponse.urgent.isTrue().and(jurorResponse.superUrgent.isNull()
+                                                     .or(jurorResponse.superUrgent.isFalse()));
     }
 
 
