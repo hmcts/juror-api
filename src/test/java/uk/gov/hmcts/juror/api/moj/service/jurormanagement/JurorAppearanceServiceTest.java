@@ -141,8 +141,6 @@ class JurorAppearanceServiceTest {
         request.getCommonData().setCheckOutTime(null);
         request.getCommonData().setSingleJuror(Boolean.TRUE);
 
-        RetrieveAttendanceDetailsDto dto = buildRetrieveAttendanceDetailsDto(jurors);
-
         Tuple t3 = mock(Tuple.class);
         mockQueryResultAbsent(t3, JUROR8, "TEST", "EIGHT", 2);
 
@@ -152,6 +150,9 @@ class JurorAppearanceServiceTest {
         List<Tuple> absentTuples = new ArrayList<>();
         absentTuples.add(t3);
         absentTuples.add(t4);
+
+        RetrieveAttendanceDetailsDto dto = buildRetrieveAttendanceDetailsDto(jurors);
+
         doReturn(absentTuples).when(appearanceRepository).retrieveNonAttendanceDetails(dto.getCommonData());        //
         // invoke actual service method under test
         jurorAppearanceService.markJurorAsAbsent(buildPayload(OWNER_415, List.of(LOC_415)), request.getCommonData());
@@ -178,8 +179,6 @@ class JurorAppearanceServiceTest {
         request.getCommonData().setCheckOutTime(null);
         request.getCommonData().setSingleJuror(Boolean.TRUE);
 
-        RetrieveAttendanceDetailsDto dto = buildRetrieveAttendanceDetailsDto(jurors);
-
         Tuple t3 = mock(Tuple.class);
         mockQueryResultAbsent(t3, JUROR8, "TEST", "EIGHT", 2);
 
@@ -189,6 +188,9 @@ class JurorAppearanceServiceTest {
         List<Tuple> absentTuples = new ArrayList<>();
         absentTuples.add(t3);
         absentTuples.add(t4);
+
+        RetrieveAttendanceDetailsDto dto = buildRetrieveAttendanceDetailsDto(jurors);
+
         doReturn(absentTuples).when(appearanceRepository).retrieveNonAttendanceDetails(dto.getCommonData());        //
         // invoke actual service method under test
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
