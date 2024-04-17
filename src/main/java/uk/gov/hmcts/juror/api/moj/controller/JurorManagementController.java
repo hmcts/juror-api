@@ -138,7 +138,7 @@ public class JurorManagementController {
         return ResponseEntity.ok(jurorAppearanceService.deleteAttendance(payload, request));
     }
 
-    @PutMapping
+    @PutMapping("/mark-as-absent")
     @Operation(description = "Mark juror as absent")
     public ResponseEntity<Void> markJurorAsAbsent(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,

@@ -167,6 +167,37 @@ class JurorAppearanceServiceTest {
     }
 
     @Test
+    void markJurorAsAbsentCourtLocationNotFound() {
+        List<String> jurors = new ArrayList<>();
+        jurors.add(JUROR1);
+
+        when(courtLocationRepository.findByLocCode(anyString())).thenReturn(Optional.empty());
+
+        UpdateAttendanceDto request = buildUpdateAttendanceDto(jurors);
+        request.getCommonData().setStatus(UpdateAttendanceStatus.CONFIRM_ATTENDANCE);
+        request.getCommonData().setCheckOutTime(null);
+        request.getCommonData().setSingleJuror(Boolean.TRUE);
+
+        RetrieveAttendanceDetailsDto dto = buildRetrieveAttendanceDetailsDto(jurors);
+
+        Tuple t3 = mock(Tuple.class);
+        mockQueryResultAbsent(t3, JUROR8, "TEST", "EIGHT", 2);
+
+        Tuple t4 = mock(Tuple.class);
+        mockQueryResultAbsent(t4, JUROR9, "TEST", "NINE", 2);
+
+        List<Tuple> absentTuples = new ArrayList<>();
+        absentTuples.add(t3);
+        absentTuples.add(t4);
+        doReturn(absentTuples).when(appearanceRepository).retrieveNonAttendanceDetails(dto.getCommonData());        //
+        // invoke actual service method under test
+        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+                jurorAppearanceService.markJurorAsAbsent(buildPayload("415", List.of("415")),
+                    request.getCommonData())).as("Court location not found")
+            .withMessageContaining("Court location not found");
+    }
+
+    @Test
     void addAttendanceDayHappyPath() {
         jurorAppearanceService = spy(jurorAppearanceService);
 
