@@ -105,7 +105,8 @@ import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
     "PMD.ExcessiveImports",
     "PMD.GodClass",
     "PMD.TooManyMethods",
-    "PMD.LawOfDemeter"
+    "PMD.LawOfDemeter",
+    "PMD.CyclomaticComplexity"
 })
 public class JurorExpenseServiceImpl implements JurorExpenseService {
 
@@ -316,12 +317,9 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 appearance.getAttendanceDate().toString());
             appearance.setDraftExpense(false);
 
-            if (!appearance.isPayCash()) {
-                // check if the juror has bank details
-                if (!juror.hasBankAccount()) {
-                    throw new MojException.BusinessRuleViolation("Juror must have bank details",
-                        JUROR_MUST_HAVE_BANK_DETAILS);
-                }
+            if (!appearance.isPayCash() && !juror.hasBankAccount()) {
+                throw new MojException.BusinessRuleViolation("Juror must have bank details",
+                    JUROR_MUST_HAVE_BANK_DETAILS);
             }
         }
 
