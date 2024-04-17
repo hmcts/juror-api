@@ -47,6 +47,6 @@ public interface JurorAppearanceService {
     void confirmJuryAttendance(UpdateAttendanceDto request);
 
     void modifyConfirmedAttendance(ModifyConfirmedAttendanceDto request);
-    
+
     boolean hasAttendances(String jurorNumber);
 }
