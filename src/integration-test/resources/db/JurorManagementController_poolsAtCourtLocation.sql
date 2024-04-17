@@ -1,3 +1,8 @@
+DELETE FROM juror_mod.juror_pool;
+DELETE FROM juror_mod.pool;
+DELETE FROM juror_mod.juror;
+DELETE FROM juror_mod.appearance;
+
 -- CHESTER COURT (415)
 -- 415230101 - REQUESTED - Crown Court
 INSERT INTO JUROR_MOD.POOL
@@ -76,7 +81,7 @@ VALUES('418', '418230104', DATE_TRUNC('day', CURRENT_DATE - 1), 1, NULL, 'CRO', 
 
 -- 418230105 - ACTIVE (Nil Pool) - Crown Court
 INSERT INTO JUROR_MOD.POOL
-(OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE, LOC_CODE, NEW_REQUEST, NIL_POOL)
+(OWNER, POOL_NO,  RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE, LOC_CODE, NEW_REQUEST, NIL_POOL)
 VALUES('418', '418230105', date_trunc('day', current_date), 0, 0, 'CRO', '418', 'N', true);
 
 -- 418230106 - COMPLETED (Nil Pool) - Crown Court
@@ -120,7 +125,6 @@ INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, is_active, n
 ('418', '641800002', '418230102', true, '2023-10-23', 2, null),
 ('418', '641800003', '418230103', true, '2023-10-23', 13, null);
 
-
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,travel_time,appearance_stage,non_attendance) VALUES
 	(current_date,'641500003','415230101','415',123456789,'09:30:00',null,'01:12','CHECKED_IN',false);
 
@@ -129,3 +133,6 @@ INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_c
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,travel_time,appearance_stage,non_attendance) VALUES
 	(current_date,'641500005','415230101','415',123456789,'09:30:00',null,'01:12','CHECKED_IN',false);
+
+INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,travel_time,appearance_stage,non_attendance) VALUES
+	(current_date,'641500007','415230101','415',123456789,'09:30:00',null,'01:12',null,false);
