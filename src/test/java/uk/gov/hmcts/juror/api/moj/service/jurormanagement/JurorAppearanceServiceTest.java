@@ -36,6 +36,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -295,7 +296,7 @@ class JurorAppearanceServiceTest {
         List<JurorAppearanceResponseDto.JurorAppearanceResponseData> appearanceDataList = new ArrayList<>();
         appearanceDataList.add(appearanceData);
 
-        when(appearanceRepository.getAppearanceRecords(anyString(), any(), anyString()))
+        when(appearanceRepository.getAppearanceRecords(anyString(), any(), anyString(), any()))
             .thenReturn(appearanceDataList);
 
         JurorAppearanceDto jurorAppearanceDto = buildJurorAppearanceDto();
@@ -365,7 +366,7 @@ class JurorAppearanceServiceTest {
         List<JurorAppearanceResponseDto.JurorAppearanceResponseData> appearanceDataList = new ArrayList<>();
         appearanceDataList.add(appearanceData);
 
-        when(appearanceRepository.getAppearanceRecords(anyString(), any(), anyString()))
+        when(appearanceRepository.getAppearanceRecords(anyString(), any(), anyString(), any()))
             .thenReturn(appearanceDataList);
 
         JurorAppearanceDto jurorAppearanceDto = buildJurorAppearanceDto();
@@ -399,7 +400,7 @@ class JurorAppearanceServiceTest {
                 JUROR_123456789, true);
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
 
-        when(appearanceRepository.getAppearanceRecords(anyString(), any(), anyString()))
+        when(appearanceRepository.getAppearanceRecords(anyString(), any(), anyString(), any()))
             .thenReturn(new ArrayList<>());
 
         JurorAppearanceDto jurorAppearanceDto = buildJurorAppearanceDto();
@@ -714,11 +715,11 @@ class JurorAppearanceServiceTest {
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
 
         doReturn(new ArrayList<Tuple>()).when(appearanceRepository).getAppearanceRecords(anyString(),
-            any(), anyString());
+            any(), anyString(), any());
 
         JurorAppearanceResponseDto jurorAppearanceResponseDto =
             jurorAppearanceService.getAppearanceRecords(LOC_415, now(),
-                buildPayload(OWNER_415, Collections.singletonList(LOC_415)));
+                buildPayload(OWNER_415, Collections.singletonList(LOC_415)), JurorStatusGroup.AT_COURT);
 
         assertThat(jurorAppearanceResponseDto).isNotNull();
         assertThat(jurorAppearanceResponseDto.getData()).isEmpty();
@@ -2158,12 +2159,18 @@ class JurorAppearanceServiceTest {
         List<JurorAppearanceResponseDto.JurorAppearanceResponseData> jurorAppearance7 = buildAttendanceRecords(JUROR7,
             "SEVEN", null, null, IJurorStatus.RESPONDED);
 
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR1)).thenReturn(jurorAppearance1);
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR2)).thenReturn(jurorAppearance2);
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR3)).thenReturn(jurorAppearance3);
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR5)).thenReturn(jurorAppearance5);
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR6)).thenReturn(jurorAppearance6);
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR7)).thenReturn(jurorAppearance7);
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR1, JurorStatusGroup.AT_COURT))
+            .thenReturn(jurorAppearance1);
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR2, JurorStatusGroup.AT_COURT))
+            .thenReturn(jurorAppearance2);
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR3, JurorStatusGroup.AT_COURT))
+            .thenReturn(jurorAppearance3);
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR5, JurorStatusGroup.AT_COURT))
+            .thenReturn(jurorAppearance5);
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR6, JurorStatusGroup.AT_COURT))
+            .thenReturn(jurorAppearance6);
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR7, JurorStatusGroup.AT_COURT))
+            .thenReturn(jurorAppearance7);
 
         CourtLocation courtLocation = mock(CourtLocation.class);
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findByLocCode(OWNER_415);
@@ -2193,7 +2200,8 @@ class JurorAppearanceServiceTest {
 
         List<JurorAppearanceResponseDto.JurorAppearanceResponseData> jurorAppearance7 = buildAttendanceRecords(JUROR7,
             "SEVEN", null, null, IJurorStatus.RESPONDED);
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR7)).thenReturn(jurorAppearance7);
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR7, JurorStatusGroup.AT_COURT))
+            .thenReturn(jurorAppearance7);
 
         CourtLocation courtLocation = mock(CourtLocation.class);
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findByLocCode(OWNER_415);
@@ -2259,10 +2267,14 @@ class JurorAppearanceServiceTest {
         List<JurorAppearanceResponseDto.JurorAppearanceResponseData> jurorAppearance7 = buildAttendanceRecords(JUROR7,
             "SEVEN", LocalTime.of(9, 30), null, IJurorStatus.RESPONDED);
 
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR2)).thenReturn(jurorAppearance2);
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR3)).thenReturn(jurorAppearance3);
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR6)).thenReturn(jurorAppearance6);
-        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR7)).thenReturn(jurorAppearance7);
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR2, JurorStatusGroup.AT_COURT))
+            .thenReturn(jurorAppearance2);
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR3, JurorStatusGroup.AT_COURT))
+            .thenReturn(jurorAppearance3);
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR6, JurorStatusGroup.AT_COURT))
+            .thenReturn(jurorAppearance6);
+        when(appearanceRepository.getAppearanceRecords("415", now(), JUROR7, JurorStatusGroup.AT_COURT))
+            .thenReturn(jurorAppearance7);
 
         CourtLocation courtLocation = mock(CourtLocation.class);
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findByLocCode(OWNER_415);

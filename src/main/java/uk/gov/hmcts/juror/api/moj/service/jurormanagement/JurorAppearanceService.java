@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 
 import java.time.LocalDate;
 
@@ -24,7 +25,8 @@ public interface JurorAppearanceService {
     JurorAppearanceResponseDto.JurorAppearanceResponseData processAppearance(
         BureauJwtPayload payload, JurorAppearanceDto jurorAppearanceDto);
 
-    JurorAppearanceResponseDto getAppearanceRecords(String locCode, LocalDate date, BureauJwtPayload payload);
+    JurorAppearanceResponseDto getAppearanceRecords(String locCode, LocalDate date, BureauJwtPayload payload,
+                                                    JurorStatusGroup group);
 
     boolean hasAppearances(String jurorNumber);
 
@@ -45,6 +47,6 @@ public interface JurorAppearanceService {
     void confirmJuryAttendance(UpdateAttendanceDto request);
 
     void modifyConfirmedAttendance(ModifyConfirmedAttendanceDto request);
-    
+
     boolean hasAttendances(String jurorNumber);
 }

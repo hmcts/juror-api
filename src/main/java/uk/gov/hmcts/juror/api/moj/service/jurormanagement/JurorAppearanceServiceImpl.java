@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
@@ -168,7 +169,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
         // now read the data back and send to front end
         List<JurorAppearanceResponseDto.JurorAppearanceResponseData> appearanceDataList =
-            appearanceRepository.getAppearanceRecords(locCode, appearanceDate, jurorNumber);
+            appearanceRepository.getAppearanceRecords(locCode, appearanceDate, jurorNumber, JurorStatusGroup.AT_COURT);
 
         if (appearanceDataList.size() != 1) {
             throw new MojException.InternalServerError("Error checking in juror " + jurorNumber, null);
@@ -188,12 +189,12 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     @Override
     public JurorAppearanceResponseDto getAppearanceRecords(String locCode, LocalDate date,
-                                                           BureauJwtPayload payload) {
+                                                           BureauJwtPayload payload, JurorStatusGroup group) {
 
         CourtLocationUtils.validateAccessToCourtLocation(locCode, payload.getOwner(), courtLocationRepository);
 
         List<JurorAppearanceResponseDto.JurorAppearanceResponseData> appearanceDataList =
-            appearanceRepository.getAppearanceRecords(locCode, date, null);
+            appearanceRepository.getAppearanceRecords(locCode, date, null, group);
 
         return new JurorAppearanceResponseDto(appearanceDataList);
     }
@@ -593,7 +594,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
             // get the juror appearance record if it exists
             Appearance appearance = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
-                request.getCommonData().getAttendanceDate())
+                    request.getCommonData().getAttendanceDate())
                 .orElse(Appearance.builder()
                     .jurorNumber(jurorNumber)
                     .attendanceDate(request.getCommonData().getAttendanceDate())
@@ -960,7 +961,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
             // retrieve the current attendance details
             List<JurorAppearanceResponseDto.JurorAppearanceResponseData> currentAttendanceDetails =
-                appearanceRepository.getAppearanceRecords(locCode, appearanceDate, jurorNumber);
+                appearanceRepository.getAppearanceRecords(locCode, appearanceDate, jurorNumber,
+                    JurorStatusGroup.AT_COURT);
 
             // if the status of the juror is panelled, the record is not updated.
             if (currentAttendanceDetails.get(0).getJurorStatus().equals(IJurorStatus.PANEL)) {
