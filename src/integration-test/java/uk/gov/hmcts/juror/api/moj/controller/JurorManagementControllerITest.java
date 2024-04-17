@@ -1495,7 +1495,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             List<JurorsToDismissResponseDto.JurorsToDismissData> jurorsToDismissData = response.getBody().getData();
             assertThat(jurorsToDismissData).as("Expect there to be 4 Juror record").hasSize(4);
 
-            verifyResponseData(jurorsToDismissData);
+            verifyResponseData(jurorsToDismissData, 4);
         }
 
         @Test
@@ -1550,9 +1550,9 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        private void verifyResponseData(List<JurorsToDismissResponseDto.JurorsToDismissData> response) {
+        private void verifyResponseData(List<JurorsToDismissResponseDto.JurorsToDismissData> response, int dataSize) {
             assertThat(response)
-                .hasSize(4)
+                .hasSize(dataSize)
                 .extracting(JurorsToDismissResponseDto.JurorsToDismissData::getJurorNumber,
                     JurorsToDismissResponseDto.JurorsToDismissData::getFirstName,
                     JurorsToDismissResponseDto.JurorsToDismissData::getLastName,
