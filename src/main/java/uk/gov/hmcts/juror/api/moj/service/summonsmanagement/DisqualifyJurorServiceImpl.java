@@ -101,35 +101,39 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
         log.trace("Juror Number {} - Api service method disqualifyJuror() started with code {}", jurorNumber,
             disqualifyJurorDto.getCode());
 
-        AbstractJurorResponse jurorResponse = null;
-
         //Check if the current user has access to the Juror record
         final JurorPool jurorPool = checkOfficerIsAuthorisedToAccessJurorRecord(jurorNumber, payload);
 
-        //Get the existing juror response for the appropriate reply method, and map to the generic juror response pojo
-        if (ReplyMethod.PAPER.equals(disqualifyJurorDto.getReplyMethod())) {
-            jurorResponse = getJurorPaperResponse(jurorNumber, jurorPaperResponseRepository);
-        } else if (ReplyMethod.DIGITAL.equals(disqualifyJurorDto.getReplyMethod())) {
-            jurorResponse = getJurorDigitalResponse(jurorNumber, jurorDigitalResponseRepository);
-        }
-
         if (!ReplyMethod.NONE.equals(disqualifyJurorDto.getReplyMethod())) {
+
+            AbstractJurorResponse jurorResponse = null;
+
+            // Get the existing juror response for the appropriate reply method, and map to the generic juror
+            // response pojo
+            if (ReplyMethod.PAPER.equals(disqualifyJurorDto.getReplyMethod())) {
+                jurorResponse = getJurorPaperResponse(jurorNumber, jurorPaperResponseRepository);
+            } else if (ReplyMethod.DIGITAL.equals(disqualifyJurorDto.getReplyMethod())) {
+                jurorResponse = getJurorDigitalResponse(jurorNumber, jurorDigitalResponseRepository);
+            }
 
             if (jurorResponse == null) {
                 throw new MojException.NotFound("Juror response not found", null);
             }
 
             //Check the status of the juror response to ensure only responses in the correct status can be updated
-            checkJurorResponseStatus(jurorResponse);
+            if (jurorResponse.getProcessingComplete().equals(Boolean.FALSE)) {
 
-            //Set the new status - need to copy the old status as required for the auditing steps
-            final ProcessingStatus oldProcessingStatus = setJurorResponseProcessingStatus(jurorResponse);
+                log.debug("Juror {} - Juror response is not complete, updating response", jurorNumber);
 
-            //Save the updated juror response
-            if (ReplyMethod.PAPER.equals(disqualifyJurorDto.getReplyMethod())) {
-                saveJurorPaperResponse(payload.getLogin(), (PaperResponse) jurorResponse);
-            } else if (ReplyMethod.DIGITAL.equals(disqualifyJurorDto.getReplyMethod())) {
-                saveJurorDigitalResponse(payload.getLogin(), oldProcessingStatus, (DigitalResponse) jurorResponse);
+                //Set the new status - need to copy the old status as required for the auditing steps
+                final ProcessingStatus oldProcessingStatus = setJurorResponseProcessingStatus(jurorResponse);
+
+                //Save the updated juror response
+                if (ReplyMethod.PAPER.equals(disqualifyJurorDto.getReplyMethod())) {
+                    saveJurorPaperResponse(payload.getLogin(), (PaperResponse) jurorResponse);
+                } else if (ReplyMethod.DIGITAL.equals(disqualifyJurorDto.getReplyMethod())) {
+                    saveJurorDigitalResponse(payload.getLogin(), oldProcessingStatus, (DigitalResponse) jurorResponse);
+                }
             }
         }
 
