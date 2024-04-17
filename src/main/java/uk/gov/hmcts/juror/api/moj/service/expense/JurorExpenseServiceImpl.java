@@ -1096,6 +1096,22 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                     + "Pool Number: %s and approval type %s", dto.getJurorNumber(), dto.getPoolNumber(),
                 dto.getApprovalType().name()), null);
         }
+
+        Appearance firstAppearance = appearances.get(0);
+
+        Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, firstAppearance.getJurorNumber());
+        if (juror == null) {
+            throw new MojException.NotFound("Juror not found: " + firstAppearance.getJurorNumber(), null);
+        }
+
+        // If the juror is not paying cash and does not have bank details, throw an exception
+        for (Appearance appearance : appearances) {
+            if (!appearance.isPayCash() && !juror.hasBankAccount()) {
+                throw new MojException.BusinessRuleViolation("Juror must have bank details",
+                    JUROR_MUST_HAVE_BANK_DETAILS);
+            }
+        }
+
         if (!validateAppearanceVersionNumber(appearances, dto.getDateToRevisions())) {
             throw new MojException.BusinessRuleViolation("Revisions do not align",
                 MojException.BusinessRuleViolation.ErrorCode.DATA_OUT_OF_DATE);
@@ -1115,7 +1131,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 "User cannot approve expenses over " + BigDecimalUtils.currencyFormat(userLimit),
                 CAN_NOT_APPROVE_MORE_THAN_LIMIT);
         }
-        Appearance firstAppearance = appearances.get(0);
+
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(dto.getJurorNumber(),
                 firstAppearance.getCourtLocation().getLocCode(),
