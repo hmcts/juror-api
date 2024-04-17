@@ -585,6 +585,12 @@ class JurorExpenseServiceTest {
                 .findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
             doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(anyCollection());
 
+            Juror juror = new Juror();
+            juror.setJurorNumber(jurorNumber);
+            juror.setBankAccountNumber("12345678");
+            juror.setSortCode("123456");
+            doReturn(Optional.of(juror)).when(jurorRepository).findById(jurorNumber);
+
             CourtLocation courtLocation = mock(CourtLocation.class);
             appearanceToSubmit.setCourtLocation(courtLocation);
             doReturn(TestConstants.VALID_COURT_LOCATION).when(courtLocation).getLocCode();
@@ -635,6 +641,12 @@ class JurorExpenseServiceTest {
                 LocalDate.of(2024, 1, 2));
             Appearance appearanceInDraft = buildTestAppearance(jurorNumber, poolNumber,
                 LocalDate.of(2024, 1, 3));
+
+            Juror juror = new Juror();
+            juror.setJurorNumber(jurorNumber);
+            juror.setBankAccountNumber("12345678");
+            juror.setSortCode("123456");
+            doReturn(Optional.of(juror)).when(jurorRepository).findById(jurorNumber);
 
             doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(anyCollection());
             doReturn(List.of(appearanceToSubmit1, appearanceToSubmit2, appearanceInDraft))
