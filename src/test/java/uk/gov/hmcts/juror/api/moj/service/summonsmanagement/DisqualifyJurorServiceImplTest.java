@@ -464,8 +464,9 @@ public class DisqualifyJurorServiceImplTest {
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
         doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(anyString());
 
-        Assertions.assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
-            disqualifyJurorService.disqualifyJuror(JUROR_123456789, disqualifyJurorDto, courtPayload));
+        disqualifyJurorService.disqualifyJuror(JUROR_123456789, disqualifyJurorDto, courtPayload);
+
+        // expect no further processing of response but still update pool and history
 
         //Digital related
         verify(jurorDigitalResponseRepository, times(1)).findByJurorNumber(anyString());
@@ -478,9 +479,9 @@ public class DisqualifyJurorServiceImplTest {
         verify(summonsReplyMergeService, never()).mergePaperResponse(any(PaperResponse.class), anyString());
 
         //Common
-        verify(disqualificationLetterRepository, never()).save(any(DisqualificationLetter.class));
-        verify(jurorHistoryRepository, never()).save(any(JurorHistory.class));
-        verify(jurorPoolRepository, never()).save(any(JurorPool.class));
+        // TODO add verification for printDataServiceArgumentCaptor
+        verify(jurorHistoryRepository, times(1)).save(any(JurorHistory.class));
+        verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
     }
