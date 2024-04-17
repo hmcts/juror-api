@@ -258,12 +258,12 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
         JPAQuery<?> partialQuery = queryFactory.from(QJurorPool.jurorPool)
             .join(QJuror.juror).on(QJurorPool.jurorPool.juror.jurorNumber.eq(QJuror.juror.jurorNumber))
             .leftJoin(QAppearance.appearance)
-            .on(QJurorPool.jurorPool.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber)
-                .and(QAppearance.appearance.attendanceDate.eq(today)))
+                .on(QJurorPool.jurorPool.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber)
+                    .and(QAppearance.appearance.attendanceDate.eq(today)))
             .leftJoin(QJurorStatus.jurorStatus)
-            .on(QJurorPool.jurorPool.status.status.eq(QJurorStatus.jurorStatus.status))
+                .on(QJurorPool.jurorPool.status.status.eq(QJurorStatus.jurorStatus.status))
             .leftJoin(QJurorTrial.jurorTrial)
-            .on(QJurorPool.jurorPool.juror.jurorNumber.eq(QJurorTrial.jurorTrial.juror.jurorNumber))
+                .on(QJurorPool.jurorPool.juror.jurorNumber.eq(QJurorTrial.jurorTrial.juror.jurorNumber))
             .where(QJurorPool.jurorPool.isActive.isTrue())
             .where(QJurorPool.jurorPool.pool.poolNumber.eq(search.getPoolNumber()))
             .where(QJurorPool.jurorPool.owner.eq(owner));
@@ -314,7 +314,7 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
                     ));
         }
 
-        return partialQuery.select(
+        return partialQuery.distinct().select(
             QJurorPool.jurorPool.juror.jurorNumber,
             QJurorPool.jurorPool.juror.firstName,
             QJurorPool.jurorPool.juror.lastName,
@@ -323,8 +323,15 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             getCheckedInBoolean().as(CHECKED_IN_TODAY),
             QAppearance.appearance.timeIn,
             QJurorPool.jurorPool.nextDate,
-            QJurorStatus.jurorStatus.statusDesc
-        );
+            QJurorStatus.jurorStatus.statusDesc)
+            .groupBy(QJurorPool.jurorPool.juror.jurorNumber,
+                     QJurorPool.jurorPool.juror.firstName,
+                     QJurorPool.jurorPool.juror.lastName,
+                     QJurorPool.jurorPool.juror.postcode,
+                     CHECKED_IN_TODAY,
+                     QAppearance.appearance.timeIn,
+                     QJurorPool.jurorPool.nextDate,
+                     QJurorStatus.jurorStatus.statusDesc);
     }
 
     private static StringExpression getJurorAttendance() {
@@ -357,7 +364,7 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             .then(PoolMemberFilterRequestQuery.AttendanceEnum.IN_ATTENDANCE.getKeyString())
             .when(QJurorPool.jurorPool.nextDate.eq(LocalDate.now()))
             .then(PoolMemberFilterRequestQuery.AttendanceEnum.OTHER.getKeyString())
-            .otherwise("")
+            .otherwise("").max()
             .as(ATTENDANCE);
     }
 

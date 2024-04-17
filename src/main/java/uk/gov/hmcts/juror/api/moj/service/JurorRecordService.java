@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
@@ -87,5 +88,7 @@ public interface JurorRecordService {
 
     void editJurorsBankDetails(RequestBankDetailsDto dto);
 
+    void confirmIdentity(ConfirmIdentityDto dto);
 
+    void markResponded(String jurorNumber);
 }

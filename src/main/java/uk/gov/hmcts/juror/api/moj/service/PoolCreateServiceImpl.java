@@ -11,7 +11,6 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolAddCitizenRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
 import uk.gov.hmcts.juror.api.moj.controller.request.NilPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolAdditionalSummonsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
@@ -556,7 +555,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         return PaginationUtil.toPaginatedList(
             jurorPoolRepository.fetchFilteredPoolMembers(search, payload.getOwner()),
             search,
-            JurorPoolSearch.SortField.JUROR_NUMBER,
+            PoolMemberFilterRequestQuery.SortField.JUROR_NUMBER,
             SortMethod.ASC,
             tuple -> {
                 FilterPoolMember.FilterPoolMemberBuilder builder = FilterPoolMember.builder()

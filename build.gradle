@@ -1,7 +1,7 @@
 buildscript {
     ext {
         springBootVersion = '3.2.4'
-        notifyVersion = '5.0.0-RELEASE'
+        notifyVersion = '5.0.1-RELEASE'
         springDocVersion = '2.5.0'
         queryDslVersion = '5.1.0'
         flywayVersion = '10.11.0'
@@ -124,7 +124,7 @@ dependencies {
     annotationProcessor('org.projectlombok:lombok')
 
     implementation('org.apache.commons:commons-lang3:3.14.0')
-    implementation('org.apache.commons:commons-text:1.11.0')
+    implementation('org.apache.commons:commons-text:1.12.0')
     implementation("uk.gov.service.notify:notifications-java-client:${notifyVersion}")
 
     runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.5.1')
@@ -200,13 +200,11 @@ tasks.withType(Test).configureEach() {
 
 // Flyway must align with application.yml
 flyway {
-    def dbHost = System.getenv("DB_HOST") ?: "localhost"
-    def dbPort = System.getenv("DB_PORT") ?: "5432"
-    def dbName = System.getenv("DB_NAME") ?: "juror"
-    def dbUserName = System.getenv("DB_USER_NAME") ?: "system"
+    def dbUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/juror"
+    def dbUserName = System.getenv("DB_USERNAME") ?: "system"
     def dbPassword = System.getenv("DB_PASSWORD") ?: "postgres"
 
-    url = "jdbc:postgresql://$dbHost:$dbPort/$dbName"
+    url = "$dbUrl"
     user = "$dbUserName"
     password = "$dbPassword"
     schemas = ['juror', 'juror_digital', 'juror_digital_user', 'juror_dashboard', 'hk', 'juror_mod']
@@ -278,13 +276,13 @@ checkstyle {
 }
 
 pmdIntegrationTest {
-    maxFailures = 434
+    maxFailures = 433
 }
 pmdTest {
     maxFailures = 381
 }
 pmdMain {
-    maxFailures = 1137
+    maxFailures = 1130
 }
 pmd {
     maxFailures = 0

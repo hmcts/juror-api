@@ -9,8 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.CreatePanelDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.trial.JurorListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.AvailableJurorsDto;
@@ -32,8 +33,9 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/v1/moj/trial/panel", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Panel Management")
+@Validated
+@IsCourtUser
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@PreAuthorize(SecurityUtil.COURT_AUTH)
 public class PanelController {
 
     @NonNull
@@ -55,7 +57,23 @@ public class PanelController {
         @RequestBody CreatePanelDto createPanelDto) {
         List<PanelListDto> dto = panelService.createPanel(createPanelDto.getNumberRequested(),
             createPanelDto.getTrialNumber(), createPanelDto.getPoolNumbers(),
-            createPanelDto.getCourtLocationCode(), payload);
+            createPanelDto.getCourtLocationCode(),
+            createPanelDto.getAttendanceDate(),
+            payload);
+        return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/add-panel-members")
+    @Operation(summary = "Add panel members to a existing trial")
+    public ResponseEntity<List<PanelListDto>> addPanelMembers(@RequestBody CreatePanelDto createPanelDto) {
+
+        SecurityUtil.validateCourtLocationPermitted(createPanelDto.getCourtLocationCode());
+
+        List<PanelListDto> dto = panelService.addPanelMembers(createPanelDto.getNumberRequested(),
+            createPanelDto.getTrialNumber(), createPanelDto.getPoolNumbers(),
+            createPanelDto.getCourtLocationCode(),
+            createPanelDto.getAttendanceDate());
+
         return ResponseEntity.ok(dto);
     }
 
@@ -88,4 +106,14 @@ public class PanelController {
         List<PanelListDto> dto = panelService.getPanelSummary(trialNumber, courtLocationCode);
         return ResponseEntity.ok(dto);
     }
+
+    @GetMapping("/status")
+    @Operation(summary = "Gets the panel creation status")
+    public ResponseEntity<Boolean> getPanelCreationStatus(
+        @RequestParam("trial_number") @PathVariable("trialNumber") String trialNumber,
+        @RequestParam("court_location_code") @PathVariable("courtLocationCode") String courtLocationCode) {
+        return ResponseEntity.ok(panelService.getPanelStatus(trialNumber, courtLocationCode));
+    }
 }
+
+

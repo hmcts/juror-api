@@ -149,6 +149,7 @@ class JurorPoolRepositoryImplTest {
             Mockito.when(jpaQuery.on(Mockito.any(Predicate.class))).thenReturn(jpaQuery);
             Mockito.when(jpaQuery.leftJoin(Mockito.any(EntityPath.class))).thenReturn(jpaQuery);
             Mockito.when(jpaQuery.select(Mockito.any(Expression[].class))).thenReturn(jpaQuery);
+            Mockito.when(jpaQuery.distinct()).thenReturn(jpaQuery);
         }
 
         @Test
@@ -173,34 +174,43 @@ class JurorPoolRepositoryImplTest {
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(QJurorPool.jurorPool.pool.poolNumber.eq("41500000"));
 
-            Mockito.verify(jpaQuery, Mockito.times(1))
-                .select(Mockito.eq(QJurorPool.jurorPool.juror.jurorNumber),
-                    Mockito.eq(QJurorPool.jurorPool.juror.firstName),
-                    Mockito.eq(QJurorPool.jurorPool.juror.lastName),
-                    Mockito.eq(QJurorPool.jurorPool.juror.postcode),
-                    Mockito.eq(new CaseBuilder()
-                        .when(Expressions.asBoolean(QJurorPool.jurorPool.onCall.eq(true)))
-                        .then(PoolMemberFilterRequestQuery.AttendanceEnum.ON_CALL.getKeyString())
-                        .when(QJurorTrial.jurorTrial.result.eq("J"))
-                        .then(PoolMemberFilterRequestQuery.AttendanceEnum.ON_A_TRIAL.getKeyString())
-                        .when(Expressions.booleanOperation(
-                            Ops.AND,
-                            QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
-                            QAppearance.appearance.attendanceDate.eq(LocalDate.now())
-                        ))
-                        .then(PoolMemberFilterRequestQuery.AttendanceEnum.IN_ATTENDANCE.getKeyString())
-                        .when(QJurorPool.jurorPool.nextDate.eq(LocalDate.now()))
-                        .then(PoolMemberFilterRequestQuery.AttendanceEnum.OTHER.getKeyString())
-                        .otherwise("")
-                        .as(ATTENDANCE)),
-                    Mockito.eq(Expressions.booleanOperation(
-                        Ops.AND,
-                        QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
-                        QAppearance.appearance.attendanceDate.eq(LocalDate.now())
-                    ).as(CHECKED_IN_TODAY)),
-                    Mockito.eq(QAppearance.appearance.timeIn),
-                    Mockito.eq(QJurorPool.jurorPool.nextDate),
-                    Mockito.eq(QJurorStatus.jurorStatus.statusDesc));
+            Mockito.verify(jpaQuery, Mockito.times(1)).select(
+                Mockito.eq(QJurorPool.jurorPool.juror.jurorNumber),
+                Mockito.eq(QJurorPool.jurorPool.juror.firstName),
+                Mockito.eq(QJurorPool.jurorPool.juror.lastName),
+                Mockito.eq(QJurorPool.jurorPool.juror.postcode),
+                Mockito.eq(new CaseBuilder()
+                               .when(Expressions.asBoolean(QJurorPool.jurorPool.onCall.eq(true)))
+                               .then(PoolMemberFilterRequestQuery.AttendanceEnum.ON_CALL.getKeyString())
+                               .when(QJurorTrial.jurorTrial.result.eq("J"))
+                               .then(PoolMemberFilterRequestQuery.AttendanceEnum.ON_A_TRIAL.getKeyString())
+                               .when(Expressions.booleanOperation(
+                                   Ops.AND,
+                                   QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+                                   QAppearance.appearance.attendanceDate.eq(LocalDate.now())
+                               ))
+                               .then(PoolMemberFilterRequestQuery.AttendanceEnum.IN_ATTENDANCE.getKeyString())
+                               .when(QJurorPool.jurorPool.nextDate.eq(LocalDate.now()))
+                               .then(PoolMemberFilterRequestQuery.AttendanceEnum.OTHER.getKeyString())
+                               .otherwise("").max()
+                               .as(ATTENDANCE)),
+                Mockito.eq(Expressions.booleanOperation(
+                    Ops.AND,
+                    QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+                    QAppearance.appearance.attendanceDate.eq(LocalDate.now())
+                ).as(CHECKED_IN_TODAY)),
+                Mockito.eq(QAppearance.appearance.timeIn),
+                Mockito.eq(QJurorPool.jurorPool.nextDate),
+                Mockito.eq(QJurorStatus.jurorStatus.statusDesc));
+            Mockito.verify(jpaQuery, Mockito.times(1)).groupBy(
+                Mockito.eq(QJurorPool.jurorPool.juror.jurorNumber),
+                Mockito.eq(QJurorPool.jurorPool.juror.firstName),
+                Mockito.eq(QJurorPool.jurorPool.juror.lastName),
+                Mockito.eq(QJurorPool.jurorPool.juror.postcode),
+                Mockito.eq(CHECKED_IN_TODAY),
+                Mockito.eq(QAppearance.appearance.timeIn),
+                Mockito.eq(QJurorPool.jurorPool.nextDate),
+                Mockito.eq(QJurorStatus.jurorStatus.statusDesc));
 
             Mockito.verify(jurorPoolRepository, Mockito.times(1)).getAttendanceCase();
             Mockito.verify(jurorPoolRepository, Mockito.times(2)).getCheckedInBoolean();

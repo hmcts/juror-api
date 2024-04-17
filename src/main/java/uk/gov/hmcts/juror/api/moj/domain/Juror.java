@@ -105,7 +105,7 @@ public class Juror extends Address implements Serializable {
     private LocalDate excusalDate;
 
     @NotAudited
-    @Length(max = 1)
+    @Length(max = 2)
     @Column(name = "excusal_code")
     private String excusalCode;
 

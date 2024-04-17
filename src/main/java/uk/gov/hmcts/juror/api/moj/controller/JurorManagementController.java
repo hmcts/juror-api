@@ -31,6 +31,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.AddAttendanceDayDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAppearanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorsToDismissRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.JurorNonAttendanceDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.ModifyConfirmedAttendanceDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.UpdateAttendanceDto;
@@ -48,7 +49,7 @@ import static uk.gov.hmcts.juror.api.JurorDigitalApplication.JUROR_OWNER;
 
 @RestController
 @Validated
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 @RequestMapping(value = "/api/v1/moj/juror-management", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Juror Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -118,6 +119,15 @@ public class JurorManagementController {
         return ResponseEntity.ok(jurorAppearanceService.updateAttendanceDate(request));
     }
 
+    @PatchMapping("/attendance/modify-attendance")
+    @Operation(description = "Modify a jurors confirmed attendance for a given date")
+    @ResponseStatus(HttpStatus.OK)
+    @IsCourtUser
+    public void modifyAttendance(
+        @RequestBody @Valid ModifyConfirmedAttendanceDto request) {
+        jurorAppearanceService.modifyConfirmedAttendance(request);
+    }
+
     @DeleteMapping("/attendance")
     @Operation(description = "Delete the attendance record for a juror")
     public ResponseEntity<AttendanceDetailsResponse> deleteAttendance(
@@ -157,6 +167,14 @@ public class JurorManagementController {
         return ResponseEntity.ok(jurorAppearanceService.retrieveJurorsOnTrials(locationCode, attendanceDate));
     }
 
+    @PatchMapping("/confirm-jury-attendance")
+    @Operation(description = "Confirm attendance for jurors who are on a trial")
+    @IsCourtUser
+    @ResponseStatus(HttpStatus.OK)
+    public void confirmJuryAttendance(
+        @RequestBody @Valid UpdateAttendanceDto request) {
+        jurorAppearanceService.confirmJuryAttendance(request);
+    }
 
     private void validateOwner(BureauJwtPayload payload) {
         if (JUROR_OWNER.equalsIgnoreCase(payload.getOwner())) {

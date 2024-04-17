@@ -513,8 +513,8 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(requestedPoolData.getNumberRequested() - requestedPoolData.getDeferralsUsed());
 
         assertThat(currentlyDeferredRepository.count())
-            .as("Expect 1 records to be deleted from DEFER_DBF, leaving 5 remaining records")
-            .isEqualTo(5);
+            .as("Expect 1 records to be deleted from DEFER_DBF, leaving 6 remaining records")
+            .isEqualTo(6);
 
         Map<String, String> oldJurorPoolIdMap = new ConcurrentHashMap<>();
         oldJurorPoolIdMap.put("444444444", "767220401");
@@ -522,7 +522,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         assertThat(jurorPoolRepository.count())
             .as("Expect 1 new records to be added to the POOL_MEMBER view")
-            .isEqualTo(7);
+            .isEqualTo(8);
 
         Map<String, String> newJurorPoolIdMap = new ConcurrentHashMap<>();
         newJurorPoolIdMap.put("444444444", "767221001");
@@ -583,8 +583,8 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(requestedPoolData.getNumberRequested() - requestedPoolData.getDeferralsUsed());
 
         assertThat(currentlyDeferredRepository.count())
-            .as("Expect 3 records to be deleted from DEFER_DBF, leaving 3 remaining records")
-            .isEqualTo(3);
+            .as("Expect 3 records to be deleted from DEFER_DBF, leaving 4 remaining records")
+            .isEqualTo(4);
 
         Map<String, String> oldJurorPoolIdMap = new ConcurrentHashMap<>();
         oldJurorPoolIdMap.put("111111111", "415220401");
@@ -594,7 +594,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
         assertThat(jurorPoolRepository.count())
             .as("Expect 3 new records to be added to the POOL_MEMBER view")
-            .isEqualTo(9);
+            .isEqualTo(10);
 
         Map<String, String> newJurorPoolIdMap = new ConcurrentHashMap<>();
         newJurorPoolIdMap.put("111111111", "415221001");

@@ -31,6 +31,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.config.security.IsSeniorCourtUser;
+import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
@@ -461,5 +462,21 @@ public class JurorRecordController {
     public ResponseEntity<Void> editJurorsBankDetails(@Valid @RequestBody RequestBankDetailsDto dto) {
         jurorRecordService.editJurorsBankDetails(dto);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PatchMapping("/confirm-identity")
+    @Operation(summary = "Confirm a jurors identity")
+    @ResponseStatus(HttpStatus.OK)
+    @IsCourtUser
+    public void confirmJurorsIdentity(@Valid @RequestBody ConfirmIdentityDto dto) {
+        jurorRecordService.confirmIdentity(dto);
+    }
+
+    @PatchMapping("/mark-responded/{juror_number}")
+    @Operation(summary = "Mark a juror as responded")
+    @ResponseStatus(HttpStatus.OK)
+    public void markResponded(@Valid @JurorNumber @P("juror_number") @PathVariable("juror_number")
+                                  @Parameter(description = "jurorNumber", required = true) String jurorNumber) {
+        jurorRecordService.markResponded(jurorNumber);
     }
 }

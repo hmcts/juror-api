@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
+import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
@@ -72,6 +73,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.IdCheckCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
@@ -137,7 +139,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.LawOfDemeter", "PMD.CouplingBetweenObjects",
@@ -964,25 +965,35 @@ class JurorRecordServiceTest {
 
     @Test
     void testCreateJurorContactLogBureauUserCourtOwnedRecord() {
+        final ArgumentCaptor<ContactLog> contactArgumentCaptor = ArgumentCaptor.forClass(ContactLog.class);
         final BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, COURT_OWNER));
 
-        ContactEnquiryType contactEnquiryType = new ContactEnquiryType(ContactEnquiryCode.GE, "General Enquiry");
-        ContactLog contactLog = new ContactLog();
+        ContactCode contactEnquiryType = new ContactCode(IContactCode.GENERAL.getCode(),
+                                                         IContactCode.GENERAL.getDescription());
         ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, IContactCode.GENERAL);
+        LocalDateTime startCall = LocalDateTime.now();
+        requestDto.setStartCall(startCall);
 
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
-        doReturn(Optional.of(contactEnquiryType)).when(contactEnquiryTypeRepository)
-            .findById(ContactEnquiryCode.GE);
+        doReturn(Optional.of(contactEnquiryType)).when(contactCodeRepository)
+            .findById(IContactCode.GENERAL.getCode());
+
+        ContactLog contactLog = new ContactLog();
         doReturn(contactLog).when(contactLogRepository)
             .saveAndFlush(any());
 
-        assertThatExceptionOfType(MojException.Forbidden.class)
-            .isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
+        assertThatNoException().isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
 
-        verify(contactLogRepository, never()).saveAndFlush(any());
+        verify(contactLogRepository, times(1))
+            .saveAndFlush(contactArgumentCaptor.capture());
+        ContactLog contactCaptor = contactArgumentCaptor.getValue();
+
+        assertThat(contactCaptor.getEnquiryType()).isEqualTo(contactEnquiryType);
+        assertThat(contactCaptor.getJurorNumber()).isEqualTo(VALID_JUROR_NUMBER);
+        assertThat(contactCaptor.getStartCall()).isEqualTo(startCall);
     }
 
     @Test
@@ -1099,6 +1110,7 @@ class JurorRecordServiceTest {
         jurorPool.setOwner(owner);
         jurorPool.setPool(poolRequest);
         jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
+        jurorPool.setDateCreated(LocalDateTime.now().minusDays(3));
 
         juror.setAssociatedPools(Set.of(jurorPool));
         jurorPool.setJuror(juror);
@@ -1129,6 +1141,7 @@ class JurorRecordServiceTest {
         jurorPool.setOwner(owner);
         jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
         jurorPool.setPool(poolRequest);
+        jurorPool.setDateCreated(LocalDateTime.now().minusDays(5));
 
         juror.setAssociatedPools(Set.of(jurorPool));
         jurorPool.setJuror(juror);
@@ -1393,12 +1406,12 @@ class JurorRecordServiceTest {
         doReturn(createJurorPoolList(jurorNumber, bureauOwnerCode)).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
         doReturn(Optional.of(new ModJurorDetail())).when(jurorDetailRepositoryMod).findById(jurorNumber);
-        doReturn(new BureauJurorDetailDto()).when(bureauService).mapJurorDetailsToDto(any());
+        doReturn(createBureauJurorDetailDto(jurorNumber)).when(bureauService).mapJurorDetailsToDto(any());
 
         jurorRecordService.getBureauDetailsByJurorNumber(jurorNumber, bureauOwnerCode);
 
         // current user is bureau so no need to query records and check ownership for read only permission
-        verify(jurorPoolRepository, times(1))
+        verify(jurorPoolRepository, times(2))
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
 
         verify(jurorDetailRepositoryMod, times(1)).findById(jurorNumber);
@@ -1412,15 +1425,14 @@ class JurorRecordServiceTest {
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, courtOwnerCode);
         jurorPools.add(createValidJurorPool(jurorNumber, "435"));
 
-        doReturn(jurorPools).when(jurorPoolRepository)
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPools).when(jurorPoolRepository).findByJurorJurorNumberAndIsActive(jurorNumber, true);
         doReturn(Optional.of(new ModJurorDetail())).when(jurorDetailRepositoryMod).findById(jurorNumber);
-        doReturn(new BureauJurorDetailDto()).when(bureauService).mapJurorDetailsToDto(any());
+
+        doReturn(createBureauJurorDetailDto(jurorNumber)).when(bureauService).mapJurorDetailsToDto(any());
 
         jurorRecordService.getBureauDetailsByJurorNumber(jurorNumber, courtOwnerCode);
 
-        verify(jurorPoolRepository, times(1))
-            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorPoolRepository, times(2)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
         verify(jurorDetailRepositoryMod, times(1)).findById(jurorNumber);
         verify(bureauService, times(1)).mapJurorDetailsToDto(any());
     }
@@ -1486,7 +1498,7 @@ class JurorRecordServiceTest {
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
         assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Excepted status to be 'Not "
-            + "Checked'").isEqualTo("Not Checked");
+            + "Checked'").isEqualTo(policeCheck);
     }
 
     @Test
@@ -1513,14 +1525,13 @@ class JurorRecordServiceTest {
 
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
-        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Excepted status to be 'Not "
-            + "Checked - There was a problem'").isEqualTo("Not Checked - There was a problem");
+        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Police check status")
+            .isEqualTo(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED);
     }
 
     @ParameterizedTest
     @EnumSource(value = PoliceCheck.class, mode = EnumSource.Mode.INCLUDE,
-        names = {"IN_PROGRESS", "ERROR_RETRY_NAME_HAS_NUMERICS", "ERROR_RETRY_CONNECTION_ERROR",
-            "ERROR_RETRY_OTHER_ERROR_CODE", "ERROR_RETRY_NO_ERROR_REASON", "ERROR_RETRY_UNEXPECTED_EXCEPTION"})
+        names = {"IN_PROGRESS"})
     void testBureauGetJurorOverviewPoliceCheckStatusInProgress(PoliceCheck policeCheck) {
         final String jurorNumber = "111111111";
         final String locCode = "415";
@@ -1545,7 +1556,7 @@ class JurorRecordServiceTest {
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
         assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Excepted status to be 'In "
-            + "Progress'").isEqualTo("In Progress");
+            + "Progress'").isEqualTo(PoliceCheck.IN_PROGRESS);
     }
 
     @Test
@@ -1573,8 +1584,8 @@ class JurorRecordServiceTest {
 
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
-        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Excepted status to be 'Passed'")
-            .isEqualTo("Passed");
+        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Police Check status")
+            .isEqualTo(PoliceCheck.ELIGIBLE);
     }
 
     @Test
@@ -1630,8 +1641,8 @@ class JurorRecordServiceTest {
 
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
-        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Excepted status to be 'Failed'")
-            .isEqualTo("Failed");
+        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Police check status")
+            .isEqualTo(PoliceCheck.INELIGIBLE);
     }
 
     @Test
@@ -2736,7 +2747,7 @@ class JurorRecordServiceTest {
             when(jurorStatusRepository.findById(IJurorStatus.FAILED_TO_ATTEND))
                 .thenReturn(Optional.of(failedToAttendStatus));
 
-            when(jurorAppearanceService.hasAppearances(TestConstants.VALID_JUROR_NUMBER))
+            when(jurorAppearanceService.hasAttendances(TestConstants.VALID_JUROR_NUMBER))
                 .thenReturn(true);
 
             JurorStatus status = mock(JurorStatus.class);
@@ -3248,8 +3259,8 @@ class JurorRecordServiceTest {
                 jurorRecordService.getJurorAttendanceDetails(TestConstants.VALID_JUROR_NUMBER,
                     TestConstants.VALID_POOL_NUMBER, buildPayload(owner));
 
-            assertEquals(1, jurorAttendanceDetailsResponseDto.getData().size(),
-                "One attendance record should be returned");
+            assertEquals(2, jurorAttendanceDetailsResponseDto.getData().size(),
+                "Two attendance record should be returned");
 
             verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER);
@@ -3672,4 +3683,103 @@ class JurorRecordServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("Confirm juror identity")
+    class ConfirmJurorIdentity {
+
+        @Test
+        void happyPath() {
+            TestUtils.setUpMockAuthentication("415", "CourtUser", "1", List.of("415"));
+            String jurorNumber = "111111111";
+
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.L)
+                .build();
+
+            JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, "415");
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true))
+                .thenReturn(Collections.singletonList(jurorPool));
+            jurorRecordService.confirmIdentity(dto);
+
+            ArgumentCaptor<JurorPool> jurorPoolArgumentCaptor = ArgumentCaptor.forClass(JurorPool.class);
+
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            verify(jurorPoolRepository, times(1))
+                .save(jurorPoolArgumentCaptor.capture());
+
+            JurorPool updatedJurorPool = jurorPoolArgumentCaptor.getValue();
+            assertEquals(IdCheckCodeEnum.L.getCode(), updatedJurorPool.getIdChecked());
+
+            verify(jurorHistoryService, times(1)).createIdentityConfirmedHistory(jurorPool);
+
+        }
+
+        @Test
+        void wrongCourtUser() {
+            TestUtils.setUpMockAuthentication("416", "CourtUser", "1", List.of("416"));
+            String jurorNumber = "111111111";
+
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.L)
+                .build();
+
+            JurorPool jurorPool = createValidJurorPool(jurorNumber, "415");
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true))
+                .thenReturn(Collections.singletonList(jurorPool));
+
+            MojException.Forbidden exception
+                = assertThrows(MojException.Forbidden.class, () -> jurorRecordService.confirmIdentity(dto),
+                "Forbidden exception");
+
+            assertEquals("Current user (416) does not own any Juror "
+                    + "Pool associations for Juror Number: " + jurorNumber,
+                exception.getMessage(), "Exception message should match");
+
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            verify(jurorPoolRepository, times(0)).save(any(JurorPool.class));
+            verify(jurorHistoryService, times(0)).createIdentityConfirmedHistory(any(JurorPool.class));
+
+        }
+
+
+        @Test
+        void jurorNotFound() {
+            TestUtils.setUpMockAuthentication("416", "CourtUser", "1", List.of("416"));
+            String jurorNumber = "111111111";
+
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.L)
+                .build();
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true))
+                .thenReturn(Collections.emptyList());
+
+            MojException.NotFound exception
+                = assertThrows(MojException.NotFound.class, () -> jurorRecordService.confirmIdentity(dto),
+                "Not found");
+
+            assertEquals("Unable to find any Juror Pool associations for juror number " + jurorNumber,
+                exception.getMessage(), "Exception message should match");
+
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            verify(jurorPoolRepository, times(0)).save(any(JurorPool.class));
+            verify(jurorHistoryService, times(0)).createIdentityConfirmedHistory(any(JurorPool.class));
+
+        }
+    }
+
+    private BureauJurorDetailDto createBureauJurorDetailDto(String jurorNumber) {
+
+        BureauJurorDetailDto bureauJurorDetailDto = new BureauJurorDetailDto();
+        bureauJurorDetailDto.setJurorNumber(jurorNumber);
+
+        return bureauJurorDetailDto;
+    }
 }

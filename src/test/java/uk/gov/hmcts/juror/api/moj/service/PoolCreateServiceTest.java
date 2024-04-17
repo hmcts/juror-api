@@ -15,7 +15,6 @@ import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorPoolSearch;
 import uk.gov.hmcts.juror.api.moj.controller.request.NilPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolMemberFilterRequestQuery;
@@ -554,7 +553,7 @@ public class PoolCreateServiceTest {
 
         mockStaticPaginationUtil.verify(() -> {
             PaginationUtil.toPaginatedList(Mockito.eq(mockData), Mockito.eq(createPoolFilterQuery(poolNumber)),
-                                           Mockito.eq(JurorPoolSearch.SortField.JUROR_NUMBER),
+                                           Mockito.eq(PoolMemberFilterRequestQuery.SortField.JUROR_NUMBER),
                                            Mockito.eq(SortMethod.ASC), dataMapperCaptor.capture(),
                                            Mockito.eq(500L));
         });
@@ -596,7 +595,7 @@ public class PoolCreateServiceTest {
 
         mockStaticPaginationUtil.verify(() -> {
             PaginationUtil.toPaginatedList(Mockito.eq(mockData), Mockito.eq(createPoolFilterQuery(poolNumber)),
-                                           Mockito.eq(JurorPoolSearch.SortField.JUROR_NUMBER),
+                                           Mockito.eq(PoolMemberFilterRequestQuery.SortField.JUROR_NUMBER),
                                            Mockito.eq(SortMethod.ASC), dataMapperCaptor.capture(),
                                            Mockito.eq(500L));
         });

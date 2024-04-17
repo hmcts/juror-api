@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.ExpenseDetailsForT
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.FinancialLossWarning;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.SummaryExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
@@ -78,4 +79,8 @@ public interface JurorExpenseService {
 
     CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(
         String jurorNumber, String poolNumber, List<LocalDate> dates);
+
+    SummaryExpenseDetailsDto calculateSummaryTotals(String jurorNumber, String poolNumber);
+
+    void realignExpenseDetails(Appearance appearance, boolean isDeleted);
 }

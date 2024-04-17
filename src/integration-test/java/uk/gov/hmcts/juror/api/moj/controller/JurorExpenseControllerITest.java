@@ -193,8 +193,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             CustomPageImpl<Void> responseBody = response.getBody();
             assertNotNull(responseBody, "Response must be present");
 
-            assertThat(responseBody.getTotalPages()).isEqualTo(2);
-            assertThat(responseBody.getTotalElements()).isEqualTo(26);
+            assertThat(responseBody.getTotalPages()).isEqualTo(1);
+            assertThat(responseBody.getTotalElements()).isEqualTo(25);
             assertThat(responseBody.getContent().size()).isEqualTo(25);
         }
 
@@ -246,8 +246,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertNotNull(responseBody, "Response must be present");
 
             assertThat(responseBody.getTotalPages()).isEqualTo(1);
-            assertThat(responseBody.getTotalElements()).isEqualTo(11);
-            assertThat(responseBody.getContent().size()).isEqualTo(11);
+            assertThat(responseBody.getTotalElements()).isEqualTo(10);
+            assertThat(responseBody.getContent().size()).isEqualTo(10);
         }
 
         @Test
@@ -1235,6 +1235,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(financialLoss.getOtherCostsDescription()).isEqualTo(otherDescription);
             }
 
+            @SuppressWarnings("PMD.ExcessiveParameterList")
             private void validateTravel(DailyExpenseTravel travel,
                                         Boolean travelByCar, Integer jurorsByCar,
                                         Boolean travelByMotorcycle, Integer jurorsByMotorcycle,
@@ -2584,8 +2585,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     new BigDecimal("57.00"), new BigDecimal("90.00"));
             }
 
-            private void assertApproved(Appearance appearance) {
-                assertThat(appearance).isNotNull();
+            private void assertApproved(Optional<Appearance> appearanceOpt) {
+                assertThat(appearanceOpt.isPresent()).isTrue();
+                Appearance appearance = appearanceOpt.get();
                 assertThat(appearance.getAppearanceStage())
                     .isEqualTo(AppearanceStage.EXPENSE_AUTHORISED);
             }

@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -47,6 +48,10 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.TooManyMethods",
+    "PMD.ExcessiveImports",
+    "PMD.GodClass",
+    "PMD.PotentialLawOfDemeterViolation"})
 public class JurorManagementServiceImpl implements JurorManagementService {
 
     @NonNull
@@ -73,38 +78,58 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public int reassignJurors(BureauJwtPayload payload, JurorManagementRequestDto jurorManagementRequestDto) {
+    public ReassignPoolMembersResultDto reassignJurors(BureauJwtPayload payload,
+                                                       JurorManagementRequestDto jurorManagementRequestDto) {
         log.trace("Entered reassignJurors method");
 
+        final String owner = payload.getOwner();
 
         // validate the request DTO, cannot reassign to the same pool in the same court - bad request.
         validateRequest(jurorManagementRequestDto);
 
-        PoolRequest sourcePoolRequest =
-            RepositoryUtils.unboxOptionalRecord(
-                poolRequestRepository.findByPoolNumber(jurorManagementRequestDto.getSourcePoolNumber()
-                ), jurorManagementRequestDto.getSourcePoolNumber());
-
-        PoolRequest targetPoolRequest =
-            RepositoryUtils.unboxOptionalRecord(
-                poolRequestRepository.findByPoolNumber(
-                    jurorManagementRequestDto.getReceivingPoolNumber()),
-                jurorManagementRequestDto.getReceivingPoolNumber()
-            );
-
-        CourtLocation sendingCourtLocation =
+        final CourtLocation sendingCourtLocation =
             RepositoryUtils.unboxOptionalRecord(courtLocationRepository.findByLocCode(
                 jurorManagementRequestDto.getSourceCourtLocCode()), jurorManagementRequestDto.getSourceCourtLocCode());
 
-        CourtLocation receivingCourtLocation =
+        final CourtLocation receivingCourtLocation =
             RepositoryUtils.unboxOptionalRecord(
                 courtLocationRepository.findByLocCode(
                     jurorManagementRequestDto.getReceivingCourtLocCode()),
                 jurorManagementRequestDto.getReceivingCourtLocCode()
             );
 
-        String sourcePoolNumber = sourcePoolRequest.getPoolNumber();
-        String targetPoolNumber = targetPoolRequest.getPoolNumber();
+        final PoolRequest sourcePoolRequest =
+            RepositoryUtils.unboxOptionalRecord(
+                poolRequestRepository.findByPoolNumber(jurorManagementRequestDto.getSourcePoolNumber()
+                ), jurorManagementRequestDto.getSourcePoolNumber());
+
+        PoolRequest targetPoolRequest;
+        if (jurorManagementRequestDto.getReceivingPoolNumber() != null) {
+            targetPoolRequest =
+                RepositoryUtils.unboxOptionalRecord(
+                    poolRequestRepository.findByPoolNumber(
+                        jurorManagementRequestDto.getReceivingPoolNumber()),
+                    jurorManagementRequestDto.getReceivingPoolNumber()
+                );
+        } else {
+            if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
+                throw new MojException.BadRequest("Receiving Pool Number is required for Bureau users", null);
+            }
+            // create a new pool in the same court location for court users only
+            targetPoolRequest = createTargetPoolRequest(jurorManagementRequestDto, sourcePoolRequest,
+                sendingCourtLocation);
+        }
+
+        final String sourcePoolNumber = sourcePoolRequest.getPoolNumber();
+        final String targetPoolNumber = targetPoolRequest.getPoolNumber();
+
+        if (sourcePoolNumber == null || targetPoolNumber == null) {
+            throw new MojException.NotFound("Could not find Source or Target Pool request", null);
+        }
+
+        if (!sourcePoolRequest.getOwner().equals(owner) || !targetPoolRequest.getOwner().equals(owner)) {
+            throw new MojException.BadRequest("Users can only reassign between owned pools", null);
+        }
 
         List<String> jurorNumbersList = jurorManagementRequestDto.getJurorNumbers();
 
@@ -119,7 +144,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         log.debug("{} Pool Members found for the {} juror numbers provided", sourceJurorPools.size(),
             jurorManagementRequestDto.getJurorNumbers().stream().distinct().count()
         );
-        final String owner = payload.getOwner();
+
         final String currentUser = payload.getLogin();
         int reassignedJurorsCount = 0;
         for (JurorPool sourceJurorPool : sourceJurorPools) {
@@ -148,7 +173,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                     .build());
 
                 // queue a summons confirmation letter (Bureau only!)
-                if (payload.getOwner().equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)) {
+                if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())) {
                     ConfirmationLetter confirmationLetter = confirmationLetterService.getLetterToEnqueue(owner,
                         jurorNumber);
                     confirmationLetterService.enqueueLetter(confirmationLetter);
@@ -165,7 +190,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
         log.trace("Finished reassignJurors method");
 
-        return reassignedJurorsCount;
+        return new ReassignPoolMembersResultDto(reassignedJurorsCount, targetPoolNumber);
     }
 
     private void validateRequest(JurorManagementRequestDto jurorManagementRequestDto) {
@@ -421,7 +446,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
     private void validateTransferRequest(String owner, JurorManagementRequestDto requestDto) {
 
-        if (owner.equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)) {
+        if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
             // transferring jurors between courts can only be actioned by the court, never by the Bureau
             throw new MojException.Forbidden("Current user has insufficient permission to "
                 + "transfer pool members", null);
@@ -482,7 +507,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
     private PoolRequest createTargetPoolRequest(JurorManagementRequestDto requestDto, PoolRequest sourcePoolRequest,
                                                 CourtLocation receivingCourtLocation) {
-        log.trace("Create target pool request for transferring pool members to {}",
+        log.trace("Create target pool request for transferring/reassigning pool members to {}",
             requestDto.getReceivingCourtLocCode());
         PoolRequest targetPoolRequest = new PoolRequest();
         targetPoolRequest.setOwner(requestDto.getReceivingCourtLocCode());

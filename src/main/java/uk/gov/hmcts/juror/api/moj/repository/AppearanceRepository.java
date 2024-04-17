@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.history.RevisionRepository;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -14,15 +15,12 @@ import java.util.Set;
 
 
 @Repository
-public interface AppearanceRepository extends
-    IAppearanceRepository, JpaRepository<Appearance, AppearanceId>,
+public interface AppearanceRepository extends IAppearanceRepository, JpaRepository<Appearance, AppearanceId>,
     RevisionRepository<Appearance, AppearanceId, Long> {
 
     long countByJurorNumber(String jurorNumber);
 
-    Appearance findByJurorNumber(String jurorNumber);
-
-    Appearance findByJurorNumberAndAttendanceDate(String jurorNumber, LocalDate attendanceDate);
+    Optional<Appearance> findByJurorNumberAndAttendanceDate(String jurorNumber, LocalDate attendanceDate);
 
     List<Appearance> findAllByJurorNumberAndPoolNumber(String jurorNumber, String poolNumber);
 
@@ -48,4 +46,10 @@ public interface AppearanceRepository extends
 
     List<Appearance> findAllByJurorNumberAndPoolNumberAndAttendanceDateIn(String jurorNumber, String poolNumber,
                                                                           List<LocalDate> dates);
+
+    @Query(value = "select nextval('juror_mod.attendance_audit_seq')", nativeQuery = true)
+    Long getNextAttendanceAuditNumber();
+
+    long countByJurorNumberAndAppearanceStageNotNull(String jurorNumber);
+
 }

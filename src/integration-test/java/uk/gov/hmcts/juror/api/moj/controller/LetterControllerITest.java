@@ -23,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeEntity;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.AdditionalInformationDto;
@@ -33,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CertificateOfE
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CourtLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.PrintLettersRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.DeferralLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ExcusalLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.FailedToAttendLetterData;
@@ -44,7 +44,9 @@ import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.WithdrawalLet
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JurorForExemptionListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialExemptionListDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
+import uk.gov.hmcts.juror.api.moj.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
@@ -591,7 +593,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
                 assertThat(data.getStatus()).isEqualTo("Deferred");
                 assertThat(data.getDeferredTo()).isEqualTo(LocalDate.now().plusDays(10));
-                String reason = excusalCodeRepository.findById("A").orElse(new ExcusalCodeEntity()).getDescription();
+                String reason = excusalCodeRepository.findById("A").orElse(new ExcusalCode()).getDescription();
                 assertThat(data.getReason()).isEqualToIgnoringCase(reason);
                 assertThat(data.getDatePrinted()).isEqualTo(LocalDate.now().minusDays(9));
                 assertThat(data.getPoolNumber()).isEqualTo("415220401");
@@ -665,7 +667,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
                 assertThat(data.getStatus()).isEqualTo("Deferred");
                 assertThat(data.getDeferredTo()).isEqualTo(LocalDate.now().plusDays(25));
-                String reason = excusalCodeRepository.findById("T").orElse(new ExcusalCodeEntity()).getDescription();
+                String reason = excusalCodeRepository.findById("T").orElse(new ExcusalCode()).getDescription();
                 assertThat(data.getReason()).isEqualToIgnoringCase(reason);
                 assertThat(data.getDatePrinted()).isNull();
                 assertThat(data.getPoolNumber()).isEqualTo("415220404");
@@ -1007,7 +1009,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
                 assertThat(data.getStatus()).isEqualTo("Responded");
                 assertThat(data.getDateRefused()).isEqualTo(LocalDate.now().minusDays(8));
-                String reason = excusalCodeRepository.findById("A").orElse(new ExcusalCodeEntity()).getDescription();
+                String reason = excusalCodeRepository.findById("A").orElse(new ExcusalCode()).getDescription();
                 assertThat(data.getReason()).isEqualToIgnoringCase(reason);
                 assertThat(data.getDatePrinted()).isEqualTo(LocalDate.now().minusDays(8));
                 assertThat(data.getPoolNumber()).isEqualTo("415220401");
@@ -1081,7 +1083,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
                 assertThat(data.getStatus()).isEqualTo("Deferred");
                 assertThat(data.getDateRefused()).isEqualTo(LocalDate.now().minusDays(8));
-                String reason = excusalCodeRepository.findById("A").orElse(new ExcusalCodeEntity()).getDescription();
+                String reason = excusalCodeRepository.findById("A").orElse(new ExcusalCode()).getDescription();
                 assertThat(data.getReason()).isEqualToIgnoringCase(reason);
                 assertThat(data.getDatePrinted()).isNull();
                 assertThat(data.getPoolNumber()).isEqualTo("415220402");
@@ -2910,8 +2912,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(() -> Failures.instance()
                     .failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(),
-                    LocalDate.now().plusDays(4), false);
+                verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(), null,false);
 
                 // verify history added
                 List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
@@ -2951,8 +2952,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
                         -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(),
-                    LocalDate.now().plusDays(4), false);
+                verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(), null,false);
 
                 // verify history added
                 updatedJurorHistoryList = jurorHistoryRepository
@@ -2981,8 +2981,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
                         -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(),
-                    LocalDate.now().plusDays(4), false);
+                verifyDataResponse(bulkPrintData, "570", Boolean.FALSE, LocalDate.now(), null,false);
 
                 // verify history added
                 List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
@@ -3044,14 +3043,22 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
                 RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(reissueLetterRequestDto,
                     httpHeaders, POST, uri);
-                ResponseEntity<String> response = template.exchange(request, String.class);
+                ResponseEntity<ReissueLetterReponseDto> response = template.exchange(request,
+                    ReissueLetterReponseDto.class);
 
                 assertThat(response).isNotNull();
+                assertThat(response.getStatusCode()).isEqualTo(OK);
                 assertThat(response.getBody()).isNotNull();
-                assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
-                assertThat(JsonPath.read(response.getBody(), "$['message']").toString())
-                    .as("JSON: Error message")
-                    .isEqualTo("Juror not found for juror number 555555566");
+                ReissueLetterReponseDto responseDto = response.getBody();
+                assertThat(responseDto.getJurors().size()).isEqualTo(1);
+
+                ReissueLetterReponseDto.ReissueLetterResponseData reissueLetterResponseData =
+                    responseDto.getJurors().get(0);
+                assertThat(reissueLetterResponseData.getJurorNumber()).isEqualTo(jurorNumber);
+                assertThat(reissueLetterResponseData.getFirstName()).isEqualTo("Juror566");
+                assertThat(reissueLetterResponseData.getLastName()).isEqualTo("Juror566Surname");
+                assertThat(reissueLetterResponseData.getJurorStatus().getCode()).isEqualTo(IJurorStatus.DEFERRED);
+
             }
 
             @Test
@@ -3088,8 +3095,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     FormCode.BI_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
                         -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "575", Boolean.FALSE, LocalDate.now(),
-                    LocalDate.now().plusDays(4), true);
+                verifyDataResponse(bulkPrintData, "575", Boolean.FALSE, LocalDate.now(), null,true);
 
                 // verify history added
                 List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
@@ -3116,8 +3122,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     .orElseThrow(() -> Failures.instance().failure("Expected record exist in bulk print data table"));
 
                 verifyDataResponse(bulkPrintData, "576", true,
-                    LocalDate.of(2024, 1, 31),
-                    LocalDate.of(2024, 1, 18), true);
+                    LocalDate.of(2024, 1, 31), LocalDate.of(2024, 1, 18), true);
 
                 // invoke service to reissue letter
                 triggerValidBureau(
@@ -3133,8 +3138,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())
                     .orElseThrow(() -> Failures.instance().failure("Expect record to exit in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "576", Boolean.FALSE, LocalDate.now(),
-                    LocalDate.now().plusDays(4), false);
+                verifyDataResponse(bulkPrintData, "576", Boolean.FALSE, LocalDate.now(), null, false);
 
                 // verify history added
                 List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
@@ -3194,8 +3198,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now()).orElseThrow(()
                             -> Failures.instance().failure("Expected record to be found in bulk print data table"));
 
-                verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(),
-                    LocalDate.now().plusDays(4), false);
+                verifyDataResponse(bulkPrintData, "561", Boolean.FALSE, LocalDate.now(), null,false);
 
                 // verify history added
                 List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
@@ -3208,17 +3211,16 @@ class LetterControllerITest extends AbstractIntegrationTest {
             private void verifyDataResponse(BulkPrintData bulkPrintData,
                                             String jurorNumberPostfix,
                                             Boolean extractedFlag,
-                                            LocalDate creationDate, LocalDate recDate, Boolean isWelsh) {
+                                            LocalDate creationDate, LocalDate reprintRecDate, Boolean isWelsh) {
                 assertThat(bulkPrintData).isNotNull();
 
                 assertThat(bulkPrintData.isExtractedFlag()).isEqualTo(extractedFlag);
                 assertThat(bulkPrintData.getJurorNo()).isEqualTo("555555" + jurorNumberPostfix);
                 assertThat(bulkPrintData.getCreationDate()).isEqualTo(creationDate);
-                assertThat(bulkPrintData.getDetailRec())
-                    .contains(recDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")).toUpperCase());
                 assertThat(bulkPrintData.isExtractedFlag()).isEqualTo(extractedFlag);
                 assertThat(bulkPrintData.getDigitalComms()).isNull();
 
+                verifyRecDate(bulkPrintData, reprintRecDate);
                 if (isWelsh) {
                     assertThat(bulkPrintData.getFormAttribute().getDirectoryName()).isEqualTo("WEL_NON_RESP");
                     assertThat(bulkPrintData.getFormAttribute().getMaxRecLen()).isEqualTo(691);
@@ -3240,6 +3242,29 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(index.getOtherInformationDate()).isNull();
                 assertThat(index.getOtherInformationRef()).isNull();
             }
+
+            private void verifyRecDate(BulkPrintData bulkPrintData, LocalDate reprintRecDate) {
+                // for new reports (not reprints) the recDate will be based on Calendar day
+                if (reprintRecDate == null) {
+                    Calendar calendar = Calendar.getInstance();
+                    switch (calendar.get(Calendar.DAY_OF_WEEK)) {
+                        case MONDAY, TUESDAY, WEDNESDAY -> assertThat(bulkPrintData.getDetailRec()).contains(
+                            LocalDate
+                                .now()
+                                .plusDays(2)
+                                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy")).toUpperCase());
+                        case THURSDAY, FRIDAY -> assertThat(bulkPrintData.getDetailRec()).contains(
+                            LocalDate
+                                .now()
+                                .plusDays(4)
+                                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy")).toUpperCase());
+                        default -> fail("Unexpected day of the week");
+                    }
+                } else {
+                    assertThat(bulkPrintData.getDetailRec())
+                        .contains(reprintRecDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")).toUpperCase());
+                }
+            }
         }
 
         private void triggerValidBureau(
@@ -3255,12 +3280,15 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(reissueLetterRequestDto,
                 httpHeaders, POST, uri);
-            ResponseEntity<String> response = template.exchange(request, String.class);
+            ResponseEntity<ReissueLetterReponseDto> response = template.exchange(request,
+                ReissueLetterReponseDto.class);
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode())
                 .as("Expect HTTP Response to be OK")
                 .isEqualTo(OK);
-            assertThat(response.getBody()).isEqualTo("Letters reissued");
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().getJurors()).as("No jurors expected with errors").isEmpty();
+
         }
     }
 
@@ -5506,7 +5534,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
             assertThat(data.getStatus()).isEqualTo("Postponed");
             assertThat(data.getPostponedTo()).isEqualTo(LocalDate.now().plusDays(10));
-            String reason = excusalCodeRepository.findById("P").orElse(new ExcusalCodeEntity()).getDescription();
+            String reason = excusalCodeRepository.findById("P").orElse(new ExcusalCode()).getDescription();
             assertThat(data.getReason()).isEqualToIgnoringCase(reason);
             assertThat(data.getDatePrinted()).isEqualTo(LocalDate.now().minusDays(9));
             assertThat(data.getPoolNumber()).isEqualTo("415220401");
@@ -5573,7 +5601,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data.getPostcode()).isEqualTo("CH1 2AN");
             assertThat(data.getStatus()).isEqualTo("Postponed");
             assertThat(data.getPostponedTo()).isEqualTo(LocalDate.now().plusDays(13));
-            String reason = excusalCodeRepository.findById("P").orElse(new ExcusalCodeEntity()).getDescription();
+            String reason = excusalCodeRepository.findById("P").orElse(new ExcusalCode()).getDescription();
             assertThat(data.getReason()).isEqualToIgnoringCase(reason);
             assertThat(data.getDatePrinted()).isNull();
             assertThat(data.getPoolNumber()).isEqualTo("415220401");
@@ -7393,4 +7421,3 @@ class LetterControllerITest extends AbstractIntegrationTest {
         }
     }
 }
-

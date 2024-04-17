@@ -103,7 +103,7 @@ public class JurorPool implements Serializable {
     @Column(name = "was_deferred")
     private Boolean wasDeferred;
 
-    @Length(max = 1)
+    @Length(max = 2)
     @Column(name = "deferral_code")
     private String deferralCode;
 

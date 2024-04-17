@@ -4956,6 +4956,7 @@ class JurorExpenseServiceTest {
             doReturn(null).when(juror).getFinancialLoss();
 
             Appearance appearance = mock(Appearance.class);
+            doReturn(AttendanceType.FULL_DAY).when(appearance).getAttendanceType();
             doReturn(effectiveTime).when(appearance).getEffectiveTime();
 
 
@@ -4972,6 +4973,7 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1))
                 .isAttendanceDay(appearance);
 
+            verify(appearance, times(1)).getAttendanceType();
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(null);
@@ -5010,8 +5012,8 @@ class JurorExpenseServiceTest {
             doReturn(null).when(juror).getFinancialLoss();
 
             Appearance appearance = mock(Appearance.class);
+            doReturn(AttendanceType.FULL_DAY).when(appearance).getAttendanceType();
             doReturn(effectiveTime).when(appearance).getEffectiveTime();
-
 
             jurorExpenseService.applyDefaultExpenses(appearance, juror);
 
@@ -5026,6 +5028,7 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1))
                 .isAttendanceDay(appearance);
 
+            verify(appearance, times(1)).getAttendanceType();
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(null);
@@ -5065,6 +5068,7 @@ class JurorExpenseServiceTest {
             doReturn(null).when(juror).getFinancialLoss();
 
             Appearance appearance = mock(Appearance.class);
+            doReturn(AttendanceType.NON_ATTENDANCE).when(appearance).getAttendanceType();
             doReturn(effectiveTime).when(appearance).getEffectiveTime();
 
 
@@ -5081,6 +5085,7 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1))
                 .isAttendanceDay(appearance);
 
+            verify(appearance, times(1)).getAttendanceType();
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(null);
@@ -5120,7 +5125,8 @@ class JurorExpenseServiceTest {
 
             Appearance appearance = mock(Appearance.class);
             doReturn(effectiveTime).when(appearance).getEffectiveTime();
-
+            doReturn(AttendanceType.FULL_DAY).when(appearance).getAttendanceType();
+            doReturn(payAttendanceType).when(appearance).getPayAttendanceType();
 
             jurorExpenseService.applyDefaultExpenses(appearance, juror);
 
@@ -5135,6 +5141,7 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1))
                 .isAttendanceDay(appearance);
 
+            verify(appearance, times(1)).getAttendanceType();
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(null);
@@ -5174,6 +5181,7 @@ class JurorExpenseServiceTest {
 
             Appearance appearance = mock(Appearance.class);
             doReturn(effectiveTime).when(appearance).getEffectiveTime();
+            doReturn(AttendanceType.FULL_DAY).when(appearance).getAttendanceType();
             doReturn(payAttendanceType).when(appearance).getPayAttendanceType();
 
 
@@ -5190,6 +5198,7 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1))
                 .isAttendanceDay(appearance);
 
+            verify(appearance, times(1)).getAttendanceType();
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("50.00"));
@@ -5229,6 +5238,7 @@ class JurorExpenseServiceTest {
             doReturn(new BigDecimal("50.00")).when(juror).getFinancialLoss();
 
             Appearance appearance = mock(Appearance.class);
+            doReturn(AttendanceType.HALF_DAY).when(appearance).getAttendanceType();
             doReturn(effectiveTime).when(appearance).getEffectiveTime();
             doReturn(payAttendanceType).when(appearance).getPayAttendanceType();
 
@@ -5246,6 +5256,7 @@ class JurorExpenseServiceTest {
             verify(jurorExpenseService, times(1))
                 .isAttendanceDay(appearance);
 
+            verify(appearance, times(1)).getAttendanceType();
             verify(appearance, times(1)).getEffectiveTime();
             verify(appearance, times(1)).setTravelTime(travelTime);
             verify(appearance, times(1)).setLossOfEarningsDue(new BigDecimal("25.00"));
@@ -5274,9 +5285,9 @@ class JurorExpenseServiceTest {
 
             doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(anyCollection());
             doNothing().when(jurorExpenseService).applyDefaultExpenses(any(), any());
-            Appearance appearance1 = mockAppearance();
-            Appearance appearance2 = mockAppearance();
-            Appearance appearance3 = mockAppearance();
+            Appearance appearance1 = mockAppearance(AttendanceType.FULL_DAY);
+            Appearance appearance2 = mockAppearance(AttendanceType.FULL_DAY);
+            Appearance appearance3 = mockAppearance(AttendanceType.FULL_DAY);
             jurorExpenseService.applyDefaultExpenses(
                 List.of(appearance1, appearance2, appearance3));
 
@@ -5308,10 +5319,33 @@ class JurorExpenseServiceTest {
             verify(appearanceRepository, never()).saveAll(any());
         }
 
-        private Appearance mockAppearance() {
+        @Test
+        void positiveAbsentAppearance() {
+            Juror juror = mock(Juror.class);
+            doReturn(TestConstants.VALID_JUROR_NUMBER).when(juror).getJurorNumber();
+            doReturn(juror).when(jurorExpenseService).getJuror(TestConstants.VALID_JUROR_NUMBER);
+
+            doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(anyCollection());
+            doNothing().when(jurorExpenseService).applyDefaultExpenses(any(), any());
+            Appearance appearance1 = mockAppearance(AttendanceType.FULL_DAY);
+            Appearance appearance2 = mockAppearance(AttendanceType.ABSENT);
+            jurorExpenseService.applyDefaultExpenses(
+                List.of(appearance1, appearance2));
+
+            verify(jurorExpenseService, times(1))
+                .applyDefaultExpenses(appearance1, juror);
+            verify(jurorExpenseService, times(1))
+                .applyDefaultExpenses(appearance2, juror);
+            verify(jurorExpenseService, times(1)).saveAppearancesWithExpenseRateIdUpdate(
+                List.of(appearance1)
+            );
+        }
+
+        private Appearance mockAppearance(AttendanceType attendanceType) {
             Appearance appearance = mock(Appearance.class);
             doReturn(TestConstants.VALID_JUROR_NUMBER).when(appearance).getJurorNumber();
             doReturn(AppearanceStage.EXPENSE_ENTERED).when(appearance).getAppearanceStage();
+            doReturn(attendanceType).when(appearance).getAttendanceType();
             doReturn(true).when(appearance).isDraftExpense();
             return appearance;
         }

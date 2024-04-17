@@ -127,7 +127,7 @@ class JurorRecordControllerTest {
 
         JurorDetailsCommonResponseDto commonDto = new JurorDetailsCommonResponseDto();
         commonDto.setJurorNumber(JUROR_NUMBER);
-        commonDto.setPoliceCheck("Not Checked");
+        commonDto.setPoliceCheck(PoliceCheck.NOT_CHECKED);
         commonDto.setNoDeferrals(0);
 
         JurorOverviewResponseDto dto = new JurorOverviewResponseDto();
@@ -1210,7 +1210,7 @@ class JurorRecordControllerTest {
         commonDto.setDeferredTo(null);
         commonDto.setNoDeferrals(0);
         commonDto.setDeferralDate(null);
-        commonDto.setPoliceCheck("Not Checked");
+        commonDto.setPoliceCheck(PoliceCheck.NOT_CHECKED);
         commonDto.setPendingTitle("Dr");
         commonDto.setPendingFirstName("NewFirstName");
         commonDto.setPendingLastName("NewLastName");

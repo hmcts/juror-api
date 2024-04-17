@@ -57,26 +57,21 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
     "PMD.TooManyMethods"
 })
 public class TrialServiceImpl implements TrialService {
+
     @Autowired
     private TrialRepository trialRepository;
     @Autowired
     private JudgeRepository judgeRepository;
-
     @Autowired
     private CourtroomRepository courtroomRepository;
-
     @Autowired
     private CourtLocationRepository courtLocationRepository;
-
     @Autowired
     private PanelRepository panelRepository;
-
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
-
     @Autowired
     private AppearanceRepository appearanceRepository;
-
     @Autowired
     private CompleteServiceService completeService;
 
@@ -84,6 +79,14 @@ public class TrialServiceImpl implements TrialService {
 
     @Override
     public TrialSummaryDto createTrial(BureauJwtPayload payload, TrialDto trialDto) {
+
+        if (trialRepository.existsByTrialNumberAndCourtLocationLocCode(trialDto.getCaseNumber(),
+            trialDto.getCourtLocation())) {
+            throw new MojException.BadRequest(String.format("Unable to create trial with case number: %s at "
+                    + "location code %s (case number already in use at this location)", trialDto.getCaseNumber(),
+                trialDto.getCourtLocation()), null);
+        }
+
         Courtroom courtroom =
             RepositoryUtils.unboxOptionalRecord(courtroomRepository.findById(trialDto.getCourtroomId()),
                 trialDto.getCourtroomId().toString());
@@ -93,11 +96,11 @@ public class TrialServiceImpl implements TrialService {
         Judge judge =
             RepositoryUtils.unboxOptionalRecord(judgeRepository.findById(trialDto.getJudgeId()),
                 trialDto.getJudgeId().toString());
-        
+
         Trial trial = convertDtoToTrial(trialDto, courtroom, judge, courtLocation);
         trialRepository.save(trial);
 
-        //TODo confirm
+        //TODO confirm
         judge.setLastUsed(LocalDateTime.now());
         judgeRepository.save(judge);
         return createTrialSummary(trial, courtroom, judge);
@@ -124,7 +127,11 @@ public class TrialServiceImpl implements TrialService {
 
     @Override
     public TrialSummaryDto getTrialSummary(BureauJwtPayload payload, String trialNo, String locCode) {
-        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNo, locCode);
+
+        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNo, locCode)
+            .orElseThrow(() -> new MojException.NotFound(String.format("Cannot find trial with "
+                + "number: %s for court location %s", trialNo, locCode), null));
+
         if (trial == null) {
             throw new MojException.NotFound("Cannot find trial %s for court location %s.".formatted(trialNo, locCode),
                 null);
@@ -173,31 +180,30 @@ public class TrialServiceImpl implements TrialService {
 
         JurorStatus jurorStatus = new JurorStatus();
         jurorStatus.setStatus(IJurorStatus.RESPONDED);
-        boolean appearanceAltered = false;
         for (Panel panel : juryMembersToBeReturned) {
             final String jurorNumber = panel.getJurorPool().getJurorNumber();
-            Appearance appearance = appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber());
+            Appearance appearance = RepositoryUtils.unboxOptionalRecord(
+                appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
+                    returnJuryDto.getAttendanceDate()),
+                jurorNumber);
             // only apply check in time for those that have not been checked in yet
             if (appearance.getTimeIn() == null && StringUtils.isNotEmpty(returnJuryDto.getCheckIn())) {
                 appearance.setTimeIn(LocalTime.parse(returnJuryDto.getCheckIn()));
                 log.debug("setting time in for juror %s".formatted(jurorNumber));
-                appearanceAltered = true;
             }
 
             if (appearance.getTimeOut() == null && StringUtils.isNotEmpty(returnJuryDto.getCheckOut())) {
                 appearance.setTimeOut(LocalTime.parse(returnJuryDto.getCheckOut()));
                 log.debug("setting time out for juror %s".formatted(jurorNumber));
-                appearanceAltered = true;
             }
+
+            appearance.setSatOnJury(true);
 
             panel.setResult(PanelResult.RETURNED);
             panel.setCompleted(true);
             panel.getJurorPool().setStatus(jurorStatus);
 
-            if (appearanceAltered) {
-                appearanceRepository.saveAndFlush(appearance);
-                log.debug(String.format("updated appearance record for juror %s", jurorNumber));
-            }
+            appearanceRepository.saveAndFlush(appearance);
 
             panelRepository.saveAndFlush(panel);
             log.debug(String.format("updated juror trial record for juror %s", jurorNumber));
@@ -228,7 +234,9 @@ public class TrialServiceImpl implements TrialService {
         }
 
         Trial trial = trialRepository
-            .findByTrialNumberAndCourtLocationLocCode(dto.getTrialNumber(), dto.getLocationCode());
+            .findByTrialNumberAndCourtLocationLocCode(dto.getTrialNumber(), dto.getLocationCode())
+            .orElseThrow(() -> new MojException.NotFound(String.format("Cannot find trial with "
+                + "number: %s for court location %s", dto.getTrialNumber(), dto.getLocationCode()), null));
 
         if (trial == null) {
             throw new MojException.NotFound(

@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.FoodDrinkClaimType;
 import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
 
 import java.io.Serializable;
@@ -50,7 +51,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 @Getter
 @Setter
 @Audited
-@SuppressWarnings({"PMD.TooManyFields", "PMD.LawOfDemeter"})
+@SuppressWarnings({"PMD.TooManyFields", "PMD.LawOfDemeter", "PMD.TooManyImports"})
 public class Appearance implements Serializable {
 
     @Version
@@ -241,6 +242,13 @@ public class Appearance implements Serializable {
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private ExpenseRates expenseRates;
 
+    /**
+     * Sequence generated number to group jurors by when their attendance is confirmed. Uses either a 'P' prefix for
+     * pool attendance (Jurors in waiting) or a 'J' prefix for jury attendance (serving on jury for a trial)
+     */
+    @Column(name = "attendance_audit_number")
+    private String attendanceAuditNumber;
+
     public String getIdString() {
         return "JurorNumber: " + this.jurorNumber + ", "
             + "AttendanceDate: " + this.attendanceDate + ", "
@@ -378,8 +386,8 @@ public class Appearance implements Serializable {
         addExpenseToErrors(errors, "childcare", this.getChildcareDue(), this.getChildcarePaid());
         addExpenseToErrors(errors, "miscAmount", this.getMiscAmountDue(), this.getMiscAmountPaid());
         addExpenseToErrors(errors, "total", this.getTotalDue(), this.getTotalPaid());
-        if ((AppearanceStage.EXPENSE_EDITED.equals(this.getAppearanceStage())
-            || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage()))) {
+        if (AppearanceStage.EXPENSE_EDITED.equals(this.getAppearanceStage())
+            || AppearanceStage.EXPENSE_AUTHORISED.equals(this.getAppearanceStage())) {
             if (BigDecimalUtils.isLessThan(getOrZero(this.getSmartCardAmountPaid()),
                 getOrZero(this.getSmartCardAmountDue()))) {
                 errors.put("smartCardAmount",
@@ -412,5 +420,55 @@ public class Appearance implements Serializable {
 
     public boolean isFullDay() {
         return getEffectiveTime().isAfter(LocalTime.of(4, 0));
+    }
+
+    public void clearExpenses(boolean validate) {
+        if (validate) {
+            validateCanClearExpenses();
+        }
+
+        clearFinancialLossExpenses(false);
+
+        clearTravelExpenses(false);
+        clearFoodAndDrinkExpenses(false);
+    }
+
+    public void clearFinancialLossExpenses(boolean validate) {
+        if (validate) {
+            validateCanClearExpenses();
+        }
+        setLossOfEarningsPaid(BigDecimal.ZERO);
+        setChildcarePaid(BigDecimal.ZERO);
+        setMiscAmountPaid(BigDecimal.ZERO);
+    }
+
+
+    public void clearTravelExpenses(boolean validate) {
+        if (validate) {
+            validateCanClearExpenses();
+        }
+        setPublicTransportPaid(BigDecimal.ZERO);
+        setHiredVehiclePaid(BigDecimal.ZERO);
+        setMotorcyclePaid(BigDecimal.ZERO);
+        setCarPaid(BigDecimal.ZERO);
+        setBicyclePaid(BigDecimal.ZERO);
+        setParkingPaid(BigDecimal.ZERO);
+    }
+
+    public void clearFoodAndDrinkExpenses(boolean validate) {
+        if (validate) {
+            validateCanClearExpenses();
+        }
+        setSubsistencePaid(BigDecimal.ZERO);
+        setSmartCardAmountPaid(BigDecimal.ZERO);
+    }
+
+    private void validateCanClearExpenses() {
+        if (BigDecimalUtils.isGreaterThan(getTotalPaid(), BigDecimal.ZERO)
+            || Set.of(AppearanceStage.EXPENSE_EDITED, AppearanceStage.EXPENSE_AUTHORISED)
+            .contains(getAppearanceStage())) {
+            throw new MojException.InternalServerError(
+                "Cannot clear expenses for appearance that has authorised values", null);
+        }
     }
 }

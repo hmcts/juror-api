@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.request.trial;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,7 +10,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @NoArgsConstructor
@@ -33,4 +37,17 @@ public class JurorListRequestDto {
 
     @JsonProperty("number_requested")
     private int numberRequested;
+
+    @JsonProperty("attendance_date")
+    @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
+    private LocalDate attendanceDate = LocalDate.now();
+
+
+    @JsonSetter("attendance_date")
+    public void setAttendanceDate(LocalDate date) {
+        if (date != null) {
+            attendanceDate = date;
+        }
+    }
+
 }

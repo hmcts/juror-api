@@ -42,6 +42,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseR
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApproval;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.SimplifiedExpenseDetailDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.SummaryExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
@@ -62,12 +63,14 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ExpenseRatesRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorExpenseTotalsRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PaymentDataRepository;
 import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
 import uk.gov.hmcts.juror.api.moj.service.FinancialAuditService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -108,6 +111,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     private final JurorExpenseTotalsRepository jurorExpenseTotalsRepository;
     private final AppearanceRepository appearanceRepository;
     private final JurorRepository jurorRepository;
+    private final JurorPoolRepository jurorPoolRepository;
     private final FinancialAuditService financialAuditService;
     private final UserService userService;
     private final JurorHistoryService jurorHistoryService;
@@ -210,13 +214,21 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             log.info("No appearances found with matching criteria");
             return;
         }
+
         appearances.forEach(appearance -> applyDefaultExpenses(appearance, getJuror(appearance.getJurorNumber())));
-        saveAppearancesWithExpenseRateIdUpdate(appearances);
+        List<Appearance> filteredAppearances = appearances.stream()
+            .filter(appearance -> !AttendanceType.ABSENT.equals(appearance.getAttendanceType())).toList();
+
+        saveAppearancesWithExpenseRateIdUpdate(filteredAppearances);
     }
 
     @Transactional
     @Override
     public void applyDefaultExpenses(Appearance appearance, Juror juror) {
+        if (AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
+            return;
+        }
+
         appearance.setTravelTime(juror.getTravelTime());
         appearance.setPayAttendanceType(calculatePayAttendanceType(appearance));
 
@@ -669,22 +681,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         return combinedSimplifiedExpenseDetailDto;
     }
 
-    SimplifiedExpenseDetailDto mapCombinedSimplifiedExpenseDetailDto(Appearance appearance) {
-        return SimplifiedExpenseDetailDto.builder()
-            .attendanceDate(appearance.getAttendanceDate())
-            .financialAuditNumber(appearance.getFinancialAuditDetails().getFinancialAuditNumber())
-            .attendanceType(appearance.getAttendanceType())
-            .financialLoss(appearance.getTotalFinancialLossDue())
-            .travel(appearance.getTotalTravelDue())
-            .foodAndDrink(getOrZero(appearance.getSubsistenceDue()))
-            .smartcard(getOrZero(appearance.getSmartCardAmountDue()))
-            .totalDue(appearance.getTotalDue())
-            .totalPaid(appearance.getTotalPaid())
-            .balanceToPay(appearance.getBalanceToPay())
-            .auditCreatedOn(appearance.getFinancialAuditDetails().getCreatedOn())
-            .build();
-    }
-
     @Override
     @Transactional(readOnly = true)
     public CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(String jurorNumber, String poolNumber,
@@ -709,6 +705,88 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         appearances.forEach(
             appearance -> combinedExpenseDetailsDto.addExpenseDetail(mapAppearanceToExpenseDetailsDto(appearance)));
         return combinedExpenseDetailsDto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SummaryExpenseDetailsDto calculateSummaryTotals(String jurorNumber, String poolNumber) {
+
+        final String owner = SecurityUtil.getActiveOwner();
+
+        // check if the user has access to the juror pool for juror
+        JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber, owner);
+
+        List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(jurorNumber,
+            poolNumber);
+
+        if (appearances.isEmpty()) {
+            throw new MojException.NotFound("No appearances found for juror: " + jurorNumber, null);
+        }
+
+        SummaryExpenseDetailsDto summaryExpenseDetailsDto = new SummaryExpenseDetailsDto();
+
+        for (Appearance appearance : appearances) {
+            if (appearance.isDraftExpense()) {
+                // calculate the total for draft
+                if (appearance.getTotalDue() != null) {
+                    summaryExpenseDetailsDto.addToTotalDraft(appearance.getTotalDue());
+                }
+            } else {
+
+                // calculate the total approved
+                if (appearance.getTotalPaid() != null) {
+                    summaryExpenseDetailsDto.addToTotalApproved(
+                        appearance.getTotalPaid());
+                }
+
+                // calculate the total for approval
+                if (appearance.getTotalPaid() != null && appearance.getTotalDue() != null) {
+                    summaryExpenseDetailsDto.addToTotalForApproval(
+                        appearance.getTotalDue().subtract(appearance.getTotalPaid()));
+                } else if (appearance.getTotalDue() != null) {
+                    summaryExpenseDetailsDto.addToTotalForApproval(appearance.getTotalDue());
+                }
+            }
+        }
+
+        return summaryExpenseDetailsDto;
+    }
+
+    /**
+     * This method should only be called if the appearance stage is EXPENSE_ENTERED or expense is draft.
+     * Violating this constraint may lead to data integrity issues.
+     * (Not validated here as consuming methods already perform this validation)
+     */
+    @Override
+    @Transactional
+    public void realignExpenseDetails(Appearance appearance, boolean isDeleted) {
+        if (isDeleted || AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
+            appearance.clearExpenses(true);
+        } else if (Set.of(AttendanceType.NON_ATTENDANCE, AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
+            .contains(appearance.getAttendanceType())) {
+            appearance.clearTravelExpenses(true);
+            appearance.clearFoodAndDrinkExpenses(true);
+        }
+
+        if (appearance.isDraftExpense()) {
+            applyDefaultExpenses(appearance, getJuror(appearance.getJurorNumber()));
+            updateExpenseRatesId(List.of(appearance));
+        } else {
+            if (Set.of(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED)
+                .contains(appearance.getAppearanceStage())) {
+
+                FinancialAuditDetails financialAuditDetails =
+                    financialAuditService.createFinancialAuditDetail(appearance.getJurorNumber(),
+                        appearance.getCourtLocation().getLocCode(),
+                        FinancialAuditDetails.Type.EDIT,
+                        List.of(appearance));
+
+                jurorHistoryService.createExpenseEditHistory(
+                    financialAuditDetails,
+                    appearance
+                );
+            }
+        }
     }
 
     @Override
@@ -746,7 +824,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Override
     @Transactional(readOnly = true)
     public ExpenseCount countExpenseTypes(String jurorNumber, String poolNumber) {
-        List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
+        List<Appearance> appearances =
+            appearanceRepository.findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
         final String owner = SecurityUtil.getActiveOwner();
         if (!appearances.isEmpty() && appearances.stream()
             .noneMatch(appearance -> owner.equals(appearance.getCourtLocation().getOwner()))) {
@@ -777,7 +856,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                     dailyExpense.getDateOfExpense());
 
                 if (!type.isApplicable(appearance)) {
-                    throw new MojException.BusinessRuleViolation("Expense for this day is not of type: " + type.name(),
+                    throw new MojException.BusinessRuleViolation(
+                        "Expense for this day is not of type: " + type.name(),
                         MojException.BusinessRuleViolation.ErrorCode.WRONG_EXPENSE_TYPE);
                 }
 
@@ -802,6 +882,22 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             financialAuditDetails,
             appearance
         ));
+    }
+
+    SimplifiedExpenseDetailDto mapCombinedSimplifiedExpenseDetailDto(Appearance appearance) {
+        return SimplifiedExpenseDetailDto.builder()
+            .attendanceDate(appearance.getAttendanceDate())
+            .financialAuditNumber(appearance.getFinancialAuditDetails().getFinancialAuditNumber())
+            .attendanceType(appearance.getAttendanceType())
+            .financialLoss(appearance.getTotalFinancialLossDue())
+            .travel(appearance.getTotalTravelDue())
+            .foodAndDrink(getOrZero(appearance.getSubsistenceDue()))
+            .smartcard(getOrZero(appearance.getSmartCardAmountDue()))
+            .totalDue(appearance.getTotalDue())
+            .totalPaid(appearance.getTotalPaid())
+            .balanceToPay(appearance.getBalanceToPay())
+            .auditCreatedOn(appearance.getFinancialAuditDetails().getCreatedOn())
+            .build();
     }
 
 
@@ -1084,7 +1180,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .postcode(juror.getPostcode())
             .authCode(applicationSettingService.getAppSetting(ApplicationSettings.Setting.PAYMENT_AUTH_CODE)
                 .orElseThrow(
-                    () -> new MojException.InternalServerError("Payment Auth Code not found in application settings",
+                    () -> new MojException.InternalServerError(
+                        "Payment Auth Code not found in application settings",
                         null))
                 .getValue())
             .jurorName(juror.getName())
@@ -1113,7 +1210,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .collect(Collectors.toSet());
         String username = SecurityUtil.getActiveLogin();
         return financialAuditDetailsSet.stream()
-            .noneMatch(financialAuditDetails -> financialAuditDetails.getCreatedBy().getUsername().equals(username));
+            .noneMatch(
+                financialAuditDetails -> financialAuditDetails.getCreatedBy().getUsername().equals(username));
     }
 
 
@@ -1167,9 +1265,14 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .indexOf(localDate) >= 10;//>= as 0 indexed
     }
 
-    void saveAppearancesWithExpenseRateIdUpdate(Collection<Appearance> appearances) {
+
+    void updateExpenseRatesId(Collection<Appearance> appearances) {
         ExpenseRates expenseRates = getCurrentExpenseRates(false);
         appearances.forEach(appearance -> appearance.setExpenseRates(expenseRates));
+    }
+
+    void saveAppearancesWithExpenseRateIdUpdate(Collection<Appearance> appearances) {
+        updateExpenseRatesId(appearances);
         appearanceRepository.saveAll(appearances);
     }
 

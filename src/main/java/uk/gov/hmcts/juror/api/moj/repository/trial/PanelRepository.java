@@ -14,10 +14,15 @@ public interface PanelRepository extends IPanelRepository, JpaRepository<Panel, 
 
     List<Panel> findByTrialTrialNumberAndTrialCourtLocationLocCode(String trialNumber, String locCode);
 
-    Panel findByTrialTrialNumberAndJurorPoolJurorJurorNumber(String trialNumber, String jurorNumber);
+    Panel findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(String trialNumber,
+                                                                                         String locCode,
+                                                                                         String jurorNumber);
 
-    boolean existsByTrialTrialNumber(String trialNumber);
+    boolean existsByTrialTrialNumberAndTrialCourtLocationLocCode(String trialNumber, String locCode);
 
     boolean existsByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolPoolPoolNumberAndJurorPoolJurorJurorNumber(
         String trialNumber, String locCode, String jurorNumber, String poolNumber);
+
+    Panel findByTrialCourtLocationLocCodeAndJurorPoolPoolPoolNumberAndJurorPoolJurorJurorNumberAndCompleted(
+        String locCode, String poolNumber, String jurorNumber, boolean completed);
 }

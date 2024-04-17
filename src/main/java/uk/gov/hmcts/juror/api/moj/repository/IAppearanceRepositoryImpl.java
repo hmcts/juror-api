@@ -23,9 +23,11 @@ import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
+import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -44,6 +46,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     EntityManager entityManager;
 
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
+    private static final QPoolRequest POOL = QPoolRequest.poolRequest;
     private static final QJuror JUROR = QJuror.juror;
     private static final QAppearance APPEARANCE = QAppearance.appearance;
     private static final QJurorTrial JUROR_TRIAL = QJurorTrial.jurorTrial;
@@ -99,7 +102,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
         return queryFactory.select(JUROR.jurorNumber.as("juror_number"),
                 JUROR.firstName.as("first_name"),
                 JUROR.lastName.as("last_name"),
-                JUROR_POOL.status.status.as("status"))
+                JUROR_POOL.status.status.as("status"),
+                JUROR_POOL.pool.poolNumber.as("pool_number"))
             .from(JUROR)
             .join(JUROR_POOL)
             .on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber))
@@ -142,10 +146,12 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .join(JUROR_POOL)
             .on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber))
             .join(APPEARANCE)
-            .on(JUROR.jurorNumber.eq(APPEARANCE.jurorNumber))
+            .on(JUROR.jurorNumber.eq(APPEARANCE.jurorNumber)
+                .and(APPEARANCE.courtLocation.eq(JUROR_POOL.pool.courtLocation)))
             .where(APPEARANCE.courtLocation.locCode.eq(locCode))
             .where(APPEARANCE.attendanceDate.eq(date))
-            .where(JUROR_POOL.status.status.in(jurorStatuses));
+            .where(JUROR_POOL.status.status.in(jurorStatuses))
+            .where(JUROR_POOL.isActive.isTrue());
     }
 
     private List<Tuple> sqlOrderQueryResults(JPAQuery<Tuple> query) {
@@ -179,55 +185,63 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     public List<Tuple> getAvailableJurors(String locCode) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         return queryFactory.select(
-                JUROR_POOL.pool.poolNumber,
+                POOL.poolNumber,
                 APPEARANCE.count(),
-                JUROR_POOL.pool.returnDate,
+                POOL.returnDate,
                 COURT_LOCATION.name,
                 COURT_LOCATION.locCode
             )
-            .from(APPEARANCE)
-            .join(JUROR_POOL).on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber))
-            .join(COURT_LOCATION).on(COURT_LOCATION.locCode.eq(locCode))
+            .from(POOL)
+            .join(JUROR_POOL).on(JUROR_POOL.pool.eq(POOL))
+            .join(APPEARANCE).on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber))
+            .on(POOL.courtLocation.eq(APPEARANCE.courtLocation))
+            .join(COURT_LOCATION)
+            .on(APPEARANCE.courtLocation.eq(COURT_LOCATION))
+            .on(POOL.courtLocation.eq(COURT_LOCATION))
+            .where(COURT_LOCATION.locCode.eq(locCode))
+            .where(JUROR_POOL.isActive.eq(true))
             .where(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED))
             .where(APPEARANCE.timeIn.isNotNull())
-            .groupBy(JUROR_POOL.pool.poolNumber)
-            .groupBy(JUROR_POOL.pool.returnDate)
+            .where(APPEARANCE.timeOut.isNull())
+            .where(APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN))
+            .where(APPEARANCE.attendanceDate.eq(LocalDate.now()))
+            .where(APPEARANCE.trialNumber.isNull().or(APPEARANCE.trialNumber.isEmpty()))
+            .groupBy(POOL.poolNumber)
+            .groupBy(POOL.returnDate)
             .groupBy(COURT_LOCATION.locCode)
             .fetch();
     }
 
     @Override
-    public List<JurorPool> retrieveAllJurors() {
-        return buildJurorPoolQuery().fetch();
+    public List<JurorPool> retrieveAllJurors(String locCode, LocalDate attendanceDate) {
+        return buildJurorPoolsCheckedInTodayQuery(locCode, attendanceDate).fetch();
     }
 
     @Override
-    public List<JurorPool> getJurorsInPools(List<String> poolNumbers) {
-        JPAQuery<JurorPool> query = buildJurorPoolQuery();
+    public List<JurorPool> getJurorsInPools(String locCode, List<String> poolNumbers, LocalDate attendanceDate) {
+        JPAQuery<JurorPool> query = buildJurorPoolsCheckedInTodayQuery(locCode, attendanceDate);
         return query.where(JUROR_POOL.pool.poolNumber.in(poolNumbers)).fetch();
     }
 
     /**
-     * Builds query for getting juror pool information using the appearance table.
+     * Builds query for getting the juror pool record for jurors at a given court location with an appearance record
+     * today showing they have been checked in and are available to be selected for a panel.
      *
      * @return JPAQuery
      */
     @Override
-    public JPAQuery<JurorPool> buildJurorPoolQuery() {
-        ArrayList<Integer> activeStatuses = new ArrayList<>();
-        activeStatuses.add(IJurorStatus.RESPONDED);
-        activeStatuses.add(IJurorStatus.PANEL);
-        activeStatuses.add(IJurorStatus.JUROR);
-
+    public JPAQuery<JurorPool> buildJurorPoolsCheckedInTodayQuery(String locCode, LocalDate attendanceDate) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-        return queryFactory.select(
-                JUROR_POOL
-            )
+        return queryFactory.select(JUROR_POOL)
             .from(APPEARANCE)
             .join(JUROR_POOL)
-            .on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber)
-                .and(JUROR_POOL.status.status.in(activeStatuses))
-                .and(JUROR_POOL.isActive.isTrue()));
+            .on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber))
+            .where(APPEARANCE.courtLocation.locCode.eq(locCode))
+            .where(APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN))
+            .where(APPEARANCE.attendanceDate.eq(attendanceDate))
+            .where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode))
+            .where(JUROR_POOL.status.status.eq(IJurorStatus.RESPONDED))
+            .where(JUROR_POOL.isActive.isTrue());
     }
 
     @Override
@@ -289,13 +303,21 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     public List<Tuple> getTrialsWithAttendanceCount(String locationCode, LocalDate attendanceDate) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
-        return queryFactory.select(JUROR_TRIAL.trialNumber, APPEARANCE.jurorNumber.count())
+        return queryFactory.select(JUROR_TRIAL.trialNumber,
+                APPEARANCE.jurorNumber.count(),
+                APPEARANCE.attendanceAuditNumber)
             .from(APPEARANCE)
-            .join(JUROR_TRIAL).on(APPEARANCE.jurorNumber.eq(JUROR_TRIAL.juror.jurorNumber))
+            .join(JUROR_TRIAL).on(APPEARANCE.jurorNumber.eq(JUROR_TRIAL.juror.jurorNumber)
+                .and(APPEARANCE.trialNumber.eq(JUROR_TRIAL.trialNumber)))
             .where(APPEARANCE.attendanceDate.eq(attendanceDate))
-            .where(APPEARANCE.attendanceType.notIn(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE))
+            .where(APPEARANCE.attendanceType.notIn(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE,
+                AttendanceType.NON_ATTENDANCE_LONG_TRIAL))
+            .where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_AUTHORISED,
+                AppearanceStage.EXPENSE_EDITED))
             .where(APPEARANCE.courtLocation.locCode.eq(locationCode))
-            .groupBy(JUROR_TRIAL.trialNumber)
+            .where(JUROR_TRIAL.result.equalsIgnoreCase(PanelResult.JUROR.getCode()))
+            .groupBy(JUROR_TRIAL.trialNumber,
+                APPEARANCE.attendanceAuditNumber)
             .fetch();
     }
 }

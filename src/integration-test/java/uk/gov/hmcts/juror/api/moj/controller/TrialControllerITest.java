@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -187,11 +188,12 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             restTemplate.exchange(new RequestEntity<>(trialRequest2, httpHeaders, POST,
                 URI.create(URL_CREATE)), TrialSummaryDto.class);
 
-        assertThat(responseEntity.getStatusCode()).as(ASSERT_POST_IS_SUCCESSFUL).isEqualTo(OK);
+        assertThat(responseEntity.getStatusCode()).as("Expect the POST request to be unsuccessful - "
+            + "bad request sending duplicate case number for the same location").isEqualTo(BAD_REQUEST);
 
         long countAfter = trialRepository.count();
         assertThat(countAfter)
-            .as("Expect number of trial records remain unchanged")
+            .as("Expect number of trial records increase by 1")
             .isEqualTo(countBefore + 1);
     }
 
@@ -566,7 +568,10 @@ public class TrialControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(1);
             assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
 
-            Appearance appearance = appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber());
+            Appearance appearance =
+                appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+                    LocalDate.now()).orElseThrow(() ->
+                    new MojException.NotFound("No appearance record found", null));
 
             assertThat(appearance.getTimeIn()).as("Expect time in to not be null").isNotNull();
             assertThat(appearance.getTimeIn()).as("Expect time in to be 09:00").isEqualTo(LocalTime.parse(
@@ -575,6 +580,8 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeOut()).as("Expect time out to not be null").isNotNull();
             assertThat(appearance.getTimeOut()).as("Expect time out to be 10:00").isEqualTo(LocalTime.parse(
                 "10:00"));
+
+            assertThat(appearance.getSatOnJury()).isTrue();
         }
     }
 
@@ -606,14 +613,16 @@ public class TrialControllerITest extends AbstractIntegrationTest {
                 jurorHistoryRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber()).size())
                 .as("Expect one history item for juror " + panel.getJurorPool().getJurorNumber())
                 .isEqualTo(1);
-            assertThat(
-                appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber()).getTimeIn())
-                .as("Expect time to be null").isNull();
-            assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
 
-            Appearance appearance = appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber());
+            Appearance appearance =
+                appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+                    LocalDate.now()).orElseThrow(() ->
+                    new MojException.NotFound("No appearance record found", null));
             assertThat(appearance.getTimeIn()).as("Expect time in to be null").isNull();
+            assertThat(appearance.getTimeIn()).as("Expect time to be null").isNull();
+            assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
             assertThat(appearance.getTimeOut()).as("Expect time out to be null").isNull();
+            assertThat(appearance.getSatOnJury()).isTrue();
         }
     }
 
@@ -649,7 +658,10 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(panel.getJurorPool().getJuror().getCompletionDate()).as(
                 "Expect completion date to be " + LocalDate.now()).isEqualTo(LocalDate.now());
 
-            Appearance appearance = appearanceRepository.findByJurorNumber(panel.getJurorPool().getJurorNumber());
+            Appearance appearance =
+                appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+                    LocalDate.now()).orElseThrow(() ->
+                    new MojException.NotFound("No appearance record found", null));
 
             assertThat(appearance.getTimeIn()).as("Expect time in to not be null").isNotNull();
             assertThat(appearance.getTimeIn()).as("Expect time in to be 09:00").isEqualTo(LocalTime.parse(
@@ -659,9 +671,10 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getTimeOut()).as("Expect time out to be 10:00").isEqualTo(LocalTime.parse(
                 "10:00"));
 
+            assertThat(appearance.getSatOnJury()).isTrue();
+
             assertThat(panel.getJurorPool().getJuror().getCompletionDate()).as("Expect completion date to not be "
                 + "null").isNotNull();
-
         }
     }
 
@@ -681,7 +694,7 @@ public class TrialControllerITest extends AbstractIntegrationTest {
 
         assertThat(responseEntity.getStatusCode()).as("Expect status code to be 200 (ok)").isEqualTo(OK);
 
-        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, locationCode);
+        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, locationCode).get();
         assertThat(trial.getTrialEndDate()).as("Expect trial end date to not be null").isNotNull();
         assertThat(trial.getTrialEndDate()).as("Expect trial end date to equal " + dto.getTrialEndDate())
             .isEqualTo(dto.getTrialEndDate());

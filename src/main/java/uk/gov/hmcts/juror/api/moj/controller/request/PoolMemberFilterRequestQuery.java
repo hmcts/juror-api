@@ -82,7 +82,7 @@ public class PoolMemberFilterRequestQuery implements IsPageable {
 
     @Getter
     public enum SortField implements SortMethod.HasComparableExpression {
-        JUROR_NUMBER(QJuror.juror.jurorNumber),
+        JUROR_NUMBER(QJurorPool.jurorPool.juror.jurorNumber),
         FIRST_NAME(QJuror.juror.firstName),
         LAST_NAME(QJuror.juror.lastName),
         NEXT_DATE(QJurorPool.jurorPool.nextDate),

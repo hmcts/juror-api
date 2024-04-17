@@ -7,7 +7,8 @@ import lombok.Getter;
 @Getter
 public enum ReplyMethod {
     PAPER("Paper"),
-    DIGITAL("Digital");
+    DIGITAL("Digital"),
+    NONE("None");
 
     private String description;
 
