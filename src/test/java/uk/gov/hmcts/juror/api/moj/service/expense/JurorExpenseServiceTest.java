@@ -632,14 +632,14 @@ class JurorExpenseServiceTest {
         @Test
         @DisplayName("Successfully submit two expenses for approval")
         void multipleExpenseHappyPath() {
-            String jurorNumber = "641512345";
-            String poolNumber = "415123456";
+            final String jurorNumber = "641512345";
+            final String poolNumber = "415123456";
 
-            Appearance appearanceToSubmit1 = buildTestAppearance(jurorNumber, poolNumber,
+            final Appearance appearanceToSubmit1 = buildTestAppearance(jurorNumber, poolNumber,
                 LocalDate.of(2024, 1, 1));
-            Appearance appearanceToSubmit2 = buildTestAppearance(jurorNumber, poolNumber,
+            final Appearance appearanceToSubmit2 = buildTestAppearance(jurorNumber, poolNumber,
                 LocalDate.of(2024, 1, 2));
-            Appearance appearanceInDraft = buildTestAppearance(jurorNumber, poolNumber,
+            final Appearance appearanceInDraft = buildTestAppearance(jurorNumber, poolNumber,
                 LocalDate.of(2024, 1, 3));
 
             Juror juror = new Juror();
@@ -693,18 +693,18 @@ class JurorExpenseServiceTest {
         @Test
         @DisplayName("Submit expenses for approval but no bank details")
         void singleExpenseNoBankDetails() {
-            String jurorNumber = "641512345";
-            String poolNumber = "415123456";
+            final String jurorNumber = "641512345";
+            final String poolNumber = "415123456";
 
-            Appearance appearanceToSubmit = buildTestAppearance(jurorNumber, poolNumber,
+            final Appearance appearanceToSubmit = buildTestAppearance(jurorNumber, poolNumber,
                 LocalDate.of(2024, 1, 1));
-            Appearance appearanceInDraft = buildTestAppearance(jurorNumber, poolNumber,
+            final Appearance appearanceInDraft = buildTestAppearance(jurorNumber, poolNumber,
                 LocalDate.of(2024, 1, 2));
 
             doReturn(List.of(appearanceToSubmit, appearanceInDraft)).when(appearanceRepository)
                 .findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
 
-            Juror juror = new Juror();
+            final Juror juror = new Juror();
             juror.setJurorNumber(jurorNumber);
 
             doReturn(Optional.of(juror)).when(jurorRepository).findById(jurorNumber);
@@ -712,7 +712,7 @@ class JurorExpenseServiceTest {
             CourtLocation courtLocation = mock(CourtLocation.class);
             appearanceToSubmit.setCourtLocation(courtLocation);
             doReturn(TestConstants.VALID_COURT_LOCATION).when(courtLocation).getLocCode();
-            
+
             ExpenseItemsDto expenseItemsDto = ExpenseItemsDto.builder()
                 .jurorNumber(jurorNumber)
                 .poolNumber(poolNumber)
