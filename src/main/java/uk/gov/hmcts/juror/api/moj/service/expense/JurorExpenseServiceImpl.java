@@ -85,6 +85,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -772,13 +773,12 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             applyDefaultExpenses(appearance, getJuror(appearance.getJurorNumber()));
             updateExpenseRatesId(List.of(appearance));
         } else {
-            if (Set.of(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED)
-                .contains(appearance.getAppearanceStage())) {
+            if (Objects.equals(AppearanceStage.EXPENSE_ENTERED, appearance.getAppearanceStage())) {
 
                 FinancialAuditDetails financialAuditDetails =
                     financialAuditService.createFinancialAuditDetail(appearance.getJurorNumber(),
                         appearance.getCourtLocation().getLocCode(),
-                        FinancialAuditDetails.Type.EDIT,
+                        FinancialAuditDetails.Type.FOR_APPROVAL_EDIT,
                         List.of(appearance));
 
                 jurorHistoryService.createExpenseEditHistory(
