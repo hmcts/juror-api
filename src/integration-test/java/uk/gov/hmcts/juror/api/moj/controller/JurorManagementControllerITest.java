@@ -1493,7 +1493,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(Objects.requireNonNull(response.getBody()).getData()).isNotNull();
 
             List<JurorsToDismissResponseDto.JurorsToDismissData> jurorsToDismissData = response.getBody().getData();
-            assertThat(jurorsToDismissData).as("Expect there to be 4 Juror record").hasSize(4);
 
             verifyResponseData(jurorsToDismissData, 4);
         }
