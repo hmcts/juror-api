@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +22,7 @@ public class ReturnJuryDto {
     @JsonProperty("check_in")
     @Schema(description = "Check in time (formatted HH:mm 24hrs) for juror's that have not been checked in", format =
         "HH:mm", example = "09:00")
+    @NotEmpty
     private String checkIn;
 
     @JsonProperty("check_out")

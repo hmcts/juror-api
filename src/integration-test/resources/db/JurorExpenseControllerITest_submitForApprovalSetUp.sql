@@ -13,13 +13,13 @@ values ('415', '415230101', '2024-01-02', 5, 5, 'CRO', '415', 'N', '2024-01-02 0
 
 -- create juror records
 insert into juror_mod.juror (juror_number, last_name, first_name, dob, address_line_1, address_line_4, postcode,
-                             responded)
+                             responded, sort_code, bank_acct_no)
 values ('641500020', 'Lnametwozero', 'Fnametwozero', current_date - interval '20 years', '520 Street Name', 'Any town',
-        'CH1 2AN', 'Y');
+        'CH1 2AN', 'Y', '123456', '12345678');
 insert into juror_mod.juror_audit (revision, rev_type, juror_number, last_name, first_name, dob, address_line_1,
-                                   address_line_4, postcode)
+                                   address_line_4, postcode, sort_code, bank_acct_no)
 values (1, 2, '641500020', 'Lnametwozero', 'Fnametwozero', current_date - interval '20 years', '520 Street Name',
-        'Any town', 'CH1 2AN');
+        'Any town', 'CH1 2AN', '123456', '12345678');
 
 -- create juror_pool associative records
 insert into juror_mod.juror_pool (owner, juror_number, pool_number, status, is_active)

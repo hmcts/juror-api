@@ -96,6 +96,7 @@ import java.util.stream.Collectors;
 import static uk.gov.hmcts.juror.api.JurorDigitalApplication.PAGE_SIZE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CAN_NOT_APPROVE_MORE_THAN_LIMIT;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_MUST_HAVE_BANK_DETAILS;
 import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
 
 @Service
@@ -105,7 +106,8 @@ import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
     "PMD.ExcessiveImports",
     "PMD.GodClass",
     "PMD.TooManyMethods",
-    "PMD.LawOfDemeter"
+    "PMD.LawOfDemeter",
+    "PMD.CyclomaticComplexity"
 })
 public class JurorExpenseServiceImpl implements JurorExpenseService {
 
@@ -298,15 +300,30 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         // date in the request dto
         List<Appearance> appearances = getAppearances(dto);
 
+        if (appearances.isEmpty()) {
+            throw new MojException.NotFound("No appearances found for juror: " + dto.getJurorNumber(), null);
+        }
+
+        Appearance firstAppearance = appearances.get(0);
+
+        Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, firstAppearance.getJurorNumber());
+        if (juror == null) {
+            throw new MojException.NotFound("Juror not found: " + firstAppearance.getJurorNumber(), null);
+        }
+
         // update each expense record to assign the financial audit details object
         // and update the is_draft_expense property to false (marking the batch of expenses as ready for approval)
         for (Appearance appearance : appearances) {
             log.debug("Submitting appearance with attendance date: ${} for approval",
                 appearance.getAttendanceDate().toString());
             appearance.setDraftExpense(false);
+
+            if (!appearance.isPayCash() && !juror.hasBankAccount()) {
+                throw new MojException.BusinessRuleViolation("Juror must have bank details",
+                    JUROR_MUST_HAVE_BANK_DETAILS);
+            }
         }
 
-        Appearance firstAppearance = appearances.get(0);
         CourtLocation courtLocation = firstAppearance.getCourtLocation();
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(dto.getJurorNumber(),

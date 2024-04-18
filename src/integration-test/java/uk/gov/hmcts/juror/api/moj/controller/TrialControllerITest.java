@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
+import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -74,6 +75,7 @@ public class TrialControllerITest extends AbstractIntegrationTest {
 
     private static final String COURT_USER = "COURT_USER";
     private static final String BUREAU_USER = "BUREAU_USER";
+    private static final String URL_EDIT = "/api/v1/moj/trial/edit";
 
     private HttpHeaders httpHeaders;
 
@@ -127,12 +129,16 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             .isEqualTo("TEST00001");
 
         assertThat(requireNonNull(responseBody).getDefendants())
-            .as("Expect trial number to be Joe, John, Betty")
+            .as("Expect trial defendent to be Joe, John, Betty")
             .isEqualTo("Joe, John, Betty");
 
         assertThat(requireNonNull(responseBody).getTrialType())
-            .as("Expect trial number to be CIV")
+            .as("Expect trial type to be CIV")
             .isEqualTo("Civil");
+
+        assertThat(requireNonNull(responseBody).getTrialStartDate())
+            .as("Expect trial start date to be 1 month in the future")
+            .isEqualTo(LocalDate.now().plusMonths(1));
 
         assertThat(requireNonNull(responseBody).getProtectedTrial())
             .as("Expect protected trial to be false")
@@ -375,11 +381,11 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             .isEqualTo("T100000023");
 
         assertThat(requireNonNull(responseBody).getDefendants())
-            .as("Expect trial number to be TEST DEFENDANT")
+            .as("Expect trial defendent to be TEST DEFENDANT")
             .isEqualTo("TEST DEFENDANT");
 
         assertThat(requireNonNull(responseBody).getTrialType())
-            .as("Expect trial number to be CIV")
+            .as("Expect trial type to be CIV")
             .isEqualTo("Civil");
 
         assertThat(requireNonNull(responseBody).getProtectedTrial())
@@ -450,11 +456,11 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             .isEqualTo("T100000024");
 
         assertThat(requireNonNull(responseBody).getDefendants())
-            .as("Expect trial number to be TEST DEFENDANT")
+            .as("Expect trial defendent to be TEST DEFENDANT")
             .isEqualTo("TEST DEFENDANT");
 
         assertThat(requireNonNull(responseBody).getTrialType())
-            .as("Expect trial number to be CIV")
+            .as("Expect trial type to be CIV")
             .isEqualTo("Civil");
 
         assertThat(requireNonNull(responseBody).getProtectedTrial())
@@ -582,6 +588,9 @@ public class TrialControllerITest extends AbstractIntegrationTest {
                 "10:00"));
 
             assertThat(appearance.getSatOnJury()).isTrue();
+            assertThat(appearance.getAppearanceStage())
+                .as("Expect appearance stage to be EXPENSE_ENTERED")
+                .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
         }
     }
 
@@ -592,7 +601,7 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             + "trial_number=T10000001&"
             + "location_code=415";
 
-        ReturnJuryDto dto = createReturnJuryDto(false, "", "");
+        ReturnJuryDto dto = createReturnJuryDto(false, "09:30", "");
         initialiseHeader(singletonList("415"), "415", COURT_USER);
 
         ResponseEntity<Void> responseEntity =
@@ -618,10 +627,12 @@ public class TrialControllerITest extends AbstractIntegrationTest {
                 appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
                     LocalDate.now()).orElseThrow(() ->
                     new MojException.NotFound("No appearance record found", null));
-            assertThat(appearance.getTimeIn()).as("Expect time in to be null").isNull();
-            assertThat(appearance.getTimeIn()).as("Expect time to be null").isNull();
-            assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
+            assertThat(appearance.getTimeIn()).as("Expect time in to be null").isEqualTo(LocalTime.of(9, 30));
             assertThat(appearance.getTimeOut()).as("Expect time out to be null").isNull();
+            assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
+            assertThat(appearance.getAppearanceStage())
+                .as("Expect appearance stage to be CHECKED_IN")
+                .isEqualTo(AppearanceStage.CHECKED_IN);
             assertThat(appearance.getSatOnJury()).isTrue();
         }
     }
@@ -672,6 +683,9 @@ public class TrialControllerITest extends AbstractIntegrationTest {
                 "10:00"));
 
             assertThat(appearance.getSatOnJury()).isTrue();
+            assertThat(appearance.getAppearanceStage())
+                .as("Expect appearance stage to be EXPENSE_ENTERED")
+                .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
 
             assertThat(panel.getJurorPool().getJuror().getCompletionDate()).as("Expect completion date to not be "
                 + "null").isNotNull();
@@ -758,6 +772,88 @@ public class TrialControllerITest extends AbstractIntegrationTest {
         assertThat(code).as("Expect code to be TRIAL_HAS_MEMBERS").isEqualTo("TRIAL_HAS_MEMBERS");
     }
 
+    @Test
+    public void editTrialHappy() {
+        initialiseHeader(singletonList("416"), "416", COURT_USER);
+        TrialDto trialRequest = editTrialRequest();
+
+        ResponseEntity<TrialSummaryDto> responseEntity =
+            restTemplate.exchange(new RequestEntity<>(trialRequest, httpHeaders, PATCH,
+                URI.create(URL_EDIT)), TrialSummaryDto.class);
+
+        assertThat(responseEntity.getStatusCode()).as("Expect HTTP Response to be OK").isEqualTo(OK);
+
+        TrialSummaryDto responseBody = responseEntity.getBody();
+        assertThat(responseBody).isNotNull();
+
+        assertThat(requireNonNull(responseBody).getTrialNumber())
+            .as("Expect trial number to be TEST000012")
+            .isEqualTo("TEST000012");
+
+        assertThat(requireNonNull(responseBody).getDefendants())
+            .as("Expect trial defendent to be Peter and David")
+            .isEqualTo("Peter and David");
+
+        assertThat(requireNonNull(responseBody).getTrialType())
+            .as("Expect trial type to be CRI")
+            .isEqualTo("Criminal");
+
+        assertThat(requireNonNull(responseBody).getTrialStartDate())
+            .as("Expect start date of trial to be 10 days in future")
+            .isEqualTo(LocalDate.now().plusDays(10));
+
+        assertThat(requireNonNull(responseBody).getProtectedTrial())
+            .as("Expect protected trial to be true")
+            .isEqualTo(Boolean.TRUE);
+
+        assertThat(requireNonNull(responseBody).getIsActive())
+            .as("Expect is active to be true")
+            .isEqualTo(Boolean.TRUE);
+
+        JudgeDto judge = responseBody.getJudge();
+        assertThat(requireNonNull(judge).getId())
+            .as("Expect judge id to be 24 (type long)")
+            .isEqualTo(24L);
+
+        assertThat(requireNonNull(judge).getCode())
+            .as("Expect judge code to be 4323")
+            .isEqualTo("4323");
+
+        assertThat(requireNonNull(judge).getDescription())
+            .as("Expect judge description to be Judge Test3")
+            .isEqualTo("Judge Test3");
+
+        CourtroomsDto courtrooms = responseBody.getCourtroomsDto();
+        assertThat(requireNonNull(courtrooms).getId())
+            .as("Expect courtroom id to be 69 (type long)")
+            .isEqualTo(69L);
+
+        assertThat(requireNonNull(courtrooms).getOwner())
+            .as("Expect courtroom owner to be 416")
+            .isEqualTo("416");
+
+        assertThat(requireNonNull(courtrooms).getRoomNumber())
+            .as("Expect courtroom room number to be 4")
+            .isEqualTo("4");
+
+        assertThat(requireNonNull(courtrooms).getDescription())
+            .as("Expect courtroom description to be")
+            .isEqualTo("large room fits 102 people");
+    }
+
+    @Test
+    public void editTrialWrongCourtUser() {
+        initialiseHeader(singletonList("415"), "415", COURT_USER);
+        TrialDto trialRequest = editTrialRequest();
+
+        ResponseEntity<TrialSummaryDto> responseEntity =
+            restTemplate.exchange(new RequestEntity<>(trialRequest, httpHeaders, PATCH,
+                URI.create(URL_EDIT)), TrialSummaryDto.class);
+
+        assertThat(responseEntity.getStatusCode()).as("Expect HTTP Response to be Forbidden")
+            .isEqualTo(FORBIDDEN);
+    }
+
     private void initialiseHeader(List<String> courts, String owner, String loginUserType) {
         BureauJwtPayload.Staff staff = createStaff(courts, "MsCourt");
 
@@ -779,6 +875,19 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             .courtLocation("415")
             .courtroomId(66L)
             .protectedTrial(Boolean.FALSE)
+            .build();
+    }
+
+    private TrialDto editTrialRequest() {
+        return TrialDto.builder()
+            .caseNumber("TEST000012")
+            .trialType(TrialType.CRI)
+            .defendant("Peter and David")
+            .startDate(LocalDate.now().plusDays(10))
+            .judgeId(24L)
+            .courtLocation("416")
+            .courtroomId(69L)
+            .protectedTrial(Boolean.TRUE)
             .build();
     }
 
