@@ -6,7 +6,7 @@ INSERT INTO juror_mod.juror (juror_number, title, last_name, first_name, dob, ad
                              responded,
                              police_check)
 VALUES ('111111111', NULL, 'LNAMEONE', 'FNAMEONE', '1990-07-25', '543 STREET NAME', 'ANYTOWN', 'CH1 2AN', true,
-        null),
+        'NOT_CHECKED'),
        ('111111112', NULL, 'LNAMEONE', 'FNAMEONE', '1990-07-25', '543 STREET NAME', 'ANYTOWN', 'CH1 2AN', true,
         'UNCHECKED_MAX_RETRIES_EXCEEDED'),
        ('111111113', NULL, 'LNAMEONE', 'FNAMEONE', '1990-07-25', '543 STREET NAME', 'ANYTOWN', 'CH1 2AN', true,

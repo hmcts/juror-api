@@ -283,7 +283,11 @@ public class Juror extends Address implements Serializable {
     }
 
     public String getName() {
-        return String.format("%s %s %s", title, firstName, lastName);
+        String buildName = "";
+        if (title != null) {
+            buildName = title + " ";
+        }
+        return buildName + firstName + " " + lastName;
     }
 
     public boolean hasBankAccount() {

@@ -1113,10 +1113,15 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 "User cannot approve expenses over " + BigDecimalUtils.currencyFormat(userLimit),
                 CAN_NOT_APPROVE_MORE_THAN_LIMIT);
         }
+        Appearance firstAppearance = appearances.get(0);
+        if(!dto.getCashPayment()){
+            paymentDataRepository.save(createPaymentData(dto.getJurorNumber(),
+                firstAppearance.getCourtLocation(), appearances));
+        }
         appearances.forEach(this::approveAppearance);
         saveAppearancesWithExpenseRateIdUpdate(appearances);
 
-        Appearance firstAppearance = appearances.get(0);
+
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(dto.getJurorNumber(),
                 firstAppearance.getCourtLocation().getLocCode(),
@@ -1127,6 +1132,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .map(Appearance::getAttendanceDate)
             .max(Comparator.naturalOrder())
             .get();
+
         if (dto.getCashPayment()) {
             jurorHistoryService.createExpenseApproveCash(
                 dto.getJurorNumber(),
@@ -1136,9 +1142,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 totalToApprove
             );
         } else {
-            paymentDataRepository.save(createPaymentData(dto.getJurorNumber(),
-                firstAppearance.getCourtLocation(), appearances));
-
             jurorHistoryService.createExpenseApproveBacs(
                 dto.getJurorNumber(),
                 dto.getPoolNumber(),
@@ -1163,6 +1166,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         appearance.setMiscAmountPaid(appearance.getMiscAmountDue());
         appearance.setSmartCardAmountPaid(appearance.getSmartCardAmountDue());
     }
+
 
     PaymentData createPaymentData(String jurorNumber, CourtLocation courtLocation,
                                   List<Appearance> appearances) {
