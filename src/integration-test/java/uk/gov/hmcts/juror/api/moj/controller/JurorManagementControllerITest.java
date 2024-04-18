@@ -1479,7 +1479,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("GET jurors to dismiss list - happy path")
+        @DisplayName("GET jurors to dismiss list - include not in attendance")
         void retrieveJurorsToDismissListIncludeNotInAttendance() {
             List<String> pools = createPools("415230101");
 
@@ -1492,14 +1492,33 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
             assertThat(Objects.requireNonNull(response.getBody()).getData()).isNotNull();
 
-            List<JurorsToDismissResponseDto.JurorsToDismissData> jurorsToDismissData = response.getBody().getData();
-
-            verifyResponseData(jurorsToDismissData, 4);
+            assertThat(response.getBody().getData())
+                .hasSize(4)
+                .extracting(JurorsToDismissResponseDto.JurorsToDismissData::getJurorNumber,
+                    JurorsToDismissResponseDto.JurorsToDismissData::getFirstName,
+                    JurorsToDismissResponseDto.JurorsToDismissData::getLastName,
+                    JurorsToDismissResponseDto.JurorsToDismissData::getAttending,
+                    JurorsToDismissResponseDto.JurorsToDismissData::getNextDueAtCourt,
+                    JurorsToDismissResponseDto.JurorsToDismissData::getCheckInTime,
+                    JurorsToDismissResponseDto.JurorsToDismissData::getServiceStartDate)
+                .containsExactlyInAnyOrder(
+                    tuple("641500003", "TEST", "PERSON3", "In attendance",
+                        LocalDate.now().minusDays(10).toString(),
+                        LocalTime.of(9, 30), LocalDate.now().minusDays(10)),
+                    tuple("641500004", "TEST", "PERSON4", "On call", "On call", null,
+                        LocalDate.now().minusDays(10)),
+                    tuple("641500006", "TEST", "PERSON6", "In attendance",
+                        LocalDate.now().minusDays(10).toString(), LocalTime.of(9, 30),
+                        LocalDate.now().minusDays(10)),
+                    tuple("641500007", "TEST", "PERSON7", "Other",
+                        LocalDate.now().minusDays(10).toString(), null,
+                        LocalDate.now().minusDays(10))
+                );
         }
 
         @Test
         @DisplayName("GET jurors to dismiss list - Unhappy path, Bureau User not allowed")
-        void retrieveJurorsToDismissListUnhappyBureauUser() throws Exception {
+        void retrieveJurorsToDismissListUnhappyBureauUser() {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
 
             List<String> pools = createPools("415930101");
@@ -1547,31 +1566,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .includeOnCall(includeOnCall)
                 .numberOfJurorsToDismiss(numberOfJurorsToDismiss)
                 .build();
-        }
-
-        private void verifyResponseData(List<JurorsToDismissResponseDto.JurorsToDismissData> response, int dataSize) {
-            assertThat(response)
-                .hasSize(dataSize)
-                .extracting(JurorsToDismissResponseDto.JurorsToDismissData::getJurorNumber,
-                    JurorsToDismissResponseDto.JurorsToDismissData::getFirstName,
-                    JurorsToDismissResponseDto.JurorsToDismissData::getLastName,
-                    JurorsToDismissResponseDto.JurorsToDismissData::getAttending,
-                    JurorsToDismissResponseDto.JurorsToDismissData::getNextDueAtCourt,
-                    JurorsToDismissResponseDto.JurorsToDismissData::getCheckInTime,
-                    JurorsToDismissResponseDto.JurorsToDismissData::getServiceStartDate)
-                .containsExactlyInAnyOrder(
-                    tuple("641500003", "TEST", "PERSON3", "In attendance",
-                        LocalDate.now().minusDays(10).toString(),
-                        LocalTime.of(9, 30), LocalDate.now().minusDays(10)),
-                    tuple("641500004", "TEST", "PERSON4", "On call", "On call", null,
-                        LocalDate.now().minusDays(10)),
-                    tuple("641500006", "TEST", "PERSON6", "In attendance",
-                        LocalDate.now().minusDays(10).toString(), LocalTime.of(9, 30),
-                        LocalDate.now().minusDays(10)),
-                    tuple("641500007", "TEST", "PERSON7", "Other",
-                        LocalDate.now().minusDays(10).toString(), LocalTime.of(9, 30),
-                        LocalDate.now().minusDays(10))
-                );
         }
     }
 
