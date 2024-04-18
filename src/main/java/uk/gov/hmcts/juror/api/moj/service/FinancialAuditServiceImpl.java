@@ -102,8 +102,9 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
 
 
     @Override
-    public FinancialAuditDetails getLastFinancialAuditDetailsWithType(FinancialAuditDetails financialAuditDetails,
-                                                                      FinancialAuditDetails.Type.GenericType genericType) {
+    public FinancialAuditDetails getLastFinancialAuditDetailsWithType(
+        FinancialAuditDetails financialAuditDetails,
+        FinancialAuditDetails.Type.GenericType genericType) {
         return getFinancialAuditDetailsWithType(
             financialAuditDetails,
             genericType,
@@ -111,8 +112,9 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
     }
 
     @Override
-    public FinancialAuditDetails getFirstFinancialAuditDetailsWithType(FinancialAuditDetails financialAuditDetails,
-                                                                       FinancialAuditDetails.Type.GenericType genericType) {
+    public FinancialAuditDetails getFirstFinancialAuditDetailsWithType(
+        FinancialAuditDetails financialAuditDetails,
+        FinancialAuditDetails.Type.GenericType genericType) {
         return getFinancialAuditDetailsWithType(
             financialAuditDetails,
             genericType,
@@ -156,10 +158,10 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
         ).orElseThrow(
             () -> new MojException.NotFound(
                 "Appearance not found for financial audit details appearances "
-                + " juror number: " + jurorNumber
-                + " pool number: " + financialAuditDetailsAppearances.getPoolNumber()
-                + " attendance date: " + financialAuditDetailsAppearances.getAttendanceDate()
-                + " appearance version: " + financialAuditDetailsAppearances.getAppearanceVersion()
-                , null));
+                    + " juror number: " + jurorNumber
+                    + " pool number: " + financialAuditDetailsAppearances.getPoolNumber()
+                    + " attendance date: " + financialAuditDetailsAppearances.getAttendanceDate()
+                    + " appearance version: " + financialAuditDetailsAppearances.getAppearanceVersion(),
+                null));
     }
 }

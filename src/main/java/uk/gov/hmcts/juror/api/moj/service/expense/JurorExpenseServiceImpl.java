@@ -1114,7 +1114,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 CAN_NOT_APPROVE_MORE_THAN_LIMIT);
         }
         Appearance firstAppearance = appearances.get(0);
-        if(!dto.getCashPayment()){
+        if (!dto.getCashPayment()) {
             paymentDataRepository.save(createPaymentData(dto.getJurorNumber(),
                 firstAppearance.getCourtLocation(), appearances));
         }

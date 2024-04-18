@@ -14,16 +14,17 @@ public class IFinancialAuditDetailsRepositoryImpl implements IFinancialAuditDeta
     EntityManager entityManager;
 
 
-    JPAQueryFactory getJPAQueryFactory() {
+    JPAQueryFactory getJpaQueryFactory() {
         return new JPAQueryFactory(entityManager);
     }
 
     @Override
-    public FinancialAuditDetails findLastFinancialAuditDetailsWithType(FinancialAuditDetails financialAuditDetails,
-                                                                       FinancialAuditDetails.Type.GenericType genericType,
-                                                                       SortMethod sortMethod) {
+    public FinancialAuditDetails findLastFinancialAuditDetailsWithType(
+        FinancialAuditDetails financialAuditDetails,
+        FinancialAuditDetails.Type.GenericType genericType,
+        SortMethod sortMethod) {
 
-        JPAQueryFactory queryFactory = getJPAQueryFactory();
+        JPAQueryFactory queryFactory = getJpaQueryFactory();
         JPAQuery<FinancialAuditDetails> query = queryFactory.select(QFinancialAuditDetails.financialAuditDetails)
             .from(QFinancialAuditDetails.financialAuditDetails)
             .join(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances)

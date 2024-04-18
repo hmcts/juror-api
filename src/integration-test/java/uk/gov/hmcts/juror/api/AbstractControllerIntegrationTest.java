@@ -44,6 +44,7 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
 
     protected AbstractControllerIntegrationTest(HttpMethod method, TestRestTemplate template,
                                                 HttpStatus validStatus) {
+        super();
         this.method = method;
         this.template = template;
         this.validStatus = validStatus;
@@ -52,6 +53,7 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
 
     protected AbstractControllerIntegrationTest(HttpMethod method, TestRestTemplate template,
                                                 HttpStatus validStatus, Type returnType) {
+        super();
         this.method = method;
         this.template = template;
         this.validStatus = validStatus;
@@ -59,6 +61,7 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
     }
 
     @BeforeEach
+    @Override
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -106,10 +109,10 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
                 return url;
             }
             StringBuilder urlBuilder = new StringBuilder(url);
-            urlBuilder.append("?");
+            urlBuilder.append('?');
             queryParams.forEach((key, value) -> {
                 for (String v : value) {
-                    urlBuilder.append(key).append("=").append(v).append("&");
+                    urlBuilder.append(key).append('=').append(v).append('&');
                 }
             });
 

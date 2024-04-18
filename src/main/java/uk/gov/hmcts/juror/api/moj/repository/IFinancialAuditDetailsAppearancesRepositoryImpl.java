@@ -17,14 +17,14 @@ public class IFinancialAuditDetailsAppearancesRepositoryImpl
     EntityManager entityManager;
 
 
-    JPAQueryFactory getJPAQueryFactory() {
+    JPAQueryFactory getJpaQueryFactory() {
         return new JPAQueryFactory(entityManager);
     }
 
     @Override
-    public Optional<FinancialAuditDetailsAppearances> findPreviousFinancialAuditDetailsAppearances(String jurorNumber,
-                                                                                                   Appearance appearance) {
-        JPAQueryFactory queryFactory = getJPAQueryFactory();
+    public Optional<FinancialAuditDetailsAppearances> findPreviousFinancialAuditDetailsAppearances(
+        String jurorNumber, Appearance appearance) {
+        JPAQueryFactory queryFactory = getJpaQueryFactory();
         JPAQuery<FinancialAuditDetailsAppearances> query =
             queryFactory.select(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances)
                 .from(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances)

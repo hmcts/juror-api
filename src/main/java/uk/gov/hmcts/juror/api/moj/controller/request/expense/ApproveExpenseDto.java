@@ -72,12 +72,12 @@ public class ApproveExpenseDto extends JurorNumberAndPoolNumberDto {
 
         public FinancialAuditDetails.Type toApproveType(boolean isCash) {
             return switch (this) {
-                case FOR_APPROVAL -> isCash ?
-                    FinancialAuditDetails.Type.APPROVED_CASH :
-                    FinancialAuditDetails.Type.APPROVED_BACS;
-                case FOR_REAPPROVAL -> isCash ?
-                    FinancialAuditDetails.Type.REAPPROVED_CASH :
-                    FinancialAuditDetails.Type.REAPPROVED_BACS;
+                case FOR_APPROVAL -> isCash
+                    ? FinancialAuditDetails.Type.APPROVED_CASH
+                    : FinancialAuditDetails.Type.APPROVED_BACS;
+                case FOR_REAPPROVAL -> isCash
+                    ? FinancialAuditDetails.Type.REAPPROVED_CASH
+                    : FinancialAuditDetails.Type.REAPPROVED_BACS;
             };
         }
     }

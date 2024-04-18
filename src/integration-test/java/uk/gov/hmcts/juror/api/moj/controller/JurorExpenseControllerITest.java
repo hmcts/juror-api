@@ -2378,7 +2378,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         private static final String JUROR_NUMBER = "641500020";
         private static final String POOL_NUMBER = "415230101";
 
-        protected ApproveExpenses() {
+        private ApproveExpenses() {
 
         }
 
@@ -3847,17 +3847,19 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
 
         private String toUrl(String locCode, String paymentMethod, String from, String to) {
-            String urlTmp = URL.replace("{loc_code}", locCode)
-                .replace("{payment_method}", paymentMethod);
+            StringBuilder builder = new StringBuilder(URL.replace("{loc_code}", locCode)
+                .replace("{payment_method}", paymentMethod));
+
             if (from != null) {
-                urlTmp += "?from=" + from;
+                builder.append("?from=")
+                    .append(from);
             }
             if (to != null) {
-                urlTmp += (from != null
-                    ? "&"
-                    : "?") + "to=" + to;
+                builder.append(from != null ? '&' : '?')
+                    .append("to=")
+                    .append(to);
             }
-            return urlTmp;
+            return builder.toString();
         }
 
         @Nested
