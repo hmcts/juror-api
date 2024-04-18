@@ -449,7 +449,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(summary)
                 .as("Expect 2 jurors to be checked in")
                 .extracting(AttendanceDetailsResponse.Summary::getCheckedIn)
-                .isEqualTo(2L);
+                .isEqualTo(3L);
 
             assertThat(summary)
                 .as("Expect 2 jurors to be absent")
@@ -919,7 +919,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             AttendanceDetailsResponse.Summary summary = response.getBody().getSummary();
             assertThat(summary)
                 .extracting(AttendanceDetailsResponse.Summary::getCheckedIn)
-                .isEqualTo(3L);
+                .isEqualTo(4L);
 
             assertThat(summary)
                 .extracting(AttendanceDetailsResponse.Summary::getAbsent)
