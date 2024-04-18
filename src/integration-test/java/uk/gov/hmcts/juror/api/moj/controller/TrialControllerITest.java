@@ -129,11 +129,11 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             .isEqualTo("TEST00001");
 
         assertThat(requireNonNull(responseBody).getDefendants())
-            .as("Expect trial number to be Joe, John, Betty")
+            .as("Expect trial defendent to be Joe, John, Betty")
             .isEqualTo("Joe, John, Betty");
 
         assertThat(requireNonNull(responseBody).getTrialType())
-            .as("Expect trial number to be CIV")
+            .as("Expect trial type to be CIV")
             .isEqualTo("Civil");
 
         assertThat(requireNonNull(responseBody).getTrialStartDate())
@@ -381,11 +381,11 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             .isEqualTo("T100000023");
 
         assertThat(requireNonNull(responseBody).getDefendants())
-            .as("Expect trial number to be TEST DEFENDANT")
+            .as("Expect trial defendent to be TEST DEFENDANT")
             .isEqualTo("TEST DEFENDANT");
 
         assertThat(requireNonNull(responseBody).getTrialType())
-            .as("Expect trial number to be CIV")
+            .as("Expect trial type to be CIV")
             .isEqualTo("Civil");
 
         assertThat(requireNonNull(responseBody).getProtectedTrial())
@@ -456,11 +456,11 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             .isEqualTo("T100000024");
 
         assertThat(requireNonNull(responseBody).getDefendants())
-            .as("Expect trial number to be TEST DEFENDANT")
+            .as("Expect trial defendent to be TEST DEFENDANT")
             .isEqualTo("TEST DEFENDANT");
 
         assertThat(requireNonNull(responseBody).getTrialType())
-            .as("Expect trial number to be CIV")
+            .as("Expect trial type to be CIV")
             .isEqualTo("Civil");
 
         assertThat(requireNonNull(responseBody).getProtectedTrial())
@@ -791,11 +791,11 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             .isEqualTo("TEST000012");
 
         assertThat(requireNonNull(responseBody).getDefendants())
-            .as("Expect trial number to be Peter and David")
+            .as("Expect trial defendent to be Peter and David")
             .isEqualTo("Peter and David");
 
         assertThat(requireNonNull(responseBody).getTrialType())
-            .as("Expect trial number to be CRI")
+            .as("Expect trial type to be CRI")
             .isEqualTo("Criminal");
 
         assertThat(requireNonNull(responseBody).getTrialStartDate())
@@ -839,6 +839,19 @@ public class TrialControllerITest extends AbstractIntegrationTest {
         assertThat(requireNonNull(courtrooms).getDescription())
             .as("Expect courtroom description to be")
             .isEqualTo("large room fits 102 people");
+    }
+
+    @Test
+    public void editTrialWrongCourtUser() {
+        initialiseHeader(singletonList("415"), "415", COURT_USER);
+        TrialDto trialRequest = editTrialRequest();
+
+        ResponseEntity<TrialSummaryDto> responseEntity =
+            restTemplate.exchange(new RequestEntity<>(trialRequest, httpHeaders, PATCH,
+                URI.create(URL_EDIT)), TrialSummaryDto.class);
+
+        assertThat(responseEntity.getStatusCode()).as("Expect HTTP Response to be Forbidden")
+            .isEqualTo(FORBIDDEN);
     }
 
     private void initialiseHeader(List<String> courts, String owner, String loginUserType) {
