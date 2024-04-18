@@ -760,7 +760,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             jurorPools.addAll(jurorPoolOnCall);
         }
 
-        if (ObjectUtils.defaultIfNull(request.getIncludeOnCall(), false)) {
+        if (ObjectUtils.defaultIfNull(request.getIncludeNotInAttendance(), false)) {
             List<JurorPool> jurorPoolNotInAttendance =
                 jurorPoolRepository.findJurorsNotInAttendanceAtCourtLocation(request.getLocationCode(),
                     request.getPoolNumbers());
