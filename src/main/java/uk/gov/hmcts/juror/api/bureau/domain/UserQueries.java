@@ -23,8 +23,7 @@ public class UserQueries {
      * @return QueryDSL filter
      */
     public static BooleanExpression activeBureauOfficers() {
-        return isBureau().and(active())
-            .and(USER.roles.contains(Role.TEAM_LEADER).not());
+        return isBureau().and(active());
     }
 
     public static BooleanExpression isBureau() {
