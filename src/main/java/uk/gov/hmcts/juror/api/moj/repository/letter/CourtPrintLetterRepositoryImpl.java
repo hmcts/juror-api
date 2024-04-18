@@ -149,8 +149,8 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                 .join(PANEL).on(PANEL.jurorPool.eq(JUROR_POOL).and(PANEL.trial.eq(TRIAL)))
                 .where(PANEL.trial.trialNumber.eq(trialNumber))
                 .orderBy(PANEL.trial.trialNumber.desc());
-            case CERTIFICATE_OF_ATTENDANCE -> {
-            } // Does not do anything
+            case CERTIFICATE_OF_ATTENDANCE ->
+                query.where(APPEARANCE.noShow.isFalse().or(APPEARANCE.noShow.isNull()));
 
             default -> throw new MojException.NotImplemented("letter type not implemented", null);
         }
