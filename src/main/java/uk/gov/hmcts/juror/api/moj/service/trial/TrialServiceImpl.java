@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
@@ -47,6 +48,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.TRIAL_HAS_MEMBERS;
 
@@ -180,12 +182,18 @@ public class TrialServiceImpl implements TrialService {
 
         JurorStatus jurorStatus = new JurorStatus();
         jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+        Trial trial = RepositoryUtils.unboxOptionalRecord(
+            trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, locationCode),
+            trialNumber + ", " + locationCode);
+
         for (Panel panel : juryMembersToBeReturned) {
+
             final String jurorNumber = panel.getJurorPool().getJurorNumber();
-            Appearance appearance = RepositoryUtils.unboxOptionalRecord(
-                appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
-                    returnJuryDto.getAttendanceDate()),
-                jurorNumber);
+
+            Appearance appearance = getJurorAppearanceForDate(panel.getJurorPool(),
+                returnJuryDto.getAttendanceDate());
+
             // only apply check in time for those that have not been checked in yet
             if (appearance.getTimeIn() == null && StringUtils.isNotEmpty(returnJuryDto.getCheckIn())) {
                 appearance.setTimeIn(LocalTime.parse(returnJuryDto.getCheckIn()));
@@ -331,6 +339,25 @@ public class TrialServiceImpl implements TrialService {
         trial.setCourtLocation(courtLocation);
         trial.setTrialType(dto.getTrialType());
         return trial;
+    }
+
+    private Appearance getJurorAppearanceForDate(JurorPool jurorPool, LocalDate attendanceDate) {
+
+        final String jurorNumber = jurorPool.getJurorNumber();
+
+        log.debug(String.format("Check for an appearance record for Juror: %s on %s", jurorNumber, attendanceDate));
+        Optional<Appearance> appearanceOpt = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
+            attendanceDate);
+        log.debug(String.format("Appearance record for Juror: %s on %s %s", jurorNumber,
+            attendanceDate, appearanceOpt.isPresent() ? "already exists" : "could not be found"));
+
+        return appearanceOpt.orElse(
+            Appearance.builder()
+                .jurorNumber(jurorNumber)
+                .attendanceDate(attendanceDate)
+                .courtLocation(jurorPool.getPool().getCourtLocation())
+                .poolNumber(jurorPool.getPool().getPoolNumber())
+                .build());
     }
 
 }
