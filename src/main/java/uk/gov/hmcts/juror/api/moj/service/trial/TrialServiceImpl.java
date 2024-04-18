@@ -120,7 +120,7 @@ public class TrialServiceImpl implements TrialService {
         // check user has access to the court location
         BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         if (!payload.getStaff().getCourts().contains(trialDto.getCourtLocation())) {
-            throw new MojException.BadRequest("User does not have access to the court location", null);
+            throw new MojException.Forbidden("User does not have access to the court location", null);
         }
 
         // check the trial exists
