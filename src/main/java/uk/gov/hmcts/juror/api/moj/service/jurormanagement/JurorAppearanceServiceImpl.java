@@ -434,6 +434,38 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             ModifyConfirmedAttendanceDto.ModifyAttendanceType.DELETE.equals(modifyAttendanceType));
     }
 
+    @Override
+    public void markJurorAsAbsent(BureauJwtPayload payload,
+                                  UpdateAttendanceDto.CommonData updateCommonData) {
+        // 1. retrieve details of jurors who attended court for the given attendance date (checked-in)
+        RetrieveAttendanceDetailsDto.CommonData retrieveCommonData = new RetrieveAttendanceDetailsDto.CommonData();
+        retrieveCommonData.setAttendanceDate(updateCommonData.getAttendanceDate());
+        retrieveCommonData.setLocationCode(updateCommonData.getLocationCode());
+        retrieveCommonData.setTag(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE);
+
+        // 2. retrieve details of jurors who failed to show up on the day (no show)
+        List<Tuple> absentTuples = appearanceRepository.retrieveNonAttendanceDetails(retrieveCommonData);
+
+        CourtLocation courtLocation = courtLocationRepository.findByLocCode(updateCommonData.getLocationCode())
+            .orElseThrow(() -> new MojException.NotFound("Court location not found", null));
+
+        // 3. absent jurors - build new appearance record with minimal data
+        List<Appearance> absentJurors = new ArrayList<>();
+        absentTuples.forEach(tuple -> {
+            Appearance appearance = Appearance.builder()
+                .jurorNumber(tuple.get(0, String.class))
+                .poolNumber(tuple.get(4, String.class))
+                .attendanceDate(updateCommonData.getAttendanceDate())
+                .courtLocation(courtLocation)
+                .noShow(Boolean.TRUE)
+                .attendanceType(AttendanceType.ABSENT)
+                .build();
+            absentJurors.add(appearance);
+        });
+
+        appearanceRepository.saveAllAndFlush(absentJurors);
+
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -593,7 +625,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
             // get the juror appearance record if it exists
             Appearance appearance = appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber,
-                request.getCommonData().getAttendanceDate())
+                    request.getCommonData().getAttendanceDate())
                 .orElse(Appearance.builder()
                     .jurorNumber(jurorNumber)
                     .attendanceDate(request.getCommonData().getAttendanceDate())
