@@ -39,3 +39,8 @@ insert into juror_mod.trial (trial_number, loc_code, description, judge, trial_t
 ('T100000024','462', 'TEST DEFENDANT', 22,'CIV', current_date, current_date, false, 67),
 ('T100000025','415', 'TEST DEFENDANT', 22,'CIV', current_date, null, false, 66),
 ('T100000026','462', 'TEST DEFENDANT', 22,'CIV', current_date, current_date,false, 67);
+
+INSERT INTO juror_mod.trial
+(trial_number, loc_code, description, courtroom, judge, trial_type, trial_start_date, trial_end_date, anonymous, juror_requested, jurors_sent) VALUES
+('T100000027', '462', 'TEST DEFENDANT62', 67, 22, 'CRI', current_date, NULL, false, NULL, NULL),
+('T100000027', '415', 'TEST DEFENDANT15', 66, 21, 'CRI', current_date - 1, NULL, false, NULL, NULL);

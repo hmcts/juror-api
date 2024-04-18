@@ -116,8 +116,11 @@ public class TrialServiceImpl implements TrialService {
             ? Sort.by(sortBy).descending()
             : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE, sort);
+
         List<TrialListDto> dtoList = new ArrayList<>();
+
         Long totalTrials = trialRepository.getTotalTrialsForCourtLocations(payload.getStaff().getCourts(), isActive);
+
         List<Trial> trials = trialRepository.getListOfTrialsForCourtLocations(payload.getStaff().getCourts(), isActive,
             trialNumber, pageable);
 
@@ -130,6 +133,10 @@ public class TrialServiceImpl implements TrialService {
 
     @Override
     public TrialSummaryDto getTrialSummary(BureauJwtPayload payload, String trialNo, String locCode) {
+        if (!payload.getStaff().getCourts().contains(locCode)) {
+            throw new MojException.Forbidden("Current user has insufficient permission "
+                + "to view the trial details for the court location", null);
+        }
 
         Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNo, locCode)
             .orElseThrow(() -> new MojException.NotFound(String.format("Cannot find trial with "
