@@ -39,3 +39,5 @@ ALTER TABLE juror_mod.financial_audit_details_appearances
 ALTER TABLE juror_mod.financial_audit_details_appearances
     ADD CONSTRAINT financial_audit_details_appearances_pkey PRIMARY KEY (financial_audit_id, attendance_date, appearance_version);
 
+ALTER TABLE juror_mod.appearance_audit
+    ALTER COLUMN version drop not null;
