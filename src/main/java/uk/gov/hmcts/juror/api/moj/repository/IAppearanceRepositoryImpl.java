@@ -117,7 +117,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
 
     private List<Integer> sqlFilterQueryJurorStatus(@NotNull RetrieveAttendanceDetailsTag tag) {
         if (tag.equals(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE)) {
-            return List.of(IJurorStatus.RESPONDED);
+            return List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL);
         } else if (tag.equals(RetrieveAttendanceDetailsTag.PANELLED)) {
             return List.of(IJurorStatus.PANEL);
         } else {

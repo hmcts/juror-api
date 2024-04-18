@@ -54,6 +54,7 @@ public class TrialController {
      * Enable the officer to create a trial.
      *
      * @param payload - login information
+     *
      * @throws MojException.BadRequest - thrown if there is an validation issue?
      */
     @PostMapping("/create")
@@ -63,6 +64,15 @@ public class TrialController {
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid TrialDto trialDto) {
         TrialSummaryDto trialSummaryDto = trialService.createTrial(payload, trialDto);
+        return ResponseEntity.ok().body(trialSummaryDto);
+    }
+
+    @PatchMapping("/edit")
+    @Operation(summary = "Enable the officer to edit a trial")
+    @PreAuthorize(SecurityUtil.COURT_AUTH)
+    public ResponseEntity<TrialSummaryDto> editTrial(
+        @RequestBody @Valid TrialDto trialDto) {
+        TrialSummaryDto trialSummaryDto = trialService.editTrial(trialDto);
         return ResponseEntity.ok().body(trialSummaryDto);
     }
 
@@ -112,8 +122,8 @@ public class TrialController {
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam(name = "trial_number") @PathVariable(name = "trialNumber") String trialNumber,
         @RequestParam(name = "location_code") @PathVariable(name = "locationCode") String locationCode,
-        @RequestBody @Valid ReturnJuryDto returnJuryDto
-    ) {
+        @RequestBody @Valid ReturnJuryDto returnJuryDto) {
+
         trialService.returnJury(payload, trialNumber, locationCode, returnJuryDto);
         return ResponseEntity.ok(null);
     }

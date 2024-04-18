@@ -52,10 +52,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.time.LocalDate.now;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.PATCH;
@@ -232,7 +234,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         assertThat(response.getStatusCode()).as("HTTP status created expected").isEqualTo(BAD_REQUEST);
     }
-
 
     @Test
     @DisplayName("POST addAttendanceDay() - happy path")
@@ -513,7 +514,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(summary)
                 .as("Expect 2 jurors to be checked in")
                 .extracting(AttendanceDetailsResponse.Summary::getCheckedIn)
-                .isEqualTo(2L);
+                .isEqualTo(3L);
 
             assertThat(summary)
                 .as("Expect 2 jurors to be absent")
@@ -983,7 +984,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             AttendanceDetailsResponse.Summary summary = response.getBody().getSummary();
             assertThat(summary)
                 .extracting(AttendanceDetailsResponse.Summary::getCheckedIn)
-                .isEqualTo(3L);
+                .isEqualTo(4L);
 
             assertThat(summary)
                 .extracting(AttendanceDetailsResponse.Summary::getAbsent)
@@ -1159,7 +1160,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     @DisplayName("PATCH Update attendance date")
     @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDate.sql"})
     class UpdateAttendanceDate {
-        static final LocalDate ATTENDANCE_DATE = LocalDate.now().plusMonths(1);
+        static final LocalDate ATTENDANCE_DATE = now().plusMonths(1);
         static final String POOL_NUMBER_415230101 = "415230101";
         static final String URL_ATTENDANCE_DATE = "/attendance-date";
         static final String UPDATED_ATTENDANCE_DATE_MESSAGE = "Attendance date should have been updated to "
@@ -1441,7 +1442,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("DELETE Delete attendance")
     class DeleteAttendance {
-
         @Test
         @DisplayName("DELETE delete attendance - delete attendance record okay")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
@@ -1517,140 +1517,122 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             return request;
         }
-
     }
 
-    @Test
-    @DisplayName("GET jurors to dismiss list - happy path")
+    @Nested
+    @DisplayName("GET jurors to dismiss list")
     @Sql({"/db/mod/truncate.sql", "/db/JurorManagementController_poolsAtCourtLocation.sql"})
-    public void getJurorsToDismissListHappy() {
-        List<String> pools = new ArrayList<>();
-        pools.add("415230101");
+    class JurorsToDismissList {
+        private static final String URL = "/api/v1/moj/juror-management/jurors-to-dismiss";
 
-        final JurorsToDismissRequestDto request = JurorsToDismissRequestDto.builder()
-            .poolNumbers(pools)
-            .locationCode("415")
-            .includeNotInAttendance(true)
-            .includeOnCall(true)
-            .numberOfJurorsToDismiss(3)
-            .build();
+        @Test
+        @DisplayName("GET jurors to dismiss list - happy path")
+        void retrieveJurorsToDismissListHappy() {
+            List<String> pools = createPools("415230101");
 
-        ResponseEntity<JurorsToDismissResponseDto> response =
-            restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
-                URI.create("/api/v1/moj/juror-management/jurors-to-dismiss")), JurorsToDismissResponseDto.class);
+            JurorsToDismissRequestDto request = createJurorsToDismissRequestDto(pools, true, true, 3);
 
-        assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
-        assertThat(response.getBody().getData()).isNotNull();
+            ResponseEntity<JurorsToDismissResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
+                    URI.create(URL)), JurorsToDismissResponseDto.class);
 
-        List<JurorsToDismissResponseDto.JurorsToDismissData> jurorsToDismissData = response.getBody().getData();
-        assertThat(jurorsToDismissData).as("Expect there to be 3 Juror record").hasSize(3);
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+            assertThat(Objects.requireNonNull(response.getBody()).getData()).isNotNull();
 
+            List<JurorsToDismissResponseDto.JurorsToDismissData> jurorsToDismissData = response.getBody().getData();
+            assertThat(jurorsToDismissData).as("Expect there to be 3 Juror record").hasSize(3);
+        }
+
+        @Test
+        @DisplayName("GET jurors to dismiss list - include not in attendance")
+        void retrieveJurorsToDismissListIncludeNotInAttendance() {
+            List<String> pools = createPools("415230101");
+
+            JurorsToDismissRequestDto request = createJurorsToDismissRequestDto(pools, true, true, 4);
+
+            ResponseEntity<JurorsToDismissResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
+                    URI.create(URL)), JurorsToDismissResponseDto.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+            assertThat(Objects.requireNonNull(response.getBody()).getData()).isNotNull();
+
+            assertThat(response.getBody().getData())
+                .hasSize(4)
+                .extracting(JurorsToDismissResponseDto.JurorsToDismissData::getJurorNumber,
+                    JurorsToDismissResponseDto.JurorsToDismissData::getFirstName,
+                    JurorsToDismissResponseDto.JurorsToDismissData::getLastName,
+                    JurorsToDismissResponseDto.JurorsToDismissData::getAttending,
+                    JurorsToDismissResponseDto.JurorsToDismissData::getNextDueAtCourt,
+                    JurorsToDismissResponseDto.JurorsToDismissData::getCheckInTime,
+                    JurorsToDismissResponseDto.JurorsToDismissData::getServiceStartDate)
+                .containsExactlyInAnyOrder(
+                    tuple("641500003", "TEST", "PERSON3", "In attendance",
+                        LocalDate.now().minusDays(10).toString(),
+                        LocalTime.of(9, 30), LocalDate.now().minusDays(10)),
+                    tuple("641500004", "TEST", "PERSON4", "On call", "On call", null,
+                        LocalDate.now().minusDays(10)),
+                    tuple("641500006", "TEST", "PERSON6", "In attendance",
+                        LocalDate.now().minusDays(10).toString(), LocalTime.of(9, 30),
+                        LocalDate.now().minusDays(10)),
+                    tuple("641500007", "TEST", "PERSON7", "Other",
+                        LocalDate.now().minusDays(10).toString(), null,
+                        LocalDate.now().minusDays(10))
+                );
+        }
+
+        @Test
+        @DisplayName("GET jurors to dismiss list - Unhappy path, Bureau User not allowed")
+        void retrieveJurorsToDismissListUnhappyBureauUser() {
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+
+            List<String> pools = createPools("415930101");
+
+            JurorsToDismissRequestDto request = createJurorsToDismissRequestDto(pools, true, true, 3);
+
+            ResponseEntity<JurorsToDismissResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
+                    URI.create(URL)), JurorsToDismissResponseDto.class);
+
+            assertThat(response.getStatusCode()).as("Expect HTTP Status of Forbidden").isEqualTo(FORBIDDEN);
+            assertThat(Objects.requireNonNull(response.getBody()).getData()).isNull();
+        }
+
+        @Test
+        @DisplayName("GET jurors to dismiss list - Unhappy path, pool not found")
+        void retrieveJurorsToDismissListUnhappyPoolNotFound() {
+            List<String> pools = createPools("415930101");  // pool does not exist
+
+            JurorsToDismissRequestDto request = createJurorsToDismissRequestDto(pools, true, true, 3);
+
+            ResponseEntity<JurorsToDismissResponseDto> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
+                    URI.create(URL)), JurorsToDismissResponseDto.class);
+
+            assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+            assertThat(Objects.requireNonNull(response.getBody()).getData()).isEmpty();
+        }
+
+        private List<String> createPools(String poolNumber) {
+            List<String> pools = new ArrayList<>();
+            pools.add(poolNumber);
+
+            return pools;
+        }
+
+        private JurorsToDismissRequestDto createJurorsToDismissRequestDto(List<String> pools,
+                                                                          Boolean includeNotInAttendance,
+                                                                          Boolean includeOnCall,
+                                                                          int numberOfJurorsToDismiss) {
+            return JurorsToDismissRequestDto.builder()
+                .poolNumbers(pools)
+                .locationCode("415")
+                .includeNotInAttendance(includeNotInAttendance)
+                .includeOnCall(includeOnCall)
+                .numberOfJurorsToDismiss(numberOfJurorsToDismiss)
+                .build();
+        }
     }
-
-    @Test
-    @DisplayName("GET jurors to dismiss list - Unhappy path, Bureau User not allowed")
-    @Sql({"/db/mod/truncate.sql", "/db/JurorManagementController_poolsAtCourtLocation.sql"})
-    public void getJurorsToDismissListUnhappyBureauUser() throws Exception {
-        List<String> pools = new ArrayList<>();
-        pools.add("415930101");
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
-        final JurorsToDismissRequestDto request = JurorsToDismissRequestDto.builder()
-            .poolNumbers(pools)
-            .locationCode("415")
-            .includeNotInAttendance(true)
-            .includeOnCall(true)
-            .numberOfJurorsToDismiss(3)
-            .build();
-
-        ResponseEntity<JurorsToDismissResponseDto> response =
-            restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
-                URI.create("/api/v1/moj/juror-management/jurors-to-dismiss")), JurorsToDismissResponseDto.class);
-
-        assertThat(response.getStatusCode()).as("Expect HTTP Status of Forbidden").isEqualTo(FORBIDDEN);
-        assertThat(response.getBody().getData()).isNull();
-
-    }
-
-    @Test
-    @DisplayName("GET jurors to dismiss list - Unhappy path, pool not found")
-    @Sql({"/db/mod/truncate.sql", "/db/JurorManagementController_poolsAtCourtLocation.sql"})
-    public void getJurorsToDismissListUnhappyPoolNotFound() {
-        List<String> pools = new ArrayList<>();
-        pools.add("415930101");  // pool does not exist
-
-        JurorsToDismissRequestDto request = JurorsToDismissRequestDto.builder()
-            .poolNumbers(pools)
-            .locationCode("415")
-            .includeNotInAttendance(true)
-            .includeOnCall(true)
-            .numberOfJurorsToDismiss(3)
-            .build();
-
-        ResponseEntity<JurorsToDismissResponseDto> response =
-            restTemplate.exchange(new RequestEntity<>(request, httpHeaders, GET,
-                URI.create("/api/v1/moj/juror-management/jurors-to-dismiss")), JurorsToDismissResponseDto.class);
-
-        assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
-        assertThat(response.getBody().getData()).isEmpty();
-
-    }
-
-    private RetrieveAttendanceDetailsDto buildRetrieveAttendanceDetailsDto(List<String> jurors) {
-        RetrieveAttendanceDetailsDto.CommonData commonData = new RetrieveAttendanceDetailsDto.CommonData();
-        commonData.setAttendanceDate(now().minusDays(2));
-        commonData.setLocationCode("415");
-        commonData.setTag(RetrieveAttendanceDetailsTag.JUROR_NUMBER);
-
-        return RetrieveAttendanceDetailsDto.builder()
-            .commonData(commonData)
-            .juror(jurors)
-            .build();
-    }
-
-    private static void validateAppearanceRecord(
-        ResponseEntity<JurorAppearanceResponseDto.JurorAppearanceResponseData> response) {
-
-        assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
-
-        JurorAppearanceResponseDto.JurorAppearanceResponseData jurorAppearanceResponseData = response.getBody();
-        assertThat(jurorAppearanceResponseData).isNotNull();
-
-        assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR1);
-        assertThat(jurorAppearanceResponseData.getFirstName()).isEqualTo("TEST");
-        assertThat(jurorAppearanceResponseData.getLastName()).isEqualTo("LASTNAME");
-        assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.RESPONDED);
-        assertThat(jurorAppearanceResponseData.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
-        assertThat(jurorAppearanceResponseData.getCheckOutTime()).isNull();
-    }
-
-    private void validateAppearanceRecordMultiple(ResponseEntity<JurorAppearanceResponseDto> response) {
-        assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
-
-        JurorAppearanceResponseDto jurorAppearanceResponseDto = response.getBody();
-        assertThat(jurorAppearanceResponseDto.getData().size()).as("Expect 3 records to be returned")
-            .isEqualTo(3);
-
-        JurorAppearanceResponseDto.JurorAppearanceResponseData jurorAppearanceResponseData =
-            jurorAppearanceResponseDto.getData().get(0);
-        assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR1);
-        assertThat(jurorAppearanceResponseData.getFirstName()).isEqualTo("TEST");
-        assertThat(jurorAppearanceResponseData.getLastName()).isEqualTo("LASTNAME");
-        assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.RESPONDED);
-        assertThat(jurorAppearanceResponseData.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
-        assertThat(jurorAppearanceResponseData.getCheckOutTime()).isNull();
-
-        jurorAppearanceResponseData =
-            jurorAppearanceResponseDto.getData().get(1);
-        assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR2);
-        assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.JUROR);
-
-        jurorAppearanceResponseData =
-            jurorAppearanceResponseDto.getData().get(2);
-        assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR3);
-        assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.PANEL);
-    }
-
 
     @Nested
     @DisplayName("Non Attendance tests")
@@ -1981,7 +1963,60 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             return request;
         }
-
     }
 
+    private RetrieveAttendanceDetailsDto buildRetrieveAttendanceDetailsDto(List<String> jurors) {
+        RetrieveAttendanceDetailsDto.CommonData commonData = new RetrieveAttendanceDetailsDto.CommonData();
+        commonData.setAttendanceDate(now().minusDays(2));
+        commonData.setLocationCode("415");
+        commonData.setTag(RetrieveAttendanceDetailsTag.JUROR_NUMBER);
+
+        return RetrieveAttendanceDetailsDto.builder()
+            .commonData(commonData)
+            .juror(jurors)
+            .build();
+    }
+
+    private static void validateAppearanceRecord(
+        ResponseEntity<JurorAppearanceResponseDto.JurorAppearanceResponseData> response) {
+
+        assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+        JurorAppearanceResponseDto.JurorAppearanceResponseData jurorAppearanceResponseData = response.getBody();
+        assertThat(jurorAppearanceResponseData).isNotNull();
+
+        assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR1);
+        assertThat(jurorAppearanceResponseData.getFirstName()).isEqualTo("TEST");
+        assertThat(jurorAppearanceResponseData.getLastName()).isEqualTo("LASTNAME");
+        assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.RESPONDED);
+        assertThat(jurorAppearanceResponseData.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
+        assertThat(jurorAppearanceResponseData.getCheckOutTime()).isNull();
+    }
+
+    private void validateAppearanceRecordMultiple(ResponseEntity<JurorAppearanceResponseDto> response) {
+        assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+        JurorAppearanceResponseDto jurorAppearanceResponseDto = response.getBody();
+        assertThat(jurorAppearanceResponseDto.getData().size()).as("Expect 3 records to be returned")
+            .isEqualTo(3);
+
+        JurorAppearanceResponseDto.JurorAppearanceResponseData jurorAppearanceResponseData =
+            jurorAppearanceResponseDto.getData().get(0);
+        assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR1);
+        assertThat(jurorAppearanceResponseData.getFirstName()).isEqualTo("TEST");
+        assertThat(jurorAppearanceResponseData.getLastName()).isEqualTo("LASTNAME");
+        assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.RESPONDED);
+        assertThat(jurorAppearanceResponseData.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
+        assertThat(jurorAppearanceResponseData.getCheckOutTime()).isNull();
+
+        jurorAppearanceResponseData =
+            jurorAppearanceResponseDto.getData().get(1);
+        assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR2);
+        assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.JUROR);
+
+        jurorAppearanceResponseData =
+            jurorAppearanceResponseDto.getData().get(2);
+        assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR3);
+        assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.PANEL);
+    }
 }

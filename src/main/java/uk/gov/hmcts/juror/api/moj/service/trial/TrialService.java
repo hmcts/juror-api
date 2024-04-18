@@ -26,4 +26,6 @@ public interface TrialService {
                     ReturnJuryDto jurorDetailRequestDto);
 
     void endTrial(EndTrialDto dto);
+
+    TrialSummaryDto editTrial(TrialDto trialDto);
 }

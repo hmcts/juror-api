@@ -229,7 +229,7 @@ class TrialControllerTest {
     @SuppressWarnings({
         "PMD.JUnitTestsShouldIncludeAssert"//False positive
     })
-    void testReturnJury() throws Exception {
+    void testReturnJury() {
         final String methodUrl = "/return-jury?trial_number=T10000000&location_code=415";
 
         jwtPayload = createJwt("415", "COURT_USER");
@@ -241,6 +241,28 @@ class TrialControllerTest {
                 .content(asJsonString(createReturnJuryDto()))
                 .principal(mockPrincipal))
             .andExpect(status().isOk()));
+    }
+
+    @Test
+    @SuppressWarnings({
+        "PMD.JUnitTestsShouldIncludeAssert"//False positive
+    })
+    void testReturnJuryEmptyTimes() throws Exception {
+        final String methodUrl = "/return-jury?trial_number=T10000000&location_code=415";
+
+        jwtPayload = createJwt("415", "COURT_USER");
+        BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
+        when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
+
+        ReturnJuryDto requestBody = createReturnJuryDto();
+        requestBody.setCheckIn("");
+        requestBody.setCheckOut("");
+
+        mockMvc.perform(post(BASE_URL + methodUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(requestBody))
+                .principal(mockPrincipal))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
