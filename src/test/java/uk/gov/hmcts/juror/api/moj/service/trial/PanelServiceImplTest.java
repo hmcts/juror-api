@@ -70,13 +70,10 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 class PanelServiceImplTest {
     @Mock
     private TrialRepository trialRepository;
-
     @Mock
     private PanelRepository panelRepository;
-
     @Mock
     private JurorPoolRepository jurorPoolRepository;
-
     @Mock
     private AppearanceRepository appearanceRepository;
     @Mock

@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.moj.service.trial;
 
 import com.querydsl.core.Tuple;
 import lombok.extern.slf4j.Slf4j;
-import org.flywaydb.core.api.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
