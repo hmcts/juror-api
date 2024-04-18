@@ -115,11 +115,6 @@ public class TrialController {
         @RequestParam(name = "location_code") @PathVariable(name = "locationCode") String locationCode,
         @RequestBody @Valid ReturnJuryDto returnJuryDto) {
 
-        if (StringUtils.isEmpty(returnJuryDto.getCheckIn())) {
-            throw new MojException.BadRequest("Please enter a valid check in time to return jurors",
-                null);
-        }
-
         trialService.returnJury(payload, trialNumber, locationCode, returnJuryDto);
         return ResponseEntity.ok(null);
     }
