@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
+import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -587,6 +588,9 @@ public class TrialControllerITest extends AbstractIntegrationTest {
                 "10:00"));
 
             assertThat(appearance.getSatOnJury()).isTrue();
+            assertThat(appearance.getAppearanceStage())
+                .as("Expect appearance stage to be EXPENSE_ENTERED")
+                .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
         }
     }
 
@@ -597,7 +601,7 @@ public class TrialControllerITest extends AbstractIntegrationTest {
             + "trial_number=T10000001&"
             + "location_code=415";
 
-        ReturnJuryDto dto = createReturnJuryDto(false, "", "");
+        ReturnJuryDto dto = createReturnJuryDto(false, "09:30", "");
         initialiseHeader(singletonList("415"), "415", COURT_USER);
 
         ResponseEntity<Void> responseEntity =
@@ -623,10 +627,12 @@ public class TrialControllerITest extends AbstractIntegrationTest {
                 appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
                     LocalDate.now()).orElseThrow(() ->
                     new MojException.NotFound("No appearance record found", null));
-            assertThat(appearance.getTimeIn()).as("Expect time in to be null").isNull();
-            assertThat(appearance.getTimeIn()).as("Expect time to be null").isNull();
-            assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
+            assertThat(appearance.getTimeIn()).as("Expect time in to be null").isEqualTo(LocalTime.of(9, 30));
             assertThat(appearance.getTimeOut()).as("Expect time out to be null").isNull();
+            assertThat(panel.isCompleted()).as("Expected panel completed status to be true").isTrue();
+            assertThat(appearance.getAppearanceStage())
+                .as("Expect appearance stage to be CHECKED_IN")
+                .isEqualTo(AppearanceStage.CHECKED_IN);
             assertThat(appearance.getSatOnJury()).isTrue();
         }
     }
@@ -677,6 +683,9 @@ public class TrialControllerITest extends AbstractIntegrationTest {
                 "10:00"));
 
             assertThat(appearance.getSatOnJury()).isTrue();
+            assertThat(appearance.getAppearanceStage())
+                .as("Expect appearance stage to be EXPENSE_ENTERED")
+                .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
 
             assertThat(panel.getJurorPool().getJuror().getCompletionDate()).as("Expect completion date to not be "
                 + "null").isNotNull();

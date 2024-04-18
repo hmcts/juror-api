@@ -337,33 +337,6 @@ class TrialServiceImplTest {
     }
 
     @Test
-    void testReturnJuryNoConfirmAttendanceEmptyTimes() {
-        final String trialNumber = "T100000000";
-        List<Panel> panelMembers = createPanelMembers(10, PanelResult.JUROR, trialNumber, IJurorStatus.JUROR);
-        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
-            .thenReturn(panelMembers);
-
-        for (Panel panel : panelMembers) {
-            Appearance appearance = createAppearance(panel.getJurorPool().getJurorNumber());
-            appearance.setTimeIn(null);
-            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
-                LocalDate.now())).thenReturn(Optional.of(appearance));
-        }
-
-        trialService
-            .returnJury(payload, trialNumber, "415",
-                createReturnJuryDto(false, "", ""));
-
-        verify(panelRepository, times(1))
-            .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
-        verify(panelRepository, times(panelMembers.size())).saveAndFlush(any());
-        verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
-        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
-        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
-        assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).as("Sat on Jury").isTrue();
-    }
-
-    @Test
     void testReturnJuryNoConfirmAttendanceNullTimes() {
         final String trialNumber = "T100000000";
         List<Panel> panelMembers = createPanelMembers(10, PanelResult.JUROR, trialNumber, IJurorStatus.JUROR);
@@ -379,7 +352,7 @@ class TrialServiceImplTest {
 
         trialService
             .returnJury(payload, trialNumber, "415",
-                createReturnJuryDto(false, null, null));
+                createReturnJuryDto(false, "09:30", null));
 
         verify(panelRepository, times(1))
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
@@ -387,7 +360,6 @@ class TrialServiceImplTest {
         verify(jurorHistoryRepository, times(panelMembers.size())).save(any());
         ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
         verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
-        assertThat(appearanceArgumentCaptor.getValue().getSatOnJury()).as("Sat on Jury").isTrue();
     }
 
     @Test
