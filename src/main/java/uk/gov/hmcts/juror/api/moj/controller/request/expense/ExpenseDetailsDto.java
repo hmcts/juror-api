@@ -27,14 +27,14 @@ public class ExpenseDetailsDto extends ExpenseValuesDto {
 
     @JsonProperty("attendance_date")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate attendanceDate;
+    protected LocalDate attendanceDate;
 
     @JsonProperty("attendance_type")
-    private AttendanceType attendanceType;
+    protected AttendanceType attendanceType;
 
 
     @JsonProperty("payment_method")
-    private PaymentMethod paymentMethod;
+    protected PaymentMethod paymentMethod;
 
     public ExpenseDetailsDto(Appearance appearance) {
         super(appearance);

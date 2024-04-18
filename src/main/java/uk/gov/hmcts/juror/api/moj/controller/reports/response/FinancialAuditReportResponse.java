@@ -8,6 +8,7 @@ import lombok.Data;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsWithOriginalDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsSimpleDto;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 public class FinancialAuditReportResponse {
 
     private String financialAuditNumber;
+    private FinancialAuditDetails.Type auditType;
     private FilterableJurorDetailsResponseDto jurorDetails;
     private FilterableJurorDetailsResponseDto originalJurorDetails;
 

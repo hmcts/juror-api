@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsSimpleDto;
 import uk.gov.hmcts.juror.api.moj.service.FinancialAuditService;
 import uk.gov.hmcts.juror.api.moj.service.JurorRecordService;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 
@@ -42,19 +43,19 @@ public class FinancialAuditReportServiceImpl implements FinancialAuditReportServ
         FinancialAuditReportResponse.FinancialAuditReportResponseBuilder builder =
             FinancialAuditReportResponse.builder()
                 .financialAuditNumber(financialAuditDetails.getFinancialAuditNumber())
+                .auditType(financialAuditDetails.getType())
                 .submittedAt(forApprovalFinancialAuditDetails.getCreatedOn())
                 .submittedBy(new UserDetailsSimpleDto(forApprovalFinancialAuditDetails.getCreatedBy()))
                 .expenses(getExpenses(financialAuditDetails))
                 .jurorDetails(getJurorDetails(financialAuditDetails));
 
-        //TODO confirm once report design is confirmed
         if (FinancialAuditDetails.Type.GenericType.EDIT.equals(financialAuditDetails.getType().getGenericType())) {
             builder.originalJurorDetails(getJurorDetails(forApprovalFinancialAuditDetails));
         }
 
         if (FinancialAuditDetails.Type.GenericType.APPROVED.equals(financialAuditDetails.getType().getGenericType())) {
-            builder.approvedAt(forApprovalFinancialAuditDetails.getCreatedOn())
-                .approvedBy(new UserDetailsSimpleDto(forApprovalFinancialAuditDetails.getCreatedBy()));
+            builder.approvedAt(financialAuditDetails.getCreatedOn())
+                .approvedBy(new UserDetailsSimpleDto(financialAuditDetails.getCreatedBy()));
         }
 
         return builder.build();
@@ -75,7 +76,7 @@ public class FinancialAuditReportServiceImpl implements FinancialAuditReportServ
     private CombinedExpenseDetailsDto<ExpenseDetailsWithOriginalDto> getExpenses(
         FinancialAuditDetails financialAuditDetails) {
         CombinedExpenseDetailsDto<ExpenseDetailsWithOriginalDto> combinedExpenseDetailsDto =
-            new CombinedExpenseDetailsDto<>(true);
+            new CombinedExpenseDetailsDto<>(false);
 
         final Function<Appearance, Appearance> origionalAppearanceFunction;
 
@@ -88,6 +89,8 @@ public class FinancialAuditReportServiceImpl implements FinancialAuditReportServ
         }
 
         financialAuditService.getAppearances(financialAuditDetails)
+            .stream()
+            .sorted(Comparator.comparing(Appearance::getAttendanceDate))
             .forEach(appearance -> combinedExpenseDetailsDto.addExpenseDetail(
                 new ExpenseDetailsWithOriginalDto(appearance,
                     origionalAppearanceFunction.apply(appearance))));
