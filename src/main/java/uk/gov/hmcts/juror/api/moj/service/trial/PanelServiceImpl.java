@@ -265,6 +265,11 @@ public class PanelServiceImpl implements PanelService {
                     appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber, dto.getAttendanceDate()),
                     jurorNumber);
                 appearance.setPoolNumber(panelMember.getJurorPool().getPoolNumber());
+
+                if (panelMember.getResult() == PanelResult.CHALLENGED) {
+                    appearance.setSatOnJury(true);
+                }
+
                 appearanceRepository.saveAndFlush(appearance);
             } else {
                 JurorHistoryUtils.saveJurorHistory(HistoryCodeMod.JURY_EMPANELMENT,

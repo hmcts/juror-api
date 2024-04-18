@@ -234,7 +234,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).as("HTTP status created expected").isEqualTo(BAD_REQUEST);
     }
 
-
     @Test
     @DisplayName("POST addAttendanceDay() - happy path")
     @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql"})
