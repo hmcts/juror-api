@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -55,6 +54,7 @@ public class TrialController {
      * Enable the officer to create a trial.
      *
      * @param payload - login information
+     *
      * @throws MojException.BadRequest - thrown if there is an validation issue?
      */
     @PostMapping("/create")
