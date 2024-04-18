@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
+import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -403,9 +404,9 @@ class PanelServiceImplTest {
             doReturn(member).when(panelRepository)
                 .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(
                     "T100000025", "415", member.getJurorPool().getJurorNumber());
-            doReturn(Optional.of(createAppearance(member.getJurorPool().getJurorNumber())))
-                .when(appearanceRepository).findByJurorNumberAndAttendanceDate(member.getJurorPool().getJurorNumber(),
-                    now());
+            doReturn(Optional.of(createAppearance(member.getJurorPool().getJurorNumber()))).when(appearanceRepository)
+                .findByJurorNumberAndAttendanceDateAndAppearanceStage(member.getJurorPool().getJurorNumber(),
+                    now(), AppearanceStage.CHECKED_IN);
             if (member.getResult() != PanelResult.JUROR) {
                 totalUnusedJurors++;
             }
@@ -436,12 +437,12 @@ class PanelServiceImplTest {
         for (Panel member : panelMembers) {
             doReturn(member).when(panelRepository)
                 .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(
-                "T100000025",
-                "415",
-                member.getJurorPool().getJurorNumber());
-            doReturn(Optional.of(createAppearance(member.getJurorPool().getJurorNumber())))
-                .when(appearanceRepository).findByJurorNumberAndAttendanceDate(member.getJurorPool().getJurorNumber(),
-                    now());
+                    "T100000025",
+                    "415",
+                    member.getJurorPool().getJurorNumber());
+            doReturn(Optional.of(createAppearance(member.getJurorPool().getJurorNumber()))).when(appearanceRepository)
+                .findByJurorNumberAndAttendanceDateAndAppearanceStage(member.getJurorPool().getJurorNumber(),
+                    now(), AppearanceStage.CHECKED_IN);
         }
 
         doReturn(Optional.of(createTrial())).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(anyString(),
@@ -463,7 +464,7 @@ class PanelServiceImplTest {
             if (member.getResult().equals(PanelResult.CHALLENGED) || member.getResult().equals(PanelResult.JUROR)) {
                 Optional<Appearance> memberAppearance =
                     appearanceArgumentCaptor.getAllValues().stream().filter(appearance ->
-                    appearance.getJurorNumber().equals(member.getJurorPool().getJurorNumber())).findFirst();
+                        appearance.getJurorNumber().equals(member.getJurorPool().getJurorNumber())).findFirst();
                 assertThat(memberAppearance.get().getSatOnJury()).isTrue();
             }
         }
@@ -510,6 +511,35 @@ class PanelServiceImplTest {
         assertThrows(MojException.BadRequest.class, () ->
             panelService.processEmpanelled(jurorListRequestDto, payload)
         );
+    }
+
+    @Test
+    void processEmpanelledNoAppearance() {
+        final int totalPanelMembers = 10;
+        int totalUnusedJurors = 0;
+        List<Panel> panelMembers = createPanelMembers(totalPanelMembers);
+        BureauJwtPayload payload = buildPayload();
+
+        for (Panel member : panelMembers) {
+            doReturn(member).when(panelRepository)
+                .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(
+                    "T100000025", "415", member.getJurorPool().getJurorNumber());
+            doReturn(Optional.empty()).when(appearanceRepository)
+                .findByJurorNumberAndAttendanceDateAndAppearanceStage(member.getJurorPool().getJurorNumber(),
+                    now(), AppearanceStage.CHECKED_IN);
+            if (member.getResult() != PanelResult.JUROR) {
+                totalUnusedJurors++;
+            }
+        }
+
+        doReturn(Optional.of(createTrial())).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(anyString(),
+            anyString());
+
+        JurorListRequestDto jurorListRequestDto =
+            createEmpanelledListRequestDto(panelMembers);
+
+        assertThatExceptionOfType(MojException.BusinessRuleViolation.class).isThrownBy(() ->
+            panelService.processEmpanelled(jurorListRequestDto, payload));
     }
 
     @Test
@@ -1165,9 +1195,8 @@ class PanelServiceImplTest {
         List<Panel> panelList = new ArrayList<>();
         String jurorNumber = "1111111%02d";
         PanelResult result = PanelResult.JUROR;
-        for (int i = 0;
-             i < totalMembers;
-             i++) {
+        for (int i = 0; i < totalMembers; i++) {
+
             Panel temp = createSinglePanelData();
             temp.getJurorPool().getJuror().setJurorNumber(jurorNumber.formatted(i + 1));
             temp.getJurorPool().setTimesSelected(random.nextInt(0, 2));
