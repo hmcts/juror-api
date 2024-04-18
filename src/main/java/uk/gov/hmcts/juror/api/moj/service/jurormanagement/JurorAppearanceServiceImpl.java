@@ -441,7 +441,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         RetrieveAttendanceDetailsDto.CommonData retrieveCommonData = new RetrieveAttendanceDetailsDto.CommonData();
         retrieveCommonData.setAttendanceDate(updateCommonData.getAttendanceDate());
         retrieveCommonData.setLocationCode(updateCommonData.getLocationCode());
-        retrieveCommonData.setTag(RetrieveAttendanceDetailsTag.DELETE);
+        retrieveCommonData.setTag(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE);
 
         // 3. retrieve details of jurors who failed to show up on the day (no show)
         List<Tuple> absentTuples = appearanceRepository.retrieveNonAttendanceDetails(retrieveCommonData);

@@ -179,15 +179,15 @@ class JurorAppearanceServiceTest {
         request.getCommonData().setCheckOutTime(null);
         request.getCommonData().setSingleJuror(Boolean.TRUE);
 
-        Tuple t3 = mock(Tuple.class);
-        mockQueryResultAbsent(t3, JUROR8, "TEST", "EIGHT", 2);
+        Tuple t1 = mock(Tuple.class);
+        mockQueryResultAbsent(t1, JUROR8, "TEST", "EIGHT", 2);
 
-        Tuple t4 = mock(Tuple.class);
-        mockQueryResultAbsent(t4, JUROR9, "TEST", "NINE", 2);
+        Tuple t2 = mock(Tuple.class);
+        mockQueryResultAbsent(t2, JUROR9, "TEST", "NINE", 2);
 
         List<Tuple> absentTuples = new ArrayList<>();
-        absentTuples.add(t3);
-        absentTuples.add(t4);
+        absentTuples.add(t1);
+        absentTuples.add(t2);
 
         RetrieveAttendanceDetailsDto dto = buildRetrieveAttendanceDetailsDto(jurors);
 
