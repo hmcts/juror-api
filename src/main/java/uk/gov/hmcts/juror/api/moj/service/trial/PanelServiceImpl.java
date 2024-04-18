@@ -140,7 +140,7 @@ public class PanelServiceImpl implements PanelService {
         Optional<Trial> trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
             courtLocationCode);
 
-        if (!trial.isPresent()) {
+        if (trial.isEmpty()) {
             throw new MojException.NotFound(String.format("Cannot find trial with number: %s for court location %s",
                 trialNumber, courtLocationCode), null);
         }

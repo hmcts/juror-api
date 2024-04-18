@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -428,7 +429,6 @@ class PanelServiceImplTest {
         final int totalPanelMembers = 10;
         List<Panel> panelMembers = createPanelMembers(totalPanelMembers);
 
-
         for (Panel panelMember : panelMembers) {
             panelMember.setResult(PanelResult.CHALLENGED);
         }
@@ -450,9 +450,21 @@ class PanelServiceImplTest {
 
         BureauJwtPayload payload = buildPayload();
         panelService.processEmpanelled(jurorListRequestDto, payload);
-        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(any());
+
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
         verify(panelRepository, times(totalPanelMembers)).saveAndFlush(any());
         verify(jurorHistoryRepository, times(totalPanelMembers)).save(any());
+
+        for (Panel member : panelMembers) {
+            if (member.getResult().equals(PanelResult.CHALLENGED) || member.getResult().equals(PanelResult.JUROR)) {
+                Optional<Appearance> memberAppearance =
+                    appearanceArgumentCaptor.getAllValues().stream().filter(appearance ->
+                    appearance.getJurorNumber().equals(member.getJurorPool().getJurorNumber())).findFirst();
+                assertThat(memberAppearance.get().getSatOnJury()).isTrue();
+            }
+        }
     }
 
     @Test
