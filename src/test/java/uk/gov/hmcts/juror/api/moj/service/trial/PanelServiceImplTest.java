@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -424,6 +425,51 @@ class PanelServiceImplTest {
     }
 
     @Test
+    void processEmpanelledChallenged() {
+        final int totalPanelMembers = 10;
+        List<Panel> panelMembers = createPanelMembers(totalPanelMembers);
+
+        for (Panel panelMember : panelMembers) {
+            panelMember.setResult(PanelResult.CHALLENGED);
+        }
+
+        for (Panel member : panelMembers) {
+            doReturn(member).when(panelRepository)
+                .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(
+                "T100000025",
+                "415",
+                member.getJurorPool().getJurorNumber());
+            doReturn(Optional.of(createAppearance(member.getJurorPool().getJurorNumber())))
+                .when(appearanceRepository).findByJurorNumberAndAttendanceDate(member.getJurorPool().getJurorNumber(),
+                    now());
+        }
+
+        doReturn(Optional.of(createTrial())).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(anyString(),
+            anyString());
+
+        JurorListRequestDto jurorListRequestDto =
+            createEmpanelledListRequestDto(panelMembers);
+
+        BureauJwtPayload payload = buildPayload();
+        panelService.processEmpanelled(jurorListRequestDto, payload);
+
+        ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
+
+        verify(appearanceRepository, times(panelMembers.size())).saveAndFlush(appearanceArgumentCaptor.capture());
+        verify(panelRepository, times(totalPanelMembers)).saveAndFlush(any());
+        verify(jurorHistoryRepository, times(totalPanelMembers)).save(any());
+
+        for (Panel member : panelMembers) {
+            if (member.getResult().equals(PanelResult.CHALLENGED) || member.getResult().equals(PanelResult.JUROR)) {
+                Optional<Appearance> memberAppearance =
+                    appearanceArgumentCaptor.getAllValues().stream().filter(appearance ->
+                    appearance.getJurorNumber().equals(member.getJurorPool().getJurorNumber())).findFirst();
+                assertThat(memberAppearance.get().getSatOnJury()).isTrue();
+            }
+        }
+    }
+
+    @Test
     void processEmpanelledAsJurorNumberRequestedNotEnough() {
         JurorListRequestDto jurorListRequestDto =
             createEmpanelledListRequestDto(Collections.singletonList(createSinglePanelData()));
@@ -538,7 +584,9 @@ class PanelServiceImplTest {
                     .findByTrialTrialNumberAndTrialCourtLocationLocCode(anyString(), anyString());
 
                 List<String> jurorNumbers = new ArrayList<>();
-                for (int i = 0; i < maxJurors; i++) {
+                for (int i = 0;
+                     i < maxJurors;
+                     i++) {
                     jurorNumbers.add(jurorNumberFormat.formatted(i));
                 }
 
@@ -547,7 +595,9 @@ class PanelServiceImplTest {
                     .retrieveAllJurors(locCode, date);
 
                 List<Appearance> appearanceList = new ArrayList<>();
-                for (int i = 0; i < maxJurors; i++) {
+                for (int i = 0;
+                     i < maxJurors;
+                     i++) {
                     String jurorNumber = jurorNumbers.get(i);
                     Appearance appearance = createAppearance(jurorNumber);
                     doReturn(Optional.of(appearance)).when(appearanceRepository)

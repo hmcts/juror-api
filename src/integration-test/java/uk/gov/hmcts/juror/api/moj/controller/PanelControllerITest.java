@@ -381,6 +381,12 @@ public class PanelControllerITest extends AbstractIntegrationTest {
         assertThat(appearance.getTrialNumber())
             .as("Expected trial number value to be null")
             .isNull();
+
+        if (panelMember.getResult() == PanelResult.CHALLENGED) {
+            assertThat(appearance.getSatOnJury())
+                .as("Sat on Jury")
+                .isTrue();
+        }
     }
 
     @Test
