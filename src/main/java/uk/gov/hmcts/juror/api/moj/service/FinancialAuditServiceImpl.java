@@ -154,6 +154,12 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
             financialAuditDetailsAppearances.getAttendanceDate(),
             financialAuditDetailsAppearances.getAppearanceVersion()
         ).orElseThrow(
-            () -> new MojException.NotFound("Appearance not found for financial audit details appearances", null));
+            () -> new MojException.NotFound(
+                "Appearance not found for financial audit details appearances "
+                + " juror number: " + jurorNumber
+                + " pool number: " + financialAuditDetailsAppearances.getPoolNumber()
+                + " attendance date: " + financialAuditDetailsAppearances.getAttendanceDate()
+                + " appearance version: " + financialAuditDetailsAppearances.getAppearanceVersion()
+                , null));
     }
 }

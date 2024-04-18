@@ -1096,6 +1096,9 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 "User cannot approve expenses over " + BigDecimalUtils.currencyFormat(userLimit),
                 CAN_NOT_APPROVE_MORE_THAN_LIMIT);
         }
+        appearances.forEach(this::approveAppearance);
+        saveAppearancesWithExpenseRateIdUpdate(appearances);
+
         Appearance firstAppearance = appearances.get(0);
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(dto.getJurorNumber(),
@@ -1127,8 +1130,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 totalToApprove
             );
         }
-        appearances.forEach(this::approveAppearance);
-        saveAppearancesWithExpenseRateIdUpdate(appearances);
     }
 
     void approveAppearance(Appearance appearance) {
