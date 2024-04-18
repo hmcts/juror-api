@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
+import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -183,37 +184,36 @@ public class TrialServiceImpl implements TrialService {
         JurorStatus jurorStatus = new JurorStatus();
         jurorStatus.setStatus(IJurorStatus.RESPONDED);
 
-        Trial trial = RepositoryUtils.unboxOptionalRecord(
-            trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, locationCode),
-            trialNumber + ", " + locationCode);
-
         for (Panel panel : juryMembersToBeReturned) {
 
             final String jurorNumber = panel.getJurorPool().getJurorNumber();
 
-            Appearance appearance = getJurorAppearanceForDate(panel.getJurorPool(),
-                returnJuryDto.getAttendanceDate());
+            if (StringUtils.isNotEmpty(returnJuryDto.getCheckIn())) {
+                Appearance appearance = getJurorAppearanceForDate(panel.getJurorPool(),
+                    returnJuryDto.getAttendanceDate());
 
-            // only apply check in time for those that have not been checked in yet
-            if (appearance.getTimeIn() == null && StringUtils.isNotEmpty(returnJuryDto.getCheckIn())) {
-                appearance.setTimeIn(LocalTime.parse(returnJuryDto.getCheckIn()));
-                log.debug("setting time in for juror %s".formatted(jurorNumber));
+                // only apply check in time for those that have not been checked in yet
+                if (appearance.getTimeIn() == null) {
+                    appearance.setAppearanceStage(AppearanceStage.CHECKED_IN);
+                    appearance.setTimeIn(LocalTime.parse(returnJuryDto.getCheckIn()));
+                    log.debug("setting time in for juror %s".formatted(jurorNumber));
+                }
+
+                if (appearance.getTimeOut() == null && StringUtils.isNotEmpty(returnJuryDto.getCheckOut())) {
+                    appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
+                    appearance.setTimeOut(LocalTime.parse(returnJuryDto.getCheckOut()));
+                    log.debug("setting time out for juror %s".formatted(jurorNumber));
+                }
+
+                appearance.setSatOnJury(true);
+                appearanceRepository.saveAndFlush(appearance);
             }
-
-            if (appearance.getTimeOut() == null && StringUtils.isNotEmpty(returnJuryDto.getCheckOut())) {
-                appearance.setTimeOut(LocalTime.parse(returnJuryDto.getCheckOut()));
-                log.debug("setting time out for juror %s".formatted(jurorNumber));
-            }
-
-            appearance.setSatOnJury(true);
 
             panel.setResult(PanelResult.RETURNED);
             panel.setCompleted(true);
             panel.getJurorPool().setStatus(jurorStatus);
-
-            appearanceRepository.saveAndFlush(appearance);
-
             panelRepository.saveAndFlush(panel);
+
             log.debug(String.format("updated juror trial record for juror %s", jurorNumber));
 
             JurorHistoryUtils.saveJurorHistory(HistoryCodeMod.RETURN_PANEL, jurorNumber,
@@ -221,7 +221,7 @@ public class TrialServiceImpl implements TrialService {
 
             log.debug(String.format(String.format("saved history item for juror %s", jurorNumber)));
 
-            if (returnJuryDto.getCompleted()) {
+            if (Boolean.TRUE.equals(returnJuryDto.getCompleted())) {
                 CompleteServiceJurorNumberListDto dto = new CompleteServiceJurorNumberListDto();
                 dto.setJurorNumbers(Collections.singletonList(panel.getJurorPool().getJurorNumber()));
                 dto.setCompletionDate(LocalDate.now());
