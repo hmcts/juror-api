@@ -173,6 +173,7 @@ public class TrialServiceImpl implements TrialService {
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void returnJury(BureauJwtPayload payload, String trialNumber, String locationCode,
                            ReturnJuryDto returnJuryDto) {
+
         List<Panel> panelList =
             panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, locationCode);
 

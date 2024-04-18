@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
+import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -112,8 +113,13 @@ public class TrialController {
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam(name = "trial_number") @PathVariable(name = "trialNumber") String trialNumber,
         @RequestParam(name = "location_code") @PathVariable(name = "locationCode") String locationCode,
-        @RequestBody @Valid ReturnJuryDto returnJuryDto
-    ) {
+        @RequestBody @Valid ReturnJuryDto returnJuryDto) {
+
+        if (StringUtils.isEmpty(returnJuryDto.getCheckIn())) {
+            throw new MojException.BadRequest("Please enter a valid check in time to return jurors",
+                null);
+        }
+
         trialService.returnJury(payload, trialNumber, locationCode, returnJuryDto);
         return ResponseEntity.ok(null);
     }
