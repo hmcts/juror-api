@@ -425,7 +425,7 @@ class PanelServiceImplTest {
     }
 
     @Test
-    void processEmpanlledChallenged() {
+    void processEmpanelledChallenged() {
         final int totalPanelMembers = 10;
         List<Panel> panelMembers = createPanelMembers(totalPanelMembers);
 
@@ -434,8 +434,10 @@ class PanelServiceImplTest {
         }
 
         for (Panel member : panelMembers) {
-            doReturn(member).when(panelRepository).findByTrialTrialNumberAndJurorPoolJurorJurorNumber(
+            doReturn(member).when(panelRepository)
+                .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(
                 "T100000025",
+                "415",
                 member.getJurorPool().getJurorNumber());
             doReturn(Optional.of(createAppearance(member.getJurorPool().getJurorNumber())))
                 .when(appearanceRepository).findByJurorNumberAndAttendanceDate(member.getJurorPool().getJurorNumber(),
