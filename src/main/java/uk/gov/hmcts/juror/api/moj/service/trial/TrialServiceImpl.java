@@ -163,7 +163,7 @@ public class TrialServiceImpl implements TrialService {
             trial.getTrialNumber(),
             trial.getCourtLocation().getLocCode());
 
-        return panelList.size() > 0;
+        return !panelList.isEmpty();
     }
 
     @Override
