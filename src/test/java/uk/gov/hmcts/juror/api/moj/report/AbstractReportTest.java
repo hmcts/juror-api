@@ -964,7 +964,7 @@ class AbstractReportTest {
 
             when(trial.getJudge().getName()).thenReturn("Judge Dredd");
 
-            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(any(), any())).thenReturn(trial);
+            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(any(), any())).thenReturn(Optional.of(trial));
 
             StandardReportRequest request = mock(StandardReportRequest.class);
 
@@ -1052,7 +1052,7 @@ class AbstractReportTest {
 
             doReturn(trial).when(report).getTrial(any(), any());
 
-            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(any(), any())).thenReturn(trial);
+            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(any(), any())).thenReturn(Optional.of(trial));
 
             assertThat(createReport().getTrial(TestConstants.VALID_TRIAL_NUMBER, trialRepository))
                 .isEqualTo(trial);

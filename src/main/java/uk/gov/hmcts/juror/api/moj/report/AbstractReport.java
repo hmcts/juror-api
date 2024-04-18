@@ -365,12 +365,12 @@ public abstract class AbstractReport<T> {
     }
 
     public Trial getTrial(String trialNumber, TrialRepository trialRepository) {
-        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
+        Optional<Trial> trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
             SecurityUtil.getActiveOwner());
-        if (trial == null) {
+        if (trial.isEmpty()) {
             throw new MojException.NotFound("Trial not found", null);
         }
-        return trial;
+        return trial.get();
     }
 
     protected List<LinkedHashMap<String, Object>> getTableDataAsList(List<Tuple> data) {
