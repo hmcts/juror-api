@@ -748,7 +748,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
                 .capacity(60).urgents(0L).allocation(60L).incompletes(0L).build(),
             AutoAssignResponse.StaffCapacityResponse.responseBuilder().login("jbrown").name("John Brown")
                 .capacity(60).urgents(0L).allocation(60L).incompletes(0L).build()
-            );
+        );
     }
 
     @Test
