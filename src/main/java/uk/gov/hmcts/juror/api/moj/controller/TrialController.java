@@ -67,6 +67,15 @@ public class TrialController {
         return ResponseEntity.ok().body(trialSummaryDto);
     }
 
+    @PatchMapping("/edit")
+    @Operation(summary = "Enable the officer to edit a trial")
+    @PreAuthorize(SecurityUtil.COURT_AUTH)
+    public ResponseEntity<TrialSummaryDto> editTrial(
+        @RequestBody @Valid TrialDto trialDto) {
+        TrialSummaryDto trialSummaryDto = trialService.editTrial(trialDto);
+        return ResponseEntity.ok().body(trialSummaryDto);
+    }
+
     @GetMapping("/list")
     @Operation(summary = "Get a list of all trials")
     @PreAuthorize(SecurityUtil.COURT_AUTH)

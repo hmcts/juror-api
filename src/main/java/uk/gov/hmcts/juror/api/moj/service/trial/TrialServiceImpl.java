@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.CompleteServiceJurorNumberListDto;
@@ -42,6 +43,7 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorHistoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -51,6 +53,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_EDIT_COMPLETED_TRIAL;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_EDIT_TRIAL_WITH_JURORS;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.TRIAL_HAS_MEMBERS;
 
 @Slf4j
@@ -106,7 +110,60 @@ public class TrialServiceImpl implements TrialService {
         //TODO confirm
         judge.setLastUsed(LocalDateTime.now());
         judgeRepository.save(judge);
-        return createTrialSummary(trial, courtroom, judge);
+        return createTrialSummary(trial, courtroom, judge, false);
+    }
+
+    @Override
+    @Transactional
+    public TrialSummaryDto editTrial(TrialDto trialDto) {
+
+        // check user has access to the court location
+        BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
+        if (!payload.getStaff().getCourts().contains(trialDto.getCourtLocation())) {
+            throw new MojException.Forbidden("User does not have access to the court location", null);
+        }
+
+        // check the trial exists
+        Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialDto.getCaseNumber(),
+            trialDto.getCourtLocation())
+            .orElseThrow(() -> new MojException.NotFound(String.format("Cannot find trial with "
+                + "number: %s for court location %s", trialDto.getCaseNumber(), trialDto.getCourtLocation()), null));
+
+        // check the trial is not completed
+        if (trial.getTrialEndDate() != null) {
+            throw new MojException.BusinessRuleViolation("Cannot edit a completed trial",
+                CANNOT_EDIT_COMPLETED_TRIAL);
+        }
+
+        // cannot edit a trial with jurors or panel members
+        if (hasJurorsOnTrial(trial)) {
+            throw new MojException.BusinessRuleViolation("Cannot edit a trial with jurors or panel members",
+                CANNOT_EDIT_TRIAL_WITH_JURORS);
+        }
+
+        // update the trial
+        trial.setJudge(judgeRepository.findById(trialDto.getJudgeId())
+            .orElseThrow(() -> new MojException.NotFound("Cannot find judge with id: %s"
+                .formatted(trialDto.getJudgeId()), null)));
+        trial.setDescription(trialDto.getDefendant());
+        trial.setAnonymous(trialDto.isProtectedTrial());
+        trial.setTrialStartDate(trialDto.getStartDate());
+        trial.setTrialType(trialDto.getTrialType());
+        trial.setCourtroom(courtroomRepository.findById(trialDto.getCourtroomId())
+            .orElseThrow(() -> new MojException.NotFound("Cannot find courtroom with id: %s"
+                .formatted(trialDto.getCourtroomId()), null)));
+        trialRepository.save(trial);
+
+        return createTrialSummary(trial, trial.getCourtroom(), trial.getJudge(), false);
+    }
+
+    private boolean hasJurorsOnTrial(Trial trial) {
+
+        List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
+            trial.getTrialNumber(),
+            trial.getCourtLocation().getLocCode());
+
+        return panelList.size() > 0;
     }
 
     @Override
@@ -139,7 +196,7 @@ public class TrialServiceImpl implements TrialService {
             throw new MojException.NotFound("Cannot find trial %s for court location %s.".formatted(trialNo, locCode),
                 null);
         }
-        return createTrialSummary(trial, trial.getCourtroom(), trial.getJudge());
+        return createTrialSummary(trial, trial.getCourtroom(), trial.getJudge(), true);
     }
 
     @Override
@@ -288,7 +345,7 @@ public class TrialServiceImpl implements TrialService {
         return dto;
     }
 
-    private TrialSummaryDto createTrialSummary(Trial trial, Courtroom courtroom, Judge judge) {
+    private TrialSummaryDto createTrialSummary(Trial trial, Courtroom courtroom, Judge judge, boolean panelCheck) {
         TrialSummaryDto dto = new TrialSummaryDto();
         dto.setCourtroomsDto(convertCourtroomEntityToDto(courtroom));
         dto.setJudge(convertJudgeEntityToDto(judge));
@@ -300,15 +357,20 @@ public class TrialServiceImpl implements TrialService {
         dto.setIsActive(trial.getTrialEndDate() == null);
         dto.setTrialEndDate(trial.getTrialEndDate());
 
-        List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
-            trial.getTrialNumber(),
-            trial.getCourtLocation().getLocCode()
-        );
-
-        boolean isJuryEmpanelled = panelList.stream().anyMatch(panel -> panel.getResult() == PanelResult.JUROR);
-        dto.setIsJuryEmpanelled(isJuryEmpanelled);
+        if (panelCheck) {
+            boolean isJuryEmpanelled = isJuryEmpanelledOnTrial(trial);
+            dto.setIsJuryEmpanelled(isJuryEmpanelled);
+        }
 
         return dto;
+    }
+
+    private boolean isJuryEmpanelledOnTrial(Trial trial) {
+        List<Panel> panelList = panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(
+            trial.getTrialNumber(),
+            trial.getCourtLocation().getLocCode());
+
+        return panelList.stream().anyMatch(panel -> panel.getResult() == PanelResult.JUROR);
     }
 
     private JudgeDto convertJudgeEntityToDto(Judge judge) {
