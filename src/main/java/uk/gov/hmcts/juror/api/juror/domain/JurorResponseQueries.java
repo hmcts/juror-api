@@ -28,7 +28,7 @@ public class JurorResponseQueries {
      * @return QueryDSL filter
      */
     public static BooleanExpression backlog() {
-        return jurorResponse.urgent.isFalse().and(jurorResponse.superUrgent.isFalse())
+        return nonUrgent()
             .and(jurorResponse.processingStatus.eq(
                 ProcessingStatus.TODO)).and(jurorResponse.staff.isNull());
     }
@@ -48,6 +48,10 @@ public class JurorResponseQueries {
 
     private static BooleanExpression urgent() {
         return jurorResponse.urgent.isTrue().or(jurorResponse.superUrgent.isTrue());
+    }
+
+    private static BooleanExpression nonUrgent() {
+        return jurorResponse.urgent.isTrue().not().and(jurorResponse.superUrgent.isTrue().not());
     }
 
 
@@ -87,7 +91,7 @@ public class JurorResponseQueries {
         } else {
             return byMemberOfStaffAssigned(staffLogin)
                 .and(byStatus(statuses))
-                .and(urgent().not());
+                .and(nonUrgent());
         }
     }
 
@@ -97,8 +101,7 @@ public class JurorResponseQueries {
      */
 
     private static BooleanExpression backlogUrgent() {
-        return jurorResponse.urgent.isTrue().and(jurorResponse.superUrgent.isNull()
-                                                     .or(jurorResponse.superUrgent.isFalse()));
+        return jurorResponse.urgent.isTrue().and(jurorResponse.superUrgent.isTrue().not());
     }
 
 
@@ -107,7 +110,7 @@ public class JurorResponseQueries {
      * @returns a response - Super Urgent
      */
     private static BooleanExpression backlogSuperUrgent() {
-        return jurorResponse.superUrgent.isTrue().and(jurorResponse.urgent.isFalse());
+        return jurorResponse.superUrgent.isTrue().and(jurorResponse.urgent.isTrue().not());
     }
 
     /**
@@ -148,7 +151,7 @@ public class JurorResponseQueries {
     public static BooleanExpression byAssignedNonUrgent(User staffMember) {
         return jurorResponse.staff.isNotNull()
             .and(notClosed())
-            .and(backlogUrgent().not()).and(backlogSuperUrgent().not())
+            .and(nonUrgent())
             .and(assignedTo(staffMember));
     }
 
