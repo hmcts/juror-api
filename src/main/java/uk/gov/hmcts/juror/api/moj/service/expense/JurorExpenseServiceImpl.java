@@ -304,26 +304,15 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             throw new MojException.NotFound("No appearances found for juror: " + dto.getJurorNumber(), null);
         }
 
-        Appearance firstAppearance = appearances.get(0);
-
-        Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, firstAppearance.getJurorNumber());
-        if (juror == null) {
-            throw new MojException.NotFound("Juror not found: " + firstAppearance.getJurorNumber(), null);
-        }
-
         // update each expense record to assign the financial audit details object
         // and update the is_draft_expense property to false (marking the batch of expenses as ready for approval)
         for (Appearance appearance : appearances) {
             log.debug("Submitting appearance with attendance date: ${} for approval",
                 appearance.getAttendanceDate().toString());
             appearance.setDraftExpense(false);
-
-            if (!appearance.isPayCash() && !juror.hasBankAccount()) {
-                throw new MojException.BusinessRuleViolation("Juror must have bank details",
-                    JUROR_MUST_HAVE_BANK_DETAILS);
-            }
         }
 
+        Appearance firstAppearance = appearances.get(0);
         CourtLocation courtLocation = firstAppearance.getCourtLocation();
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(dto.getJurorNumber(),
