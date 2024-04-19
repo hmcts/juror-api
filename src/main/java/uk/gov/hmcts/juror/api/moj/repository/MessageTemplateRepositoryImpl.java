@@ -39,7 +39,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
     EntityManager entityManager;
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
     private static final QJuror JUROR = QJuror.juror;
-    private static final QPanel JUROR_TRIAL = QPanel.panel;
+    private static final QPanel PANEL = QPanel.panel;
 
     private static final QTrial TRIAL = QTrial.trial;
 
@@ -87,9 +87,9 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
         }
 
         if (search.getTrialNumber() != null || !simpleResponse) {
-            query.leftJoin(JUROR_TRIAL).on(
-                JUROR_POOL.eq(JUROR_TRIAL.jurorPool),
-                JUROR_TRIAL.result.in(PanelResult.JUROR),
+            query.leftJoin(PANEL).on(
+                JUROR.eq(PANEL.juror),
+                PANEL.result.in(PanelResult.JUROR),
                 TRIAL.courtLocation.locCode.eq(locCode),
                 JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR)
             );
