@@ -904,7 +904,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void editTrialHappy() {
+    void editTrialHappy() {
         initialiseHeader(singletonList("416"), "416", COURT_USER);
         TrialDto trialRequest = editTrialRequest();
 
@@ -973,7 +973,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void editTrialWrongCourtUser() {
+    void editTrialWrongCourtUser() {
         initialiseHeader(singletonList("415"), "415", COURT_USER);
         TrialDto trialRequest = editTrialRequest();
 
