@@ -4,10 +4,12 @@ import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Custom Repository definition for the appearance entity.
@@ -33,6 +35,12 @@ public interface IAppearanceRepository {
     Integer countJurorExpenseForApproval(String jurorNumber, String poolNumber);
 
     long countPendingApproval(String locCode, boolean isCash);
+
+    Optional<Appearance> findByJurorNumberAndPoolNumberAndAttendanceDateAndVersion(
+        String jurorNumber,
+        String poolNumber,
+        LocalDate attendanceDate,
+        long appearanceVersion);
 
     List<Tuple> getTrialsWithAttendanceCount(String locationCode, LocalDate attendanceDate);
 }

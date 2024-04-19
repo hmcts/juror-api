@@ -85,6 +85,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -789,13 +790,12 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             applyDefaultExpenses(appearance, getJuror(appearance.getJurorNumber()));
             updateExpenseRatesId(List.of(appearance));
         } else {
-            if (Set.of(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED)
-                .contains(appearance.getAppearanceStage())) {
+            if (Objects.equals(AppearanceStage.EXPENSE_ENTERED, appearance.getAppearanceStage())) {
 
                 FinancialAuditDetails financialAuditDetails =
                     financialAuditService.createFinancialAuditDetail(appearance.getJurorNumber(),
                         appearance.getCourtLocation().getLocCode(),
-                        FinancialAuditDetails.Type.EDIT,
+                        FinancialAuditDetails.Type.FOR_APPROVAL_EDIT,
                         List.of(appearance));
 
                 jurorHistoryService.createExpenseEditHistory(
@@ -892,7 +892,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(jurorNumber,
                 firstAppearance.getCourtLocation().getLocCode(),
-                FinancialAuditDetails.Type.EDIT,
+                type.toEditType(),
                 appearances);
 
         appearances.forEach(appearance -> jurorHistoryService.createExpenseEditHistory(
@@ -1114,18 +1114,25 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 CAN_NOT_APPROVE_MORE_THAN_LIMIT);
         }
         Appearance firstAppearance = appearances.get(0);
+        if (!dto.getCashPayment()) {
+            paymentDataRepository.save(createPaymentData(dto.getJurorNumber(),
+                firstAppearance.getCourtLocation(), appearances));
+        }
+        appearances.forEach(this::approveAppearance);
+        saveAppearancesWithExpenseRateIdUpdate(appearances);
+
+
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(dto.getJurorNumber(),
                 firstAppearance.getCourtLocation().getLocCode(),
-                dto.getCashPayment()
-                    ? FinancialAuditDetails.Type.APPROVED_CASH
-                    : FinancialAuditDetails.Type.APPROVED_BACS,
+                dto.getApprovalType().toApproveType(dto.getCashPayment()),
                 appearances);
 
         LocalDate latestAppearanceDate = appearances.stream()
             .map(Appearance::getAttendanceDate)
             .max(Comparator.naturalOrder())
             .get();
+
         if (dto.getCashPayment()) {
             jurorHistoryService.createExpenseApproveCash(
                 dto.getJurorNumber(),
@@ -1135,9 +1142,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 totalToApprove
             );
         } else {
-            paymentDataRepository.save(createPaymentData(dto.getJurorNumber(),
-                firstAppearance.getCourtLocation(), appearances));
-
             jurorHistoryService.createExpenseApproveBacs(
                 dto.getJurorNumber(),
                 dto.getPoolNumber(),
@@ -1146,8 +1150,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 totalToApprove
             );
         }
-        appearances.forEach(this::approveAppearance);
-        saveAppearancesWithExpenseRateIdUpdate(appearances);
     }
 
     void approveAppearance(Appearance appearance) {
@@ -1164,6 +1166,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         appearance.setMiscAmountPaid(appearance.getMiscAmountDue());
         appearance.setSmartCardAmountPaid(appearance.getSmartCardAmountDue());
     }
+
 
     PaymentData createPaymentData(String jurorNumber, CourtLocation courtLocation,
                                   List<Appearance> appearances) {

@@ -7,12 +7,16 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.envers.AuditReaderFactory;
+import org.hibernate.envers.query.AuditEntity;
 import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
@@ -30,6 +34,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Custom Repository implementation for the Appearance entity.
@@ -273,6 +278,25 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
             .groupBy(APPEARANCE.poolNumber)
             .groupBy(APPEARANCE.appearanceStage)
             .fetchCount();
+    }
+
+    @Override
+    public Optional<Appearance> findByJurorNumberAndPoolNumberAndAttendanceDateAndVersion(String jurorNumber,
+                                                                                          String poolNumber,
+                                                                                          LocalDate attendanceDate,
+                                                                                          long appearanceVersion) {
+        try {
+            return Optional.ofNullable((Appearance) AuditReaderFactory.get(entityManager)
+                .createQuery()
+                .forRevisionsOfEntity(Appearance.class, true, false)
+                .add(AuditEntity.property("jurorNumber").eq(jurorNumber))
+                .add(AuditEntity.property("poolNumber").eq(poolNumber))
+                .add(AuditEntity.property("attendanceDate").eq(attendanceDate))
+                .add(AuditEntity.property("version").eq(appearanceVersion))
+                .getSingleResult());
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
     }
 
     @Override

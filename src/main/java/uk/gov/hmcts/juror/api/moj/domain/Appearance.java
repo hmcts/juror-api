@@ -20,7 +20,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.envers.Audited;
-import org.hibernate.envers.NotAudited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
@@ -56,7 +55,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 public class Appearance implements Serializable {
 
     @Version
-    @NotAudited
+    @Audited
     private Long version;
 
     @Id

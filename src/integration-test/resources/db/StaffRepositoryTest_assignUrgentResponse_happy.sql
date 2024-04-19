@@ -28,12 +28,12 @@ INSERT INTO juror_mod.juror (juror_number, poll_number, title, last_name, first_
                              login_attempts, is_locked)
 VALUES ('123251234', '21112', 'Mr', 'Hoola', 'Gypsey', '1984-07-24 00:00:00', '27 Knutson Trail', 'Scotland',
         'Aberdeen', 'United Kingdom', NULL, 'AB21 3RY', '44(703)209-6991', '44(109)549-5621', NULL, false, NULL, NULL,
-        NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL,
+        NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, 'NOT_CHECKED',
         '2024-03-13 00:53:36', NULL, '44(145)525-2391', 'jhoola@ed.gov', 0, 0, '2024-03-13 00:53:36', NULL, NULL, NULL,
         NULL, NULL, NULL, NULL, NULL, false, NULL, 0, false),
        ('209092530', '21112', 'Dr', 'Castillo', 'Jane', '1984-07-24 00:00:00', '4 Knutson Trail', 'Scotland',
         'Aberdeen', 'United Kingdom', NULL, 'AB21 3RY', '44(703)209-6993', '44(109)549-5625', NULL, false, NULL, NULL,
-        NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL,
+        NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, 'NOT_CHECKED',
         '2024-03-13 00:53:37', NULL, '44(145)525-2390', 'jcastillo0@ed.gov', 0, 0, '2024-03-13 00:53:37', NULL, NULL,
         NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 0, false);
 INSERT INTO juror_mod.juror_pool (juror_number, pool_number, "owner", user_edtq, is_active, status, times_sel, def_date,

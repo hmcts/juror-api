@@ -2,12 +2,12 @@ package uk.gov.hmcts.juror.api.moj.domain.authentication;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
@@ -16,18 +16,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class UserDetailsDto {
-    @NotBlank
-    private String username;
-    @NotBlank
-    private String email;
-    @NotBlank
-    private String name;
+public class UserDetailsDto extends UserDetailsSimpleDto {
     @NotNull
     private Boolean isActive;
     private LocalDateTime lastSignIn;
@@ -43,9 +38,7 @@ public class UserDetailsDto {
     }
 
     public UserDetailsDto(User user, List<UserCourtDto> courts) {
-        this.username = user.getUsername();
-        this.email = user.getEmail();
-        this.name = user.getName();
+        super(user);
         this.isActive = user.isActive();
         this.lastSignIn = user.getLastLoggedIn();
         this.userType = user.getUserType();

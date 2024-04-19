@@ -21,6 +21,8 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -42,6 +44,7 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
 
     protected AbstractControllerIntegrationTest(HttpMethod method, TestRestTemplate template,
                                                 HttpStatus validStatus) {
+        super();
         this.method = method;
         this.template = template;
         this.validStatus = validStatus;
@@ -50,6 +53,7 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
 
     protected AbstractControllerIntegrationTest(HttpMethod method, TestRestTemplate template,
                                                 HttpStatus validStatus, Type returnType) {
+        super();
         this.method = method;
         this.template = template;
         this.validStatus = validStatus;
@@ -57,6 +61,7 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
     }
 
     @BeforeEach
+    @Override
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -75,12 +80,18 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
         private String jwt = getValidJwt();
         private String url = getValidUrl();
         private P payload = getValidPayload();
+        Map<String, String[]> queryParams = new HashMap<>();
+
+        public ControllerTest<P1, R1> addQueryParam(String name, String... value) {
+            queryParams.put(name, value);
+            return this;
+        }
 
         public ControllerTestResponseString triggerInvalid() {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
             return new ControllerTestResponseString(template.exchange(
                 new RequestEntity<>(payload, httpHeaders, method,
-                    URI.create(url)),
+                    URI.create(getUrlWithQueryParams())),
                 String.class));
         }
 
@@ -88,9 +99,26 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
             return new ControllerTestResponse<>(template.exchange(
                 new RequestEntity<>(payload, httpHeaders, method,
-                    URI.create(url)),
+                    URI.create(getUrlWithQueryParams())),
                 ParameterizedTypeReference.forType(returnType)));
         }
+
+
+        private String getUrlWithQueryParams() {
+            if (queryParams.isEmpty()) {
+                return url;
+            }
+            StringBuilder urlBuilder = new StringBuilder(url);
+            urlBuilder.append('?');
+            queryParams.forEach((key, value) -> {
+                for (String v : value) {
+                    urlBuilder.append(key).append('=').append(v).append('&');
+                }
+            });
+
+            return urlBuilder.substring(0, urlBuilder.length() - 1);
+        }
+
 
 
         @Getter

@@ -94,6 +94,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -2621,7 +2622,7 @@ class JurorExpenseServiceTest {
             doReturn(new BigDecimal("2.01")).when(appearance2).getTotalChanged();
             doReturn(true).when(approvalType).isApplicable(appearance3);
             doReturn(new BigDecimal("3.01")).when(appearance3).getTotalChanged();
-
+            doReturn(FinancialAuditDetails.Type.APPROVED_BACS).when(approvalType).toApproveType(anyBoolean());
             doReturn(LocalDate.of(2023, 1, 2)).when(appearance1).getAttendanceDate();
             doReturn(LocalDate.of(2023, 1, 1)).when(appearance3).getAttendanceDate();
 
@@ -2723,7 +2724,7 @@ class JurorExpenseServiceTest {
             doReturn(new BigDecimal("2.01")).when(appearance2).getTotalChanged();
             doReturn(true).when(approvalType).isApplicable(appearance3);
             doReturn(new BigDecimal("3.01")).when(appearance3).getTotalChanged();
-
+            doReturn(FinancialAuditDetails.Type.APPROVED_CASH).when(approvalType).toApproveType(anyBoolean());
             doReturn(LocalDate.of(2023, 1, 2)).when(appearance1).getAttendanceDate();
             doReturn(LocalDate.of(2023, 1, 1)).when(appearance3).getAttendanceDate();
 
@@ -4063,6 +4064,7 @@ class JurorExpenseServiceTest {
             doReturn(true).when(expenseType).isApplicable(appearance1);
             doReturn(true).when(expenseType).isApplicable(appearance2);
             doReturn(true).when(expenseType).isApplicable(appearance3);
+            doReturn(FinancialAuditDetails.Type.FOR_APPROVAL_EDIT).when(expenseType).toEditType();
 
             doReturn(null).when(jurorExpenseService).updateExpenseInternal(any(), any());
 
@@ -4079,7 +4081,7 @@ class JurorExpenseServiceTest {
             verify(financialAuditService, times(1))
                 .createFinancialAuditDetail(TestConstants.VALID_JUROR_NUMBER,
                     TestConstants.VALID_COURT_LOCATION,
-                    FinancialAuditDetails.Type.EDIT,
+                    FinancialAuditDetails.Type.FOR_APPROVAL_EDIT,
                     List.of(appearance1, appearance2, appearance3));
 
             verify(jurorExpenseService, times(1))

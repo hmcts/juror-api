@@ -102,6 +102,8 @@ public class FinancialAuditServiceImplTest {
             FinancialAuditDetails auditDetails = FinancialAuditDetails.builder()
                 .id(321L)
                 .createdBy(user)
+                .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                .locCode(TestConstants.VALID_COURT_LOCATION)
                 .createdOn(LocalDateTime.now(clock))
                 .type(type)
                 .jurorRevision(1L)
@@ -112,16 +114,19 @@ public class FinancialAuditServiceImplTest {
             CourtLocation courtLocation = mock(CourtLocation.class);
 
             Appearance appearance1 = mock(Appearance.class);
+            when(appearance1.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
             when(appearance1.getJurorNumber()).thenReturn(TestConstants.VALID_JUROR_NUMBER);
             when(appearance1.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 1));
             when(appearance1.getCourtLocation()).thenReturn(courtLocation);
             when(appearance1.getVersion()).thenReturn(1L);
             Appearance appearance2 = mock(Appearance.class);
+            when(appearance2.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
             when(appearance2.getJurorNumber()).thenReturn(TestConstants.VALID_JUROR_NUMBER);
             when(appearance2.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 2));
             when(appearance2.getCourtLocation()).thenReturn(courtLocation);
             when(appearance2.getVersion()).thenReturn(12L);
             Appearance appearance3 = mock(Appearance.class);
+            when(appearance3.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
             when(appearance3.getJurorNumber()).thenReturn(TestConstants.VALID_JUROR_NUMBER);
             when(appearance3.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 3));
             when(appearance3.getCourtLocation()).thenReturn(courtLocation);
@@ -143,23 +148,20 @@ public class FinancialAuditServiceImplTest {
                 List.of(
                     new FinancialAuditDetailsAppearances(
                        321L,
-                        TestConstants.VALID_JUROR_NUMBER,
+                        TestConstants.VALID_POOL_NUMBER,
                         LocalDate.of(2023, 1, 1),
-                        courtLocation,
                         1L
                     ),
                     new FinancialAuditDetailsAppearances(
                         321L,
-                        TestConstants.VALID_JUROR_NUMBER,
+                        TestConstants.VALID_POOL_NUMBER,
                         LocalDate.of(2023, 1, 2),
-                        courtLocation,
                         12L
                     ),
                     new FinancialAuditDetailsAppearances(
                         321L,
-                        TestConstants.VALID_JUROR_NUMBER,
+                        TestConstants.VALID_POOL_NUMBER,
                         LocalDate.of(2023, 1, 3),
-                        courtLocation,
                         123L
                     )
                 )

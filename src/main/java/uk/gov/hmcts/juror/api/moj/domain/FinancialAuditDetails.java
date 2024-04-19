@@ -9,16 +9,22 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "financial_audit_details", schema = "juror_mod")
@@ -46,8 +52,14 @@ public class FinancialAuditDetails implements Serializable {
     @JoinColumn(name = "created_by", referencedColumnName = "username")
     private User createdBy;
 
+    @Column(name = "juror_number")
+    private String jurorNumber;
+
     @Column(name = "juror_revision")
     private Long jurorRevision;
+
+    @Column(name = "loc_code")
+    private String locCode;
 
     @Column(name = "court_location_revision")
     private Long courtLocationRevision;
@@ -55,6 +67,11 @@ public class FinancialAuditDetails implements Serializable {
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
     private Type type;
+
+
+    @OneToMany
+    @JoinColumn(name = "financial_audit_id", referencedColumnName = "id")
+    private List<FinancialAuditDetailsAppearances> financialAuditDetailsAppearances;
 
 
     /**
@@ -69,10 +86,33 @@ public class FinancialAuditDetails implements Serializable {
     }
 
 
+    @Getter
     public enum Type {
-        FOR_APPROVAL,
-        APPROVED_CASH,
-        APPROVED_BACS,
-        EDIT
+        FOR_APPROVAL(GenericType.FOR_APPROVAL),
+        APPROVED_CASH(GenericType.APPROVED),
+        APPROVED_BACS(GenericType.APPROVED),
+        REAPPROVED_CASH(GenericType.APPROVED),
+        REAPPROVED_BACS(GenericType.APPROVED),
+        FOR_APPROVAL_EDIT(GenericType.EDIT),
+        APPROVED_EDIT(GenericType.EDIT),
+        REAPPROVED_EDIT(GenericType.EDIT);
+
+        private final GenericType genericType;
+
+        Type(GenericType genericType) {
+            this.genericType = genericType;
+        }
+
+        public enum GenericType {
+            FOR_APPROVAL,
+            APPROVED,
+            EDIT;
+
+            public Set<Type> getTypes() {
+                return Arrays.stream(Type.values())
+                    .filter(type -> type.getGenericType().equals(this))
+                    .collect(Collectors.toSet());
+            }
+        }
     }
 }
