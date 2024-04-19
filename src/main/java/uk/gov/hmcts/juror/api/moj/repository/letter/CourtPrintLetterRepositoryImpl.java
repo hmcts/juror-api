@@ -68,6 +68,9 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
 
         orderResultsBasedOnLetterType(query, courtLetterType);
 
+
+        // multiple records can be expected if there are multiple history events for a juror - the data is sorted by
+        // history date descending so fetching first will retrieve the latest record.
         return query.fetchFirst();
     }
 
@@ -151,8 +154,8 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                 .where(PANEL.trial.trialNumber.eq(trialNumber))
                 .orderBy(PANEL.trial.trialNumber.desc());
             case CERTIFICATE_OF_ATTENDANCE ->
-                query.join(APPEARANCE).on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber)
-                        .and(JUROR_POOL.pool.poolNumber.eq(APPEARANCE.poolNumber)))
+                query.join(APPEARANCE).on(JUROR.jurorNumber.eq(APPEARANCE.jurorNumber)
+                        .and(COURT_LOCATION.eq(APPEARANCE.courtLocation)))
                     .where(APPEARANCE.noShow.isFalse().or(APPEARANCE.noShow.isNull()))
                     .where(APPEARANCE.attendanceType.ne(AttendanceType.ABSENT).or(APPEARANCE.attendanceType.isNull()))
                     .orderBy(APPEARANCE.attendanceDate.desc());

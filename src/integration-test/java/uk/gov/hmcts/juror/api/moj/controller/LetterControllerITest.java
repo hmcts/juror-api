@@ -4940,7 +4940,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     assertThat(response.getStatusCode())
                         .isEqualTo(BAD_REQUEST);
                     assertThat(response.getBody()).isNotNull();
-                    assertThat(response.getBody()).contains("Cannot generate letter date for juror(s):\\n123456789");
+                    assertThat(response.getBody()).contains("Cannot generate letter data for juror(s):\\n123456789");
                 }
 
                 @Test
@@ -7068,7 +7068,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 String.class);
 
             assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
-            assertThat(response.getBody()).contains("Cannot generate letter date for juror(s):\\n555555563");
+            assertThat(response.getBody()).contains("Cannot generate letter data for juror(s):\\n555555563");
         }
 
         void verifyDataEnglish(PrintLetterDataResponseDto response,

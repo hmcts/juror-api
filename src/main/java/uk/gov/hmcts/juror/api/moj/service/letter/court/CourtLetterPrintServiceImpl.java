@@ -151,7 +151,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
         }
 
         if (letters.isEmpty()) {
-            throw new MojException.BadRequest("Cannot generate letter date for juror(s):\n"
+            throw new MojException.BadRequest("Cannot generate letter data for juror(s):\n"
                 + StringUtils.collectionToDelimitedString(printLettersRequestDto.getJurorNumbers(), "\n"), null);
         }
 
