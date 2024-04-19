@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.QWelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
@@ -148,6 +149,12 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             }
             letters.add(dto);
         }
+
+        if (letters.isEmpty()) {
+            throw new MojException.BadRequest("Cannot generate letter date for juror(s):\n"
+                + StringUtils.collectionToDelimitedString(printLettersRequestDto.getJurorNumbers(), "\n"), null);
+        }
+
         return letters;
     }
 

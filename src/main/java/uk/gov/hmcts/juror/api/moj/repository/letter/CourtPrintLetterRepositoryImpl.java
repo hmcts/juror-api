@@ -154,6 +154,7 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                 query.join(APPEARANCE).on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber)
                         .and(JUROR_POOL.pool.poolNumber.eq(APPEARANCE.poolNumber)))
                     .where(APPEARANCE.noShow.isFalse().or(APPEARANCE.noShow.isNull()))
+                    .where(APPEARANCE.attendanceType.ne(AttendanceType.ABSENT).or(APPEARANCE.attendanceType.isNull()))
                     .orderBy(APPEARANCE.attendanceDate.desc());
 
             default -> throw new MojException.NotImplemented("letter type not implemented", null);

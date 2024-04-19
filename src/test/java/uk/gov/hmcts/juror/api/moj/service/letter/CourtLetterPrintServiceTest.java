@@ -1945,7 +1945,6 @@ public class CourtLetterPrintServiceTest {
             assertThat(dto.getAttendanceDataList()).isNotNull();
 
 
-
             ArgumentCaptor<JurorHistory> jurorHistoryArgumentCaptor = ArgumentCaptor.forClass(JurorHistory.class);
 
             verify(systemParameterRepositoryMod, times(1)).findById(103);
@@ -2120,6 +2119,7 @@ public class CourtLetterPrintServiceTest {
             }
         }
 
+
         Tuple createCertificateOfAttendanceDataEnglish(BigDecimal lossOfEarnings, BigDecimal childCare,
                                                        BigDecimal miscAmount, Boolean nonAttendance,
                                                        String courtLocation) {
@@ -2141,6 +2141,7 @@ public class CourtLetterPrintServiceTest {
             when(data.get(APPEARANCE.nonAttendanceDay)).thenReturn(nonAttendance);
             return data;
         }
+
     }
 }
 
