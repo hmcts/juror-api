@@ -39,6 +39,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsOnTrialResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
@@ -59,14 +60,15 @@ public class JurorManagementController {
     private final JurorAppearanceService jurorAppearanceService;
 
     @GetMapping(path = "/appearance")
-    @Operation(description = "Retrieve juror appearance records for a given date and location ")
+    @Operation(description = "Retrieve juror's with an appearance record for a given date and location. "
+        + "Juror status is filtered by providing a status group (list of valid statuses for each request")
     public ResponseEntity<JurorAppearanceResponseDto> getAppearanceRecords(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam @CourtLocationCode @Valid String locationCode,
         @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid
-        LocalDate attendanceDate) {
+        LocalDate attendanceDate, @RequestParam @Valid JurorStatusGroup group) {
         final JurorAppearanceResponseDto jurorAppearanceResponseDto = jurorAppearanceService
-            .getAppearanceRecords(locationCode, attendanceDate, payload);
+            .getAppearanceRecords(locationCode, attendanceDate, payload, group);
         return ResponseEntity.ok(jurorAppearanceResponseDto);
     }
 

@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
@@ -54,9 +55,9 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
 
     @Override
     public List<JurorAppearanceResponseDto.JurorAppearanceResponseData> getAppearanceRecords(
-        String locCode, LocalDate date, String jurorNumber) {
+        String locCode, LocalDate date, String jurorNumber, JurorStatusGroup group) {
 
-        List<Integer> jurorStatuses = Arrays.asList(IJurorStatus.RESPONDED, IJurorStatus.PANEL, IJurorStatus.JUROR);
+        List<Integer> jurorStatuses = group.getStatusList();
         JPAQuery<Tuple> query = sqlFetchAppearanceRecords(locCode, date, jurorStatuses);
 
         // check if we need to just return one juror's record

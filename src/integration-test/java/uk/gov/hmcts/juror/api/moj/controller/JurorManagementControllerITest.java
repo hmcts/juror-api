@@ -34,6 +34,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.UpdateAttendanceStatus;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -321,17 +322,81 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET getAppearanceRecords() - happy path")
+    @DisplayName("GET getAppearanceRecords() - all AT_COURT statuses, happy path")
     @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAppearanceTests.sql"})
-    void testGetAppearanceHappyPath() {
+    void testGetAppearanceAtCourtHappyPath() {
         String localDate = now().minusDays(2).toString().formatted("YYYY-mm-dd");
 
         ResponseEntity<JurorAppearanceResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
-                    URI.create("/api/v1/moj/juror-management/appearance?locationCode=415&attendanceDate=" + localDate)),
+                    URI.create("/api/v1/moj/juror-management/appearance?locationCode=415&attendanceDate=" + localDate
+                        + "&group=" + JurorStatusGroup.AT_COURT)),
                 JurorAppearanceResponseDto.class);
 
         validateAppearanceRecordMultiple(response);
+    }
+
+
+    @Test
+    @DisplayName("GET getAppearanceRecords() - IN_WAITING statuses, happy path")
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAppearanceTests.sql"})
+    void testGetAppearanceInWaitingHappyPath() {
+        String localDate = now().minusDays(2).toString().formatted("YYYY-mm-dd");
+
+        ResponseEntity<JurorAppearanceResponseDto> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
+                    URI.create("/api/v1/moj/juror-management/appearance?locationCode=415&attendanceDate=" + localDate
+                        + "&group=" + JurorStatusGroup.IN_WAITING)),
+                JurorAppearanceResponseDto.class);
+
+
+        assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+        JurorAppearanceResponseDto jurorAppearanceResponseDto = response.getBody();
+        assert jurorAppearanceResponseDto != null;
+        assertThat(jurorAppearanceResponseDto.getData()).as("Expect 2 records to be returned")
+            .hasSize(2);
+
+        JurorAppearanceResponseDto.JurorAppearanceResponseData jurorAppearanceResponseData =
+            jurorAppearanceResponseDto.getData().get(0);
+        assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR1);
+        assertThat(jurorAppearanceResponseData.getFirstName()).isEqualTo("TEST");
+        assertThat(jurorAppearanceResponseData.getLastName()).isEqualTo("LASTNAME");
+        assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.RESPONDED);
+        assertThat(jurorAppearanceResponseData.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
+        assertThat(jurorAppearanceResponseData.getCheckOutTime()).isNull();
+
+        jurorAppearanceResponseData =
+            jurorAppearanceResponseDto.getData().get(1);
+        assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR3);
+        assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.PANEL);
+    }
+
+    @Test
+    @DisplayName("GET getAppearanceRecords() - all ON_TRIAL statuses, happy path")
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAppearanceTests.sql"})
+    void testGetAppearanceOnTrialHappyPath() {
+        String localDate = now().minusDays(2).toString().formatted("YYYY-mm-dd");
+
+        ResponseEntity<JurorAppearanceResponseDto> response =
+            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
+                    URI.create("/api/v1/moj/juror-management/appearance?locationCode=415&attendanceDate=" + localDate
+                        + "&group=" + JurorStatusGroup.ON_TRIAL)),
+                JurorAppearanceResponseDto.class);
+
+
+        assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
+
+        JurorAppearanceResponseDto jurorAppearanceResponseDto = response.getBody();
+        assert jurorAppearanceResponseDto != null;
+        assertThat(jurorAppearanceResponseDto.getData()).as("Expect 1 record to be returned")
+            .hasSize(1);
+
+        JurorAppearanceResponseDto.JurorAppearanceResponseData jurorAppearanceResponseData =
+            jurorAppearanceResponseDto.getData().get(0);
+
+        assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR2);
+        assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.JUROR);
     }
 
     @Test
@@ -339,7 +404,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     void testGetAppearanceUnhappyPath() {
         ResponseEntity<JurorAppearanceResponseDto> response =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
-                    URI.create("/api/v1/moj/juror-management/appearance?locationCode=415&attendanceDate=2023-10-08")),
+                    URI.create("/api/v1/moj/juror-management/appearance?locationCode=415&attendanceDate=2023-10-08"
+                        + "&group=" + JurorStatusGroup.AT_COURT)),
                 JurorAppearanceResponseDto.class);
 
         assertThat(response.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);

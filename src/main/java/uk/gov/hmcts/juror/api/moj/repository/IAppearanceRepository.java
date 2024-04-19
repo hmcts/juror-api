@@ -6,6 +6,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAtt
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.Optional;
 public interface IAppearanceRepository {
 
     List<JurorAppearanceResponseDto.JurorAppearanceResponseData> getAppearanceRecords(
-        String locCode, LocalDate date, String jurorNumber);
+        String locCode, LocalDate date, String jurorNumber, JurorStatusGroup group);
 
     List<Tuple> retrieveAttendanceDetails(RetrieveAttendanceDetailsDto request);
 
