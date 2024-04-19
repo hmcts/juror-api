@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.juror.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -37,8 +38,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Audited
-@EqualsAndHashCode(exclude = {"courtRegion"})
-@ToString
+@ToString(exclude = "assemblyRoom")
+@EqualsAndHashCode(exclude = {"courtRegion","assemblyRoom"})
 @Table(name = "court_location", schema = "juror_mod")
 @SuppressWarnings("PMD.TooManyFields")
 public class CourtLocation implements Serializable {
@@ -170,7 +171,7 @@ public class CourtLocation implements Serializable {
     @NotAudited
     private String signatory;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assembly_room", referencedColumnName = "id")
     @NotAudited
     private Courtroom assemblyRoom;
