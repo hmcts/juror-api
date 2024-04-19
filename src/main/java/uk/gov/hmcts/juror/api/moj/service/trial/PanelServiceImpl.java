@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
+import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -38,6 +39,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_MUST_BE_CHECKED_IN;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NO_PANEL_EXIST;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_AVAILABLE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_LIMITS;
@@ -261,9 +263,14 @@ public class PanelServiceImpl implements PanelService {
                 JurorHistoryUtils.saveJurorHistory(HistoryCodeMod.RETURN_PANEL, jurorNumber,
                     jurorPool.getPoolNumber(), payload, jurorHistoryRepository);
 
-                Appearance appearance = RepositoryUtils.unboxOptionalRecord(
-                    appearanceRepository.findByJurorNumberAndAttendanceDate(jurorNumber, dto.getAttendanceDate()),
-                    jurorNumber);
+                // An appearance record MUST exist for the juror and attendance day
+                // - they must be checked in on the day that's being processed
+                Appearance appearance =
+                    appearanceRepository.findByJurorNumberAndAttendanceDateAndAppearanceStage(jurorNumber,
+                            dto.getAttendanceDate(), AppearanceStage.CHECKED_IN)
+                        .orElseThrow(() ->
+                            new MojException.BusinessRuleViolation(String.format("No appearance record found for "
+                                + "juror %s on %s", jurorNumber, dto.getAttendanceDate()), JUROR_MUST_BE_CHECKED_IN));
                 appearance.setPoolNumber(panelMember.getJurorPool().getPoolNumber());
 
                 if (panelMember.getResult() == PanelResult.CHALLENGED) {
