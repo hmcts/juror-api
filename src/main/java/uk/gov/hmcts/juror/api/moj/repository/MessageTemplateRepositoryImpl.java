@@ -82,7 +82,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
             .from(JUROR)
             .join(JUROR_POOL)
             .on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
-        if (isCourt) {
+        if (isCourt || !locCode.equals("400")) {
             query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));
         }
 
