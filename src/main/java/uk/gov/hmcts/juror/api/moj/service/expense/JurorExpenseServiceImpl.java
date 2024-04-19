@@ -96,7 +96,6 @@ import java.util.stream.Collectors;
 import static uk.gov.hmcts.juror.api.JurorDigitalApplication.PAGE_SIZE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CAN_NOT_APPROVE_MORE_THAN_LIMIT;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO;
-import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_MUST_HAVE_BANK_DETAILS;
 import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
 
 @Service

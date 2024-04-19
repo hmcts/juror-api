@@ -85,7 +85,6 @@ public class MojException extends RuntimeException {
             TRIAL_HAS_ENDED,
             NO_PANEL_EXIST,
             APPEARANCE_MUST_HAVE_NO_APPROVED_EXPENSES,
-            JUROR_MUST_HAVE_BANK_DETAILS,
             JUROR_MUST_BE_CHECKED_IN,
             CANNOT_EDIT_TRIAL_WITH_JURORS,
             CANNOT_EDIT_COMPLETED_TRIAL
