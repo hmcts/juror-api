@@ -554,7 +554,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
                     URI.create(String.format(URL_TRIAL_SUMMARY, "T100000023", "415"))), String.class);
 
             assertThat(responseEntity.getStatusCode())
-                .as("Bureau users are forbidden from getting trial summary").isEqualTo(FORBIDDEN);
+                .as("Officer forbidden to view trial details of courts not member of").isEqualTo(FORBIDDEN);
 
             JSONObject exceptionDetails = getExceptionDetails(responseEntity);
             assertThat(exceptionDetails.getString("error")).isEqualTo("Forbidden");
