@@ -60,5 +60,10 @@ public class Panel implements Serializable {
 
     @Column(name = "completed")
     private boolean completed;
+
+    public String getJurorNumber() {
+        return this.getJuror().getJurorNumber();
+    }
+
 }
 
