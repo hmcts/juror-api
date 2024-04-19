@@ -1,5 +1,5 @@
 ALTER TABLE juror_mod.appearance_audit
-    ADD COLUMN version bigint default 1 not null;
+    ADD COLUMN version bigint default 1;
 
 
 UPDATE juror_mod.juror
@@ -38,6 +38,3 @@ ALTER TABLE juror_mod.financial_audit_details_appearances
     ADD COLUMN pool_number varchar(9) NOT NULL default 'ERROR';
 ALTER TABLE juror_mod.financial_audit_details_appearances
     ADD CONSTRAINT financial_audit_details_appearances_pkey PRIMARY KEY (financial_audit_id, attendance_date, appearance_version);
-
-ALTER TABLE juror_mod.appearance_audit
-    ALTER COLUMN version drop not null;
