@@ -121,7 +121,7 @@ public class UserServiceModImpl implements UserService {
         User user = findUserByUsername(username);
         courts.forEach(string -> user.addCourt(getCourtLocation(string)));
         //TEMP until AD move
-        if(!courts.isEmpty()) {
+        if (!courts.isEmpty()) {
             user.setOwner(courts.get(0));
         }
         userRepository.save(user);
