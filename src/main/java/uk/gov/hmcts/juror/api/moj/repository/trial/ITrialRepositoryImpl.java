@@ -9,7 +9,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.Querydsl;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
@@ -26,7 +26,7 @@ public class ITrialRepositoryImpl implements ITrialRepository {
     EntityManager entityManager;
 
     private static final QTrial TRIAL = QTrial.trial;
-    private static final QJurorTrial JUROR_TRIAL = QJurorTrial.jurorTrial;
+    private static final QPanel PANEL = QPanel.panel;
 
     private JPQLQuery<Trial> buildCommonQuery(String trialNumber, List<String> locCode, boolean isActiveFilter) {
         JPQLQuery<Trial> query = new JPAQuery<>(entityManager);
@@ -77,13 +77,13 @@ public class ITrialRepositoryImpl implements ITrialRepository {
                 TRIAL.trialType.stringValue(),
                 TRIAL.courtroom.description,
                 TRIAL.judge.name,
-                JUROR_TRIAL.juror.count())
+                PANEL.jurorPool.count())
             .from(TRIAL)
-            .join(JUROR_TRIAL)
-            .on(TRIAL.trialNumber.eq(JUROR_TRIAL.trialNumber))
+            .join(PANEL)
+            .on(TRIAL.eq(PANEL.trial))
             .where(TRIAL.trialEndDate.isNull().and(TRIAL.courtLocation.locCode.eq(locationCode)))
             .where(TRIAL.trialStartDate.loe(attendanceDate))
-            .where(JUROR_TRIAL.result.equalsIgnoreCase(PanelResult.JUROR.getCode()))
+            .where(PANEL.result.eq(PanelResult.JUROR))
             .groupBy(TRIAL.trialNumber, TRIAL.description, TRIAL.trialType.stringValue(), TRIAL.courtroom.description,
                 TRIAL.judge.name)
             .fetch();
