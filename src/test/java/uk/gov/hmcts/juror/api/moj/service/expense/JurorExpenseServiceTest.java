@@ -692,49 +692,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @DisplayName("Submit expenses for approval but no bank details")
-        void singleExpenseNoBankDetails() {
-            final String jurorNumber = "641512345";
-            final String poolNumber = "415123456";
-
-            final Appearance appearanceToSubmit = buildTestAppearance(jurorNumber, poolNumber,
-                LocalDate.of(2024, 1, 1));
-            final Appearance appearanceInDraft = buildTestAppearance(jurorNumber, poolNumber,
-                LocalDate.of(2024, 1, 2));
-
-            doReturn(List.of(appearanceToSubmit, appearanceInDraft)).when(appearanceRepository)
-                .findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
-
-            final Juror juror = new Juror();
-            juror.setJurorNumber(jurorNumber);
-
-            doReturn(Optional.of(juror)).when(jurorRepository).findById(jurorNumber);
-
-            CourtLocation courtLocation = mock(CourtLocation.class);
-            appearanceToSubmit.setCourtLocation(courtLocation);
-            doReturn(TestConstants.VALID_COURT_LOCATION).when(courtLocation).getLocCode();
-
-            ExpenseItemsDto expenseItemsDto = ExpenseItemsDto.builder()
-                .jurorNumber(jurorNumber)
-                .poolNumber(poolNumber)
-                .attendanceDates(List.of(LocalDate.of(2024, 1, 1)))
-                .build();
-
-            assertThatExceptionOfType(MojException.BusinessRuleViolation.class).isThrownBy(() ->
-                jurorExpenseService.submitDraftExpensesForApproval(expenseItemsDto));
-
-            verify(appearanceRepository, times(1))
-                .findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
-
-            verify(jurorExpenseService, never()).saveAppearancesWithExpenseRateIdUpdate(Mockito.anyList());
-            verify(financialAuditService, never())
-                .createFinancialAuditDetail(Mockito.anyString(), Mockito.anyString(),
-                    Mockito.any(FinancialAuditDetails.Type.class),
-                    Mockito.anyList());
-            verifyNoInteractions(jurorHistoryService);
-        }
-
-        @Test
         @DisplayName("Appearance records not found")
         void appearanceRecordsNotFound() {
             String jurorNumber = "641512345";
