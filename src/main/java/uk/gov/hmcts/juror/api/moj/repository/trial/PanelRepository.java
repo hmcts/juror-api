@@ -20,6 +20,7 @@ public interface PanelRepository extends IPanelRepository, JpaRepository<Panel, 
 
     boolean existsByTrialTrialNumberAndTrialCourtLocationLocCode(String trialNumber, String locCode);
 
+    @SuppressWarnings("PMD.UseObjectForClearerAPI")
     boolean existsByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolPoolPoolNumberAndJurorPoolJurorJurorNumber(
         String trialNumber, String locCode, String jurorNumber, String poolNumber);
 
