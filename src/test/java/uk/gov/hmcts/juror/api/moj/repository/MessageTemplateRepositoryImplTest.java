@@ -60,7 +60,7 @@ class MessageTemplateRepositoryImplTest {
     private JPAQueryFactory queryFactory;
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
     private static final QJuror JUROR = QJuror.juror;
-    private static final QPanel JUROR_TRIAL = QPanel.panel;
+    private static final QPanel PANEL = QPanel.panel;
 
     private static final QTrial TRIAL = QTrial.trial;
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
@@ -203,15 +203,15 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1)).join(JUROR_POOL);
         verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
 
-        verify(jpaQuery, times(1)).leftJoin(JUROR_TRIAL);
+        verify(jpaQuery, times(1)).leftJoin(PANEL);
         verify(jpaQuery, times(1)).on(
-            JUROR_POOL.eq(JUROR_TRIAL.jurorPool),
-            JUROR_TRIAL.result.in(PanelResult.JUROR),
+            JUROR_POOL.juror.eq(PANEL.juror),
+            PANEL.result.in(PanelResult.JUROR),
             TRIAL.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION),
             JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR));
 
 
-        verify(jpaQuery, times(1)).leftJoin(JUROR_TRIAL);
+        verify(jpaQuery, times(1)).leftJoin(PANEL);
 
 
         verify(jpaQuery, times(1)).limit(4L);
@@ -360,15 +360,15 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
         verify(jpaQuery, times(1)).where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
 
-        verify(jpaQuery, times(1)).leftJoin(JUROR_TRIAL);
+        verify(jpaQuery, times(1)).leftJoin(PANEL);
         verify(jpaQuery, times(1)).on(
-            JUROR_POOL.eq(JUROR_TRIAL.jurorPool),
-            JUROR_TRIAL.result.in(PanelResult.JUROR),
+            JUROR_POOL.juror.eq(PANEL.juror),
+            PANEL.result.in(PanelResult.JUROR),
             TRIAL.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION),
             JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR));
 
 
-        verify(jpaQuery, times(1)).leftJoin(JUROR_TRIAL);
+        verify(jpaQuery, times(1)).leftJoin(PANEL);
 
 
         verify(jpaQuery, times(1)).limit(4L);
@@ -451,15 +451,15 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
         verify(jpaQuery, times(1)).where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
 
-        verify(jpaQuery, times(1)).leftJoin(JUROR_TRIAL);
+        verify(jpaQuery, times(1)).leftJoin(PANEL);
         verify(jpaQuery, times(1)).on(
-            JUROR_POOL.eq(JUROR_TRIAL.jurorPool),
-            JUROR_TRIAL.result.in(PanelResult.JUROR),
+            JUROR_POOL.juror.eq(PANEL.juror),
+            PANEL.result.in(PanelResult.JUROR),
             TRIAL.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION),
             JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR));
 
 
-        verify(jpaQuery, times(1)).leftJoin(JUROR_TRIAL);
+        verify(jpaQuery, times(1)).leftJoin(PANEL);
 
 
         verify(jpaQuery, times(1)).limit(4L);

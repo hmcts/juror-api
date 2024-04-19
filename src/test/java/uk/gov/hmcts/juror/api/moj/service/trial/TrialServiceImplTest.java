@@ -37,6 +37,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.CourtroomRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.JudgeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
@@ -56,6 +57,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -83,6 +85,8 @@ class TrialServiceImplTest {
     private AppearanceRepository appearanceRepository;
     @Mock
     private JurorHistoryRepository jurorHistoryRepository;
+    @Mock
+    private JurorPoolRepository jurorPoolRepository;
     @Mock
     private CompleteServiceServiceImpl completeService;
 
@@ -308,7 +312,7 @@ class TrialServiceImplTest {
             .thenReturn(panelMembers);
 
         for (Panel panel : panelMembers) {
-            Appearance appearance = createAppearance(panel.getJurorPool().getJurorNumber());
+            Appearance appearance = createAppearance(panel.getJurorNumber());
 
             if ("null".equals(checkInTime)) {
                 appearance.setTimeIn(null);
@@ -318,7 +322,7 @@ class TrialServiceImplTest {
                 appearance.setTimeOut(LocalTime.parse(checkInTime));
             }
 
-            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 LocalDate.now())).thenReturn(Optional.of(appearance));
         }
 
@@ -344,9 +348,9 @@ class TrialServiceImplTest {
             .thenReturn(panelMembers);
 
         for (Panel panel : panelMembers) {
-            Appearance appearance = createAppearance(panel.getJurorPool().getJurorNumber());
+            Appearance appearance = createAppearance(panel.getJurorNumber());
             appearance.setTimeIn(null);
-            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 LocalDate.now())).thenReturn(Optional.of(appearance));
         }
 
@@ -370,8 +374,8 @@ class TrialServiceImplTest {
             .thenReturn(panelMembers);
 
         for (Panel panel : panelMembers) {
-            Appearance appearance = createAppearance(panel.getJurorPool().getJurorNumber());
-            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorPool().getJurorNumber(),
+            Appearance appearance = createAppearance(panel.getJurorNumber());
+            when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 LocalDate.now())).thenReturn(Optional.of(appearance));
         }
 
@@ -590,7 +594,7 @@ class TrialServiceImplTest {
              i < totalMembers;
              i++) {
             Panel temp = createSinglePanelData(panelResult, trialNumber, status, jurorNumber);
-            temp.getJurorPool().getJuror().setJurorNumber(jurorNumber.formatted(i + 1));
+            temp.getJuror().setJurorNumber(jurorNumber.formatted(i + 1));
             temp.setResult(panelResult);
             panelList.add(temp);
 
@@ -604,9 +608,9 @@ class TrialServiceImplTest {
         for (Panel panel : panelList) {
             JurorDetailRequestDto dto = new JurorDetailRequestDto();
             dto.setResult(panel.getResult());
-            dto.setFirstName(panel.getJurorPool().getJuror().getFirstName());
-            dto.setFirstName(panel.getJurorPool().getJuror().getLastName());
-            dto.setJurorNumber(panel.getJurorPool().getJurorNumber());
+            dto.setFirstName(panel.getJuror().getFirstName());
+            dto.setFirstName(panel.getJuror().getLastName());
+            dto.setJurorNumber(panel.getJurorNumber());
             dtoList.add(dto);
         }
         return dtoList;
@@ -637,12 +641,14 @@ class TrialServiceImplTest {
         jurorPool.setStatus(jurorStatus);
         jurorPool.setLocation("Court 1");
 
-
         Panel panel = new Panel();
-        panel.setJurorPool(jurorPool);
+        panel.setJuror(juror);
         panel.setCompleted(false);
         panel.setTrial(createTrial(trialNumber));
         panel.setResult(panelResult);
+
+        doReturn(jurorPool).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(jurorNumber, true,
+            panel.getTrial().getCourtLocation());
 
         return panel;
     }
