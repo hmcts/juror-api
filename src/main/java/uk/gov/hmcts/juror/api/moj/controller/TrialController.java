@@ -40,9 +40,6 @@ import java.util.List;
 @Validated
 @Tag(name = "Trial Management")
 public class TrialController {
-
-    public static final String ERROR_MESSAGE = "Bureau users are not allowed to use this service";
-
     private final TrialService trialService;
 
     @Autowired
@@ -54,7 +51,6 @@ public class TrialController {
      * Enable the officer to create a trial.
      *
      * @param payload - login information
-     *
      * @throws MojException.BadRequest - thrown if there is an validation issue?
      */
     @PostMapping("/create")
