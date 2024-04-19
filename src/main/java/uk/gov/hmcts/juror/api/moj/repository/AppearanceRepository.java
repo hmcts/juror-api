@@ -52,4 +52,8 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
 
     long countByJurorNumberAndAppearanceStageNotNull(String jurorNumber);
 
+    Optional<Appearance> findByJurorNumberAndAttendanceDateAndAppearanceStage(String jurorNumber,
+                                                                              LocalDate attendanceDate,
+                                                                              AppearanceStage appearanceStage);
+
 }
