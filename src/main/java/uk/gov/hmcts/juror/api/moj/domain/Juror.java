@@ -290,7 +290,4 @@ public class Juror extends Address implements Serializable {
         return buildName + firstName + " " + lastName;
     }
 
-    public boolean hasBankAccount() {
-        return sortCode != null && bankAccountNumber != null;
-    }
 }
