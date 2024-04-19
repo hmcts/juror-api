@@ -68,7 +68,7 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
 
         orderResultsBasedOnLetterType(query, courtLetterType);
 
-        return query.fetchOne();
+        return query.fetchFirst();
     }
 
     @Override
@@ -88,7 +88,8 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
         filterDataBasedOnLetterType(letterType, query, null);
 
         // filter based on date
-        if (SHOW_CAUSE.equals(letterType) || FAILED_TO_ATTEND.equals(letterType)) {
+        if (SHOW_CAUSE.equals(letterType)
+            || FAILED_TO_ATTEND.equals(letterType)) {
             query.where(APPEARANCE.attendanceDate.eq(letterDate));
         }
 
@@ -150,7 +151,10 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                 .where(PANEL.trial.trialNumber.eq(trialNumber))
                 .orderBy(PANEL.trial.trialNumber.desc());
             case CERTIFICATE_OF_ATTENDANCE ->
-                query.where(APPEARANCE.noShow.isFalse().or(APPEARANCE.noShow.isNull()));
+                query.join(APPEARANCE).on(JUROR_POOL.juror.jurorNumber.eq(APPEARANCE.jurorNumber)
+                        .and(JUROR_POOL.pool.poolNumber.eq(APPEARANCE.poolNumber)))
+                    .where(APPEARANCE.noShow.isFalse().or(APPEARANCE.noShow.isNull()))
+                    .orderBy(APPEARANCE.attendanceDate.desc());
 
             default -> throw new MojException.NotImplemented("letter type not implemented", null);
         }
