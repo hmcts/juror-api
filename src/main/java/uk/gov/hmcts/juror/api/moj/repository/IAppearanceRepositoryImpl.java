@@ -22,8 +22,8 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
@@ -50,7 +50,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     private static final QPoolRequest POOL = QPoolRequest.poolRequest;
     private static final QJuror JUROR = QJuror.juror;
     private static final QAppearance APPEARANCE = QAppearance.appearance;
-    private static final QJurorTrial JUROR_TRIAL = QJurorTrial.jurorTrial;
+    private static final QPanel PANEL = QPanel.panel;
     private static final QCourtLocation COURT_LOCATION = QCourtLocation.courtLocation;
 
     @Override
@@ -304,20 +304,20 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     public List<Tuple> getTrialsWithAttendanceCount(String locationCode, LocalDate attendanceDate) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
-        return queryFactory.select(JUROR_TRIAL.trialNumber,
+        return queryFactory.select(PANEL.trial.trialNumber,
                 APPEARANCE.jurorNumber.count(),
                 APPEARANCE.attendanceAuditNumber)
             .from(APPEARANCE)
-            .join(JUROR_TRIAL).on(APPEARANCE.jurorNumber.eq(JUROR_TRIAL.juror.jurorNumber)
-                .and(APPEARANCE.trialNumber.eq(JUROR_TRIAL.trialNumber)))
+            .join(PANEL).on(APPEARANCE.jurorNumber.eq(PANEL.jurorPool.juror.jurorNumber)
+                .and(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber)))
             .where(APPEARANCE.attendanceDate.eq(attendanceDate))
             .where(APPEARANCE.attendanceType.notIn(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE,
                 AttendanceType.NON_ATTENDANCE_LONG_TRIAL))
             .where(APPEARANCE.appearanceStage.in(AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_AUTHORISED,
                 AppearanceStage.EXPENSE_EDITED))
             .where(APPEARANCE.courtLocation.locCode.eq(locationCode))
-            .where(JUROR_TRIAL.result.equalsIgnoreCase(PanelResult.JUROR.getCode()))
-            .groupBy(JUROR_TRIAL.trialNumber,
+            .where(PANEL.result.eq(PanelResult.JUROR))
+            .groupBy(PANEL.trial.trialNumber,
                 APPEARANCE.attendanceAuditNumber)
             .fetch();
     }
