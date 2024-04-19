@@ -13,13 +13,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResultConverter;
 
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import javax.annotation.Nullable;
 
 /**
  * juror_mod.panel table entity.
@@ -41,11 +41,10 @@ public class Panel implements Serializable {
     private Trial trial;
 
     @JoinColumn(name = "juror_number")
-    @JoinColumn(name = "pool_number")
     @NotNull
     @ManyToOne
     @Id
-    private JurorPool jurorPool;
+    private Juror juror;
 
     @Column(name = "rand_number")
     @Deprecated(since = "Old Heritage column")
