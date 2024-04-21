@@ -81,7 +81,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
         JPAQuery<Tuple> query = queryFactory.select(returnFields.toArray(new Expression<?>[0]))
             .from(JUROR)
             .join(JUROR_POOL)
-            .on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
+            .on(JUROR.eq(JUROR_POOL.juror));
         if (isCourt) {
             query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));
         }
@@ -144,7 +144,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
         JPQLQuery<Tuple> query = queryFactory.select(returnFields.toArray(new Expression<?>[0]))
             .from(JUROR)
             .join(JUROR_POOL)
-            .on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
+            .on(JUROR.eq(JUROR_POOL.juror));
 
         if (SecurityUtil.isCourt()) {
             query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));

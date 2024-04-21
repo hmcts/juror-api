@@ -57,6 +57,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -291,8 +292,8 @@ class TrialServiceImplTest {
     void testReturnPanel() {
         final String trialNumber = "T100000000";
         List<Panel> panelMembers = createPanelMembers(10, null, trialNumber, IJurorStatus.PANEL);
-        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
-            .thenReturn(panelMembers);
+        doReturn(panelMembers).when(panelRepository)
+            .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
 
         trialService.returnPanel(payload, trialNumber, "415", createJurorDetailRequestDto(panelMembers));
 
@@ -344,8 +345,8 @@ class TrialServiceImplTest {
     void testReturnJuryNoConfirmAttendanceNullTimes() {
         final String trialNumber = "T100000000";
         List<Panel> panelMembers = createPanelMembers(10, PanelResult.JUROR, trialNumber, IJurorStatus.JUROR);
-        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
-            .thenReturn(panelMembers);
+        doReturn(panelMembers).when(panelRepository)
+            .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
 
         for (Panel panel : panelMembers) {
             Appearance appearance = createAppearance(panel.getJurorNumber());
@@ -370,10 +371,11 @@ class TrialServiceImplTest {
     void testReturnJuryConfirmAttendanceCompleteService() {
         final String trialNumber = "T100000000";
         List<Panel> panelMembers = createPanelMembers(10, PanelResult.JUROR, trialNumber, IJurorStatus.JUROR);
-        when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415"))
-            .thenReturn(panelMembers);
+        doReturn(panelMembers).when(panelRepository)
+            .findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNumber, "415");
 
         for (Panel panel : panelMembers) {
+            createJurorPool(panel.getJuror(), panel.getTrial().getCourtLocation(), IJurorStatus.JUROR);
             Appearance appearance = createAppearance(panel.getJurorNumber());
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
                 LocalDate.now())).thenReturn(Optional.of(appearance));
@@ -546,7 +548,8 @@ class TrialServiceImplTest {
     private CourtLocation createCourtLocation() {
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode("415");
-        courtLocation.setOwner("AYLESBURY");
+        courtLocation.setOwner("415");
+        courtLocation.setName("CHESTER");
 
         return courtLocation;
     }
@@ -586,14 +589,11 @@ class TrialServiceImplTest {
         return dto;
     }
 
-    public List<Panel> createPanelMembers(int totalMembers, PanelResult panelResult, String trialNumber,
-                                          int status) {
+    public List<Panel> createPanelMembers(int totalMembers, PanelResult panelResult, String trialNumber, int status) {
         List<Panel> panelList = new ArrayList<>();
         String jurorNumber = "1111111%02d";
-        for (int i = 0;
-             i < totalMembers;
-             i++) {
-            Panel temp = createSinglePanelData(panelResult, trialNumber, status, jurorNumber);
+        for (int i = 0; i < totalMembers; i++) {
+            Panel temp = createSinglePanelData(panelResult, trialNumber, status, String.format(jurorNumber, i + 1));
             temp.getJuror().setJurorNumber(jurorNumber.formatted(i + 1));
             temp.setResult(panelResult);
             panelList.add(temp);
@@ -624,31 +624,13 @@ class TrialServiceImplTest {
         juror.setFirstName("FNAME");
         juror.setLastName("LNAME");
 
-        JurorStatus jurorStatus = new JurorStatus();
-        jurorStatus.setStatus(jurorStatusValue);
-        jurorStatus.setActive(true);
-
-        PoolRequest poolRequest = new PoolRequest();
-        poolRequest.setPoolNumber("111111111");
-
-
-        poolRequest.setCourtLocation(createCourtLocation());
-
-        JurorPool jurorPool = new JurorPool();
-        jurorPool.setOwner("415");
-        jurorPool.setJuror(juror);
-        jurorPool.setPool(poolRequest);
-        jurorPool.setStatus(jurorStatus);
-        jurorPool.setLocation("Court 1");
-
         Panel panel = new Panel();
         panel.setJuror(juror);
         panel.setCompleted(false);
         panel.setTrial(createTrial(trialNumber));
         panel.setResult(panelResult);
 
-        doReturn(jurorPool).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(jurorNumber, true,
-            panel.getTrial().getCourtLocation());
+        createJurorPool(juror, panel.getTrial().getCourtLocation(), jurorStatusValue);
 
         return panel;
     }
@@ -673,6 +655,29 @@ class TrialServiceImplTest {
         dto.setTrialNumber("T100000000");
         dto.setLocationCode("415");
         return dto;
+    }
+
+    private JurorPool createJurorPool(Juror juror, CourtLocation courtLocation, int jurorStatusValue) {
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(jurorStatusValue);
+        jurorStatus.setActive(true);
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("111111111");
+        poolRequest.setCourtLocation(courtLocation);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner("415");
+        jurorPool.setJuror(juror);
+        jurorPool.setPool(poolRequest);
+        jurorPool.setStatus(jurorStatus);
+        jurorPool.setLocation("Court 1");
+
+        doReturn(jurorPool).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(juror.getJurorNumber()),
+            eq(true), any(CourtLocation.class));
+
+        return jurorPool;
     }
 }
 

@@ -8,7 +8,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -53,6 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -207,8 +207,9 @@ class PanelServiceImplTest {
 
         final String locCode = "415";
 
-        doReturn(createJurorPool(jurorNumbers, "415231201")).when(appearanceRepository)
-            .retrieveAllJurors(locCode, date);
+        List<JurorPool> jurorPools = createJurorPool(jurorNumbers, "415231201");
+
+        doReturn(jurorPools).when(appearanceRepository).retrieveAllJurors(locCode, date);
         doReturn(Optional.of(createAppearance("121212121"))).when(appearanceRepository)
             .findByJurorNumberAndAttendanceDate("121212121", now());
         doReturn(Optional.of(createAppearance("111111111"))).when(appearanceRepository)
@@ -229,7 +230,6 @@ class PanelServiceImplTest {
         assertThat(dtoList.get(0).getFirstName()).as("Expected first name to be FNAME").isEqualTo("FNAME");
         assertThat(dtoList.get(0).getLastName()).as("Expected first name to be LNAME").isEqualTo("LNAME");
         assertThat(dtoList.get(0).getJurorStatus()).as("Expected status to be Panelled").isEqualTo("Panelled");
-
     }
 
     @Test
@@ -808,8 +808,8 @@ class PanelServiceImplTest {
                 TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
                 doReturn(Optional.of(createTrial())).when(trialRepository)
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
-                Mockito.when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode))
-                    .thenReturn(createPanelMembers(2));
+                doReturn(createPanelMembers(2)).when(panelRepository)
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
                     () -> {
                         panelService.addPanelMembers(0,
@@ -843,8 +843,8 @@ class PanelServiceImplTest {
                 TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
                 doReturn(Optional.of(createTrial())).when(trialRepository)
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
-                Mockito.when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode))
-                    .thenReturn(createPanelMembers(1000));
+                doReturn(createPanelMembers(1000)).when(panelRepository)
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
                     () -> {
                         panelService.addPanelMembers(0,
@@ -878,8 +878,8 @@ class PanelServiceImplTest {
                 TestUtils.setUpMockAuthentication(locCode, "COURT_USER", "99", Collections.singletonList(locCode));
                 doReturn(Optional.of(createTrial())).when(trialRepository)
                     .findByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
-                Mockito.when(panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode))
-                    .thenReturn(createPanelMembers(2));
+                doReturn(createPanelMembers(2)).when(panelRepository)
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", locCode);
                 MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
                     () -> {
                         panelService.addPanelMembers(3,
@@ -1093,6 +1093,8 @@ class PanelServiceImplTest {
             jurorPool.setStatus(jurorStatus);
             jurorPool.setLocation("Court 1");
 
+            doReturn(jurorPool).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(eq(jurorNumber),
+                eq(true), any(CourtLocation.class));
             jurorPoolList.add(jurorPool);
         }
         return jurorPoolList;
@@ -1153,7 +1155,8 @@ class PanelServiceImplTest {
     private CourtLocation createCourtLocation() {
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode("415");
-        courtLocation.setOwner("AYLESBURY");
+        courtLocation.setOwner("415");
+        courtLocation.setName("CHESTER");
         return courtLocation;
     }
 
@@ -1169,6 +1172,10 @@ class PanelServiceImplTest {
         panel.setCompleted(false);
         panel.setTrial(createTrial());
         panel.setResult(PanelResult.JUROR);
+
+        JurorPool jurorPool = createJurorPool(juror, panel.getTrial().getCourtLocation());
+        doReturn(jurorPool).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(juror.getJurorNumber(),
+            true, panel.getTrial().getCourtLocation());
 
         return panel;
     }

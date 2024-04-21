@@ -230,8 +230,8 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
     public List<String> fetchThinPoolMembers(String poolNumber, String owner) {
         JPAQueryFactory queryFactory = getQueryFactory();
 
-        List<?> results = queryFactory.select(QPoolRequest.poolRequest.owner).from(QPoolRequest.poolRequest)
-            .where(QPoolRequest.poolRequest.poolNumber.eq(poolNumber))
+        List<?> results = queryFactory.select(POOL_REQUEST.owner).from(POOL_REQUEST)
+            .where(POOL_REQUEST.poolNumber.eq(poolNumber))
             .fetch();
 
         if (results.isEmpty()) {

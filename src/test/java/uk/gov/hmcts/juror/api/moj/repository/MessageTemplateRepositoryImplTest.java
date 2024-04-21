@@ -132,7 +132,7 @@ class MessageTemplateRepositoryImplTest {
         assertThat(result.getData().get(0)).isInstanceOf(JurorToSendMessageBureau.class);
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
-        verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
+        verify(jpaQuery, times(1)).on(JUROR.eq(JUROR_POOL.juror));
 
         verify(jpaQuery, times(1)).limit(4L);
         verify(jpaQuery, times(1)).offset(0L);
@@ -201,11 +201,11 @@ class MessageTemplateRepositoryImplTest {
         assertThat(result.getData().get(0)).isInstanceOf(JurorToSendMessageBureau.class);
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
-        verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
+        verify(jpaQuery, times(1)).on(JUROR.eq(JUROR_POOL.juror));
 
         verify(jpaQuery, times(1)).leftJoin(PANEL);
         verify(jpaQuery, times(1)).on(
-            JUROR_POOL.juror.eq(PANEL.juror),
+            JUROR.eq(PANEL.juror),
             PANEL.result.in(PanelResult.JUROR),
             TRIAL.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION),
             JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR));
@@ -287,7 +287,7 @@ class MessageTemplateRepositoryImplTest {
         assertThat(result.getData().get(0)).isInstanceOf(JurorToSendMessageCourt.class);
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
-        verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
+        verify(jpaQuery, times(1)).on(JUROR.eq(JUROR_POOL.juror));
         verify(jpaQuery, times(1)).where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
 
         verify(jpaQuery, times(1)).limit(4L);
@@ -357,12 +357,12 @@ class MessageTemplateRepositoryImplTest {
         assertThat(result.getData().get(0)).isInstanceOf(JurorToSendMessageCourt.class);
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
-        verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
+        verify(jpaQuery, times(1)).on(JUROR.eq(JUROR_POOL.juror));
         verify(jpaQuery, times(1)).where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
 
         verify(jpaQuery, times(1)).leftJoin(PANEL);
         verify(jpaQuery, times(1)).on(
-            JUROR_POOL.juror.eq(PANEL.juror),
+            JUROR.eq(PANEL.juror),
             PANEL.result.in(PanelResult.JUROR),
             TRIAL.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION),
             JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR));
@@ -448,12 +448,12 @@ class MessageTemplateRepositoryImplTest {
         assertThat(result.getData().get(0)).isInstanceOf(JurorToSendMessageCourt.class);
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
-        verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
+        verify(jpaQuery, times(1)).on(JUROR.eq(JUROR_POOL.juror));
         verify(jpaQuery, times(1)).where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
 
         verify(jpaQuery, times(1)).leftJoin(PANEL);
         verify(jpaQuery, times(1)).on(
-            JUROR_POOL.juror.eq(PANEL.juror),
+            JUROR.eq(PANEL.juror),
             PANEL.result.in(PanelResult.JUROR),
             TRIAL.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION),
             JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR));
