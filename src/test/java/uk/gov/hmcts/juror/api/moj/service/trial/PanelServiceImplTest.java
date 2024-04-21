@@ -1100,6 +1100,28 @@ class PanelServiceImplTest {
         return jurorPoolList;
     }
 
+    JurorPool createJurorPool(Juror juror, CourtLocation courtLocation) {
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("111111111");
+        poolRequest.setCourtLocation(courtLocation);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.PANEL);
+        jurorStatus.setActive(true);
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner("415");
+        jurorPool.setJuror(juror);
+        jurorPool.setPool(poolRequest);
+        jurorPool.setStatus(jurorStatus);
+        jurorPool.setLocation("Court 1");
+        doReturn(jurorPool).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(juror.getJurorNumber(),
+            true, courtLocation);
+
+        return jurorPool;
+    }
+
     private Appearance createAppearance(String jurorNumber) {
         CourtLocation courtlocation = new CourtLocation();
         courtlocation.setLocCode("415");
@@ -1178,28 +1200,6 @@ class PanelServiceImplTest {
             true, panel.getTrial().getCourtLocation());
 
         return panel;
-    }
-
-    JurorPool createJurorPool(Juror juror, CourtLocation courtLocation) {
-
-        PoolRequest poolRequest = new PoolRequest();
-        poolRequest.setPoolNumber("111111111");
-        poolRequest.setCourtLocation(courtLocation);
-
-        JurorStatus jurorStatus = new JurorStatus();
-        jurorStatus.setStatus(IJurorStatus.PANEL);
-        jurorStatus.setActive(true);
-
-        JurorPool jurorPool = new JurorPool();
-        jurorPool.setOwner("415");
-        jurorPool.setJuror(juror);
-        jurorPool.setPool(poolRequest);
-        jurorPool.setStatus(jurorStatus);
-        jurorPool.setLocation("Court 1");
-        doReturn(jurorPool).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(juror.getJurorNumber(),
-            true, courtLocation);
-
-        return jurorPool;
     }
 
     List<Panel> createPanelMembers(int totalMembers) {

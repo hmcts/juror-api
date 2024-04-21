@@ -17,9 +17,9 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResultConverter;
 
-import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import javax.annotation.Nullable;
 
 /**
  * juror_mod.panel table entity.
