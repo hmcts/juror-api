@@ -182,8 +182,8 @@ insert into juror_mod.trial (trial_number,loc_code,description,courtroom,judge,t
 ('T10000002', '415', 'test trial', 1, 1, 'CIV', current_date, false);
 
 -- add existing panel on a trial with teh same number (different court location code)
-insert into juror_mod.juror_trial (loc_code, juror_number, trial_number, pool_number, rand_number, date_selected, "result", completed) values
-('452', '452000001', 'T10000000', '452231101', 1, current_date - 1, 'J', false),
-('452', '452000002', 'T10000000', '452231101', 1, current_date - 1, 'J', false),
-('452', '452000003', 'T10000000', '452231101', 1, current_date - 1, 'J', false);
+insert into juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed) values
+('452', '452000001', 'T10000000', 1, current_date - 1, 'J', false),
+('452', '452000002', 'T10000000', 1, current_date - 1, 'J', false),
+('452', '452000003', 'T10000000', 1, current_date - 1, 'J', false);
 
