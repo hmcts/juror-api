@@ -646,7 +646,6 @@ class MessagingServiceImplTest {
             doReturn(false).when(messagingService).isJurorOnTrial(
                 anyString(),
                 anyString(),
-                anyString(),
                 anyString()
             );
             MojException.BusinessRuleViolation exception = assertThrows(
