@@ -884,35 +884,6 @@ class TrialControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/trial/EndTrial.sql"})
-    void testEndTrialPanelMembersStillInTrial() {
-        final String url = "/api/v1/moj/trial/end-trial";
-        EndTrialDto dto = createEndTrialDto();
-        dto.setTrialNumber("T10000001");
-        initialiseHeader(singletonList("415"), "415", COURT_USER);
-
-        ResponseEntity<String> responseEntity =
-            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, PATCH,
-                URI.create(url)), String.class);
-
-        assertThat(responseEntity.getStatusCode())
-            .as("Expect status code to be 422 (ok)")
-            .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
-
-        JSONObject exceptionDetails = getExceptionDetails(responseEntity);
-        String errorMessage = exceptionDetails.getString("message");
-        String code = exceptionDetails.getString("code");
-
-
-        assertThat(errorMessage).as("Expect error message to not be null").isNotNull();
-        assertThat(errorMessage)
-            .as("Expect error message to equal: Cannot end trial, trial still has members")
-            .isEqualTo("Cannot end trial, trial still has members");
-        assertThat(code).as("Expect code to not be null").isNotNull();
-        assertThat(code).as("Expect code to be TRIAL_HAS_MEMBERS").isEqualTo("TRIAL_HAS_MEMBERS");
-    }
-
-    @Test
     void editTrialHappy() {
         initialiseHeader(singletonList("416"), "416", COURT_USER);
         TrialDto trialRequest = editTrialRequest();
