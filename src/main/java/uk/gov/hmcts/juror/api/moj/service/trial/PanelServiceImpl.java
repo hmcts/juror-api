@@ -247,7 +247,7 @@ public class PanelServiceImpl implements PanelService {
         for (JurorDetailRequestDto detail : dto.getJurors()) {
             Panel panelMember =
                 panelRepository
-                    .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(
+                    .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
                         dto.getTrialNumber(), dto.getCourtLocationCode(), detail.getJurorNumber());
 
             panelMember.setResult(detail.getResult());

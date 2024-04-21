@@ -14,16 +14,19 @@ public interface PanelRepository extends IPanelRepository, JpaRepository<Panel, 
 
     List<Panel> findByTrialTrialNumberAndTrialCourtLocationLocCode(String trialNumber, String locCode);
 
-    Panel findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(String trialNumber,
-                                                                                         String locCode,
-                                                                                         String jurorNumber);
+    Panel findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(String trialNumber,
+                                                                                String locCode,
+                                                                                String jurorNumber);
 
     boolean existsByTrialTrialNumberAndTrialCourtLocationLocCode(String trialNumber, String locCode);
 
-    @SuppressWarnings("PMD.UseObjectForClearerAPI")
-    boolean existsByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolPoolPoolNumberAndJurorPoolJurorJurorNumber(
-        String trialNumber, String locCode, String jurorNumber, String poolNumber);
 
-    Panel findByTrialCourtLocationLocCodeAndJurorPoolPoolPoolNumberAndJurorPoolJurorJurorNumberAndCompleted(
-        String locCode, String poolNumber, String jurorNumber, boolean completed);
+    boolean existsByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(String trialNumber,
+                                                                                    String locCode,
+                                                                                    String poolNumber);
+
+
+    Panel findByTrialCourtLocationLocCodeAndJurorJurorNumberAndCompleted(String locCode,
+                                                                         String jurorNumber,
+                                                                         boolean completed);
 }

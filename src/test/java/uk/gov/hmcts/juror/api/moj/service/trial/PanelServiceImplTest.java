@@ -399,7 +399,7 @@ class PanelServiceImplTest {
 
         for (Panel member : panelMembers) {
             doReturn(member).when(panelRepository)
-                .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(
+                .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
                     "T100000025", "415", member.getJurorNumber());
             doReturn(Optional.of(createAppearance(member.getJurorNumber()))).when(appearanceRepository)
                 .findByJurorNumberAndAttendanceDateAndAppearanceStage(member.getJurorNumber(),
@@ -433,7 +433,7 @@ class PanelServiceImplTest {
 
         for (Panel member : panelMembers) {
             doReturn(member).when(panelRepository)
-                .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(
+                .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
                     "T100000025",
                     "415",
                     member.getJurorNumber());
@@ -483,7 +483,7 @@ class PanelServiceImplTest {
         Panel panel = createSinglePanelData();
         panel.setResult(null);
         doReturn(panel).when(panelRepository)
-            .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(anyString(), anyString(),
+            .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(anyString(), anyString(),
                 anyString());
         JurorListRequestDto jurorListRequestDto =
             createEmpanelledListRequestDto(Collections.singletonList(panel));
@@ -499,7 +499,7 @@ class PanelServiceImplTest {
         Panel panel = createSinglePanelData();
         panel.setResult(PanelResult.RETURNED);
         doReturn(panel).when(panelRepository)
-            .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(anyString(), anyString(),
+            .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(anyString(), anyString(),
                 anyString());
         JurorListRequestDto jurorListRequestDto =
             createEmpanelledListRequestDto(Collections.singletonList(panel));
@@ -519,7 +519,7 @@ class PanelServiceImplTest {
 
         for (Panel member : panelMembers) {
             doReturn(member).when(panelRepository)
-                .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolJurorJurorNumber(
+                .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
                     "T100000025", "415", member.getJurorNumber());
             doReturn(Optional.empty()).when(appearanceRepository)
                 .findByJurorNumberAndAttendanceDateAndAppearanceStage(member.getJurorNumber(),
