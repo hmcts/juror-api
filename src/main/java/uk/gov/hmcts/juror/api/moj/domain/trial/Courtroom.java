@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.domain.trial;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -11,7 +12,9 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 
@@ -24,6 +27,8 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@ToString(exclude = "courtLocation")
+@EqualsAndHashCode(exclude = {"courtLocation"})
 @Builder
 @Table(name = "courtroom", schema = "juror_mod")
 public class Courtroom implements Serializable {
@@ -36,7 +41,7 @@ public class Courtroom implements Serializable {
     private long id;
 
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "loc_code", nullable = false, updatable = false)
     private CourtLocation courtLocation;
 

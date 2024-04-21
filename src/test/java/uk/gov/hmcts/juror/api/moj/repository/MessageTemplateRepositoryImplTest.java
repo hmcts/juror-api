@@ -123,7 +123,7 @@ class MessageTemplateRepositoryImplTest {
 
 
         PaginatedList<? extends JurorToSendMessageBase> result = messageTemplateRepositoryImpl
-            .messageSearch(messageSearch, TestConstants.VALID_COURT_LOCATION, true, 500L);
+            .messageSearch(messageSearch, "400", true, 500L);
 
 
         assertThat(result).isNotNull();
@@ -193,7 +193,7 @@ class MessageTemplateRepositoryImplTest {
 
 
         PaginatedList<? extends JurorToSendMessageBase> result = messageTemplateRepositoryImpl
-            .messageSearch(messageSearch, TestConstants.VALID_COURT_LOCATION, false, 500L);
+            .messageSearch(messageSearch, "400", false, 500L);
 
         assertThat(result).isNotNull();
         assertThat(result.getData()).isNotNull();
@@ -364,7 +364,7 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1)).on(
             JUROR.eq(PANEL.juror),
             PANEL.result.in(PanelResult.JUROR),
-            TRIAL.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION),
+            TRIAL.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode),
             JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR));
 
 
@@ -455,7 +455,7 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1)).on(
             JUROR.eq(PANEL.juror),
             PANEL.result.in(PanelResult.JUROR),
-            TRIAL.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION),
+            TRIAL.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode),
             JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR));
 
 
