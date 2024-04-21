@@ -90,7 +90,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
             query.leftJoin(PANEL).on(
                 JUROR.eq(PANEL.juror),
                 PANEL.result.in(PanelResult.JUROR),
-                TRIAL.courtLocation.locCode.eq(locCode),
+                TRIAL.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode),
                 JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR)
             );
         }
