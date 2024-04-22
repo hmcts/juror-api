@@ -51,7 +51,7 @@ public class AdministrationHolidaysController {
     @GetMapping("/non-sitting-days/{loc_code}")
     @Operation(summary = "View non sitting days")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH + " && " + SecurityUtil.IS_MANAGER)
+    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH)
     public ResponseEntity<List<HolidayDate>> viewNonSittingDays(
         @P("loc_code")
         @PathVariable("loc_code")
@@ -64,7 +64,7 @@ public class AdministrationHolidaysController {
     @DeleteMapping("/non-sitting-days/{loc_code}/{date}")
     @Operation(summary = "Delete a non sitting days")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH + " && " + SecurityUtil.IS_MANAGER)
+    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH)
     public ResponseEntity<Void> deleteNonSittingDays(
         @P("loc_code")
         @PathVariable("loc_code")
@@ -80,7 +80,7 @@ public class AdministrationHolidaysController {
     @PostMapping("/non-sitting-days/{loc_code}")
     @Operation(summary = "Add a non sitting days")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH + " && " + SecurityUtil.IS_MANAGER)
+    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH)
     public ResponseEntity<Void> addNonSittingDays(
         @P("loc_code")
         @PathVariable("loc_code")
