@@ -160,8 +160,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         String locCode, LocalDate minDate, LocalDate maxDate,
         int pageNumber, String sortBy, SortDirection sortOrder) {
 
-        SecurityUtil.validateCourtLocationPermitted(locCode);
-
         Sort sort = SortDirection.DESC.equals(sortOrder)
             ? Sort.by(sortBy).descending()
             : Sort.by(sortBy).ascending();
