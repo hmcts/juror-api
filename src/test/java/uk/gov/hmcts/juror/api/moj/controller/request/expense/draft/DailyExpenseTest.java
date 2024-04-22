@@ -3,17 +3,15 @@ package uk.gov.hmcts.juror.api.moj.controller.request.expense.draft;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
-import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
+class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
     @Override
     protected DailyExpense createValidObject() {
         return DailyExpense.builder()

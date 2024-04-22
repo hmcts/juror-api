@@ -1,9 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller.request.expense;
 
 import org.junit.jupiter.api.Nested;
-import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
-import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
 import java.util.List;

@@ -286,8 +286,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
      * Submit one or more draft expense records (for a single juror) for approval. This will generate the financial
      * audit number for the batch and update the is_draft_expense flag.
      *
-     * @param dto request body include the juror number and pool number and a list of attendance dates to identify the
-     *            appearance records which need to be submitted for approval.
      */
     @Override
     @Transactional
@@ -804,6 +802,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     @Override
     @Transactional(readOnly = true)
+    @SuppressWarnings("LineLength")
     public CombinedExpenseDetailsDto<ExpenseDetailsDto> getDraftExpenses(String locCode, String jurorNumber) {
         return getExpenses(
             appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAppearanceStageAndIsDraftExpenseTrueOrderByAttendanceDate(

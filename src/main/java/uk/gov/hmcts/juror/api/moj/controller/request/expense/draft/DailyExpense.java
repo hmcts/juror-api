@@ -4,14 +4,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
 import uk.gov.hmcts.juror.api.validation.EnumValidator;
-import uk.gov.hmcts.juror.api.validation.PoolNumber;
 import uk.gov.hmcts.juror.api.validation.ValidateIf;
 import uk.gov.hmcts.juror.api.validation.ValidateIfTrigger;
 

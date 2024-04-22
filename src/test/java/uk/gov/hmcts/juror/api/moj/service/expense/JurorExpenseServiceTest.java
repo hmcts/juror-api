@@ -573,11 +573,8 @@ class JurorExpenseServiceTest {
         @DisplayName("Successfully submit one expense for approval")
         void singleExpenseHappyPath() {
 
-            Appearance appearanceToSubmit = buildTestAppearance(TestConstants.VALID_JUROR_NUMBER,
+            final Appearance appearanceToSubmit = buildTestAppearance(TestConstants.VALID_JUROR_NUMBER,
                 LocalDate.of(2024, 1, 1));
-            Appearance appearanceInDraft = buildTestAppearance(TestConstants.VALID_JUROR_NUMBER,
-                LocalDate.of(2024, 1, 2));
-
             doNothing().when(jurorExpenseService).saveAppearancesWithExpenseRateIdUpdate(anyCollection());
 
             Juror juror = new Juror();
@@ -594,7 +591,6 @@ class JurorExpenseServiceTest {
                 any(), any(), any(), any()
             );
 
-            ArgumentCaptor<List<Appearance>> appearanceArgumentCaptor = ArgumentCaptor.forClass(List.class);
 
             List<LocalDate> attendanceDates = List.of(LocalDate.of(2024, 1, 1));
 
@@ -613,6 +609,7 @@ class JurorExpenseServiceTest {
             verify(appearanceRepository, times(1))
                 .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
+            ArgumentCaptor<List<Appearance>> appearanceArgumentCaptor = ArgumentCaptor.forClass(List.class);
 
             verify(jurorExpenseService, times(1)).saveAppearancesWithExpenseRateIdUpdate(
                 appearanceArgumentCaptor.capture());
@@ -640,8 +637,6 @@ class JurorExpenseServiceTest {
                 LocalDate.of(2024, 1, 1));
             final Appearance appearanceToSubmit2 = buildTestAppearance(TestConstants.VALID_JUROR_NUMBER,
                 LocalDate.of(2024, 1, 2));
-            final Appearance appearanceInDraft = buildTestAppearance(TestConstants.VALID_JUROR_NUMBER,
-                LocalDate.of(2024, 1, 3));
 
             Juror juror = new Juror();
             juror.setJurorNumber(TestConstants.VALID_JUROR_NUMBER);
@@ -701,8 +696,7 @@ class JurorExpenseServiceTest {
 
             doReturn(new ArrayList<Appearance>()).when(appearanceRepository)
                 .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(TestConstants.VALID_COURT_LOCATION,
-                    TestConstants.VALID_JUROR_NUMBER, attendanceDates
-                );
+                    TestConstants.VALID_JUROR_NUMBER, attendanceDates);
 
             assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
                 jurorExpenseService.submitDraftExpensesForApproval(
@@ -736,7 +730,6 @@ class JurorExpenseServiceTest {
         @Test
         void positiveFound() {
             final String jurorNumber = TestConstants.VALID_JUROR_NUMBER;
-            final String poolNumber = TestConstants.VALID_POOL_NUMBER;
             final LocalDate attendanceDate = LocalDate.now();
             final Appearance appearance = mock(Appearance.class);
             final Optional<Appearance> appearanceOptional = Optional.of(appearance);
@@ -757,7 +750,6 @@ class JurorExpenseServiceTest {
         @Test
         void negativeNotFound() {
             final String jurorNumber = TestConstants.VALID_JUROR_NUMBER;
-            final String poolNumber = TestConstants.VALID_POOL_NUMBER;
             final LocalDate attendanceDate = LocalDate.now();
             final Optional<Appearance> appearanceOptional = Optional.empty();
 
@@ -3882,6 +3874,7 @@ class JurorExpenseServiceTest {
     class GetDraftExpenses {
 
         @Test
+        @SuppressWarnings("LineLength")
         void positiveTypical() {
             Appearance appearance1 = mock(Appearance.class);
             when(appearance1.getAppearanceStage()).thenReturn(AppearanceStage.EXPENSE_ENTERED);
@@ -3920,8 +3913,7 @@ class JurorExpenseServiceTest {
             verify(appearanceRepository, times(1))
                 .findAllByCourtLocationLocCodeAndJurorNumberAndAppearanceStageAndIsDraftExpenseTrueOrderByAttendanceDate(
                     TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER,
-                    AppearanceStage.EXPENSE_ENTERED
-                );
+                    AppearanceStage.EXPENSE_ENTERED);
             verify(jurorExpenseService, times(1))
                 .getExpenses(List.of(appearance2, appearance3, appearance1));
 
@@ -5496,7 +5488,7 @@ class JurorExpenseServiceTest {
                 LocalDate.of(2023, 1, 2),
                 LocalDate.of(2023, 1, 3)
             );
-            ApportionSmartCardRequest dto = ApportionSmartCardRequest.builder()
+            final ApportionSmartCardRequest dto = ApportionSmartCardRequest.builder()
                 .smartCardAmount(new BigDecimal("90.00"))
                 .attendanceDates(
                     attendanceDates
@@ -5540,7 +5532,7 @@ class JurorExpenseServiceTest {
                 LocalDate.of(2023, 1, 2),
                 LocalDate.of(2023, 1, 3)
             );
-            ApportionSmartCardRequest dto = ApportionSmartCardRequest.builder()
+            final ApportionSmartCardRequest dto = ApportionSmartCardRequest.builder()
                 .smartCardAmount(new BigDecimal("100.00"))
                 .attendanceDates(
                     attendanceDates
@@ -5679,8 +5671,7 @@ class JurorExpenseServiceTest {
             ));
             doReturn(appearances).when(appearanceRepository)
                 .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
-                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
-                );
+                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates);
 
             assertThat(jurorExpenseService.getAppearances(TestConstants.VALID_COURT_LOCATION,
                 TestConstants.VALID_JUROR_NUMBER, attendanceDates))
@@ -5701,8 +5692,7 @@ class JurorExpenseServiceTest {
 
             doReturn(List.of()).when(appearanceRepository)
                 .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
-                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
-                );
+                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates);
 
 
             MojException.NotFound exception = assertThrows(MojException.NotFound.class,
@@ -5733,8 +5723,7 @@ class JurorExpenseServiceTest {
                 mockAppearance(LocalDate.of(2023, 1, 1)),
                 mockAppearance(LocalDate.of(2023, 1, 2))
             ))).when(appearanceRepository).findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER
-                , attendanceDates
+                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
             );
 
 

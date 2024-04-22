@@ -15,6 +15,7 @@ import java.util.Set;
 
 
 @Repository
+@SuppressWarnings("LineLength")
 public interface AppearanceRepository extends IAppearanceRepository, JpaRepository<Appearance, AppearanceId>,
     RevisionRepository<Appearance, AppearanceId, Long> {
 

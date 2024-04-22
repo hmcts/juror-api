@@ -16,9 +16,9 @@ public class ValidationServiceImpl implements ValidationService {
     private final Validator validator;
 
     @Override
-    public void validate(Object request, Class<?> _class) {
+    public void validate(Object request, Class<?> clazz) {
         Set<ConstraintViolation<Object>> violations =
-            validator.validate(request, _class);
+            validator.validate(request, clazz);
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }

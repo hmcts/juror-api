@@ -23,26 +23,21 @@ import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApportionSmartCardRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApproveExpenseDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.AttendanceDates;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CalculateTotalExpenseRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.expense.AttendanceDates;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseType;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.GetEnteredExpenseRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseFinancialLoss;
-import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseFoodAndDrink;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseTime;
-import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseTravel;
 import uk.gov.hmcts.juror.api.moj.controller.response.DefaultExpenseResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.CombinedSimplifiedExpenseDetailDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.expense.DailyExpenseResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.ExpenseCount;
-import uk.gov.hmcts.juror.api.moj.controller.response.expense.FinancialLossWarningTest;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseResponse;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.SimplifiedExpenseDetailDto;
@@ -50,7 +45,6 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSumma
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
-import uk.gov.hmcts.juror.api.moj.enumeration.FoodDrinkClaimType;
 import uk.gov.hmcts.juror.api.moj.enumeration.PayAttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -69,7 +63,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -113,7 +106,7 @@ class JurorExpenseControllerTest {
     private JurorRepository jurorRepository;
 
     @Nested
-    @DisplayName("GET " +UnpaidExpensesForCourtLocation.URL)
+    @DisplayName("GET " + UnpaidExpensesForCourtLocation.URL)
     class UnpaidExpensesForCourtLocation {
 
         public static final String URL = BASE_URL + "/unpaid-summary";
@@ -121,6 +114,7 @@ class JurorExpenseControllerTest {
         public String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);
         }
+
         @Test
         @DisplayName("Valid court user - with date range filter")
         void happyPathForValidCourtUserWithDates() throws Exception {
@@ -145,11 +139,13 @@ class JurorExpenseControllerTest {
                     pageNumber, "jurorNumber", SortDirection.ASC);
 
 
-            mockMvc.perform(get(String.format(toUrl(TestConstants.VALID_COURT_LOCATION) + "?min_date=2023-01-05&max_date=2023-01-19"
-                    + "&page_number=0"
-                    + "&sort_by=jurorNumber&sort_order=ASC"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .principal(mockPrincipal))
+            mockMvc.perform(
+                    get(String.format(toUrl(TestConstants.VALID_COURT_LOCATION) + "?min_date=2023-01-05&max_date=2023"
+                        + "-01-19"
+                        + "&page_number=0"
+                        + "&sort_by=jurorNumber&sort_order=ASC"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].juror_number", CoreMatchers.is(responseItem.getJurorNumber())))
@@ -187,10 +183,11 @@ class JurorExpenseControllerTest {
                     pageNumber, "jurorNumber", SortDirection.ASC);
 
 
-            mockMvc.perform(get(String.format(toUrl(TestConstants.VALID_COURT_LOCATION) + "?page_number=0&sort_by=jurorNumber"
-                    + "&sort_order=ASC"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .principal(mockPrincipal))
+            mockMvc.perform(
+                    get(String.format(toUrl(TestConstants.VALID_COURT_LOCATION) + "?page_number=0&sort_by=jurorNumber"
+                        + "&sort_order=ASC"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].juror_number", CoreMatchers.is(responseItem.getJurorNumber())))
@@ -260,9 +257,11 @@ class JurorExpenseControllerTest {
                 .when(jurorExpenseService).getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION,
                     null, null, pageNumber, "jurorNumber", SortDirection.ASC);
 
-            mockMvc.perform(get(String.format(toUrl(TestConstants.VALID_COURT_LOCATION) + "?&sort_by=jurorNumber&sort_order=ASC"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .principal(mockPrincipal))
+            mockMvc.perform(
+                    get(String.format(toUrl(TestConstants.VALID_COURT_LOCATION) + "?&sort_by=jurorNumber&sort_order"
+                        + "=ASC"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
 
@@ -292,9 +291,10 @@ class JurorExpenseControllerTest {
                 .when(jurorExpenseService).getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION,
                     null, null, pageNumber, "jurorNumber", SortDirection.ASC);
 
-            mockMvc.perform(get(String.format(toUrl(TestConstants.VALID_COURT_LOCATION) + "?page_number=0&sort_order=ASC"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .principal(mockPrincipal))
+            mockMvc.perform(
+                    get(String.format(toUrl(TestConstants.VALID_COURT_LOCATION) + "?page_number=0&sort_order=ASC"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
 
@@ -324,9 +324,10 @@ class JurorExpenseControllerTest {
                 .when(jurorExpenseService).getUnpaidExpensesForCourtLocation(TestConstants.VALID_COURT_LOCATION,
                     null, null, pageNumber, "jurorNumber", SortDirection.ASC);
 
-            mockMvc.perform(get(String.format(toUrl(TestConstants.VALID_COURT_LOCATION) + "?page_number=0&sort_by=jurorNumber"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .principal(mockPrincipal))
+            mockMvc.perform(
+                    get(String.format(toUrl(TestConstants.VALID_COURT_LOCATION) + "?page_number=0&sort_by=jurorNumber"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
 
@@ -357,11 +358,12 @@ class JurorExpenseControllerTest {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
+
         @Test
         @DisplayName("Valid Request")
         @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void happyPathForGetDefaultExpenses() throws Exception {
-            String jurorNumber = "111111111";
+            final String jurorNumber = "111111111";
 
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(
@@ -385,7 +387,7 @@ class JurorExpenseControllerTest {
             when(jurorExpenseService.getDefaultExpensesForJuror(jurorNumber)).thenReturn(responseItem);
 
             mockMvc.perform(get(
-                toUrl(TestConstants.VALID_COURT_LOCATION,"111111111"))
+                    toUrl(TestConstants.VALID_COURT_LOCATION, "111111111"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .principal(mockPrincipal))
                 .andDo(MockMvcResultHandlers.print())

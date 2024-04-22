@@ -1380,8 +1380,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 LocalDate dateOfExpense = LocalDate.of(2024, 1, 11);
                 GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
                 assertNotFound(triggerInvalid(JUROR_NUMBER, request),
-                    toUrl(COURT_LOCATION, JUROR_NUMBER), "No appearance record found for juror: " + JUROR_NUMBER +
-                        " on day: 2024-01-11");
+                    toUrl(COURT_LOCATION, JUROR_NUMBER), "No appearance record found for juror: "
+                        + JUROR_NUMBER + " on day: 2024-01-11");
             }
 
             @Test
@@ -3603,6 +3603,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            @SuppressWarnings("LineLength")
             void expensesLessThanZero() throws Exception {
                 assertBusinessRuleViolation(triggerInvalid(COURT_LOCATION, COURT_LOCATION, JUROR_NUMBER,
                         CalculateTotalExpenseRequestDto.builder()
@@ -4351,7 +4352,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertNotFound(triggerInvalid(COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER,
                         getValidPayload(new BigDecimal("90.00")), COURT_LOCATION),
                     toUrl(COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER),
-                    "One or more appearance records not found for Loc code: 415, Juror Number: 123456789 and Attendance Dates provided");
+                    "One or more appearance records not found for Loc code: 415, "
+                        + "Juror Number: 123456789 and Attendance Dates provided");
             }
 
             @Test
