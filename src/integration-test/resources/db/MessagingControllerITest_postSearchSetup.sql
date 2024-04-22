@@ -127,15 +127,15 @@ values ('T100000000', '415', 'TEST DEFENDANT', 22, 'CIV', current_date, current_
        ('T100000001', '415', 'TEST DEFENDANT', 21, 'CIV', current_date, null, false, 66);
 
 INSERT INTO juror_mod.juror_trial
-(loc_code, juror_number, trial_number, pool_number, rand_number, date_selected, "result", completed)
+(loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed)
 VALUES
     --Status = Panel (3) or Juror(4) and result is J
 
-    ('415', '100000005', 'T100000000', '200000015', 10, '2023-11-30 13:50:59.110', 'NU', false),--Not included as NU
-    ('415', '100000014', 'T100000000', '200000015', 5, '2023-11-30 13:50:58.821', 'R', false),--Not included as R
+    ('415', '100000005', 'T100000000', 10, '2023-11-30 13:50:59.110', 'NU', false),--Not included as NU
+    ('415', '100000014', 'T100000000', 5, '2023-11-30 13:50:58.821', 'R', false),--Not included as R
 
-    ('415', '100000014', 'T100000001', '200000015', 5, '2023-11-30 13:50:58.821', 'J', false),--Included
+    ('415', '100000014', 'T100000001', 5, '2023-11-30 13:50:58.821', 'J', false),--Included
 
-    ('415', '100000004', 'T100000000', '200000014', 10, '2023-11-30 13:50:59.110', 'J', false),--Included
-    ('415', '100000022', 'T100000000', '200000014', 5, '2023-11-30 13:50:58.821', 'J', false),--Included
-    ('415', '100000015', 'T100000000', '200000015', 10, '2023-11-30 13:50:59.110', 'J', false);--Not included bad status
+    ('415', '100000004', 'T100000000', 10, '2023-11-30 13:50:59.110', 'J', false),--Included
+    ('415', '100000022', 'T100000000', 5, '2023-11-30 13:50:58.821', 'J', false),--Included
+    ('415', '100000015', 'T100000000', 10, '2023-11-30 13:50:59.110', 'J', false);--Not included bad status
