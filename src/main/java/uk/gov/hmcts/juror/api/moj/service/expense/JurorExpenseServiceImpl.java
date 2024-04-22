@@ -341,7 +341,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     Appearance getDraftAppearance(String locCode, String jurorNumber, LocalDate attendanceDate) {
         Optional<Appearance> appearanceOptional =
             appearanceRepository
-                .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDateAndDraftExpense(
+                .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDateAndIsDraftExpense(
                     locCode,
                     jurorNumber,
                     attendanceDate,

@@ -212,7 +212,9 @@ public class JurorExpenseController {
 
     @PostMapping("/{payment_method}/approve")
     @Operation(summary = "Approve all expense records of a given type (for a single juror)")
-    @PreAuthorize(SecurityUtil.COURT_AUTH + " and " + SecurityUtil.IS_MANAGER)
+    @PreAuthorize("(" + SecurityUtil.LOC_CODE_AUTH
+        + " and " + SecurityUtil.COURT_AUTH
+        + " and " + SecurityUtil.IS_MANAGER + ")")
     @ResponseStatus(HttpStatus.OK)
     @Transactional
     public ResponseEntity<Void> approveExpenses(

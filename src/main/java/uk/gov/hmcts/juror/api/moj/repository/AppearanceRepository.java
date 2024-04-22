@@ -37,10 +37,10 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
         String owner);
 
 
-    Optional<Appearance> findByCourtLocationLocCodeAndJurorNumberAndAttendanceDateAndDraftExpense(String locCode,
-                                                                                                  String jurorNumber,
-                                                                                                  LocalDate attendanceDate,
-                                                                                                  boolean draftExpense);
+    Optional<Appearance> findByCourtLocationLocCodeAndJurorNumberAndAttendanceDateAndIsDraftExpense(String locCode,
+                                                                                                    String jurorNumber,
+                                                                                                    LocalDate attendanceDate,
+                                                                                                    boolean draftExpense);
 
     Optional<Appearance> findByJurorNumberAndPoolNumberAndAttendanceDate(String jurorNumber,
                                                                          String poolNumber, LocalDate attendanceDate);

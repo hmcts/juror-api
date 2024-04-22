@@ -741,7 +741,7 @@ class JurorExpenseServiceTest {
             final Appearance appearance = mock(Appearance.class);
             final Optional<Appearance> appearanceOptional = Optional.of(appearance);
 
-            when(appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndAttendanceDateAndDraftExpense(
+            when(appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndAttendanceDateAndIsDraftExpense(
                 TestConstants.VALID_COURT_LOCATION, jurorNumber, attendanceDate, true))
                 .thenReturn(appearanceOptional);
 
@@ -750,7 +750,7 @@ class JurorExpenseServiceTest {
                 .isEqualTo(appearance);
 
             verify(appearanceRepository, times(1))
-                .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDateAndDraftExpense(
+                .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDateAndIsDraftExpense(
                     TestConstants.VALID_COURT_LOCATION, jurorNumber, attendanceDate, true);
         }
 
@@ -761,7 +761,7 @@ class JurorExpenseServiceTest {
             final LocalDate attendanceDate = LocalDate.now();
             final Optional<Appearance> appearanceOptional = Optional.empty();
 
-            when(appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndAttendanceDateAndDraftExpense(
+            when(appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndAttendanceDateAndIsDraftExpense(
                 TestConstants.VALID_COURT_LOCATION, jurorNumber, attendanceDate, true))
                 .thenReturn(appearanceOptional);
 
@@ -778,7 +778,7 @@ class JurorExpenseServiceTest {
             );
 
             verify(appearanceRepository, times(1))
-                .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDateAndDraftExpense(
+                .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDateAndIsDraftExpense(
                     TestConstants.VALID_COURT_LOCATION, jurorNumber, attendanceDate, true);
         }
     }
