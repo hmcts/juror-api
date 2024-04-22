@@ -20,8 +20,6 @@ public class ApproveExpenseDtoTest extends AbstractValidatorTest<ApproveExpenseD
     protected ApproveExpenseDto createValidObject() {
         return ApproveExpenseDto.builder()
             .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
-            .poolNumber(TestConstants.VALID_POOL_NUMBER)
-            .cashPayment(false)
             .approvalType(ApproveExpenseDto.ApprovalType.FOR_REAPPROVAL)
             .dateToRevisions(
                 List.of(
@@ -42,15 +40,6 @@ public class ApproveExpenseDtoTest extends AbstractValidatorTest<ApproveExpenseD
         }
     }
 
-    @Nested
-    class PoolNumberTest extends AbstractValidationFieldTestString {
-        protected PoolNumberTest() {
-            super("poolNumber", ApproveExpenseDto::setPoolNumber);
-            ignoreAdditionalFailures();
-            addNotBlankTest(null);
-            addInvalidPatternTest("INVALID", "^\\d{9}$", null);
-        }
-    }
 
     @Nested
     class ApprovalTypeTest extends AbstractValidationFieldTestBase<ApproveExpenseDto.ApprovalType> {
@@ -100,14 +89,6 @@ public class ApproveExpenseDtoTest extends AbstractValidatorTest<ApproveExpenseD
         }
     }
 
-    @Nested
-    class CashPaymentTest extends AbstractValidationFieldTestBase<Boolean> {
-
-        protected CashPaymentTest() {
-            super("cashPayment", ApproveExpenseDto::setCashPayment);
-            addRequiredTest(null);
-        }
-    }
 
     @Nested
     class ApprovalTypeEnumTest {

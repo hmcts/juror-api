@@ -14,12 +14,11 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto
 import java.time.LocalDate;
 import java.util.List;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GetEnteredExpenseRequest extends JurorNumberAndPoolNumberDto {
+public class GetEnteredExpenseRequest {
 
     @JsonProperty("expense_dates")
     @JsonFormat(pattern = "yyyy-MM-dd")

@@ -18,11 +18,6 @@ import java.time.LocalTime;
 @Data
 public class DefaultExpenseResponseDto {
 
-    @JsonProperty("juror_number")
-    @Schema(description = "9-digit numeric string to uniquely identify a juror")
-    @JurorNumber
-    private String jurorNumber;
-
     @JsonProperty("financial_loss")
     private BigDecimal financialLoss;
 

@@ -22,7 +22,13 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
 
     Optional<Appearance> findByJurorNumberAndAttendanceDate(String jurorNumber, LocalDate attendanceDate);
 
-    List<Appearance> findAllByJurorNumberAndPoolNumber(String jurorNumber, String poolNumber);
+
+    List<Appearance> findAllByCourtLocationLocCodeAndJurorNumber(String locCode, String jurorNumber);
+
+    List<Appearance> findAllByCourtLocationLocCodeAndJurorNumberAndAppearanceStageAndIsDraftExpenseTrueOrderByAttendanceDate(
+        String locCode,
+        String jurorNumber,
+        AppearanceStage appearanceStage);
 
     @SuppressWarnings("checkstyle:LineLength")
     List<Appearance> findAllByJurorNumberAndAppearanceStageInAndCourtLocationOwnerAndIsDraftExpenseTrueOrderByAttendanceDateDesc(
@@ -30,14 +36,21 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
         Set<AppearanceStage> stages,
         String owner);
 
-    Optional<Appearance> findByJurorNumberAndPoolNumberAndAttendanceDateAndIsDraftExpenseTrue(String jurorNumber,
-                                                                                              String poolNumber,
-                                                                                              LocalDate attendanceDate);
+
+    Optional<Appearance> findByCourtLocationLocCodeAndJurorNumberAndAttendanceDateAndDraftExpense(String locCode,
+                                                                                                  String jurorNumber,
+                                                                                                  LocalDate attendanceDate,
+                                                                                                  boolean draftExpense);
 
     Optional<Appearance> findByJurorNumberAndPoolNumberAndAttendanceDate(String jurorNumber,
                                                                          String poolNumber, LocalDate attendanceDate);
 
-    List<Appearance> findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(String jurorNumber, String poolNumber);
+    Optional<Appearance> findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(String locCode,
+                                                                                   String jurorNumber,
+                                                                                   LocalDate attendanceDate);
+
+    List<Appearance> findByCourtLocationLocCodeAndJurorNumberAndIsDraftExpenseTrue(String locCode,
+                                                                                   String jurorNumber);
 
     List<Appearance> findAllByCourtLocationLocCodeAndAppearanceStageAndPayCashAndIsDraftExpenseFalse(
         String locCode,
@@ -46,6 +59,11 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
 
     List<Appearance> findAllByJurorNumberAndPoolNumberAndAttendanceDateIn(String jurorNumber, String poolNumber,
                                                                           List<LocalDate> dates);
+
+    List<Appearance> findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(String locCode,
+                                                                                    String jurorNumber,
+                                                                                    List<LocalDate> dates);
+
 
     @Query(value = "select nextval('juror_mod.attendance_audit_seq')", nativeQuery = true)
     Long getNextAttendanceAuditNumber();
@@ -56,4 +74,6 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
                                                                               LocalDate attendanceDate,
                                                                               AppearanceStage appearanceStage);
 
+
+    List<Appearance> findAllByJurorNumberAndPoolNumber(String jurorNumber, String poolNumber);
 }

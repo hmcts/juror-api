@@ -6,11 +6,11 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,8 +21,9 @@ import java.util.List;
 @AllArgsConstructor
 @Valid
 @SuperBuilder
+@EqualsAndHashCode
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ExpenseItemsDto extends JurorNumberAndPoolNumberDto {
+public class AttendanceDates {
 
     @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING)
     @NotEmpty

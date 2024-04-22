@@ -143,12 +143,12 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @Override
     @PreAuthorize("isAuthenticated()")
     public void createExpenseApproveCash(String jurorNumber,
-                                         String poolNumber,
                                          FinancialAuditDetails financialAuditDetails,
                                          LocalDate latestAppearanceDate,
                                          BigDecimal totalAmount) {
-        registerHistoryWithAdditionalInfo(jurorNumber,
-            poolNumber,
+        registerHistoryWithAdditionalInfo(
+            jurorNumber,
+            null,
             HistoryCodeMod.CASH_PAYMENT_APPROVAL,
             BigDecimalUtils.currencyFormat(totalAmount),
             SecurityUtil.getActiveLogin(),
@@ -159,12 +159,11 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @Override
     @PreAuthorize("isAuthenticated()")
     public void createExpenseApproveBacs(String jurorNumber,
-                                         String poolNumber,
                                          FinancialAuditDetails financialAuditDetails,
                                          LocalDate latestAppearanceDate,
                                          BigDecimal totalAmount) {
         registerHistoryWithAdditionalInfo(jurorNumber,
-            poolNumber,
+            null,
             HistoryCodeMod.ARAMIS_EXPENSES_FILE_CREATED,
             BigDecimalUtils.currencyFormat(totalAmount),
             SecurityUtil.getActiveLogin(),

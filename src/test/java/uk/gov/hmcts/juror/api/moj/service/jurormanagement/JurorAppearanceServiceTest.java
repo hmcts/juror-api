@@ -2803,6 +2803,7 @@ class JurorAppearanceServiceTest {
     class RealignAttendanceType {
 
         private Appearance mockAppearance(LocalTime timeIn, LocalTime timeOut,
+                                          String locCode,
                                           boolean isFulLDay,
                                           Boolean noShow, AttendanceType attendanceType,
                                           boolean isLongTrialDay) {
@@ -2819,10 +2820,13 @@ class JurorAppearanceServiceTest {
             when(appearance.getAttendanceDate()).thenReturn(localDate);
             when(appearance.isFullDay()).thenReturn(isFulLDay);
 
+            CourtLocation courtLocation = mock(CourtLocation.class);
+            when(courtLocation.getLocCode()).thenReturn(locCode);
+            when(appearance.getCourtLocation()).thenReturn(courtLocation);
 
             when(jurorExpenseService.isLongTrialDay(
+                locCode,
                 TestConstants.VALID_JUROR_NUMBER,
-                TestConstants.VALID_POOL_NUMBER,
                 localDate
             )).thenReturn(isLongTrialDay);
             return appearance;
@@ -2833,6 +2837,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 true,
                 Boolean.FALSE,
                 null,
@@ -2847,6 +2852,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 true,
                 Boolean.FALSE,
                 null,
@@ -2861,6 +2867,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.FALSE,
                 null,
@@ -2876,6 +2883,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.FALSE,
                 null,
@@ -2890,6 +2898,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.FALSE,
                 AttendanceType.NON_ATTENDANCE_LONG_TRIAL,
@@ -2904,6 +2913,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.FALSE,
                 AttendanceType.NON_ATTENDANCE,
@@ -2918,6 +2928,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 null,
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.FALSE,
                 AttendanceType.NON_ATTENDANCE,
@@ -2931,6 +2942,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 null,
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.FALSE,
                 AttendanceType.NON_ATTENDANCE,
@@ -2944,6 +2956,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.TRUE,
                 AttendanceType.NON_ATTENDANCE,
@@ -2957,6 +2970,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.FALSE,
                 AttendanceType.ABSENT,

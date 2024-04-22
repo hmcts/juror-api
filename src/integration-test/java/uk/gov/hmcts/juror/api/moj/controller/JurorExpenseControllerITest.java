@@ -29,7 +29,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApproveExpenseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CalculateTotalExpenseRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseItemsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.AttendanceDates;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseType;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.GetEnteredExpenseRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
@@ -1457,14 +1457,14 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            ExpenseItemsDto payload = new ExpenseItemsDto();
+            AttendanceDates payload = new AttendanceDates();
             payload.setJurorNumber(jurorNumber);
             payload.setPoolNumber(poolNumber);
             List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 2),
                 LocalDate.of(2024, 1, 3));
             payload.setAttendanceDates(appearanceDates);
 
-            RequestEntity<ExpenseItemsDto> request = new RequestEntity<>(payload, httpHeaders, POST, uri);
+            RequestEntity<AttendanceDates> request = new RequestEntity<>(payload, httpHeaders, POST, uri);
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -1495,13 +1495,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            ExpenseItemsDto payload = new ExpenseItemsDto();
+            AttendanceDates payload = new AttendanceDates();
             payload.setJurorNumber(jurorNumber);
             payload.setPoolNumber(poolNumber);
             List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 1));
             payload.setAttendanceDates(appearanceDates);
 
-            RequestEntity<ExpenseItemsDto> request = new RequestEntity<>(payload, httpHeaders, POST, uri);
+            RequestEntity<AttendanceDates> request = new RequestEntity<>(payload, httpHeaders, POST, uri);
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -1519,13 +1519,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            ExpenseItemsDto payload = new ExpenseItemsDto();
+            AttendanceDates payload = new AttendanceDates();
             payload.setJurorNumber(jurorNumber);
             payload.setPoolNumber(poolNumber);
             List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 1));
             payload.setAttendanceDates(appearanceDates);
 
-            RequestEntity<ExpenseItemsDto> request = new RequestEntity<>(payload, httpHeaders, POST, uri);
+            RequestEntity<AttendanceDates> request = new RequestEntity<>(payload, httpHeaders, POST, uri);
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -1543,13 +1543,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            ExpenseItemsDto payload = new ExpenseItemsDto();
+            AttendanceDates payload = new AttendanceDates();
             payload.setJurorNumber(jurorNumber);
             payload.setPoolNumber(poolNumber);
             List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 1));
             payload.setAttendanceDates(appearanceDates);
 
-            RequestEntity<ExpenseItemsDto> request = new RequestEntity<>(payload, httpHeaders, POST, uri);
+            RequestEntity<AttendanceDates> request = new RequestEntity<>(payload, httpHeaders, POST, uri);
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -1567,12 +1567,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            ExpenseItemsDto payload = new ExpenseItemsDto();
+            AttendanceDates payload = new AttendanceDates();
             payload.setJurorNumber(jurorNumber);
             payload.setPoolNumber(poolNumber);
             payload.setAttendanceDates(new ArrayList<>());
 
-            RequestEntity<ExpenseItemsDto> request = new RequestEntity<>(payload, httpHeaders, POST, uri);
+            RequestEntity<AttendanceDates> request = new RequestEntity<>(payload, httpHeaders, POST, uri);
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -1590,13 +1590,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            ExpenseItemsDto payload = new ExpenseItemsDto();
+            AttendanceDates payload = new AttendanceDates();
             payload.setJurorNumber(jurorNumber);
             payload.setPoolNumber(poolNumber);
             List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 2));
             payload.setAttendanceDates(appearanceDates);
 
-            RequestEntity<ExpenseItemsDto> request = new RequestEntity<>(payload, httpHeaders, POST, uri);
+            RequestEntity<AttendanceDates> request = new RequestEntity<>(payload, httpHeaders, POST, uri);
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);

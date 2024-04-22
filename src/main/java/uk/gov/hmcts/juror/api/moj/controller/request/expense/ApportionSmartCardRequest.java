@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import uk.gov.hmcts.juror.api.validation.ExpenseNumericLimit;
 
@@ -18,7 +19,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ApportionSmartCardRequest extends ExpenseItemsDto {
+public class ApportionSmartCardRequest extends AttendanceDates {
 
     @NotNull
     @ExpenseNumericLimit

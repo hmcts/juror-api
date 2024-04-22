@@ -7,6 +7,8 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import java.util.function.Function;
 
 public enum ExpenseType {
+    DRAFT(appearance -> appearance.isDraftExpense()
+        && AppearanceStage.EXPENSE_ENTERED.equals(appearance.getAppearanceStage())),
     FOR_APPROVAL(appearance -> !appearance.isDraftExpense()
         && AppearanceStage.EXPENSE_ENTERED.equals(appearance.getAppearanceStage())),
     FOR_REAPPROVAL(appearance -> !appearance.isDraftExpense()
@@ -30,6 +32,7 @@ public enum ExpenseType {
             case FOR_APPROVAL -> FinancialAuditDetails.Type.FOR_APPROVAL_EDIT;
             case FOR_REAPPROVAL -> FinancialAuditDetails.Type.REAPPROVED_EDIT;
             case APPROVED -> FinancialAuditDetails.Type.APPROVED_EDIT;
+            case DRAFT -> throw new IllegalArgumentException("Cannot convert DRAFT to edit type");
         };
     }
 }

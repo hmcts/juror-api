@@ -12,8 +12,6 @@ public class GetEnteredExpenseRequestTest extends AbstractValidatorTest<GetEnter
     @Override
     protected GetEnteredExpenseRequest createValidObject() {
         return GetEnteredExpenseRequest.builder()
-            .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
-            .poolNumber(TestConstants.VALID_POOL_NUMBER)
             .expenseDates(List.of(LocalDate.now()))
             .build();
     }
@@ -24,26 +22,6 @@ public class GetEnteredExpenseRequestTest extends AbstractValidatorTest<GetEnter
             super("expenseDates", GetEnteredExpenseRequest::setExpenseDates);
             addNotEmptyTest(null);
             addNullValueInListTest(null);
-        }
-    }
-
-    @Nested
-    class JurorNumberTest extends AbstractValidationFieldTestString {
-        protected JurorNumberTest() {
-            super("jurorNumber", GetEnteredExpenseRequest::setJurorNumber);
-            ignoreAdditionalFailures();
-            addNotBlankTest(null);
-            addInvalidPatternTest("INVALID", ValidationConstants.JUROR_NUMBER, null);
-        }
-    }
-
-    @Nested
-    class PoolNumberTest extends AbstractValidationFieldTestString {
-        protected PoolNumberTest() {
-            super("poolNumber", GetEnteredExpenseRequest::setPoolNumber);
-            ignoreAdditionalFailures();
-            addNotBlankTest(null);
-            addInvalidPatternTest("INVALID", ValidationConstants.POOL_NUMBER, null);
         }
     }
 }
