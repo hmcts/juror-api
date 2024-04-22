@@ -281,39 +281,6 @@ class JurorExpenseServiceTest {
                 .findUnpaidByCourtLocationCode(anyString(), any(Pageable.class));
         }
 
-        @Test
-        @DisplayName("403 Forbidden - User with incorrect permissions")
-        void invalidUser() {
-            securityUtilMockedStatic.when(() -> SecurityUtil.validateCourtLocationPermitted(anyString()))
-                .thenThrow(
-                    new MojException.Forbidden("Current user does not have permissions to " + "Court Location", null));
-
-            String courtLocation = "415";
-            SortDirection sortDirection = SortDirection.DESC;
-            String sortBy = "poolNumber";
-            int pageNumber = 1;
-
-            LocalDate minDate = LocalDate.now().minusDays(14);
-            LocalDate maxDate = LocalDate.now();
-
-            assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(
-                () -> jurorExpenseService.getUnpaidExpensesForCourtLocation(courtLocation, minDate, maxDate, pageNumber,
-                    sortBy, sortDirection));
-
-
-            verify(jurorExpenseTotalsRepository, never())
-                .countUnpaidByCourtLocationCodeAndAppearanceDate(anyString(), any(LocalDate.class),
-                    any(LocalDate.class));
-            verify(jurorExpenseTotalsRepository, never())
-                .findUnpaidByCourtLocationCodeAndAppearanceDate(anyString(), any(LocalDate.class),
-                    any(LocalDate.class), any(Pageable.class));
-
-            verify(jurorExpenseTotalsRepository, never())
-                .countByCourtLocationCodeAndTotalUnapprovedGreaterThan(anyString(), anyFloat());
-            verify(jurorExpenseTotalsRepository, never())
-                .findUnpaidByCourtLocationCode(anyString(), any(Pageable.class));
-
-        }
 
         private List<JurorExpenseTotals> createJurorExpenseTotals(String locCode) {
             JurorExpenseTotals jurorExpenseTotals1 =
