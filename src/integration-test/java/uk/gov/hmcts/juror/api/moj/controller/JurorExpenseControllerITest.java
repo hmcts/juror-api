@@ -3733,9 +3733,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             @Test
             void canNotAccessJurorPool() throws Exception {
-                assertMojForbiddenResponse(triggerInvalid(COURT_LOCATION, "641500020", "414"),
-                    toUrl(COURT_LOCATION, "641500020"),
-                    "User cannot access this juror pool");
+                assertForbiddenResponse(triggerInvalid(COURT_LOCATION, "641500020", "414"),
+                    toUrl(COURT_LOCATION, "641500020"));
             }
 
             @Test
