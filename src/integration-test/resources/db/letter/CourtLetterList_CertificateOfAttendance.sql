@@ -35,4 +35,4 @@ VALUES
 	(current_date + 11,'555555562','415220504','457','09:30:00','16:30:00','01:12','CHECKED_OUT', 50,30, 10, false, false, 'FULL_DAY'),
 	(current_date + 12,'555555562','415220504','457','09:30:00','16:30:00','01:12','CHECKED_OUT', 50,30, 10, false, false, 'FULL_DAY'),
 	(current_date + 13,'555555562','415220504','457','09:30:00','16:30:00','01:12','CHECKED_OUT', 50,30, 10, false, false, 'FULL_DAY'),
-	(current_date + 13,'555555563','415220504','415','09:30:00','16:30:00','01:12', null, 0, 0, 0, false, true,'ABSENT');
+	(current_date + 13,'555555563','415220504','415',null,null,null, null, 0, 0, 0, false, true,'ABSENT');
