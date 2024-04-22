@@ -2161,15 +2161,15 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 418230101")
             .isEqualTo("418230101");
         validatePoolData(poolsAtCourtLocationDataDto, serviceStartDate);
-        assertThat(poolsAtCourtLocationDataDto.getTotalJurors()).as("Expect there to be 0 juror in total")
-            .isEqualTo(1);
+        assertThat(poolsAtCourtLocationDataDto.getJurorsOnTrials()).as("Expect there to be 0 juror(s) in trials")
+            .isEqualTo(0);
 
         poolsAtCourtLocationDataDto
             = poolsAtCourtLocationDataDtos.get(1);
         assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 418230102")
             .isEqualTo("418230102");
         validatePoolData(poolsAtCourtLocationDataDto, serviceStartDate);
-        assertThat(poolsAtCourtLocationDataDto.getTotalJurors()).as("Expect there to be 1 juror in total")
+        assertThat(poolsAtCourtLocationDataDto.getJurorsOnTrials()).as("Expect there to be 1 juror(s) in trials")
             .isEqualTo(1);
 
 
@@ -2178,7 +2178,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 418230103")
             .isEqualTo("418230103");
         validatePoolData(poolsAtCourtLocationDataDto, serviceStartDate);
-        assertThat(poolsAtCourtLocationDataDto.getTotalJurors()).as("Expect there to be 1 juror in total")
+        assertThat(poolsAtCourtLocationDataDto.getJurorsOnTrials()).as("Expect there to be 1 juror(s) in trials")
             .isEqualTo(1);
 
     }

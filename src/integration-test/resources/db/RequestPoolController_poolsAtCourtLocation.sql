@@ -84,15 +84,17 @@ INSERT INTO juror_mod.juror (juror_number, last_name, first_name, dob, address_l
 ('641700006', 'PERSON6', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
 ('641700007', 'PERSON7', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
 ('641700008', 'PERSON8', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
-('641700009', 'PERSON3', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
-('641700010', 'PERSON4', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
-('641700011', 'PERSON5', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
-('641700012', 'PERSON6', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
-('641700013', 'PERSON7', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
-('641700014', 'PERSON8', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
+('641700009', 'PERSON9', 'TEST9', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
+('641700010', 'PERSON10', 'TEST10', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
+('641700011', 'PERSON11', 'TEST11', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
+('641700012', 'PERSON12', 'TEST12', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
+('641700013', 'PERSON13', 'TEST13', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
+('641700014', 'PERSON14', 'TEST14', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
 ('641800001', 'PERSON1', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
 ('641800002', 'PERSON2', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
 ('641800003', 'PERSON3', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
+('641800004', 'PERSON4', 'TEST4', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
+('641800005', 'PERSON5', 'TEST5', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null),
 ('641900001', 'PERSON1', 'TEST', '1990-05-16', '542 STREET NAME', 'ANYTOWN', 'CH1 2AN', true, null);
 
 INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, is_active, next_date, status, on_call) VALUES
@@ -115,6 +117,8 @@ INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, is_active, n
 ('418', '641800001', '418230101', true, '2023-10-25', 2, null),
 ('418', '641800002', '418230102', true, '2023-10-23', 2, null),
 ('418', '641800003', '418230103', true, '2023-10-23', 2, null),
+('418', '641800004', '418230102', true, '2023-10-23', 3, null),
+('418', '641800005', '418230103', true, '2023-10-23', 4, null),
 ('419', '641900001', '419230101', true, '2023-10-23', 2, true);
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,f_audit,time_in,time_out,travel_time,appearance_stage,non_attendance) VALUES
