@@ -308,7 +308,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                 APPEARANCE.jurorNumber.count(),
                 APPEARANCE.attendanceAuditNumber)
             .from(APPEARANCE)
-            .join(PANEL).on(APPEARANCE.jurorNumber.eq(PANEL.jurorPool.juror.jurorNumber)
+            .join(PANEL).on(APPEARANCE.jurorNumber.eq(PANEL.juror.jurorNumber)
                 .and(APPEARANCE.trialNumber.eq(PANEL.trial.trialNumber)))
             .where(APPEARANCE.attendanceDate.eq(attendanceDate))
             .where(APPEARANCE.attendanceType.notIn(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE,

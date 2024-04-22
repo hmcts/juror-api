@@ -77,7 +77,7 @@ public class ITrialRepositoryImpl implements ITrialRepository {
                 TRIAL.trialType.stringValue(),
                 TRIAL.courtroom.description,
                 TRIAL.judge.name,
-                PANEL.jurorPool.count())
+                PANEL.juror.count())
             .from(TRIAL)
             .join(PANEL)
             .on(TRIAL.eq(PANEL.trial))

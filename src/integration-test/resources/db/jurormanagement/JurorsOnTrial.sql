@@ -104,23 +104,23 @@ attendance_type, trial_number, appearance_stage, attendance_audit_number) values
 (current_date, '415000020', '415', current_time,current_time,true,'NON_ATTENDANCE_LONG_TRIAL','T10000002','EXPENSE_ENTERED',null);
 
 
-insert into juror_mod.juror_trial (loc_code, juror_number, trial_number, pool_number, rand_number, date_selected, "result", completed) values
-('415', '415000001','T10000000', '415231101', 10, current_date - 30, 'P', false),
-('415', '415000003','T10000000', '415231101', 11, current_date - 30, 'P', false),
-('415', '415000004','T10000000', '415231102', 1, current_date - 30, 'P', false),
-('415', '415000005','T10000000', '415231102', 3, current_date - 30, 'P', false),
-('415', '415000006','T10000000', '415231102', 4, current_date - 30, 'P', false),
-('415', '415000007','T10000000', '415231102', 7, current_date - 30, 'P', false),
-('415', '415000008','T10000000', '415231102', 8, current_date - 30, 'P', false),
-('415', '415000009','T10000000', '415231103', 13, current_date - 30, 'P', false),
-('415', '415000010','T10000000', '415231103', 12, current_date - 30, 'P', false),
-('415', '415000011','T10000000', '415231103', 6, current_date - 30, 'P', false),
-('415', '415000012','T10000000', '415231103', 2, current_date - 30, 'P', false),
-('415', '415000013','T10000000', '415231103', 9, current_date - 30, 'P', false),
-('415', '415000014','T10000001', '415231104', 14, current_date - 30, 'J', false),
-('415', '415000015','T10000001', '415231104', 15, current_date - 30, 'J', false),
-('415', '415000016','T10000001', '415231104', 16, current_date - 30, 'J', false),
-('415', '415000017','T10000001', '415231104', 17, current_date - 30, 'J', false),
-('415', '415000018','T10000002', '415231104', 18, current_date - 30, 'J', false),
-('415', '415000019','T10000002', '415231104', 20, current_date - 30, 'J', false),
-('415', '415000020','T10000002', '415231104', 19, current_date - 30, 'J', false);
+insert into juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed) values
+('415', '415000001','T10000000', 10, current_date - 30, 'P', false),
+('415', '415000003','T10000000', 11, current_date - 30, 'P', false),
+('415', '415000004','T10000000', 1, current_date - 30, 'P', false),
+('415', '415000005','T10000000', 3, current_date - 30, 'P', false),
+('415', '415000006','T10000000', 4, current_date - 30, 'P', false),
+('415', '415000007','T10000000', 7, current_date - 30, 'P', false),
+('415', '415000008','T10000000', 8, current_date - 30, 'P', false),
+('415', '415000009','T10000000', 13, current_date - 30, 'P', false),
+('415', '415000010','T10000000', 12, current_date - 30, 'P', false),
+('415', '415000011','T10000000', 6, current_date - 30, 'P', false),
+('415', '415000012','T10000000', 2, current_date - 30, 'P', false),
+('415', '415000013','T10000000', 9, current_date - 30, 'P', false),
+('415', '415000014','T10000001', 14, current_date - 30, 'J', false),
+('415', '415000015','T10000001', 15, current_date - 30, 'J', false),
+('415', '415000016','T10000001', 16, current_date - 30, 'J', false),
+('415', '415000017','T10000001', 17, current_date - 30, 'J', false),
+('415', '415000018','T10000002', 18, current_date - 30, 'J', false),
+('415', '415000019','T10000002', 20, current_date - 30, 'J', false),
+('415', '415000020','T10000002', 19, current_date - 30, 'J', false);

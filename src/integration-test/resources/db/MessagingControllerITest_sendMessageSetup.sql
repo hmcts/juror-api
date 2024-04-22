@@ -60,10 +60,10 @@ values ('T100000002', '462', 'TEST DEFENDANT', 21, 'CIV', current_date, null, fa
        ('T100000004', '462', 'TEST DEFENDANT', 21, 'CIV', current_date, null, false, 66);
 
 INSERT INTO juror_mod.juror_trial
-(loc_code, juror_number, trial_number, pool_number, rand_number, date_selected, "result", completed)
+(loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed)
 VALUES
     --Status = Panel (3) or Juror(4) and result is J
-    ('756', '100000001', 'T100000003', '200000015', 1, '2023-11-30 13:50:58.821', 'J', false),
-    ('462', '100000002', 'T100000002', '200000002', 2, '2023-11-30 13:50:58.821', 'J', false),
-    ('462', '100000004', 'T100000002', '200000014', 3, '2023-11-30 13:50:59.110', 'J', false),
-    ('756', '100000014', 'T100000003', '200000015', 4, '2023-11-30 13:50:59.110', 'J', false);
+    ('756', '100000001', 'T100000003', 1, '2023-11-30 13:50:58.821', 'J', false),
+    ('462', '100000002', 'T100000002', 2, '2023-11-30 13:50:58.821', 'J', false),
+    ('462', '100000004', 'T100000002', 3, '2023-11-30 13:50:59.110', 'J', false),
+    ('756', '100000014', 'T100000003', 4, '2023-11-30 13:50:59.110', 'J', false);

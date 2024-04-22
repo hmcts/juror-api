@@ -51,7 +51,7 @@ public class TrialController {
      * Enable the officer to create a trial.
      *
      * @param payload - login information
-     * @throws MojException.BadRequest - thrown if there is an validation issue?
+     * @throws MojException.BadRequest - thrown if there is a validation issue?
      */
     @PostMapping("/create")
     @Operation(summary = "Enable the officer to create a trial")

@@ -42,6 +42,10 @@ import static uk.gov.hmcts.juror.api.moj.repository.IJurorPoolRepository.CHECKED
 class JurorPoolRepositoryImplTest {
 
     private static final QPanel PANEL = QPanel.panel;
+    private static final QJuror JUROR = QJuror.juror;
+    private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
+    private static final QAppearance APPEARANCE = QAppearance.appearance;
+    private static final QJurorStatus JUROR_STATUS = QJurorStatus.jurorStatus;
 
     @Mock
     private JPAQueryFactory queryFactory;
@@ -75,11 +79,11 @@ class JurorPoolRepositoryImplTest {
 
             jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner);
 
-            Mockito.verify(queryFactory, Mockito.times(1)).select(QJurorPool.jurorPool.juror.jurorNumber);
-            Mockito.verify(jpaQuery, Mockito.times(1)).from(QJurorPool.jurorPool);
-            Mockito.verify(jpaQuery, Mockito.times(1)).where(QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber)
-                .and(QJurorPool.jurorPool.owner.eq(owner))
-                .and(QJurorPool.jurorPool.isActive.isTrue()));
+            Mockito.verify(queryFactory, Mockito.times(1)).select(JUROR_POOL.juror.jurorNumber);
+            Mockito.verify(jpaQuery, Mockito.times(1)).from(JUROR_POOL);
+            Mockito.verify(jpaQuery, Mockito.times(1)).where(JUROR_POOL.pool.poolNumber.eq(poolNumber)
+                .and(JUROR_POOL.owner.eq(owner))
+                .and(JUROR_POOL.isActive.isTrue()));
             Mockito.verify(jpaQuery, Mockito.times(2)).fetch();
             Mockito.verifyNoMoreInteractions(jpaQuery);
         }
@@ -93,11 +97,11 @@ class JurorPoolRepositoryImplTest {
 
             jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner);
 
-            Mockito.verify(queryFactory, Mockito.times(1)).select(QJurorPool.jurorPool.juror.jurorNumber);
-            Mockito.verify(jpaQuery, Mockito.times(1)).from(QJurorPool.jurorPool);
-            Mockito.verify(jpaQuery, Mockito.times(1)).where(QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber)
-                .and(QJurorPool.jurorPool.owner.eq(owner))
-                .and(QJurorPool.jurorPool.isActive.isTrue()));
+            Mockito.verify(queryFactory, Mockito.times(1)).select(JUROR_POOL.juror.jurorNumber);
+            Mockito.verify(jpaQuery, Mockito.times(1)).from(JUROR_POOL);
+            Mockito.verify(jpaQuery, Mockito.times(1)).where(JUROR_POOL.pool.poolNumber.eq(poolNumber)
+                .and(JUROR_POOL.owner.eq(owner))
+                .and(JUROR_POOL.isActive.isTrue()));
             Mockito.verify(jpaQuery, Mockito.times(2)).fetch();
             Mockito.verifyNoMoreInteractions(jpaQuery);
         }
@@ -111,11 +115,11 @@ class JurorPoolRepositoryImplTest {
 
             jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner);
 
-            Mockito.verify(queryFactory, Mockito.times(1)).select(QJurorPool.jurorPool.juror.jurorNumber);
-            Mockito.verify(jpaQuery, Mockito.times(1)).from(QJurorPool.jurorPool);
-            Mockito.verify(jpaQuery, Mockito.times(1)).where(QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber)
-                .and(QJurorPool.jurorPool.owner.eq(owner))
-                .and(QJurorPool.jurorPool.isActive.isTrue()));
+            Mockito.verify(queryFactory, Mockito.times(1)).select(JUROR_POOL.juror.jurorNumber);
+            Mockito.verify(jpaQuery, Mockito.times(1)).from(JUROR_POOL);
+            Mockito.verify(jpaQuery, Mockito.times(1)).where(JUROR_POOL.pool.poolNumber.eq(poolNumber)
+                .and(JUROR_POOL.owner.eq(owner))
+                .and(JUROR_POOL.isActive.isTrue()));
             Mockito.verify(jpaQuery, Mockito.times(2)).fetch();
             Mockito.verifyNoMoreInteractions(jpaQuery);
         }
@@ -161,60 +165,62 @@ class JurorPoolRepositoryImplTest {
             final String ownerId = "415";
             final LocalDate today = LocalDate.now();
             jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().build(), ownerId);
-            Mockito.verify(queryFactory, Mockito.times(1)).from(QJurorPool.jurorPool);
-            Mockito.verify(jpaQuery, Mockito.times(1)).join(QJuror.juror);
+            Mockito.verify(queryFactory, Mockito.times(1)).from(JUROR_POOL);
+            Mockito.verify(jpaQuery, Mockito.times(1)).join(JUROR);
             Mockito.verify(jpaQuery, Mockito.times(1))
-                .on(QJurorPool.jurorPool.juror.jurorNumber.eq(QJuror.juror.jurorNumber));
-            Mockito.verify(jpaQuery, Mockito.times(1)).leftJoin(QAppearance.appearance);
+                .on(JUROR_POOL.juror.eq(JUROR));
+            Mockito.verify(jpaQuery, Mockito.times(1)).leftJoin(APPEARANCE);
             Mockito.verify(jpaQuery, Mockito.times(1))
-                .on(QJurorPool.jurorPool.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber)
-                    .and(QAppearance.appearance.attendanceDate.eq(today)));
-            Mockito.verify(jpaQuery, Mockito.times(1)).leftJoin(QJurorStatus.jurorStatus);
+                .on(JUROR.jurorNumber.eq(APPEARANCE.jurorNumber)
+                    .and(APPEARANCE.attendanceDate.eq(today)));
+            Mockito.verify(jpaQuery, Mockito.times(1)).leftJoin(JUROR_STATUS);
             Mockito.verify(jpaQuery, Mockito.times(1))
-                .on(QJurorPool.jurorPool.status.status.eq(QJurorStatus.jurorStatus.status));
+                .on(JUROR_POOL.status.status.eq(JUROR_STATUS.status));
             Mockito.verify(jpaQuery, Mockito.times(1)).leftJoin(PANEL);
             Mockito.verify(jpaQuery, Mockito.times(1))
-                .where(QJurorPool.jurorPool.isActive.isTrue());
+                .on(JUROR.eq(PANEL.juror));
             Mockito.verify(jpaQuery, Mockito.times(1))
-                .where(QJurorPool.jurorPool.pool.poolNumber.eq("41500000"));
+                .where(JUROR_POOL.isActive.isTrue());
+            Mockito.verify(jpaQuery, Mockito.times(1))
+                .where(JUROR_POOL.pool.poolNumber.eq("41500000"));
 
             Mockito.verify(jpaQuery, Mockito.times(1)).select(
-                Mockito.eq(QJurorPool.jurorPool.juror.jurorNumber),
-                Mockito.eq(QJurorPool.jurorPool.juror.firstName),
-                Mockito.eq(QJurorPool.jurorPool.juror.lastName),
-                Mockito.eq(QJurorPool.jurorPool.juror.postcode),
+                Mockito.eq(JUROR_POOL.juror.jurorNumber),
+                Mockito.eq(JUROR_POOL.juror.firstName),
+                Mockito.eq(JUROR_POOL.juror.lastName),
+                Mockito.eq(JUROR_POOL.juror.postcode),
                 Mockito.eq(new CaseBuilder()
-                    .when(Expressions.asBoolean(QJurorPool.jurorPool.onCall.eq(true)))
+                    .when(Expressions.asBoolean(JUROR_POOL.onCall.eq(true)))
                     .then(PoolMemberFilterRequestQuery.AttendanceEnum.ON_CALL.getKeyString())
                     .when(PANEL.result.eq(PanelResult.JUROR))
                     .then(PoolMemberFilterRequestQuery.AttendanceEnum.ON_A_TRIAL.getKeyString())
                     .when(Expressions.booleanOperation(
                         Ops.AND,
-                        QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
-                        QAppearance.appearance.attendanceDate.eq(LocalDate.now())
+                        APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+                        APPEARANCE.attendanceDate.eq(LocalDate.now())
                     ))
                     .then(PoolMemberFilterRequestQuery.AttendanceEnum.IN_ATTENDANCE.getKeyString())
-                    .when(QJurorPool.jurorPool.nextDate.eq(LocalDate.now()))
+                    .when(JUROR_POOL.nextDate.eq(LocalDate.now()))
                     .then(PoolMemberFilterRequestQuery.AttendanceEnum.OTHER.getKeyString())
                     .otherwise("").max()
                     .as(ATTENDANCE)),
                 Mockito.eq(Expressions.booleanOperation(
                     Ops.AND,
-                    QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
-                    QAppearance.appearance.attendanceDate.eq(LocalDate.now())
+                    APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+                    APPEARANCE.attendanceDate.eq(LocalDate.now())
                 ).as(CHECKED_IN_TODAY)),
-                Mockito.eq(QAppearance.appearance.timeIn),
-                Mockito.eq(QJurorPool.jurorPool.nextDate),
-                Mockito.eq(QJurorStatus.jurorStatus.statusDesc));
+                Mockito.eq(APPEARANCE.timeIn),
+                Mockito.eq(JUROR_POOL.nextDate),
+                Mockito.eq(JUROR_STATUS.statusDesc));
             Mockito.verify(jpaQuery, Mockito.times(1)).groupBy(
-                Mockito.eq(QJurorPool.jurorPool.juror.jurorNumber),
-                Mockito.eq(QJurorPool.jurorPool.juror.firstName),
-                Mockito.eq(QJurorPool.jurorPool.juror.lastName),
-                Mockito.eq(QJurorPool.jurorPool.juror.postcode),
+                Mockito.eq(JUROR_POOL.juror.jurorNumber),
+                Mockito.eq(JUROR_POOL.juror.firstName),
+                Mockito.eq(JUROR_POOL.juror.lastName),
+                Mockito.eq(JUROR_POOL.juror.postcode),
                 Mockito.eq(CHECKED_IN_TODAY),
-                Mockito.eq(QAppearance.appearance.timeIn),
-                Mockito.eq(QJurorPool.jurorPool.nextDate),
-                Mockito.eq(QJurorStatus.jurorStatus.statusDesc));
+                Mockito.eq(APPEARANCE.timeIn),
+                Mockito.eq(JUROR_POOL.nextDate),
+                Mockito.eq(JUROR_STATUS.statusDesc));
 
             Mockito.verify(jurorPoolRepository, Mockito.times(1)).getAttendanceCase();
             Mockito.verify(jurorPoolRepository, Mockito.times(2)).getCheckedInBoolean();
@@ -225,11 +231,11 @@ class JurorPoolRepositoryImplTest {
         void checkJurorOwner() {
             String ownerId = "415";
             jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().build(), ownerId);
-            Mockito.verify(jpaQuery, Mockito.times(1)).where(QJurorPool.jurorPool.owner.eq(ownerId));
+            Mockito.verify(jpaQuery, Mockito.times(1)).where(JUROR_POOL.owner.eq(ownerId));
 
             ownerId = SecurityUtil.BUREAU_OWNER;
             jurorPoolRepository.fetchFilteredPoolMembers(getSearchBuilder().build(), ownerId);
-            Mockito.verify(jpaQuery, Mockito.times(1)).where(QJurorPool.jurorPool.owner.eq(ownerId));
+            Mockito.verify(jpaQuery, Mockito.times(1)).where(JUROR_POOL.owner.eq(ownerId));
         }
 
         @Test
@@ -238,25 +244,25 @@ class JurorPoolRepositoryImplTest {
             Mockito.verify(jpaQuery, Mockito.times(3))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(0))
-                .where(QJuror.juror.jurorNumber.like("123456%"));
+                .where(JUROR.jurorNumber.like("123456%"));
             Mockito.verify(jpaQuery, Mockito.times(0))
-                .where(QJuror.juror.firstName.like("TEST%"));
+                .where(JUROR.firstName.like("TEST%"));
             Mockito.verify(jpaQuery, Mockito.times(0))
-                .where(QJuror.juror.lastName.like("PERSON%"));
+                .where(JUROR.lastName.like("PERSON%"));
             Mockito.verify(jpaQuery, Mockito.times(0))
                 .where(Expressions.booleanOperation(
                     Ops.AND,
-                    QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
-                    QAppearance.appearance.attendanceDate.eq(LocalDate.now())
+                    APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+                    APPEARANCE.attendanceDate.eq(LocalDate.now())
                 ));
             Mockito.verify(jpaQuery, Mockito.times(0))
-                .where(QJurorPool.jurorPool.nextDate.isNotNull());
+                .where(JUROR_POOL.nextDate.isNotNull());
             Mockito.verify(jpaQuery, Mockito.times(0))
-                .where(QJurorPool.jurorPool.nextDate.isNull());
+                .where(JUROR_POOL.nextDate.isNull());
             Mockito.verify(jpaQuery, Mockito.times(0))
-                .where(QJurorStatus.jurorStatus.statusDesc.in(Arrays.asList("Status1", "Status2")));
+                .where(JUROR_STATUS.statusDesc.in(Arrays.asList("Status1", "Status2")));
             Mockito.verify(jpaQuery, Mockito.times(0))
-                .where(QJurorPool.jurorPool.onCall.eq(true)
+                .where(JUROR_POOL.onCall.eq(true)
                     .or(Expressions.FALSE)
                     .or(Expressions.FALSE)
                     .or(Expressions.FALSE));
@@ -270,25 +276,25 @@ class JurorPoolRepositoryImplTest {
                     .or(Expressions.FALSE)
                     .or(Expressions.booleanOperation(
                         Ops.AND,
-                        QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
-                        QAppearance.appearance.attendanceDate.eq(LocalDate.now())))
+                        APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+                        APPEARANCE.attendanceDate.eq(LocalDate.now())))
                     .or(Expressions.FALSE));
             Mockito.verify(jpaQuery, Mockito.times(0))
                 .where(Expressions.FALSE
                     .or(Expressions.FALSE)
                     .or(Expressions.FALSE)
-                    .or(QJurorPool.jurorPool.nextDate.eq(LocalDate.now())
-                        .and(QJurorPool.jurorPool.onCall.ne(true))
+                    .or(JUROR_POOL.nextDate.eq(LocalDate.now())
+                        .and(JUROR_POOL.onCall.ne(true))
                         .and(PANEL.result.ne(PanelResult.JUROR))
-                        .and(QAppearance.appearance.appearanceStage.ne(AppearanceStage.CHECKED_IN))));
+                        .and(APPEARANCE.appearanceStage.ne(AppearanceStage.CHECKED_IN))));
             Mockito.verify(jpaQuery, Mockito.times(0))
-                .where(QJurorPool.jurorPool.onCall.eq(true)
+                .where(JUROR_POOL.onCall.eq(true)
                     .or(PANEL.result.eq(PanelResult.JUROR))
                     .or(Expressions.booleanOperation(
                         Ops.AND,
-                        QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
-                        QAppearance.appearance.attendanceDate.eq(LocalDate.now())))
-                    .or(QJurorPool.jurorPool.nextDate.eq(LocalDate.now())));
+                        APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+                        APPEARANCE.attendanceDate.eq(LocalDate.now())))
+                    .or(JUROR_POOL.nextDate.eq(LocalDate.now())));
 
         }
 
@@ -298,7 +304,7 @@ class JurorPoolRepositoryImplTest {
             Mockito.verify(jpaQuery, Mockito.times(4))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
-                .where(QJuror.juror.jurorNumber.like("123456%"));
+                .where(JUROR.jurorNumber.like("123456%"));
         }
 
         @Test
@@ -307,7 +313,7 @@ class JurorPoolRepositoryImplTest {
             Mockito.verify(jpaQuery, Mockito.times(4))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
-                .where(QJuror.juror.firstName.like("TEST%"));
+                .where(JUROR.firstName.like("TEST%"));
         }
 
         @Test
@@ -316,7 +322,7 @@ class JurorPoolRepositoryImplTest {
             Mockito.verify(jpaQuery, Mockito.times(4))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
-                .where(QJuror.juror.lastName.like("PERSON%"));
+                .where(JUROR.lastName.like("PERSON%"));
         }
 
         @Test
@@ -327,8 +333,8 @@ class JurorPoolRepositoryImplTest {
             Mockito.verify(jpaQuery, Mockito.times(0))
                 .where(Expressions.booleanOperation(
                     Ops.AND,
-                    QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
-                    QAppearance.appearance.attendanceDate.eq(LocalDate.now())
+                    APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+                    APPEARANCE.attendanceDate.eq(LocalDate.now())
                 ));
         }
 
@@ -340,8 +346,8 @@ class JurorPoolRepositoryImplTest {
             Mockito.verify(jpaQuery, Mockito.times(1))
                 .where(Expressions.booleanOperation(
                     Ops.AND,
-                    QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
-                    QAppearance.appearance.attendanceDate.eq(LocalDate.now())
+                    APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+                    APPEARANCE.attendanceDate.eq(LocalDate.now())
                 ));
         }
 
@@ -352,7 +358,7 @@ class JurorPoolRepositoryImplTest {
             Mockito.verify(jpaQuery, Mockito.times(4))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
-                .where(QJurorPool.jurorPool.nextDate.isNotNull());
+                .where(JUROR_POOL.nextDate.isNotNull());
         }
 
         @Test
@@ -362,7 +368,7 @@ class JurorPoolRepositoryImplTest {
             Mockito.verify(jpaQuery, Mockito.times(4))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
-                .where(QJurorPool.jurorPool.nextDate.isNull());
+                .where(JUROR_POOL.nextDate.isNull());
         }
 
         @Test
@@ -372,9 +378,9 @@ class JurorPoolRepositoryImplTest {
             Mockito.verify(jpaQuery, Mockito.times(3))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(0))
-                .where(QJurorPool.jurorPool.nextDate.isNull());
+                .where(JUROR_POOL.nextDate.isNull());
             Mockito.verify(jpaQuery, Mockito.times(0))
-                .where(QJurorPool.jurorPool.nextDate.isNotNull());
+                .where(JUROR_POOL.nextDate.isNotNull());
         }
 
         @Test
@@ -384,7 +390,7 @@ class JurorPoolRepositoryImplTest {
             Mockito.verify(jpaQuery, Mockito.times(4))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
-                .where(QJurorStatus.jurorStatus.statusDesc.in(Arrays.asList("Status1", "Status2")));
+                .where(JUROR_STATUS.statusDesc.in(Arrays.asList("Status1", "Status2")));
         }
 
         @Test
@@ -394,7 +400,7 @@ class JurorPoolRepositoryImplTest {
             Mockito.verify(jpaQuery, Mockito.times(4))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
-                .where(QJurorPool.jurorPool.onCall.eq(true)
+                .where(JUROR_POOL.onCall.eq(true)
                     .or(Expressions.FALSE)
                     .or(Expressions.FALSE)
                     .or(Expressions.FALSE));
@@ -422,8 +428,8 @@ class JurorPoolRepositoryImplTest {
                     .or(Expressions.FALSE)
                     .or(Expressions.booleanOperation(
                         Ops.AND,
-                        QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
-                        QAppearance.appearance.attendanceDate.eq(LocalDate.now())))
+                        APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+                        APPEARANCE.attendanceDate.eq(LocalDate.now())))
                     .or(Expressions.FALSE));
 
             Mockito.clearInvocations(jpaQuery);
@@ -436,10 +442,10 @@ class JurorPoolRepositoryImplTest {
                 .where(Expressions.FALSE
                     .or(Expressions.FALSE)
                     .or(Expressions.FALSE)
-                    .or(QJurorPool.jurorPool.nextDate.eq(LocalDate.now())
-                        .and(QJurorPool.jurorPool.onCall.ne(true))
+                    .or(JUROR_POOL.nextDate.eq(LocalDate.now())
+                        .and(JUROR_POOL.onCall.ne(true))
                         .and(PANEL.result.ne(PanelResult.JUROR))
-                        .and(QAppearance.appearance.appearanceStage.ne(AppearanceStage.CHECKED_IN))));
+                        .and(APPEARANCE.appearanceStage.ne(AppearanceStage.CHECKED_IN))));
 
             Mockito.clearInvocations(jpaQuery);
 
@@ -451,16 +457,16 @@ class JurorPoolRepositoryImplTest {
             Mockito.verify(jpaQuery, Mockito.times(4))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
-                .where(QJurorPool.jurorPool.onCall.eq(true)
+                .where(JUROR_POOL.onCall.eq(true)
                     .or(PANEL.result.eq(PanelResult.JUROR))
                     .or(Expressions.booleanOperation(
                         Ops.AND,
-                        QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
-                        QAppearance.appearance.attendanceDate.eq(LocalDate.now())))
-                    .or(QJurorPool.jurorPool.nextDate.eq(LocalDate.now())
-                        .and(QJurorPool.jurorPool.onCall.ne(true))
+                        APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+                        APPEARANCE.attendanceDate.eq(LocalDate.now())))
+                    .or(JUROR_POOL.nextDate.eq(LocalDate.now())
+                        .and(JUROR_POOL.onCall.ne(true))
                         .and(PANEL.result.ne(PanelResult.JUROR))
-                        .and(QAppearance.appearance.appearanceStage.ne(AppearanceStage.CHECKED_IN))));
+                        .and(APPEARANCE.appearanceStage.ne(AppearanceStage.CHECKED_IN))));
         }
     }
 

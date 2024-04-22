@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.TrialType;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.trial.ExemptionCertificateServiceImpl;
@@ -29,15 +30,17 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(SpringExtension.class)
 public class ExemptionCertificateServiceTest {
     @Mock
     private PanelRepository panelRepository;
-
     @Mock
     private TrialRepository trialRepository;
+    @Mock
+    private JurorPoolRepository jurorPoolRepository;
 
     @InjectMocks
     private ExemptionCertificateServiceImpl exemptionCertificateService;
@@ -143,9 +146,15 @@ public class ExemptionCertificateServiceTest {
         juror.setLastName("LNAME");
         juror.setJurorNumber("111111111");
 
-        CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setLocCourtName("Test location");
-        courtLocation.setLocCode("415");
+        Panel panel = new Panel();
+        panel.setJuror(juror);
+        panel.setResult(PanelResult.JUROR);
+        panel.setTrial(trial);
+        panel.setDateSelected(LocalDateTime.now());
+        return Collections.singletonList(panel);
+    }
+
+    JurorPool setupJurorPool(Juror juror, CourtLocation courtLocation) {
 
         PoolRequest request = new PoolRequest();
         request.setOwner("415");
@@ -156,11 +165,9 @@ public class ExemptionCertificateServiceTest {
         jurorPool.setJuror(juror);
         jurorPool.setPool(request);
 
-        Panel panel = new Panel();
-        panel.setJurorPool(jurorPool);
-        panel.setResult(PanelResult.JUROR);
-        panel.setTrial(trial);
-        panel.setDateSelected(LocalDateTime.now());
-        return Collections.singletonList(panel);
+        doReturn(jurorPool).when(jurorPoolRepository).findByJurorNumberAndIsActiveAndCourt(juror.getJurorNumber(),
+            true, courtLocation);
+
+        return jurorPool;
     }
 }

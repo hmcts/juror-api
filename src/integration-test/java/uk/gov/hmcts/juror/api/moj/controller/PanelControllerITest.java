@@ -25,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.EmpanelListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.PanelListDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -32,6 +33,7 @@ import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
+import uk.gov.hmcts.juror.api.moj.utils.PanelUtils;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -347,7 +349,7 @@ public class PanelControllerITest extends AbstractIntegrationTest {
                 }
                 case JUROR -> {
                     List<JurorHistory> jurorHistories =
-                        jurorHistoryRepository.findByJurorNumber(panelMember.getJurorPool().getJurorNumber());
+                        jurorHistoryRepository.findByJurorNumber(panelMember.getJurorNumber());
                     assertThat(jurorHistories.size()).as("Expected history items to be one").isEqualTo(1);
                     assertThat(jurorHistories.get(0).getHistoryCode().getCode()).as(
                             "Expected history code to be TADD")
@@ -366,18 +368,19 @@ public class PanelControllerITest extends AbstractIntegrationTest {
 
     private void validateNotUsedChallengedHistory(Panel panelMember) {
         List<JurorHistory> jurorHistories =
-            jurorHistoryRepository.findByJurorNumber(panelMember.getJurorPool().getJurorNumber());
+            jurorHistoryRepository.findByJurorNumber(panelMember.getJurorNumber());
         assertThat(jurorHistories.size()).as("Expected history items to be one").isEqualTo(1);
         assertThat(jurorHistories.get(0).getHistoryCode().getCode()).as(
                 "Expected history code to be VRET")
             .isEqualTo("VRET");
         Appearance appearance =
-            appearanceRepository.findByJurorNumberAndAttendanceDate(panelMember.getJurorPool().getJurorNumber(),
+            appearanceRepository.findByJurorNumberAndAttendanceDate(panelMember.getJurorNumber(),
                 LocalDate.now()).orElseThrow(() ->
                 new MojException.NotFound("No appearance record found", null));
+        JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panelMember);
         assertThat(appearance.getPoolNumber())
             .as("Expected value to be the current juror's pool number")
-            .isEqualTo(panelMember.getJurorPool().getPoolNumber());
+            .isEqualTo(jurorPool.getPoolNumber());
         assertThat(appearance.getTrialNumber())
             .as("Expected trial number value to be null")
             .isNull();

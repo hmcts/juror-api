@@ -1,12 +1,11 @@
 package uk.gov.hmcts.juror.api.moj.domain.trial;
 
 import jakarta.persistence.JoinColumn;
-import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
 
 public class PanelId {
     @JoinColumn(name = "juror_number", nullable = false)
-    @JoinColumn(name = "pool_number", nullable = false)
-    private JurorPool jurorPool;
+    private Juror juror;
     @JoinColumn(name = "loc_code")
     @JoinColumn(name = "trial_number")
     private Trial trial;

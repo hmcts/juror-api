@@ -159,7 +159,6 @@ public class MessagingServiceImpl implements MessagingService {
             }
             if (jurors.stream()
                 .anyMatch(jurorNumberAndSendType -> !isJurorOnTrial(jurorNumberAndSendType.getJurorNumber(),
-                    jurorNumberAndSendType.getPoolNumber(),
                     trialNumber, locCode))) {
                 throw new MojException.BusinessRuleViolation("Juror is not apart of trial", JUROR_NOT_APART_OF_TRIAL);
             }
@@ -218,11 +217,9 @@ public class MessagingServiceImpl implements MessagingService {
     }
 
 
-    boolean isJurorOnTrial(String jurorNumber, String poolNumber, String trialNumber, String locCode) {
+    boolean isJurorOnTrial(String jurorNumber, String trialNumber, String locCode) {
         return panelRepository
-            .existsByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolPoolPoolNumberAndJurorPoolJurorJurorNumber(
-                trialNumber, locCode, poolNumber, jurorNumber
-            );
+            .existsByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(trialNumber, locCode, jurorNumber);
     }
 
     @SuppressWarnings("PMD.CyclomaticComplexity")

@@ -150,7 +150,8 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                     .where(APPEARANCE.attendanceType.eq(AttendanceType.ABSENT))
                     .orderBy(APPEARANCE.attendanceDate.desc());
             case CERTIFICATE_OF_EXEMPTION -> query
-                .join(PANEL).on(PANEL.jurorPool.eq(JUROR_POOL).and(PANEL.trial.eq(TRIAL)))
+                .join(PANEL).on(PANEL.juror.eq(JUROR)
+                    .and(PANEL.trial.courtLocation.eq(POOL_REQUEST.courtLocation)))
                 .where(PANEL.trial.trialNumber.eq(trialNumber))
                 .orderBy(PANEL.trial.trialNumber.desc());
             case CERTIFICATE_OF_ATTENDANCE ->

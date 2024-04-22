@@ -29,6 +29,6 @@ insert into juror_mod.trial (trial_number, loc_code, description, judge, trial_t
 	('T10000001','457', 'TEST DEFENDANT', 3,'CIV', current_date, false, 3);
 
 
-INSERT INTO juror_mod.juror_trial (loc_code, juror_number, trial_number, pool_number, rand_number, date_selected, "result", completed) values
-	('415', '123456789','T10000000', '415220502', 10, '2024-02-22 13:50:59.110', '', false),
-	('457', '987654321','T10000001', '415220503', 5, '2024-02-22 13:50:58.821', '', false);
+INSERT INTO juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed) values
+	('415', '123456789','T10000000', 10, '2024-02-22 13:50:59.110', '', false),
+	('457', '987654321','T10000001', 5, '2024-02-22 13:50:58.821', '', false);

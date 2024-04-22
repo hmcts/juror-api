@@ -39,7 +39,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
     EntityManager entityManager;
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
     private static final QJuror JUROR = QJuror.juror;
-    private static final QPanel JUROR_TRIAL = QPanel.panel;
+    private static final QPanel PANEL = QPanel.panel;
 
     private static final QTrial TRIAL = QTrial.trial;
 
@@ -81,15 +81,15 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
         JPAQuery<Tuple> query = queryFactory.select(returnFields.toArray(new Expression<?>[0]))
             .from(JUROR)
             .join(JUROR_POOL)
-            .on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
+            .on(JUROR.eq(JUROR_POOL.juror));
         if (isCourt || !locCode.equals("400")) {
             query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));
         }
 
         if (search.getTrialNumber() != null || !simpleResponse) {
-            query.leftJoin(JUROR_TRIAL).on(
-                JUROR_POOL.eq(JUROR_TRIAL.jurorPool),
-                JUROR_TRIAL.result.in(PanelResult.JUROR),
+            query.leftJoin(PANEL).on(
+                JUROR.eq(PANEL.juror),
+                PANEL.result.in(PanelResult.JUROR),
                 TRIAL.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode),
                 JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR)
             );
@@ -144,7 +144,7 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
         JPQLQuery<Tuple> query = queryFactory.select(returnFields.toArray(new Expression<?>[0]))
             .from(JUROR)
             .join(JUROR_POOL)
-            .on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
+            .on(JUROR.eq(JUROR_POOL.juror));
 
         if (SecurityUtil.isCourt()) {
             query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));

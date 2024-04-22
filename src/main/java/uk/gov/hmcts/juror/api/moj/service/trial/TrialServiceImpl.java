@@ -36,12 +36,14 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.CourtroomRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.JudgeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorHistoryUtils;
+import uk.gov.hmcts.juror.api.moj.utils.PanelUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -80,9 +82,13 @@ public class TrialServiceImpl implements TrialService {
     @Autowired
     private AppearanceRepository appearanceRepository;
     @Autowired
+    private JurorPoolRepository jurorPoolRepository;
+    @Autowired
     private CompleteServiceService completeService;
 
     private static final int PAGE_SIZE = 25;
+    private static final String CANNOT_FIND_TRIAL_ERROR_MESSAGE = "Cannot find trial with number: %s for "
+        + "court location %s";
 
     @Override
     public TrialSummaryDto createTrial(BureauJwtPayload payload, TrialDto trialDto) {
@@ -125,9 +131,9 @@ public class TrialServiceImpl implements TrialService {
 
         // check the trial exists
         Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialDto.getCaseNumber(),
-            trialDto.getCourtLocation())
-            .orElseThrow(() -> new MojException.NotFound(String.format("Cannot find trial with "
-                + "number: %s for court location %s", trialDto.getCaseNumber(), trialDto.getCourtLocation()), null));
+                trialDto.getCourtLocation())
+            .orElseThrow(() -> new MojException.NotFound(String.format(CANNOT_FIND_TRIAL_ERROR_MESSAGE,
+                trialDto.getCaseNumber(), trialDto.getCourtLocation()), null));
 
         // check the trial is not completed
         if (trial.getTrialEndDate() != null) {
@@ -196,13 +202,9 @@ public class TrialServiceImpl implements TrialService {
         }
 
         Trial trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNo, locCode)
-            .orElseThrow(() -> new MojException.NotFound(String.format("Cannot find trial with "
-                + "number: %s for court location %s", trialNo, locCode), null));
+            .orElseThrow(() -> new MojException.NotFound(String.format(CANNOT_FIND_TRIAL_ERROR_MESSAGE,
+                trialNo, locCode), null));
 
-        if (trial == null) {
-            throw new MojException.NotFound("Cannot find trial %s for court location %s.".formatted(trialNo, locCode),
-                null);
-        }
         return createTrialSummary(trial, trial.getCourtroom(), trial.getJudge(), true);
     }
 
@@ -222,14 +224,18 @@ public class TrialServiceImpl implements TrialService {
         jurorStatus.setStatus(IJurorStatus.RESPONDED);
         for (Panel panel : panelMembersToReturn) {
             panel.setResult(PanelResult.RETURNED);
-            panel.getJurorPool().setStatus(jurorStatus);
             panel.setCompleted(true);
             panelRepository.saveAndFlush(panel);
-            log.debug(String.format("updated juror trial record for juror %s", panel.getJurorPool().getJurorNumber()));
 
-            JurorHistoryUtils.saveJurorHistory(HistoryCodeMod.RETURN_PANEL, panel.getJurorPool().getJurorNumber(),
-                panel.getJurorPool().getPoolNumber(), payload, jurorHistoryRepository);
-            log.debug(String.format("saved history item for juror %s", panel.getJurorPool().getJurorNumber()));
+            JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
+            jurorPool.setStatus(jurorStatus);
+            jurorPoolRepository.saveAndFlush(jurorPool);
+
+            log.debug(String.format("updated juror trial record for juror %s", panel.getJurorNumber()));
+
+            JurorHistoryUtils.saveJurorHistory(HistoryCodeMod.RETURN_PANEL, panel.getJurorNumber(),
+                jurorPool.getPoolNumber(), payload, jurorHistoryRepository);
+            log.debug(String.format("saved history item for juror %s", panel.getJurorNumber()));
         }
     }
 
@@ -251,11 +257,12 @@ public class TrialServiceImpl implements TrialService {
 
         for (Panel panel : juryMembersToBeReturned) {
 
-            final String jurorNumber = panel.getJurorPool().getJurorNumber();
+            final String jurorNumber = panel.getJurorNumber();
+            JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
 
             if (StringUtils.isNotEmpty(returnJuryDto.getCheckIn())) {
-                Appearance appearance = getJurorAppearanceForDate(panel.getJurorPool(),
-                    returnJuryDto.getAttendanceDate());
+
+                Appearance appearance = getJurorAppearanceForDate(jurorPool, returnJuryDto.getAttendanceDate());
 
                 // only apply check in time for those that have not been checked in yet
                 if (appearance.getTimeIn() == null) {
@@ -276,21 +283,22 @@ public class TrialServiceImpl implements TrialService {
 
             panel.setResult(PanelResult.RETURNED);
             panel.setCompleted(true);
-            panel.getJurorPool().setStatus(jurorStatus);
             panelRepository.saveAndFlush(panel);
+
+            jurorPool.setStatus(jurorStatus);
 
             log.debug(String.format("updated juror trial record for juror %s", jurorNumber));
 
             JurorHistoryUtils.saveJurorHistory(HistoryCodeMod.RETURN_PANEL, jurorNumber,
-                panel.getJurorPool().getPoolNumber(), payload, jurorHistoryRepository);
+                jurorPool.getPoolNumber(), payload, jurorHistoryRepository);
 
             log.debug(String.format(String.format("saved history item for juror %s", jurorNumber)));
 
             if (Boolean.TRUE.equals(returnJuryDto.getCompleted())) {
                 CompleteServiceJurorNumberListDto dto = new CompleteServiceJurorNumberListDto();
-                dto.setJurorNumbers(Collections.singletonList(panel.getJurorPool().getJurorNumber()));
+                dto.setJurorNumbers(Collections.singletonList(panel.getJurorNumber()));
                 dto.setCompletionDate(LocalDate.now());
-                completeService.completeService(panel.getJurorPool().getPoolNumber(), dto);
+                completeService.completeService(jurorPool.getPoolNumber(), dto);
             }
         }
     }
@@ -308,14 +316,9 @@ public class TrialServiceImpl implements TrialService {
 
         Trial trial = trialRepository
             .findByTrialNumberAndCourtLocationLocCode(dto.getTrialNumber(), dto.getLocationCode())
-            .orElseThrow(() -> new MojException.NotFound(String.format("Cannot find trial with "
-                + "number: %s for court location %s", dto.getTrialNumber(), dto.getLocationCode()), null));
+            .orElseThrow(() -> new MojException.NotFound(String.format(CANNOT_FIND_TRIAL_ERROR_MESSAGE,
+                dto.getTrialNumber(), dto.getLocationCode()), null));
 
-        if (trial == null) {
-            throw new MojException.NotFound(
-                "Cannot find trial %s for court location %s"
-                    .formatted(dto.getTrialNumber(), dto.getLocationCode()), null);
-        }
 
         trial.setTrialEndDate(dto.getTrialEndDate());
         log.info("trial {} has been completed", trial.getTrialNumber());
@@ -327,9 +330,10 @@ public class TrialServiceImpl implements TrialService {
         List<Panel> panelMembersToReturn = new ArrayList<>();
         for (Panel panel : panelList) {
             for (JurorDetailRequestDto dto : jurorList) {
-                if (dto.getJurorNumber().equals(panel.getJurorPool().getJurorNumber())
+                if (dto.getJurorNumber().equals(panel.getJurorNumber())
                     && panel.getResult() == panelResult
-                    && panel.getJurorPool().getStatus().getStatus() == jurorStatus) {
+                    && PanelUtils.getAssociatedJurorPool(jurorPoolRepository,
+                    panel).getStatus().getStatus() == jurorStatus) {
                     panelMembersToReturn.add(panel);
                     break;
                 }

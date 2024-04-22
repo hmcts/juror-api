@@ -580,7 +580,6 @@ class MessagingServiceImplTest {
             doReturn(true).when(messagingService).isJurorOnTrial(
                 anyString(),
                 anyString(),
-                anyString(),
                 anyString()
             );
 
@@ -598,16 +597,16 @@ class MessagingServiceImplTest {
                 );
 
             verify(messagingService, times(1))
-                .isJurorOnTrial("100000001", "200000001",
-                    TestConstants.VALID_TRIAL_NUMBER, TestConstants.VALID_COURT_LOCATION);
+                .isJurorOnTrial("100000001", TestConstants.VALID_TRIAL_NUMBER,
+                    TestConstants.VALID_COURT_LOCATION);
 
             verify(messagingService, times(1))
-                .isJurorOnTrial("100000002", "200000002",
-                    TestConstants.VALID_TRIAL_NUMBER, TestConstants.VALID_COURT_LOCATION);
+                .isJurorOnTrial("100000002", TestConstants.VALID_TRIAL_NUMBER,
+                    TestConstants.VALID_COURT_LOCATION);
 
             verify(messagingService, times(1))
-                .isJurorOnTrial("100000003", "200000003",
-                    TestConstants.VALID_TRIAL_NUMBER, TestConstants.VALID_COURT_LOCATION);
+                .isJurorOnTrial("100000003", TestConstants.VALID_TRIAL_NUMBER,
+                    TestConstants.VALID_COURT_LOCATION);
         }
 
         @Test
@@ -645,7 +644,6 @@ class MessagingServiceImplTest {
                 TestConstants.VALID_COURT_LOCATION
             );
             doReturn(false).when(messagingService).isJurorOnTrial(
-                anyString(),
                 anyString(),
                 anyString(),
                 anyString()
@@ -979,15 +977,13 @@ class MessagingServiceImplTest {
         void positiveTrue() {
             doReturn(true)
                 .when(panelRepository)
-                .existsByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolPoolPoolNumberAndJurorPoolJurorJurorNumber(
+                .existsByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
                     TestConstants.VALID_TRIAL_NUMBER,
                     TestConstants.VALID_COURT_LOCATION,
-                    TestConstants.VALID_JUROR_NUMBER,
-                    TestConstants.VALID_POOL_NUMBER);
+                    TestConstants.VALID_JUROR_NUMBER);
 
             assertThat(messagingService.isJurorOnTrial(
                 TestConstants.VALID_JUROR_NUMBER,
-                TestConstants.VALID_POOL_NUMBER,
                 TestConstants.VALID_TRIAL_NUMBER,
                 TestConstants.VALID_COURT_LOCATION
             )).isTrue();
@@ -998,15 +994,13 @@ class MessagingServiceImplTest {
         void positiveFalse() {
             doReturn(false)
                 .when(panelRepository)
-                .existsByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorPoolPoolPoolNumberAndJurorPoolJurorJurorNumber(
+                .existsByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
                     TestConstants.VALID_JUROR_NUMBER,
-                    TestConstants.VALID_POOL_NUMBER,
                     TestConstants.VALID_TRIAL_NUMBER,
                     TestConstants.VALID_COURT_LOCATION);
 
             assertThat(messagingService.isJurorOnTrial(
                 TestConstants.VALID_JUROR_NUMBER,
-                TestConstants.VALID_POOL_NUMBER,
                 TestConstants.VALID_TRIAL_NUMBER,
                 TestConstants.VALID_COURT_LOCATION
             )).isFalse();
