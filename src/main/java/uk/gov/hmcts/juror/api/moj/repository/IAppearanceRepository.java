@@ -37,9 +37,9 @@ public interface IAppearanceRepository {
 
     long countPendingApproval(String locCode, boolean isCash);
 
-    Optional<Appearance> findByJurorNumberAndPoolNumberAndAttendanceDateAndVersion(
+    Optional<Appearance> findByJurorNumberAndLocCodeAndAttendanceDateAndVersion(
         String jurorNumber,
-        String poolNumber,
+        String locCode,
         LocalDate attendanceDate,
         long appearanceVersion);
 

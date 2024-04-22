@@ -173,7 +173,6 @@ public class JurorExpenseController {
     @GetMapping("/{juror_number}/counts")
     @Operation(summary = "Get the count of each type of expense for a juror and pool number.")
     @ResponseStatus(HttpStatus.OK)
-    @IsCourtUser
     public ResponseEntity<ExpenseCount> getCounts(
         @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable(name = "juror_number") @JurorNumber @Valid String jurorNumber
@@ -197,7 +196,6 @@ public class JurorExpenseController {
     @GetMapping("/{payment_method}/pending-approval")
     @Operation(summary = "Get a list of all of a jurors expenses that are pending approval/re-approval")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH)
     public ResponseEntity<PendingApprovalList> getExpensesForApproval(
         @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable("payment_method") @Valid @NotNull PaymentMethod paymentMethod,
@@ -216,7 +214,6 @@ public class JurorExpenseController {
         + " and " + SecurityUtil.COURT_AUTH
         + " and " + SecurityUtil.IS_MANAGER + ")")
     @ResponseStatus(HttpStatus.OK)
-    @Transactional
     public ResponseEntity<Void> approveExpenses(
         @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable("payment_method") @Valid @NotNull PaymentMethod paymentMethod,
@@ -230,7 +227,6 @@ public class JurorExpenseController {
     @Operation(summary = "Summarise the total expenses for a juror in draft, for approval and approved "
         + "in a given pool.")
     @ResponseStatus(HttpStatus.OK)
-    @IsCourtUser
     public ResponseEntity<SummaryExpenseDetailsDto> calculateSummaryTotals(
         @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @P("juror-number") @PathVariable("juror-number") @Valid @NotBlank @JurorNumber String jurorNumber) {
@@ -238,7 +234,6 @@ public class JurorExpenseController {
     }
 
 
-    //Unrelated
     @GetMapping("/unpaid-summary")
     @Operation(summary = "Retrieve a list of jurors with outstanding unpaid "
         + "expenses. List will always be filtered by court location (using location code) and additionally can be "

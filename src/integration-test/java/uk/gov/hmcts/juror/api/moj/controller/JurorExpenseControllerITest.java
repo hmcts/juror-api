@@ -169,7 +169,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         long appearanceVersion) {
         assertThat(financialAuditDetailsAppearance).isNotNull();
         assertThat(financialAuditDetailsAppearance.getFinancialAuditId()).isEqualTo(id);
-        assertThat(financialAuditDetailsAppearance.getPoolNumber()).isEqualTo(POOL_NUMBER);
         assertThat(financialAuditDetailsAppearance.getAttendanceDate()).isEqualTo(attendanceDate);
         assertThat(financialAuditDetailsAppearance.getAppearanceVersion()).isEqualTo(appearanceVersion);
     }
@@ -2646,8 +2645,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         + "juror_number, loc_code) VALUES ("
                         + "3, 1, 6, 'FOR_APPROVAL', 'COURT_USER', '2023-01-01 00:00:00','641500020','415')",
                     "INSERT INTO juror_mod.financial_audit_details_appearances ("
-                        + "financial_audit_id, attendance_date,appearance_version, pool_number) VALUES "
-                        + "(3, '2023-01-14', 1,'415230101')"
+                        + "financial_audit_id, attendance_date,appearance_version) VALUES "
+                        + "(3, '2023-01-14', 1)"
                 })
             void negativeUserCanNotApprove() throws Exception {
                 assertBusinessRuleViolation(triggerInvalid(COURT_LOCATION,
