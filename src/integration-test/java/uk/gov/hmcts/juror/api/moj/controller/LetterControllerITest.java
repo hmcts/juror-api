@@ -4933,15 +4933,14 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     RequestEntity<CertificateOfExemptionRequestDto> request = new RequestEntity<>(requestDto,
                         httpHeaders, POST,
                         URI.create(PRINT_CERTIFICATE_OF_EXEMPTION_URL));
-                    ResponseEntity<PrintLetterDataResponseDto[]> response = template.exchange(request,
-                        PrintLetterDataResponseDto[].class);
+                    ResponseEntity<String> response = template.exchange(request,
+                        String.class);
 
                     assertThat(response).isNotNull();
                     assertThat(response.getStatusCode())
-                        .as("Expect HTTP Response to be OK - endpoint is permitted for Court Users only")
-                        .isEqualTo(OK);
+                        .isEqualTo(BAD_REQUEST);
                     assertThat(response.getBody()).isNotNull();
-                    assertThat(response.getBody().length).as("Expecting results to be zero").isEqualTo(0);
+                    assertThat(response.getBody()).contains("Cannot generate letter data for juror(s):\\n123456789");
                 }
 
                 @Test
@@ -7047,6 +7046,30 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertForbiddenResponse(response, String.valueOf(uri));
         }
 
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Issue Certificate of Attendance Letter - Absent Juror - English")
+        void englishLetterAbsentJuror() {
+            final String jurorNumber = "555555563";
+            final String courtOwner = "415";
+            final String payload = createBureauJwt("COURT_USER", courtOwner);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
+
+            PrintLettersRequestDto requestDto = PrintLettersRequestDto.builder()
+                .jurorNumbers(List.of(jurorNumber))
+                .letterType(CourtLetterType.CERTIFICATE_OF_ATTENDANCE)
+                .build();
+
+            RequestEntity<PrintLettersRequestDto> requestEntity
+                = new RequestEntity<>(requestDto, httpHeaders, POST, uri);
+            ResponseEntity<String> response = template.exchange(requestEntity,
+                String.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
+            assertThat(response.getBody()).contains("Cannot generate letter data for juror(s):\\n555555563");
+        }
 
         void verifyDataEnglish(PrintLetterDataResponseDto response,
                                LocalDate attendanceDate,

@@ -68,7 +68,10 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
 
         orderResultsBasedOnLetterType(query, courtLetterType);
 
-        return query.fetchOne();
+
+        // multiple records can be expected if there are multiple history events for a juror - the data is sorted by
+        // history date descending so fetching first will retrieve the latest record.
+        return query.fetchFirst();
     }
 
     @Override
@@ -88,7 +91,8 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
         filterDataBasedOnLetterType(letterType, query, null);
 
         // filter based on date
-        if (SHOW_CAUSE.equals(letterType) || FAILED_TO_ATTEND.equals(letterType)) {
+        if (SHOW_CAUSE.equals(letterType)
+            || FAILED_TO_ATTEND.equals(letterType)) {
             query.where(APPEARANCE.attendanceDate.eq(letterDate));
         }
 
@@ -149,8 +153,12 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                 .join(PANEL).on(PANEL.jurorPool.eq(JUROR_POOL).and(PANEL.trial.eq(TRIAL)))
                 .where(PANEL.trial.trialNumber.eq(trialNumber))
                 .orderBy(PANEL.trial.trialNumber.desc());
-            case CERTIFICATE_OF_ATTENDANCE -> {
-            } // Does not do anything
+            case CERTIFICATE_OF_ATTENDANCE ->
+                query.join(APPEARANCE).on(JUROR.jurorNumber.eq(APPEARANCE.jurorNumber)
+                        .and(COURT_LOCATION.eq(APPEARANCE.courtLocation)))
+                    .where(APPEARANCE.noShow.isFalse().or(APPEARANCE.noShow.isNull()))
+                    .where(APPEARANCE.attendanceType.ne(AttendanceType.ABSENT).or(APPEARANCE.attendanceType.isNull()))
+                    .orderBy(APPEARANCE.attendanceDate.desc());
 
             default -> throw new MojException.NotImplemented("letter type not implemented", null);
         }
