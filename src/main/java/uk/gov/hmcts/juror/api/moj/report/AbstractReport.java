@@ -80,6 +80,9 @@ public abstract class AbstractReport<T> {
 
     final List<Consumer<StandardReportRequest>> authenticationConsumers;
 
+    public AbstractReport(EntityPath<?> from, DataType... dataType) {
+        this(null,from,dataType);
+    }
     public AbstractReport(PoolRequestRepository poolRequestRepository, EntityPath<?> from, DataType... dataType) {
         this.poolRequestRepository = poolRequestRepository;
         this.from = from;
@@ -100,7 +103,7 @@ public abstract class AbstractReport<T> {
     }
 
     public void isCourtUserOnly() {
-        authenticationConsumers.add(request -> {
+        addAuthenticationConsumer(request -> {
             if (!SecurityUtil.isCourt()) {
                 throw new MojException.Forbidden("User not allowed to access this report", null);
             }
@@ -108,7 +111,7 @@ public abstract class AbstractReport<T> {
     }
 
     public void isBureauUserOnly() {
-        authenticationConsumers.add(request -> {
+        addAuthenticationConsumer(request -> {
             if (!SecurityUtil.isBureau()) {
                 throw new MojException.Forbidden("User not allowed to access this report", null);
             }
@@ -266,10 +269,16 @@ public abstract class AbstractReport<T> {
         StandardReportRequest request,
         StandardReportResponse.TableData<T> tableData);
 
-    void checkOwnership(PoolRequest poolRequest, boolean allowBureau) {
+    protected void checkOwnership(PoolRequest poolRequest, boolean allowBureau) {
         if (!poolRequest.getOwner().equals(SecurityUtil.getActiveOwner())
             && !(SecurityUtil.isBureau() && allowBureau)) {
             throw new MojException.Forbidden("User not allowed to access this pool", null);
+        }
+    }
+    protected void checkOwnership(String locCode, boolean allowBureau) {
+        if (!SecurityUtil.getCourts().contains(locCode)
+            && !(SecurityUtil.isBureau() && allowBureau)) {
+            throw new MojException.Forbidden("User not allowed to access court", null);
         }
     }
 
@@ -348,6 +357,12 @@ public abstract class AbstractReport<T> {
         }
 
         public interface RequireToDate {
+        }
+
+        public interface RequireDate {
+        }
+
+        public interface RequireLocCode {
         }
     }
 }
