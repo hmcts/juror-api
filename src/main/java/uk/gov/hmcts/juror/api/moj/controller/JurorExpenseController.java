@@ -221,13 +221,13 @@ public class JurorExpenseController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping("/{juror-number}/summary/totals")
+    @GetMapping("/{juror_number}/summary/totals")
     @Operation(summary = "Summarise the total expenses for a juror in draft, for approval and approved "
         + "in a given pool.")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<SummaryExpenseDetailsDto> calculateSummaryTotals(
         @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
-        @P("juror-number") @PathVariable("juror-number") @Valid @NotBlank @JurorNumber String jurorNumber) {
+        @PathVariable("juror_number") @Valid @NotBlank @JurorNumber String jurorNumber) {
         return ResponseEntity.ok(jurorExpenseService.calculateSummaryTotals(locCode, jurorNumber));
     }
 
@@ -269,7 +269,7 @@ public class JurorExpenseController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> setDefaultExpenses(
         @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
-        @P("juror_number") @PathVariable("juror_number") @Valid @NotBlank @JurorNumber String jurorNumber,
+        @PathVariable("juror_number") @Valid @NotBlank @JurorNumber String jurorNumber,
         @Valid @RequestBody RequestDefaultExpensesDto dto) {
         jurorExpenseService.setDefaultExpensesForJuror(jurorNumber, dto);
         return new ResponseEntity<>(HttpStatus.OK);
