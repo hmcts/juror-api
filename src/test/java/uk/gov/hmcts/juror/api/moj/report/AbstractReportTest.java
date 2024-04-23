@@ -847,8 +847,8 @@ class AbstractReportTest {
             verify(poolRequest, times(1)).getReturnDate();
             verify(courtLocation, times(1)).getName();
             verify(courtLocation, times(1)).getLocCode();
-            verify(poolRequest, times(2)).getCourtLocation();
-            doNothing().when(report).checkOwnership(any(PoolRequest.class), anyBoolean());
+            verify(poolRequest, times(1)).getCourtLocation();
+            verify(report, never()).checkOwnership(any(PoolRequest.class), anyBoolean());
             verifyNoMoreInteractions(poolRequest, poolType, courtLocation, request);
         }
 
@@ -908,7 +908,7 @@ class AbstractReportTest {
             verify(poolRequest, times(1)).getReturnDate();
             verify(courtLocation, times(1)).getName();
             verify(courtLocation, times(1)).getLocCode();
-            verify(poolRequest, times(2)).getCourtLocation();
+            verify(poolRequest, times(1)).getCourtLocation();
             verify(report, times(1)).checkOwnership(poolRequest, false);
             verifyNoMoreInteractions(poolRequest, poolType, courtLocation, request);
         }

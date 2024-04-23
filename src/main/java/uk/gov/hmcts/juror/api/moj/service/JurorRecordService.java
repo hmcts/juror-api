@@ -77,8 +77,9 @@ public interface JurorRecordService {
 
     void undoUpdateJurorToFailedToAttend(String jurorNumber, String poolNumber);
 
-    JurorAttendanceDetailsResponseDto getJurorAttendanceDetails(String jurorNumber,
-                                                                String poolNumber, BureauJwtPayload payload);
+    JurorAttendanceDetailsResponseDto getJurorAttendanceDetails(String locCode,
+                                                                String jurorNumber,
+                                                                BureauJwtPayload payload);
 
     PendingJurorsResponseDto getPendingJurors(String locCode, PendingJurorStatus status);
 

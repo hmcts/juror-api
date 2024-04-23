@@ -59,15 +59,14 @@ class AbstractGroupedReportTest {
 
     @Test
     void positiveCombine() {
-        DataType[] dataTypes = AbstractGroupedReport.combine(DataType.JUROR_NUMBER,
-            new DataType[]{DataType.FIRST_NAME, DataType.CONTACT_DETAILS});
+        IDataType[] dataTypes = AbstractGroupedReport.combine(DataType.JUROR_NUMBER,
+            DataType.FIRST_NAME, DataType.CONTACT_DETAILS);
         assertThat(dataTypes).containsExactly(DataType.JUROR_NUMBER, DataType.FIRST_NAME, DataType.CONTACT_DETAILS);
     }
 
     @Test
     void positiveCombineNoAdditional() {
-        DataType[] dataTypes = AbstractGroupedReport.combine(DataType.JUROR_NUMBER,
-            new DataType[]{});
+        IDataType[] dataTypes = AbstractGroupedReport.combine(DataType.JUROR_NUMBER);
         assertThat(dataTypes).containsExactly(DataType.JUROR_NUMBER);
     }
 

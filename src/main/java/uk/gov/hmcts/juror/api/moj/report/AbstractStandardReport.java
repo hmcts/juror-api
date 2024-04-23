@@ -10,8 +10,13 @@ import java.util.List;
 
 public abstract class AbstractStandardReport extends AbstractReport<List<LinkedHashMap<String, Object>>> {
 
+    public AbstractStandardReport(EntityPath<?> from,
+                                  IDataType... dataType) {
+        this(null, from, dataType);
+    }
+
     public AbstractStandardReport(PoolRequestRepository poolRequestRepository, EntityPath<?> from,
-                                  DataType... dataType) {
+                                  IDataType... dataType) {
         super(poolRequestRepository, from, dataType);
     }
     public AbstractStandardReport(EntityPath<?> from,
