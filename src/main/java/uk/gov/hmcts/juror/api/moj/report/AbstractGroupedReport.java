@@ -19,19 +19,24 @@ public abstract class AbstractGroupedReport extends AbstractReport<Map<String, L
     final DataType groupBy;
     final boolean removeGroupByFromResponse;
 
+    public AbstractGroupedReport(EntityPath<?> from, DataType groupBy,
+                                 boolean removeGroupByFromResponse, IDataType... dataType) {
+        this(null, from, groupBy, removeGroupByFromResponse, dataType);
+    }
+
     public AbstractGroupedReport(PoolRequestRepository poolRequestRepository,
                                  EntityPath<?> from, DataType groupBy,
-                                 boolean removeGroupByFromResponse, DataType... dataType) {
+                                 boolean removeGroupByFromResponse, IDataType... dataType) {
         super(poolRequestRepository, from, combine(groupBy, dataType));
         this.removeGroupByFromResponse = removeGroupByFromResponse;
         this.groupBy = groupBy;
     }
 
-    static DataType[] combine(DataType groupBy, DataType... dataType) {
-        List<DataType> list = new ArrayList<>();
+    static IDataType[] combine(DataType groupBy, IDataType... dataType) {
+        List<IDataType> list = new ArrayList<>();
         list.add(groupBy);
         list.addAll(Arrays.asList(dataType));
-        return list.toArray(new DataType[0]);
+        return list.toArray(new IDataType[0]);
     }
 
     @Override

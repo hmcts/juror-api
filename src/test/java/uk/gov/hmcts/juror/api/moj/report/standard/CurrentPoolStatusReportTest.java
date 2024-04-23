@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
+import uk.gov.hmcts.juror.api.moj.report.IDataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
 import java.util.LinkedHashMap;
@@ -55,7 +56,7 @@ class CurrentPoolStatusReportTest extends AbstractStandardReportTestSupport<Curr
 
     @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
-        doNothing().when(report).addGroupBy(any(), any(DataType[].class));
+        doNothing().when(report).addGroupBy(any(), any(IDataType[].class));
         report.preProcessQuery(query, request);
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.poolNumber.eq(TestConstants.VALID_POOL_NUMBER));
