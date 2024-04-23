@@ -62,8 +62,8 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.BulkService;
 import uk.gov.hmcts.juror.api.moj.service.JurorRecordService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 import uk.gov.hmcts.juror.api.validation.JurorNumber;
-import uk.gov.hmcts.juror.api.validation.PoolNumber;
 
 import java.util.List;
 
@@ -414,22 +414,21 @@ public class JurorRecordController {
     }
 
     /**
-     * Get the Attendance details for a given Juror in a pool.
+     * Get the Attendance details for a given Juror in a given court.
      *
      * @param jurorNumber Unique Juror number of the juror
-     * @param poolNumber  a complete (min 9 digit) pool number that identifies a unique pool entry
+     * @param locCode  a court location code to retrieve attendance details for
      * @return Fully populated DTO of a juror's attendance details in a pool
      */
-    @GetMapping(path = "/attendance-detail/{jurorNumber}/{poolNumber}")
+    @GetMapping(path = "/attendance-detail/{locCode}/{jurorNumber}")
     @Operation(summary = "Get attendance details for juror number in a pool")
     public ResponseEntity<JurorAttendanceDetailsResponseDto> getJurorAttendanceDetails(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @PathVariable("jurorNumber") @Valid @JurorNumber
         @Parameter(description = "Valid juror number", required = true) String jurorNumber,
-        @Valid @PathVariable("poolNumber") @PoolNumber
-        @Parameter(description = "Valid pool number", required = true) String poolNumber) {
+        @Valid @PathVariable("locCode") @CourtLocationCode String locCode) {
         final JurorAttendanceDetailsResponseDto details =
-            jurorRecordService.getJurorAttendanceDetails(jurorNumber, poolNumber, payload);
+            jurorRecordService.getJurorAttendanceDetails(locCode, jurorNumber, payload);
 
         return ResponseEntity.ok().body(details);
     }
