@@ -277,6 +277,7 @@ public abstract class AbstractReport<T> {
             throw new MojException.Forbidden("User not allowed to access this pool", null);
         }
     }
+
     protected void checkOwnership(String locCode, boolean allowBureau) {
         if (!SecurityUtil.getCourts().contains(locCode)
             && !(SecurityUtil.isBureau() && allowBureau)) {
