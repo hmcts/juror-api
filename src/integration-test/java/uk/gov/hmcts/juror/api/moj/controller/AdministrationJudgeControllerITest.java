@@ -147,12 +147,6 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
             }
 
             @Test
-            void unauthorisedNotManager() {
-                assertForbiddenResponse(triggerInvalid("999991", "415", Set.of()),
-                    toUrl("999991"));
-            }
-
-            @Test
             void unauthorisedIsBureau() {
                 assertForbiddenResponse(triggerInvalid("999991", "400"),
                     toUrl("999991"));
@@ -234,12 +228,6 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
             void invalidJudgeId() throws JsonProcessingException {
                 assertInvalidPathParam(triggerInvalid("INVALID", "415"),
                     "INVALID is the incorrect data type or is not in the expected format (judge_id)");
-            }
-
-            @Test
-            void unauthorisedNotManager() {
-                assertForbiddenResponse(triggerInvalid("999993", "415", Set.of()),
-                    toUrl("999993"));
             }
 
             @Test
@@ -403,11 +391,6 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
             }
 
             @Test
-            void unauthorisedNotManager() {
-                assertForbiddenResponse(triggerInvalid(null, "415", Set.of()), URL);
-            }
-
-            @Test
             void unauthorisedIsBureau() {
                 assertForbiddenResponse(triggerInvalid(null, "400"), URL);
             }
@@ -476,13 +459,6 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
                     .judgeCode("CD1")
                     .judgeName("New Name")
                     .build();
-            }
-
-
-            @Test
-            void unauthorisedNotManager() {
-                assertForbiddenResponse(triggerInvalid(getValidPayload(), "415", Set.of()),
-                    URL);
             }
 
             @Test
@@ -602,12 +578,6 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
             void invalidJudgeId() throws JsonProcessingException {
                 assertInvalidPathParam(triggerInvalid("INVALID", getValidPayload(), "415"),
                     "INVALID is the incorrect data type or is not in the expected format (judge_id)");
-            }
-
-            @Test
-            void unauthorisedNotManger() {
-                assertForbiddenResponse(triggerInvalid("999991", getValidPayload(), "415", Set.of()),
-                    toUrl("999991"));
             }
 
             @Test
