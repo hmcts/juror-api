@@ -3355,7 +3355,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void getJurorAttendanceHappy() {
             ResponseEntity<JurorAttendanceDetailsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/attendance-detail/111111111/415230101")),
+                        URI.create("/api/v1/moj/juror-record/attendance-detail/415/111111111")),
                     JurorAttendanceDetailsResponseDto.class);
 
             assertThat(response.getStatusCode())
@@ -3425,7 +3425,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void getJurorAttendanceOnCall() {
             ResponseEntity<JurorAttendanceDetailsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/attendance-detail/222222222/415230101")),
+                        URI.create("/api/v1/moj/juror-record/attendance-detail/415/222222222")),
                     JurorAttendanceDetailsResponseDto.class);
 
             assertThat(response.getStatusCode())

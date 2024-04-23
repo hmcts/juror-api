@@ -1158,18 +1158,18 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional(readOnly = true)
-    public JurorAttendanceDetailsResponseDto getJurorAttendanceDetails(String jurorNumber, String poolNumber,
+    public JurorAttendanceDetailsResponseDto getJurorAttendanceDetails(String locCode, String jurorNumber,
                                                                        BureauJwtPayload payload) {
         log.info("Juror {} attendance record requested by user {}", jurorNumber, payload.getLogin());
 
-        JurorPool jurorPool = getJurorPool(jurorNumber, poolNumber);
+        JurorPool jurorPool = getJurorPoolByLocCode(locCode, jurorNumber);
         JurorPoolUtils.checkReadAccessForCurrentUser(jurorPool, payload.getOwner());
 
         JurorAttendanceDetailsResponseDto responseDto = new JurorAttendanceDetailsResponseDto();
 
         // run custom query to return the required data.
         List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> jurorAttendanceDetails =
-            getAttendanceData(jurorNumber, poolNumber);
+            getAttendanceData(locCode, jurorNumber);
         jurorAttendanceDetails.sort(Comparator
             .comparing(JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData::getAttendanceDate));
         responseDto.setData(jurorAttendanceDetails);
@@ -1193,14 +1193,14 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         return responseDto;
     }
 
-    private List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> getAttendanceData(String jurorNumber,
-                                                                                                  String poolNumber) {
-
-        List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
+    private List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> getAttendanceData(String locCode,
+                                                                                                  String jurorNumber) {
+        List<Appearance> appearances = appearanceRepository
+            .findAllByCourtLocationLocCodeAndJurorNumber(locCode, jurorNumber);
 
         return appearances.stream()
             .filter(appearance -> appearance.getAppearanceStage() == null || !Set.of(AppearanceStage.CHECKED_IN,
-                    AppearanceStage.CHECKED_OUT).contains(appearance.getAppearanceStage()))
+                AppearanceStage.CHECKED_OUT).contains(appearance.getAppearanceStage()))
             .map(JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData::new)
             .collect(Collectors.toList());
     }
@@ -1267,6 +1267,16 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, poolNumber);
         if (jurorPool == null) {
             throw new MojException.NotFound("Juror number " + jurorNumber + " not found in pool " + poolNumber, null);
+        }
+        return jurorPool;
+    }
+
+    private JurorPool getJurorPoolByLocCode(String locCode, String jurorNumber) {
+        JurorPool jurorPool = jurorPoolRepository
+            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(locCode, jurorNumber);
+        if (jurorPool == null) {
+            throw new MojException.NotFound("No active pools found for juror number "
+                + jurorNumber + " at location " + locCode, null);
         }
         return jurorPool;
     }
