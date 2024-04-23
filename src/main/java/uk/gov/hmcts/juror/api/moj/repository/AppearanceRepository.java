@@ -31,7 +31,6 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
         String jurorNumber,
         AppearanceStage appearanceStage);
 
-    @SuppressWarnings("checkstyle:LineLength")
     List<Appearance> findAllByJurorNumberAndAppearanceStageInAndCourtLocationOwnerAndIsDraftExpenseTrueOrderByAttendanceDateDesc(
         String jurorNumber,
         Set<AppearanceStage> stages,

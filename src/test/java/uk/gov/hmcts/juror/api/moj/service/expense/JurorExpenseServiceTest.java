@@ -5457,7 +5457,7 @@ class JurorExpenseServiceTest {
             );
             final ApportionSmartCardRequest dto = ApportionSmartCardRequest.builder()
                 .smartCardAmount(new BigDecimal("90.00"))
-                .attendanceDates(
+                .dates(
                     attendanceDates
                 )
                 .build();
@@ -5501,7 +5501,7 @@ class JurorExpenseServiceTest {
             );
             final ApportionSmartCardRequest dto = ApportionSmartCardRequest.builder()
                 .smartCardAmount(new BigDecimal("100.00"))
-                .attendanceDates(
+                .dates(
                     attendanceDates
                 )
                 .build();
@@ -5545,7 +5545,7 @@ class JurorExpenseServiceTest {
             );
             ApportionSmartCardRequest dto = ApportionSmartCardRequest.builder()
                 .smartCardAmount(new BigDecimal("100.00"))
-                .attendanceDates(
+                .dates(
                     attendanceDates
                 )
                 .build();
@@ -5584,7 +5584,7 @@ class JurorExpenseServiceTest {
             );
             ApportionSmartCardRequest dto = ApportionSmartCardRequest.builder()
                 .smartCardAmount(new BigDecimal("100.00"))
-                .attendanceDates(
+                .dates(
                     attendanceDates
                 )
                 .build();

@@ -931,7 +931,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Override
     @Transactional
     public void apportionSmartCard(String locCode, String jurorNumber, ApportionSmartCardRequest dto) {
-        List<Appearance> appearances = getAppearances(locCode, jurorNumber, dto.getAttendanceDates());
+        List<Appearance> appearances = getAppearances(locCode, jurorNumber, dto.getDates());
 
         final BigDecimal amountPerAppearance = dto.getSmartCardAmount()
             .divide(BigDecimal.valueOf(appearances.size()), 2, RoundingMode.HALF_UP);

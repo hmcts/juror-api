@@ -25,7 +25,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApportionSmartCardRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApproveExpenseDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.expense.AttendanceDates;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.DateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CalculateTotalExpenseRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
@@ -1420,12 +1420,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            AttendanceDates payload = new AttendanceDates();
+            DateDto payload = new DateDto();
             List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 2),
                 LocalDate.of(2024, 1, 3));
-            payload.setAttendanceDates(appearanceDates);
+            payload.setDates(appearanceDates);
 
-            RequestEntity<AttendanceDates> request = new RequestEntity<>(payload, httpHeaders, POST,
+            RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
                 URI.create(toUrl(COURT_LOCATION, JUROR_NUMBER)));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
@@ -1453,11 +1453,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            AttendanceDates payload = new AttendanceDates();
+            DateDto payload = new DateDto();
             List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 1));
-            payload.setAttendanceDates(appearanceDates);
+            payload.setDates(appearanceDates);
 
-            RequestEntity<AttendanceDates> request = new RequestEntity<>(payload, httpHeaders, POST,
+            RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
                 URI.create(toUrl(COURT_LOCATION, JUROR_NUMBER)));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
@@ -1473,11 +1473,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            AttendanceDates payload = new AttendanceDates();
+            DateDto payload = new DateDto();
             List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 1));
-            payload.setAttendanceDates(appearanceDates);
+            payload.setDates(appearanceDates);
 
-            RequestEntity<AttendanceDates> request = new RequestEntity<>(payload, httpHeaders, POST,
+            RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
                 URI.create(toUrl(COURT_LOCATION, "INVALID")));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
@@ -1492,11 +1492,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            AttendanceDates payload = new AttendanceDates();
+            DateDto payload = new DateDto();
             List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 1));
-            payload.setAttendanceDates(appearanceDates);
+            payload.setDates(appearanceDates);
 
-            RequestEntity<AttendanceDates> request = new RequestEntity<>(payload, httpHeaders, POST,
+            RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
                 URI.create(toUrl("INVALID", JUROR_NUMBER)));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
@@ -1512,10 +1512,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            AttendanceDates payload = new AttendanceDates();
-            payload.setAttendanceDates(new ArrayList<>());
+            DateDto payload = new DateDto();
+            payload.setDates(new ArrayList<>());
 
-            RequestEntity<AttendanceDates> request = new RequestEntity<>(payload, httpHeaders, POST,
+            RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
                 URI.create(toUrl(COURT_LOCATION, JUROR_NUMBER)));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
@@ -1530,11 +1530,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
-            AttendanceDates payload = new AttendanceDates();
+            DateDto payload = new DateDto();
             List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 2));
-            payload.setAttendanceDates(appearanceDates);
+            payload.setDates(appearanceDates);
 
-            RequestEntity<AttendanceDates> request = new RequestEntity<>(payload, httpHeaders, POST,
+            RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
                 URI.create(toUrl("400", JUROR_NUMBER)));
             ResponseEntity<Void> response = template.exchange(request, Void.class);
 
@@ -4251,7 +4251,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         protected ApportionSmartCardRequest getValidPayload(BigDecimal smartCardAmount) {
             return ApportionSmartCardRequest.builder()
                 .smartCardAmount(smartCardAmount)
-                .attendanceDates(ATTENDANCE_DATES)
+                .dates(ATTENDANCE_DATES)
                 .build();
         }
 
@@ -4366,7 +4366,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             @Test
             void negativeNonDraftDays() throws Exception {
                 ApportionSmartCardRequest payload = getValidPayload(new BigDecimal("90.00"));
-                payload.setAttendanceDates(List.of(LocalDate.of(2023, 1, 11)));
+                payload.setDates(List.of(LocalDate.of(2023, 1, 11)));
                 assertBusinessRuleViolation(triggerInvalid(
                         COURT_LOCATION, JUROR_NUMBER, payload, COURT_LOCATION),
                     "Can not apportion smart card for non-draft days",

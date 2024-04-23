@@ -28,7 +28,7 @@ public class DailyExpense {
     private LocalDate dateOfExpense;
 
 
-    @JsonProperty("pay_cash")
+    @JsonProperty("payment_method")
     @NotNull(groups = {AttendanceDay.class, NonAttendanceDay.class, EditDay.class})
     @ValidateIf(fields = {"time", "financialLoss", "travel", "foodAndDrink"},
         condition = ValidateIf.Condition.ANY_PRESENT,

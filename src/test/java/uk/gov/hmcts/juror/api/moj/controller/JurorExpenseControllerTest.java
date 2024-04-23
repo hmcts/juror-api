@@ -26,7 +26,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApportionSmartCardRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApproveExpenseDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.expense.AttendanceDates;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.DateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CalculateTotalExpenseRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
@@ -451,8 +451,8 @@ class JurorExpenseControllerTest {
         @Test
         @DisplayName("Happy path")
         void happyPath() throws Exception {
-            AttendanceDates payload = new AttendanceDates();
-            payload.setAttendanceDates(List.of(LocalDate.of(2024, 1, 2)));
+            DateDto payload = new DateDto();
+            payload.setDates(List.of(LocalDate.of(2024, 1, 2)));
 
             Mockito.doNothing().when(jurorExpenseService).submitDraftExpensesForApproval(any(), any(), any());
 
@@ -466,7 +466,7 @@ class JurorExpenseControllerTest {
                 .submitDraftExpensesForApproval(
                     eq(TestConstants.VALID_COURT_LOCATION),
                     eq(TestConstants.VALID_JUROR_NUMBER),
-                    eq(payload.getAttendanceDates())
+                    eq(payload.getDates())
                 );
             verifyNoMoreInteractions(jurorExpenseService);
         }
@@ -474,8 +474,8 @@ class JurorExpenseControllerTest {
         @Test
         @DisplayName("Not Found Error")
         void appearanceRecordsNotFound() throws Exception {
-            AttendanceDates payload = new AttendanceDates();
-            payload.setAttendanceDates(List.of(LocalDate.of(2024, 1, 2)));
+            DateDto payload = new DateDto();
+            payload.setDates(List.of(LocalDate.of(2024, 1, 2)));
 
             MojException.NotFound exception = new MojException.NotFound(String.format("No appearance records found for "
                     + "Juror Number: %s, Pool Number: %s and Attendance Dates provided",
@@ -494,7 +494,7 @@ class JurorExpenseControllerTest {
                 .submitDraftExpensesForApproval(
                     eq(TestConstants.VALID_COURT_LOCATION),
                     eq(TestConstants.VALID_JUROR_NUMBER),
-                    eq(payload.getAttendanceDates())
+                    eq(payload.getDates())
                 );
             verifyNoMoreInteractions(jurorExpenseService);
         }
@@ -1279,7 +1279,7 @@ class JurorExpenseControllerTest {
         private ApportionSmartCardRequest getValidPayload() {
             return ApportionSmartCardRequest.builder()
                 .smartCardAmount(new BigDecimal("100.00"))
-                .attendanceDates(List.of(LocalDate.of(2023, 1, 17)))
+                .dates(List.of(LocalDate.of(2023, 1, 17)))
                 .build();
         }
 

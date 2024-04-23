@@ -23,10 +23,10 @@ import java.util.List;
 @SuperBuilder
 @EqualsAndHashCode
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class AttendanceDates {
+public class DateDto {
 
     @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING)
     @NotEmpty
-    private List<LocalDate> attendanceDates;
+    private List<LocalDate> dates;
 
 }

@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApportionSmartCardRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApproveExpenseDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.expense.AttendanceDates;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.DateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CalculateTotalExpenseRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
@@ -134,8 +134,8 @@ public class JurorExpenseController {
     public ResponseEntity<Void> submitDraftExpensesForApproval(
         @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable(name = "juror_number") @JurorNumber @Valid String jurorNumber,
-        @Valid @RequestBody AttendanceDates dto) {
-        jurorExpenseService.submitDraftExpensesForApproval(locCode, jurorNumber, dto.getAttendanceDates());
+        @Valid @RequestBody DateDto dto) {
+        jurorExpenseService.submitDraftExpensesForApproval(locCode, jurorNumber, dto.getDates());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -169,7 +169,7 @@ public class JurorExpenseController {
     }
 
     @GetMapping("/{juror_number}/counts")
-    @Operation(summary = "Get the count of each type of expense for a juror and pool number.")
+    @Operation(summary = "Get the count of each type of expense for a juror at a given court location.")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<ExpenseCount> getCounts(
         @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
@@ -222,8 +222,8 @@ public class JurorExpenseController {
     }
 
     @GetMapping("/{juror_number}/summary/totals")
-    @Operation(summary = "Summarise the total expenses for a juror in draft, for approval and approved "
-        + "in a given pool.")
+    @Operation(summary = "Summarise the total expenses for a juror at a given court location categorised by the "
+        + "expense status (draft, for approval and approved)")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<SummaryExpenseDetailsDto> calculateSummaryTotals(
         @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
