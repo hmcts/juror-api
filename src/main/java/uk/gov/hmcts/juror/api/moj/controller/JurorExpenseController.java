@@ -30,9 +30,9 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApportionSmartCardRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApproveExpenseDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.expense.DateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CalculateTotalExpenseRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.DateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseType;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.GetEnteredExpenseRequest;
@@ -102,7 +102,8 @@ public class JurorExpenseController {
     }
 
     @PostMapping("/{juror_number}/entered")
-    @Operation(summary = "Get a jurors entered expense details for a given day.")
+    @Operation(summary = "Get a jurors entered expense details for a given day.",
+        description = "POST (acting as GET as has request body)")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<List<GetEnteredExpenseResponse>> getEnteredExpenseDetails(
         @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
@@ -153,7 +154,8 @@ public class JurorExpenseController {
     }
 
     @PostMapping("/{juror_number}/view")
-    @Operation(summary = "Get a list of a jurors expenses for given dates")
+    @Operation(summary = "Get a list of a jurors expenses for given dates",
+    description = "POST (acting as GET as has request body)")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> getExpenses(
         @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
