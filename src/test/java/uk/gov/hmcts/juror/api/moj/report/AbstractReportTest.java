@@ -175,9 +175,9 @@ class AbstractReportTest {
         }
 
         @Test
-        void jurorTrialToJuror() {
+        void jurorPanelToJuror() {
             assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QPanel.panel)).isTrue();
-            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QPanel.panel.trial);
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QPanel.panel);
 
             assertThat(map.containsKey(QJuror.juror)).isTrue();
             assertThat(map.get(QJuror.juror)).isEqualTo(
