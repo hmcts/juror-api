@@ -848,7 +848,7 @@ class AbstractReportTest {
             verify(courtLocation, times(1)).getName();
             verify(courtLocation, times(1)).getLocCode();
             verify(poolRequest, times(2)).getCourtLocation();
-            verify(report, never()).checkOwnership(any(), anyBoolean());
+            verify(report, never()).checkOwnership(any(PoolRequest.class), anyBoolean());
             verifyNoMoreInteractions(poolRequest, poolType, courtLocation, request);
         }
 
@@ -867,7 +867,7 @@ class AbstractReportTest {
 
             StandardReportRequest request = mock(StandardReportRequest.class);
             when(request.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
-            doNothing().when(report).checkOwnership(any(), anyBoolean());
+            doNothing().when(report).checkOwnership(any(PoolRequest.class), anyBoolean());
             CourtLocation courtLocation = mock(CourtLocation.class);
             when(courtLocation.getName()).thenReturn("Court Name");
             when(courtLocation.getLocCode()).thenReturn("LOC");

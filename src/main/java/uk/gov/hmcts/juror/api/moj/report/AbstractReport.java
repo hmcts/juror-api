@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -277,6 +278,13 @@ public abstract class AbstractReport<T> {
         }
     }
 
+    void checkOwnership(String locCode, boolean allowBureau) {
+        if (!SecurityUtil.getCourts().contains(locCode)
+            && !(SecurityUtil.isBureau() && allowBureau)) {
+            throw new MojException.Forbidden("User not allowed to access this court", null);
+        }
+    }
+
     public Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameHeader(CourtLocation courtLocation) {
         return new AbstractMap.SimpleEntry<>("court_name", AbstractReportResponse.DataTypeValue.builder()
             .displayName("Court Name")
@@ -312,10 +320,21 @@ public abstract class AbstractReport<T> {
             "court_name", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Court Name")
                 .dataType(String.class.getSimpleName())
-                .value(
-                    poolRequest.getCourtLocation().getName() + " (" + poolRequest.getCourtLocation().getLocCode() + ")")
+                .value(getCourtNameString(poolRequest.getCourtLocation()))
                 .build()
         ));
+    }
+
+    protected String getCourtNameString(CourtLocationRepository courtLocationRepository, String locCode) {
+        Optional<CourtLocation> courtLocation = courtLocationRepository.findByLocCode(locCode);
+        if (courtLocation.isEmpty()) {
+            throw new MojException.NotFound("Court not found", null);
+        }
+        return getCourtNameString(courtLocation.get());
+    }
+
+    public String getCourtNameString(CourtLocation courtLocation) {
+        return courtLocation.getName() + " (" + courtLocation.getLocCode() + ")";
     }
 
     PoolRequest getPoolRequest(String poolNumber) {
