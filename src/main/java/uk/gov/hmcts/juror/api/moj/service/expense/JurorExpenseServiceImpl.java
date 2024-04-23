@@ -394,7 +394,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .stage(appearance.getAppearanceStage())
             .totalDue(appearance.getTotalDue())
             .totalPaid(appearance.getTotalPaid())
-            .payCash(appearance.isPayCash())
+            .paymentMethod(PaymentMethod.fromPayCash(appearance.isPayCash()))
             .time(getTimeFromAppearance(appearance))
             .financialLoss(getFinancialLossFromAppearance(appearance))
             .travel(getTravelFromAppearance(appearance))

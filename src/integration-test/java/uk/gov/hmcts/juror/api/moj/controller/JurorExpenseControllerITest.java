@@ -1234,7 +1234,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(response.getStage()).isEqualTo(AppearanceStage.EXPENSE_ENTERED);
                 assertThat(response.getTotalDue()).isEqualTo(new BigDecimal("525.00"));
                 assertThat(response.getTotalPaid()).isEqualTo(new BigDecimal("0.00"));
-                assertThat(response.getPayCash()).isEqualTo(true);
+                assertThat(response.getPaymentMethod()).isEqualTo(PaymentMethod.CASH);
 
                 validateTime(response.getTime(),
                     LocalTime.of(6, 30),
@@ -1277,7 +1277,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(response.getStage()).isEqualTo(AppearanceStage.EXPENSE_ENTERED);
                 assertThat(response.getTotalDue()).isEqualTo(new BigDecimal("552.97"));
                 assertThat(response.getTotalPaid()).isEqualTo(new BigDecimal("0.00"));
-                assertThat(response.getPayCash()).isEqualTo(false);
+                assertThat(response.getPaymentMethod()).isEqualTo(PaymentMethod.BACS);
 
                 validateTime(response.getTime(),
                     LocalTime.of(4, 0),
@@ -1320,7 +1320,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(response.getStage()).isEqualTo(AppearanceStage.EXPENSE_AUTHORISED);
                 assertThat(response.getTotalDue()).isEqualTo(new BigDecimal("551.48"));
                 assertThat(response.getTotalPaid()).isEqualTo(new BigDecimal("541.48"));
-                assertThat(response.getPayCash()).isEqualTo(false);
+                assertThat(response.getPaymentMethod()).isEqualTo(PaymentMethod.BACS);
 
                 validateTime(response.getTime(),
                     LocalTime.of(6, 25),

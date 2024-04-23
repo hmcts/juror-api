@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseF
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseTime;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseTravel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -39,8 +40,8 @@ public class GetEnteredExpenseResponse {
     @JsonProperty("total_paid")
     private BigDecimal totalPaid;
 
-    @JsonProperty("pay_cash")
-    private Boolean payCash;
+    @JsonProperty("payment_method")
+    private PaymentMethod paymentMethod;
 
     @JsonProperty("time")
     private DailyExpenseTimeEntered time;

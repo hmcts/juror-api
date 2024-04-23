@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.enumeration;
 
+import io.micrometer.core.instrument.binder.db.MetricsDSLContext;
 import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 
@@ -17,6 +18,10 @@ public enum PaymentMethod {
     PaymentMethod(String name, Function<Appearance, Boolean> isApplicableFunction) {
         this.name = name;
         this.isApplicableFunction = isApplicableFunction;
+    }
+
+    public static PaymentMethod fromPayCash(boolean payCash) {
+        return payCash ? CASH : BACS;
     }
 
     public boolean isApplicable(Appearance appearance) {

@@ -2411,7 +2411,7 @@ class JurorExpenseServiceTest {
         assertThat(data.getStage()).isEqualTo(stage);
         assertThat(data.getTotalDue()).isEqualTo(totalDue);
         assertThat(data.getTotalPaid()).isEqualTo(totalPaid);
-        assertThat(data.getPayCash()).isEqualTo(payCash);
+        assertThat(data.getPaymentMethod()).isEqualTo(PaymentMethod.CASH);
         assertThat(data.getTime()).isEqualTo(time);
         assertThat(data.getFinancialLoss()).isEqualTo(financialLoss);
         assertThat(data.getTravel()).isEqualTo(travel);
