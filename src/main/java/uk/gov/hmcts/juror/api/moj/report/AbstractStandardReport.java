@@ -11,7 +11,7 @@ import java.util.List;
 public abstract class AbstractStandardReport extends AbstractReport<List<LinkedHashMap<String, Object>>> {
 
     public AbstractStandardReport(EntityPath<?> from,
-                                  DataType... dataType) {
+                                  IDataType... dataType) {
         this(null, from, dataType);
     }
 
