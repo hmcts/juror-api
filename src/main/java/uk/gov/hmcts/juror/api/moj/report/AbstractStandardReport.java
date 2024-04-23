@@ -16,7 +16,7 @@ public abstract class AbstractStandardReport extends AbstractReport<List<LinkedH
     }
 
     public AbstractStandardReport(PoolRequestRepository poolRequestRepository, EntityPath<?> from,
-                                  DataType... dataType) {
+                                  IDataType... dataType) {
         super(poolRequestRepository, from, dataType);
     }
 

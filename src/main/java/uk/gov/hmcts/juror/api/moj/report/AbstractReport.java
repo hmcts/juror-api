@@ -74,18 +74,18 @@ public abstract class AbstractReport<T> {
     private EntityManager entityManager;
 
     final PoolRequestRepository poolRequestRepository;
-    final List<DataType> dataTypes;
+    final List<IDataType> dataTypes;
     final Set<EntityPath<?>> requiredTables;
-    final List<DataType> effectiveDataTypes;
+    final List<IDataType> effectiveDataTypes;
     final EntityPath<?> from;
 
     final List<Consumer<StandardReportRequest>> authenticationConsumers;
 
-    public AbstractReport(EntityPath<?> from, DataType... dataType) {
+    public AbstractReport(EntityPath<?> from, IDataType... dataType) {
         this(null, from, dataType);
     }
 
-    public AbstractReport(PoolRequestRepository poolRequestRepository, EntityPath<?> from, DataType... dataType) {
+    public AbstractReport(PoolRequestRepository poolRequestRepository, EntityPath<?> from, IDataType... dataType) {
         this.poolRequestRepository = poolRequestRepository;
         this.from = from;
         this.dataTypes = List.of(dataType);
@@ -94,7 +94,7 @@ public abstract class AbstractReport<T> {
             .flatMap(List::stream)
             .toList();
         this.requiredTables = effectiveDataTypes.stream()
-            .map(DataType::getRequiredTables)
+            .map(IDataType::getRequiredTables)
             .flatMap(List::stream)
             .collect(Collectors.toSet());
         this.authenticationConsumers = new ArrayList<>();
@@ -157,7 +157,7 @@ public abstract class AbstractReport<T> {
     protected abstract T getTableData(List<Tuple> data);
 
 
-    StandardReportResponse.TableData.Heading getHeading(DataType dataType) {
+    StandardReportResponse.TableData.Heading getHeading(IDataType dataType) {
         StandardReportResponse.TableData.Heading heading = StandardReportResponse.TableData.Heading.builder()
             .id(dataType.getId())
             .name(dataType.getDisplayName())
@@ -171,7 +171,7 @@ public abstract class AbstractReport<T> {
         return heading;
     }
 
-    public Map.Entry<String, Object> getDataFromReturnType(Tuple tuple, DataType dataType) {
+    public Map.Entry<String, Object> getDataFromReturnType(Tuple tuple, IDataType dataType) {
         Object value;
         if (dataType.getReturnTypes() == null) {
             value = getSimpleValue(tuple, dataType);
@@ -182,9 +182,9 @@ public abstract class AbstractReport<T> {
     }
 
     @SuppressWarnings("PMD.UseConcurrentHashMap")
-    private Object getComplexValue(Tuple tuple, DataType dataType) {
+    private Object getComplexValue(Tuple tuple, IDataType dataType) {
         Map<String, Object> data = new LinkedHashMap<>();
-        for (DataType subType : dataType.getReturnTypes()) {
+        for (IDataType subType : dataType.getReturnTypes()) {
             Map.Entry<String, Object> valueEntry = getDataFromReturnType(tuple, subType);
             if (valueEntry.getValue() != null) {
                 data.put(valueEntry.getKey(), valueEntry.getValue());
@@ -193,7 +193,7 @@ public abstract class AbstractReport<T> {
         return data;
     }
 
-    private Object getSimpleValue(Tuple tuple, DataType dataType) {
+    private Object getSimpleValue(Tuple tuple, IDataType dataType) {
         Object value = tuple.get(dataType.getExpression());
 
         if (value != null) {
@@ -218,7 +218,7 @@ public abstract class AbstractReport<T> {
     JPAQuery<Tuple> getQuery() {
         return getQueryFactory()
             .select(effectiveDataTypes.stream()
-                .map(DataType::getExpression)
+                .map(IDataType::getExpression)
                 .toArray(Expression[]::new)).from(from);
     }
 
@@ -241,12 +241,12 @@ public abstract class AbstractReport<T> {
         });
     }
 
-    List<DataType> getDataType(DataType dataType) {
-        List<DataType> data = new ArrayList<>();
+    List<IDataType> getDataType(IDataType dataType) {
+        List<IDataType> data = new ArrayList<>();
         if (dataType.getReturnTypes() == null) {
             data.add(dataType);
         } else {
-            for (DataType subType : dataType.getReturnTypes()) {
+            for (IDataType subType : dataType.getReturnTypes()) {
                 data.addAll(getDataType(subType));
             }
         }
@@ -257,11 +257,11 @@ public abstract class AbstractReport<T> {
         return new JPAQueryFactory(entityManager);
     }
 
-    public void addGroupBy(JPAQuery<Tuple> query, DataType... dataTypes) {
+    public void addGroupBy(JPAQuery<Tuple> query, IDataType... dataTypes) {
         query.groupBy(Arrays.stream(dataTypes)
             .map(this::getDataType)
             .flatMap(List::stream)
-            .map(DataType::getExpression)
+            .map(IDataType::getExpression)
             .toArray(Expression[]::new));
     }
 
