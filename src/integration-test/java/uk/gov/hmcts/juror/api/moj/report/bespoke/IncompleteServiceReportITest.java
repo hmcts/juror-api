@@ -104,12 +104,9 @@ class IncompleteServiceReportITest extends AbstractIntegrationTest {
         assertThat(tableData).isNotNull();
 
         assertThat(tableHeadings.size()).isEqualTo(5);
-        assertThat(tableData.size()).isEqualTo(3);
-
         validateTableHeadings(tableHeadings);
 
         assertThat(tableData).hasSize(3);
-
         validateTableData(tableData);
     }
 
