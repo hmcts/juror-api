@@ -80,6 +80,10 @@ public abstract class AbstractReport<T> {
 
     final List<Consumer<StandardReportRequest>> authenticationConsumers;
 
+    public AbstractReport(EntityPath<?> from, DataType... dataType) {
+        this(null, from, dataType);
+    }
+
     public AbstractReport(PoolRequestRepository poolRequestRepository, EntityPath<?> from, DataType... dataType) {
         this.poolRequestRepository = poolRequestRepository;
         this.from = from;

@@ -19,6 +19,11 @@ public abstract class AbstractGroupedReport extends AbstractReport<Map<String, L
     final DataType groupBy;
     final boolean removeGroupByFromResponse;
 
+    public AbstractGroupedReport(EntityPath<?> from, DataType groupBy,
+                                 boolean removeGroupByFromResponse, DataType... dataType) {
+        this(null, from, groupBy, removeGroupByFromResponse, dataType);
+    }
+
     public AbstractGroupedReport(PoolRequestRepository poolRequestRepository,
                                  EntityPath<?> from, DataType groupBy,
                                  boolean removeGroupByFromResponse, DataType... dataType) {
