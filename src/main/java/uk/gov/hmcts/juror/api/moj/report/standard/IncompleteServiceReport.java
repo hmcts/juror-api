@@ -2,24 +2,19 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
-import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
-import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -58,22 +53,19 @@ public class IncompleteServiceReport extends AbstractStandardReport {
     }
 
     @Override
-    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
-        StandardReportRequest request,
+    public Map<String, StandardReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
         StandardReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
 
         Map<String, StandardReportResponse.DataTypeValue> map = new HashMap<>();
         map.put("total_incomplete_service", StandardReportResponse.DataTypeValue.builder()
             .displayName("Total incomplete service")
-            .dataType(Long.class.getSimpleName())
+            .dataType(Integer.class.getSimpleName())
             .value(tableData.getData().size())
             .build());
-
 
         map.put("cut_off_date", AbstractReportResponse.DataTypeValue.builder().displayName("Cut-off Date")
             .dataType(LocalDate.class.getSimpleName())
             .value(DateTimeFormatter.ISO_DATE.format(request.getDate())).build());
-
 
         courtLocationRepository.findByLocCode(request.getLocCode()).ifPresent(courtLocation -> {
             map.put("court_name", AbstractReportResponse.DataTypeValue.builder().displayName("Court Name")
@@ -82,10 +74,6 @@ public class IncompleteServiceReport extends AbstractStandardReport {
                     + " (" + courtLocation.getLocCode() + ")")
                 .build());
         });
-
-        map.put("court_name", AbstractReportResponse.DataTypeValue.builder().displayName("Court Name")
-            .dataType(String.class.getSimpleName()).value(StringUtils.capitalize(
-                StringUtils.lowerCase(courtLocation.getName())) + " (" + courtLocation.getLocCode() + ")").build());
 
         return map;
     }
