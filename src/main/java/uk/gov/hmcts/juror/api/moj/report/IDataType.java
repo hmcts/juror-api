@@ -13,6 +13,7 @@ public interface IDataType {
     String getDisplayName();
 
     Class<?> getDataType();
+
     Expression<?> getExpression();
 
     IDataType[] getReturnTypes();
