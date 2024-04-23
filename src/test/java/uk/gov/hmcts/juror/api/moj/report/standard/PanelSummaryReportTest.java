@@ -12,9 +12,9 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -56,7 +56,7 @@ class PanelSummaryReportTest extends AbstractStandardReportTestSupport<PanelSumm
 
 
     public PanelSummaryReportTest() {
-        super(QJurorTrial.jurorTrial,
+        super(QPanel.panel,
             PanelSummaryReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
@@ -78,9 +78,9 @@ class PanelSummaryReportTest extends AbstractStandardReportTestSupport<PanelSumm
 
         report.preProcessQuery(query, request);
         verify(query, times(1))
-            .where(QJurorTrial.jurorTrial.trialNumber.eq(TestConstants.VALID_TRIAL_NUMBER));
+            .where(QPanel.panel.trial.trialNumber.eq(TestConstants.VALID_TRIAL_NUMBER));
         verify(query, times(1))
-            .where(QJurorTrial.jurorTrial.locCode.eq(SecurityUtil.getActiveOwner()));
+            .where(QPanel.panel.trial.courtLocation.locCode.eq(SecurityUtil.getActiveOwner()));
         verify(query, times(1))
             .orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }

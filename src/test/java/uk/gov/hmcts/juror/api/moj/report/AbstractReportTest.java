@@ -24,10 +24,10 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
@@ -98,7 +98,7 @@ class AbstractReportTest {
         @Test
         void sizeCheck() {
             assertThat(AbstractReport.CLASS_TO_JOIN).hasSize(5);
-            assertThat(AbstractReport.CLASS_TO_JOIN.get(QJurorTrial.jurorTrial)).hasSize(1);
+            assertThat(AbstractReport.CLASS_TO_JOIN.get(QPanel.panel)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QJuror.juror)).hasSize(2);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QJurorPool.jurorPool)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest)).hasSize(1);
@@ -176,12 +176,12 @@ class AbstractReportTest {
 
         @Test
         void jurorTrialToJuror() {
-            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJurorTrial.jurorTrial)).isTrue();
-            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QJurorTrial.jurorTrial);
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QPanel.panel)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QPanel.panel.trial);
 
             assertThat(map.containsKey(QJuror.juror)).isTrue();
             assertThat(map.get(QJuror.juror)).isEqualTo(
-                new Predicate[]{QJurorTrial.jurorTrial.juror.eq(QJuror.juror)}
+                new Predicate[]{QPanel.panel.juror.eq(QJuror.juror)}
             );
         }
     }

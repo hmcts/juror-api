@@ -17,8 +17,8 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
@@ -70,9 +70,9 @@ public abstract class AbstractReport<T> {
                 QJurorPool.jurorPool.pool.poolNumber.eq(QAppearance.appearance.poolNumber)
             }
         ));
-        CLASS_TO_JOIN.put(QJurorTrial.jurorTrial, Map.of(
+        CLASS_TO_JOIN.put(QPanel.panel, Map.of(
             QJuror.juror, new Predicate[]{
-                QJurorTrial.jurorTrial.juror.eq(QJuror.juror)
+                QPanel.panel.juror.eq(QJuror.juror)
             }
         ));
     }

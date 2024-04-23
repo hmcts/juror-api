@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
@@ -28,7 +28,7 @@ public class PanelSummaryReport extends AbstractStandardReport {
     public PanelSummaryReport(PoolRequestRepository poolRequestRepository, TrialRepository trialRepository) {
         super(
             poolRequestRepository,
-            QJurorTrial.jurorTrial,
+            QPanel.panel,
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
             DataType.LAST_NAME);
@@ -40,8 +40,8 @@ public class PanelSummaryReport extends AbstractStandardReport {
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        query.where(QJurorTrial.jurorTrial.trialNumber.eq(request.getTrialNumber()));
-        query.where(QJurorTrial.jurorTrial.locCode.eq(SecurityUtil.getActiveOwner()));
+        query.where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
+        query.where(QPanel.panel.trial.courtLocation.locCode.eq(SecurityUtil.getActiveOwner()));
         query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
