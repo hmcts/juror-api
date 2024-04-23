@@ -155,7 +155,7 @@ public class JurorExpenseController {
 
     @PostMapping("/{juror_number}/view")
     @Operation(summary = "Get a list of a jurors expenses for given dates",
-    description = "POST (acting as GET as has request body)")
+        description = "POST (acting as GET as has request body)")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> getExpenses(
         @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,

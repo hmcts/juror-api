@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.enumeration;
 
-import io.micrometer.core.instrument.binder.db.MetricsDSLContext;
 import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 
