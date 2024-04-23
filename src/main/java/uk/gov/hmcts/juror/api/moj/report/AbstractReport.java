@@ -284,13 +284,6 @@ public abstract class AbstractReport<T> {
         }
     }
 
-    void checkOwnership(String locCode, boolean allowBureau) {
-        if (!SecurityUtil.getCourts().contains(locCode)
-            && !(SecurityUtil.isBureau() && allowBureau)) {
-            throw new MojException.Forbidden("User not allowed to access this court", null);
-        }
-    }
-
     public Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameHeader(CourtLocation courtLocation) {
         return new AbstractMap.SimpleEntry<>("court_name", AbstractReportResponse.DataTypeValue.builder()
             .displayName("Court Name")
