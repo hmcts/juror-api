@@ -35,7 +35,7 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/moj/administration/judges", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Administration - Judges")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@PreAuthorize(SecurityUtil.COURT_AUTH + " and " + SecurityUtil.IS_MANAGER)
+@PreAuthorize(SecurityUtil.COURT_AUTH)
 public class AdministrationJudgeController {
 
     private final AdministrationJudgeService administrationJudgeService;
