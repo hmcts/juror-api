@@ -41,7 +41,7 @@ public class AdministrationCourtRoomController {
     @GetMapping("/{loc_code}")
     @Operation(summary = "View a court room")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("(" + SecurityUtil.LOC_CODE_AUTH + ") or "
+    @PreAuthorize("(" + SecurityUtil.LOC_CODE_AUTH_COURT_ONLY +  ") or "
         + SecurityUtil.USER_TYPE_ADMINISTRATOR)
     public ResponseEntity<List<CourtRoomWithIdDto>> viewCourtRoomsDetails(
         @P("loc_code")
@@ -55,7 +55,7 @@ public class AdministrationCourtRoomController {
     @PostMapping("/{loc_code}")
     @Operation(summary = "Create a court room")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH)
+    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH_COURT_ONLY)
     public ResponseEntity<Void> createCourtRoom(
         @P("loc_code")
         @PathVariable("loc_code")
@@ -70,7 +70,7 @@ public class AdministrationCourtRoomController {
     @GetMapping("/{loc_code}/{id}")
     @Operation(summary = "View a court room")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH)
+    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH_COURT_ONLY)
     public ResponseEntity<CourtRoomWithIdDto> viewCourtRoomDetails(
         @P("loc_code")
         @PathVariable("loc_code")
@@ -88,7 +88,7 @@ public class AdministrationCourtRoomController {
     @PutMapping("/{loc_code}/{id}")
     @Operation(summary = "Update a court room")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH)
+    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH_COURT_ONLY)
     public ResponseEntity<Void> updateCourtRoom(
         @P("loc_code")
         @PathVariable("loc_code")
