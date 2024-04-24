@@ -49,6 +49,7 @@ import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesDto;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorExpenseTotals;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PaymentData;
 import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
 import uk.gov.hmcts.juror.api.moj.domain.User;
@@ -283,7 +284,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     /**
      * Submit one or more draft expense records (for a single juror) for approval. This will generate the financial
      * audit number for the batch and update the is_draft_expense flag.
-     *
      */
     @Override
     @Transactional
@@ -966,7 +966,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         List<PendingApproval> pendingApprovals = new ArrayList<>();
         //For approval
-        pendingApprovals.addAll(mapAppearancesToPendingApproval(
+        pendingApprovals.addAll(mapAppearancesToPendingApproval(locCode,
             appearanceRepository
                 .findAllByCourtLocationLocCodeAndAppearanceStageAndPayCashAndIsDraftExpenseFalse(
                     locCode,
@@ -976,7 +976,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             fromInclusive, toInclusive
         ));
         //For Re-Approval
-        pendingApprovals.addAll(mapAppearancesToPendingApproval(
+        pendingApprovals.addAll(mapAppearancesToPendingApproval(locCode,
             appearanceRepository
                 .findAllByCourtLocationLocCodeAndAppearanceStageAndPayCashAndIsDraftExpenseFalse(
                     locCode,
@@ -1005,17 +1005,15 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         return pendingApprovalList;
     }
 
-    List<PendingApproval> mapAppearancesToPendingApproval(List<Appearance> appearances,
-                                                          boolean isReapproval,
-                                                          LocalDate fromInclusive, LocalDate toInclusive) {
-        Map<PendingApprovalMapId, List<Appearance>> approvalMapIdListMap = new HashMap<>();
+    List<PendingApproval> mapAppearancesToPendingApproval(
+        String locCode, List<Appearance> appearances,
+        boolean isReapproval,
+        LocalDate fromInclusive, LocalDate toInclusive) {
+        Map<String, List<Appearance>> approvalMapIdListMap = new HashMap<>();
 
-        appearances.forEach(appearance -> {
-            PendingApprovalMapId pendingApprovalMapId = new PendingApprovalMapId(appearance.getJurorNumber(),
-                appearance.getPoolNumber());
-            approvalMapIdListMap.computeIfAbsent(pendingApprovalMapId, k -> new ArrayList<>()).add(appearance);
-        });
-
+        appearances.forEach(
+            appearance -> approvalMapIdListMap.computeIfAbsent(appearance.getJurorNumber(), k -> new ArrayList<>())
+                .add(appearance));
 
         return approvalMapIdListMap.values().stream()
             .filter(appearances1 -> {
@@ -1034,18 +1032,18 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 }
                 return true;
             })
-            .map(appearances1 -> mapAppearancesToPendingApprovalSinglePool(appearances1, isReapproval))
+            .map(appearances1 -> mapAppearancesToPendingApprovalSinglePool(locCode, appearances1, isReapproval))
             .toList();
     }
 
-    PendingApproval mapAppearancesToPendingApprovalSinglePool(List<Appearance> appearances,
-                                                              boolean isReapproval) {
+    PendingApproval mapAppearancesToPendingApprovalSinglePool(
+        String locCode, List<Appearance> appearances, boolean isReapproval) {
         final String jurorNumber = appearances.get(0).getJurorNumber();
         final Juror juror = getJuror(jurorNumber);
 
         return PendingApproval.builder()
             .jurorNumber(jurorNumber)
-            .poolNumber(appearances.get(0).getPoolNumber())
+            .poolNumber(getActiveJurorPool(locCode, juror.getJurorNumber()).getPoolNumber())
             .firstName(juror.getFirstName())
             .lastName(juror.getLastName())
             .amountDue(appearances.stream()
@@ -1060,6 +1058,17 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                         .version(appearance.getVersion())
                         .build()).toList()
             ).build();
+    }
+
+    private JurorPool getActiveJurorPool(String locCode, String jurorNumber) {
+        System.out.println("TMP: " + locCode + " " + jurorNumber);
+        JurorPool jurorPool =
+            jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(locCode,
+                jurorNumber);
+        if (jurorPool == null) {
+            throw new MojException.NotFound("No active pool found for juror: " + jurorNumber, null);
+        }
+        return jurorPool;
     }
 
     //This method is here to support unit testing

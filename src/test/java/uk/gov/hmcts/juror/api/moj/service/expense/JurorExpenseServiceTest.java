@@ -52,6 +52,7 @@ import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesDto;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorExpenseTotals;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PaymentData;
 import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
 import uk.gov.hmcts.juror.api.moj.domain.User;
@@ -66,6 +67,7 @@ import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ExpenseRatesRepository;
 import uk.gov.hmcts.juror.api.moj.repository.FinancialAuditDetailsRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorExpenseTotalsRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PaymentDataRepository;
 import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
@@ -136,6 +138,9 @@ class JurorExpenseServiceTest {
     private ValidationService validationService;
     @Mock
     private PaymentDataRepository paymentDataRepository;
+
+    @Mock
+    private JurorPoolRepository jurorPoolRepository;
 
     @Mock
     private ApplicationSettingService applicationSettingService;
@@ -4431,7 +4436,7 @@ class JurorExpenseServiceTest {
                 TestConstants.VALID_POOL_NUMBER);
 
             doReturn(List.of(pendingApproval1, pendingApproval2, pendingApproval3)).when(jurorExpenseService)
-                .mapAppearancesToPendingApproval(
+                .mapAppearancesToPendingApproval(TestConstants.VALID_COURT_LOCATION,
                     forApprovedAppearances, false, from, to);
 
             PendingApproval pendingApproval4 = mockPendingApproval(TestConstants.VALID_JUROR_NUMBER,
@@ -4439,7 +4444,7 @@ class JurorExpenseServiceTest {
             PendingApproval pendingApproval5 = mockPendingApproval(TestConstants.VALID_JUROR_NUMBER_2,
                 TestConstants.VALID_POOL_NUMBER_2);
             doReturn(List.of(pendingApproval4, pendingApproval5)).when(jurorExpenseService)
-                .mapAppearancesToPendingApproval(
+                .mapAppearancesToPendingApproval(TestConstants.VALID_COURT_LOCATION,
                     forReApprovedAppearances, true, from, to);
 
             PendingApprovalList pendingApprovalList = jurorExpenseService.getExpensesForApproval(
@@ -4465,9 +4470,9 @@ class JurorExpenseServiceTest {
                 AppearanceStage.EXPENSE_EDITED,
                 true);
             verify(jurorExpenseService, times(1)).mapAppearancesToPendingApproval(
-                forApprovedAppearances, false, from, to);
+                TestConstants.VALID_COURT_LOCATION, forApprovedAppearances, false, from, to);
             verify(jurorExpenseService, times(1)).mapAppearancesToPendingApproval(
-                forReApprovedAppearances, true, from, to);
+                TestConstants.VALID_COURT_LOCATION, forReApprovedAppearances, true, from, to);
         }
 
 
@@ -4506,9 +4511,9 @@ class JurorExpenseServiceTest {
                 TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 2));
 
             Appearance juror2Pool2Appearance1 = mockAppearance(
-                TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 1, 1));
+                TestConstants.VALID_JUROR_NUMBER_3, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
             Appearance juror2Pool2Appearance2 = mockAppearance(
-                TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 1, 2));
+                TestConstants.VALID_JUROR_NUMBER_3, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 1, 2));
 
 
             PendingApproval juror1Pool1PendingApproval = mock(PendingApproval.class);
@@ -4517,16 +4522,20 @@ class JurorExpenseServiceTest {
 
             doReturn(juror1Pool1PendingApproval).when(jurorExpenseService)
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror1Pool1Appearance1, juror1Pool1Appearance2, juror1Pool1Appearance3), false);
             doReturn(juror2Pool1PendingApproval).when(jurorExpenseService)
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool1Appearance1, juror2Pool1Appearance2), false);
             doReturn(juror2Pool2PendingApproval).when(jurorExpenseService)
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool2Appearance1, juror2Pool2Appearance2), false);
 
 
             assertThat(jurorExpenseService.mapAppearancesToPendingApproval(
+                TestConstants.VALID_COURT_LOCATION,
                 List.of(
                     juror1Pool1Appearance1, juror1Pool1Appearance2, juror1Pool1Appearance3,
                     juror2Pool1Appearance1, juror2Pool1Appearance2,
@@ -4537,12 +4546,15 @@ class JurorExpenseServiceTest {
 
             verify(jurorExpenseService, times(1))
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror1Pool1Appearance1, juror1Pool1Appearance2, juror1Pool1Appearance3), false);
             verify(jurorExpenseService, times(1))
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool1Appearance1, juror2Pool1Appearance2), false);
             verify(jurorExpenseService, times(1))
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool2Appearance1, juror2Pool2Appearance2), false);
         }
 
@@ -4562,9 +4574,9 @@ class JurorExpenseServiceTest {
                 TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 2, 2));
 
             Appearance juror2Pool2Appearance1 = mockAppearance(
-                TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 3, 1));
+                TestConstants.VALID_JUROR_NUMBER_3, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 3, 1));
             Appearance juror2Pool2Appearance2 = mockAppearance(
-                TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 3, 2));
+                TestConstants.VALID_JUROR_NUMBER_3, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 3, 2));
 
 
             PendingApproval juror1Pool1PendingApproval = mock(PendingApproval.class);
@@ -4573,28 +4585,33 @@ class JurorExpenseServiceTest {
 
             doReturn(juror1Pool1PendingApproval).when(jurorExpenseService)
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror1Pool1Appearance1, juror1Pool1Appearance2, juror1Pool1Appearance3), false);
             doReturn(juror2Pool1PendingApproval).when(jurorExpenseService)
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool1Appearance1, juror2Pool1Appearance2), false);
             doReturn(juror2Pool2PendingApproval).when(jurorExpenseService)
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool2Appearance1, juror2Pool2Appearance2), false);
 
 
             assertThat(jurorExpenseService.mapAppearancesToPendingApproval(
+                TestConstants.VALID_COURT_LOCATION,
                 List.of(
                     juror1Pool1Appearance1, juror1Pool1Appearance2, juror1Pool1Appearance3,
                     juror2Pool1Appearance1, juror2Pool1Appearance2,
                     juror2Pool2Appearance1, juror2Pool2Appearance2
                 ), false, LocalDate.of(2023, 2, 1), null
             )).containsExactlyInAnyOrder(juror2Pool1PendingApproval, juror2Pool2PendingApproval);
-
             verify(jurorExpenseService, times(1))
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool1Appearance1, juror2Pool1Appearance2), false);
             verify(jurorExpenseService, times(1))
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool2Appearance1, juror2Pool2Appearance2), false);
         }
 
@@ -4614,9 +4631,9 @@ class JurorExpenseServiceTest {
                 TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 2, 2));
 
             Appearance juror2Pool2Appearance1 = mockAppearance(
-                TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 3, 1));
+                TestConstants.VALID_JUROR_NUMBER_3, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 3, 1));
             Appearance juror2Pool2Appearance2 = mockAppearance(
-                TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 3, 2));
+                TestConstants.VALID_JUROR_NUMBER_3, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 3, 2));
 
 
             PendingApproval juror1Pool1PendingApproval = mock(PendingApproval.class);
@@ -4625,16 +4642,20 @@ class JurorExpenseServiceTest {
 
             doReturn(juror1Pool1PendingApproval).when(jurorExpenseService)
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror1Pool1Appearance1, juror1Pool1Appearance2, juror1Pool1Appearance3), false);
             doReturn(juror2Pool1PendingApproval).when(jurorExpenseService)
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool1Appearance1, juror2Pool1Appearance2), false);
             doReturn(juror2Pool2PendingApproval).when(jurorExpenseService)
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool2Appearance1, juror2Pool2Appearance2), false);
 
 
             assertThat(jurorExpenseService.mapAppearancesToPendingApproval(
+                TestConstants.VALID_COURT_LOCATION,
                 List.of(
                     juror1Pool1Appearance1, juror1Pool1Appearance2, juror1Pool1Appearance3,
                     juror2Pool1Appearance1, juror2Pool1Appearance2,
@@ -4644,9 +4665,11 @@ class JurorExpenseServiceTest {
 
             verify(jurorExpenseService, times(1))
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool1Appearance1, juror2Pool1Appearance2), false);
             verify(jurorExpenseService, times(1))
                 .mapAppearancesToPendingApprovalSinglePool(
+                    TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool2Appearance1, juror2Pool2Appearance2), false);
         }
 
@@ -4666,9 +4689,9 @@ class JurorExpenseServiceTest {
                 TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 2, 2));
 
             Appearance juror2Pool2Appearance1 = mockAppearance(
-                TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 3, 1));
+                TestConstants.VALID_JUROR_NUMBER_3, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 3, 1));
             Appearance juror2Pool2Appearance2 = mockAppearance(
-                TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 3, 2));
+                TestConstants.VALID_JUROR_NUMBER_3, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 3, 2));
 
 
             PendingApproval juror1Pool1PendingApproval = mock(PendingApproval.class);
@@ -4676,17 +4699,17 @@ class JurorExpenseServiceTest {
             PendingApproval juror2Pool2PendingApproval = mock(PendingApproval.class);
 
             doReturn(juror1Pool1PendingApproval).when(jurorExpenseService)
-                .mapAppearancesToPendingApprovalSinglePool(
+                .mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                     List.of(juror1Pool1Appearance1, juror1Pool1Appearance2, juror1Pool1Appearance3), false);
             doReturn(juror2Pool1PendingApproval).when(jurorExpenseService)
-                .mapAppearancesToPendingApprovalSinglePool(
+                .mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool1Appearance1, juror2Pool1Appearance2), false);
             doReturn(juror2Pool2PendingApproval).when(jurorExpenseService)
-                .mapAppearancesToPendingApprovalSinglePool(
+                .mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool2Appearance1, juror2Pool2Appearance2), false);
 
 
-            assertThat(jurorExpenseService.mapAppearancesToPendingApproval(
+            assertThat(jurorExpenseService.mapAppearancesToPendingApproval(TestConstants.VALID_COURT_LOCATION,
                 List.of(
                     juror1Pool1Appearance1, juror1Pool1Appearance2, juror1Pool1Appearance3,
                     juror2Pool1Appearance1, juror2Pool1Appearance2,
@@ -4695,10 +4718,10 @@ class JurorExpenseServiceTest {
             )).containsExactlyInAnyOrder(juror1Pool1PendingApproval, juror2Pool1PendingApproval);
 
             verify(jurorExpenseService, times(1))
-                .mapAppearancesToPendingApprovalSinglePool(
+                .mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                     List.of(juror1Pool1Appearance1, juror1Pool1Appearance2, juror1Pool1Appearance3), false);
             verify(jurorExpenseService, times(1))
-                .mapAppearancesToPendingApprovalSinglePool(
+                .mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool1Appearance1, juror2Pool1Appearance2), false);
         }
 
@@ -4718,9 +4741,9 @@ class JurorExpenseServiceTest {
                 TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 2, 2));
 
             Appearance juror2Pool2Appearance1 = mockAppearance(
-                TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 3, 1));
+                TestConstants.VALID_JUROR_NUMBER_3, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 3, 1));
             Appearance juror2Pool2Appearance2 = mockAppearance(
-                TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 3, 2));
+                TestConstants.VALID_JUROR_NUMBER_3, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 3, 2));
 
 
             PendingApproval juror1Pool1PendingApproval = mock(PendingApproval.class);
@@ -4728,17 +4751,17 @@ class JurorExpenseServiceTest {
             PendingApproval juror2Pool2PendingApproval = mock(PendingApproval.class);
 
             doReturn(juror1Pool1PendingApproval).when(jurorExpenseService)
-                .mapAppearancesToPendingApprovalSinglePool(
+                .mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                     List.of(juror1Pool1Appearance1, juror1Pool1Appearance2, juror1Pool1Appearance3), false);
             doReturn(juror2Pool1PendingApproval).when(jurorExpenseService)
-                .mapAppearancesToPendingApprovalSinglePool(
+                .mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool1Appearance1, juror2Pool1Appearance2), false);
             doReturn(juror2Pool2PendingApproval).when(jurorExpenseService)
-                .mapAppearancesToPendingApprovalSinglePool(
+                .mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool2Appearance1, juror2Pool2Appearance2), false);
 
 
-            assertThat(jurorExpenseService.mapAppearancesToPendingApproval(
+            assertThat(jurorExpenseService.mapAppearancesToPendingApproval(TestConstants.VALID_COURT_LOCATION,
                 List.of(
                     juror1Pool1Appearance1, juror1Pool1Appearance2, juror1Pool1Appearance3,
                     juror2Pool1Appearance1, juror2Pool1Appearance2,
@@ -4747,10 +4770,10 @@ class JurorExpenseServiceTest {
             )).containsExactlyInAnyOrder(juror1Pool1PendingApproval, juror2Pool1PendingApproval);
 
             verify(jurorExpenseService, times(1))
-                .mapAppearancesToPendingApprovalSinglePool(
+                .mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                     List.of(juror1Pool1Appearance1, juror1Pool1Appearance2, juror1Pool1Appearance3), false);
             verify(jurorExpenseService, times(1))
-                .mapAppearancesToPendingApprovalSinglePool(
+                .mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool1Appearance1, juror2Pool1Appearance2), false);
 
         }
@@ -4770,9 +4793,9 @@ class JurorExpenseServiceTest {
                 TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 2, 2));
 
             Appearance juror2Pool2Appearance1 = mockAppearance(
-                TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 3, 1));
+                TestConstants.VALID_JUROR_NUMBER_3, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 3, 1));
             Appearance juror2Pool2Appearance2 = mockAppearance(
-                TestConstants.VALID_JUROR_NUMBER_2, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 3, 2));
+                TestConstants.VALID_JUROR_NUMBER_3, TestConstants.VALID_POOL_NUMBER_2, LocalDate.of(2023, 3, 2));
 
 
             PendingApproval juror1Pool1PendingApproval = mock(PendingApproval.class);
@@ -4780,17 +4803,17 @@ class JurorExpenseServiceTest {
             PendingApproval juror2Pool2PendingApproval = mock(PendingApproval.class);
 
             doReturn(juror1Pool1PendingApproval).when(jurorExpenseService)
-                .mapAppearancesToPendingApprovalSinglePool(
+                .mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                     List.of(juror1Pool1Appearance1, juror1Pool1Appearance2, juror1Pool1Appearance3), false);
             doReturn(juror2Pool1PendingApproval).when(jurorExpenseService)
-                .mapAppearancesToPendingApprovalSinglePool(
+                .mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool1Appearance1, juror2Pool1Appearance2), false);
             doReturn(juror2Pool2PendingApproval).when(jurorExpenseService)
-                .mapAppearancesToPendingApprovalSinglePool(
+                .mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool2Appearance1, juror2Pool2Appearance2), false);
 
 
-            assertThat(jurorExpenseService.mapAppearancesToPendingApproval(
+            assertThat(jurorExpenseService.mapAppearancesToPendingApproval(TestConstants.VALID_COURT_LOCATION,
                 List.of(
                     juror1Pool1Appearance1, juror1Pool1Appearance2, juror1Pool1Appearance3,
                     juror2Pool1Appearance1, juror2Pool1Appearance2,
@@ -4799,9 +4822,18 @@ class JurorExpenseServiceTest {
             )).containsExactlyInAnyOrder(juror2Pool1PendingApproval);
 
             verify(jurorExpenseService, times(1))
-                .mapAppearancesToPendingApprovalSinglePool(
+                .mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                     List.of(juror2Pool1Appearance1, juror2Pool1Appearance2), false);
         }
+    }
+
+    private void mockActiveJurorPool(String locCode, String jurorNumber, String poolNumber) {
+        JurorPool jurorPool = mock(JurorPool.class);
+        when(jurorPool.getPoolNumber()).thenReturn(poolNumber);
+
+        doReturn(jurorPool)
+            .when(jurorPoolRepository)
+            .findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(locCode, jurorNumber);
     }
 
     @Nested
@@ -4828,12 +4860,16 @@ class JurorExpenseServiceTest {
             Juror juror = mock(Juror.class);
             when(juror.getFirstName()).thenReturn("John");
             when(juror.getLastName()).thenReturn("Doe");
+            when(juror.getJurorNumber()).thenReturn(TestConstants.VALID_JUROR_NUMBER);
             doReturn(juror).when(jurorExpenseService).getJuror(TestConstants.VALID_JUROR_NUMBER);
             doReturn(true).when(jurorExpenseService).validateUserCanApprove(
                 List.of(appearance1, appearance2, appearance3)
             );
 
-            assertThat(jurorExpenseService.mapAppearancesToPendingApprovalSinglePool(
+            mockActiveJurorPool(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER,
+                TestConstants.VALID_POOL_NUMBER);
+
+            assertThat(jurorExpenseService.mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                 List.of(appearance1, appearance2, appearance3), false))
                 .isEqualTo(PendingApproval.builder()
                     .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
@@ -4879,12 +4915,15 @@ class JurorExpenseServiceTest {
             Juror juror = mock(Juror.class);
             when(juror.getFirstName()).thenReturn("John2");
             when(juror.getLastName()).thenReturn("Doe2");
+            when(juror.getJurorNumber()).thenReturn(TestConstants.VALID_JUROR_NUMBER);
+
             doReturn(juror).when(jurorExpenseService).getJuror(TestConstants.VALID_JUROR_NUMBER);
             doReturn(false).when(jurorExpenseService).validateUserCanApprove(
                 List.of(appearance1, appearance2, appearance3)
             );
-
-            assertThat(jurorExpenseService.mapAppearancesToPendingApprovalSinglePool(
+            mockActiveJurorPool(TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER,
+                TestConstants.VALID_POOL_NUMBER);
+            assertThat(jurorExpenseService.mapAppearancesToPendingApprovalSinglePool(TestConstants.VALID_COURT_LOCATION,
                 List.of(appearance1, appearance2, appearance3), true))
                 .isEqualTo(PendingApproval.builder()
                     .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
