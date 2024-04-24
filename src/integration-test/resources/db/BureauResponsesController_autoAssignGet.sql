@@ -1,12 +1,22 @@
 --Staff
-INSERT INTO juror_mod.users (owner, username,email, name, active,team_id,version)
+INSERT INTO juror_mod.users (username,user_type,email, name, active,team_id,version)
 VALUES
-    ('400','smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre',  true, 1, 1),
-    ('400','sbell','sbell@email.gov.uk', 'Sandra Bell',  true, 2, 1),
-    ('400','alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3, 1),
-    ('400','jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1, 1),
-    ('400','jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2, 1),
-    ('400','jbrown','jbrown@email.gov.uk', 'John Brown', true, 3, 1);
+    ('smcintyre','BUREAU','smcintyre@email.gov.uk', 'Stephanie Mcintyre',  true, 1, 1),
+    ('sbell','BUREAU','sbell@email.gov.uk', 'Sandra Bell',  true, 2, 1),
+    ('alineweaver','BUREAU','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3, 1),
+    ('jbrown1','BUREAU','jbrown1@email.gov.uk', 'Jared Brown', true, 1, 1),
+    ('jwilliams','BUREAU','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2, 1),
+    ('jbrown','BUREAU','jbrown@email.gov.uk', 'John Brown', true, 3, 1);
+
+
+insert into juror_mod.user_courts (username, loc_code)
+values
+    ('smcintyre', '400'),
+    ('sbell', '400'),
+    ('alineweaver', '400'),
+    ('jbrown1', '400'),
+    ('jwilliams', '400'),
+    ('jbrown', '400');
 
 INSERT INTO juror_mod.user_roles (username, role)
 VALUES ('jbrown1', 'TEAM_LEADER'),

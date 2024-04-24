@@ -57,8 +57,6 @@ public class UserServiceModImpl implements UserService {
         if (UserType.ADMINISTRATOR.equals(createUserDto.getUserType()) || UserType.BUREAU.equals(
             createUserDto.getUserType())) {
             user.addCourt(getCourtLocation(SecurityUtil.BUREAU_OWNER));
-            //TEMP until AD move
-            user.setOwner(SecurityUtil.BUREAU_OWNER);
         }
         userRepository.save(user);
         return new UsernameDto(user.getUsername());
@@ -120,10 +118,6 @@ public class UserServiceModImpl implements UserService {
     public void addCourt(String username, List<String> courts) {
         User user = findUserByUsername(username);
         courts.forEach(string -> user.addCourt(getCourtLocation(string)));
-        //TEMP until AD move
-        if (!courts.isEmpty()) {
-            user.setOwner(courts.get(0));
-        }
         userRepository.save(user);
     }
 

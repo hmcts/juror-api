@@ -1,7 +1,10 @@
 
 
-INSERT INTO juror_mod.users(owner, username,email, name, active, last_logged_in, version, team_id)
-VALUES ('400', 'ksalazar','ksalazar@email.gov.uk', 'Kris Salazar', true, CURRENT_DATE-3, 0, 1);
+INSERT INTO juror_mod.users(username,email, name, active, last_logged_in, version, team_id)
+VALUES ('ksalazar','ksalazar@email.gov.uk', 'Kris Salazar', true, CURRENT_DATE-3, 0, 1);
+
+insert into juror_mod.user_courts (username, loc_code)
+values ('ksalazar', '400');
 
 INSERT INTO juror_mod.expense_rates_public values ('TRAVEL_BICYCLE_PER_MILE', 0.096);
 

@@ -37,10 +37,15 @@ INSERT INTO juror_mod.juror_response (juror_number,date_received,title,first_nam
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ('827761086','2018-01-08 00:00:00','Mrs','Emily','Cruise','Address1','Address2','Address3','Address4','Address5 Address6','E17 2NY','CLOSED','1990-01-01','111111111',NULL,'mail@email.com',false,NULL,false,NULL,NULL,false,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,true,true,'ncrawford','2018-01-09 00:00:00',false,false,'2018-01-10 13:30:19',false,'Digital'),
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ('845814425','2017-12-30 00:00:00','Sir','Anthony','Connery','Address1','Address2','Address3','Address4','Address5 Address6','E17 2NY','AWAITING_TRANSLATION','1990-01-01','111111111',NULL,'mail@email.com',false,NULL,false,NULL,NULL,false,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,true,true,'ncrawford','2018-01-10 00:00:00',false,false,NULL,false,'Digital');
 
-INSERT INTO juror_mod.users (owner, username,email, name, active,version)
-VALUES  ('400','lrees','lrees@email.gov.uk','Lewis Rees',true,0),
-        ('400','kfry','kfry@email.gov.uk','Katherine Fry',true,0),
-        ('400','ncrawford','ncrawford@email.gov.uk','Natasha Crawford',true,0);
+INSERT INTO juror_mod.users (username,email, name, active,version)
+VALUES  ('lrees','lrees@email.gov.uk','Lewis Rees',true,0),
+        ('kfry','kfry@email.gov.uk','Katherine Fry',true,0),
+        ('ncrawford','ncrawford@email.gov.uk','Natasha Crawford',true,0);
+
+insert into juror_mod.user_courts (username, loc_code)
+values ('lrees', '400'),
+       ('kfry', '400'),
+       ('ncrawford', '400');
 
 INSERT INTO juror_mod.user_roles (username, role)
 VALUES ('kfry', 'TEAM_LEADER');

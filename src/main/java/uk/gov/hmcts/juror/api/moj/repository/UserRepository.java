@@ -30,10 +30,9 @@ public interface UserRepository extends CrudRepository<User, String>, QuerydslPr
         return queryFactory
             .select(user)
             .from(user)
-            .join(courtLocation)
-            .on(user.owner.eq(courtLocation.owner))
+            .join(user.courts, courtLocation)
+            .on(courtLocation.locCode.eq(court))
             .where(user.active.eq(true))
-            .where(courtLocation.locCode.eq(court))
             .fetch();
     }
 

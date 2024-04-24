@@ -38,10 +38,6 @@ import java.util.Set;
 @EqualsAndHashCode(exclude = {"team", "courts"})
 public class User implements Serializable {
 
-    @Column(name = "owner")
-    @Deprecated(forRemoval = true)
-    private String owner;
-
     @Id
     @Column(name = "username", unique = true, length = 20)
     @NotEmpty
@@ -108,11 +104,6 @@ public class User implements Serializable {
 
     public boolean hasRole(Role role) {
         return getRoles().contains(role);
-    }
-
-    @Deprecated(forRemoval = true)
-    public String getOwner() {
-        return owner;
     }
 
     @Deprecated(forRemoval = true)

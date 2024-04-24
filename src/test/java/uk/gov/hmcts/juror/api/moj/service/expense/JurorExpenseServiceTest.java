@@ -2521,7 +2521,6 @@ class JurorExpenseServiceTest {
                 .thenReturn(username);
             User user = mock(User.class);
             doReturn(user).when(userService).findByUsername(username);
-            doReturn(TestConstants.VALID_COURT_LOCATION).when(user).getOwner();
             return user;
         }
 

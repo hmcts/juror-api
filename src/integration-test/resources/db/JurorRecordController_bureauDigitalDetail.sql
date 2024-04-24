@@ -13,8 +13,8 @@ DELETE FROM juror_mod.users where username = 'name';
 DELETE FROM juror_mod.user_courts where loc_code = '471';
 
 -- users
-INSERT INTO juror_mod.users ("owner", username, "name", active, last_logged_in, "version", team_id, approval_limit, user_type, email) VALUES
-('471', 'court-southwark', 'Court Southwark', true, NULL, 1, NULL, 0.00, 'COURT', 'court-southwark@email.gov.uk');
+INSERT INTO juror_mod.users (username, "name", active, last_logged_in, "version", team_id, approval_limit, user_type, email) VALUES
+('court-southwark', 'Court Southwark', true, NULL, 1, NULL, 0.00, 'COURT', 'court-southwark@email.gov.uk');
 
 -- user_courts
 INSERT INTO juror_mod.user_courts (username, loc_code) VALUES ('court-southwark', '471');

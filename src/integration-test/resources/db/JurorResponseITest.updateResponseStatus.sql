@@ -35,7 +35,10 @@ insert into juror_mod.juror_reasonable_adjustment (juror_number, reasonable_adju
 ('644892530', 'W', 'Wheel chair access');
 
 -- team leader with login enabled
-INSERT INTO juror_mod.users (owner, username,email, name, active,last_logged_in,team_id,version)
-VALUES ('400','testlogin','testlogin@email.gov.uk','Test Login',true,CURRENT_DATE - 3,1,0);
+INSERT INTO juror_mod.users (username,email, name, active,last_logged_in,team_id,version)
+VALUES ('testlogin','testlogin@email.gov.uk','Test Login',true,CURRENT_DATE - 3,1,0);
 INSERT INTO juror_mod.user_roles (username, role)
 VALUES ('testlogin', 'TEAM_LEADER');
+
+insert into juror_mod.user_courts (username, loc_code)
+values ('testlogin', '400');
