@@ -2,17 +2,18 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -28,8 +29,9 @@ public class IncompleteServiceReport extends AbstractStandardReport {
     private final CourtLocationRepository courtLocationRepository;
 
     @Autowired
-    public IncompleteServiceReport(CourtLocationRepository courtLocationRepository) {
-        super(
+    public IncompleteServiceReport(PoolRequestRepository poolRequestRepository,
+                                   CourtLocationRepository courtLocationRepository) {
+        super(poolRequestRepository,
             QJuror.juror,
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
@@ -46,10 +48,10 @@ public class IncompleteServiceReport extends AbstractStandardReport {
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query
             .where(QJurorPool.jurorPool.nextDate.loe(request.getDate()))
-            .where(QJurorPool.jurorPool.owner.eq(request.getLocCode()))
-            .where(QJurorPool.jurorPool.status.status.in(List.of(2, 3, 4)))
-            .orderBy(QJuror.juror.jurorNumber.asc())
-            .fetch();
+            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(request.getLocCode()))
+            .where(QJurorPool.jurorPool.status.status.in(List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL,
+                IJurorStatus.JUROR)))
+            .orderBy(QJuror.juror.jurorNumber.asc());
     }
 
     @Override
@@ -67,13 +69,10 @@ public class IncompleteServiceReport extends AbstractStandardReport {
             .dataType(LocalDate.class.getSimpleName())
             .value(DateTimeFormatter.ISO_DATE.format(request.getDate())).build());
 
-        courtLocationRepository.findByLocCode(request.getLocCode()).ifPresent(courtLocation -> {
-            map.put("court_name", AbstractReportResponse.DataTypeValue.builder().displayName("Court Name")
-                .dataType(String.class.getSimpleName())
-                .value(StringUtils.capitalize(StringUtils.lowerCase(courtLocation.getName()))
-                    + " (" + courtLocation.getLocCode() + ")")
-                .build());
-        });
+        map.put("court_name", AbstractReportResponse.DataTypeValue.builder().displayName("Court Name")
+            .dataType(String.class.getSimpleName())
+            .value(getCourtNameString(courtLocationRepository, request.getLocCode()))
+            .build());
 
         return map;
     }

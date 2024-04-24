@@ -20,11 +20,6 @@ public abstract class AbstractStandardReport extends AbstractReport<List<LinkedH
         super(poolRequestRepository, from, dataType);
     }
 
-    public AbstractStandardReport(EntityPath<?> from,
-                                  DataType... dataType) {
-        this(null, from, dataType);
-    }
-
     @Override
     protected List<LinkedHashMap<String, Object>> getTableData(List<Tuple> data) {
         return getTableDataAsList(data);

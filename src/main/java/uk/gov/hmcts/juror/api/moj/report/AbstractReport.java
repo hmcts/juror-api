@@ -281,7 +281,7 @@ public abstract class AbstractReport<T> {
     protected void checkOwnership(String locCode, boolean allowBureau) {
         if (!SecurityUtil.getCourts().contains(locCode)
             && !(SecurityUtil.isBureau() && allowBureau)) {
-            throw new MojException.Forbidden("User not allowed to access court", null);
+            throw new MojException.Forbidden("User not allowed to access this court", null);
         }
     }
 

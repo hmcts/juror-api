@@ -19,7 +19,10 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/IncompleteServiceReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings({
+    "PMD.LawOfDemeter",
+    "PMD.JUnitTestsShouldIncludeAssert"//False positive
+})
 class IncompleteServiceReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public IncompleteServiceReportITest(TestRestTemplate template) {
@@ -41,21 +44,25 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
-            .printResponse()
             .assertEquals(getTypicalResponse());
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
+    void negativeNoRecordsFound() {
+        StandardReportRequest request = getValidPayload();
+        request.setDate(LocalDate.now().minusDays(100));
+        testBuilder()
+            .payload(addReportType(request))
+            .triggerValid()
+            .responseConsumer(this::verifyAndRemoveReportCreated)
+            .assertEquals(getNoRecordsResponse());
+    }
+
+    @Test
     void negativeInvalidPayloadLocCodeMissing() {
         StandardReportRequest request = getValidPayload();
         request.setLocCode(null);
@@ -66,9 +73,6 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void negativeInvalidPayloadCutOffDateMissing() {
         StandardReportRequest request = getValidPayload();
         request.setDate(null);
@@ -79,20 +83,14 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getCourtJwt("414"))
             .triggerInvalid()
-            .assertMojForbiddenResponse("User not allowed to access court");
+            .assertMojForbiddenResponse("User not allowed to access this court");
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void negativeUnauthorisedBureau() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -116,7 +114,7 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
                 .add("court_name", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Court Name")
                     .dataType("String")
-                    .value("Chester (415)")
+                    .value("CHESTER (415)")
                     .build()))
             .tableData(
                 StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
@@ -173,6 +171,62 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
                             .add("pool_number_by_jp", "415240601")
                             .add("next_attendance_date",
                                 DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(1)))))
+                    .build())
+            .build();
+    }
+
+    private StandardReportResponse getNoRecordsResponse() {
+        return StandardReportResponse.builder()
+            .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
+                .add("cut_off_date", StandardReportResponse.DataTypeValue.builder()
+                    .displayName("Cut-off Date")
+                    .dataType("LocalDate")
+                    .value(DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(100)))
+                    .build())
+                .add("total_incomplete_service", StandardReportResponse.DataTypeValue.builder()
+                    .displayName("Total incomplete service")
+                    .dataType("Integer")
+                    .value(0)
+                    .build())
+                .add("court_name", StandardReportResponse.DataTypeValue.builder()
+                    .displayName("Court Name")
+                    .dataType("String")
+                    .value("CHESTER (415)")
+                    .build()))
+            .tableData(
+                StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
+                    .headings(List.of(
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("juror_number")
+                            .name("Juror Number")
+                            .dataType("String")
+                            .headings(null)
+                            .build(),
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("first_name")
+                            .name("First Name")
+                            .dataType("String")
+                            .headings(null)
+                            .build(),
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("last_name")
+                            .name("Last Name")
+                            .dataType("String")
+                            .headings(null)
+                            .build(),
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("pool_number_by_jp")
+                            .name("Pool Number")
+                            .dataType("String")
+                            .headings(null)
+                            .build(),
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("next_attendance_date")
+                            .name("Next attendance date")
+                            .dataType("LocalDate")
+                            .headings(null)
+                            .build()))
+                    .data(List.of())
                     .build())
             .build();
     }
