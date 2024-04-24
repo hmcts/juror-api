@@ -1083,7 +1083,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         List<Appearance> appearances = appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(
                 locCode, dto.getJurorNumber())
             .stream()
-            .filter(appearance -> appearance.getCourtLocation().getOwner().equals(SecurityUtil.getActiveOwner()))
             .filter(paymentMethod::isApplicable)
             .filter(approvalType::isApplicable).toList();
 
