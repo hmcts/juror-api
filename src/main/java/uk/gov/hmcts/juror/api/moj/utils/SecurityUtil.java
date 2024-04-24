@@ -25,6 +25,9 @@ public final class SecurityUtil {
 
 
     public static final String LOC_CODE_AUTH = "isAuthenticated() && principal.staff.courts.contains(#loc_code)";
+
+    public static final String LOC_CODE_AUTH_COURT_ONLY = "isAuthenticated() && principal.owner != '400' && "
+        + "principal.staff.courts.contains(#loc_code)";
     public static final String LOC_CODE_AUTH_OR_BUREAU = "isAuthenticated() "
         + "&& (principal.owner == '400' || principal.staff.courts.contains(#loc_code))";
 

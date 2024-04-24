@@ -20,7 +20,7 @@ public abstract class AbstractGroupedReportTestSupport
                                             Class<?> validatorClass,
                                             DataType groupBy,
                                             boolean removeGroupByFromResponse,
-                                            DataType... dataTypes) {
+                                            IDataType... dataTypes) {
         super(from, validatorClass, AbstractGroupedReport.combine(groupBy, dataTypes));
         this.removeGroupByFromResponse = removeGroupByFromResponse;
         this.groupBy = groupBy;

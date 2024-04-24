@@ -17,7 +17,7 @@ import java.util.Locale;
 
 @Getter
 @SuppressWarnings("PMD.ArrayIsStoredDirectly")
-public enum DataType {
+public enum DataType implements IDataType {
     JUROR_NUMBER("Juror Number", String.class, QJuror.juror.jurorNumber, QJuror.juror),
     FIRST_NAME("First Name", String.class, QJuror.juror.firstName, QJuror.juror),
     LAST_NAME("Last Name", String.class, QJuror.juror.lastName, QJuror.juror),
@@ -73,7 +73,7 @@ public enum DataType {
     private final String displayName;
     private final Class<?> dataType;
     private final Expression<?> expression;
-    private final DataType[] returnTypes;
+    private final IDataType[] returnTypes;
 
     DataType(String displayName, Class<?> dataType, Expression<?> expression,
              EntityPath<?>... requiredTables) {
@@ -84,7 +84,7 @@ public enum DataType {
         this.requiredTables = List.of(requiredTables);
     }
 
-    DataType(String displayName, Class<?> dataType, DataType... dataTypes) {
+    DataType(String displayName, Class<?> dataType, IDataType... dataTypes) {
         this.displayName = displayName;
         this.dataType = dataType;
         this.returnTypes = dataTypes;

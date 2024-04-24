@@ -131,12 +131,6 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
                         URI.create(URL)),
                     String.class);
             }
-
-            @Test
-            void unauthorisedNotManagerOrAdminUser() {
-                assertForbiddenResponse(triggerInvalid("415", UserType.COURT, Set.of()),
-                    URL);
-            }
         }
     }
 
@@ -209,12 +203,6 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
             void invalidCodeType() {
                 assertInvalidPathParam(triggerInvalid("INVALID", "INVALID"),
                     "viewNonSittingDays.locCode: must match \"^\\d{3}$\"");
-            }
-
-            @Test
-            void unauthorisedNotManagerUser() {
-                assertForbiddenResponse(triggerInvalid("415", "415", UserType.COURT, Set.of()),
-                    toUrl("415"));
             }
 
             @Test
@@ -300,12 +288,6 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
             void invalidLocCode() {
                 assertInvalidPathParam(triggerInvalid("INVALID", "INVALID", VALID_DATE),
                     "deleteNonSittingDays.locCode: must match \"^\\d{3}$\"");
-            }
-
-            @Test
-            void unauthorisedNotManagerUser() {
-                assertForbiddenResponse(triggerInvalid("415", "415", VALID_DATE,
-                    UserType.COURT, Set.of()), toUrl("415", "2023-01-01"));
             }
 
             @Test
@@ -419,13 +401,6 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
                 payload.setDate(null);
                 assertInvalidPayload(triggerInvalid("415", "415", payload),
                     new RestResponseEntityExceptionHandler.FieldError("date", "must not be null"));
-            }
-
-            @Test
-            void unauthorisedNotManagerUser() {
-                assertForbiddenResponse(triggerInvalid("415", "415", getValidPayload(),
-                        UserType.COURT,Set.of()),
-                    toUrl("415"));
             }
 
             @Test

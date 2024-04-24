@@ -692,13 +692,19 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         RequestEntity<Void> request = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri);
         ResponseEntity<AutoAssignResponse> response = template.exchange(request, AutoAssignResponse.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody().getData()).hasSize(3).containsExactlyInAnyOrder(
+        assertThat(response.getBody().getData()).hasSize(6).containsExactlyInAnyOrder(
             AutoAssignResponse.StaffCapacityResponse.responseBuilder().login("smcintyre").name("Stephanie Mcintyre")
                 .capacity(50).urgents(2L).allocation(52L).incompletes(2L).build(),
             AutoAssignResponse.StaffCapacityResponse.responseBuilder().login("sbell").name("Sandra Bell").capacity(50)
                 .urgents(1L).allocation(51L).incompletes(6L).build(),
             AutoAssignResponse.StaffCapacityResponse.responseBuilder().login("alineweaver").name("Albert Lineweaver")
-                .capacity(50).urgents(3L).allocation(53L).incompletes(9L).build()
+                .capacity(50).urgents(3L).allocation(53L).incompletes(9L).build(),
+            AutoAssignResponse.StaffCapacityResponse.responseBuilder().login("jbrown1").name("Jared Brown")
+                .capacity(50).urgents(0L).allocation(50L).incompletes(0L).build(),
+            AutoAssignResponse.StaffCapacityResponse.responseBuilder().login("jwilliams").name("Jeremy Williams")
+                .capacity(50).urgents(0L).allocation(50L).incompletes(0L).build(),
+            AutoAssignResponse.StaffCapacityResponse.responseBuilder().login("jbrown").name("John Brown")
+                .capacity(50).urgents(0L).allocation(50L).incompletes(0L).build()
         );
 
         assertThat(response.getBody().getMeta()).isNotNull();
@@ -729,13 +735,19 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         RequestEntity<Void> request = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri);
         ResponseEntity<AutoAssignResponse> response = template.exchange(request, AutoAssignResponse.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody().getData()).hasSize(3).containsExactlyInAnyOrder(
+        assertThat(response.getBody().getData()).hasSize(6).containsExactlyInAnyOrder(
             AutoAssignResponse.StaffCapacityResponse.responseBuilder().login("smcintyre").name("Stephanie Mcintyre")
                 .capacity(60).urgents(2L).allocation(62L).incompletes(2L).build(),
             AutoAssignResponse.StaffCapacityResponse.responseBuilder().login("sbell").name("Sandra Bell").capacity(60)
                 .urgents(1L).allocation(61L).incompletes(6L).build(),
             AutoAssignResponse.StaffCapacityResponse.responseBuilder().login("alineweaver").name("Albert Lineweaver")
-                .capacity(60).urgents(3L).allocation(63L).incompletes(9L).build()
+                .capacity(60).urgents(3L).allocation(63L).incompletes(9L).build(),
+            AutoAssignResponse.StaffCapacityResponse.responseBuilder().login("jbrown1").name("Jared Brown")
+                .capacity(60).urgents(0L).allocation(60L).incompletes(0L).build(),
+            AutoAssignResponse.StaffCapacityResponse.responseBuilder().login("jwilliams").name("Jeremy Williams")
+                .capacity(60).urgents(0L).allocation(60L).incompletes(0L).build(),
+            AutoAssignResponse.StaffCapacityResponse.responseBuilder().login("jbrown").name("John Brown")
+                .capacity(60).urgents(0L).allocation(60L).incompletes(0L).build()
         );
     }
 

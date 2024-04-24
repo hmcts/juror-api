@@ -103,7 +103,7 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
         assertThat(exchange.getBody().getBureauBacklogCount().getNonUrgent()).isEqualTo(4);
         assertThat(exchange.getBody().getBureauBacklogCount().getUrgent()).isEqualTo(2);
         assertThat(exchange.getBody().getBureauBacklogCount().getSuperUrgent()).isEqualTo(1);
-        assertThat(exchange.getBody().getData().size()).isEqualTo(3);
+        assertThat(exchange.getBody().getData().size()).isEqualTo(6);
 
         List<BureauOfficerAllocatedData> carneson =
             exchange.getBody().getData().stream().filter(r -> r.getLogin().equals("carneson"))
