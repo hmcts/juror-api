@@ -54,6 +54,7 @@ class ReportControllerTest {
     @MockBean
     private FinancialAuditReportService financialAuditReportService;
 
+
     @Nested
     @DisplayName("POST (GET) " + ViewReportStandard.URL)
     class ViewReportStandard {
