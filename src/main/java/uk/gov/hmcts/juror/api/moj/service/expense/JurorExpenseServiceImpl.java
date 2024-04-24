@@ -1061,7 +1061,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     private JurorPool getActiveJurorPool(String locCode, String jurorNumber) {
-        System.out.println("TMP: " + locCode + " " + jurorNumber);
         JurorPool jurorPool =
             jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(locCode,
                 jurorNumber);
