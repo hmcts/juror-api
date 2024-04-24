@@ -58,6 +58,6 @@ public class StandardReportRequest {
     private LocalDate toDate;
 
     @NotNull(groups = AbstractReport.Validators.RequireLocCode.class)
-    @CourtLocationCode
+    @CourtLocationCode(groups = AbstractReport.Validators.RequireLocCode.class)
     private String locCode;
 }

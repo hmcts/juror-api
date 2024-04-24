@@ -36,6 +36,7 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
             .trialNumber(TestConstants.VALID_TRIAL_NUMBER)
+            .locCode(TestConstants.VALID_COURT_LOCATION)
             .build());
     }
 

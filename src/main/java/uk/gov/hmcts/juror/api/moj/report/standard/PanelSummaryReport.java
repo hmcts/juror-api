@@ -66,7 +66,8 @@ public class PanelSummaryReport extends AbstractStandardReport {
 
     public interface RequestValidator extends
         Validators.AbstractRequestValidator,
-        Validators.RequireTrialNumber {
+        Validators.RequireTrialNumber,
+        Validators.RequireLocCode {
 
     }
 }
