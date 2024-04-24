@@ -54,7 +54,8 @@ public abstract class AbstractReport<T> {
         CLASS_TO_JOIN = new ConcurrentHashMap<>();
         CLASS_TO_JOIN.put(QJuror.juror, Map.of(
             QJurorPool.jurorPool, new Predicate[]{QJuror.juror.eq(QJurorPool.jurorPool.juror)},
-            QAppearance.appearance, new Predicate[]{QJuror.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber)}
+            QAppearance.appearance, new Predicate[]{QJuror.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber)},
+            QPanel.panel, new Predicate[]{QPanel.panel.juror.eq(QJuror.juror)}
         ));
         CLASS_TO_JOIN.put(QJurorPool.jurorPool, Map.of(
             QJuror.juror, new Predicate[]{QJurorPool.jurorPool.juror.eq(QJuror.juror)}
@@ -239,7 +240,7 @@ public abstract class AbstractReport<T> {
                 query.join(requiredTable).on(joinOptions.get(from));
             } else {
                 throw new MojException.InternalServerError(
-                    "Not Implemented yet: " + requiredTable + " from " + from.getClass(), null);
+                    "Not Implemented yet: " + requiredTable.getClass() + " from " + from.getClass(), null);
             }
         });
     }
