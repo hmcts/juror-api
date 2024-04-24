@@ -404,5 +404,9 @@ public abstract class AbstractReport<T> {
 
         public interface RequireToDate {
         }
+
+        public interface RequireLocCode {
+
+        }
     }
 }

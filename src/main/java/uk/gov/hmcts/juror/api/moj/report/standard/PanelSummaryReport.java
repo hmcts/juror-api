@@ -41,7 +41,7 @@ public class PanelSummaryReport extends AbstractStandardReport {
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
-        query.where(QPanel.panel.trial.courtLocation.locCode.eq(SecurityUtil.getActiveOwner()));
+        query.where(QPanel.panel.trial.courtLocation.locCode.eq(request.getLocCode()));
         query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 

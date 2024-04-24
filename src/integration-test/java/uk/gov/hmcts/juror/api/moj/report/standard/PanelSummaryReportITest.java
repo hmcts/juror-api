@@ -44,6 +44,7 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
+            .printResponse()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
     }

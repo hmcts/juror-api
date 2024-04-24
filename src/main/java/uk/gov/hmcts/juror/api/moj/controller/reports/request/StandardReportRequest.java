@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
+import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 import uk.gov.hmcts.juror.api.validation.PoolNumber;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
@@ -55,4 +56,8 @@ public class StandardReportRequest {
     @NotNull(groups = AbstractReport.Validators.RequireToDate.class)
     @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
     private LocalDate toDate;
+
+    @NotNull(groups = AbstractReport.Validators.RequireLocCode.class)
+    @CourtLocationCode
+    private String locCode;
 }
