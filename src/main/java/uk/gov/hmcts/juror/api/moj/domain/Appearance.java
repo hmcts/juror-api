@@ -75,6 +75,10 @@ public class Appearance implements Serializable {
     @JoinColumn(name = "loc_code", nullable = false)
     private CourtLocation courtLocation;
 
+    //Used for audit retrieval of this entity do not modify this field.
+    @Column(name = "loc_code", nullable = false, insertable = false, updatable = false)
+    private String locCode;
+
     @ManyToOne
     @JoinColumn(name = "f_audit", referencedColumnName = "id")
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)

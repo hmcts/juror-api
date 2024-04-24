@@ -148,19 +148,16 @@ public class FinancialAuditServiceImplTest {
                 List.of(
                     new FinancialAuditDetailsAppearances(
                        321L,
-                        TestConstants.VALID_POOL_NUMBER,
                         LocalDate.of(2023, 1, 1),
                         1L
                     ),
                     new FinancialAuditDetailsAppearances(
                         321L,
-                        TestConstants.VALID_POOL_NUMBER,
                         LocalDate.of(2023, 1, 2),
                         12L
                     ),
                     new FinancialAuditDetailsAppearances(
                         321L,
-                        TestConstants.VALID_POOL_NUMBER,
                         LocalDate.of(2023, 1, 3),
                         123L
                     )

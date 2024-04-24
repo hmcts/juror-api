@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ApportionSmartCardRequest extends ExpenseItemsDto {
+public class ApportionSmartCardRequest extends DateDto {
 
     @NotNull
     @ExpenseNumericLimit

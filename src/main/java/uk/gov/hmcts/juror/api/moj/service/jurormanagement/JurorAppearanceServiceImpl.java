@@ -380,8 +380,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                                            LocalTime checkOutTime
     ) {
         boolean isLongTrial = jurorExpenseService.isLongTrialDay(
+            appearance.getCourtLocation().getLocCode(),
             appearance.getJurorNumber(),
-            appearance.getPoolNumber(),
             appearance.getAttendanceDate());
 
         final AppearanceStage oldAppearanceStage = appearance.getAppearanceStage();
@@ -538,7 +538,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             .poolNumber(request.getPoolNumber())
             .nonAttendanceDay(Boolean.TRUE)
             .attendanceType(
-                jurorExpenseService.isLongTrialDay(request.getJurorNumber(), request.getPoolNumber(), nonAttendanceDate)
+                jurorExpenseService.isLongTrialDay(
+                    locationCode,
+                    request.getJurorNumber(), nonAttendanceDate)
                     ? AttendanceType.NON_ATTENDANCE_LONG_TRIAL
                     : AttendanceType.NON_ATTENDANCE)
             .appearanceStage(AppearanceStage.EXPENSE_ENTERED)
@@ -1241,7 +1243,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         }
 
         boolean isLongTrialDay =
-            jurorExpenseService.isLongTrialDay(appearance.getJurorNumber(), appearance.getPoolNumber(),
+            jurorExpenseService.isLongTrialDay(appearance.getCourtLocation().getLocCode(),
+                appearance.getJurorNumber(),
                 appearance.getAttendanceDate());
 
         if (appearance.getAttendanceType() != null && Set.of(AttendanceType.NON_ATTENDANCE,
