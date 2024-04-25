@@ -120,7 +120,6 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
         }
 
 
-
         @Getter
         @Setter
         @Accessors(chain = true, fluent = true)

@@ -11,7 +11,6 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -46,7 +45,6 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
-            .printResponse()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
     }
