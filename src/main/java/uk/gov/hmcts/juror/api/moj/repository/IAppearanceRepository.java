@@ -4,10 +4,13 @@ import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.jurormanagement.RetrieveAttendanceDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Custom Repository definition for the appearance entity.
@@ -16,7 +19,7 @@ import java.util.List;
 public interface IAppearanceRepository {
 
     List<JurorAppearanceResponseDto.JurorAppearanceResponseData> getAppearanceRecords(
-        String locCode, LocalDate date, String jurorNumber);
+        String locCode, LocalDate date, String jurorNumber, JurorStatusGroup group);
 
     List<Tuple> retrieveAttendanceDetails(RetrieveAttendanceDetailsDto request);
 
@@ -24,15 +27,21 @@ public interface IAppearanceRepository {
 
     List<Tuple> getAvailableJurors(String locCode);
 
-    List<JurorPool> retrieveAllJurors();
+    List<JurorPool> retrieveAllJurors(String locCode, LocalDate date);
 
-    List<JurorPool> getJurorsInPools(List<String> poolNumber);
+    List<JurorPool> getJurorsInPools(String locCode, List<String> poolNumber, LocalDate date);
 
-    JPAQuery<JurorPool> buildJurorPoolQuery();
+    JPAQuery<JurorPool> buildJurorPoolsCheckedInTodayQuery(String locCode, LocalDate date);
 
     Integer countJurorExpenseForApproval(String jurorNumber, String poolNumber);
 
     long countPendingApproval(String locCode, boolean isCash);
+
+    Optional<Appearance> findByJurorNumberAndLocCodeAndAttendanceDateAndVersion(
+        String jurorNumber,
+        String locCode,
+        LocalDate attendanceDate,
+        long appearanceVersion);
 
     List<Tuple> getTrialsWithAttendanceCount(String locationCode, LocalDate attendanceDate);
 }

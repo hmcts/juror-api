@@ -24,7 +24,6 @@ import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApproveExpenseDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CalculateTotalExpenseRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseItemsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseType;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpenseApplyToAllDays;
@@ -42,6 +41,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.expense.GetEnteredExpenseR
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApproval;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.PendingApprovalList;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.SimplifiedExpenseDetailDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.expense.SummaryExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.expense.UnpaidExpenseSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ExpenseRates;
@@ -49,6 +49,7 @@ import uk.gov.hmcts.juror.api.moj.domain.ExpenseRatesDto;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorExpenseTotals;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PaymentData;
 import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
 import uk.gov.hmcts.juror.api.moj.domain.User;
@@ -62,12 +63,15 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ExpenseRatesRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorExpenseTotalsRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PaymentDataRepository;
 import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
 import uk.gov.hmcts.juror.api.moj.service.FinancialAuditService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
+import uk.gov.hmcts.juror.api.moj.service.ValidationService;
 import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -82,6 +86,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -101,13 +106,16 @@ import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
     "PMD.ExcessiveImports",
     "PMD.GodClass",
     "PMD.TooManyMethods",
-    "PMD.LawOfDemeter"
+    "PMD.LawOfDemeter",
+    "PMD.CyclomaticComplexity"
 })
 public class JurorExpenseServiceImpl implements JurorExpenseService {
 
+    private final ValidationService validationService;
     private final JurorExpenseTotalsRepository jurorExpenseTotalsRepository;
     private final AppearanceRepository appearanceRepository;
     private final JurorRepository jurorRepository;
+    private final JurorPoolRepository jurorPoolRepository;
     private final FinancialAuditService financialAuditService;
     private final UserService userService;
     private final JurorHistoryService jurorHistoryService;
@@ -153,8 +161,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         String locCode, LocalDate minDate, LocalDate maxDate,
         int pageNumber, String sortBy, SortDirection sortOrder) {
 
-        SecurityUtil.validateCourtLocationPermitted(locCode);
-
         Sort sort = SortDirection.DESC.equals(sortOrder)
             ? Sort.by(sortBy).descending()
             : Sort.by(sortBy).ascending();
@@ -192,7 +198,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         DefaultExpenseResponseDto dto = new DefaultExpenseResponseDto();
 
-        dto.setJurorNumber(juror.getJurorNumber());
         dto.setFinancialLoss(juror.getFinancialLoss());
         dto.setTravelTime(juror.getTravelTime());
         dto.setDistanceTraveledMiles(juror.getMileage());
@@ -254,11 +259,11 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Override
     @Transactional
     @SuppressWarnings("checkstyle:LineLength")
-    public void setDefaultExpensesForJuror(RequestDefaultExpensesDto dto) {
+    public void setDefaultExpensesForJuror(String jurorNumber, RequestDefaultExpensesDto dto) {
 
         final String owner = SecurityUtil.getActiveOwner();
 
-        Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, dto.getJurorNumber());
+        Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, jurorNumber);
 
         juror.setMileage(dto.getDistanceTraveledMiles());
         juror.setFinancialLoss(dto.getFinancialLoss());
@@ -271,7 +276,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         if (dto.isOverwriteExistingDraftExpenses()) {
             applyDefaultExpenses(appearanceRepository
                 .findAllByJurorNumberAndAppearanceStageInAndCourtLocationOwnerAndIsDraftExpenseTrueOrderByAttendanceDateDesc(
-                    dto.getJurorNumber(),
+                    jurorNumber,
                     Set.of(AppearanceStage.EXPENSE_ENTERED), owner));
         }
     }
@@ -279,19 +284,20 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     /**
      * Submit one or more draft expense records (for a single juror) for approval. This will generate the financial
      * audit number for the batch and update the is_draft_expense flag.
-     *
-     * @param dto request body include the juror number and pool number and a list of attendance dates to identify the
-     *            appearance records which need to be submitted for approval.
      */
     @Override
     @Transactional
-    public void submitDraftExpensesForApproval(ExpenseItemsDto dto) {
+    public void submitDraftExpensesForApproval(String locCode, String jurorNumber, List<LocalDate> attendanceDates) {
         log.trace("Enter submitDraftExpensesForApproval");
 
         // query the database to retrieve appearance records for a given juror number and pool number (from the
         // request body) - then filter the result set down to just those records where the attendance date matches a
         // date in the request dto
-        List<Appearance> appearances = getAppearances(dto);
+        List<Appearance> appearances = getAppearances(locCode, jurorNumber, attendanceDates);
+
+        if (appearances.isEmpty()) {
+            throw new MojException.NotFound("No appearances found for juror: " + jurorNumber, null);
+        }
 
         // update each expense record to assign the financial audit details object
         // and update the is_draft_expense property to false (marking the batch of expenses as ready for approval)
@@ -301,11 +307,10 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             appearance.setDraftExpense(false);
         }
 
-        Appearance firstAppearance = appearances.get(0);
-        CourtLocation courtLocation = firstAppearance.getCourtLocation();
         FinancialAuditDetails financialAuditDetails =
-            financialAuditService.createFinancialAuditDetail(dto.getJurorNumber(),
-                courtLocation.getLocCode(),
+            financialAuditService.createFinancialAuditDetail(
+                jurorNumber,
+                locCode,
                 FinancialAuditDetails.Type.FOR_APPROVAL, appearances);
 
         appearances.forEach(appearance ->
@@ -316,11 +321,11 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         log.trace("Exit submitDraftExpensesForApproval");
     }
 
-    Appearance getAppearance(String jurorNumber, String poolNumber, LocalDate attendanceDate) {
+    Appearance getAppearance(String locCode, String jurorNumber, LocalDate attendanceDate) {
         Optional<Appearance> appearanceOptional =
-            appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(
+            appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(
+                locCode,
                 jurorNumber,
-                poolNumber,
                 attendanceDate);
         if (appearanceOptional.isEmpty()) {
             throw new MojException.NotFound("No appearance record found for juror: " + jurorNumber
@@ -329,12 +334,14 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         return appearanceOptional.get();
     }
 
-    Appearance getDraftAppearance(String jurorNumber, String poolNumber, LocalDate attendanceDate) {
+    Appearance getDraftAppearance(String locCode, String jurorNumber, LocalDate attendanceDate) {
         Optional<Appearance> appearanceOptional =
-            appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDateAndIsDraftExpenseTrue(
-                jurorNumber,
-                poolNumber,
-                attendanceDate);
+            appearanceRepository
+                .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDateAndIsDraftExpense(
+                    locCode,
+                    jurorNumber,
+                    attendanceDate,
+                    true);
         if (appearanceOptional.isEmpty()) {
             throw new MojException.NotFound("No draft appearance record found for juror: " + jurorNumber
                 + " on day: " + attendanceDate, null);
@@ -354,7 +361,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         DailyExpenseResponse dailyExpenseResponse = new DailyExpenseResponse();
 
         DailyExpenseTime time = request.getTime();
-        appearance.setPayCash(request.getPayCash());
+        appearance.setPayCash(PaymentMethod.CASH.equals(request.getPaymentMethod()));
         updateDraftTimeExpense(appearance, time);
         dailyExpenseResponse.setFinancialLossWarning(
             updateDraftFinancialLossExpense(appearance, request.getFinancialLoss()));
@@ -377,8 +384,9 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     @Override
     @Transactional(readOnly = true)
-    public GetEnteredExpenseResponse getEnteredExpense(String jurorNumber, String poolNumber, LocalDate dateOfExpense) {
-        Appearance appearance = getAppearance(jurorNumber, poolNumber, dateOfExpense);
+    public GetEnteredExpenseResponse getEnteredExpense(String locCode, String jurorNumber,
+                                                       LocalDate dateOfExpense) {
+        Appearance appearance = getAppearance(locCode, jurorNumber, dateOfExpense);
 
         return GetEnteredExpenseResponse.builder()
             .noneAttendanceDay(appearance.getNonAttendanceDay())
@@ -386,7 +394,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .stage(appearance.getAppearanceStage())
             .totalDue(appearance.getTotalDue())
             .totalPaid(appearance.getTotalPaid())
-            .payCash(appearance.isPayCash())
+            .paymentMethod(PaymentMethod.fromPayCash(appearance.isPayCash()))
             .time(getTimeFromAppearance(appearance))
             .financialLoss(getFinancialLossFromAppearance(appearance))
             .travel(getTravelFromAppearance(appearance))
@@ -434,15 +442,20 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     @Transactional
     @Override
-    public DailyExpenseResponse updateDraftExpense(String jurorNumber, DailyExpense request) {
+    public DailyExpenseResponse updateDraftExpense(String locCode, String jurorNumber, DailyExpense request) {
         if (request.getApplyToAllDays() == null || request.getApplyToAllDays().isEmpty()) {
-            Appearance appearance = getDraftAppearance(jurorNumber, request.getPoolNumber(),
+            Appearance appearance = getDraftAppearance(locCode, jurorNumber,
                 request.getDateOfExpense());
+            if (!isAttendanceDay(appearance)) {
+                validationService.validate(request, DailyExpense.NonAttendanceDay.class);
+            } else {
+                validationService.validate(request, DailyExpense.AttendanceDay.class);
+            }
             return updateExpenseInternal(appearance, request);
         }
 
-        applyToAll(appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(jurorNumber,
-            request.getPoolNumber()), request);
+        applyToAll(appearanceRepository.findByCourtLocationLocCodeAndJurorNumberAndIsDraftExpenseTrue(
+            locCode, jurorNumber), request);
         return new DailyExpenseResponse();
     }
 
@@ -517,7 +530,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 });
             }
             if (DailyExpenseApplyToAllDays.PAY_CASH.equals(dailyExpenseApplyToAllDays)) {
-                appearances.forEach(appearance -> appearance.setPayCash(request.getPayCash()));
+                appearances.forEach(appearance -> appearance.setPayCash(
+                    PaymentMethod.CASH.equals(request.getPaymentMethod())));
             }
 
             final DailyExpenseFinancialLoss financialLoss = request.getFinancialLoss();
@@ -654,10 +668,10 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     @Override
     @Transactional(readOnly = true)
-    public CombinedSimplifiedExpenseDetailDto getSimplifiedExpense(JurorNumberAndPoolNumberDto request,
+    public CombinedSimplifiedExpenseDetailDto getSimplifiedExpense(String locCode, String jurorNumber,
                                                                    ExpenseType type) {
         List<Appearance> appearances =
-            appearanceRepository.findAllByJurorNumberAndPoolNumber(request.getJurorNumber(), request.getPoolNumber())
+            appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(locCode, jurorNumber)
                 .stream()
                 .filter(type::isApplicable)
                 .sorted(Comparator.comparing(Appearance::getAttendanceDate))
@@ -677,28 +691,13 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         return combinedSimplifiedExpenseDetailDto;
     }
 
-    SimplifiedExpenseDetailDto mapCombinedSimplifiedExpenseDetailDto(Appearance appearance) {
-        return SimplifiedExpenseDetailDto.builder()
-            .attendanceDate(appearance.getAttendanceDate())
-            .financialAuditNumber(appearance.getFinancialAuditDetails().getFinancialAuditNumber())
-            .attendanceType(appearance.getAttendanceType())
-            .financialLoss(appearance.getTotalFinancialLossDue())
-            .travel(appearance.getTotalTravelDue())
-            .foodAndDrink(getOrZero(appearance.getSubsistenceDue()))
-            .smartcard(getOrZero(appearance.getSmartCardAmountDue()))
-            .totalDue(appearance.getTotalDue())
-            .totalPaid(appearance.getTotalPaid())
-            .balanceToPay(appearance.getBalanceToPay())
-            .auditCreatedOn(appearance.getFinancialAuditDetails().getCreatedOn())
-            .build();
-    }
-
     @Override
     @Transactional(readOnly = true)
-    public CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(String jurorNumber, String poolNumber,
+    public CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(String locCode, String jurorNumber,
                                                                     List<LocalDate> dates) {
         CombinedExpenseDetailsDto<ExpenseDetailsDto> result = getExpenses(appearanceRepository
-            .findAllByJurorNumberAndPoolNumberAndAttendanceDateIn(jurorNumber, poolNumber, dates));
+            .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(locCode, jurorNumber, dates));
+
         if (result.getExpenseDetails().size() != dates.size()) {
             throw new MojException.NotFound("Not all dates found", null);
         }
@@ -721,23 +720,102 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     @Override
     @Transactional(readOnly = true)
-    public CombinedExpenseDetailsDto<ExpenseDetailsDto> getDraftExpenses(String jurorNumber, String poolNumber) {
+    public SummaryExpenseDetailsDto calculateSummaryTotals(String locCode, String jurorNumber) {
+
+        final String owner = SecurityUtil.getActiveOwner();
+
+        // check if the user has access to the juror pool for juror
+        JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber, owner);
+
+        List<Appearance> appearances = appearanceRepository
+            .findAllByCourtLocationLocCodeAndJurorNumber(locCode, jurorNumber);
+
+        if (appearances.isEmpty()) {
+            throw new MojException.NotFound("No appearances found for juror: " + jurorNumber, null);
+        }
+
+        SummaryExpenseDetailsDto summaryExpenseDetailsDto = new SummaryExpenseDetailsDto();
+
+        for (Appearance appearance : appearances) {
+            if (appearance.isDraftExpense()) {
+                // calculate the total for draft
+                if (appearance.getTotalDue() != null) {
+                    summaryExpenseDetailsDto.addToTotalDraft(appearance.getTotalDue());
+                }
+            } else {
+
+                // calculate the total approved
+                if (appearance.getTotalPaid() != null) {
+                    summaryExpenseDetailsDto.addToTotalApproved(
+                        appearance.getTotalPaid());
+                }
+
+                // calculate the total for approval
+                if (appearance.getTotalPaid() != null && appearance.getTotalDue() != null) {
+                    summaryExpenseDetailsDto.addToTotalForApproval(
+                        appearance.getTotalDue().subtract(appearance.getTotalPaid()));
+                } else if (appearance.getTotalDue() != null) {
+                    summaryExpenseDetailsDto.addToTotalForApproval(appearance.getTotalDue());
+                }
+            }
+        }
+
+        return summaryExpenseDetailsDto;
+    }
+
+    /**
+     * This method should only be called if the appearance stage is EXPENSE_ENTERED or expense is draft.
+     * Violating this constraint may lead to data integrity issues.
+     * (Not validated here as consuming methods already perform this validation)
+     */
+    @Override
+    @Transactional
+    public void realignExpenseDetails(Appearance appearance, boolean isDeleted) {
+        if (isDeleted || AttendanceType.ABSENT.equals(appearance.getAttendanceType())) {
+            appearance.clearExpenses(true);
+        } else if (!isAttendanceDay(appearance)) {
+            appearance.clearTravelExpenses(true);
+            appearance.clearFoodAndDrinkExpenses(true);
+        }
+
+        if (appearance.isDraftExpense()) {
+            applyDefaultExpenses(appearance, getJuror(appearance.getJurorNumber()));
+            updateExpenseRatesId(List.of(appearance));
+        } else {
+            if (Objects.equals(AppearanceStage.EXPENSE_ENTERED, appearance.getAppearanceStage())) {
+
+                FinancialAuditDetails financialAuditDetails =
+                    financialAuditService.createFinancialAuditDetail(appearance.getJurorNumber(),
+                        appearance.getCourtLocation().getLocCode(),
+                        FinancialAuditDetails.Type.FOR_APPROVAL_EDIT,
+                        List.of(appearance));
+
+                jurorHistoryService.createExpenseEditHistory(
+                    financialAuditDetails,
+                    appearance
+                );
+            }
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @SuppressWarnings("LineLength")
+    public CombinedExpenseDetailsDto<ExpenseDetailsDto> getDraftExpenses(String locCode, String jurorNumber) {
         return getExpenses(
-            appearanceRepository.findByJurorNumberAndPoolNumberAndIsDraftExpenseTrue(jurorNumber, poolNumber)
-                .stream()
-                .filter(appearance -> AppearanceStage.EXPENSE_ENTERED.equals(appearance.getAppearanceStage()))
-                .sorted(Comparator.comparing(Appearance::getAttendanceDate))
-                .toList());
+            appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAppearanceStageAndIsDraftExpenseTrueOrderByAttendanceDate(
+                locCode, jurorNumber, AppearanceStage.EXPENSE_ENTERED));
     }
 
     @Override
     @Transactional(readOnly = true)
     @SneakyThrows
-    public CombinedExpenseDetailsDto<ExpenseDetailsForTotals> calculateTotals(CalculateTotalExpenseRequestDto dto) {
+    public CombinedExpenseDetailsDto<ExpenseDetailsForTotals> calculateTotals(
+        String locCode, String jurorNumber, CalculateTotalExpenseRequestDto dto) {
         CombinedExpenseDetailsDto<ExpenseDetailsForTotals> responseDto = new CombinedExpenseDetailsDto<>(true);
         dto.getExpenseList().stream().map(dailyExpense -> {
             Appearance appearance =
-                getAppearance(dto.getJurorNumber(), dto.getPoolNumber(), dailyExpense.getDateOfExpense());
+                getAppearance(locCode, jurorNumber, dailyExpense.getDateOfExpense());
             entityManager.detach(appearance);//Detach from session to avoid updating the appearance
 
             if (dailyExpense.shouldPullFromDatabase()) {
@@ -753,44 +831,49 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     @Override
     @Transactional(readOnly = true)
-    public ExpenseCount countExpenseTypes(String jurorNumber, String poolNumber) {
-        List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber);
+    public ExpenseCount countExpenseTypes(String locCode, String jurorNumber) {
+        List<Appearance> appearances =
+            appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(locCode, jurorNumber);
         final String owner = SecurityUtil.getActiveOwner();
         if (!appearances.isEmpty() && appearances.stream()
             .noneMatch(appearance -> owner.equals(appearance.getCourtLocation().getOwner()))) {
             throw new MojException.Forbidden("User cannot access this juror pool", null);
         }
         return ExpenseCount.builder()
-            .totalDraft(appearances.stream().filter(appearance ->
-                appearance.isDraftExpense() && AppearanceStage.EXPENSE_ENTERED.equals(
-                    appearance.getAppearanceStage())).count())
-            .totalForApproval(appearances.stream().filter(appearance ->
-                !appearance.isDraftExpense() && AppearanceStage.EXPENSE_ENTERED.equals(
-                    appearance.getAppearanceStage())).count())
-            .totalForReapproval(appearances.stream().filter(appearance ->
-                !appearance.isDraftExpense() && AppearanceStage.EXPENSE_EDITED.equals(
-                    appearance.getAppearanceStage())).count())
-            .totalApproved(appearances.stream().filter(appearance ->
-                !appearance.isDraftExpense() && AppearanceStage.EXPENSE_AUTHORISED.equals(
-                    appearance.getAppearanceStage())).count())
+            .totalDraft(appearances.stream()
+                .filter(ExpenseType.DRAFT::isApplicable)
+                .count())
+            .totalForApproval(appearances.stream()
+                .filter(ExpenseType.FOR_APPROVAL::isApplicable)
+                .count())
+            .totalForReapproval(appearances.stream()
+                .filter(ExpenseType.FOR_REAPPROVAL::isApplicable)
+                .count())
+            .totalApproved(appearances.stream()
+                .filter(ExpenseType.APPROVED::isApplicable)
+                .count())
             .build();
     }
 
+
     @Override
     @Transactional
-    public void updateExpense(String jurorNumber, ExpenseType type, List<DailyExpense> request) {
+    public void updateExpense(String locCode, String jurorNumber, ExpenseType type, List<DailyExpense> request) {
+        boolean isDraft = ExpenseType.DRAFT.equals(type);
         List<Appearance> appearances = request.stream()
             .map(dailyExpense -> {
-                Appearance appearance = getAppearance(jurorNumber, dailyExpense.getPoolNumber(),
-                    dailyExpense.getDateOfExpense());
+                Appearance appearance = getAppearance(locCode, jurorNumber, dailyExpense.getDateOfExpense());
 
                 if (!type.isApplicable(appearance)) {
-                    throw new MojException.BusinessRuleViolation("Expense for this day is not of type: " + type.name(),
+                    throw new MojException.BusinessRuleViolation(
+                        "Expense for this day is not of type: " + type.name(),
                         MojException.BusinessRuleViolation.ErrorCode.WRONG_EXPENSE_TYPE);
                 }
-
-                updateExpenseInternal(appearance, dailyExpense);
-
+                if (isDraft) {
+                    updateDraftExpense(locCode, jurorNumber, dailyExpense);
+                } else {
+                    updateExpenseInternal(appearance, dailyExpense);
+                }
                 if (AppearanceStage.EXPENSE_AUTHORISED.equals(appearance.getAppearanceStage())) {
                     appearance.setAppearanceStage(AppearanceStage.EXPENSE_EDITED);
                 }
@@ -798,12 +881,15 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 return appearance;
             }).toList();
 
+        if (isDraft) {
+            return;
+        }
 
         Appearance firstAppearance = appearances.get(0);
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(jurorNumber,
                 firstAppearance.getCourtLocation().getLocCode(),
-                FinancialAuditDetails.Type.EDIT,
+                type.toEditType(),
                 appearances);
 
         appearances.forEach(appearance -> jurorHistoryService.createExpenseEditHistory(
@@ -812,15 +898,31 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         ));
     }
 
+    SimplifiedExpenseDetailDto mapCombinedSimplifiedExpenseDetailDto(Appearance appearance) {
+        return SimplifiedExpenseDetailDto.builder()
+            .attendanceDate(appearance.getAttendanceDate())
+            .financialAuditNumber(appearance.getFinancialAuditDetails().getFinancialAuditNumber())
+            .attendanceType(appearance.getAttendanceType())
+            .financialLoss(appearance.getTotalFinancialLossDue())
+            .travel(appearance.getTotalTravelDue())
+            .foodAndDrink(getOrZero(appearance.getSubsistenceDue()))
+            .smartcard(getOrZero(appearance.getSmartCardAmountDue()))
+            .totalDue(appearance.getTotalDue())
+            .totalPaid(appearance.getTotalPaid())
+            .balanceToPay(appearance.getBalanceToPay())
+            .auditCreatedOn(appearance.getFinancialAuditDetails().getCreatedOn())
+            .build();
+    }
 
-    List<Appearance> getAppearances(ExpenseItemsDto dto) {
-        List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(dto.getJurorNumber(),
-            dto.getPoolNumber()).stream().filter(appearance ->
-            dto.getAttendanceDates().contains(appearance.getAttendanceDate())).toList();
-        if (appearances.isEmpty() || appearances.size() != dto.getAttendanceDates().size()) {
+
+    List<Appearance> getAppearances(String locCode, String jurorNumber, List<LocalDate> dates) {
+        List<Appearance> appearances =
+            appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+                locCode, jurorNumber, dates);
+        if (appearances.isEmpty() || appearances.size() != dates.size()) {
             throw new MojException.NotFound(
-                String.format("One or more appearance records not found for Juror Number: %s, "
-                    + "Pool Number: %s and Attendance Dates provided", dto.getJurorNumber(), dto.getPoolNumber()),
+                String.format("One or more appearance records not found for Loc code: %s, "
+                    + "Juror Number: %s and Attendance Dates provided", locCode, jurorNumber),
                 null);
         }
         return appearances;
@@ -828,8 +930,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     @Override
     @Transactional
-    public void apportionSmartCard(ApportionSmartCardRequest dto) {
-        List<Appearance> appearances = getAppearances(dto);
+    public void apportionSmartCard(String locCode, String jurorNumber, ApportionSmartCardRequest dto) {
+        List<Appearance> appearances = getAppearances(locCode, jurorNumber, dto.getDates());
 
         final BigDecimal amountPerAppearance = dto.getSmartCardAmount()
             .divide(BigDecimal.valueOf(appearances.size()), 2, RoundingMode.HALF_UP);
@@ -864,7 +966,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
         List<PendingApproval> pendingApprovals = new ArrayList<>();
         //For approval
-        pendingApprovals.addAll(mapAppearancesToPendingApproval(
+        pendingApprovals.addAll(mapAppearancesToPendingApproval(locCode,
             appearanceRepository
                 .findAllByCourtLocationLocCodeAndAppearanceStageAndPayCashAndIsDraftExpenseFalse(
                     locCode,
@@ -874,7 +976,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             fromInclusive, toInclusive
         ));
         //For Re-Approval
-        pendingApprovals.addAll(mapAppearancesToPendingApproval(
+        pendingApprovals.addAll(mapAppearancesToPendingApproval(locCode,
             appearanceRepository
                 .findAllByCourtLocationLocCodeAndAppearanceStageAndPayCashAndIsDraftExpenseFalse(
                     locCode,
@@ -903,17 +1005,15 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         return pendingApprovalList;
     }
 
-    List<PendingApproval> mapAppearancesToPendingApproval(List<Appearance> appearances,
-                                                          boolean isReapproval,
-                                                          LocalDate fromInclusive, LocalDate toInclusive) {
-        Map<PendingApprovalMapId, List<Appearance>> approvalMapIdListMap = new HashMap<>();
+    List<PendingApproval> mapAppearancesToPendingApproval(
+        String locCode, List<Appearance> appearances,
+        boolean isReapproval,
+        LocalDate fromInclusive, LocalDate toInclusive) {
+        Map<String, List<Appearance>> approvalMapIdListMap = new HashMap<>();
 
-        appearances.forEach(appearance -> {
-            PendingApprovalMapId pendingApprovalMapId = new PendingApprovalMapId(appearance.getJurorNumber(),
-                appearance.getPoolNumber());
-            approvalMapIdListMap.computeIfAbsent(pendingApprovalMapId, k -> new ArrayList<>()).add(appearance);
-        });
-
+        appearances.forEach(
+            appearance -> approvalMapIdListMap.computeIfAbsent(appearance.getJurorNumber(), k -> new ArrayList<>())
+                .add(appearance));
 
         return approvalMapIdListMap.values().stream()
             .filter(appearances1 -> {
@@ -932,18 +1032,18 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 }
                 return true;
             })
-            .map(appearances1 -> mapAppearancesToPendingApprovalSinglePool(appearances1, isReapproval))
+            .map(appearances1 -> mapAppearancesToPendingApprovalSinglePool(locCode, appearances1, isReapproval))
             .toList();
     }
 
-    PendingApproval mapAppearancesToPendingApprovalSinglePool(List<Appearance> appearances,
-                                                              boolean isReapproval) {
+    PendingApproval mapAppearancesToPendingApprovalSinglePool(
+        String locCode, List<Appearance> appearances, boolean isReapproval) {
         final String jurorNumber = appearances.get(0).getJurorNumber();
         final Juror juror = getJuror(jurorNumber);
 
         return PendingApproval.builder()
             .jurorNumber(jurorNumber)
-            .poolNumber(appearances.get(0).getPoolNumber())
+            .poolNumber(getActiveJurorPool(locCode, juror.getJurorNumber()).getPoolNumber())
             .firstName(juror.getFirstName())
             .lastName(juror.getLastName())
             .amountDue(appearances.stream()
@@ -958,6 +1058,16 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                         .version(appearance.getVersion())
                         .build()).toList()
             ).build();
+    }
+
+    private JurorPool getActiveJurorPool(String locCode, String jurorNumber) {
+        JurorPool jurorPool =
+            jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(locCode,
+                jurorNumber);
+        if (jurorPool == null) {
+            throw new MojException.NotFound("No active pool found for juror: " + jurorNumber, null);
+        }
+        return jurorPool;
     }
 
     //This method is here to support unit testing
@@ -976,17 +1086,17 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Override
     @Transactional
     @PreAuthorize(SecurityUtil.IS_MANAGER)
-    public void approveExpenses(ApproveExpenseDto dto) {
+    public void approveExpenses(String locCode, PaymentMethod paymentMethod, ApproveExpenseDto dto) {
         ApproveExpenseDto.ApprovalType approvalType = dto.getApprovalType();
-        List<Appearance> appearances = appearanceRepository.findAllByJurorNumberAndPoolNumber(dto.getJurorNumber(),
-                dto.getPoolNumber()).stream()
-            .filter(appearance -> appearance.getCourtLocation().getOwner().equals(SecurityUtil.getActiveOwner()))
-            .filter(appearance -> dto.getCashPayment().equals(appearance.isPayCash()))
+        List<Appearance> appearances = appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(
+                locCode, dto.getJurorNumber())
+            .stream()
+            .filter(paymentMethod::isApplicable)
             .filter(approvalType::isApplicable).toList();
 
         if (appearances.isEmpty()) {
-            throw new MojException.NotFound(String.format("No appearance records found for Juror Number: %s, "
-                    + "Pool Number: %s and approval type %s", dto.getJurorNumber(), dto.getPoolNumber(),
+            throw new MojException.NotFound(String.format("No appearance records found for Loc code: %s, "
+                    + "Juror Number: %s and approval type %s", locCode, dto.getJurorNumber(),
                 dto.getApprovalType().name()), null);
         }
         if (!validateAppearanceVersionNumber(appearances, dto.getDateToRevisions())) {
@@ -1009,40 +1119,40 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 CAN_NOT_APPROVE_MORE_THAN_LIMIT);
         }
         Appearance firstAppearance = appearances.get(0);
+        if (!PaymentMethod.CASH.equals(paymentMethod)) {
+            paymentDataRepository.save(createPaymentData(dto.getJurorNumber(),
+                firstAppearance.getCourtLocation(), appearances));
+        }
+        appearances.forEach(this::approveAppearance);
+        saveAppearancesWithExpenseRateIdUpdate(appearances);
+
+
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(dto.getJurorNumber(),
                 firstAppearance.getCourtLocation().getLocCode(),
-                dto.getCashPayment()
-                    ? FinancialAuditDetails.Type.APPROVED_CASH
-                    : FinancialAuditDetails.Type.APPROVED_BACS,
+                dto.getApprovalType().toApproveType(PaymentMethod.CASH.equals(paymentMethod)),
                 appearances);
 
         LocalDate latestAppearanceDate = appearances.stream()
             .map(Appearance::getAttendanceDate)
             .max(Comparator.naturalOrder())
             .get();
-        if (dto.getCashPayment()) {
+
+        if (PaymentMethod.CASH.equals(paymentMethod)) {
             jurorHistoryService.createExpenseApproveCash(
                 dto.getJurorNumber(),
-                dto.getPoolNumber(),
                 financialAuditDetails,
                 latestAppearanceDate,
                 totalToApprove
             );
         } else {
-            paymentDataRepository.save(createPaymentData(dto.getJurorNumber(),
-                firstAppearance.getCourtLocation(), appearances));
-
             jurorHistoryService.createExpenseApproveBacs(
                 dto.getJurorNumber(),
-                dto.getPoolNumber(),
                 financialAuditDetails,
                 latestAppearanceDate,
                 totalToApprove
             );
         }
-        appearances.forEach(this::approveAppearance);
-        saveAppearancesWithExpenseRateIdUpdate(appearances);
     }
 
     void approveAppearance(Appearance appearance) {
@@ -1059,6 +1169,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         appearance.setMiscAmountPaid(appearance.getMiscAmountDue());
         appearance.setSmartCardAmountPaid(appearance.getSmartCardAmountDue());
     }
+
 
     PaymentData createPaymentData(String jurorNumber, CourtLocation courtLocation,
                                   List<Appearance> appearances) {
@@ -1094,7 +1205,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .postcode(juror.getPostcode())
             .authCode(applicationSettingService.getAppSetting(ApplicationSettings.Setting.PAYMENT_AUTH_CODE)
                 .orElseThrow(
-                    () -> new MojException.InternalServerError("Payment Auth Code not found in application settings",
+                    () -> new MojException.InternalServerError(
+                        "Payment Auth Code not found in application settings",
                         null))
                 .getValue())
             .jurorName(juror.getName())
@@ -1123,7 +1235,8 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .collect(Collectors.toSet());
         String username = SecurityUtil.getActiveLogin();
         return financialAuditDetailsSet.stream()
-            .noneMatch(financialAuditDetails -> financialAuditDetails.getCreatedBy().getUsername().equals(username));
+            .noneMatch(
+                financialAuditDetails -> financialAuditDetails.getCreatedBy().getUsername().equals(username));
     }
 
 
@@ -1163,11 +1276,11 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     @Override
     @Transactional(readOnly = true)
-    public boolean isLongTrialDay(String jurorNumber, String poolNumber, LocalDate localDate) {
+    public boolean isLongTrialDay(String locCode, String jurorNumber, LocalDate localDate) {
         List<LocalDate> localDates = new ArrayList<>();
         localDates.add(localDate);
         localDates.addAll(
-            appearanceRepository.findAllByJurorNumberAndPoolNumber(jurorNumber, poolNumber)
+            appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(locCode, jurorNumber)
                 .stream()
                 .map(Appearance::getAttendanceDate)
                 .distinct()
@@ -1177,9 +1290,14 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .indexOf(localDate) >= 10;//>= as 0 indexed
     }
 
-    void saveAppearancesWithExpenseRateIdUpdate(Collection<Appearance> appearances) {
+
+    void updateExpenseRatesId(Collection<Appearance> appearances) {
         ExpenseRates expenseRates = getCurrentExpenseRates(false);
         appearances.forEach(appearance -> appearance.setExpenseRates(expenseRates));
+    }
+
+    void saveAppearancesWithExpenseRateIdUpdate(Collection<Appearance> appearances) {
+        updateExpenseRatesId(appearances);
         appearanceRepository.saveAll(appearances);
     }
 

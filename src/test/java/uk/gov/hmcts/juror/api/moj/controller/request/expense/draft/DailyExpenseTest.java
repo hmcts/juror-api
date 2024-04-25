@@ -3,22 +3,20 @@ package uk.gov.hmcts.juror.api.moj.controller.request.expense.draft;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
-import uk.gov.hmcts.juror.api.validation.ValidationConstants;
+import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
 
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
+class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
     @Override
     protected DailyExpense createValidObject() {
         return DailyExpense.builder()
             .dateOfExpense(LocalDate.now())
-            .poolNumber(TestConstants.VALID_POOL_NUMBER)
-            .payCash(true)
+            .paymentMethod(PaymentMethod.BACS)
             .build();
     }
 
@@ -26,13 +24,12 @@ public class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
     void positiveShouldPullFromDatabaseTrue() {
         assertThat(
             DailyExpense.builder()
-                .payCash(null)
+                .paymentMethod(null)
                 .time(null)
                 .financialLoss(null)
                 .travel(null)
                 .foodAndDrink(null)
                 .dateOfExpense(LocalDate.now())
-                .poolNumber(TestConstants.VALID_POOL_NUMBER)
                 .build().shouldPullFromDatabase()
         ).isTrue();
     }
@@ -41,13 +38,12 @@ public class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
     void positiveShouldPullFromDatabaseFalseHasPayCash() {
         assertThat(
             DailyExpense.builder()
-                .payCash(true)
+                .paymentMethod(PaymentMethod.CASH)
                 .time(null)
                 .financialLoss(null)
                 .travel(null)
                 .foodAndDrink(null)
                 .dateOfExpense(LocalDate.now())
-                .poolNumber(TestConstants.VALID_POOL_NUMBER)
                 .build().shouldPullFromDatabase()
         ).isFalse();
     }
@@ -56,13 +52,11 @@ public class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
     void positiveShouldPullFromDatabaseFalseHasTime() {
         assertThat(
             DailyExpense.builder()
-                .payCash(null)
                 .time(DailyExpenseTime.builder().build())
                 .financialLoss(null)
                 .travel(null)
                 .foodAndDrink(null)
                 .dateOfExpense(LocalDate.now())
-                .poolNumber(TestConstants.VALID_POOL_NUMBER)
                 .build().shouldPullFromDatabase()
         ).isFalse();
     }
@@ -71,13 +65,11 @@ public class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
     void positiveShouldPullFromDatabaseFalseHasFinancialLoss() {
         assertThat(
             DailyExpense.builder()
-                .payCash(null)
                 .time(null)
                 .financialLoss(DailyExpenseFinancialLoss.builder().build())
                 .travel(null)
                 .foodAndDrink(null)
                 .dateOfExpense(LocalDate.now())
-                .poolNumber(TestConstants.VALID_POOL_NUMBER)
                 .build().shouldPullFromDatabase()
         ).isFalse();
     }
@@ -86,13 +78,11 @@ public class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
     void positiveShouldPullFromDatabaseFalseTravel() {
         assertThat(
             DailyExpense.builder()
-                .payCash(null)
                 .time(null)
                 .financialLoss(null)
                 .travel(DailyExpenseTravel.builder().build())
                 .foodAndDrink(null)
                 .dateOfExpense(LocalDate.now())
-                .poolNumber(TestConstants.VALID_POOL_NUMBER)
                 .build().shouldPullFromDatabase()
         ).isFalse();
     }
@@ -101,13 +91,11 @@ public class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
     void positiveShouldPullFromDatabaseFalseFoodAndDrink() {
         assertThat(
             DailyExpense.builder()
-                .payCash(null)
                 .time(null)
                 .financialLoss(null)
                 .travel(null)
                 .foodAndDrink(DailyExpenseFoodAndDrink.builder().build())
                 .dateOfExpense(LocalDate.now())
-                .poolNumber(TestConstants.VALID_POOL_NUMBER)
                 .build().shouldPullFromDatabase()
         ).isFalse();
     }
@@ -125,25 +113,11 @@ public class DailyExpenseTest extends AbstractValidatorTest<DailyExpense> {
         }
     }
 
-    @Nested
-    class PoolNumberTest extends AbstractValidationFieldTestString {
-        protected PoolNumberTest() {
-            super("poolNumber", DailyExpense::setPoolNumber);
-            ignoreAdditionalFailures();
-            addNotBlankTest(new FieldTestSupport()
-                .setGroups(
-                    DailyExpense.AttendanceDay.class,
-                    DailyExpense.NonAttendanceDay.class
-                )
-            );
-            addInvalidPatternTest("INVALID", ValidationConstants.POOL_NUMBER, null);
-        }
-    }
 
     @Nested
-    class PayCashTest extends AbstractValidationFieldTestBase<Boolean> {
-        protected PayCashTest() {
-            super("payCash", DailyExpense::setPayCash);
+    class PaymentMethodTest extends AbstractValidationFieldTestBase<PaymentMethod> {
+        protected PaymentMethodTest() {
+            super("paymentMethod", DailyExpense::setPaymentMethod);
             addRequiredTest(new FieldTestSupport()
                 .setGroups(
                     DailyExpense.AttendanceDay.class,

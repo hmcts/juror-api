@@ -16,6 +16,7 @@ import java.util.Date;
  */
 
 @Slf4j
+@SuppressWarnings("PMD.LawOfDemeter")
 public class PoolQueries {
     private static final int SENT_T_COURT_COMMS_SENT = 9;
     private static final int INFO_COMMS_NOT_SENT = 0;

@@ -40,9 +40,6 @@ import java.util.List;
 @Validated
 @Tag(name = "Trial Management")
 public class TrialController {
-
-    public static final String ERROR_MESSAGE = "Bureau users are not allowed to use this service";
-
     private final TrialService trialService;
 
     @Autowired
@@ -52,8 +49,9 @@ public class TrialController {
 
     /**
      * Enable the officer to create a trial.
-     * @param  payload - login information
-     * @throws MojException.BadRequest - thrown if there is an validation issue?
+     *
+     * @param payload - login information
+     * @throws MojException.BadRequest - thrown if there is a validation issue?
      */
     @PostMapping("/create")
     @Operation(summary = "Enable the officer to create a trial")
@@ -65,6 +63,15 @@ public class TrialController {
         return ResponseEntity.ok().body(trialSummaryDto);
     }
 
+    @PatchMapping("/edit")
+    @Operation(summary = "Enable the officer to edit a trial")
+    @PreAuthorize(SecurityUtil.COURT_AUTH)
+    public ResponseEntity<TrialSummaryDto> editTrial(
+        @RequestBody @Valid TrialDto trialDto) {
+        TrialSummaryDto trialSummaryDto = trialService.editTrial(trialDto);
+        return ResponseEntity.ok().body(trialSummaryDto);
+    }
+
     @GetMapping("/list")
     @Operation(summary = "Get a list of all trials")
     @PreAuthorize(SecurityUtil.COURT_AUTH)
@@ -73,11 +80,11 @@ public class TrialController {
         @RequestParam("page_number") @PathVariable("pageNumber") @Valid int pageNumber,
         @RequestParam("sort_by") @PathVariable("sortBy") @Valid String sortBy,
         @RequestParam("sort_order") @PathVariable("sortOrder") @Valid String sortOrder,
-        @RequestParam(value = "trial_number",required = false)
+        @RequestParam(value = "trial_number", required = false)
         @TrialNumber @Valid String trialNumber,
         @RequestParam("is_active") @PathVariable("isActive") @Valid Boolean isActive) {
         Page<TrialListDto> trials = trialService
-            .getTrials(payload, pageNumber, sortBy, sortOrder, isActive,trialNumber);
+            .getTrials(payload, pageNumber, sortBy, sortOrder, isActive, trialNumber);
         return ResponseEntity.ok().body(new PageDto<>(trials));
     }
 
@@ -111,8 +118,8 @@ public class TrialController {
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam(name = "trial_number") @PathVariable(name = "trialNumber") String trialNumber,
         @RequestParam(name = "location_code") @PathVariable(name = "locationCode") String locationCode,
-        @RequestBody @Valid ReturnJuryDto returnJuryDto
-    ) {
+        @RequestBody @Valid ReturnJuryDto returnJuryDto) {
+
         trialService.returnJury(payload, trialNumber, locationCode, returnJuryDto);
         return ResponseEntity.ok(null);
     }

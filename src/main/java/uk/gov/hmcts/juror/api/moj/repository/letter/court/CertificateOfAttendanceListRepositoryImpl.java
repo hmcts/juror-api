@@ -46,8 +46,8 @@ public class CertificateOfAttendanceListRepositoryImpl implements ICertificateOf
         }
 
         if (!StringUtils.isEmpty(courtLetterSearchCriteria.jurorName())) {
-            jpaQuery.where(CERTIFICATE_OF_ATTENDANCE_LETTER_LIST.firstName.concat(
-                    " " + CERTIFICATE_OF_ATTENDANCE_LETTER_LIST.lastName)
+            jpaQuery.where(CERTIFICATE_OF_ATTENDANCE_LETTER_LIST.firstName.concat(" ")
+                .concat(CERTIFICATE_OF_ATTENDANCE_LETTER_LIST.lastName)
                 .containsIgnoreCase(courtLetterSearchCriteria.jurorName()));
         }
 

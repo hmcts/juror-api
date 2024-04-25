@@ -6,6 +6,7 @@ import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorHistory;
@@ -27,7 +28,7 @@ public interface ReissueLetterService {
 
     ReissueLetterListResponseDto reissueLetterList(ReissueLetterListRequestDto request);
 
-    void reissueLetter(ReissueLetterRequestDto request);
+    ReissueLetterReponseDto reissueLetter(ReissueLetterRequestDto request);
 
     void deletePendingLetter(ReissueLetterRequestDto request);
 

@@ -69,6 +69,10 @@ public class PoolSummaryResponseDto {
         @Schema(name = "Is Nil Pool",
             description = "Indicates whether the the pool is a nil pool or not")
         private boolean isNilPool;
+
+        @JsonProperty("current_owner")
+        @Schema(name = "Current Owner", description = "Current owner (3 digit code) of the juror record")
+        private String currentOwner;
     }
 
     @NoArgsConstructor

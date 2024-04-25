@@ -43,4 +43,7 @@ public class FilterableJurorDetailsResponseDto {
 
     @JsonProperty("address")
     private JurorAddressDto address;
+
+    @JsonProperty("mileage")
+    private Integer mileage;
 }

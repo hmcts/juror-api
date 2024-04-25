@@ -10,6 +10,8 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetailsAppearances;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.FinancialAuditDetailsAppearancesRepository;
 import uk.gov.hmcts.juror.api.moj.repository.FinancialAuditDetailsRepository;
@@ -46,7 +48,9 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
             .createdBy(userRepository.findByUsername(SecurityUtil.getActiveLogin()))
             .createdOn(LocalDateTime.now(clock))
             .type(type)
+            .jurorNumber(jurorNumber)
             .jurorRevision(jurorRevision.getRequiredRevisionNumber())
+            .locCode(courtLocationCode)
             .courtLocationRevision(courtRevision.getRequiredRevisionNumber())
             .build();
 
@@ -60,9 +64,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
             financialAuditDetailsAppearances.add(
                 new FinancialAuditDetailsAppearances(
                     financialAuditDetails.getId(),
-                    savedAppearance.getJurorNumber(),
                     savedAppearance.getAttendanceDate(),
-                    savedAppearance.getCourtLocation(),
                     savedAppearance.getVersion()
                 )
             );
@@ -75,5 +77,93 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
     @Override
     public List<FinancialAuditDetails> getFinancialAuditDetails(Appearance appearance) {
         return financialAuditDetailsRepository.findAllByAppearance(appearance);
+    }
+
+    @Override
+    public FinancialAuditDetails getFinancialAuditDetails(long financialAuditNumber) {
+        return financialAuditDetailsRepository.findById(financialAuditNumber)
+            .orElseThrow(() -> new MojException.NotFound("Financial Audit Details not found: "
+                + financialAuditNumber, null));
+    }
+
+    @Override
+    public List<Appearance> getAppearances(FinancialAuditDetails financialAuditDetails) {
+        List<FinancialAuditDetailsAppearances> financialAuditDetailsAppearances =
+            financialAuditDetails.getFinancialAuditDetailsAppearances();
+        return financialAuditDetailsAppearances.stream()
+            .map(
+                financialAuditDetailsAppearances1 ->
+                    getAppearanceFromFinancialAuditDetailsAppearances(
+                        financialAuditDetails.getLocCode(),
+                        financialAuditDetails.getJurorNumber(),
+                        financialAuditDetailsAppearances1))
+            .toList();
+    }
+
+
+    @Override
+    public FinancialAuditDetails getLastFinancialAuditDetailsWithType(
+        FinancialAuditDetails financialAuditDetails,
+        FinancialAuditDetails.Type.GenericType genericType) {
+        return getFinancialAuditDetailsWithType(
+            financialAuditDetails,
+            genericType,
+            SortMethod.ASC);
+    }
+
+    @Override
+    public FinancialAuditDetails getFirstFinancialAuditDetailsWithType(
+        FinancialAuditDetails financialAuditDetails,
+        FinancialAuditDetails.Type.GenericType genericType) {
+        return getFinancialAuditDetailsWithType(
+            financialAuditDetails,
+            genericType,
+            SortMethod.DESC);
+    }
+
+    @Override
+    public Appearance getPreviousAppearance(FinancialAuditDetails financialAuditDetails, Appearance appearance) {
+        return getAppearanceFromFinancialAuditDetailsAppearances(
+            financialAuditDetails.getLocCode(),
+            financialAuditDetails.getJurorNumber(),
+            getPreviousFinancialAuditDetailsAppearances(financialAuditDetails, appearance));
+    }
+
+    private FinancialAuditDetails getFinancialAuditDetailsWithType(FinancialAuditDetails financialAuditDetails,
+                                                                   FinancialAuditDetails.Type.GenericType genericType,
+                                                                   SortMethod sortMethod) {
+        return financialAuditDetailsRepository.findLastFinancialAuditDetailsWithType(
+            financialAuditDetails,
+            genericType,
+            sortMethod);
+    }
+
+    private FinancialAuditDetailsAppearances getPreviousFinancialAuditDetailsAppearances(
+        FinancialAuditDetails financialAuditDetails, Appearance appearance) {
+        return financialAuditDetailsAppearancesRepository
+            .findPreviousFinancialAuditDetailsAppearances(
+                financialAuditDetails, appearance)
+            .orElseThrow(
+                () -> new MojException.NotFound("No previous appearance found for appearance", null));
+    }
+
+    private Appearance getAppearanceFromFinancialAuditDetailsAppearances(
+        String locCode,
+        String jurorNumber,
+        FinancialAuditDetailsAppearances financialAuditDetailsAppearances) {
+
+        return appearanceRepository.findByJurorNumberAndLocCodeAndAttendanceDateAndVersion(
+            jurorNumber,
+            locCode,
+            financialAuditDetailsAppearances.getAttendanceDate(),
+            financialAuditDetailsAppearances.getAppearanceVersion()
+        ).orElseThrow(
+            () -> new MojException.NotFound(
+                "Appearance not found for financial audit details appearances "
+                    + " juror number: " + jurorNumber
+                    + " loc code: " + locCode
+                    + " attendance date: " + financialAuditDetailsAppearances.getAttendanceDate()
+                    + " appearance version: " + financialAuditDetailsAppearances.getAppearanceVersion(),
+                null));
     }
 }

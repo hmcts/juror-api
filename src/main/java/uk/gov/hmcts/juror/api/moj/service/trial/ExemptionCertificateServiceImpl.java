@@ -67,10 +67,10 @@ public class ExemptionCertificateServiceImpl implements ExemptionCertificateServ
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(caseNumber, courtLocation);
         for (Panel member : panelMembers) {
             dtoList.add(JurorForExemptionListDto.builder()
-                    .dateEmpanelled(member.getDateSelected().toLocalDate())
-                    .firstName(member.getJurorPool().getJuror().getFirstName())
-                    .lastName(member.getJurorPool().getJuror().getLastName())
-                    .jurorNumber(member.getJurorPool().getJurorNumber())
+                .dateEmpanelled(member.getDateSelected().toLocalDate())
+                .firstName(member.getJuror().getFirstName())
+                .lastName(member.getJuror().getLastName())
+                .jurorNumber(member.getJurorNumber())
                 .build());
         }
         return dtoList;

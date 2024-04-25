@@ -43,7 +43,8 @@ public class FilterableJurorDetailsRequestDto {
     public enum IncludeType {
         PAYMENT_DETAILS((dto, context) -> dto.setPaymentDetails(PaymentDetails.from(context.juror()))),
         NAME_DETAILS((dto, context) -> dto.setNameDetails(NameDetails.from(context.juror()))),
-        ADDRESS_DETAILS((dto, context) -> dto.setAddress(JurorAddressDto.from(context.juror())));
+        ADDRESS_DETAILS((dto, context) -> dto.setAddress(JurorAddressDto.from(context.juror()))),
+        MILEAGE((dto, context) -> dto.setMileage(context.juror().getMileage()));
 
         private final BiConsumer<FilterableJurorDetailsResponseDto, FilterContext> filter;
 

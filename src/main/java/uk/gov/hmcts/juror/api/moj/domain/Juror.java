@@ -15,6 +15,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -180,7 +181,8 @@ public class Juror extends Address implements Serializable {
     @NotAudited
     @Column(name = "police_check")
     @Enumerated(EnumType.STRING)
-    private PoliceCheck policeCheck;
+    @Builder.Default
+    private PoliceCheck policeCheck = PoliceCheck.NOT_CHECKED;
 
     @NotAudited
     @Length(max = 20)
@@ -281,6 +283,11 @@ public class Juror extends Address implements Serializable {
     }
 
     public String getName() {
-        return String.format("%s %s %s", title, firstName, lastName);
+        String buildName = "";
+        if (title != null) {
+            buildName = title + " ";
+        }
+        return buildName + firstName + " " + lastName;
     }
+
 }

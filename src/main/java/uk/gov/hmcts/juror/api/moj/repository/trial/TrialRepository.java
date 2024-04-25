@@ -5,9 +5,13 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.domain.trial.TrialId;
 
+import java.util.Optional;
+
 public interface TrialRepository extends ITrialRepository, JpaRepository<Trial, TrialId>,
     QuerydslPredicateExecutor<Trial> {
-    Trial findByTrialNumberAndCourtLocationLocCode(String trialNumber, String locCode);
+
+    Optional<Trial> findByTrialNumberAndCourtLocationLocCode(String trialNumber, String locCode);
 
     boolean existsByTrialNumberAndCourtLocationLocCode(String trialNumber, String locCode);
+    
 }

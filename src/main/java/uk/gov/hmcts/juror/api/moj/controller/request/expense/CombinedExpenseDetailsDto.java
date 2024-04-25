@@ -1,10 +1,10 @@
 package uk.gov.hmcts.juror.api.moj.controller.request.expense;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Data
+@SuperBuilder
 @SuppressWarnings("squid:NoSonar")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CombinedExpenseDetailsDto<T extends ExpenseDetailsDto> {
@@ -49,7 +50,9 @@ public class CombinedExpenseDetailsDto<T extends ExpenseDetailsDto> {
     public static class Total extends ExpenseValuesDto {
 
         private int totalDays;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         private BigDecimal totalDue;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         private BigDecimal totalPaid;
 
         @JsonIgnore
@@ -86,7 +89,7 @@ public class CombinedExpenseDetailsDto<T extends ExpenseDetailsDto> {
         }
 
         @JsonProperty("total_outstanding")
-        @NotNull
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         public BigDecimal getTotalOutstanding() {
             if (hasTotals) {
                 return getTotalDue()
@@ -96,6 +99,7 @@ public class CombinedExpenseDetailsDto<T extends ExpenseDetailsDto> {
         }
 
         @JsonProperty("total_due")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         public BigDecimal getTotalDue() {
             if (hasTotals) {
                 return Optional.ofNullable(totalDue).orElse(BigDecimal.ZERO);
@@ -104,6 +108,7 @@ public class CombinedExpenseDetailsDto<T extends ExpenseDetailsDto> {
         }
 
         @JsonProperty("total_paid")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         public BigDecimal getTotalPaid() {
             if (hasTotals) {
                 return Optional.ofNullable(totalPaid).orElse(BigDecimal.ZERO);

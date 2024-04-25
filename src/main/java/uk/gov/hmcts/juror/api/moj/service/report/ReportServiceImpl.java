@@ -1,31 +1,28 @@
 package uk.gov.hmcts.juror.api.moj.service.report;
 
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
+import uk.gov.hmcts.juror.api.moj.service.ValidationService;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class ReportServiceImpl implements ReportService {
     private final Map<String, AbstractReport<?>> reports;
-    private final Validator validator;
+    private final ValidationService validateService;
 
     @Autowired
-    public ReportServiceImpl(List<AbstractReport<?>> reports, Validator validator) {
-        this.validator = validator;
+    public ReportServiceImpl(List<AbstractReport<?>> reports, ValidationService validateService) {
         this.reports = reports.stream()
             .collect(Collectors.toMap(AbstractReport::getName, report -> report));
+        this.validateService = validateService;
         if (this.reports.size() != reports.size()) {
             throw new MojException.InternalServerError("Duplicate report names found", null);
         }
@@ -37,15 +34,7 @@ public class ReportServiceImpl implements ReportService {
         if (abstractReport == null) {
             throw new MojException.NotFound("Report not found", null);
         }
-        validate(standardReportRequest, abstractReport);
+        validateService.validate(standardReportRequest, abstractReport.getRequestValidatorClass());
         return abstractReport.getStandardReportResponse(standardReportRequest);
-    }
-
-    private void validate(StandardReportRequest request, AbstractReport<?> abstractReport) {
-        Set<ConstraintViolation<StandardReportRequest>> violations =
-            validator.validate(request, abstractReport.getRequestValidatorClass());
-        if (!violations.isEmpty()) {
-            throw new ConstraintViolationException(violations);
-        }
     }
 }

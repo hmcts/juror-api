@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
+import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
 
 import java.util.Map;
@@ -49,6 +50,10 @@ class ReportControllerTest {
 
     @MockBean
     private ReportService reportService;
+
+    @MockBean
+    private FinancialAuditReportService financialAuditReportService;
+
 
     @Nested
     @DisplayName("POST (GET) " + ViewReportStandard.URL)

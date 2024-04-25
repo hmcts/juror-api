@@ -47,7 +47,7 @@ public abstract class AbstractReportTestSupport<
     T, R extends AbstractReport<T>> {
 
     private final EntityPath<?> from;
-    private final DataType[] dataTypes;
+    private final IDataType[] dataTypes;
     private final Class<?> validatorClass;
     protected R report;
     private PoolRequestRepository poolRequestRepository;
@@ -58,7 +58,7 @@ public abstract class AbstractReportTestSupport<
 
 
     public AbstractReportTestSupport(EntityPath<?> from,
-                                     Class<?> validatorClass, DataType... dataTypes) {
+                                     Class<?> validatorClass, IDataType... dataTypes) {
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         this.validator = validatorFactory.getValidator();
         validatorFactory.close();

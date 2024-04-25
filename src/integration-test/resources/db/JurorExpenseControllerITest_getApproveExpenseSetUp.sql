@@ -90,16 +90,15 @@ VALUES ('415', 'smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre', true,
        ('417', 'jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2, 1),
        ('418', 'jbrown','jbrown@email.gov.uk', 'John Brown', true, 3, 1);
 
-INSERT INTO juror_mod.financial_audit_details(id, juror_revision, court_location_revision, type, created_by, created_on)
-VALUES (1234, 1, 1, 'FOR_APPROVAL', 'COURT_USER2', '2023-01-11 09:31:01.000'),
-       (123, 1, 1, 'FOR_APPROVAL', 'smcintyre', '2023-01-11 09:31:01.000'),
-       (321, 1, 1, 'APPROVED_BACS', 'smcintyre', '2023-01-12 09:32:02.000'),
-       (3, 1, 1, 'APPROVED_BACS', 'smcintyre', '2023-01-13 09:33:03.000'),
-       (12345, 1, 1, 'EDIT', 'smcintyre', '2023-01-14 09:34:04.000');
+INSERT INTO juror_mod.financial_audit_details(id, juror_revision, court_location_revision, type, created_by, created_on, juror_number, loc_code)
+VALUES (1234, 1, 1, 'FOR_APPROVAL', 'COURT_USER2', '2023-01-11 09:31:01.000','641500021','415'),
+       (123, 1, 1, 'FOR_APPROVAL', 'smcintyre', '2023-01-11 09:31:01.000','641500021','415'),
+       (321, 1, 1, 'APPROVED_BACS', 'smcintyre', '2023-01-12 09:32:02.000','641500021','415'),
+       (3, 1, 1, 'APPROVED_BACS', 'smcintyre', '2023-01-13 09:33:03.000','641500021','415'),
+       (12345, 1, 1, 'APPROVED_EDIT', 'smcintyre', '2023-01-14 09:34:04.000','641500021','415');
 
-INSERT INTO juror_mod.financial_audit_details_appearances (financial_audit_id, juror_number,
-                                                           attendance_date, loc_code, appearance_version)
-VALUES (1234, '641500021', '2023-01-8', '415', 1);
+INSERT INTO juror_mod.financial_audit_details_appearances (financial_audit_id, attendance_date,  appearance_version)
+VALUES (1234, '2023-01-08',  1);
 --Approved edited
 
 INSERT INTO juror_mod.appearance

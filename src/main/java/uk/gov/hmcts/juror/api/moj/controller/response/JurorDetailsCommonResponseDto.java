@@ -3,6 +3,8 @@ package uk.gov.hmcts.juror.api.moj.controller.response;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -107,11 +109,11 @@ public class JurorDetailsCommonResponseDto {
     @Schema(name = "Disqualification Code", description = "Code indicating disqualification reason")
     private String disqualifyCode;
 
-    @JsonProperty("policeCheck")
+    @JsonProperty("police_check")
+    @Enumerated(EnumType.STRING)
     @Schema(name = "Police Check Status")
-    private String policeCheck;
-
-
+    private PoliceCheck policeCheck;
+    
     @Length(max = 10)
     @Schema(description = "Pending Title")
     private String pendingTitle;
@@ -175,7 +177,7 @@ public class JurorDetailsCommonResponseDto {
         Optional<JurorStatus> jurorStatusOpt = jurorStatusRepository.findById(jurorPool.getStatus().getStatus());
         jurorStatusOpt.ifPresent(status -> this.jurorStatus = status.getStatusDesc());
 
-        this.policeCheck = PoliceCheck.getDescription(juror.getPoliceCheck());
+        this.policeCheck = juror.getPoliceCheck();
         setPendingNameChange(juror);
 
         this.manuallyCreated = pendingJurorRepository.findById(jurorPool.getJurorNumber()).isPresent();

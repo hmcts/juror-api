@@ -82,3 +82,5 @@ VALUES (current_date - interval '2 days','666666666', '415230101','415','09:30:0
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,time_in,time_out,non_attendance,appearance_stage,attendance_type)
 VALUES (current_date - interval '2 days','777777777', '415230101','415','15:53','12:30',false,'CHECKED_IN','FULL_DAY');
+
+alter sequence attendance_audit_seq restart with 10123456;

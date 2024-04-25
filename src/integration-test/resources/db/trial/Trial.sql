@@ -5,11 +5,15 @@ SELECT setval('juror_mod.judge_id_seq', 20);
 -- Dummy test data
 insert into juror_mod.judge (owner, code, description) values
 ('415', '1234','Test judge'),
-('462', '4321','Judge Test');
+('462', '4321','Judge Test'),
+('416', '4322','Judge Test2'),
+('416', '4323','Judge Test3');
 
 insert into juror_mod.courtroom (loc_code, room_number, description) values
 ('415', '1', 'large room fits 100 people'),
-('462', '2', 'large room fits 100 people');
+('462', '2', 'large room fits 100 people'),
+('416', '3', 'large room fits 101 people'),
+('416', '4', 'large room fits 102 people');
 
 insert into juror_mod.trial (trial_number, loc_code, description, judge, trial_type, trial_start_date, trial_end_date, anonymous, courtroom) values
 ('T100000000','462', 'TEST DEFENDANT', 22,'CIV', current_date, current_date, false, 67),
@@ -38,4 +42,11 @@ insert into juror_mod.trial (trial_number, loc_code, description, judge, trial_t
 ('T100000023','415', 'TEST DEFENDANT', 22,'CIV', current_date, null, false, 66),
 ('T100000024','462', 'TEST DEFENDANT', 22,'CIV', current_date, current_date, false, 67),
 ('T100000025','415', 'TEST DEFENDANT', 22,'CIV', current_date, null, false, 66),
-('T100000026','462', 'TEST DEFENDANT', 22,'CIV', current_date, current_date,false, 67);
+('T100000026','462', 'TEST DEFENDANT', 22,'CIV', current_date, current_date,false, 67),
+('TEST000012','416', 'JOE BLOGGS', 23,'CIV', current_date, null,false, 68);
+
+INSERT INTO juror_mod.trial
+(trial_number, loc_code, description, courtroom, judge, trial_type, trial_start_date, trial_end_date, anonymous, juror_requested, jurors_sent) VALUES
+('T100000027', '462', 'TEST DEFENDANT62', 67, 22, 'CRI', current_date, NULL, false, NULL, NULL),
+('T100000027', '415', 'TEST DEFENDANT15', 66, 21, 'CRI', current_date - 1, NULL, false, NULL, NULL);
+

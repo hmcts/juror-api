@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CertificateOfE
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CourtLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.PrintLettersRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDataResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JurorForExemptionListDto;
@@ -113,12 +114,12 @@ public class LetterController {
     @PostMapping("/reissue-letter")
     @Operation(description = "Reissue letters to jurors as Bureau officer")
     @IsBureauUser
-    public ResponseEntity<String> reissueLetter(
+    public ResponseEntity<ReissueLetterReponseDto> reissueLetter(
         @RequestBody @Valid @NotNull ReissueLetterRequestDto request) {
 
-        reissueLetterService.reissueLetter(request);
+        ReissueLetterReponseDto response = reissueLetterService.reissueLetter(request);
 
-        return ResponseEntity.ok("Letters reissued");
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/delete-pending-letter")

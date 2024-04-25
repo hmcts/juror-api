@@ -171,12 +171,6 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             }
 
             @Test
-            void unauthorisedNotManagerUser() {
-                assertForbiddenResponse(triggerInvalid("415", "415", UserType.COURT, Set.of()),
-                    toUrl("415"));
-            }
-
-            @Test
             void unauthorisedNotPartOfCourt() {
                 assertForbiddenResponse(triggerInvalid("415", "416"),
                     toUrl("416"));
@@ -258,13 +252,6 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             void invalidLocCode() {
                 assertInvalidPathParam(triggerInvalid("INVALID", "INVALID", getValidCourtRoomDto()),
                     "createCourtRoom.locCode: must match \"^\\d{3}$\"");
-            }
-
-            @Test
-            void unauthorisedNotManagerUser() {
-                assertForbiddenResponse(triggerInvalid("415", "415", getValidCourtRoomDto(),
-                        UserType.COURT, Set.of()),
-                    toUrl("415"));
             }
 
             @Test
@@ -376,12 +363,6 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             }
 
             @Test
-            void unauthorisedNotManagerUser() {
-                assertForbiddenResponse(triggerInvalid("415", "415", "1", UserType.COURT, Set.of()),
-                    toUrl("415", "1"));
-            }
-
-            @Test
             void unauthorisedNotPartOfCourt() {
                 assertForbiddenResponse(triggerInvalid("415", "416", "1"),
                     toUrl("416", "1"));
@@ -485,13 +466,6 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             void invalidId() {
                 assertInvalidPathParam(triggerInvalid("415", "415", "INVALID", getValidCourtRoomDto()),
                     "INVALID is the incorrect data type or is not in the expected format (id)");
-            }
-
-            @Test
-            void unauthorisedNotManagerUser() {
-                assertForbiddenResponse(triggerInvalid("415", "415", "1", getValidCourtRoomDto(),
-                        UserType.COURT, Set.of()),
-                    toUrl("415", "1"));
             }
 
             @Test

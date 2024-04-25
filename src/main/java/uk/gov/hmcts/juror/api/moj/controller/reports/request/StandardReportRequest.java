@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
+import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 import uk.gov.hmcts.juror.api.validation.PoolNumber;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
@@ -33,6 +34,7 @@ public class StandardReportRequest {
         "NonRespondedReport",
         "PostponedListByPoolReport",
         "UndeliverableListReport",
+        "IncompleteServiceReport",
         //Grouped
         "PostponedListByDateReport"
     })
@@ -49,4 +51,12 @@ public class StandardReportRequest {
     @NotNull(groups = AbstractReport.Validators.RequireToDate.class)
     @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
     private LocalDate toDate;
+
+    @NotNull(groups = AbstractReport.Validators.RequireDate.class)
+    @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
+    private LocalDate date;
+
+    @NotNull(groups = AbstractReport.Validators.RequireLocCode.class)
+    @CourtLocationCode(groups = AbstractReport.Validators.RequireLocCode.class)
+    private String locCode;
 }

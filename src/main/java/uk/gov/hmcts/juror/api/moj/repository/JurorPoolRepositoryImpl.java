@@ -22,10 +22,11 @@ import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -48,6 +49,7 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
     private static final QJuror JUROR = QJuror.juror;
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
     private static final QAppearance APPEARANCE = QAppearance.appearance;
+    private static final QPanel PANEL = QPanel.panel;
 
     @Override
     public String findLatestPoolSequence(String poolNumber) {
@@ -228,8 +230,8 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
     public List<String> fetchThinPoolMembers(String poolNumber, String owner) {
         JPAQueryFactory queryFactory = getQueryFactory();
 
-        List<?> results = queryFactory.select(QPoolRequest.poolRequest.owner).from(QPoolRequest.poolRequest)
-            .where(QPoolRequest.poolRequest.poolNumber.eq(poolNumber))
+        List<?> results = queryFactory.select(POOL_REQUEST.owner).from(POOL_REQUEST)
+            .where(POOL_REQUEST.poolNumber.eq(poolNumber))
             .fetch();
 
         if (results.isEmpty()) {
@@ -239,11 +241,11 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
         if (SecurityUtil.BUREAU_OWNER.equals(owner) || results.contains(SecurityUtil.BUREAU_OWNER)
             || results.contains(owner)) {
 
-            return queryFactory.select(QJurorPool.jurorPool.juror.jurorNumber)
-                .from(QJurorPool.jurorPool)
-                .where(QJurorPool.jurorPool.pool.poolNumber.eq(poolNumber)
-                           .and(QJurorPool.jurorPool.owner.eq(owner))
-                           .and(QJurorPool.jurorPool.isActive.isTrue()))
+            return queryFactory.select(JUROR_POOL.juror.jurorNumber)
+                .from(JUROR_POOL)
+                .where(JUROR_POOL.pool.poolNumber.eq(poolNumber)
+                    .and(JUROR_POOL.owner.eq(owner))
+                    .and(JUROR_POOL.isActive.isTrue()))
                 .fetch();
         }
 
@@ -255,36 +257,36 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
     public JPAQuery<Tuple> fetchFilteredPoolMembers(PoolMemberFilterRequestQuery search, String owner) {
         JPAQueryFactory queryFactory = getQueryFactory();
         LocalDate today = LocalDate.now();
-        JPAQuery<?> partialQuery = queryFactory.from(QJurorPool.jurorPool)
-            .join(QJuror.juror).on(QJurorPool.jurorPool.juror.jurorNumber.eq(QJuror.juror.jurorNumber))
-            .leftJoin(QAppearance.appearance)
-            .on(QJurorPool.jurorPool.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber)
-                .and(QAppearance.appearance.attendanceDate.eq(today)))
+        JPAQuery<?> partialQuery = queryFactory.from(JUROR_POOL)
+            .join(JUROR).on(JUROR_POOL.juror.eq(JUROR))
+            .leftJoin(APPEARANCE)
+            .on(JUROR.jurorNumber.eq(APPEARANCE.jurorNumber)
+                .and(APPEARANCE.attendanceDate.eq(today)))
             .leftJoin(QJurorStatus.jurorStatus)
-            .on(QJurorPool.jurorPool.status.status.eq(QJurorStatus.jurorStatus.status))
-            .leftJoin(QJurorTrial.jurorTrial)
-            .on(QJurorPool.jurorPool.juror.jurorNumber.eq(QJurorTrial.jurorTrial.juror.jurorNumber))
-            .where(QJurorPool.jurorPool.isActive.isTrue())
-            .where(QJurorPool.jurorPool.pool.poolNumber.eq(search.getPoolNumber()))
-            .where(QJurorPool.jurorPool.owner.eq(owner));
+            .on(JUROR_POOL.status.status.eq(QJurorStatus.jurorStatus.status))
+            .leftJoin(PANEL)
+            .on(JUROR.eq(PANEL.juror))
+            .where(JUROR_POOL.isActive.isTrue())
+            .where(JUROR_POOL.pool.poolNumber.eq(search.getPoolNumber()))
+            .where(JUROR_POOL.owner.eq(owner));
 
         if (null != search.getJurorNumber()) {
-            partialQuery.where(QJuror.juror.jurorNumber.like(search.getJurorNumber() + "%"));
+            partialQuery.where(JUROR.jurorNumber.like(search.getJurorNumber() + "%"));
         }
         if (null != search.getFirstName()) {
-            partialQuery.where(QJuror.juror.firstName.like(search.getFirstName().toUpperCase() + "%"));
+            partialQuery.where(JUROR.firstName.startsWithIgnoreCase(search.getFirstName()));
         }
         if (null != search.getLastName()) {
-            partialQuery.where(QJuror.juror.lastName.like(search.getLastName().toUpperCase() + "%"));
+            partialQuery.where(JUROR.lastName.startsWithIgnoreCase(search.getLastName()));
         }
         if (null != search.getCheckedIn() && search.getCheckedIn()) {
             partialQuery.where(getCheckedInBoolean());
         }
         if (null != search.getNextDue()) {
             if (search.getNextDue().size() != 2 && "set".equals(search.getNextDue().get(0))) {
-                partialQuery.where(QJurorPool.jurorPool.nextDate.isNotNull());
+                partialQuery.where(JUROR_POOL.nextDate.isNotNull());
             } else if (search.getNextDue().size() != 2 && "notSet".equals(search.getNextDue().get(0))) {
-                partialQuery.where(QJurorPool.jurorPool.nextDate.isNull());
+                partialQuery.where(JUROR_POOL.nextDate.isNull());
             }
         }
         if (null != search.getStatuses()) {
@@ -293,38 +295,45 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
         if (null != search.getAttendance()) {
             partialQuery.where(
                 (search.getAttendance().contains(PoolMemberFilterRequestQuery.AttendanceEnum.ON_CALL)
-                    ? QJurorPool.jurorPool.onCall.eq(true)
+                    ? JUROR_POOL.onCall.eq(true)
                     : Expressions.FALSE)
                     .or(
                         search.getAttendance().contains(PoolMemberFilterRequestQuery.AttendanceEnum.ON_A_TRIAL)
-                            ? QJurorTrial.jurorTrial.result.eq("J")
+                            ? PANEL.result.eq(PanelResult.JUROR)
                             : Expressions.FALSE)
                     .or(search.getAttendance().contains(PoolMemberFilterRequestQuery.AttendanceEnum.IN_ATTENDANCE)
                         ? Expressions.booleanOperation(
                         Ops.AND,
-                        QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
-                        QAppearance.appearance.attendanceDate.eq(LocalDate.now()))
+                        APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+                        APPEARANCE.attendanceDate.eq(LocalDate.now()))
                         : Expressions.FALSE)
                     .or(search.getAttendance().contains(PoolMemberFilterRequestQuery.AttendanceEnum.OTHER)
-                        ? QJurorPool.jurorPool.nextDate.eq(LocalDate.now())
-                        .and(QJurorPool.jurorPool.onCall.ne(true))
-                        .and(QJurorTrial.jurorTrial.result.ne("J"))
-                        .and(QAppearance.appearance.appearanceStage.ne(AppearanceStage.CHECKED_IN))
+                        ? JUROR_POOL.nextDate.eq(LocalDate.now())
+                        .and(JUROR_POOL.onCall.ne(true))
+                        .and(PANEL.result.ne(PanelResult.JUROR))
+                        .and(APPEARANCE.appearanceStage.ne(AppearanceStage.CHECKED_IN))
                         : Expressions.FALSE
                     ));
         }
 
-        return partialQuery.select(
-            QJurorPool.jurorPool.juror.jurorNumber,
-            QJurorPool.jurorPool.juror.firstName,
-            QJurorPool.jurorPool.juror.lastName,
-            QJurorPool.jurorPool.juror.postcode,
-            getAttendanceCase(),
-            getCheckedInBoolean().as(CHECKED_IN_TODAY),
-            QAppearance.appearance.timeIn,
-            QJurorPool.jurorPool.nextDate,
-            QJurorStatus.jurorStatus.statusDesc
-        );
+        return partialQuery.distinct().select(
+                JUROR_POOL.juror.jurorNumber,
+                JUROR_POOL.juror.firstName,
+                JUROR_POOL.juror.lastName,
+                JUROR_POOL.juror.postcode,
+                getAttendanceCase(),
+                getCheckedInBoolean().as(CHECKED_IN_TODAY),
+                APPEARANCE.timeIn,
+                JUROR_POOL.nextDate,
+                QJurorStatus.jurorStatus.statusDesc)
+            .groupBy(JUROR_POOL.juror.jurorNumber,
+                JUROR_POOL.juror.firstName,
+                JUROR_POOL.juror.lastName,
+                JUROR_POOL.juror.postcode,
+                CHECKED_IN_TODAY,
+                APPEARANCE.timeIn,
+                JUROR_POOL.nextDate,
+                QJurorStatus.jurorStatus.statusDesc);
     }
 
     private static StringExpression getJurorAttendance() {
@@ -349,23 +358,23 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
 
     StringExpression getAttendanceCase() {
         return new CaseBuilder()
-            .when(Expressions.asBoolean(QJurorPool.jurorPool.onCall.eq(true)))
+            .when(Expressions.asBoolean(JUROR_POOL.onCall.eq(true)))
             .then(PoolMemberFilterRequestQuery.AttendanceEnum.ON_CALL.getKeyString())
-            .when(QJurorTrial.jurorTrial.result.eq("J"))
+            .when(PANEL.result.eq(PanelResult.JUROR))
             .then(PoolMemberFilterRequestQuery.AttendanceEnum.ON_A_TRIAL.getKeyString())
             .when(getCheckedInBoolean())
             .then(PoolMemberFilterRequestQuery.AttendanceEnum.IN_ATTENDANCE.getKeyString())
-            .when(QJurorPool.jurorPool.nextDate.eq(LocalDate.now()))
+            .when(JUROR_POOL.nextDate.eq(LocalDate.now()))
             .then(PoolMemberFilterRequestQuery.AttendanceEnum.OTHER.getKeyString())
-            .otherwise("")
+            .otherwise("").max()
             .as(ATTENDANCE);
     }
 
     BooleanExpression getCheckedInBoolean() {
         return Expressions.booleanOperation(
             Ops.AND,
-            QAppearance.appearance.appearanceStage.eq(AppearanceStage.CHECKED_IN),
-            QAppearance.appearance.attendanceDate.eq(LocalDate.now())
+            APPEARANCE.appearanceStage.eq(AppearanceStage.CHECKED_IN),
+            APPEARANCE.attendanceDate.eq(LocalDate.now())
         );
     }
 }

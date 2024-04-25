@@ -22,13 +22,11 @@ public interface JurorHistoryService {
     void createPoliceCheckInsufficientInformationHistory(JurorPool jurorPool);
 
     void createExpenseApproveCash(String jurorNumber,
-                                  String poolNumber,
                                   FinancialAuditDetails financialAuditDetails,
                                   LocalDate latestAppearanceDate,
                                   BigDecimal totalAmount);
 
     void createExpenseApproveBacs(String jurorNumber,
-                                  String poolNumber,
                                   FinancialAuditDetails financialAuditDetails,
                                   LocalDate latestAppearanceDate,
                                   BigDecimal totalAmount);
@@ -63,5 +61,11 @@ public interface JurorHistoryService {
 
     void createPostponementLetterHistory(JurorPool jurorPool, String otherInfo);
 
+    void createIdentityConfirmedHistory(JurorPool jurorPool);
+
     void createSummonsLetterHistory(JurorPool jurorPool, String otherInfo);
+
+    void createJuryAttendanceHistory(JurorPool jurorPool, String otherInfo);
+
+    void createPoolAttendanceHistory(JurorPool jurorPool, String otherInfo);
 }

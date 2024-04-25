@@ -1,10 +1,10 @@
 buildscript {
     ext {
-        springBootVersion = '3.2.4'
+        springBootVersion = '3.2.5'
         notifyVersion = '5.0.1-RELEASE'
         springDocVersion = '2.5.0'
         queryDslVersion = '5.1.0'
-        flywayVersion = '10.11.0'
+        flywayVersion = '10.11.1'
         postgresVersion = '42.7.3'
     }
     dependencies {
@@ -82,8 +82,8 @@ dependencies {
 
     //Internal dependency overrides
     implementation 'org.yaml:snakeyaml:2.2'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.20'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.20'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.23'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.23'
     //
     implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
@@ -124,10 +124,10 @@ dependencies {
     annotationProcessor('org.projectlombok:lombok')
 
     implementation('org.apache.commons:commons-lang3:3.14.0')
-    implementation('org.apache.commons:commons-text:1.11.0')
+    implementation('org.apache.commons:commons-text:1.12.0')
     implementation("uk.gov.service.notify:notifications-java-client:${notifyVersion}")
 
-    runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.5.1')
+    runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.5.2')
 
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
     implementation group: 'io.rest-assured', name: 'rest-assured'
@@ -144,14 +144,14 @@ dependencies {
     testImplementation('org.projectlombok:lombok')
     testAnnotationProcessor('org.projectlombok:lombok')
 
-    testImplementation('net.bytebuddy:byte-buddy:1.14.13')
+    testImplementation('net.bytebuddy:byte-buddy:1.14.14')
     testImplementation('junit:junit:4.13.2')
     testImplementation "org.testcontainers:testcontainers:1.19.7"
     testImplementation "org.testcontainers:junit-jupiter:1.19.7"
     testImplementation 'org.testcontainers:postgresql:1.19.7'
 
     // Validation
-    testImplementation 'org.wiremock:wiremock-standalone:3.5.2'
+    testImplementation 'org.wiremock:wiremock-standalone:3.5.4'
 }
 
 sonarqube {
@@ -200,13 +200,11 @@ tasks.withType(Test).configureEach() {
 
 // Flyway must align with application.yml
 flyway {
-    def dbHost = System.getenv("DB_HOST") ?: "localhost"
-    def dbPort = System.getenv("DB_PORT") ?: "5432"
-    def dbName = System.getenv("DB_NAME") ?: "juror"
-    def dbUserName = System.getenv("DB_USER_NAME") ?: "system"
+    def dbUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/juror"
+    def dbUserName = System.getenv("DB_USERNAME") ?: "system"
     def dbPassword = System.getenv("DB_PASSWORD") ?: "postgres"
 
-    url = "jdbc:postgresql://$dbHost:$dbPort/$dbName"
+    url = "$dbUrl"
     user = "$dbUserName"
     password = "$dbPassword"
     schemas = ['juror', 'juror_digital', 'juror_digital_user', 'juror_dashboard', 'hk', 'juror_mod']
@@ -278,13 +276,13 @@ checkstyle {
 }
 
 pmdIntegrationTest {
-    maxFailures = 434
+    maxFailures = 433
 }
 pmdTest {
     maxFailures = 381
 }
 pmdMain {
-    maxFailures = 1137
+    maxFailures = 1130
 }
 pmd {
     maxFailures = 0
