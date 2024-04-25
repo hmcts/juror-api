@@ -81,15 +81,20 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
         JPAQuery<Tuple> query = queryFactory.select(returnFields.toArray(new Expression<?>[0]))
             .from(JUROR)
             .join(JUROR_POOL)
-            .on(JUROR.eq(JUROR_POOL.juror));
+            .on(JUROR.eq(JUROR_POOL.juror))
+            .where(JUROR_POOL.isActive.isTrue());
         if (isCourt || !locCode.equals("400")) {
             query.where(JUROR_POOL.pool.courtLocation.locCode.eq(locCode));
+            if (isCourt) {
+                query.where(JUROR_POOL.pool.owner.ne("400"));
+            }
         }
 
         if (search.getTrialNumber() != null || !simpleResponse) {
             query.leftJoin(PANEL).on(
                 JUROR.eq(PANEL.juror),
-                PANEL.result.in(PanelResult.JUROR),
+                PANEL.result.notIn(PanelResult.RETURNED, PanelResult.NOT_USED, PanelResult.CHALLENGED),
+                TRIAL.trialEndDate.isNull(),
                 TRIAL.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode),
                 JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR)
             );
