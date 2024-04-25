@@ -6,13 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,6 +34,9 @@ public class PanelSummaryReport extends AbstractStandardReport {
 
         this.trialRepository = trialRepository;
         isCourtUserOnly();
+        addAuthenticationConsumer(standardReportRequest -> {
+            checkOwnership(standardReportRequest.getLocCode(), false);
+        });
     }
 
 
@@ -42,7 +44,7 @@ public class PanelSummaryReport extends AbstractStandardReport {
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
         query.where(QPanel.panel.trial.courtLocation.locCode.eq(request.getLocCode()));
-        query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
+        query.orderBy(QJuror.juror.jurorNumber.asc());
     }
 
     @Override

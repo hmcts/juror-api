@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -35,13 +36,13 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
-            .trialNumber(TestConstants.VALID_TRIAL_NUMBER)
+            .trialNumber("T100000001")
             .locCode(TestConstants.VALID_COURT_LOCATION)
             .build());
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -51,7 +52,7 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setTrialNumber(null);
@@ -67,7 +68,7 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
         testBuilder()
             .jwt(getBureauJwt())
             .triggerInvalid()
-            .assertMojForbiddenResponse("User not allowed to access this trial");
+            .assertMojForbiddenResponse("User not allowed to access this report");
     }
 
     private StandardReportResponse getTypicalResponse() {
@@ -76,39 +77,44 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
                 .add("panel_summary", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Panel Summary")
                     .dataType("Long")
-                    .value(2)
+                    .value(1)
+                    .build())
+                .add("report_created", StandardReportResponse.DataTypeValue.builder()
+                    .displayName(null)
+                    .dataType("LocalDateTime")
+                    .value(LocalDateTime.now())
                     .build())
                 .add("trial_number", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Trial Number")
                     .dataType("String")
-                    .value("T000000001")
+                    .value("T100000001")
                     .build())
                 .add("names", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Names")
                     .dataType("String")
-                    .value("Someone Name")
+                    .value("TEST DEFENDANT")
                     .build())
                 .add("court_room", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Court Room")
                     .dataType("String")
-                    .value("COURT 3")
+                    .value("large room fits 100 people")
                     .build())
                 .add("judge", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Judge")
                     .dataType("String")
-                    .value("Judge Dredd")
+                    .value("Test judge")
                     .build())
                 .add("court_name", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Court Name")
                     .dataType("String")
-                    .value("Chester (415)")
+                    .value("CHESTER (415)")
                     .build()))
             .tableData(
                 StandardReportResponse.TableData.<List<LinkedHashMap<String, Object>>>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("trial_number")
-                            .name("Trial Number")
+                            .id("juror_number")
+                            .name("Juror Number")
                             .dataType("String")
                             .headings(null)
                             .build(),
@@ -126,13 +132,9 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
                             .build()))
                     .data(List.of(
                         new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "641500024")
-                            .add("first_name", "John4")
-                            .add("last_name", "Smith4"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "641500026")
-                            .add("first_name", "John6")
-                            .add("last_name", "Smith6")))
+                            .add("juror_number", "415000001")
+                            .add("first_name", "FNAME1")
+                            .add("last_name", "LNAME1")))
                     .build())
             .build();
     }

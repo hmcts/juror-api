@@ -280,14 +280,14 @@ public abstract class AbstractReport<T> {
         StandardReportRequest request,
         StandardReportResponse.TableData<T> tableData);
 
-    void checkOwnership(PoolRequest poolRequest, boolean allowBureau) {
+    protected void checkOwnership(PoolRequest poolRequest, boolean allowBureau) {
         if (!poolRequest.getOwner().equals(SecurityUtil.getActiveOwner())
             && !(SecurityUtil.isBureau() && allowBureau)) {
             throw new MojException.Forbidden("User not allowed to access this pool", null);
         }
     }
 
-    void checkOwnership(String locCode, boolean allowBureau) {
+    protected void checkOwnership(String locCode, boolean allowBureau) {
         if (!SecurityUtil.getCourts().contains(locCode)
             && !(SecurityUtil.isBureau() && allowBureau)) {
             throw new MojException.Forbidden("User not allowed to access this court", null);
@@ -363,11 +363,11 @@ public abstract class AbstractReport<T> {
                 .displayName("Court Name")
                 .dataType(String.class.getSimpleName())
                 .value(
-                    trial.getCourtLocation().getName() + " (" + trial.getCourtLocation().getLocCode() + ")")
+                    getCourtNameString(trial.getCourtLocation()))
                 .build()
         ));
     }
-    
+
     protected String getCourtNameString(CourtLocationRepository courtLocationRepository, String locCode) {
         Optional<CourtLocation> courtLocation = courtLocationRepository.findByLocCode(locCode);
         if (courtLocation.isEmpty()) {
