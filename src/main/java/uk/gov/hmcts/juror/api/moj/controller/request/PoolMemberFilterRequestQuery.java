@@ -11,7 +11,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import org.hibernate.validator.constraints.Length;
-import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
