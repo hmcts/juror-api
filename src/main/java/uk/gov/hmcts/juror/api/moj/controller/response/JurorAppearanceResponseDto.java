@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
+import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 
 import java.time.LocalTime;
@@ -29,7 +30,7 @@ public class JurorAppearanceResponseDto {
 
     @JsonProperty("juror_appearance_response_data")
     @Schema(description = "List of Juror appearance records")
-    private List<JurorAppearanceResponseDto.JurorAppearanceResponseData> data;
+    public List<JurorAppearanceResponseDto.JurorAppearanceResponseData> data;
 
     @AllArgsConstructor
     @NoArgsConstructor
@@ -77,5 +78,9 @@ public class JurorAppearanceResponseDto {
         @JsonProperty("appStage")
         @Schema(description = "Stage in the attendance journey, e.g. 1=Checked_in, 2=Checked_out")
         private AppearanceStage appStage;
+
+        @JsonProperty("police_check")
+        @Setter
+        private PoliceCheck policeCheck;
     }
 }
