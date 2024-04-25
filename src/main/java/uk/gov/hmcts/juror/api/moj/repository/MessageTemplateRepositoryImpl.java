@@ -92,11 +92,10 @@ public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository
 
         if (search.getTrialNumber() != null || !simpleResponse) {
             query.leftJoin(PANEL).on(
-                JUROR.eq(PANEL.juror),
-                PANEL.result.notIn(PanelResult.RETURNED, PanelResult.NOT_USED, PanelResult.CHALLENGED),
-                TRIAL.trialEndDate.isNull(),
-                TRIAL.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode),
-                JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR)
+                JUROR.eq(PANEL.juror)
+                    .and(PANEL.result.notIn(PanelResult.RETURNED, PanelResult.NOT_USED, PanelResult.CHALLENGED))
+                    .and(PANEL.trial.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode))
+                    .and(JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR))
             );
         }
 
