@@ -701,7 +701,8 @@ class AbstractReportTest {
                 ).addJoins(query),
                 "Expected exception to be thrown when primary join is not found");
 
-            assertThat(exception.getMessage()).isEqualTo("Not Implemented yet: juror from " + from.getClass());
+            assertThat(exception.getMessage()).isEqualTo(
+                "Not Implemented yet: " + QJuror.juror.getClass() + " from " + from.getClass());
             assertThat(exception.getCause()).isNull();
         }
     }
