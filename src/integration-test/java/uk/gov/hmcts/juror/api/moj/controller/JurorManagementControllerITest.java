@@ -32,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorsToDismissResponseDto
 import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.AttendanceDetailsResponse;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
@@ -365,11 +366,13 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.RESPONDED);
         assertThat(jurorAppearanceResponseData.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
         assertThat(jurorAppearanceResponseData.getCheckOutTime()).isNull();
+        assertThat(jurorAppearanceResponseData.getPoliceCheck()).isEqualTo(PoliceCheck.NOT_CHECKED);
 
         jurorAppearanceResponseData =
             jurorAppearanceResponseDto.getData().get(1);
         assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR3);
         assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.PANEL);
+        assertThat(jurorAppearanceResponseData.getPoliceCheck()).isEqualTo(PoliceCheck.INELIGIBLE);
     }
 
     @Test
@@ -397,6 +400,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
         assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR2);
         assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.JUROR);
+        assertThat(jurorAppearanceResponseData.getPoliceCheck()).isEqualTo(PoliceCheck.ELIGIBLE);
     }
 
     @Test
@@ -1991,6 +1995,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.RESPONDED);
         assertThat(jurorAppearanceResponseData.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
         assertThat(jurorAppearanceResponseData.getCheckOutTime()).isNull();
+        assertThat(jurorAppearanceResponseData.getPoliceCheck()).isEqualTo(PoliceCheck.NOT_CHECKED);
     }
 
     private void validateAppearanceRecordMultiple(ResponseEntity<JurorAppearanceResponseDto> response) {
@@ -2008,6 +2013,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.RESPONDED);
         assertThat(jurorAppearanceResponseData.getCheckInTime()).isEqualTo(LocalTime.of(9, 30));
         assertThat(jurorAppearanceResponseData.getCheckOutTime()).isNull();
+        assertThat(jurorAppearanceResponseData.getPoliceCheck()).isEqualTo(PoliceCheck.NOT_CHECKED);
 
         jurorAppearanceResponseData =
             jurorAppearanceResponseDto.getData().get(1);
