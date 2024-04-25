@@ -135,7 +135,7 @@ public class UserServiceImpl implements UserService {
             log.debug("No user assigned to the response - return to backlog");
 
             // JDB-2641 Urgent summons cannot be assigned to backlog
-            if (jurorResponse.getUrgent()) {
+            if (jurorResponse.isUrgent()) {
                 log.debug(
                     "Unable to assign response for Juror {} to backlog as it is urgent",
                     jurorResponse.getJurorNumber()
@@ -147,7 +147,7 @@ public class UserServiceImpl implements UserService {
             }
 
             // JDB-2641 Super Urgent summons cannot be assigned to backlog
-            if (jurorResponse.getSuperUrgent()) {
+            if (jurorResponse.isSuperUrgent()) {
                 log.debug(
                     "Unable to assign response for Juror {} to backlog as it is super-urgent",
                     jurorResponse.getJurorNumber()
@@ -297,7 +297,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void assignUrgentResponse(final DigitalResponse urgentJurorResponse) throws StaffAssignmentException {
-        if (!urgentJurorResponse.getSuperUrgent() && !urgentJurorResponse.getUrgent()) {
+        if (!urgentJurorResponse.isSuperUrgent() && !urgentJurorResponse.isUrgent()) {
             // this state should be invalid
             log.warn("Not urgent or super urgent: {}", urgentJurorResponse);
             throw new StaffAssignmentException("Response not urgent: " + urgentJurorResponse);
@@ -428,8 +428,8 @@ public class UserServiceImpl implements UserService {
                 jurorResponse.getVersion(),
                 assignedTo,
                 jurorResponse.getProcessingStatus(),
-                jurorResponse.getUrgent(),
-                jurorResponse.getSuperUrgent(),
+                jurorResponse.isUrgent(),
+                jurorResponse.isSuperUrgent(),
                 jurorDisplayName.toString().trim()
             );
             assignmentListDataDtos.add(assignmentListDataDto);

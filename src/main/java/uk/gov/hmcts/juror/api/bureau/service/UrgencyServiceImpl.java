@@ -307,7 +307,7 @@ public class UrgencyServiceImpl implements UrgencyService {
         response.setSuperUrgent(isSuperUrgent(response, jurorDetails));
         if (log.isTraceEnabled()) {
             log.trace("Response {} Urgency flags updated: urgent={} super={}", response.getJurorNumber(),
-                response.getUrgent(), response.getSuperUrgent()
+                response.isUrgent(), response.isSuperUrgent()
             );
         }
     }

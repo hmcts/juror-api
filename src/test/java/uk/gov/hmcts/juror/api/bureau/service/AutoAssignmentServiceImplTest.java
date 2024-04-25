@@ -108,9 +108,9 @@ public class AutoAssignmentServiceImplTest {
 
         // If the service class doesn't use the correct parameters (for whatever reason) the tests will fall over
         // because the mock repo will return nothing
-        doReturn(backlog).when(responseRepo).findAll(JurorResponseQueries.backlog(),
+        doReturn(backlog).when(responseRepo).findAll(JurorResponseQueries.byUnassignedTodoNonUrgent(),
             JurorResponseQueries.oldestFirst());
-        doReturn((long) backlog.size()).when(responseRepo).count(JurorResponseQueries.backlog());
+        doReturn((long) backlog.size()).when(responseRepo).count(JurorResponseQueries.byUnassignedTodoNonUrgent());
     }
 
     /**

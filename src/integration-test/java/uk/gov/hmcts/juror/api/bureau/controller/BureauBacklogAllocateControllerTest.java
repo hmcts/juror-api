@@ -80,11 +80,11 @@ public class BureauBacklogAllocateControllerTest extends AbstractIntegrationTest
             new RequestEntity<>(BureauBacklogAllocateRequestDto.builder()
                 .officerAllocations(Arrays.asList(
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1)
-                        .superUrgentCount(2).userId("carneson").build(),
+                        .userId("carneson").build(),
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1)
-                        .superUrgentCount(2).userId("sgomez").build(),
+                        .userId("sgomez").build(),
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1)
-                        .superUrgentCount(2).userId("mruby").build()
+                        .userId("mruby").build()
                 )).build(), httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<Void> response = template.exchange(request, Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -114,11 +114,11 @@ public class BureauBacklogAllocateControllerTest extends AbstractIntegrationTest
             new RequestEntity<>(BureauBacklogAllocateRequestDto.builder()
                 .officerAllocations(Arrays.asList(
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1)
-                        .superUrgentCount(2).userId("carneson").build(),
+                        .userId("carneson").build(),
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1)
-                        .superUrgentCount(2).userId("sgomez").build(),
+                        .userId("sgomez").build(),
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1)
-                        .superUrgentCount(2).userId("mruby").build()
+                        .userId("mruby").build()
                 )).build(), httpHeaders, HttpMethod.POST, uri);
 
         ResponseEntity<Void> response = template.exchange(request, Void.class);
@@ -148,10 +148,10 @@ public class BureauBacklogAllocateControllerTest extends AbstractIntegrationTest
         RequestEntity<BureauBacklogAllocateRequestDto> request =
             new RequestEntity<>(BureauBacklogAllocateRequestDto.builder()
                 .officerAllocations(Arrays.asList(
-                    BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).superUrgentCount(2)
+                    BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2)
                         .userId("carneson").build(),
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1)
-                        .superUrgentCount(2).userId("sgomez").build(),
+                        .userId("sgomez").build(),
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1).userId(
                         "mruby").build()
                 )).build(), httpHeaders, HttpMethod.POST, uri);

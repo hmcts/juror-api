@@ -118,7 +118,7 @@ public class StaffServiceImpl implements StaffService {
             log.debug("No user assigned to the response - return to backlog");
 
             // JDB-2641 Urgent summons cannot be assigned to backlog
-            if (jurorResponse.getUrgent()) {
+            if (jurorResponse.isUrgent()) {
                 log.debug(
                     "Unable to assign response for Juror {} to backlog as it is urgent",
                     jurorResponse.getJurorNumber()
@@ -128,7 +128,7 @@ public class StaffServiceImpl implements StaffService {
             }
 
             // JDB-2641 Super Urgent summons cannot be assigned to backlog
-            if (jurorResponse.getSuperUrgent()) {
+            if (jurorResponse.isSuperUrgent()) {
                 log.debug(
                     "Unable to assign response for Juror {} to backlog as it is super-urgent",
                     jurorResponse.getJurorNumber()
