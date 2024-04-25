@@ -11,7 +11,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import org.hibernate.validator.constraints.Length;
-import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
@@ -83,10 +82,10 @@ public class PoolMemberFilterRequestQuery implements IsPageable {
     @Getter
     public enum SortField implements SortMethod.HasComparableExpression {
         JUROR_NUMBER(QJurorPool.jurorPool.juror.jurorNumber),
-        FIRST_NAME(QJuror.juror.firstName),
-        LAST_NAME(QJuror.juror.lastName),
+        FIRST_NAME(QJurorPool.jurorPool.juror.firstName),
+        LAST_NAME(QJurorPool.jurorPool.juror.lastName),
         NEXT_DATE(QJurorPool.jurorPool.nextDate),
-        POSTCODE(QJuror.juror.postcode),
+        POSTCODE(QJurorPool.jurorPool.juror.postcode),
         ATTENDANCE(Expressions.stringPath("attendance")),
         CHECKED_IN(Expressions.booleanPath("checked_in_today")),
         STATUS(QJurorStatus.jurorStatus.statusDesc);

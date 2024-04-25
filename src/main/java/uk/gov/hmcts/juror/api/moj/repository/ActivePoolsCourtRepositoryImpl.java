@@ -96,6 +96,8 @@ public class ActivePoolsCourtRepositoryImpl implements IActivePoolsCourtReposito
             case "courtNamedesc" -> activePoolsQuery.orderBy(COURT_LOCATION.name.desc());
             case "serviceStartDateasc" -> activePoolsQuery.orderBy(POOL_REQUEST.returnDate.asc());
             case "serviceStartDatedesc" -> activePoolsQuery.orderBy(POOL_REQUEST.returnDate.desc());
+            case "poolTypeasc" -> activePoolsQuery.orderBy(POOL_TYPE.description.asc());
+            case "poolTypedesc" -> activePoolsQuery.orderBy(POOL_TYPE.description.desc());
             default -> throw new IllegalArgumentException(
                 "Unable to run active pools at court query without a valid sort criteria");
         };
