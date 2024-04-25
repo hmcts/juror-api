@@ -5,8 +5,7 @@ import uk.gov.hmcts.juror.api.moj.domain.system.HasCodeAndDescription;
 
 @Getter
 public enum ReasonableAdjustmentsEnum implements HasCodeAndDescription<String> {
-    NONE(" ", "None"),
-    
+    NONE("N", "None"),
     CARING_RESPONSIBILITIES("C", "Caring responsibilities"),
     ALLERGIES("D", "Allergies"),
     HEARING_LOSS("H", "Hearing Loss"),
