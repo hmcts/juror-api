@@ -249,7 +249,6 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             @DisplayName("Reasonable Adjustment codes")
             void reasonableAdjustmentCodes() {
                 assertValid(CodeType.REASONABLE_ADJUSTMENTS,
-                    new CodeDescriptionResponse(" ", "NONE", null),
                     new CodeDescriptionResponse("A", "RELIGIOUS REASONS", null),
                     new CodeDescriptionResponse("C", "CARING RESPONSIBILITIES", null),
                     new CodeDescriptionResponse("D", "ALLERGIES", null),
