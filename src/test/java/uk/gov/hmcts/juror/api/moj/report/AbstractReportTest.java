@@ -99,7 +99,7 @@ class AbstractReportTest {
         void sizeCheck() {
             assertThat(AbstractReport.CLASS_TO_JOIN).hasSize(5);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QPanel.panel)).hasSize(1);
-            assertThat(AbstractReport.CLASS_TO_JOIN.get(QJuror.juror)).hasSize(2);
+            assertThat(AbstractReport.CLASS_TO_JOIN.get(QJuror.juror)).hasSize(3);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QJurorPool.jurorPool)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QAppearance.appearance)).hasSize(2);
@@ -969,6 +969,7 @@ class AbstractReportTest {
             StandardReportRequest request = mock(StandardReportRequest.class);
 
             when(request.getTrialNumber()).thenReturn(TestConstants.VALID_TRIAL_NUMBER);
+            when(request.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
             assertThat(report.loadStandardTrailHeaders(request, trialRepository))
                 .isEqualTo(Map.of(
@@ -1006,7 +1007,7 @@ class AbstractReportTest {
             verify(trial, times(2)).getCourtroom();
             verify(trial, times(1)).getDescription();
             verify(courtLocation, times(1)).getLocCode();
-            verify(trial, times(4)).getCourtLocation();
+            verify(trial, times(3)).getCourtLocation();
         }
 
         @Test

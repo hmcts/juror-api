@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
@@ -73,6 +74,7 @@ class PanelSummaryReportTest extends AbstractStandardReportTestSupport<PanelSumm
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
 
         request.setTrialNumber(TestConstants.VALID_TRIAL_NUMBER);
+        request.setLocCode(TestConstants.VALID_COURT_LOCATION);
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
@@ -80,9 +82,9 @@ class PanelSummaryReportTest extends AbstractStandardReportTestSupport<PanelSumm
         verify(query, times(1))
             .where(QPanel.panel.trial.trialNumber.eq(TestConstants.VALID_TRIAL_NUMBER));
         verify(query, times(1))
-            .where(QPanel.panel.trial.courtLocation.locCode.eq(SecurityUtil.getActiveOwner()));
+            .where(QPanel.panel.trial.courtLocation.locCode.eq(request.getLocCode()));
         verify(query, times(1))
-            .orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
+            .orderBy(QJuror.juror.jurorNumber.asc());
     }
 
     @Override
@@ -163,6 +165,7 @@ class PanelSummaryReportTest extends AbstractStandardReportTestSupport<PanelSumm
         return StandardReportRequest.builder()
             .reportType(report.getName())
             .trialNumber(TestConstants.VALID_TRIAL_NUMBER)
+            .locCode(TestConstants.VALID_COURT_LOCATION)
             .build();
     }
 
