@@ -29,16 +29,4 @@ public interface CourtLocationRepository extends CrudRepository<CourtLocation, S
 
     @Override
     List<CourtLocation> findAll();
-
-    @Deprecated(forRemoval = true)
-    default List<String> findLocCodeByOwner(EntityManager entityManager, String owner) {
-        QCourtLocation courtLocation = QCourtLocation.courtLocation;
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-        return queryFactory
-            .select(courtLocation.locCode)
-            .from(courtLocation)
-            .where(courtLocation.owner.eq(owner))
-            .orderBy(courtLocation.locCode.asc())
-            .fetch();
-    }
 }
