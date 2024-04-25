@@ -27,7 +27,7 @@ INSERT INTO JUROR_MOD.JUROR (JUROR_NUMBER,  LAST_NAME,  FIRST_NAME,  DOB,  addre
 VALUES ('444444444',  'FOUR', 'TEST',  NULL,  '540 STREET NAME',  'ANYTOWN',  'CH1 2AN',  TRUE, 63.25);
 
 INSERT INTO JUROR_MOD.JUROR_POOL (OWNER, JUROR_NUMBER, POOL_NUMBER, NEXT_DATE, DEF_DATE, STATUS, IS_ACTIVE,WAS_DEFERRED)
-VALUES ('415', '444444444', '415230101', current_date - interval '2 weeks', NULL, 2, TRUE, FALSE);
+VALUES ('415', '444444444', '415230101', current_date - interval '2 weeks', NULL, 13, TRUE, FALSE);
 
 INSERT INTO juror_mod.appearance (attendance_date,juror_number,loc_code,pool_number,time_in,non_attendance,appearance_stage) VALUES
     (current_date - interval '1 day','111111111','415','415230101','09:30:00',false,'CHECKED_IN');
