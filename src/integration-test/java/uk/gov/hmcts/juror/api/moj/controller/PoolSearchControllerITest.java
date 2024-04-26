@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -84,7 +83,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initPoolRequests.sql"})
-        void test_searchPoolRequests_bureauUser() {
+        void searchPoolRequestsBureauUser() {
             PoolSearchRequestDto request = createRequest(null, "417");
 
             ResponseEntity<PoolRequestSearchListDto> responseEntity =
@@ -109,7 +108,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initPoolRequests.sql"})
-        public void test_searchPoolRequests_courtUser_withAccess() throws Exception {
+        void searchPoolRequestsCourtUserWithAccess() throws Exception {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("417", Collections.singletonList("417")));
             PoolSearchRequestDto request = createRequest(null, "417");
 
@@ -135,7 +134,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initPoolRequests.sql"})
-        public void test_searchPoolRequests_courtUser_withoutAccess() throws Exception {
+        void searchPoolRequestsCourtUserWithoutAccess() throws Exception {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "416")));
             PoolSearchRequestDto request = createRequest(null, "417");
 
@@ -150,7 +149,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initPoolRequests.sql"})
-        public void test_searchPoolRequests_bureauUser_invalidSearchCriteria() throws Exception {
+        void searchPoolRequestsBureauUserInvalidSearchCriteria() throws Exception {
             PoolSearchRequestDto request = createRequest(null, null);
 
             ResponseEntity<PoolRequestSearchListDto> responseEntity =
@@ -165,7 +164,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initPoolRequests.sql"})
-        public void test_searchPoolRequests_courtUser_noResults() throws Exception {
+        void searchPoolRequestsCourtUserNoResults() throws Exception {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("417", Collections.singletonList("417")));
             PoolSearchRequestDto request = createRequest("417221201", "417");
 
@@ -191,7 +190,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initPoolRequests.sql"})
-        public void test_searchPoolRequests_invalidPoolNumber_tooShort() throws Exception {
+        void searchPoolRequestsInvalidPoolNumberTooShort() throws Exception {
             PoolSearchRequestDto request = createRequest("41", null);
 
             ResponseEntity<PoolRequestSearchListDto> responseEntity =
@@ -205,7 +204,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initPoolRequests.sql"})
-        public void test_searchPoolRequests_invalidPoolNumber_tooLong() throws Exception {
+        void searchPoolRequestsInvalidPoolNumberTooLong() throws Exception {
             PoolSearchRequestDto request = createRequest("4172212010", null);
 
             ResponseEntity<PoolRequestSearchListDto> responseEntity =
@@ -231,7 +230,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initCoronerPoolRequests.sql"})
-        public void searchCoronerPoolRequestsHappy() {
+        void searchCoronerPoolRequestsHappy() {
             CoronerPoolFilterRequestQuery request = CoronerPoolFilterRequestQuery.builder()
                 .poolNumber("923040001")
                 .locationCode("415")
@@ -243,8 +242,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<PaginatedList<FilterCoronerPool>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.POST,
-                    URI.create("/api/v1/moj/pool-search/coroner-pools")),  new ParameterizedTypeReference<>() {
-                });
+                    URI.create("/api/v1/moj/pool-search/coroner-pools")), new ParameterizedTypeReference<>() {});
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
@@ -272,7 +270,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initCoronerPoolRequests.sql"})
-        public void test_searchCoronerPoolRequests_bureauUser_noResults() {
+        void searchCoronerPoolRequestsBureauUserNoResults() {
             CoronerPoolFilterRequestQuery request = CoronerPoolFilterRequestQuery.builder()
                 .poolNumber("111111111")
                 .locationCode("555")
@@ -284,8 +282,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<PaginatedList<FilterCoronerPool>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.POST,
-                    URI.create("/api/v1/moj/pool-search/coroner-pools")),  new ParameterizedTypeReference<>() {
-                });
+                    URI.create("/api/v1/moj/pool-search/coroner-pools")), new ParameterizedTypeReference<>() {});
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
@@ -301,7 +298,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initCoronerPoolRequests.sql"})
-        public void test_searchCoronerPoolRequests_bureauUser_invalidSearchCriteria() {
+        void searchCoronerPoolRequestsBureauUserInvalidSearchCriteria() {
             // Invalid search criteria
             CoronerPoolFilterRequestQuery request = CoronerPoolFilterRequestQuery.builder()
                 .poolNumber("12345678910")
@@ -313,16 +310,12 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<PaginatedList<FilterCoronerPool>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.POST,
-                    URI.create("/api/v1/moj/pool-search/coroner-pools")),  new ParameterizedTypeReference<>() {
-                });
+                    URI.create("/api/v1/moj/pool-search/coroner-pools")), new ParameterizedTypeReference<>() {});
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be BAD_REQUEST")
                 .isEqualTo(HttpStatus.BAD_REQUEST);
-
         }
-
-
     }
 
 }
