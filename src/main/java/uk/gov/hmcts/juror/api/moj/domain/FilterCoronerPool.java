@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -31,7 +32,7 @@ public class FilterCoronerPool implements Serializable {
     private String courtName;
 
     @JsonProperty("requested_date")
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
     private LocalDate requestedDate;
 
     @JsonProperty("requested_by")
