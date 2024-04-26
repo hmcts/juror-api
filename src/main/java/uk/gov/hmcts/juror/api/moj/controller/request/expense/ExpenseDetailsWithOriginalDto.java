@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller.request.expense;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,7 +18,8 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 @SuppressWarnings({
     "PMD.LawOfDemeter"
 })
-public class ExpenseDetailsWithOriginalDto extends ExpenseDetailsDto {
+@JsonIgnoreProperties(value = {"total_due", "total_paid", "total_outstanding"})
+public class ExpenseDetailsWithOriginalDto extends ExpenseDetailsWithTotalsDto {
 
     private ExpenseDetailsDto original;
 
