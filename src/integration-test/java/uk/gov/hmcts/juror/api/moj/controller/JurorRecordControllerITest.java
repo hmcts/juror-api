@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.history.Revision;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -38,6 +39,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNotesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
@@ -60,6 +62,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
+import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
@@ -67,10 +70,12 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJuror;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
@@ -197,12 +202,17 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     }
 
     private void initHeaders() throws Exception {
+
+        BureauJwtPayload.Staff staff = new BureauJwtPayload.Staff();
+        staff.setCourts(Collections.singletonList("400"));
+
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
             .passwordWarning(false)
             .login("BUREAU_USER")
             .daysToExpire(89)
             .owner("400")
+            .staff(staff)
             .build());
 
         httpHeaders = new HttpHeaders();
@@ -5000,6 +5010,133 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(HttpStatus.FORBIDDEN);
         }
 
+    }
+
+    @Nested
+    @DisplayName("Search for Juror records")
+    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_searchForJurorRecords.sql"})
+    class SearchForJurorRecords {
+
+        private static final String URL = BASE_URL + "/search-juror-records";
+
+        @Test
+        void searchForJurorRecordsBureauHappyPath() throws Exception {
+            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
+                .jurorNumber("641600091")
+                .pageNumber(1)
+                .pageLimit(10)
+                .sortMethod(SortMethod.ASC)
+                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
+                .build();
+
+            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.POST,
+                    URI.create("/api/v1/moj/juror-record/search")), new ParameterizedTypeReference<>() {
+                });
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request (GET With Body) to be successful")
+                .isEqualTo(HttpStatus.OK);
+
+            assertThat(response.getBody()).isNotNull();
+            PaginatedList<FilterJurorRecord> responseBody = response.getBody();
+
+            assertThat(responseBody.getTotalItems()).as("Expect the response body to contain a total count value of 1")
+                .isEqualTo(1);
+
+            List<FilterJurorRecord> data = responseBody.getData();
+            assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
+            FilterJurorRecord juror = data.get(0);
+            assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
+                .isEqualTo("641600091");
+            assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
+                .isEqualTo("FNAMEFIVEFOURZERO LNAMEFIVEFOURZERO");
+            assertThat(juror.getPostcode()).as("Expect the response body to contain the correct postcode")
+                .isEqualTo("CH1 2AN");
+            assertThat(juror.getPoolNumber()).as("Expect the response body to contain the correct pool number")
+                .isEqualTo("416220902");
+            assertThat(juror.getCourtName()).as("Expect the response body to contain the correct court name")
+                .isEqualTo("LEWES SITTING AT CHICHESTER");
+            assertThat(juror.getStatus()).as("Expect the response body to contain the correct status")
+                .isEqualTo("Responded");
+
+        }
+
+        @Test
+        void searchForJurorRecordsCourtHappyPath() throws Exception {
+
+            String bureauJwt = createBureauJwt("Court_User", "416", "416");
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
+                .jurorNumber("641600091")
+                .pageNumber(1)
+                .pageLimit(10)
+                .sortMethod(SortMethod.ASC)
+                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
+                .build();
+
+            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.POST,
+                    URI.create("/api/v1/moj/juror-record/search")), new ParameterizedTypeReference<>() {
+                });
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request (GET With Body) to be successful")
+                .isEqualTo(HttpStatus.OK);
+
+            assertThat(response.getBody()).isNotNull();
+            PaginatedList<FilterJurorRecord> responseBody = response.getBody();
+
+            assertThat(responseBody.getTotalItems()).as("Expect the response body to contain a total count value of 1")
+                .isEqualTo(1);
+
+            List<FilterJurorRecord> data = responseBody.getData();
+            assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
+            FilterJurorRecord juror = data.get(0);
+            assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
+                .isEqualTo("641600091");
+            assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
+                .isEqualTo("FNAMEFIVEFOURZERO LNAMEFIVEFOURZERO");
+            assertThat(juror.getPostcode()).as("Expect the response body to contain the correct postcode")
+                .isEqualTo("CH1 2AN");
+            assertThat(juror.getPoolNumber()).as("Expect the response body to contain the correct pool number")
+                .isEqualTo("416220902");
+            assertThat(juror.getCourtName()).as("Expect the response body to contain the correct court name")
+                .isEqualTo("LEWES SITTING AT CHICHESTER");
+            assertThat(juror.getStatus()).as("Expect the response body to contain the correct status")
+                .isEqualTo("Responded");
+
+        }
+
+        @Test
+        void searchForJurorRecordsCourtNoResult() throws Exception {
+
+            String bureauJwt = createBureauJwt("Court_User", "415", "415");
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
+                .jurorNumber("641600091")
+                .pageNumber(1)
+                .pageLimit(10)
+                .sortMethod(SortMethod.ASC)
+                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
+                .build();
+
+            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.POST,
+                    URI.create("/api/v1/moj/juror-record/search")), new ParameterizedTypeReference<>() {
+                });
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request (GET With Body) to be successful")
+                .isEqualTo(HttpStatus.OK);
+
+            assertThat(response.getBody()).isNotNull();
+            PaginatedList<FilterJurorRecord> responseBody = response.getBody();
+
+            assertThat(responseBody.getTotalItems()).as("Expect the response body to contain a total count value of 0")
+                .isEqualTo(0);
+
+        }
     }
 
     private void verifyBulkPrintData(String jurorNumber, String formCode) {
