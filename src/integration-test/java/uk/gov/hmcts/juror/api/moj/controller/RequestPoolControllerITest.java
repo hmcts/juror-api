@@ -667,12 +667,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .as("Created Pool Request return date should be mapped from the request DTO")
             .isEqualTo(expectedAttendanceDate);
         assertThat(poolRequest.getNumberRequested())
-            .as("Created Pool Request number requested should be 0 for court-use only pools")
-            .isEqualTo(0);
+            .as("Created Pool Request number requested should be null for court-use only pools")
+            .isNull();
         assertThat(poolRequest.getPoolType().getPoolType())
             .as("Created Pool Request pool type should be mapped from the request DTO")
             .isEqualTo(requestedPoolData.getPoolType());
-        LocalTime expectedAttendTime = requestedPoolData.getAttendanceTime();
         assertThat(poolRequest.getAttendTime())
             .as("Created Pool Request attend time should be null for court-use only pools")
             .isNull();

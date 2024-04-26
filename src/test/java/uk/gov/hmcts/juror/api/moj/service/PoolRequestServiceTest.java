@@ -409,8 +409,8 @@ public class PoolRequestServiceTest {
             .as("Expect pool type to be mapped from request dto")
             .isEqualTo(poolRequestDto.getPoolType());
         assertThat(poolRequest.getNumberRequested())
-            .as("Expect number requested to be set to 0")
-            .isEqualTo(0);
+            .as("Expect number requested to be set to null")
+            .isNull();
         assertThat(poolRequest.getTotalNoRequired())
             .as("Expect total number requested to be set to 0")
             .isEqualTo(0);
