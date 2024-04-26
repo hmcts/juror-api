@@ -1017,8 +1017,12 @@ class AbstractReportTest {
 
             AbstractReport<Object> report = createReport();
 
-            Assertions.assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
-                report.getTrial(TestConstants.VALID_TRIAL_NUMBER, trialRepository));
+            MojException.NotFound notFoundException =
+                assertThrows(MojException.NotFound.class,
+                    () -> report.getTrial(TestConstants.VALID_TRIAL_NUMBER, trialRepository),
+                    "Expected exception to be thrown when trial not found");
+            assertThat(notFoundException.getMessage()).isEqualTo("Trial not found");
+            assertThat(notFoundException.getCause()).isNull();
         }
 
         @Test
