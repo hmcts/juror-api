@@ -5030,9 +5030,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .build();
 
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.POST,
-                    URI.create("/api/v1/moj/juror-record/search")), new ParameterizedTypeReference<>() {
-                });
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
+                    URI.create("/api/v1/moj/juror-record/search")), new ParameterizedTypeReference<>() {});
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
@@ -5076,9 +5075,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .build();
 
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.POST,
-                    URI.create("/api/v1/moj/juror-record/search")), new ParameterizedTypeReference<>() {
-                });
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
+                    URI.create("/api/v1/moj/juror-record/search")), new ParameterizedTypeReference<>() {});
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
@@ -5122,9 +5120,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .build();
 
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, HttpMethod.POST,
-                    URI.create("/api/v1/moj/juror-record/search")), new ParameterizedTypeReference<>() {
-                });
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
+                    URI.create("/api/v1/moj/juror-record/search")), new ParameterizedTypeReference<>() {});
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
