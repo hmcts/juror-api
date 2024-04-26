@@ -9,12 +9,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolSearchRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestSearchListDto;
+import uk.gov.hmcts.juror.api.moj.domain.FilterCoronerPool;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
+import uk.gov.hmcts.juror.api.moj.domain.QCoronerPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolType;
 import uk.gov.hmcts.juror.api.moj.domain.SortDirection;
+import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,6 +35,8 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
 
     @NonNull
     private final PoolRequestRepository poolRequestRepository;
+    @NonNull
+    private final CoronerPoolRepository coronerPoolRepository;
 
     @Override
     public PoolRequestSearchListDto searchForPoolRequest(PoolSearchRequestDto poolSearchRequestDto,
@@ -58,6 +66,25 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
         }
 
         return new PoolRequestSearchListDto(resultsData, totalResults);
+    }
+
+    @Override
+    public PaginatedList<FilterCoronerPool> searchForCoronerPools(CoronerPoolFilterRequestQuery query) {
+        return PaginationUtil.toPaginatedList(
+            coronerPoolRepository.fetchFilteredCoronerPools(query),
+            query,
+            query.getSortField(),
+            query.getSortMethod(),
+            tuple -> {
+                FilterCoronerPool.FilterCoronerPoolBuilder builder = FilterCoronerPool.builder()
+                    .poolNumber(tuple.get(QCoronerPool.coronerPool.poolNumber))
+                    .courtName(tuple.get(QCoronerPool.coronerPool.courtLocation.locCourtName))
+                    .requestedDate(tuple.get(QCoronerPool.coronerPool.requestDate))
+                    .requestedBy(tuple.get(QCoronerPool.coronerPool.name));
+                return builder.build();
+            },
+            500L
+        );
     }
 
     private boolean isStringEmpty(String param) {

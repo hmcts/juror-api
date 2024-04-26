@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller.response.letter.court;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Builder;
@@ -15,8 +16,9 @@ import java.util.List;
 
 @Getter
 @Builder
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @SuppressWarnings("PMD.TooManyFields")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class PrintLetterDataResponseDto implements Serializable {
 
     String courtName;
@@ -62,6 +64,7 @@ public class PrintLetterDataResponseDto implements Serializable {
     @Builder
     @Getter
     @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class AttendanceData {
         private String nonAttendance;
         private BigDecimal lossOfEarnings;
