@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
@@ -30,6 +31,7 @@ public class FilterCoronerPool implements Serializable {
     private String courtName;
 
     @JsonProperty("requested_date")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate requestedDate;
 
     @JsonProperty("requested_by")
