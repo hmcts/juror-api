@@ -27,10 +27,6 @@ public class BureauBacklogCountData implements Serializable {
     @Schema(description = "Total urgent")
     private Long urgent;
 
-    @JsonProperty("superUrgent")
-    @Schema(description = "Total super urgent")
-    private Long superUrgent;
-
     @JsonProperty("allReplies")
     @Schema(description = "All replies")
     private Long allReplies;
