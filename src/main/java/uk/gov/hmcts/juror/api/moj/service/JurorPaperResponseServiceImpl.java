@@ -200,7 +200,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         jurorPaperResponseDetailDto.setExcusalReason(juror.getExcusalCode());
 
         // copy super urgent
-        jurorPaperResponseDetailDto.setSuperUrgent(jurorPaperResponse.getSuperUrgent());
+        jurorPaperResponseDetailDto.setSuperUrgent(jurorPaperResponse.isSuperUrgent());
 
         jurorPaperResponseDetailDto.setSigned(jurorPaperResponse.getSigned());
         jurorPaperResponseDetailDto.setProcessingStatus(jurorPaperResponse.getProcessingStatus().getDescription());

@@ -14,7 +14,6 @@ import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries.byAssignedAll;
@@ -36,54 +35,26 @@ public class BureauOfficerAllocatedRepliesServiceImpl implements BureauOfficerAl
             .findAll(UserQueries.activeBureauOfficers()));
 
         log.trace("Extracting backlog data");
-
-        log.trace("No of Bureau Officers {}", bureauOfficers.size());
-        log.trace("Backlog : non urgent {}", bureauBacklogCountService.getBacklogNonUrgentCount());
-        log.trace("Backlog : urgent {}", bureauBacklogCountService.getBacklogUrgentCount());
-        log.trace("Backlog : super urgent {}", bureauBacklogCountService.getBacklogSuperUrgentCount());
-        log.trace("Backlog : total replies {}", bureauBacklogCountService.getBacklogAllRepliesCount());
-
-
-        List<BureauOfficerAllocatedData> staffAllocatedResponseData = new ArrayList<>();
-
         BureauBacklogCountData bureauBacklogCountDto = BureauBacklogCountData.builder()
             .nonUrgent(bureauBacklogCountService.getBacklogNonUrgentCount())
             .urgent(bureauBacklogCountService.getBacklogUrgentCount())
-            .superUrgent(bureauBacklogCountService.getBacklogSuperUrgentCount())
             .allReplies(bureauBacklogCountService.getBacklogAllRepliesCount())
             .build();
 
         log.trace("No of Bureau officers {}", bureauOfficers.size());
 
-        for (User bureauOfficer : bureauOfficers) {
-            final long nonUrgent =
-                jurorResponseRepository.count(JurorResponseQueries.byAssignedNonUrgent(bureauOfficer));
-            final long urgent = jurorResponseRepository.count(JurorResponseQueries.byAssignedUrgent(bureauOfficer));
-            final long superUrgent = jurorResponseRepository.count(JurorResponseQueries.byAssignedSuperUrgent(
-                bureauOfficer));
-            final long allReplies = jurorResponseRepository.count(byAssignedAll(bureauOfficer));
-
-            log.trace("Bureau officer {}, non urgent {} ", bureauOfficer.getUsername(), nonUrgent);
-            log.trace("Bureau officer {},  urgent {} ", bureauOfficer.getUsername(), urgent);
-            log.trace("Bureau officer {}, super urgent {} ", bureauOfficer.getUsername(), superUrgent);
-            log.trace("Bureau officer {}, all replies {} ", bureauOfficer.getUsername(), allReplies);
-
-            BureauOfficerAllocatedData staffAllocatedData = BureauOfficerAllocatedData
-                .staffAllocationResponseBuilder()
-                .login(bureauOfficer.getUsername())
-                .name(bureauOfficer.getName())
-                .nonUrgent(nonUrgent)
-                .urgent(urgent)
-                .superUrgent(superUrgent)
-                .all(allReplies)
-                .build();
-
-            staffAllocatedResponseData.add(staffAllocatedData);
-
-        }
-
-
-        return BureauOfficerAllocatedResponses.builder().data(staffAllocatedResponseData)
+        return BureauOfficerAllocatedResponses.builder()
+            .data(
+                bureauOfficers.stream()
+                    .map(user -> BureauOfficerAllocatedData
+                        .staffAllocationResponseBuilder()
+                        .login(user.getUsername())
+                        .name(user.getName())
+                        .nonUrgent(jurorResponseRepository.count(JurorResponseQueries.byAssignedNonUrgent(user)))
+                        .urgent(jurorResponseRepository.count(JurorResponseQueries.byAssignedUrgent(user)))
+                        .all(jurorResponseRepository.count(byAssignedAll(user)))
+                        .build()).toList()
+            )
             .bureauBacklogCount(bureauBacklogCountDto)
             .build();
     }

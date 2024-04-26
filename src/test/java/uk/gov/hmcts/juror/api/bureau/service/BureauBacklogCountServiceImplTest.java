@@ -87,13 +87,13 @@ public class BureauBacklogCountServiceImplTest {
     @Test
     public void backLogCount_unassignedStaff_Status_ToDo() {
 
-        doReturn((long) backlog.size()).when(responseRepo).count(JurorResponseQueries.backlog());
+        doReturn((long) backlog.size()).when(responseRepo).count(JurorResponseQueries.byUnassignedTodoNonUrgent());
         assertThat(backlogCountService.getBacklogNonUrgentCount()).isEqualTo(15);
 
-        assertThat(backlog.parallelStream().filter(r -> r.getUrgent().equals(false)).count()).isEqualTo(13);
+        assertThat(backlog.parallelStream().filter(r -> !r.isUrgent()).count()).isEqualTo(13);
 
-        assertThat(backlog.parallelStream().filter(DigitalResponse::getSuperUrgent).count()).isEqualTo(3);
-        assertThat(backlog.parallelStream().filter(DigitalResponse::getUrgent).count()).isEqualTo(2);
+        assertThat(backlog.parallelStream().filter(DigitalResponse::isSuperUrgent).count()).isEqualTo(3);
+        assertThat(backlog.parallelStream().filter(DigitalResponse::isUrgent).count()).isEqualTo(2);
 
 
     }

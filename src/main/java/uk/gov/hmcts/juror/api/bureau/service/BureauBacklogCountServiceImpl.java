@@ -25,22 +25,18 @@ public class BureauBacklogCountServiceImpl implements BureauBacklogCountService 
 
     @Override
     public long getBacklogNonUrgentCount() {
-        return jurorResponseRepository.count(JurorResponseQueries.backlog());
+        return jurorResponseRepository.count(JurorResponseQueries.byUnassignedTodoNonUrgent());
     }
 
     @Override
     public long getBacklogUrgentCount() {
-        return jurorResponseRepository.count(JurorResponseQueries.byStatusUrgent());
+        return jurorResponseRepository.count(JurorResponseQueries.byUnassignedTodoUrgent());
     }
 
-    @Override
-    public long getBacklogSuperUrgentCount() {
-        return jurorResponseRepository.count(JurorResponseQueries.byStatusSuperUrgent());
-    }
 
     @Override
     public long getBacklogAllRepliesCount() {
-        return jurorResponseRepository.count(JurorResponseQueries.byStatusAll());
+        return jurorResponseRepository.count(JurorResponseQueries.byUnassignedTodo());
     }
 
     @Override
@@ -48,7 +44,6 @@ public class BureauBacklogCountServiceImpl implements BureauBacklogCountService 
         BureauBacklogCountData dto = new BureauBacklogCountData();
         dto.setNonUrgent(getBacklogNonUrgentCount());
         dto.setUrgent(getBacklogUrgentCount());
-        dto.setSuperUrgent(getBacklogSuperUrgentCount());
         dto.setAllReplies(getBacklogAllRepliesCount());
         return dto;
 
