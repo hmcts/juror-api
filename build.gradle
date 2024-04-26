@@ -82,7 +82,7 @@ dependencies {
 
     //Internal dependency overrides
     implementation 'org.yaml:snakeyaml:2.2'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.20'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.23'
     implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.23'
     //
     implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
@@ -151,7 +151,7 @@ dependencies {
     testImplementation 'org.testcontainers:postgresql:1.19.7'
 
     // Validation
-    testImplementation 'org.wiremock:wiremock-standalone:3.5.3'
+    testImplementation 'org.wiremock:wiremock-standalone:3.5.4'
 }
 
 sonarqube {

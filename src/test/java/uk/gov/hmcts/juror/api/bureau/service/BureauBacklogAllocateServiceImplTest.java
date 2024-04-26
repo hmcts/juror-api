@@ -41,7 +41,6 @@ public class BureauBacklogAllocateServiceImplTest {
         Comparator.comparing(DigitalResponse::getDateReceived);
     private static final Integer NON_URGENT_TO_ALLOCATE_TO_STAFF = 1;
     private static final Integer URGENT_TO_ALLOCATE_TO_STAFF = 2;
-    private static final Integer SUPER_URGENT_TO_ALLOCATE_TO_STAFF = 3;
 
     @Mock
     private JurorDigitalResponseRepositoryMod responseRepo;
@@ -60,7 +59,6 @@ public class BureauBacklogAllocateServiceImplTest {
 
     private List<DigitalResponse> backlog;
     private List<DigitalResponse> urgentBacklog;
-    private List<DigitalResponse> superUrgentBacklog;
     private List<DigitalResponse> toBeAllocated;
 
     @Before
@@ -83,28 +81,20 @@ public class BureauBacklogAllocateServiceImplTest {
         urgentBacklog = generateResponses(URGENT_TO_ALLOCATE_TO_STAFF, true, false, now);
         Page<DigitalResponse> urgentResponses = new PageImpl<>(urgentBacklog);
 
-        //superUrgent backlog
-        superUrgentBacklog = generateResponses(SUPER_URGENT_TO_ALLOCATE_TO_STAFF, false, true, now);
-        Page<DigitalResponse> superUrgentResponses = new PageImpl<>(superUrgentBacklog);
 
         // If the service class doesn't use the correct parameters (for whatever reason) the tests will fall over
         // because the mock repo will return nothing
 
 
-        doReturn(nonUrgentResponses).when(responseRepo).findAll(JurorResponseQueries.backlog(), PageRequest.of(
-            0, NON_URGENT_TO_ALLOCATE_TO_STAFF, Sort.Direction.ASC, "dateReceived"));
+        doReturn(nonUrgentResponses).when(responseRepo).findAll(JurorResponseQueries.byUnassignedTodoNonUrgent(),
+            PageRequest.of(0, NON_URGENT_TO_ALLOCATE_TO_STAFF, Sort.Direction.ASC, "dateReceived"));
 
-        doReturn(urgentResponses).when(responseRepo).findAll(JurorResponseQueries.byStatusUrgent(), PageRequest.of(
-            0, URGENT_TO_ALLOCATE_TO_STAFF, Sort.Direction.ASC, "dateReceived"));
+        doReturn(urgentResponses).when(responseRepo).findAll(JurorResponseQueries.byUnassignedTodoUrgent(),
+            PageRequest.of(0, URGENT_TO_ALLOCATE_TO_STAFF, Sort.Direction.ASC, "dateReceived"));
 
-        doReturn(superUrgentResponses).when(responseRepo).findAll(JurorResponseQueries.byStatusSuperUrgent(),
-            PageRequest.of(
-                0, SUPER_URGENT_TO_ALLOCATE_TO_STAFF, Sort.Direction.ASC, "dateReceived"));
 
         toBeAllocated.addAll(backlog);
         toBeAllocated.addAll(urgentBacklog);
-        toBeAllocated.addAll(superUrgentBacklog);
-
     }
 
     /**
@@ -117,13 +107,13 @@ public class BureauBacklogAllocateServiceImplTest {
             .officerAllocations(Arrays.asList(
                 BureauBacklogAllocateRequestDto.StaffAllocation.builder()
                     .nonUrgentCount(NON_URGENT_TO_ALLOCATE_TO_STAFF).urgentCount(URGENT_TO_ALLOCATE_TO_STAFF)
-                    .superUrgentCount(SUPER_URGENT_TO_ALLOCATE_TO_STAFF).userId("staff1").build(),
+                    .userId("staff1").build(),
                 BureauBacklogAllocateRequestDto.StaffAllocation.builder()
                     .nonUrgentCount(NON_URGENT_TO_ALLOCATE_TO_STAFF).urgentCount(URGENT_TO_ALLOCATE_TO_STAFF)
-                    .superUrgentCount(SUPER_URGENT_TO_ALLOCATE_TO_STAFF).userId("staff2").build(),
+                    .userId("staff2").build(),
                 BureauBacklogAllocateRequestDto.StaffAllocation.builder()
                     .nonUrgentCount(NON_URGENT_TO_ALLOCATE_TO_STAFF).urgentCount(URGENT_TO_ALLOCATE_TO_STAFF)
-                    .superUrgentCount(SUPER_URGENT_TO_ALLOCATE_TO_STAFF).userId("staff3").build()
+                    .userId("staff3").build()
             )).build(), "loggedInUser");
         final LocalDateTime currentTime = LocalDateTime.now();
 
@@ -161,13 +151,13 @@ public class BureauBacklogAllocateServiceImplTest {
             .officerAllocations(Arrays.asList(
                 BureauBacklogAllocateRequestDto.StaffAllocation.builder()
                     .nonUrgentCount(NON_URGENT_TO_ALLOCATE_TO_STAFF).urgentCount(URGENT_TO_ALLOCATE_TO_STAFF)
-                    .superUrgentCount(SUPER_URGENT_TO_ALLOCATE_TO_STAFF).userId("staff1").build(),
+                    .userId("staff1").build(),
                 BureauBacklogAllocateRequestDto.StaffAllocation.builder()
                     .nonUrgentCount(NON_URGENT_TO_ALLOCATE_TO_STAFF).urgentCount(URGENT_TO_ALLOCATE_TO_STAFF)
-                    .superUrgentCount(SUPER_URGENT_TO_ALLOCATE_TO_STAFF).userId("staff2").build(),
+                    .userId("staff2").build(),
                 BureauBacklogAllocateRequestDto.StaffAllocation.builder()
                     .nonUrgentCount(NON_URGENT_TO_ALLOCATE_TO_STAFF).urgentCount(URGENT_TO_ALLOCATE_TO_STAFF)
-                    .superUrgentCount(SUPER_URGENT_TO_ALLOCATE_TO_STAFF).userId("staff3").build()
+                    .userId("staff3").build()
             )).build(), null);
     }
 

@@ -192,6 +192,42 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
 
     @Test
+    @DisplayName("POST addAttendanceDay() - Completed Juror")
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
+        "/db/JurorExpenseControllerITest_expenseRates.sql"})
+    void addAttendanceDayCompletedJuror() {
+        AddAttendanceDayDto requestDto = AddAttendanceDayDto.builder()
+            .jurorNumber(JUROR2)
+            .poolNumber("415230101")
+            .locationCode("415")
+            .attendanceDate(now())
+            .checkInTime(LocalTime.of(9, 30))
+            .checkOutTime(LocalTime.of(17, 30))
+            .build();
+
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
+                URI.create("/api/v1/moj/juror-management/add-attendance-day")), String.class);
+
+        assertThat(response.getStatusCode()).as("HTTP status created expected").isEqualTo(CREATED);
+
+        // verify attendance record has been added
+        Optional<Appearance> appearanceOpt =
+            appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(requestDto.getJurorNumber(),
+                requestDto.getPoolNumber(), requestDto.getAttendanceDate());
+        assertThat(appearanceOpt).isNotEmpty();
+        Appearance appearance = appearanceOpt.get();
+        assertThat(appearance.getJurorNumber()).isEqualTo(requestDto.getJurorNumber());
+        assertThat(appearance.getAttendanceDate()).isEqualTo(requestDto.getAttendanceDate());
+        assertThat(appearance.getPoolNumber()).isEqualTo(requestDto.getPoolNumber());
+        assertThat(appearance.getCourtLocation().getLocCode()).isEqualTo(requestDto.getLocationCode());
+        assertThat(appearance.getTimeIn()).isEqualTo(requestDto.getCheckInTime());
+        assertThat(appearance.getTimeOut()).isEqualTo(requestDto.getCheckOutTime());
+    }
+
+
+
+    @Test
     @DisplayName("POST addAttendanceDay() - happy path")
     @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitAddAttendanceDay.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
@@ -1646,6 +1682,40 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
                 .jurorNumber("111111111")
+                .nonAttendanceDate(now())
+                .poolNumber("415230101")
+                .locationCode("415")
+                .build();
+
+            ResponseEntity<String> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
+                    URI.create("/api/v1/moj/juror-management/non-attendance")), String.class);
+
+            assertThat(response.getStatusCode()).as("HTTP status created expected").isEqualTo(CREATED);
+
+            // verify non-attendance record has been added
+            Optional<Appearance> appearanceOpt =
+                appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDate(request.getJurorNumber(),
+                    "415230101", request.getNonAttendanceDate());
+            assertThat(appearanceOpt).isNotEmpty();
+            Appearance appearance = appearanceOpt.get();
+            assertThat(appearance.getJurorNumber()).isEqualTo(request.getJurorNumber());
+            assertThat(appearance.getAttendanceDate()).isEqualTo(request.getNonAttendanceDate());
+            assertThat(appearance.getPoolNumber()).isEqualTo(request.getPoolNumber());
+            assertThat(appearance.getCourtLocation().getLocCode()).isEqualTo(request.getLocationCode());
+            assertThat(appearance.getNonAttendanceDay()).isTrue();
+            assertThat(appearance.getLossOfEarningsDue()).isEqualTo(BigDecimal.valueOf(63.25));
+
+        }
+
+        @Test
+        @DisplayName("Add non attendance - completed juror okay")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/InitNonAttendance.sql",
+            "/db/JurorExpenseControllerITest_expenseRates.sql"})
+        void addNonAttendanceCompletedJuror() {
+
+            JurorNonAttendanceDto request = JurorNonAttendanceDto.builder()
+                .jurorNumber(JUROR4)
                 .nonAttendanceDate(now())
                 .poolNumber("415230101")
                 .locationCode("415")

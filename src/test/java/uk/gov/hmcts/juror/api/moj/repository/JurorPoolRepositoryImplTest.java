@@ -313,7 +313,7 @@ class JurorPoolRepositoryImplTest {
             Mockito.verify(jpaQuery, Mockito.times(4))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
-                .where(JUROR.firstName.like("TEST%"));
+                .where(JUROR.firstName.startsWithIgnoreCase("Test"));
         }
 
         @Test
@@ -322,7 +322,7 @@ class JurorPoolRepositoryImplTest {
             Mockito.verify(jpaQuery, Mockito.times(4))
                 .where(Mockito.any(Predicate.class));
             Mockito.verify(jpaQuery, Mockito.times(1))
-                .where(JUROR.lastName.like("PERSON%"));
+                .where(JUROR.lastName.startsWithIgnoreCase("Person"));
         }
 
         @Test

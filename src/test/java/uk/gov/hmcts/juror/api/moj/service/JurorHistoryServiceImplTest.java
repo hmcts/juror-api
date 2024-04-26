@@ -420,12 +420,11 @@ class JurorHistoryServiceImplTest {
         BigDecimal totalAmount = new BigDecimal("23.45");
         jurorHistoryService.createExpenseApproveCash(
             TestConstants.VALID_JUROR_NUMBER,
-            TestConstants.VALID_POOL_NUMBER,
             financialAuditDetails,
             attendanceDate,
             totalAmount);
         assertValuesAdditional(TestConstants.VALID_JUROR_NUMBER,
-            TestConstants.VALID_POOL_NUMBER, "someUserId1",
+            null, "someUserId1",
             attendanceDate,
             financialAuditId,
             new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.CASH_PAYMENT_APPROVAL,
@@ -442,12 +441,11 @@ class JurorHistoryServiceImplTest {
         BigDecimal totalAmount = new BigDecimal("23.45");
         jurorHistoryService.createExpenseApproveBacs(
             TestConstants.VALID_JUROR_NUMBER,
-            TestConstants.VALID_POOL_NUMBER,
             financialAuditDetails,
             attendanceDate,
             totalAmount);
         assertValuesAdditional(TestConstants.VALID_JUROR_NUMBER,
-            TestConstants.VALID_POOL_NUMBER, "someUserId1",
+            null, "someUserId1",
             attendanceDate,
             financialAuditId,
             new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.ARAMIS_EXPENSES_FILE_CREATED,

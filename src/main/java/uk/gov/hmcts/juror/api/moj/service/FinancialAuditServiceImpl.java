@@ -64,7 +64,6 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
             financialAuditDetailsAppearances.add(
                 new FinancialAuditDetailsAppearances(
                     financialAuditDetails.getId(),
-                    savedAppearance.getPoolNumber(),
                     savedAppearance.getAttendanceDate(),
                     savedAppearance.getVersion()
                 )
@@ -95,6 +94,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
             .map(
                 financialAuditDetailsAppearances1 ->
                     getAppearanceFromFinancialAuditDetailsAppearances(
+                        financialAuditDetails.getLocCode(),
                         financialAuditDetails.getJurorNumber(),
                         financialAuditDetailsAppearances1))
             .toList();
@@ -124,6 +124,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
     @Override
     public Appearance getPreviousAppearance(FinancialAuditDetails financialAuditDetails, Appearance appearance) {
         return getAppearanceFromFinancialAuditDetailsAppearances(
+            financialAuditDetails.getLocCode(),
             financialAuditDetails.getJurorNumber(),
             getPreviousFinancialAuditDetailsAppearances(financialAuditDetails, appearance));
     }
@@ -141,25 +142,26 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
         FinancialAuditDetails financialAuditDetails, Appearance appearance) {
         return financialAuditDetailsAppearancesRepository
             .findPreviousFinancialAuditDetailsAppearances(
-                financialAuditDetails.getJurorNumber(), appearance)
+                financialAuditDetails, appearance)
             .orElseThrow(
                 () -> new MojException.NotFound("No previous appearance found for appearance", null));
     }
 
     private Appearance getAppearanceFromFinancialAuditDetailsAppearances(
+        String locCode,
         String jurorNumber,
         FinancialAuditDetailsAppearances financialAuditDetailsAppearances) {
 
-        return appearanceRepository.findByJurorNumberAndPoolNumberAndAttendanceDateAndVersion(
+        return appearanceRepository.findByJurorNumberAndLocCodeAndAttendanceDateAndVersion(
             jurorNumber,
-            financialAuditDetailsAppearances.getPoolNumber(),
+            locCode,
             financialAuditDetailsAppearances.getAttendanceDate(),
             financialAuditDetailsAppearances.getAppearanceVersion()
         ).orElseThrow(
             () -> new MojException.NotFound(
                 "Appearance not found for financial audit details appearances "
                     + " juror number: " + jurorNumber
-                    + " pool number: " + financialAuditDetailsAppearances.getPoolNumber()
+                    + " loc code: " + locCode
                     + " attendance date: " + financialAuditDetailsAppearances.getAttendanceDate()
                     + " appearance version: " + financialAuditDetailsAppearances.getAppearanceVersion(),
                 null));

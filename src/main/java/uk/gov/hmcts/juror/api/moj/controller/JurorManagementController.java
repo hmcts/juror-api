@@ -115,7 +115,6 @@ public class JurorManagementController {
     @PatchMapping("/attendance/attendance-date")
     @Operation(description = "Update juror attendance date")
     @IsCourtUser
-
     public ResponseEntity<String> updateAttendanceDate(
         @RequestBody @Valid UpdateAttendanceDateDto request) {
         return ResponseEntity.ok(jurorAppearanceService.updateAttendanceDate(request));

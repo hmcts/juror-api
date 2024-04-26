@@ -95,7 +95,7 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
             );
             if (staffMemberNonUrgentCount > 0) {
                 toBeAllocated.addAll(allocateResponses(
-                    JurorResponseQueries.backlog(),
+                    JurorResponseQueries.byUnassignedTodoNonUrgent(),
                     staffMember,
                     staffMemberNonUrgentCount
                 ));
@@ -108,22 +108,9 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
             );
             if (staffMemberUrgentCount > 0) {
                 toBeAllocated.addAll(allocateResponses(
-                    JurorResponseQueries.byStatusUrgent(),
+                    JurorResponseQueries.byUnassignedTodoUrgent(),
                     staffMember,
                     staffMemberUrgentCount
-                ));
-            }
-
-            //Process SUPER URGENT responses for this staffMember
-            Integer staffMemberSuperUrgentCount = MoreObjects.firstNonNull(
-                urgencyMap.get(staffMember.getUsername()).getSuperUrgentCount(),
-                0
-            );
-            if (staffMemberSuperUrgentCount > 0) {
-                toBeAllocated.addAll(allocateResponses(
-                    JurorResponseQueries.byStatusSuperUrgent(),
-                    staffMember,
-                    staffMemberSuperUrgentCount
                 ));
             }
 

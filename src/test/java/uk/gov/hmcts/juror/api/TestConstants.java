@@ -5,6 +5,7 @@ public final class TestConstants {
     public static final String VALID_JUROR_NUMBER = "123456789";
 
     public static final String VALID_JUROR_NUMBER_2 = "123456788";
+    public static final String VALID_JUROR_NUMBER_3 = "123456787";
 
     public static final String INVALID_JUROR_NUMBER = "0123456789";
 

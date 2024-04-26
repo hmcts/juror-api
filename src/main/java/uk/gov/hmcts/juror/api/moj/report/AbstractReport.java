@@ -114,7 +114,7 @@ public abstract class AbstractReport<T> {
     }
 
     public void isCourtUserOnly() {
-        authenticationConsumers.add(request -> {
+        addAuthenticationConsumer(request -> {
             if (!SecurityUtil.isCourt()) {
                 throw new MojException.Forbidden("User not allowed to access this report", null);
             }
@@ -122,7 +122,7 @@ public abstract class AbstractReport<T> {
     }
 
     public void isBureauUserOnly() {
-        authenticationConsumers.add(request -> {
+        addAuthenticationConsumer(request -> {
             if (!SecurityUtil.isBureau()) {
                 throw new MojException.Forbidden("User not allowed to access this report", null);
             }
@@ -430,7 +430,10 @@ public abstract class AbstractReport<T> {
         }
 
         public interface RequireLocCode {
-
         }
+
+        public interface RequireDate {
+        }
+
     }
 }

@@ -36,6 +36,7 @@ public class StandardReportRequest {
         "PostponedListByPoolReport",
         "UndeliverableListReport",
         "PanelSummaryReport",
+        "IncompleteServiceReport",
         //Grouped
         "PostponedListByDateReport"
     })
@@ -56,6 +57,10 @@ public class StandardReportRequest {
     @NotNull(groups = AbstractReport.Validators.RequireToDate.class)
     @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
     private LocalDate toDate;
+
+    @NotNull(groups = AbstractReport.Validators.RequireDate.class)
+    @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
+    private LocalDate date;
 
     @NotNull(groups = AbstractReport.Validators.RequireLocCode.class)
     @CourtLocationCode(groups = AbstractReport.Validators.RequireLocCode.class)

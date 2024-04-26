@@ -77,7 +77,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
         log.trace("Total assignment capacity for auto-assignment is {}", totalCapacity);
 
         final List<DigitalResponse> backlog = Lists.newLinkedList(jurorResponseRepository.findAll(
-            JurorResponseQueries.backlog(),
+            JurorResponseQueries.byUnassignedTodoNonUrgent(),
             JurorResponseQueries.oldestFirst()
         ));
         final int backlogSize = backlog.size();
@@ -127,7 +127,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
         }
         return AutoAssignResponse.builder().data(staffCapacityList)
             .meta(AutoAssignResponse.AutoAssignmentMetadata.builder()
-                .backlogSize(jurorResponseRepository.count(JurorResponseQueries.backlog()))
+                .backlogSize(jurorResponseRepository.count(JurorResponseQueries.byUnassignedTodoNonUrgent()))
                 .build())
             .build();
     }

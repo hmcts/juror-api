@@ -204,8 +204,7 @@ class JurorAppearanceServiceTest {
     void addAttendanceDayHappyPath() {
         jurorAppearanceService = spy(jurorAppearanceService);
 
-        doReturn(null).when(jurorAppearanceService).processAppearance(any(), any(), anyBoolean());
-        doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any(), anyList());
+        doReturn(null).when(jurorAppearanceService).processAppearance(any(), any(), anyBoolean(), anyBoolean());
 
         Juror juror = new Juror();
         juror.setJurorNumber(JUROR_123456789);
@@ -220,37 +219,47 @@ class JurorAppearanceServiceTest {
             .findByJurorJurorNumberAndPoolPoolNumber(
                 JUROR_123456789, JUROR_POOL_1);
 
+        CourtLocation courtLocation = getCourtLocation();
+        doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findByLocCode(LOC_415);
         AddAttendanceDayDto dto = buildAddAttendanceDayDto();
+
+        final AppearanceId appearanceId = new AppearanceId(JUROR_123456789, dto.getAttendanceDate(),
+            courtLocation);
+        final Appearance appearance = new Appearance();
+        appearance.setJurorNumber(JUROR_123456789);
+        appearance.setAttendanceDate(dto.getAttendanceDate());
+        appearance.setCourtLocation(courtLocation);
+        appearance.setAppearanceStage(CHECKED_OUT);
+
+        doReturn(Optional.of(appearance)).when(appearanceRepository).findById(appearanceId);
+
         jurorAppearanceService.addAttendanceDay(buildPayload(OWNER_415, Arrays.asList("415", "462", "767")),
             dto);
 
         ArgumentCaptor<JurorAppearanceDto> appearanceDtoCaptor = ArgumentCaptor.forClass(JurorAppearanceDto.class);
-        ArgumentCaptor<UpdateAttendanceDto.CommonData> attendanceDtoCaptor =
-            ArgumentCaptor.forClass(UpdateAttendanceDto.CommonData.class);
         ArgumentCaptor<BureauJwtPayload> payloadArgumentCaptor = ArgumentCaptor.forClass(BureauJwtPayload.class);
 
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndPoolPoolNumber(JUROR_123456789, "123456789");
         verify(jurorAppearanceService, times(1)).processAppearance(payloadArgumentCaptor.capture(),
-            appearanceDtoCaptor.capture(), eq(true));
-        verify(jurorAppearanceService, times(1)).updateConfirmAttendance(attendanceDtoCaptor.capture(), anyList());
+            appearanceDtoCaptor.capture(), eq(true), eq(false));
+        verify(courtLocationRepository, times(1)).findByLocCode(LOC_415);
+        verify(appearanceRepository, times(1)).findById(appearanceId);
+        verify(jurorHistoryService, times(1)).createPoolAttendanceHistory(Mockito.any(), Mockito.any());
+        verify(jurorExpenseService, times(1)).applyDefaultExpenses(Mockito.anyList());
+        verify(appearanceRepository, times(1)).saveAndFlush(Mockito.any(Appearance.class));
+
+        BureauJwtPayload payload = payloadArgumentCaptor.getValue();
+        assertThat(payload.getOwner()).isEqualTo(OWNER_415);
 
         JurorAppearanceDto appearanceDto = appearanceDtoCaptor.getValue();
 
         assertThat(appearanceDto).isNotNull();
         assertThat(appearanceDto.getAttendanceDate()).isEqualTo(dto.getAttendanceDate());
-        assertThat(appearanceDto.getJurorNumber()).isEqualTo(dto.getJurorNumber());
+        assertThat(appearanceDto.getJurorNumber()).isEqualTo(JUROR_123456789);
         assertThat(appearanceDto.getCheckInTime()).isEqualTo(dto.getCheckInTime());
         assertThat(appearanceDto.getCheckOutTime()).isEqualTo(dto.getCheckOutTime());
         assertThat(appearanceDto.getLocationCode()).isEqualTo(dto.getLocationCode());
-
-        UpdateAttendanceDto.CommonData commonData = attendanceDtoCaptor.getValue();
-
-        assertThat(commonData).isNotNull();
-        assertThat(commonData.getAttendanceDate()).isEqualTo(dto.getAttendanceDate());
-        assertThat(commonData.getCheckInTime()).isEqualTo(dto.getCheckInTime());
-        assertThat(commonData.getCheckOutTime()).isEqualTo(dto.getCheckOutTime());
-        assertThat(commonData.getLocationCode()).isEqualTo(dto.getLocationCode());
 
     }
 
@@ -286,7 +295,7 @@ class JurorAppearanceServiceTest {
     void addAttendanceDayWrongAccess() {
         jurorAppearanceService = spy(jurorAppearanceService);
 
-        doReturn(null).when(jurorAppearanceService).processAppearance(any(), any(), anyBoolean());
+        doReturn(null).when(jurorAppearanceService).processAppearance(any(), any(), anyBoolean(), anyBoolean());
         doReturn(null).when(jurorAppearanceService).updateConfirmAttendance(any(), anyList());
 
         Juror juror = new Juror();
@@ -311,7 +320,7 @@ class JurorAppearanceServiceTest {
 
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndPoolPoolNumber(JUROR_123456789, "123456789");
-        verify(jurorAppearanceService, never()).processAppearance(any(), any(), anyBoolean());
+        verify(jurorAppearanceService, never()).processAppearance(any(), any(), anyBoolean(), anyBoolean());
         verify(jurorAppearanceService, never()).updateConfirmAttendance(any(), anyList());
 
     }
@@ -376,7 +385,7 @@ class JurorAppearanceServiceTest {
         jurorAppearanceDto.setCheckOutTime(LocalTime.of(17, 30));
 
         jurorAppearanceService.processAppearance(buildPayload(OWNER_415, Arrays.asList("415", "462", "767")),
-            jurorAppearanceDto, true);
+            jurorAppearanceDto, true, false);
 
         ArgumentCaptor<Appearance> appearanceArgumentCaptor = ArgumentCaptor.forClass(Appearance.class);
 
@@ -2803,6 +2812,7 @@ class JurorAppearanceServiceTest {
     class RealignAttendanceType {
 
         private Appearance mockAppearance(LocalTime timeIn, LocalTime timeOut,
+                                          String locCode,
                                           boolean isFulLDay,
                                           Boolean noShow, AttendanceType attendanceType,
                                           boolean isLongTrialDay) {
@@ -2819,10 +2829,13 @@ class JurorAppearanceServiceTest {
             when(appearance.getAttendanceDate()).thenReturn(localDate);
             when(appearance.isFullDay()).thenReturn(isFulLDay);
 
+            CourtLocation courtLocation = mock(CourtLocation.class);
+            when(courtLocation.getLocCode()).thenReturn(locCode);
+            when(appearance.getCourtLocation()).thenReturn(courtLocation);
 
             when(jurorExpenseService.isLongTrialDay(
+                locCode,
                 TestConstants.VALID_JUROR_NUMBER,
-                TestConstants.VALID_POOL_NUMBER,
                 localDate
             )).thenReturn(isLongTrialDay);
             return appearance;
@@ -2833,6 +2846,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 true,
                 Boolean.FALSE,
                 null,
@@ -2847,6 +2861,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 true,
                 Boolean.FALSE,
                 null,
@@ -2861,6 +2876,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.FALSE,
                 null,
@@ -2876,6 +2892,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.FALSE,
                 null,
@@ -2890,6 +2907,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.FALSE,
                 AttendanceType.NON_ATTENDANCE_LONG_TRIAL,
@@ -2904,6 +2922,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.FALSE,
                 AttendanceType.NON_ATTENDANCE,
@@ -2918,6 +2937,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 null,
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.FALSE,
                 AttendanceType.NON_ATTENDANCE,
@@ -2931,6 +2951,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 null,
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.FALSE,
                 AttendanceType.NON_ATTENDANCE,
@@ -2944,6 +2965,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.TRUE,
                 AttendanceType.NON_ATTENDANCE,
@@ -2957,6 +2979,7 @@ class JurorAppearanceServiceTest {
             Appearance appearance = mockAppearance(
                 LocalTime.of(9, 30),
                 LocalTime.of(17, 30),
+                TestConstants.VALID_COURT_LOCATION,
                 false,
                 Boolean.FALSE,
                 AttendanceType.ABSENT,

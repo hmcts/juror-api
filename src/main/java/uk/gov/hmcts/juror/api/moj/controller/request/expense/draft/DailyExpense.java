@@ -4,13 +4,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import lombok.Builder;
 import lombok.Data;
+import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
 import uk.gov.hmcts.juror.api.validation.EnumValidator;
-import uk.gov.hmcts.juror.api.validation.PoolNumber;
 import uk.gov.hmcts.juror.api.validation.ValidateIf;
 import uk.gov.hmcts.juror.api.validation.ValidateIfTrigger;
 
@@ -28,18 +27,13 @@ public class DailyExpense {
     @NotNull(groups = {AttendanceDay.class, NonAttendanceDay.class, EditDay.class, CalculateTotals.class})
     private LocalDate dateOfExpense;
 
-    @PoolNumber
-    @JsonProperty("pool_number")
-    @NotBlank(groups = {AttendanceDay.class, NonAttendanceDay.class, EditDay.class})
-    @Null(groups = {CalculateTotals.class})
-    private String poolNumber;
 
-    @JsonProperty("pay_cash")
+    @JsonProperty("payment_method")
     @NotNull(groups = {AttendanceDay.class, NonAttendanceDay.class, EditDay.class})
     @ValidateIf(fields = {"time", "financialLoss", "travel", "foodAndDrink"},
         condition = ValidateIf.Condition.ANY_PRESENT,
         type = ValidateIf.Type.REQUIRE)
-    private Boolean payCash;
+    private PaymentMethod paymentMethod;
 
     @JsonProperty("time")
     @Valid
@@ -80,7 +74,7 @@ public class DailyExpense {
     }
 
     public boolean shouldPullFromDatabase() {
-        return payCash == null
+        return paymentMethod == null
             && time == null
             && financialLoss == null
             && travel == null

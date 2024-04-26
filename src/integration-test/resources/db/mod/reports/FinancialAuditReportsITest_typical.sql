@@ -26,7 +26,7 @@ INSERT INTO juror_mod.pool
 VALUES('415240303', '415', '2024-03-25', 60, 'CRO', '415', 'N', '2024-04-12 23:58:38.000', NULL, '2024-03-25 08:30:00.000', false, 60, '2024-04-12 23:58:18.702');
 INSERT INTO juror_mod.juror
 (juror_number, poll_number, title, last_name, first_name, dob, address_line_1, address_line_2, address_line_3, address_line_4, address_line_5, postcode, h_phone, w_phone, w_ph_local, responded, date_excused, excusal_code, acc_exc, date_disq, disq_code, user_edtq, notes, no_def_pos, perm_disqual, reasonable_adj_code, reasonable_adj_msg, smart_card_number, completion_date, sort_code, bank_acct_name, bank_acct_no, bldg_soc_roll_no, welsh, police_check, last_update, summons_file, m_phone, h_email, contact_preference, notifications, date_created, optic_reference, pending_title, pending_first_name, pending_last_name, mileage, financial_loss, travel_time, bureau_transfer_date, claiming_subsistence_allowance, service_comp_comms_status, login_attempts, is_locked)
-VALUES('200106974', NULL, 'Ms', 'Gallus', 'Josh', '1976-06-05 00:00:00.000', '68 EWP Junction', 'Box Number 0', 'Canterbury', 'Shetland (Zetland)', NULL, 'BB2 2TG', NULL, NULL, NULL, true, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, ' ', 'Sample Details 1', NULL, '2024-04-08 00:00:00.000', '901234', 'Josh Gallus', '12345678', NULL, NULL, 'ELIGIBLE', '2024-04-16 18:18:03.000', NULL, NULL, NULL, NULL, 0, '2024-04-12 23:58:34.224', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 0, false);
+VALUES('200106974', NULL, 'Ms', 'Gallus', 'Josh', '1976-06-05 00:00:00.000', '68 EWP Junction', 'Box Number 0', 'Canterbury', 'Shetland (Zetland)', NULL, 'BB2 2TG', NULL, NULL, NULL, true, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'N', 'Sample Details 1', NULL, '2024-04-08 00:00:00.000', '901234', 'Josh Gallus', '12345678', NULL, NULL, 'ELIGIBLE', '2024-04-16 18:18:03.000', NULL, NULL, NULL, NULL, 0, '2024-04-12 23:58:34.224', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 0, false);
 
 
 INSERT INTO juror_mod.juror_audit
@@ -117,34 +117,34 @@ VALUES
 
 
 INSERT INTO juror_mod.financial_audit_details_appearances
-(financial_audit_id, attendance_date, appearance_version, pool_number)
-VALUES(91, '2024-03-25', 24, '415240303'),
-(91, '2024-03-28', 19, '415240303'),
-(91, '2024-03-26', 24, '415240303'),
-(91, '2024-03-27', 24, '415240303'),
-(92, '2024-04-01', 16, '415240303'),
-(92, '2024-04-08', 20, '415240303'),
-(92, '2024-03-29', 20, '415240303'),
-(92, '2024-04-02', 19, '415240303'),
-(92, '2024-04-05', 19, '415240303'),
-(92, '2024-04-03', 19, '415240303'),
-(92, '2024-04-04', 19, '415240303'),
-(93, '2024-04-05', 21, '415240303'),
-(93, '2024-04-08', 22, '415240303'),
-(94, '2024-03-25', 25, '415240303'),
-(94, '2024-04-01', 18, '415240303'),
-(94, '2024-04-08', 24, '415240303'),
-(94, '2024-03-28', 21, '415240303'),
-(94, '2024-03-29', 22, '415240303'),
-(94, '2024-04-02', 21, '415240303'),
-(94, '2024-04-05', 23, '415240303'),
-(94, '2024-04-03', 21, '415240303'),
-(94, '2024-04-04', 21, '415240303'),
-(94, '2024-03-26', 26, '415240303'),
-(94, '2024-03-27', 26, '415240303'),
-(95, '2024-03-25', 27, '415240303'),
-(95, '2024-03-26', 28, '415240303'),
-(95, '2024-03-27', 28, '415240303'),
-(96, '2024-03-25', 28, '415240303'),
-(96, '2024-03-26', 30, '415240303'),
-(96, '2024-03-27', 30, '415240303');
+(financial_audit_id, attendance_date, appearance_version)
+VALUES(91, '2024-03-25', 24),
+(91, '2024-03-28', 19),
+(91, '2024-03-26', 24),
+(91, '2024-03-27', 24),
+(92, '2024-04-01', 16),
+(92, '2024-04-08', 20),
+(92, '2024-03-29', 20),
+(92, '2024-04-02', 19),
+(92, '2024-04-05', 19),
+(92, '2024-04-03', 19),
+(92, '2024-04-04', 19),
+(93, '2024-04-05', 21),
+(93, '2024-04-08', 22),
+(94, '2024-03-25', 25),
+(94, '2024-04-01', 18),
+(94, '2024-04-08', 24),
+(94, '2024-03-28', 21),
+(94, '2024-03-29', 22),
+(94, '2024-04-02', 21),
+(94, '2024-04-05', 23),
+(94, '2024-04-03', 21),
+(94, '2024-04-04', 21),
+(94, '2024-03-26', 26),
+(94, '2024-03-27', 26),
+(95, '2024-03-25', 27),
+(95, '2024-03-26', 28),
+(95, '2024-03-27', 28),
+(96, '2024-03-25', 28),
+(96, '2024-03-26', 30),
+(96, '2024-03-27', 30);

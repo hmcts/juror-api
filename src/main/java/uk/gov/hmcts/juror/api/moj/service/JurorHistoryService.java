@@ -22,13 +22,11 @@ public interface JurorHistoryService {
     void createPoliceCheckInsufficientInformationHistory(JurorPool jurorPool);
 
     void createExpenseApproveCash(String jurorNumber,
-                                  String poolNumber,
                                   FinancialAuditDetails financialAuditDetails,
                                   LocalDate latestAppearanceDate,
                                   BigDecimal totalAmount);
 
     void createExpenseApproveBacs(String jurorNumber,
-                                  String poolNumber,
                                   FinancialAuditDetails financialAuditDetails,
                                   LocalDate latestAppearanceDate,
                                   BigDecimal totalAmount);
