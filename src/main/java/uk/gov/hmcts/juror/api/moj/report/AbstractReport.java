@@ -17,11 +17,13 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -69,7 +71,7 @@ public abstract class AbstractReport<T> {
                 QJurorPool.jurorPool.pool.poolNumber.eq(QAppearance.appearance.poolNumber)
             }
         ));
-        CLASS_TO_JOIN.put(QJurorTrial.jurorTrial, Map.of(
+        CLASS_TO_JOIN.put(QPanel.panel.trial, Map.of(
             QJuror.juror, new Predicate[]{QAppearance.appearance.jurorNumber.eq(QJuror.juror.jurorNumber)},
             QJurorPool.jurorPool, new Predicate[]{
                 QJurorPool.jurorPool.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber),
@@ -82,6 +84,7 @@ public abstract class AbstractReport<T> {
     private EntityManager entityManager;
 
     final PoolRequestRepository poolRequestRepository;
+    final TrialRepository trialRepository;
     final List<IDataType> dataTypes;
     final Set<EntityPath<?>> requiredTables;
     final List<IDataType> effectiveDataTypes;
@@ -89,12 +92,14 @@ public abstract class AbstractReport<T> {
 
     final List<Consumer<StandardReportRequest>> authenticationConsumers;
 
-    public AbstractReport(EntityPath<?> from, IDataType... dataType) {
-        this(null, from, dataType);
+    public AbstractReport(EntityPath<?> from, TrialRepository trialRepository, IDataType... dataType) {
+        this(null, trialRepository, from, dataType);
     }
 
-    public AbstractReport(PoolRequestRepository poolRequestRepository, EntityPath<?> from, IDataType... dataType) {
+    public AbstractReport(PoolRequestRepository poolRequestRepository, TrialRepository trialRepository,
+                          EntityPath<?> from, IDataType... dataType) {
         this.poolRequestRepository = poolRequestRepository;
+        this.trialRepository = trialRepository;
         this.from = from;
         this.dataTypes = List.of(dataType);
         this.effectiveDataTypes = dataTypes.stream()
@@ -331,6 +336,58 @@ public abstract class AbstractReport<T> {
                 .value(getCourtNameString(poolRequest.getCourtLocation()))
                 .build()
         ));
+    }
+
+    public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadJuryListHeaders(
+        StandardReportRequest request, boolean ownerMustMatch, boolean allowBureau) {
+        PoolRequest poolRequest = getPoolRequest(request.getPoolNumber());
+        if (ownerMustMatch) {
+            checkOwnership(poolRequest, allowBureau);
+        }
+
+        Trial trial = getTrial(request.getTrialNumber(), trialRepository);
+        return new ConcurrentHashMap<>(Map.of(
+            "trial_number", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Trial Number")
+                .dataType(String.class.getSimpleName())
+                .value(request.getTrialNumber())
+                .build(),
+            "names", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Names")
+                .dataType(String.class.getSimpleName())
+                .value(trial.getDescription())
+                .build(),
+            "trial_start_date", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Trial Start Date")
+                .dataType(LocalDate.class.getSimpleName())
+                .value(trial.getTrialStartDate())
+                .build(),
+            "court_room", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Court Room")
+                .dataType(String.class.getSimpleName())
+                .value(trial.getCourtroom().getDescription())
+                .build(),
+            "judge", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Judge")
+                .dataType(String.class.getSimpleName())
+                .value(trial.getJudge().getName())
+                .build(),
+            "court_name", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Court Name")
+                .dataType(String.class.getSimpleName())
+                .value(
+                    getCourtNameString(trial.getCourtLocation()))
+                .build()
+        ));
+    }
+
+    public Trial getTrial(String trialNumber, TrialRepository trialRepository) {
+        Optional<Trial> trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
+            SecurityUtil.getActiveOwner());
+        if (trial.isEmpty()) {
+            throw new MojException.NotFound("Trial not found", null);
+        }
+        return trial.get();
     }
 
     protected String getCourtNameString(CourtLocationRepository courtLocationRepository, String locCode) {
