@@ -15,14 +15,14 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Testing utility methods.
  */
-public class TestUtil {
+public final class TestUtil {
 
     private TestUtil() {
 
@@ -64,7 +64,7 @@ public class TestUtil {
                                        final SignatureAlgorithm algorithm, final String base64Key,
                                        final Instant expires) {
 
-        final Map<String, Object> claimsMap = new HashMap<>();
+        final Map<String, Object> claimsMap = new ConcurrentHashMap<>();
         claimsMap.put(Claims.EXPIRATION, Date.from(expires));
         claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
         claimsMap.put("data", dataPayload);
@@ -88,7 +88,7 @@ public class TestUtil {
                                        final SignatureAlgorithm algorithm, final String base64Key,
                                        final Instant expires) {
 
-        final Map<String, Object> claimsMap = new HashMap<>();
+        final Map<String, Object> claimsMap = new ConcurrentHashMap<>();
         claimsMap.put(Claims.EXPIRATION, Date.from(expires));
         claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
         claimsMap.put("daysToExpire", payload.getDaysToExpire());
@@ -117,7 +117,7 @@ public class TestUtil {
      */
     public static String mintHmacJwt(final SignatureAlgorithm algorithm, final String base64Key,
                                      final Instant expires) {
-        final Map<String, Object> claimsMap = new HashMap<>();
+        final Map<String, Object> claimsMap = new ConcurrentHashMap<>();
         claimsMap.put(Claims.EXPIRATION, Date.from(expires));
         claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
 

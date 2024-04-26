@@ -31,6 +31,7 @@ import uk.gov.hmcts.juror.api.bureau.service.BureauAuthenticationService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.stream.Collectors;
 
@@ -52,7 +53,7 @@ public class BureauStaffController {
     @Operation(summary = "Staff list",
         description = "Retrieve a list of all bureau staff members")
     public ResponseEntity<StaffListDto> getAll(@Parameter(hidden = true) BureauJwtAuthentication principal) {
-        if (!bureauAuthService.userIsTeamLeader(principal)) {
+        if (!SecurityUtil.isBureauManager()) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         return ResponseEntity.ok(userService.getAll());
@@ -64,7 +65,7 @@ public class BureauStaffController {
     public ResponseEntity<StaffDetailDto> getOne(
         @Parameter(description = "Staff member login") @PathVariable String login,
         @Parameter(hidden = true) BureauJwtAuthentication principal) {
-        if (!bureauAuthService.userIsTeamLeader(principal)) {
+        if (!SecurityUtil.isBureauManager()) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 

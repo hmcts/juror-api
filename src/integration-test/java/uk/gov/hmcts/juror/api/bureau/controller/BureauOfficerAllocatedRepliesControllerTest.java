@@ -21,10 +21,13 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauOfficerAllocatedData;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauOfficerAllocatedResponses;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,11 +69,9 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
 
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("ncrawford")
-            .daysToExpire(89)
-            .userLevel("1")
             .owner("400")
             .build());
 

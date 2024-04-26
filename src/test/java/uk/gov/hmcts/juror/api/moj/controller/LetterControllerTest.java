@@ -32,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListRes
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDataResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JurorForExemptionListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialExemptionListDto;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
@@ -597,7 +598,14 @@ public class LetterControllerTest {
         String username = "COURT_USER";
         String caseNumber = "T1000000";
 
-        TestUtils.setUpMockAuthentication(courtOwner, username, "1", List.of(courtOwner));
+        TestUtils.mockSecurityUtil(
+            BureauJwtPayload.builder()
+                .owner(courtOwner)
+                .login(username)
+                .userType(UserType.COURT)
+                .build()
+        );
+
         CertificateOfExemptionRequestDto certificateOfExemptionRequestDto =
             CertificateOfExemptionRequestDto.builder()
             .jurorNumbers(List.of("111111111"))

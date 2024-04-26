@@ -6,18 +6,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.JurorDigitalApplication;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.exception.PoolDeleteException;
 import uk.gov.hmcts.juror.api.moj.exception.PoolRequestException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,19 +37,18 @@ public class DeletePoolServiceImpl implements DeletePoolService {
 
     @Override
     @Transactional
-    public void deletePool(BureauJwtPayload payload, String poolNumber) {
+    public void deletePool(String poolNumber) {
         log.trace(String.format("Enter deletePoolRequest for Pool Number: %s", poolNumber));
 
         // according to specifications from heritage, users with a userLevel higher than 3 cannot delete empty pools
-        if (Integer.parseInt(payload.getUserLevel()) > 3) {
-            throw new PoolDeleteException.InsufficientPermission(payload.getLogin(), poolNumber);
+        if (SecurityUtil.hasRole(Role.SENIOR_JUROR_OFFICER)) {
+            throw new PoolDeleteException.InsufficientPermission(SecurityUtil.getUsername(), poolNumber);
         }
 
         // this will theoretically never happen unless there is a malfunction in the frontend code,
         // and we end up rendering the "delete pool (active)" button to a court user.
-        String payloadOwner = payload.getOwner();
-        if (poolRequestRepository.isActive(poolNumber) && !payloadOwner.equals(JurorDigitalApplication.JUROR_OWNER)) {
-            throw new PoolDeleteException.InsufficientPermission(payload.getLogin(), poolNumber);
+        if (poolRequestRepository.isActive(poolNumber) && !SecurityUtil.isBureau()) {
+            throw new PoolDeleteException.InsufficientPermission(SecurityUtil.getUsername(), poolNumber);
         }
 
         canDelete(poolNumber);
@@ -57,7 +56,7 @@ public class DeletePoolServiceImpl implements DeletePoolService {
         poolRequestRepository.deletePoolRequestByPoolNumber(poolNumber);
 
         poolHistoryRepository.save(new PoolHistory(poolNumber, LocalDateTime.now(), HistoryCode.DELP,
-            payload.getLogin(), "Empty pool deleted"));
+            SecurityUtil.getUsername(), "Empty pool deleted"));
 
         log.trace(String.format("Deleted a pool request with Pool Number: %s", poolNumber));
     }

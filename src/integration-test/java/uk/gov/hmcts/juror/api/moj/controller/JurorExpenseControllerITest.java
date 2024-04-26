@@ -20,7 +20,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestConstants;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestDefaultExpensesDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ApportionSmartCardRequest;
@@ -187,7 +186,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @DisplayName("Valid court user - first page of results")
         void happyPathNoDateRangeFirstPage() throws Exception {
             final String courtLocation = COURT_LOCATION;
-            final String jwt = createBureauJwt(COURT_USER, courtLocation);
+            final String jwt = createJwt(COURT_USER, courtLocation);
             final URI uri = URI.create(toUrl(courtLocation) + "?page_number=0&sort_by"
                 + "=totalUnapproved&sort_order=DESC");
 
@@ -210,9 +209,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Valid court user - last page of results")
-        void happyPathNoDateRangeLastPage() throws Exception {
+        void happyPathNoDateRangeLastPage() {
             final String courtLocation = COURT_LOCATION;
-            final String jwt = createBureauJwt(COURT_USER, courtLocation);
+            final String jwt = createJwt(COURT_USER, courtLocation);
             final URI uri = URI.create(toUrl(courtLocation) + "?page_number=1&sort_by"
                 + "=totalUnapproved&sort_order=DESC");
 
@@ -234,9 +233,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Valid court user - filter by date range")
-        void happyPathWithDateRange() throws Exception {
+        void happyPathWithDateRange() {
             final String courtLocation = COURT_LOCATION;
-            final String jwt = createBureauJwt(COURT_USER, courtLocation);
+            final String jwt = createJwt(COURT_USER, courtLocation);
             final LocalDate minDate = LocalDate.of(2023, 1, 5);
             final LocalDate maxDate = LocalDate.of(2023, 1, 10);
             final URI uri = URI.create(toUrl(courtLocation) + MIN_DATE
@@ -263,11 +262,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @Test
         @DisplayName("403 Forbidden - Invalid user")
         void invalidUser() throws Exception {
-            final String courtLocation = COURT_LOCATION;
-            final String jwt = createBureauJwt(COURT_USER, "400");
+            final String jwt = createJwtBureau(COURT_USER);
             final LocalDate minDate = LocalDate.of(2023, 1, 5);
             final LocalDate maxDate = LocalDate.of(2023, 1, 10);
-            final URI uri = URI.create(toUrl(courtLocation) + MIN_DATE
+            final URI uri = URI.create(toUrl(COURT_LOCATION) + MIN_DATE
                 + dateFormatter.format(minDate) + MAX_DATE + dateFormatter.format(maxDate) + PAGINATION_PAGE_NO
                 + PAGINATION_SORT_BY);
 
@@ -282,12 +280,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("400 Bad Request - Missing Parameter")
-        void missingParameter() throws Exception {
-            final String courtLocation = COURT_LOCATION;
-            final String jwt = createBureauJwt(COURT_USER, "400");
+        void missingParameter() {
+            final String jwt = createJwtBureau(COURT_USER);
             final LocalDate minDate = LocalDate.of(2023, 1, 5);
             final LocalDate maxDate = LocalDate.of(2023, 1, 10);
-            final URI uri = URI.create(toUrl(courtLocation) + MIN_DATE
+            final URI uri = URI.create(toUrl(COURT_LOCATION) + MIN_DATE
                 + dateFormatter.format(minDate) + MAX_DATE + dateFormatter.format(maxDate)
                 + PAGINATION_SORT_BY);
 
@@ -298,23 +295,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        }
-
-
-        private String createBureauJwt(String login, String owner) throws Exception {
-            return mintBureauJwt(BureauJwtPayload.builder()
-                .userLevel("1")
-                .login(login)
-                .staff(BureauJwtPayload.Staff.builder()
-                    .name("Test User")
-                    .active(1)
-                    .rank(1)
-                    .build())
-                .daysToExpire(89)
-                .owner(owner).staff(BureauJwtPayload.Staff.builder()
-                    .courts(Collections.singletonList(owner))
-                    .build())
-                .build());
         }
     }
 
@@ -333,7 +313,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @Test
         @DisplayName("200 Ok - Happy Path")
         void retrieveDefaultExpensesHappyPath() throws Exception {
-            final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+            final String jwt = createJwt(COURT_USER, COURT_LOCATION);
             final URI uri = URI.create(toUrl(COURT_LOCATION, JUROR_NUMBER));
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
@@ -363,7 +343,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @Test
         @DisplayName("404 Not Found - Missing Juror Number")
         void invalidUrl() throws Exception {
-            final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+            final String jwt = createJwt(COURT_USER, COURT_LOCATION);
             final URI uri = URI.create(toUrl(COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER));
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
@@ -397,7 +377,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @Test
         @DisplayName("Positive Update default expenses")
         void setDefaultExpensesHappy() {
-            final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+            final String jwt = createJwt(COURT_USER, COURT_LOCATION);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
@@ -418,7 +398,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @Test
         @DisplayName("Negative - Not found")
         void setDefaultExpensesNotFound() {
-            final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+            final String jwt = createJwt(COURT_USER, COURT_LOCATION);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
@@ -526,7 +506,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             protected ResponseEntity<String> triggerInvalid(String jurorNumber, DailyExpense request) throws
                 Exception {
-                final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+                final String jwt = createJwt(COURT_USER, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(List.of(request), httpHeaders, PUT,
@@ -579,7 +559,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             protected ResponseEntity<DailyExpenseResponse[]> triggerValid(String jurorNumber,
                                                                           DailyExpense request) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+                final String jwt = createJwt(COURT_USER, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<DailyExpenseResponse[]> response = template.exchange(
                     new RequestEntity<>(List.of(request), httpHeaders, PUT,
@@ -1160,7 +1140,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         class Positive {
             private ResponseEntity<List<GetEnteredExpenseResponse>> triggerValid(
                 GetEnteredExpenseRequest request) {
-                final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+                final String jwt = createJwt(COURT_USER, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
 
@@ -1355,7 +1335,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             private ResponseEntity<String> triggerInvalid(
                 String jurorNumber,
                 GetEnteredExpenseRequest request) {
-                final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+                final String jwt = createJwt(COURT_USER, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, POST, URI.create(
@@ -1387,7 +1367,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void unauthorisedBureauUser() {
                 LocalDate dateOfExpense = LocalDate.of(2024, 1, 11);
                 GetEnteredExpenseRequest request = buildRequest(dateOfExpense);
-                final String jwt = createBureauJwt(BUREAU_USER, "400");
+                final String jwt = createJwtBureau(BUREAU_USER);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 assertForbiddenResponse(template.exchange(
                         new RequestEntity<>(request, httpHeaders, POST, URI.create(
@@ -1416,7 +1396,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @DisplayName("Happy path")
         @SneakyThrows
         void happyPath() {
-            final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+            final String jwt = createJwt(COURT_USER, COURT_LOCATION);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
@@ -1449,7 +1429,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @DisplayName("No appearance records found")
         @SneakyThrows
         void notFoundError() {
-            final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+            final String jwt = createJwt(COURT_USER, COURT_LOCATION);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
@@ -1468,7 +1448,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @DisplayName("Bad Request - Invalid juror number")
         @SneakyThrows
         void invalidJurorNumber() {
-            final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+            final String jwt = createJwt(COURT_USER, COURT_LOCATION);
 
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
@@ -1488,7 +1468,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @DisplayName("Bad Request - Invalid Loc Code")
         @SneakyThrows
         void invalidLocCode() {
-            final String jwt = createBureauJwt(COURT_USER, "INVALID");
+            final String jwt = createJwt(COURT_USER, "INVALID");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
@@ -1507,7 +1487,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @DisplayName("Bad Request - Empty attendance date list")
         @SneakyThrows
         void invalidAttendanceDates() {
-            final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+            final String jwt = createJwt(COURT_USER, COURT_LOCATION);
 
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
@@ -1526,7 +1506,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @DisplayName("Forbidden Error - Invalid Bureau user")
         @SneakyThrows
         void bureauUser() {
-            final String jwt = createBureauJwt(BUREAU_USER, "400");
+            final String jwt = createJwtBureau(BUREAU_USER);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
@@ -1624,7 +1604,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             protected ResponseEntity<CombinedSimplifiedExpenseDetailDto> triggerValid(
                 String jurorNumber,
                 ExpenseType expenseType) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+                final String jwt = createJwt(COURT_USER, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<CombinedSimplifiedExpenseDetailDto> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -1942,7 +1922,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 String jurorNumber,
                 String type,
                 String owner) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, owner);
+                final String jwt = createJwt(COURT_USER, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -1982,7 +1962,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         class Positive {
             protected ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> triggerValid(
                 String locCode, String jurorNumber) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, locCode);
+                final String jwt = createJwt(COURT_USER, locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -2113,7 +2093,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             protected ResponseEntity<String> triggerInvalid(String locCode,
                                                             String jurorNumber,
                                                             String owner) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, owner);
+                final String jwt = createJwt(COURT_USER, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -2157,7 +2137,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         class Positive {
             protected ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> triggerValid(
                 String jurorNumber, List<LocalDate> payload) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+                final String jwt = createJwt(COURT_USER, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsDto>> response = template.exchange(
                     new RequestEntity<>(payload, httpHeaders, POST,
@@ -2266,7 +2246,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                                             String jurorNumber,
                                                             String owner,
                                                             List<LocalDate> payload) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, owner);
+                final String jwt = createJwt(COURT_USER, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(payload, httpHeaders, POST,
@@ -2324,8 +2304,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             protected ResponseEntity<String> triggerValid(
                 PaymentMethod paymentMethod,
                 ApproveExpenseDto... expenseDto) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION, UserType.COURT,
-                    Set.of(Role.MANAGER), COURT_LOCATION);
+                final String jwt = createJwt(COURT_USER, Set.of(Role.MANAGER), COURT_LOCATION, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<String> response = template.exchange(
                     new RequestEntity<>(List.of(expenseDto), httpHeaders, POST,
@@ -2549,7 +2528,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                                             String paymentMethod,
                                                             ApproveExpenseDto... expenseDto) throws Exception {
                 return triggerInvalid(owner, locCode, paymentMethod,
-                    COURT_USER, UserType.COURT, Set.of(Role.MANAGER), expenseDto);
+                    COURT_USER, owner.equals("400") ? UserType.BUREAU :  UserType.COURT,
+                    Set.of(Role.MANAGER), expenseDto);
             }
 
             protected ResponseEntity<String> triggerInvalid(String owner,
@@ -2558,7 +2538,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                                             String username,
                                                             UserType userType, Set<Role> roles,
                                                             ApproveExpenseDto... expenseDto) throws Exception {
-                final String jwt = createBureauJwt(username, owner, userType, roles, owner);
+                final String jwt = createJwt(username, owner, userType, roles, owner);
+
+
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(List.of(expenseDto), httpHeaders, POST,
@@ -2790,7 +2772,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             protected ResponseEntity<String> triggerInvalid(String jurorNumber,
                                                             String expenseType,
                                                             DailyExpense... request) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+                final String jwt = createJwt(COURT_USER, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, PUT,
@@ -2904,7 +2886,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             protected ResponseEntity<Void> triggerValid(String jurorNumber,
                                                         ExpenseType expenseType,
                                                         DailyExpense... request) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+                final String jwt = createJwt(COURT_USER, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<Void> response = template.exchange(
                     new RequestEntity<>(request, httpHeaders, PUT,
@@ -3189,7 +3171,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             protected CombinedExpenseDetailsDto<ExpenseDetailsForTotals> triggerValid(
                 String jurorNumber,
                 CalculateTotalExpenseRequestDto request) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+                final String jwt = createJwt(COURT_USER, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<CombinedExpenseDetailsDto<ExpenseDetailsForTotals>> response = template.exchange(
                     new RequestEntity<>(request, httpHeaders, POST,
@@ -3533,7 +3515,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                                             String jurorNumber,
                                                             CalculateTotalExpenseRequestDto request) throws
                 Exception {
-                final String jwt = createBureauJwt(COURT_USER, owner);
+                final String jwt = createJwt(COURT_USER, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, POST,
@@ -3679,7 +3661,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         class Positive {
             protected ExpenseCount triggerValid(String locCode,
                                                 String jurorNumber) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+                final String jwt = createJwt(COURT_USER, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<ExpenseCount> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -3723,7 +3705,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             protected ResponseEntity<String> triggerInvalid(String locCode,
                                                             String jurorNumber,
                                                             String owner) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, owner);
+                final String jwt = createJwt(COURT_USER, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -3805,7 +3787,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                                        LocalDate from,
                                                        LocalDate to,
                                                        PaymentMethod paymentMethod) throws Exception {
-                final String jwt = createBureauJwt(username, locCode);
+                final String jwt = createJwt(username, locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<PendingApprovalList> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -4187,7 +4169,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                                             String from,
                                                             String to,
                                                             String paymentMethod) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, owner);
+                final String jwt = createJwt(COURT_USER, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -4261,7 +4243,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             protected ResponseEntity<Void> triggerValid(
                 String jurorNumber,
                 ApportionSmartCardRequest request) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, COURT_LOCATION);
+                final String jwt = createJwt(COURT_USER, COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<Void> response = template.exchange(
                     new RequestEntity<>(request, httpHeaders, PATCH,
@@ -4315,7 +4297,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 String jurorNumber,
                 ApportionSmartCardRequest request,
                 String owner) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, owner);
+                final String jwt = createJwt(COURT_USER, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, PATCH,

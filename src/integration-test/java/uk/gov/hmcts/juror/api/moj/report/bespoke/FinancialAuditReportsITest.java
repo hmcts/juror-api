@@ -57,7 +57,7 @@ class FinancialAuditReportsITest extends AbstractControllerIntegrationTest<Void,
 
     @Override
     protected String getValidJwt() {
-        return createBureauJwt(
+        return createJwt(
             "test_court_standard",
             "415",
             UserType.COURT,

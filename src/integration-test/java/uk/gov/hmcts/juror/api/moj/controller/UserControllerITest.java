@@ -55,6 +55,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 @Sql(value = {"/db/administration/teardownUsers.sql",
     "/db/administration/createUsers.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "/db/administration/teardownUsers.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 public class UserControllerITest extends AbstractIntegrationTest {
 
     public static final String BASE_URL = "/api/v1/moj/users";
@@ -115,7 +116,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
 
         @Override
         protected String getValidJwt() {
-            return createBureauJwt("test_admin_standard", "400",
+            return createJwt("test_admin_standard", "400",
                 UserType.ADMINISTRATOR, Set.of(), "400");
         }
 
@@ -133,8 +134,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void adminTypical() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_admin_standard", "400",
-                        UserType.ADMINISTRATOR, Set.of(), "400"))
+                    .jwt(createJwtAdministrator("test_admin_standard"))
                     .triggerValid()
                     .assertEquals(
                         PaginatedList.builder()
@@ -193,8 +193,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void courtManagerTypical() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_court_manager", "415",
-                        UserType.COURT, Set.of(Role.MANAGER), "415"))
+                    .jwt(createJwt("test_court_manager", Set.of(Role.MANAGER), "415", "415"))
                     .triggerValid()
                     .assertEquals(
                         PaginatedList.builder()
@@ -283,7 +282,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void bureauManagerTypical() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_bureau_standard", "400",
+                    .jwt(createJwt("test_bureau_standard", "400",
                         UserType.BUREAU, Set.of(Role.MANAGER), "400"))
                     .triggerValid()
                     .assertEquals(PaginatedList.builder()
@@ -327,7 +326,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                                 .isActive(true)
                                 .lastSignIn(null)
                                 .userType(UserType.BUREAU)
-                                .roles(Set.of(Role.TEAM_LEADER))
+                                .roles(Set.of(Role.MANAGER))
                                 .courts(List.of(UserCourtDto.builder()
                                     .primaryCourt(CourtDto.builder()
                                         .name("Jury Central Summoning Bureau")
@@ -344,8 +343,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 payload.setUserName("Inactive");
                 testBuilder()
                     .payload(payload)
-                    .jwt(createBureauJwt("test_admin_standard", "400",
-                        UserType.ADMINISTRATOR, Set.of(), "400"))
+                    .jwt(createJwtAdministrator("test_admin_standard"))
                     .triggerValid()
                     .assertEquals(PaginatedList.builder()
                         .currentPage(1L)
@@ -412,8 +410,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 payload.setCourt("400");
                 testBuilder()
                     .payload(payload)
-                    .jwt(createBureauJwt("test_admin_standard", "400",
-                        UserType.ADMINISTRATOR, Set.of(), "400"))
+                    .jwt(createJwtAdministrator("test_admin_standard"))
                     .triggerValid()
                     .assertEquals(PaginatedList.builder()
                         .currentPage(1L)
@@ -473,8 +470,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 payload.setOnlyActive(true);
                 testBuilder()
                     .payload(payload)
-                    .jwt(createBureauJwt("test_admin_standard", "400",
-                        UserType.ADMINISTRATOR, Set.of(), "400"))
+                    .jwt(createJwtAdministrator("test_admin_standard"))
                     .triggerValid()
                     .assertEquals(PaginatedList.builder()
                         .currentPage(1L)
@@ -517,7 +513,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                                 .isActive(true)
                                 .lastSignIn(null)
                                 .userType(UserType.BUREAU)
-                                .roles(Set.of(Role.TEAM_LEADER))
+                                .roles(Set.of(Role.MANAGER))
                                 .courts(List.of(UserCourtDto.builder()
                                     .primaryCourt(CourtDto.builder()
                                         .name("Jury Central Summoning Bureau")
@@ -537,8 +533,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 payload.setPageNumber(2);
                 testBuilder()
                     .payload(payload)
-                    .jwt(createBureauJwt("test_admin_standard", "400",
-                        UserType.ADMINISTRATOR, Set.of(), "400"))
+                    .jwt(createJwtAdministrator("test_admin_standard"))
                     .triggerValid()
                     .assertEquals(PaginatedList.builder()
                         .currentPage(2L)
@@ -653,14 +648,29 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 payload.setPageNumber(1);
                 testBuilder()
                     .payload(payload)
-                    .jwt(createBureauJwt("test_admin_standard", "400",
-                        UserType.ADMINISTRATOR, Set.of(), "400"))
+                    .jwt(createJwtAdministrator("test_admin_standard"))
                     .triggerValid()
                     .assertEquals(PaginatedList.builder()
                         .currentPage(1L)
                         .totalPages(5L)
                         .totalItems(14L)
-                        .data(List.of(UserDetailsDto.builder()
+                        .data(List.of(
+                            UserDetailsDto.builder()
+                                .username("test_bureau_lead")
+                                .email("test_bureau_lead@email.gov.uk")
+                                .name("Bureau Team Lead")
+                                .isActive(true)
+                                .lastSignIn(null)
+                                .userType(UserType.BUREAU)
+                                .roles(Set.of(Role.MANAGER))
+                                .courts(List.of(UserCourtDto.builder()
+                                    .primaryCourt(CourtDto.builder()
+                                        .name("Jury Central Summoning Bureau")
+                                        .locCode("400")
+                                        .courtType(CourtType.MAIN).build())
+                                    .satelliteCourts(List.of()).build()))
+                                .build(),
+                            UserDetailsDto.builder()
                                 .username("test_court_manager")
                                 .email("test_court_manager@email.gov.uk")
                                 .name("Court Manager")
@@ -703,21 +713,6 @@ public class UserControllerITest extends AbstractIntegrationTest {
                                             .name("KNUTSFORD")
                                             .locCode("767")
                                             .courtType(CourtType.SATELLITE).build())).build()))
-                                .build(),
-                            UserDetailsDto.builder()
-                                .username("test_admin_inactive")
-                                .email("test_admin_inactive@email.gov.uk")
-                                .name("Admin Inactive")
-                                .isActive(false)
-                                .lastSignIn(null)
-                                .userType(UserType.ADMINISTRATOR)
-                                .roles(Set.of())
-                                .courts(List.of(UserCourtDto.builder()
-                                    .primaryCourt(CourtDto.builder()
-                                        .name("Jury Central Summoning Bureau")
-                                        .locCode("400")
-                                        .courtType(CourtType.MAIN).build())
-                                    .satelliteCourts(List.of()).build()))
                                 .build()))
                         .build());
             }
@@ -729,7 +724,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void isCourtUser() {
                 testBuilder()
-                    .jwt(createBureauJwt(COURT_USER, "415", UserType.COURT,
+                    .jwt(createJwt(COURT_USER, "415", UserType.COURT,
                         Set.of(), "415"))
                     .triggerInvalid()
                     .assertForbiddenResponse();
@@ -738,7 +733,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void isBureauUser() {
                 testBuilder()
-                    .jwt(createBureauJwt(BUREAU_USER, "400", UserType.BUREAU,
+                    .jwt(createJwt(BUREAU_USER, "400", UserType.BUREAU,
                         Set.of(), "400"))
                     .triggerInvalid()
                     .assertForbiddenResponse();
@@ -775,7 +770,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
 
         @Override
         protected String getValidJwt() {
-            return createBureauJwt("test_admin_standard", "400",
+            return createJwt("test_admin_standard", "400",
                 UserType.ADMINISTRATOR, Set.of(), "400");
         }
 
@@ -869,7 +864,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void isCourtUser() {
                 testBuilder()
-                    .jwt(createBureauJwt(COURT_USER, "415", UserType.COURT,
+                    .jwt(createJwt(COURT_USER, "415", UserType.COURT,
                         Set.of(), "415"))
                     .triggerInvalid()
                     .assertForbiddenResponse();
@@ -878,7 +873,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void isBureauUser() {
                 testBuilder()
-                    .jwt(createBureauJwt(BUREAU_USER, "400", UserType.BUREAU,
+                    .jwt(createJwt(BUREAU_USER, "400", UserType.BUREAU,
                         Set.of(), "400"))
                     .triggerInvalid()
                     .assertForbiddenResponse();
@@ -933,7 +928,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
 
         @Override
         protected String getValidJwt() {
-            return createBureauJwt("test_admin_standard", "400",
+            return createJwt("test_admin_standard", "400",
                 UserType.ADMINISTRATOR, Set.of(), "400");
         }
 
@@ -948,8 +943,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void courtManager() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_court_manager", "415",
-                        UserType.COURT, Set.of(Role.MANAGER), "415"))
+                    .jwt(createJwt("test_court_manager", Set.of(Role.MANAGER), "415", "415"))
                     .url(toUrl("test_court_standard"))
                     .triggerValid()
                     .assertEquals(UserDetailsDto.builder()
@@ -979,8 +973,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void bureauManager() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_bureau_lead", "400",
-                        UserType.BUREAU, Set.of(Role.MANAGER), "400"))
+                    .jwt(createJwtBureau("test_bureau_lead", Set.of(Role.MANAGER)))
                     .url(toUrl("test_bureau_standard"))
                     .triggerValid()
                     .assertEquals(UserDetailsDto.builder()
@@ -1003,8 +996,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void adminUser() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_admin_standard", "400",
-                        UserType.ADMINISTRATOR, Set.of(), "400"))
+                    .jwt(createJwtAdministrator("test_admin_standard"))
                     .url(toUrl("test_admin_inactive"))
                     .triggerValid()
                     .assertEquals(UserDetailsDto.builder()
@@ -1027,8 +1019,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void userDoesNotHaveCourtAsAdminUser() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_admin_standard", "400",
-                        UserType.ADMINISTRATOR, Set.of(), "400"))
+                    .jwt(createJwtAdministrator("test_admin_standard"))
                     .url(toUrl("test_court_standard"))
                     .triggerValid()
                     .assertEquals(UserDetailsDto.builder()
@@ -1063,8 +1054,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void userDoesNotHaveCourtAsCourtUser() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_court_manager", "415",
-                        UserType.COURT, Set.of(Role.MANAGER), "415"))
+                    .jwt(createJwt("test_court_manager", Set.of(Role.MANAGER), "415", "415"))
                     .url(toUrl("test_court_primary"))
                     .triggerInvalid()
                     .assertMojForbiddenResponse("User not part of court");
@@ -1073,8 +1063,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void userDoesNotHaveCourtAsBureauUser() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_bureau_lead", "400",
-                        UserType.BUREAU, Set.of(Role.MANAGER), "400"))
+                    .jwt(createJwtBureau("test_bureau_lead", Set.of(Role.MANAGER)))
                     .url(toUrl("test_court_standard"))
                     .triggerInvalid()
                     .assertMojForbiddenResponse("User not part of court");
@@ -1083,7 +1072,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void isCourtUserButNotManager() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_court_manager", "415",
+                    .jwt(createJwt("test_court_manager", "415",
                         UserType.COURT, Set.of(), "415"))
                     .url(toUrl("test_court_standard"))
                     .triggerInvalid()
@@ -1093,7 +1082,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void isBureauUserButNotManager() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_bureau_lead", "400",
+                    .jwt(createJwt("test_bureau_lead", "400",
                         UserType.BUREAU, Set.of(), "400"))
                     .url(toUrl("test_bureau_standard"))
                     .triggerInvalid()
@@ -1130,7 +1119,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
 
         @Override
         protected String getValidJwt() {
-            return createBureauJwt("test_admin_standard", "400",
+            return createJwt("test_admin_standard", "400",
                 UserType.ADMINISTRATOR, Set.of(), "400");
         }
 
@@ -1181,8 +1170,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 User userBeforeUpdate = getUserFromUsername(username);
                 testBuilder()
                     .url(toUrl(username))
-                    .jwt(createBureauJwt("test_court_manager", "415",
-                        UserType.COURT, Set.of(Role.MANAGER), "415"))
+                    .jwt(createJwt("test_court_manager", Set.of(Role.MANAGER), "415", "415"))
                     .payload(payload)
                     .triggerValid()
                     .assertValidNoBody();
@@ -1196,8 +1184,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 User userBeforeUpdate = getUserFromUsername(username);
                 testBuilder()
                     .url(toUrl(username))
-                    .jwt(createBureauJwt("test_bureau_lead", "400",
-                        UserType.BUREAU, Set.of(Role.MANAGER), "400"))
+                    .jwt(createJwtBureau("test_bureau_lead", Set.of(Role.MANAGER)))
                     .payload(payload)
                     .triggerValid()
                     .assertValidNoBody();
@@ -1211,8 +1198,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 User userBeforeUpdate = getUserFromUsername(username);
                 testBuilder()
                     .url(toUrl(username))
-                    .jwt(createBureauJwt("test_admin_standard", "400",
-                        UserType.ADMINISTRATOR, Set.of(), "400"))
+                    .jwt(createJwtAdministrator("test_admin_standard"))
                     .payload(payload)
                     .triggerValid()
                     .assertValidNoBody();
@@ -1226,8 +1212,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 User userBeforeUpdate = getUserFromUsername(username);
                 testBuilder()
                     .url(toUrl(username))
-                    .jwt(createBureauJwt("test_admin_standard", "400",
-                        UserType.ADMINISTRATOR, Set.of(), "400"))
+                    .jwt(createJwtAdministrator("test_admin_standard"))
                     .payload(payload)
                     .triggerValid()
                     .assertValidNoBody();
@@ -1242,8 +1227,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void userDoesNotHaveCourtAsCourtUser() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_court_manager", "415",
-                        UserType.COURT, Set.of(Role.MANAGER), "415"))
+                    .jwt(createJwt("test_court_manager", Set.of(Role.MANAGER), "415", "415"))
                     .url(toUrl("test_court_primary"))
                     .triggerInvalid()
                     .assertMojForbiddenResponse("User not part of court");
@@ -1252,8 +1236,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void userDoesNotHaveCourtAsBureauUser() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_bureau_lead", "400",
-                        UserType.BUREAU, Set.of(Role.MANAGER), "400"))
+                    .jwt(createJwtBureau("test_bureau_lead", Set.of(Role.MANAGER)))
                     .url(toUrl("test_court_standard"))
                     .triggerInvalid()
                     .assertMojForbiddenResponse("User not part of court");
@@ -1262,7 +1245,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void isCourtUserButNotManager() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_court_manager", "415",
+                    .jwt(createJwt("test_court_manager", "415",
                         UserType.COURT, Set.of(), "415"))
                     .url(toUrl("test_court_standard"))
                     .triggerInvalid()
@@ -1272,7 +1255,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void isBureauUserButNotManager() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_bureau_lead", "400",
+                    .jwt(createJwt("test_bureau_lead", "400",
                         UserType.BUREAU, Set.of(), "400"))
                     .url(toUrl("test_bureau_standard"))
                     .triggerInvalid()
@@ -1322,7 +1305,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
 
         @Override
         protected String getValidJwt() {
-            return createBureauJwt("test_admin_standard", "400",
+            return createJwt("test_admin_standard", "400",
                 UserType.ADMINISTRATOR, Set.of(), "400");
         }
 
@@ -1363,7 +1346,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void isBureauUser() {
                 testBuilder()
-                    .jwt(createBureauJwt(BUREAU_USER, "400", UserType.BUREAU,
+                    .jwt(createJwt(BUREAU_USER, "400", UserType.BUREAU,
                         Set.of(), "400"))
                     .triggerInvalid()
                     .assertForbiddenResponse();
@@ -1372,7 +1355,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void isCourtUser() {
                 testBuilder()
-                    .jwt(createBureauJwt(COURT_USER, "415", UserType.COURT,
+                    .jwt(createJwt(COURT_USER, "415", UserType.COURT,
                         Set.of(), "415"))
                     .triggerInvalid()
                     .assertForbiddenResponse();
@@ -1432,7 +1415,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
 
         @Override
         protected String getValidJwt() {
-            return createBureauJwt("test_admin_standard", "400",
+            return createJwt("test_admin_standard", "400",
                 UserType.ADMINISTRATOR, Set.of(), "400");
         }
 
@@ -1474,7 +1457,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void isBureauUser() {
                 testBuilder()
-                    .jwt(createBureauJwt(BUREAU_USER, "400", UserType.BUREAU,
+                    .jwt(createJwt(BUREAU_USER, "400", UserType.BUREAU,
                         Set.of(), "400"))
                     .triggerInvalid()
                     .assertForbiddenResponse();
@@ -1483,7 +1466,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void isCourtUser() {
                 testBuilder()
-                    .jwt(createBureauJwt(COURT_USER, "415", UserType.COURT,
+                    .jwt(createJwt(COURT_USER, "415", UserType.COURT,
                         Set.of(), "415"))
                     .triggerInvalid()
                     .assertForbiddenResponse();
@@ -1540,7 +1523,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
 
         @Override
         protected String getValidJwt() {
-            return createBureauJwt("test_admin_standard", "400",
+            return createJwt("test_admin_standard", "400",
                 UserType.ADMINISTRATOR, Set.of(), "400");
         }
 
@@ -1620,7 +1603,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void isBureauUser() {
                 testBuilder()
-                    .jwt(createBureauJwt(BUREAU_USER, "400", UserType.BUREAU,
+                    .jwt(createJwt(BUREAU_USER, "400", UserType.BUREAU,
                         Set.of(), "400"))
                     .triggerInvalid()
                     .assertForbiddenResponse();
@@ -1629,7 +1612,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             @Test
             void isCourtUser() {
                 testBuilder()
-                    .jwt(createBureauJwt(COURT_USER, "415", UserType.COURT,
+                    .jwt(createJwt(COURT_USER, "415", UserType.COURT,
                         Set.of(), "415"))
                     .triggerInvalid()
                     .assertForbiddenResponse();

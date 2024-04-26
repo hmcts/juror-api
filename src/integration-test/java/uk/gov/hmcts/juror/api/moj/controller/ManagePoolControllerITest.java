@@ -32,6 +32,8 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolComment;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolHistory;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.letter.CertLetter;
 import uk.gov.hmcts.juror.api.moj.domain.letter.ConfirmationLetter;
 import uk.gov.hmcts.juror.api.moj.domain.letter.LetterId;
@@ -58,6 +60,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.juror.api.TestUtil.getValuesInJsonObject;
@@ -108,17 +111,11 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         initHeaders();
     }
 
-    private void initHeaders(String... userLevel) throws Exception {
-        String level = "99";
-        if (userLevel.length == 1) {
-            level = userLevel[0];
-        }
-
+    private void initHeaders(Role... roles) {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel(level)
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(roles))
             .login("BUREAU_USER")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -127,13 +124,11 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
-    private String initCourtsJwt(String owner, List<String> courts) throws Exception {
+    private String initCourtsJwt(String owner, List<String> courts) {
 
         return mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
-            .passwordWarning(false)
+            .userType(UserType.COURT)
             .login(COURT_USER)
-            .daysToExpire(89)
             .owner(owner)
             .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build());
@@ -400,7 +395,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     public void test_deletePool_poolNotFound() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
 
         String poolNumber = "415220101";
 
@@ -413,6 +408,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     public void test_deletePool_insufficientPermission() {
+        initHeaders(Role.SENIOR_JUROR_OFFICER);
         String poolNumber = "415220101";
 
         ResponseEntity<?> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.DELETE,
@@ -425,7 +421,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolRequests.sql"})
     public void test_deletePool_poolIsLocked() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String poolNumber = "457220607";
 
         Optional<PoolRequest> poolRequest = poolRequestRepository.findByPoolNumber(poolNumber);
@@ -447,7 +443,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolRequests.sql"})
     public void test_deletePool_courtUserAndActivePool() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
 
         List<String> courts = new ArrayList<>();
         courts.add("415");
@@ -465,7 +461,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_deletePoolRequest.sql"})
     public void test_deletePool() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String poolNumber = "415220110";
 
         Optional<PoolRequest> poolRequestExists = poolRequestRepository.findByPoolNumber(poolNumber);
@@ -491,7 +487,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/EditPoolController_createPool.sql"})
     public void test_editPoolBureauUser() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String poolNumber = "415221201";
 
         //create a Pool request edit DTO
@@ -524,7 +520,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/EditPoolController_createPool.sql"})
     public void test_editPool_NoRequestedSame_BureauUser() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String poolNumber = "415221201";
 
         //create a Pool request edit DTO
@@ -559,7 +555,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/EditPoolController_createPool.sql"})
     public void test_editPoolAbovePoolCapacity_BureauUser() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String poolNumber = "415221201";
 
         //create a Pool request edit DTO
@@ -579,7 +575,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/EditPoolController_createPool.sql"})
     @Sql(statements = "DELETE FROM JUROR.POOL_COMMENTS")
     public void test_editPoolCourtUser() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String poolNumber = "415221201";
 
         List<String> courts = new ArrayList<>();
@@ -618,7 +614,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/EditPoolController_createPool.sql"})
     public void test_editPool_TotalRequiredSame_CourtUser() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String poolNumber = "415221201";
 
         List<String> courts = new ArrayList<>();
@@ -658,7 +654,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Sql(statements = "DELETE FROM JUROR.POOL_COMMENTS")
     @Sql(statements = "DELETE FROM JUROR_MOD.POOL_HISTORY")
     public void test_editPool_TotalRequiredLowerThanRequested_CourtUser() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String poolNumber = "415221201";
 
         List<String> courts = new ArrayList<>();
@@ -681,7 +677,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_validateJurorsForTransfer_happyPath() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -745,7 +741,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_validateJurorsForTransfer_invalidCourtLocation() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "012";
         String targetCourtLocation = "457";
@@ -769,7 +765,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_validateJurorsForTransfer_badRequest_invalidPoolNumber_tooShort() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "41523070";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -793,7 +789,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_validateJurorsForTransfer_badRequest_invalidPoolNumber_tooLong() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "4152307011";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -817,7 +813,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_validateJurorsForTransfer_badRequest_invalidPoolNumber_alphaNumeric() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "4152307O1";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -841,7 +837,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_validateJurorsForTransfer_badRequest_invalidSourceCourtLocation_tooShort() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "41";
         String targetCourtLocation = "457";
@@ -865,7 +861,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_validateJurorsForTransfer_badRequest_invalidSourceCourtLocation_tooLong() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "4155";
         String targetCourtLocation = "457";
@@ -889,7 +885,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_validateJurorsForTransfer_badRequest_invalidSourceCourtLocation_alphaNumeric() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "A15";
         String targetCourtLocation = "457";
@@ -913,7 +909,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_validateJurorsForTransfer_badRequest_invalidTargetCourtLocation_tooShort() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "45";
@@ -937,7 +933,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_validateJurorsForTransfer_badRequest_invalidTargetCourtLocation_tooLong() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "4577";
@@ -961,7 +957,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_validateJurorsForTransfer_badRequest_invalidTargetCourtLocation_alphaNumeric() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "A57";
@@ -985,7 +981,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_validateJurorsForTransfer_badRequest_invalidJurorNumbersList() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -1009,7 +1005,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_transferJurorsToNewCourt_oneJuror_firstTransfer_happyPath() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -1054,7 +1050,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_transferJurorsToNewCourt_multipleJurors_someFail() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -1093,7 +1089,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initTransferBackPoolMember.sql"})
     public void test_transferJurorsToNewCourt_oneJuror_transferBack_happyPath() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "457230702";
         String sourceCourtLocation = "457";
         String targetCourtLocation = "415";
@@ -1139,7 +1135,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_transferJurorsToNewCourt_unhappyPath_invalidAccess_bureauUser() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -1158,7 +1154,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_transferJurorsToNewCourt_unhappyPath_invalidAccess_courtUser() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -1180,7 +1176,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_transferJurorsToNewCourt_unhappyPath_invalidJurorNumber_tooShort() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -1202,7 +1198,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_transferJurorsToNewCourt_unhappyPath_invalidJurorNumber_tooLong() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -1224,7 +1220,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_transferJurorsToNewCourt_unhappyPath_invalidJurorNumber_alphanumeric() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -1246,7 +1242,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_transferJurorsToNewCourt_unhappyPath_sourcePoolNotFound() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230799";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -1268,7 +1264,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_transferJurorsToNewCourt_unhappyPath_invalidSourceCourt() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -1290,7 +1286,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_transferJurorsToNewCourt_unhappyPath_invalidTargetCourt() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "012";
@@ -1312,7 +1308,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_transferJurorsToNewCourt_unhappyPath_invalidRequest_jurorListEmpty() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "415230701";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -1334,7 +1330,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_transferJurorsToNewCourt_unhappyPath_invalidRequest_sourcePoolNumber() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "41523070";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -1356,7 +1352,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_transferJurorsToNewCourt_unhappyPath_invalidRequest_sourceCourtLocationCode() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "41523070";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "457";
@@ -1378,7 +1374,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initPoolMembersForTransfer.sql"})
     public void test_transferJurorsToNewCourt_unhappyPath_invalidRequest_targetCourtLocationCode() throws Exception {
-        initHeaders("1");
+        initHeaders(Role.MANAGER);
         String sourcePoolNumber = "41523070";
         String sourceCourtLocation = "415";
         String targetCourtLocation = "4x7";
@@ -1402,7 +1398,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
     public void availablePoolsInCourtLocationCourtUserHappy() throws NullPointerException {
         final URI uri = URI.create(String.format(URI_AVAILABLE_POOLS, "416"));
-        httpHeaders = initialiseHeaders("1", false, COURT_USER, 89, "416");
+        httpHeaders = initialiseHeaders(COURT_USER, UserType.COURT, null, "416");
 
         ResponseEntity<AvailablePoolsInCourtLocationDto> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET, uri),
@@ -1433,7 +1429,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
     public void availablePoolsInCourtLocationCourtUserOwnerNotFoundException() throws NullPointerException {
         final URI uri = URI.create(String.format(URI_AVAILABLE_POOLS, "404"));
-        httpHeaders = initialiseHeaders("1", false, COURT_USER, 89, "505");
+        httpHeaders = initialiseHeaders(COURT_USER, UserType.COURT, null, "505");
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(new RequestEntity<Void>(httpHeaders,
             HttpMethod.GET, uri), String.class);
@@ -1486,10 +1482,10 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
     public void availablePoolsInCourtLocationCourtOwnedCourtUserHappy() {
-        httpHeaders = initialiseHeaders("1", false, COURT_USER, 89, "416");
+        httpHeaders = initialiseHeaders(COURT_USER, UserType.COURT, null, "416");
         ResponseEntity<AvailablePoolsInCourtLocationDto> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/manage-pool/available-pools-court-owned/416")),
+                    URI.create("/api/v1/moj/manage-pool/available-pools-court-owned/416")),
                 AvailablePoolsInCourtLocationDto.class);
 
         assertThat(responseEntity.getStatusCode()).as(EXPECT_HTTP_RESPONSE_SUCCESSFUL).isEqualTo(HttpStatus.OK);
@@ -1887,8 +1883,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     }
 
     private void transferJurorPoolValidateNewlyCreatedPoolRequest(String sourcePoolNumber, String targetPoolNumber,
-                                                                   String receivingCourtLocation,
-                                                                   LocalDate targetServiceStartDate, int poolTotal) {
+                                                                  String receivingCourtLocation,
+                                                                  LocalDate targetServiceStartDate, int poolTotal) {
         PoolRequest targetPoolRequest = poolRequestRepository
             .findByPoolNumber(targetPoolNumber)
             .orElse(null);
@@ -1937,8 +1933,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     }
 
     private void transferJurorPoolValidateNewlyCreatedJurorPool(String jurorNumber, String sourcePoolNumber,
-                                                                 String targetPoolNumber, String targetLocCode,
-                                                                 LocalDate targetStartDate, String currentUser) {
+                                                                String targetPoolNumber, String targetLocCode,
+                                                                LocalDate targetStartDate, String currentUser) {
         JurorPool sourceJurorPool =
             jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber,
                 sourcePoolNumber, true).get();

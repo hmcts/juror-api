@@ -76,7 +76,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
         class Positive {
 
             Map<Integer, List<HolidayDate>> assertValid(UserType userType, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, "415", userType, roles, "415");
+                final String jwt = createJwt(COURT_USER, "415", userType, roles, "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<Map<Integer, List<HolidayDate>>> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -124,7 +124,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
 
 
             private ResponseEntity<String> triggerInvalid(String owner, UserType userType, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
+                final String jwt = createJwt(COURT_USER, owner, userType, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -152,7 +152,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
         class Positive {
 
             List<HolidayDate> assertValid(String locCode) {
-                final String jwt = createBureauJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
+                final String jwt = createJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<List<HolidayDate>> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -191,7 +191,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
 
             private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode, UserType userType,
                                                           Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
+                final String jwt = createJwt(COURT_USER, owner, userType, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -242,7 +242,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
         class Positive {
 
             void assertValid(String locCode, LocalDate date) {
-                final String jwt = createBureauJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
+                final String jwt = createJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<List<HolidayDate>> response = template.exchange(
                     new RequestEntity<>(httpHeaders, DELETE,
@@ -276,7 +276,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
 
             private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode, String date,
                                                           UserType userType, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
+                final String jwt = createJwt(COURT_USER, owner, userType, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, DELETE,
@@ -337,7 +337,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
         class Positive {
 
             void assertValid(String locCode, HolidayDate holidayDate) {
-                final String jwt = createBureauJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
+                final String jwt = createJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<Void> response = template.exchange(
                     new RequestEntity<>(holidayDate, httpHeaders, POST,
@@ -381,7 +381,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
 
             private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode, HolidayDate holidayDate,
                                                           UserType userType, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
+                final String jwt = createJwt(COURT_USER, owner, userType, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(holidayDate, httpHeaders, POST,

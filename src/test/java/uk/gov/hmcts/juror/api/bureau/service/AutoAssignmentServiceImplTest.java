@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.bureau.exception.AutoAssignException;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
@@ -238,7 +239,8 @@ public class AutoAssignmentServiceImplTest {
      */
     @Test(expected = AutoAssignException.IneligibleStaff.class)
     public void autoAssign_errorPath_teamLeader() throws Exception {
-        user3.addRole(Role.TEAM_LEADER);
+        user3.setUserType(UserType.BUREAU);
+        user3.addRole(Role.MANAGER);
         autoAssignmentService.autoAssign(AutoAssignRequest.builder()
             .data(Arrays.asList(
                 AutoAssignRequest.StaffCapacity.builder().capacity(60).login("staff1").build(),

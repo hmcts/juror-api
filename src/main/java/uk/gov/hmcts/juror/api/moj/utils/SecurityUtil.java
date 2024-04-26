@@ -5,36 +5,39 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.util.List;
 
 public final class SecurityUtil {
-    public static final int STANDARD_USER_LEVEL = 0;
-    public static final int TEAM_LEADER_LEVEL = 1;
-    public static final int JURY_OFFICER_LEVEL = 1;
-    public static final int SENIOR_JUROR_OFFICER_LEVEL = 9;
+
+    @Deprecated(forRemoval = true)
     public static final String BUREAU_OWNER = "400";
-    public static final String BUREAU_AUTH = "isAuthenticated() && principal.owner == '400'";
-    public static final String COURT_AUTH = "isAuthenticated() && principal.owner != '400'";
-    public static final String SENIOR_COURT_AUTH = COURT_AUTH + " && principal.userLevel == '9'";
-    public static final String TEAM_LEADER_AUTH = "principal.userLevel == '" + TEAM_LEADER_LEVEL + "'";
-    public static final String BUREAU_TEAM_LEADER = BUREAU_AUTH + " && " + TEAM_LEADER_AUTH;
-    public static final String TEAM_LEADER_LEVEL_STR = String.valueOf(TEAM_LEADER_LEVEL);
+    @Deprecated(forRemoval = true)
+    public static final int STANDARD_USER_LEVEL = 0;
+    @Deprecated(forRemoval = true)
+    public static final int TEAM_LEADER_LEVEL = 1;
+
+    public static final String IS_MANAGER = "hasRole('ROLE_MANAGER')";
+    public static final String IS_SJO = "hasRole('ROLE_SENIOR_JUROR_OFFICER')";
+    public static final String IS_BUREAU = "principal.userType.name() == 'BUREAU'";
+    public static final String IS_COURT = "principal.userType.name() == 'COURT'";
+    public static final String IS_ADMINISTRATOR = "principal.userType.name() == 'ADMINISTRATOR'";
+
+    public static final String IS_BUREAU_MANAGER = IS_BUREAU + " && " + IS_MANAGER;
+    public static final String IS_COURT_MANAGER = IS_COURT + " && " + IS_MANAGER;
+
+    public static final String IS_COURT_SJO = IS_COURT + " && " + IS_SJO;
 
 
     public static final String LOC_CODE_AUTH = "isAuthenticated() && principal.staff.courts.contains(#loc_code)";
 
-    public static final String LOC_CODE_AUTH_COURT_ONLY = "isAuthenticated() && principal.owner != '400' && "
+    public static final String LOC_CODE_AUTH_COURT_ONLY = "isAuthenticated() && " + IS_COURT + " && "
         + "principal.staff.courts.contains(#loc_code)";
     public static final String LOC_CODE_AUTH_OR_BUREAU = "isAuthenticated() "
-        + "&& (principal.owner == '400' || principal.staff.courts.contains(#loc_code))";
-
-    public static final String IS_MANAGER = "hasRole('ROLE_MANAGER')";
-
-    public static final String USER_TYPE_ADMINISTRATOR = "principal.userType.name() == 'ADMINISTRATOR'";
-    public static final String USER_TYPE_COURT = "principal.userType.name() == 'COURT'";
+        + "&& (" + IS_BUREAU + " || principal.staff.courts.contains(#loc_code))";
 
 
     private SecurityUtil() {
@@ -80,7 +83,7 @@ public final class SecurityUtil {
     }
 
     public static boolean isBureau() {
-        return BUREAU_OWNER.equals(getActiveOwner());
+        return UserType.BUREAU.equals(getUserType());
     }
 
     public static boolean isCourt() {
@@ -111,5 +114,17 @@ public final class SecurityUtil {
 
     public static String getLocCode() {
         return getActiveUsersBureauPayload().getLocCode();
+    }
+
+    public static boolean isManager() {
+        return getActiveUsersBureauPayload().getRoles().contains(Role.MANAGER);
+    }
+
+    public static boolean isBureauManager() {
+        return isBureau() && isManager();
+    }
+
+    public static boolean hasRole(Role role) {
+        return getActiveUsersBureauPayload().getRoles().contains(role);
     }
 }

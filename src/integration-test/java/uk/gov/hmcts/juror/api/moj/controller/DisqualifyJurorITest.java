@@ -20,6 +20,8 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
@@ -32,6 +34,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.getJurorDigitalResponse;
@@ -74,8 +77,8 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
     //Tests related to controller method: disqualifyReasons()
     @Test
     public void disqualifyReasons() {
-        DisqualifyReasonsDto disqualifyReasonsDto = templateExchangeDisqualifyReasons(BUREAU_USER, "400",
-            HttpStatus.OK);
+        DisqualifyReasonsDto disqualifyReasonsDto = templateExchangeDisqualifyReasons(
+        );
 
         assertThat(disqualifyReasonsDto.getDisqualifyReasons().size()).isEqualTo(10);
         assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(0).getCode()).isEqualTo("A");
@@ -127,7 +130,8 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDigitalDto();
 
         //Invoke service
-        templateExchangeDisqualifyJuror(disqualifyJurorDto, JUROR_NUMBER_123456789, BUREAU_USER, "400", HttpStatus.OK);
+        templateExchangeDisqualifyJuror(UserType.BUREAU, disqualifyJurorDto, JUROR_NUMBER_123456789, BUREAU_USER, "400",
+            HttpStatus.OK);
 
         //Post-verification: Verify tables updated
         digitalDisqualifyJurorPostVerification();
@@ -144,7 +148,8 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorPaperDto();
 
         //Invoke service
-        templateExchangeDisqualifyJuror(disqualifyJurorDto, JUROR_NUMBER_987654321, COURT_USER, "415", HttpStatus.OK);
+        templateExchangeDisqualifyJuror(UserType.COURT, disqualifyJurorDto, JUROR_NUMBER_987654321, COURT_USER, "415",
+            HttpStatus.OK);
 
         //Post-verification: Verify tables updated
         paperDisqualifyJurorPostVerification();
@@ -157,7 +162,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         //403 Forbidden exception is thrown
         DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorPaperDto();
 
-        templateExchangeDisqualifyJuror(disqualifyJurorDto, JUROR_NUMBER_111111111, COURT_USER, "415",
+        templateExchangeDisqualifyJuror(UserType.COURT, disqualifyJurorDto, JUROR_NUMBER_111111111, COURT_USER, "415",
             HttpStatus.FORBIDDEN);
     }
 
@@ -280,13 +285,15 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         assertThat(jurorHistoryList).isEmpty();
     }
 
-    private void templateExchangeDisqualifyJuror(DisqualifyJurorDto disqualifyJurorDto,
-                                                 String jurorNumber,
-                                                 String userType,
-                                                 String owner,
-                                                 HttpStatus httpStatus) {
+    private void templateExchangeDisqualifyJuror(
+        UserType userType,
+        DisqualifyJurorDto disqualifyJurorDto,
+        String jurorNumber,
+        String login,
+        String owner,
+        HttpStatus httpStatus) {
         final URI uri = URI.create(String.format(URI_DISQUALIFY_JUROR, jurorNumber));
-        httpHeaders = initialiseHeaders("1", false, userType, 89, owner);
+        httpHeaders = initialiseHeaders(login, userType, Set.of(Role.MANAGER), owner);
 
         RequestEntity<DisqualifyJurorDto> requestEntity = new RequestEntity<>(disqualifyJurorDto, httpHeaders,
             HttpMethod.PATCH, uri);
@@ -294,14 +301,13 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(httpStatus);
     }
 
-    private DisqualifyReasonsDto templateExchangeDisqualifyReasons(String userType, String owner,
-                                                                   HttpStatus httpStatus) {
+    private DisqualifyReasonsDto templateExchangeDisqualifyReasons() {
         final URI uri = URI.create("/api/v1/moj/disqualify/reasons");
-        httpHeaders = initialiseHeaders("1", false, userType, 89, owner);
+        httpHeaders = initialiseHeaders(DisqualifyJurorITest.BUREAU_USER, UserType.BUREAU, Set.of(Role.MANAGER), "400");
 
         RequestEntity<DisqualifyReasonsDto> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri);
         ResponseEntity<DisqualifyReasonsDto> response = template.exchange(requestEntity, DisqualifyReasonsDto.class);
-        assertThat(response.getStatusCode()).isEqualTo(httpStatus);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         return response.getBody();
     }

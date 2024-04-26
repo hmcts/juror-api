@@ -58,8 +58,8 @@ public class AdministrationController {
     @GetMapping("/courts/{loc_code}")
     @Operation(summary = "View court details")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("(" + SecurityUtil.COURT_AUTH + " and " + SecurityUtil.LOC_CODE_AUTH + ") or ("
-        + SecurityUtil.USER_TYPE_ADMINISTRATOR + ")")
+    @PreAuthorize("(" + SecurityUtil.IS_COURT + " and " + SecurityUtil.LOC_CODE_AUTH + ") or ("
+        + SecurityUtil.IS_ADMINISTRATOR + ")")
     public ResponseEntity<CourtDetailsDto> viewCourtDetails(
         @P("loc_code")
         @PathVariable("loc_code")
@@ -73,8 +73,8 @@ public class AdministrationController {
     @PutMapping("/courts/{loc_code}")
     @Operation(summary = "Update court details")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    @PreAuthorize("(" + SecurityUtil.COURT_AUTH + " and " + SecurityUtil.LOC_CODE_AUTH + ") or ("
-        + SecurityUtil.USER_TYPE_ADMINISTRATOR + ")")
+    @PreAuthorize("(" + SecurityUtil.IS_COURT + " and " + SecurityUtil.LOC_CODE_AUTH + ") or ("
+        + SecurityUtil.IS_ADMINISTRATOR + ")")
     public ResponseEntity<Void> updateCourtDetails(
         @P("loc_code")
         @PathVariable("loc_code")
@@ -106,7 +106,7 @@ public class AdministrationController {
     @GetMapping("/courts")
     @Operation(summary = "View court details")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR)
+    @PreAuthorize(SecurityUtil.IS_ADMINISTRATOR)
     public ResponseEntity<List<CourtDetailsReduced>> viewAllCourtsDetails() {
         return ResponseEntity.ok(administrationService.viewCourts());
     }
@@ -114,7 +114,7 @@ public class AdministrationController {
     @GetMapping("/expenses/rates")
     @Operation(summary = "View global expense rates")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR + " or " + SecurityUtil.USER_TYPE_COURT)
+    @PreAuthorize(SecurityUtil.IS_ADMINISTRATOR + " or " + SecurityUtil.IS_COURT)
     public ResponseEntity<ExpenseRatesDto> viewExpenseDetails() {
         return ResponseEntity.ok(new ExpenseRatesDto(
             jurorExpenseService.getCurrentExpenseRates(SecurityUtil.isCourt())));
@@ -123,7 +123,7 @@ public class AdministrationController {
     @PutMapping("/expenses/rates")
     @Operation(summary = "Update global expense rates")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR)
+    @PreAuthorize(SecurityUtil.IS_ADMINISTRATOR)
     public ResponseEntity<Void> updateExpenseDetails(
         @Valid @RequestBody ExpenseRatesDto expenseRatesDto
     ) {

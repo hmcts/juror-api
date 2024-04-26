@@ -32,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -42,6 +43,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -83,8 +85,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         @Test
         void positiveCompleteTypicalSingle() throws Exception {
             LocalDate completionTime = LocalDate.of(2023, 11, 23);
-            final String owner = "415";
-            final String bureauJwt = createBureauJwt("COURT_USER", owner);
+            final String bureauJwt = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/complete-service/415220901/complete");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -107,8 +108,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         @Test
         void positiveCompleteTypicalMultiple() throws Exception {
             LocalDate completionTime = LocalDate.of(2023, 11, 23);
-            final String owner = "415";
-            final String bureauJwt = createBureauJwt("COURT_USER", owner);
+            final String bureauJwt = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/complete-service/415220901/complete");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -157,8 +157,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         @Test
         void negativeOneJurorNotFound() throws Exception {
             LocalDate completionTime = LocalDate.of(2023, 11, 23);
-            final String owner = "415";
-            final String bureauJwt = createBureauJwt("COURT_USER", owner);
+            final String bureauJwt = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/complete-service/415220901/complete");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -196,8 +195,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         @Test
         void negativeOneJurorNotResponded() throws Exception {
             LocalDate completionTime = LocalDate.of(2023, 11, 23);
-            final String owner = "415";
-            final String bureauJwt = createBureauJwt("COURT_USER", owner);
+            final String bureauJwt = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/complete-service/415220901/complete");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -243,7 +241,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         void negativeUnauthorisedBureauUser() throws Exception {
             LocalDate completionTime = LocalDate.of(2023, 11, 23);
             final String owner = "400";
-            final String bureauJwt = createBureauJwt("COURT_USER", owner);
+            final String bureauJwt = createJwt("COURT_USER", owner);
             final URI uri = URI.create("/api/v1/moj/complete-service/415220901/complete");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -281,7 +279,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         @Test
         void positiveSingleTypicalValid() throws Exception {
             final String owner = "415";
-            final String bureauJwt = createBureauJwt("COURT_USER", owner);
+            final String bureauJwt = createJwt("COURT_USER", owner);
             final URI uri = URI.create("/api/v1/moj/complete-service/415220901/validate");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -308,7 +306,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         @Test
         void positiveSingleTypicalInValid() throws Exception {
             final String owner = "415";
-            final String bureauJwt = createBureauJwt("COURT_USER", owner);
+            final String bureauJwt = createJwt("COURT_USER", owner);
             final URI uri = URI.create("/api/v1/moj/complete-service/415220901/validate");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -335,7 +333,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         @Test
         void positiveSingleTypicalMultiple() throws Exception {
             final String owner = "415";
-            final String bureauJwt = createBureauJwt("COURT_USER", owner);
+            final String bureauJwt = createJwt("COURT_USER", owner);
             final URI uri = URI.create("/api/v1/moj/complete-service/415220901/validate");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -379,7 +377,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         @Test
         void negativeNotFound() throws Exception {
             final String owner = "415";
-            final String bureauJwt = createBureauJwt("COURT_USER", owner);
+            final String bureauJwt = createJwt("COURT_USER", owner);
             final URI uri = URI.create("/api/v1/moj/complete-service/415220901/validate");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -404,7 +402,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         @Test
         void negativeInvalidPayload() throws Exception {
             final String owner = "415";
-            final String bureauJwt = createBureauJwt("COURT_USER", owner);
+            final String bureauJwt = createJwt("COURT_USER", owner);
             final URI uri = URI.create("/api/v1/moj/complete-service/415220901/validate");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -423,7 +421,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         @Test
         void negativeUnauthorisedBureauUser() throws Exception {
             final String owner = "400";
-            final String bureauJwt = createBureauJwt("COURT_USER", owner);
+            final String bureauJwt = createJwt("COURT_USER", owner);
             final URI uri = URI.create("/api/v1/moj/complete-service/415220901/validate");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -455,7 +453,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         void positiveCompleteDismissalTypicalSingle() throws Exception {
             LocalDate completionTime = LocalDate.now();
             final String owner = "417";
-            final String bureauJwt = createBureauJwt("COURT_USER", owner);
+            final String bureauJwt = createJwt("COURT_USER", owner);
             final URI uri = URI.create("/api/v1/moj/complete-service/dismissal");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -479,7 +477,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         void positiveCompleteTypicalMultiple() throws Exception {
             LocalDate completionTime = LocalDate.now();
             final String owner = "417";
-            final String bureauJwt = createBureauJwt("COURT_USER", owner);
+            final String bureauJwt = createJwt("COURT_USER", owner);
             final URI uri = URI.create("/api/v1/moj/complete-service/dismissal");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -530,7 +528,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         void negativeOneJurorNotFound() throws Exception {
             LocalDate completionTime = LocalDate.of(2023, 11, 23);
             final String owner = "417";
-            final String bureauJwt = createBureauJwt("COURT_USER", owner);
+            final String bureauJwt = createJwt("COURT_USER", owner);
             final URI uri = URI.create("/api/v1/moj/complete-service/dismissal");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -568,8 +566,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         @Test
         void negativeUnauthorisedBureauUser() throws Exception {
             LocalDate completionTime = LocalDate.of(2023, 11, 23);
-            final String owner = "400";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", owner);
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/complete-service/dismissal");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -658,7 +655,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         void positiveTypicalSingle() throws Exception {
             String jurorNumber = "641500005";
             String poolNumber = "415220901";
-            final String bureauJwt = createBureauJwt("COURT_USER", "415", 9);
+            final String bureauJwt = createJwt("COURT_USER", Set.of(Role.SENIOR_JUROR_OFFICER), "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -690,7 +687,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             String poolNumber2 = "415220902";
             String jurorNumber3 = "641500007";
             String poolNumber3 = "415220902";
-            final String bureauJwt = createBureauJwt("COURT_USER", "415", 9);
+            final String bureauJwt = createJwt("COURT_USER", Set.of(Role.SENIOR_JUROR_OFFICER), "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -727,7 +724,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         void negativeNotFound() throws Exception {
             String jurorNumber = "641500000";
             String poolNumber = "415220901";
-            final String bureauJwt = createBureauJwt("COURT_USER", "415", 9);
+            final String bureauJwt = createJwt("COURT_USER", Set.of(Role.SENIOR_JUROR_OFFICER), "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -748,7 +745,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         void negativeBadPayload() throws Exception {
             String jurorNumber = "641500000";
             String poolNumber = "INVALID";
-            final String bureauJwt = createBureauJwt("COURT_USER", "415", 9);
+            final String bureauJwt = createJwt("COURT_USER", Set.of(Role.SENIOR_JUROR_OFFICER), "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -769,7 +766,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
         void negativeUnauthorisedNotSjo() throws Exception {
             String jurorNumber = "641500005";
             String poolNumber = "415220901";
-            final String bureauJwt = createBureauJwt("COURT_USER", "415", 1);
+            final String bureauJwt = createJwt("COURT_USER", "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -795,7 +792,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
 
         ResponseEntity<PaginatedList<CompleteJurorResponse>> triggerValid(JurorPoolSearch search) throws Exception {
-            final String bureauJwt = createBureauJwt("COURT_USER", "415", 9);
+            final String bureauJwt = createJwt("COURT_USER", Set.of(Role.SENIOR_JUROR_OFFICER), "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -998,7 +995,8 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
         @Test
         void negativeNotFound() throws Exception {
-            final String bureauJwt = createBureauJwt("COURT_USER", "415", 9);
+            final String bureauJwt =
+                createJwt("COURT_USER", Set.of(Role.SENIOR_JUROR_OFFICER), "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -1016,7 +1014,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
         @Test
         void negativeBadPayload() throws Exception {
-            final String bureauJwt = createBureauJwt("COURT_USER", "415", 1);
+            final String bureauJwt = createJwt("COURT_USER", "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -1037,7 +1035,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
         @Test
         void negativeUnauthorisedNotSjo() throws Exception {
-            final String bureauJwt = createBureauJwt("COURT_USER", "415", 1);
+            final String bureauJwt = createJwt("COURT_USER", "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 

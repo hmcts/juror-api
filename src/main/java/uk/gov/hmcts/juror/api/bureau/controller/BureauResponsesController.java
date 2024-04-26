@@ -114,7 +114,7 @@ public class BureauResponsesController {
             + "criteria") @RequestBody @Validated JurorResponseSearchRequest searchRequestDto) {
         JurorResponseSearchResults resultsDto = searchService.searchForResponses(
             searchRequestDto,
-            authService.userIsTeamLeader(auth)
+            SecurityUtil.isBureauManager()
         );
         return ResponseEntity.ok().body(resultsDto);
     }
@@ -123,7 +123,7 @@ public class BureauResponsesController {
     @Operation(summary = "Get auto-assignment capacity data")
     public ResponseEntity<AutoAssignResponse> getAutoAssignmentData(
         @Parameter(hidden = true) BureauJwtAuthentication auth) {
-        if (!authService.userIsTeamLeader(auth)) {
+        if (!SecurityUtil.isBureauManager()) {
             log.error("Auto-assign endpoint called by non-team leader");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -136,12 +136,12 @@ public class BureauResponsesController {
                                            @RequestBody @Validated AutoAssignRequest autoAssignRequest)
         throws AutoAssignException {
 
-        if (!authService.userIsTeamLeader(auth)) {
+        if (!SecurityUtil.isBureauManager()) {
             log.error("Auto-assign endpoint called by non-team leader");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         try {
-            autoAssignmentService.autoAssign(autoAssignRequest, authService.getUsername(auth));
+            autoAssignmentService.autoAssign(autoAssignRequest, SecurityUtil.getUsername());
             return ResponseEntity.ok().build();
         } catch (AutoAssignException e) {
             log.error("Failed to auto-assign:", e);
@@ -153,12 +153,12 @@ public class BureauResponsesController {
     @Operation(summary = "Deactivate officer and reassign any assigned responses")
     public ResponseEntity<Void> reassign(@Parameter(hidden = true) BureauJwtAuthentication auth,
                                          @RequestBody @Validated ReassignResponsesDto reassignResponsesDto) {
-        if (!authService.userIsTeamLeader(auth)) {
+        if (!SecurityUtil.isBureauManager()) {
             log.error("Reassign endpoint called by non-team leader");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         try {
-            userService.reassignResponses(authService.getUsername(auth), reassignResponsesDto);
+            userService.reassignResponses(SecurityUtil.getUsername(), reassignResponsesDto);
             return ResponseEntity.ok().build();
         } catch (ReassignException e) {
             log.error("Failed to re-assign:", e);

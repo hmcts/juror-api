@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.trial.TrialSummaryDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
@@ -967,9 +968,8 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
     private void initialiseHeader(List<String> courts, String owner, String loginUserType) {
         BureauJwtPayload.Staff staff = createStaff(courts, "MsCourt");
-
-        httpHeaders = initialiseHeaders("99", false, loginUserType, 89,
-            owner, staff);
+        httpHeaders = initialiseHeaders(loginUserType,
+            (owner.equals("400") ? UserType.BUREAU : UserType.COURT), null, owner, staff);
     }
 
     private BureauJwtPayload.Staff createStaff(List<String> courts, String staffName) {

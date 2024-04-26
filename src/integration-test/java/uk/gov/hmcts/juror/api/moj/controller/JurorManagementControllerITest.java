@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.jurormanagement.Attendance
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
@@ -124,10 +125,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     @SuppressWarnings("PMD.LawOfDemeter")
     private void initHeaders() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
             .login("COURT_USER")
-            .daysToExpire(89)
+            .userType(UserType.COURT)
             .owner("415")
             .staff(BureauJwtPayload.Staff.builder().courts(Collections.singletonList("415")).build())
             .build());
@@ -1608,23 +1607,23 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                     JurorsToDismissResponseDto.JurorsToDismissData::getServiceStartDate)
                 .containsExactlyInAnyOrder(
                     tuple("641500003", "TEST", "PERSON3", "In attendance",
-                        LocalDate.now().minusDays(10).toString(),
-                        LocalTime.of(9, 30), LocalDate.now().minusDays(10)),
+                        now().minusDays(10).toString(),
+                        LocalTime.of(9, 30), now().minusDays(10)),
                     tuple("641500004", "TEST", "PERSON4", "On call", "On call", null,
-                        LocalDate.now().minusDays(10)),
+                        now().minusDays(10)),
                     tuple("641500006", "TEST", "PERSON6", "In attendance",
-                        LocalDate.now().minusDays(10).toString(), LocalTime.of(9, 30),
-                        LocalDate.now().minusDays(10)),
+                        now().minusDays(10).toString(), LocalTime.of(9, 30),
+                        now().minusDays(10)),
                     tuple("641500007", "TEST", "PERSON7", "Other",
-                        LocalDate.now().minusDays(10).toString(), null,
-                        LocalDate.now().minusDays(10))
+                        now().minusDays(10).toString(), null,
+                        now().minusDays(10))
                 );
         }
 
         @Test
         @DisplayName("GET jurors to dismiss list - Unhappy path, Bureau User not allowed")
         void retrieveJurorsToDismissListUnhappyBureauUser() {
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("BUREAU_USER", "400"));
 
             List<String> pools = createPools("415930101");
 
@@ -1951,7 +1950,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @DisplayName("Get Jurors on Trials - Bureau User no access")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/JurorsOnTrial.sql"})
         void jurorsOnTrialBureauUserNoAccess() {
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("BUREAU_USER", "400"));
             ResponseEntity<JurorsOnTrialResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
                         URI.create("/api/v1/moj/juror-management/jurors-on-trial/415?attendanceDate=" + now())),
@@ -2011,7 +2010,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         @Test
         @DisplayName("Confirm attendance for jurors on a trial - Bureau no access")
         void confirmAttendanceBureauNoAccess() {
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("BUREAU_USER", "400"));
             UpdateAttendanceDto request = buildUpdateAttendanceDto();
 
             ResponseEntity<Void> response =

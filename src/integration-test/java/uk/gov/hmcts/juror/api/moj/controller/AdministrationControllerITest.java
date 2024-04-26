@@ -94,7 +94,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
         class Positive {
 
             void assertValid(CodeType codeType, CodeDescriptionResponse... expectedCodes) {
-                final String jwt = createBureauJwt(COURT_USER, "415");
+                final String jwt = createJwt(COURT_USER, "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<List<CodeDescriptionResponse>> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -274,7 +274,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
         class Negative {
 
             private ResponseEntity<String> triggerInvalid(String codeType, String owner) {
-                final String jwt = createBureauJwt(COURT_USER, owner);
+                final String jwt = createJwt(COURT_USER, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -314,7 +314,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
         class Positive {
 
             CourtDetailsDto assertValid(String locCode) {
-                final String jwt = createBureauJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
+                final String jwt = createJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<CourtDetailsDto> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -398,7 +398,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             }
 
             private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, UserType.COURT, roles, owner);
+                final String jwt = createJwt(COURT_USER, owner, UserType.COURT, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -452,7 +452,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
         class Positive {
 
             void assertValid(String locCode, CourtRates courtRates) {
-                final String jwt = createBureauJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
+                final String jwt = createJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<Void> response = template.exchange(
                     new RequestEntity<>(courtRates, httpHeaders, PUT,
@@ -505,7 +505,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
 
             private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode, CourtRates courtRates,
                                                           UserType userType, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
+                final String jwt = createJwt(COURT_USER, owner, userType, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(courtRates, httpHeaders, PUT,
@@ -574,7 +574,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
         class Positive {
 
             void assertValid(String locCode, UpdateCourtDetailsDto request, UserType userType, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, locCode, userType, roles, locCode);
+                final String jwt = createJwt(COURT_USER, locCode, userType, roles, locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<CourtDetailsDto> response = template.exchange(
                     new RequestEntity<>(request, httpHeaders, PUT,
@@ -623,7 +623,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode,
                                                           UpdateCourtDetailsDto request,
                                                           UserType userType, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
+                final String jwt = createJwt(COURT_USER, owner, userType, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, PUT,
@@ -701,7 +701,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
         class Positive {
 
             List<CourtDetailsReduced> assertValid() {
-                final String jwt = createBureauJwt(COURT_USER, "415", UserType.ADMINISTRATOR,
+                final String jwt = createJwt(COURT_USER, "415", UserType.ADMINISTRATOR,
                     Set.of(), "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<List<CourtDetailsReduced>> response = template.exchange(
@@ -764,7 +764,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
             }
 
             private ResponseEntity<String> triggerInvalid(UserType userType, Set<Role> roles, String owner) {
-                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
+                final String jwt = createJwt(COURT_USER, owner, userType, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -805,7 +805,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
 
             @Test
             void typicalAdmin() {
-                final String jwt = createBureauJwt(COURT_USER, TestConstants.VALID_COURT_LOCATION,
+                final String jwt = createJwt(COURT_USER, TestConstants.VALID_COURT_LOCATION,
                     UserType.ADMINISTRATOR, Set.of(),
                     TestConstants.VALID_COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
@@ -823,7 +823,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
 
             @Test
             void typicalCourt() {
-                final String jwt = createBureauJwt(COURT_USER, TestConstants.VALID_COURT_LOCATION,
+                final String jwt = createJwt(COURT_USER, TestConstants.VALID_COURT_LOCATION,
                     UserType.COURT, Set.of(),
                     TestConstants.VALID_COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
@@ -877,7 +877,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
 
             @Test
             void typical() {
-                final String jwt = createBureauJwt(COURT_USER,
+                final String jwt = createJwt(COURT_USER,
                     TestConstants.VALID_COURT_LOCATION,
                     UserType.ADMINISTRATOR,
                     Set.of());
@@ -970,7 +970,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
 
             private ResponseEntity<String> triggerInvalid(String owner, UserType userType, Set<Role> roles,
                                                           ExpenseRatesDto payload) {
-                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles,
+                final String jwt = createJwt(COURT_USER, owner, userType, roles,
                     TestConstants.VALID_COURT_LOCATION);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(

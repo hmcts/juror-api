@@ -16,6 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JudgeDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JudgeListDto;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
 import java.util.List;
@@ -91,12 +92,12 @@ public class JudgeControllerITest extends AbstractIntegrationTest {
     }
     
     private void initHeadersCourt() {
-        httpHeaders = initialiseHeaders("99", false, "COURT_USER", 89,
-            "435");
+        httpHeaders =
+            initialiseHeaders("COURT_USER", UserType.COURT,null,"435");
     }
 
     private void initHeadersBureau() {
-        httpHeaders = initialiseHeaders("99", false, "BUREAU_USER", 89,
-            "400");
+        httpHeaders =
+            initialiseHeaders("BUREAU_USER", UserType.BUREAU,null,"400");
     }
 }

@@ -31,6 +31,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolHistory;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CurrentlyDeferredRepository;
@@ -106,10 +107,8 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     private String initCourtsJwt(String owner, List<String> courts) throws Exception {
 
         return mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.COURT)
             .login("COURT_USER")
-            .daysToExpire(89)
             .owner(owner)
             .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build());

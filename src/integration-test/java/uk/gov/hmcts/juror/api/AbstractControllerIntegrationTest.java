@@ -21,8 +21,8 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -67,7 +67,7 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
-    public ControllerTest<P, R> testBuilder() {
+    protected ControllerTest<P, R> testBuilder() {
         return new ControllerTest<>();
     }
 
@@ -80,7 +80,7 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
         private String jwt = getValidJwt();
         private String url = getValidUrl();
         private P payload = getValidPayload();
-        Map<String, String[]> queryParams = new HashMap<>();
+        Map<String, String[]> queryParams = new ConcurrentHashMap<>();
 
         public ControllerTest<P1, R1> addQueryParam(String name, String... value) {
             queryParams.put(name, value);
@@ -161,6 +161,7 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
                 assertThat(body).isEqualTo(object);
             }
 
+            @SuppressWarnings("PMD.SystemPrintln")
             public ControllerTestResponse<T> printResponse() {
                 System.out.println(responseEntity);
                 return this;

@@ -21,13 +21,15 @@ class UserTest {
     @Test
     void positiveIsTeamLeaderTrue() {
         User user = new User();
-        user.setRoles(Set.of(Role.TEAM_LEADER));
+        user.setUserType(UserType.BUREAU);
+        user.setRoles(Set.of(Role.MANAGER));
         assertThat(user.isTeamLeader()).isTrue();
     }
 
     @Test
     void positiveIsTeamLeaderFalse() {
         User user = new User();
+        user.setUserType(UserType.COURT);
         user.setRoles(Set.of(Role.MANAGER));
         assertThat(user.isTeamLeader()).isFalse();
     }
@@ -35,14 +37,14 @@ class UserTest {
     @Test
     void positiveHasRoleTrue() {
         User user = new User();
-        user.setRoles(Set.of(Role.MANAGER, Role.TEAM_LEADER));
-        assertThat(user.hasRole(Role.TEAM_LEADER)).isTrue();
+        user.setRoles(Set.of(Role.MANAGER));
+        assertThat(user.hasRole(Role.MANAGER)).isTrue();
     }
 
     @Test
     void positiveHasRoleFalse() {
         User user = new User();
-        user.setRoles(Set.of(Role.MANAGER, Role.TEAM_LEADER));
+        user.setRoles(Set.of(Role.MANAGER));
         assertThat(user.hasRole(Role.SENIOR_JUROR_OFFICER)).isFalse();
     }
 
@@ -58,7 +60,7 @@ class UserTest {
     void positiveGetLevelBureauTeamLead() {
         User user = new User();
         user.setUserType(UserType.BUREAU);
-        user.setRoles(Set.of(Role.TEAM_LEADER));
+        user.setRoles(Set.of(Role.MANAGER));
         assertThat(user.getLevel()).isEqualTo(1);
     }
 
@@ -95,10 +97,10 @@ class UserTest {
     @Test
     void positiveAddRole() {
         User user = new User();
-        user.addRole(Role.TEAM_LEADER);
-        assertThat(user.getRoles()).isEqualTo(Set.of(Role.TEAM_LEADER));
+        user.addRole(Role.MANAGER);
+        assertThat(user.getRoles()).isEqualTo(Set.of(Role.MANAGER));
         user.addRole(Role.SENIOR_JUROR_OFFICER);
-        assertThat(user.getRoles()).isEqualTo(Set.of(Role.TEAM_LEADER, Role.SENIOR_JUROR_OFFICER));
+        assertThat(user.getRoles()).isEqualTo(Set.of(Role.MANAGER, Role.SENIOR_JUROR_OFFICER));
     }
 
     @Test

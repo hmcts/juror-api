@@ -3,7 +3,7 @@ VALUES ('400', 'BUREAU', 'MODTESTBUREAU', 'MODTESTBUREAU@email.gov.uk', 'MODTEST
        ('415', 'COURT', 'MODTESTCOURT', 'MODTESTCOURT@email.gov.uk', 'MODTESTCOURT', true, 1);
 
 INSERT INTO juror_mod.user_roles (username, role)
-VALUES ('MODTESTBUREAU', 'TEAM_LEADER');
+VALUES ('MODTESTBUREAU', 'MANAGER');
 
 INSERT INTO juror_mod.user_courts (username, loc_code)
 VALUES ('MODTESTBUREAU', '400'),
