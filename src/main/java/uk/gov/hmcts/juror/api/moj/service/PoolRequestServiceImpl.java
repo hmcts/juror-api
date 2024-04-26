@@ -156,8 +156,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
 
         PoolRequest poolRequest = poolRequestDto.isCourtOnly()
             ? createPoolForCourtUse(poolRequestDto, payload)
-            :
-                requestPoolFromBureau(poolRequestDto, payload);
+            : requestPoolFromBureau(poolRequestDto, payload);
 
         poolRequestRepository.saveAndFlush(poolRequest);
 
@@ -315,6 +314,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         PoolRequest poolRequest = convertFromDto(poolRequestDto, owner, payload.getLogin());
         poolRequest.setOwner(payload.getOwner());
         poolRequest.setNewRequest(CREATED_REQUEST_STATE);
+        poolRequest.setNumberRequested(null);
 
         poolRequestRepository.save(poolRequest);
 

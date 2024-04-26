@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static uk.gov.hmcts.juror.api.moj.domain.PoolRequestQueries.filterByActiveFlag;
@@ -44,7 +45,6 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
      *
      * @param poolTypes     List of court type description that the pool has been summoned for
      * @param courtLocation Unique 3 digit code to identify a specific court location
-     *
      * @return a list of Pool Requests which are owned by the Bureau and filtered further based on the supplied criteria
      */
     @Override
@@ -86,7 +86,6 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
      *
      * @param poolNumberPrefix the first 7 characters of a pool number containing the court location code,
      *                         attendance date year (yy) and attendance date month (mm)
-     *
      * @return a list of pools (tuples: pool number and attendance date)
      */
     @Override
@@ -113,7 +112,6 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
      *
      * @param poolNumberPrefix The first 7 characters of a Pool Number containing the Court Location Code,
      *                         Attendance Date Year (YY) and Attendance Date Month (MM)
-     *
      * @return the first Pool Request to match the provided Pool Number prefix, ordered by Pool Number (descending)
      *     therefor the first record returned will have the current highest sequence number
      */
@@ -131,7 +129,6 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
      * Query the database to find an active pool with the pool number provided.
      *
      * @param poolNumber 9-digit number that identifies a unique pool
-     *
      * @return a boolean value
      */
     @Override
@@ -168,7 +165,6 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
      * @param locCode 3-digit numeric string to uniquely identify a court location
      * @param minDate start date (inclusive) for date range predicate
      * @param maxDate end date (inclusive) for date range predicate
-     *
      * @return a Tuple4 containing:
      *     <ol>
      *         <li>Pool Number</li>
@@ -211,6 +207,36 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
         }
 
         return query.fetch();
+    }
+
+    @Override
+    public List<Tuple> findActivePoolsForDateRangeWithCourtCreatedRestriction(String owner, String locCode,
+                                                                              LocalDate minDate,
+                                                                              LocalDateTime courtCreationMinDate) {
+
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        return queryFactory.select(
+                POOL_REQUEST.poolNumber.as("POOL_NO"),
+                POOL_REQUEST.returnDate.as("SERVICE_START_DATE"),
+                POOL_REQUEST.numberRequested.as("NUMBER_REQUESTED"),
+                countRespondedPoolMembers(owner).as("ACTIVE_POOL_MEMBERS")
+            )
+            .from(POOL_REQUEST)
+            .leftJoin(JUROR_POOL)
+            .on(POOL_REQUEST.poolNumber.eq(JUROR_POOL.pool.poolNumber))
+            .where(POOL_REQUEST.nilPool.isFalse())
+            .where(
+                POOL_REQUEST.numberRequested.ne(0)
+                    .and(POOL_REQUEST.returnDate.goe(minDate))
+                    .or(POOL_REQUEST.numberRequested.isNull()
+                        .and(POOL_REQUEST.dateCreated.goe(courtCreationMinDate))
+                    ))
+            .where(POOL_REQUEST.newRequest.eq('N'))
+            .where(POOL_REQUEST.courtLocation.locCode.eq(locCode))
+            .where(POOL_REQUEST.owner.eq(owner))
+            .groupBy(POOL_REQUEST.poolNumber)
+            .groupBy(POOL_REQUEST.returnDate)
+            .groupBy(POOL_REQUEST.numberRequested).fetch();
     }
 
     /**
