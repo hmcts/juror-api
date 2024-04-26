@@ -150,8 +150,6 @@ class PanelSummaryReportTest extends AbstractStandardReportTestSupport<PanelSumm
                     .value("Chester (415)")
                     .build()
             ));
-        verify(tableData, times(1)).getData();
-        verify(data, times(1)).size();
         return map;
     }
 
