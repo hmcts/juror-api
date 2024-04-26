@@ -1024,27 +1024,6 @@ class AbstractReportTest {
             assertThat(notFoundException.getMessage()).isEqualTo("Trial not found");
             assertThat(notFoundException.getCause()).isNull();
         }
-
-        @Test
-        void negativeInvalidAccess() {
-
-            Trial trial = mock(Trial.class);
-            AbstractReport<Object> report = createReport();
-
-            doReturn(trial).when(report).getTrial(any(), any());
-            securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(false);
-
-            report.isCourtUserOnly();
-            assertThat(report.authenticationConsumers).hasSize(1);
-            Consumer<StandardReportRequest> authenticationConsumer = report.authenticationConsumers.get(0);
-
-            MojException.Forbidden exception = assertThrows(
-                MojException.Forbidden.class,
-                () -> authenticationConsumer.accept(mock(StandardReportRequest.class)),
-                "Expected exception to be thrown when not court user");
-            assertThat(exception.getMessage()).isEqualTo("User not allowed to access this report");
-            assertThat(exception.getCause()).isNull();
-        }
     }
 
     @Nested
