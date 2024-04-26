@@ -3187,7 +3187,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         @Nested
         class Positive {
 
-            @SneakyThrows
             protected CombinedExpenseDetailsDto<ExpenseDetailsForTotals> triggerValid(
                 String jurorNumber,
                 CalculateTotalExpenseRequestDto request) throws Exception {
