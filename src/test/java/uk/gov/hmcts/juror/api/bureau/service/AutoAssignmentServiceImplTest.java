@@ -75,9 +75,9 @@ public class AutoAssignmentServiceImplTest {
     @Before
     public void setUp() {
         autoAssignmentService = new AutoAssignmentServiceImpl(responseRepo, userRepo, appSettingService, auditRepo);
-        user1 = User.builder().name("Post Staff 1").username("staff1").active(true).build();
-        user2 = User.builder().name("Post Staff 2").username("staff2").active(true).build();
-        user3 = User.builder().name("Post Staff 3").username("staff3").active(true).build();
+        user1 = User.builder().userType(UserType.BUREAU).name("Post Staff 1").username("staff1").active(true).build();
+        user2 = User.builder().userType(UserType.BUREAU).name("Post Staff 2").username("staff2").active(true).build();
+        user3 = User.builder().userType(UserType.BUREAU).name("Post Staff 3").username("staff3").active(true).build();
 
         doReturn(Arrays.asList(user1, user2)).when(userRepo).findAll(UserQueries.activeBureauOfficers());
 

@@ -64,5 +64,4 @@ public class PoolSearchController {
             || payload.getOwner().equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)
             || courts.contains(locCode);
     }
-
 }
