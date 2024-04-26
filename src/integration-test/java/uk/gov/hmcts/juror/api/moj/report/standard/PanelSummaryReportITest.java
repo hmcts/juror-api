@@ -144,7 +144,11 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "415000002")
                             .add("first_name", "FNAME2")
-                            .add("last_name", "LNAME2")))
+                            .add("last_name", "LNAME2"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "415000003")
+                            .add("first_name", "FNAME3")
+                            .add("last_name", "LNAME3")))
                     .build())
             .build();
     }
