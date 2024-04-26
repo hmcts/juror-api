@@ -12,7 +12,6 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
@@ -116,6 +115,7 @@ class PanelSummaryReportTest extends AbstractStandardReportTestSupport<PanelSumm
         when(trial.getJudge().getName()).thenReturn("Judge Dredd");
 
         when(request.getTrialNumber()).thenReturn("T000000001");
+        when(request.getLocCode()).thenReturn("415");
 
 
         when(data.size()).thenReturn(2);
@@ -124,11 +124,6 @@ class PanelSummaryReportTest extends AbstractStandardReportTestSupport<PanelSumm
             request,
             false,
             Map.of(
-                "panel_summary", AbstractReportResponse.DataTypeValue.builder()
-                    .displayName("Panel Summary")
-                    .dataType(Long.class.getSimpleName())
-                    .value(2)
-                    .build(),
                 "trial_number", AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Trial Number")
                     .dataType(String.class.getSimpleName())
@@ -174,6 +169,20 @@ class PanelSummaryReportTest extends AbstractStandardReportTestSupport<PanelSumm
         StandardReportRequest request = getValidRequest();
         request.setTrialNumber(null);
         assertValidationFails(request, new ValidationFailure("trialNumber", "must not be blank"));
+    }
+
+    @Test
+    void negativeInvalidTrialNumber() {
+        StandardReportRequest request = getValidRequest();
+        request.setTrialNumber("1234567890987654321§1234567890987654321");
+        assertValidationFails(request, new ValidationFailure("trialNumber", "length must be between 0 and 16"));
+    }
+
+    @Test
+    void negativeMissingLocCode() {
+        StandardReportRequest request = getValidRequest();
+        request.setLocCode(null);
+        assertValidationFails(request, new ValidationFailure("locCode", "must not be null"));
     }
 
 }

@@ -20,7 +20,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PanelSummaryReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings({"PMD.LawOfDemeter", "PMD.JUnitTestsShouldIncludeAssert"})
 class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public PanelSummaryReportITest(TestRestTemplate template) {
@@ -41,7 +41,6 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -50,8 +49,7 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-    void negativeInvalidPayload() {
+    void negativeInvalidPayloadMissingTrialNumber() {
         StandardReportRequest request = getValidPayload();
         request.setTrialNumber(null);
         testBuilder()
@@ -61,7 +59,27 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+    void negativeInvalidPayloadMissingLocCode() {
+        StandardReportRequest request = getValidPayload();
+        request.setLocCode(null);
+        testBuilder()
+            .payload(addReportType(request))
+            .triggerInvalid()
+            .assertInvalidPathParam("locCode: must not be null");
+    }
+
+    @Test
+    void negativeInvalidPayloadLocCodeInvalidAccess() {
+        StandardReportRequest request = getValidPayload();
+        request.setLocCode("475");
+        testBuilder()
+            .payload(addReportType(request))
+            .jwt(getCourtJwt("415"))
+            .triggerInvalid()
+            .assertMojForbiddenResponse("User not allowed to access this court");
+    }
+
+    @Test
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -72,11 +90,6 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
     private StandardReportResponse getTypicalResponse() {
         return StandardReportResponse.builder()
             .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
-                .add("panel_summary", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Panel Summary")
-                    .dataType("Long")
-                    .value(1)
-                    .build())
                 .add("trial_number", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Trial Number")
                     .dataType("String")
@@ -124,11 +137,15 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
                             .headings(null)
                             .build()))
                     .data(List.of(
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "415000001")
-                            .add("first_name", "FNAME1")
-                            .add("last_name", "LNAME1")))
-                    .build())
-            .build();
+                            new ReportLinkedMap<String, Object>()
+                                .add("juror_number", "415000001")
+                                .add("first_name", "FNAME1")
+                                .add("last_name", "LNAME1"),
+                            new ReportLinkedMap<String, Object>()
+                                .add("juror_number", "415000002")
+                                .add("first_name", "FNAME2")
+                                .add("last_name", "LNAME2")))
+                        .build())
+                    .build();
     }
 }

@@ -1,6 +1,7 @@
 
 insert into juror_mod.juror (juror_number,last_name,first_name,address_line_1,responded) values
-('415000001','LNAME1','FNAME1','ADDRESS LINE 1', true);
+('415000001','LNAME1','FNAME1','ADDRESS LINE 1', true),
+('415000002','LNAME2','FNAME2','ADDRESS LINE 1', true);
 
 insert into juror_mod.appearance (attendance_date, juror_number,loc_code, time_in, time_out, non_attendance) values
 (current_date, '415000001', '415', current_time,null,false);
@@ -58,4 +59,5 @@ INSERT INTO juror_mod.trial
 ('T100000027', '415', 'TEST DEFENDANT15', 66, 21, 'CRI', current_date - 1, NULL, false, NULL, NULL);
 
 insert into juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed) values
-('415', '415000001', 'T100000001', 1, current_date - 1, 'J', false);
+('415', '415000001', 'T100000001', 1, current_date - 1, 'J', false),
+('415', '415000002', 'T100000001', 1, current_date - 1, 'J', false);

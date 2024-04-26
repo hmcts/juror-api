@@ -53,11 +53,7 @@ public class PanelSummaryReport extends AbstractStandardReport {
         StandardReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
 
         Map<String, StandardReportResponse.DataTypeValue> map = loadStandardTrailHeaders(request, trialRepository);
-        map.put("panel_summary", StandardReportResponse.DataTypeValue.builder()
-            .displayName("Panel Summary")
-            .dataType(Long.class.getSimpleName())
-            .value(tableData.getData().size())
-            .build());
+
         return map;
     }
 
