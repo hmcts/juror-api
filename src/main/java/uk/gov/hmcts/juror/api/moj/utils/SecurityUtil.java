@@ -13,12 +13,7 @@ import java.util.List;
 
 public final class SecurityUtil {
 
-    @Deprecated(forRemoval = true)
     public static final String BUREAU_OWNER = "400";
-    @Deprecated(forRemoval = true)
-    public static final int STANDARD_USER_LEVEL = 0;
-    @Deprecated(forRemoval = true)
-    public static final int TEAM_LEADER_LEVEL = 1;
 
     public static final String IS_MANAGER = "hasRole('ROLE_MANAGER')";
     public static final String IS_SJO = "hasRole('ROLE_SENIOR_JUROR_OFFICER')";

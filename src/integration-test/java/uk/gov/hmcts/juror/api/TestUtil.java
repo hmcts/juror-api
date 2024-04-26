@@ -15,9 +15,9 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Testing utility methods.
@@ -64,7 +64,7 @@ public final class TestUtil {
                                        final SignatureAlgorithm algorithm, final String base64Key,
                                        final Instant expires) {
 
-        final Map<String, Object> claimsMap = new ConcurrentHashMap<>();
+        final Map<String, Object> claimsMap = new HashMap<>();
         claimsMap.put(Claims.EXPIRATION, Date.from(expires));
         claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
         claimsMap.put("data", dataPayload);
@@ -88,7 +88,7 @@ public final class TestUtil {
                                        final SignatureAlgorithm algorithm, final String base64Key,
                                        final Instant expires) {
 
-        final Map<String, Object> claimsMap = new ConcurrentHashMap<>();
+        final Map<String, Object> claimsMap = new HashMap<>();
         claimsMap.put(Claims.EXPIRATION, Date.from(expires));
         claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
         claimsMap.put("daysToExpire", payload.getDaysToExpire());
@@ -117,7 +117,7 @@ public final class TestUtil {
      */
     public static String mintHmacJwt(final SignatureAlgorithm algorithm, final String base64Key,
                                      final Instant expires) {
-        final Map<String, Object> claimsMap = new ConcurrentHashMap<>();
+        final Map<String, Object> claimsMap = new HashMap<>();
         claimsMap.put(Claims.EXPIRATION, Date.from(expires));
         claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
 

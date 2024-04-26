@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -20,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
@@ -97,7 +97,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         if (excusalDecisionDto.getExcusalDecision().equals(ExcusalDecision.GRANT)) {
             grantExcusalForJuror(payload, excusalDecisionDto, jurorPool);
-            if (!ExcusalCode.DECEASED.equals(excusalDecisionDto.getExcusalReasonCode())
+            if (!ExcusalCodeEnum.D.getCode().equals(excusalDecisionDto.getExcusalReasonCode())
                 && SecurityUtil.BUREAU_OWNER.equals(owner)) {
                 // Only generate letter for non-deceased jurors and Bureau users
                 sendExcusalLetter(jurorPool, jurorNumber, excusalDecisionDto.getExcusalReasonCode(), login);

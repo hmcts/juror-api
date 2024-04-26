@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.ExcusalDecisionDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
@@ -28,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
@@ -339,7 +339,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
 
         ExcusalDecisionDto excusalDecisionDto = createExcusalDecisionDto();
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
-        excusalDecisionDto.setExcusalReasonCode(ExcusalCode.DECEASED);
+        excusalDecisionDto.setExcusalReasonCode(ExcusalCodeEnum.D.getCode());
 
         RequestEntity<ExcusalDecisionDto> requestEntity = new RequestEntity<>(excusalDecisionDto, httpHeaders,
             HttpMethod.PUT, uri);
@@ -403,7 +403,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         ExcusalDecisionDto excusalDecisionDto = createExcusalDecisionDto();
         excusalDecisionDto.setReplyMethod(ReplyMethod.PAPER);
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
-        excusalDecisionDto.setExcusalReasonCode(ExcusalCode.DECEASED);
+        excusalDecisionDto.setExcusalReasonCode(ExcusalCodeEnum.D.getCode());
 
         RequestEntity<ExcusalDecisionDto> requestEntity = new RequestEntity<>(excusalDecisionDto, httpHeaders,
             HttpMethod.PUT, uri);
@@ -431,7 +431,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         ExcusalDecisionDto excusalDecisionDto = createExcusalDecisionDto();
         excusalDecisionDto.setReplyMethod(ReplyMethod.DIGITAL);
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
-        excusalDecisionDto.setExcusalReasonCode(ExcusalCode.DECEASED);
+        excusalDecisionDto.setExcusalReasonCode(ExcusalCodeEnum.D.getCode());
 
         RequestEntity<ExcusalDecisionDto> requestEntity = new RequestEntity<>(excusalDecisionDto, httpHeaders,
             HttpMethod.PUT, uri);
@@ -581,7 +581,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         List<BulkPrintData> excusalLetters = new ArrayList<>();
         excusalLetterIterable.forEach(excusalLetters::add);
 
-        if (ExcusalCode.DECEASED.equals(excusalCode)) {
+        if (ExcusalCodeEnum.D.getCode().equals(excusalCode)) {
             assertThat(excusalLetters.size())
                 .as("Expect no excusal letter for deceased jurors")
                 .isEqualTo(0);
