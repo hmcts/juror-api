@@ -80,7 +80,7 @@ public class JurorAppearanceResponseDto {
         private AppearanceStage appStage;
 
         @JsonProperty("police_check")
-        @Setter
+        @Schema(description = "Police check details")
         private PoliceCheck policeCheck;
     }
 }
