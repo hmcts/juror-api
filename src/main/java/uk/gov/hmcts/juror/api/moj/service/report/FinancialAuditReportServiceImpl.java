@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.UserDetailsSimpleDto;
 import uk.gov.hmcts.juror.api.moj.service.FinancialAuditService;
 import uk.gov.hmcts.juror.api.moj.service.JurorRecordService;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.Comparator;
 import java.util.List;
@@ -36,6 +37,7 @@ public class FinancialAuditReportServiceImpl implements FinancialAuditReportServ
         FinancialAuditDetails financialAuditDetails = financialAuditService
             .getFinancialAuditDetails(financialAuditNumber);
 
+        SecurityUtil.validateCourtLocationPermitted(financialAuditDetails.getLocCode());
 
         FinancialAuditDetails forApprovalFinancialAuditDetails =
             financialAuditService.getLastFinancialAuditDetailsWithType(
@@ -77,7 +79,7 @@ public class FinancialAuditReportServiceImpl implements FinancialAuditReportServ
     private CombinedExpenseDetailsDto<ExpenseDetailsWithOriginalDto> getExpenses(
         FinancialAuditDetails financialAuditDetails) {
         CombinedExpenseDetailsDto<ExpenseDetailsWithOriginalDto> combinedExpenseDetailsDto =
-            new CombinedExpenseDetailsDto<>(false);
+            new CombinedExpenseDetailsDto<>(true);
 
         final Function<Appearance, Appearance> origionalAppearanceFunction;
 

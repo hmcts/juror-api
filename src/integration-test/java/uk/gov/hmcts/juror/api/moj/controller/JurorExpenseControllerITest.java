@@ -3186,6 +3186,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
         @Nested
         class Positive {
+
             protected CombinedExpenseDetailsDto<ExpenseDetailsForTotals> triggerValid(
                 String jurorNumber,
                 CalculateTotalExpenseRequestDto request) throws Exception {
@@ -3305,6 +3306,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .parking(new BigDecimal("15.50"))
                         .foodAndDrink(new BigDecimal("17.88000"))
                         .smartCard(new BigDecimal("8.30"))
+                        .totalPaid(new BigDecimal("8.00"))
+                        .totalDue(new BigDecimal("121.34000"))
                         .build());
             }
 
@@ -3363,6 +3366,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .parking(new BigDecimal("12.00"))
                         .foodAndDrink(new BigDecimal("3.00"))
                         .smartCard(new BigDecimal("29.00"))
+                        .totalPaid(new BigDecimal("8.00"))
+                        .totalDue(new BigDecimal("33.01"))
                         .build());
             }
 
@@ -3428,6 +3433,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .parking(new BigDecimal("2.25"))
                         .foodAndDrink(new BigDecimal("5.71000"))
                         .smartCard(new BigDecimal("4.20"))
+                        .totalPaid(new BigDecimal("0.00"))
+                        .totalDue(new BigDecimal("70.28000"))
                         .build());
             }
 
@@ -3504,10 +3511,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .smartCard(new BigDecimal("4.10"))
                         .build());
                 CombinedExpenseDetailsDto.Total total = response.getTotal();
-                total.setHasTotals(true);//Have to set this to true so we can view the totals
                 assertThat(total).isEqualTo(
                     CombinedExpenseDetailsDto.Total.builder()
-                        .hasTotals(true)
                         .totalDays(2)
                         .lossOfEarnings(new BigDecimal("105.01"))
                         .extraCare(new BigDecimal("76.00"))

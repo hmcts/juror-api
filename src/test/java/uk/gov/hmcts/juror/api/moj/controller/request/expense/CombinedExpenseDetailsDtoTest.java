@@ -194,7 +194,6 @@ class CombinedExpenseDetailsDtoTest {
         @Test
         void positiveGetTotalDueDoesNotHaveTotals() {
             final CombinedExpenseDetailsDto.Total total = spy(new CombinedExpenseDetailsDto.Total(false));
-            total.setTotalDue(new BigDecimal("20.00"));
             assertThat(total.getTotalDue()).isNull();
 
         }
@@ -209,8 +208,15 @@ class CombinedExpenseDetailsDtoTest {
         @Test
         void positiveGetTotalPaidDoesNotHaveTotals() {
             final CombinedExpenseDetailsDto.Total total = spy(new CombinedExpenseDetailsDto.Total(false));
-            total.setTotalPaid(new BigDecimal("10.00"));
             assertThat(total.getTotalPaid()).isNull();
+        }
+
+        @Test
+        void positiveGetTotalHaveTotals() {
+            final CombinedExpenseDetailsDto.Total total = spy(new CombinedExpenseDetailsDto.Total(true));
+            assertThat(total.getTotalDue()).isEqualTo(BigDecimal.ZERO);
+            assertThat(total.getTotalPaid()).isEqualTo(BigDecimal.ZERO);
+            assertThat(total.getTotalOutstanding()).isEqualTo(BigDecimal.ZERO);
         }
 
         @Test
