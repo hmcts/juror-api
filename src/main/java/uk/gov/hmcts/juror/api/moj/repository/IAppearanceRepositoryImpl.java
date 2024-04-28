@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorAppearanceResponseDto
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
@@ -141,7 +142,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                 APPEARANCE.timeIn.as("time_in"),
                 APPEARANCE.timeOut.as("time_out"),
                 APPEARANCE.noShow.as("no_show"),
-                APPEARANCE.appearanceStage.as("app_stage")
+                APPEARANCE.appearanceStage.as("app_stage"),
+                JUROR.policeCheck.as("police_check")
             )
             .from(JUROR)
             .join(JUROR_POOL)
@@ -175,6 +177,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                 .checkOutTime(tuple.get(5, LocalTime.class))
                 .noShow(tuple.get(6, Boolean.class))
                 .appStage(tuple.get(7, AppearanceStage.class))
+                .policeCheck(tuple.get(8, PoliceCheck.class))
                 .build();
             appearanceDataList.add(appearanceData);
         }
