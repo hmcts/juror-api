@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.List;
 
@@ -59,32 +60,33 @@ public class JurorRepositoryImpl implements IJurorRepository {
     }
 
     @Override
-    public JPAQuery<Tuple> fetchFilteredJurorRecords(JurorRecordFilterRequestQuery query, List<String> courts) {
+    public JPAQuery<Tuple> fetchFilteredJurorRecords(JurorRecordFilterRequestQuery query) {
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
         JPAQuery<?> partialQuery = queryFactory.from(JUROR)
             .join(JUROR_POOL).on(JUROR_POOL.juror.eq(JUROR));
 
-        if (!courts.contains("400")) {
+        if (!SecurityUtil.isBureau()) {
             // If the user is not a Bureau user, filter by the courts they have access to
-            partialQuery.where(JUROR_POOL.pool.courtLocation.locCode.in(courts));
+            partialQuery.where(JUROR_POOL.pool.courtLocation.locCode.in(SecurityUtil.getCourts()));
         }
 
         if (null != query.getJurorNumber()) {
-            partialQuery.where(JUROR.jurorNumber.like(query.getJurorNumber() + "%"));
+            partialQuery.where(JUROR.jurorNumber.startsWith(query.getJurorNumber()));
         }
 
         if (null != query.getJurorName()) {
-            partialQuery.where(JUROR.firstName.concat(" ").concat(JUROR.lastName).like(query.getJurorName() + "%"));
+            partialQuery.where(JUROR.firstName.concat(" ").concat(JUROR.lastName).containsIgnoreCase(
+                query.getJurorName()));
         }
 
         if (null != query.getPostcode()) {
-            partialQuery.where(JUROR.postcode.like(query.getPostcode() + "%"));
+            partialQuery.where(JUROR.postcode.startsWith(query.getPostcode()));
         }
 
         if (null != query.getPoolNumber()) {
-            partialQuery.where(JUROR_POOL.pool.poolNumber.like(query.getPoolNumber() + "%"));
+            partialQuery.where(JUROR_POOL.pool.poolNumber.startsWith(query.getPoolNumber()));
         }
 
         return partialQuery.distinct().select(

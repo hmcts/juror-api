@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.service.IsPageable;
+import uk.gov.hmcts.juror.api.validation.PoolNumber;
 
 @Data
 @Builder
@@ -36,6 +37,7 @@ public class JurorRecordFilterRequestQuery implements IsPageable {
 
     @JsonProperty("pool_number")
     @Schema(name = "Pool number", description = "Pool Number to search for")
+    @PoolNumber
     private String poolNumber;
 
     @JsonProperty("sort_method")

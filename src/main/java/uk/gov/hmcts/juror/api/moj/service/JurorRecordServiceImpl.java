@@ -1272,10 +1272,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Override
     public PaginatedList<FilterJurorRecord> searchForJurorRecords(JurorRecordFilterRequestQuery query) {
 
-        List<String> courts = SecurityUtil.getCourts();
-
         return PaginationUtil.toPaginatedList(
-            jurorRepository.fetchFilteredJurorRecords(query, courts),
+            jurorRepository.fetchFilteredJurorRecords(query),
             query,
             query.getSortField(),
             query.getSortMethod(),

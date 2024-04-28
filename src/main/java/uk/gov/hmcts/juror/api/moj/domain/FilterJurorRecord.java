@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +19,6 @@ import java.io.Serializable;
 @ToString
 public class FilterJurorRecord implements Serializable {
 
-    @Id
     @NotNull
     @JsonProperty("juror_number")
     private String jurorNumber;

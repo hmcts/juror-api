@@ -21,5 +21,5 @@ public interface IJurorRepository {
                                                                                CourtLocation court,
                                                                                List<Integer> status);
 
-    JPAQuery<Tuple> fetchFilteredJurorRecords(JurorRecordFilterRequestQuery query,  List<String> courts);
+    JPAQuery<Tuple> fetchFilteredJurorRecords(JurorRecordFilterRequestQuery query);
 }

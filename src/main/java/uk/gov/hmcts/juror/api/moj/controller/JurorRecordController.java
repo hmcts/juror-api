@@ -491,7 +491,7 @@ public class JurorRecordController {
         PaginatedList<FilterJurorRecord> poolRequests =
             jurorRecordService.searchForJurorRecords(query);
 
-        if (poolRequests == null) {
+        if (null == poolRequests || poolRequests.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok().body(poolRequests);
