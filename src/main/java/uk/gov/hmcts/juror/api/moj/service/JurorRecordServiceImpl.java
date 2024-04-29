@@ -1280,7 +1280,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             tuple -> {
                 FilterJurorRecord.FilterJurorRecordBuilder builder = FilterJurorRecord.builder()
                     .jurorNumber(tuple.get(QJuror.juror.jurorNumber))
-                    .jurorName(tuple.get(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName)))
+                    .jurorName(tuple.get(jurorRepository.JUROR_FULL_NAME))
                     .postcode(tuple.get(QJuror.juror.postcode))
                     .poolNumber(tuple.get(QJurorPool.jurorPool.pool.poolNumber))
                     .courtName(tuple.get(QJurorPool.jurorPool.pool.courtLocation.name))

@@ -12,6 +12,7 @@ import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.service.IsPageable;
 import uk.gov.hmcts.juror.api.validation.PoolNumber;
 
@@ -59,7 +60,7 @@ public class JurorRecordFilterRequestQuery implements IsPageable {
     @Getter
     public enum SortField implements SortMethod.HasComparableExpression {
         JUROR_NUMBER(QJuror.juror.jurorNumber),
-        JUROR_NAME(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName)),
+        JUROR_NAME(JurorRepository.JUROR_FULL_NAME),
         POSTCODE(QJuror.juror.postcode),
         POOL_NUMBER(QJurorPool.jurorPool.pool.poolNumber),
         COURT_NAME(QJurorPool.jurorPool.pool.poolRequest.courtLocation.name),
