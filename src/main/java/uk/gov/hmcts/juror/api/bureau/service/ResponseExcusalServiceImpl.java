@@ -11,7 +11,6 @@ import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalCodeDto;
-import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.ExcusalException;
 import uk.gov.hmcts.juror.api.juror.domain.ExcusalDeniedLetter;
@@ -24,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -157,7 +157,7 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
             history.setOtherInformation("Add Excuse - " + excusalCodeDto.getExcusalCode());
             historyRepository.save(history);
 
-            if (!ExcusalCode.DECEASED.equalsIgnoreCase(excusalCodeDto.getExcusalCode())) {
+            if (!ExcusalCodeEnum.D.getCode().equalsIgnoreCase(excusalCodeDto.getExcusalCode())) {
                 // only non-deceased jurors get a letter
                 ExcusalLetter excusalLetter = new ExcusalLetter();
                 excusalLetter.setJurorNumber(jurorId);

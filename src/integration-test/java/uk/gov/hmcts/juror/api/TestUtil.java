@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * Testing utility methods.
  */
-public class TestUtil {
+public final class TestUtil {
 
     private TestUtil() {
 

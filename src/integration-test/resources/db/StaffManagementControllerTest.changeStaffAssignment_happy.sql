@@ -1,9 +1,9 @@
 --staff
-INSERT INTO juror_mod.users (owner, username,email, name, active,team_id,version)
-VALUES ('400','jmcbob','jmcbob@email.gov.uk','Joe McBob',true,1,0),
-       ('400','smcbob','smcbob@email.gov.uk','Sarah McBob',true,2,0);
+INSERT INTO juror_mod.users (owner, username,email, name, active,team_id,version, user_type)
+VALUES ('400','jmcbob','jmcbob@email.gov.uk','Joe McBob',true,1,0,'BUREAU'),
+       ('400','smcbob','smcbob@email.gov.uk','Sarah McBob',true,2,0,'BUREAU');
 INSERT INTO juror_mod.user_roles (username, role)
-VALUES ('smcbob', 'TEAM_LEADER');
+VALUES ('smcbob', 'MANAGER');
 
 
 INSERT INTO juror_mod.pool (pool_no,"owner",return_date,no_requested,pool_type,loc_code,new_request,last_update,additional_summons,attend_time,nil_pool,total_no_required,date_created) VALUES

@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.bureau.exception.AutoAssignException;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
@@ -74,9 +75,9 @@ public class AutoAssignmentServiceImplTest {
     @Before
     public void setUp() {
         autoAssignmentService = new AutoAssignmentServiceImpl(responseRepo, userRepo, appSettingService, auditRepo);
-        user1 = User.builder().name("Post Staff 1").username("staff1").active(true).build();
-        user2 = User.builder().name("Post Staff 2").username("staff2").active(true).build();
-        user3 = User.builder().name("Post Staff 3").username("staff3").active(true).build();
+        user1 = User.builder().userType(UserType.BUREAU).name("Post Staff 1").username("staff1").active(true).build();
+        user2 = User.builder().userType(UserType.BUREAU).name("Post Staff 2").username("staff2").active(true).build();
+        user3 = User.builder().userType(UserType.BUREAU).name("Post Staff 3").username("staff3").active(true).build();
 
         doReturn(Arrays.asList(user1, user2)).when(userRepo).findAll(UserQueries.activeBureauOfficers());
 
@@ -238,7 +239,8 @@ public class AutoAssignmentServiceImplTest {
      */
     @Test(expected = AutoAssignException.IneligibleStaff.class)
     public void autoAssign_errorPath_teamLeader() throws Exception {
-        user3.addRole(Role.TEAM_LEADER);
+        user3.setUserType(UserType.BUREAU);
+        user3.addRole(Role.MANAGER);
         autoAssignmentService.autoAssign(AutoAssignRequest.builder()
             .data(Arrays.asList(
                 AutoAssignRequest.StaffCapacity.builder().capacity(60).login("staff1").build(),

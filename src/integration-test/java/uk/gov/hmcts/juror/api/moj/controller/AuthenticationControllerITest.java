@@ -49,6 +49,7 @@ import static org.springframework.http.HttpMethod.POST;
 @Sql(value = {"/db/administration/teardownUsers.sql",
     "/db/administration/createUsers.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "/db/administration/teardownUsers.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 public class AuthenticationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/auth/moj";
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
@@ -147,7 +148,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
             @Test
             void invalidJwtUsingBureauJwt() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_court_standard", "415"))
+                    .jwt(createJwt("test_court_standard", "415"))
                     .triggerInvalid()
                     .assertInternalServerErrorViolation(InvalidJwtAuthenticationException.class,
                         "Failed to parse JWT");
@@ -218,10 +219,10 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                     //Must expire in future
                     .isInTheFuture()
                     //Expiry is less than 1 hour
-                    .isBefore(new Date(clock.millis() + 3700000));
+                    .isBefore(new Date(clock.millis() + 3_700_000));
                 assertThat(claims.getNotBefore()).isNull();
                 assertThat(claims.getIssuedAt()).isBeforeOrEqualTo(new Date(clock.millis()));
-                assertThat(claims.getIssuedAt()).isAfter(new Date(clock.millis() - 60000));
+                assertThat(claims.getIssuedAt()).isAfter(new Date(clock.millis() - 60_000));
 
                 assertThat(claims)
                     .containsEntry("owner", expectedJwtClaims.getOwner())
@@ -410,7 +411,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
             @Test
             void invalidJwtUsingBureauJwt() {
                 testBuilder()
-                    .jwt(createBureauJwt("test_court_standard", "415"))
+                    .jwt(createJwt("test_court_standard", "415"))
                     .triggerInvalid()
                     .assertInvalidJwtAuthenticationException();
             }

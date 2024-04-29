@@ -42,7 +42,7 @@ public class AdministrationCourtRoomController {
     @Operation(summary = "View a court room")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("(" + SecurityUtil.LOC_CODE_AUTH_COURT_ONLY +  ") or "
-        + SecurityUtil.USER_TYPE_ADMINISTRATOR)
+        + SecurityUtil.IS_ADMINISTRATOR)
     public ResponseEntity<List<CourtRoomWithIdDto>> viewCourtRoomsDetails(
         @P("loc_code")
         @PathVariable("loc_code")

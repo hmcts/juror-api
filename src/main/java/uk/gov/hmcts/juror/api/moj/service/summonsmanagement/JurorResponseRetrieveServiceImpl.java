@@ -6,12 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.JurorResponseRetrieveRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.JurorResponseRetrieveResponseDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,8 +19,6 @@ import java.util.List;
 
 import static java.lang.Boolean.FALSE;
 import static java.util.Objects.requireNonNull;
-import static uk.gov.hmcts.juror.api.JurorDigitalApplication.JUROR_OWNER;
-import static uk.gov.hmcts.juror.api.moj.utils.SecurityUtil.TEAM_LEADER_LEVEL;
 import static uk.gov.hmcts.juror.api.moj.utils.converters.ConversionUtils.toProperCase;
 
 @Slf4j
@@ -35,10 +33,9 @@ public class JurorResponseRetrieveServiceImpl implements JurorResponseRetrieveSe
 
     @Override
     @Transactional(readOnly = true)
-    public JurorResponseRetrieveResponseDto retrieveJurorResponse(JurorResponseRetrieveRequestDto request,
-                                                                  BureauJwtPayload payload) {
-        boolean isBureauUser = payload.getOwner().equalsIgnoreCase(JUROR_OWNER);
-        boolean isTeamLeader = payload.getStaff().getRank().equals(TEAM_LEADER_LEVEL);
+    public JurorResponseRetrieveResponseDto retrieveJurorResponse(JurorResponseRetrieveRequestDto request) {
+        boolean isBureauUser = SecurityUtil.isBureau();
+        boolean isTeamLeader = SecurityUtil.isBureauManager();
 
         // validations
         validateRequest(request, isBureauUser, isTeamLeader);

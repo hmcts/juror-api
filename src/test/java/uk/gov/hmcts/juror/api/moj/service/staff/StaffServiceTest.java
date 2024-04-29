@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffAssignmentResponse
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
@@ -93,7 +94,8 @@ public class StaffServiceTest {
     private static final User ASSIGNER_STAFF_ENTITY = User.builder()
         .username(ASSIGNING_LOGIN)
         .name("Bob")
-        .roles(Set.of(Role.TEAM_LEADER))
+        .roles(Set.of(Role.MANAGER))
+        .userType(UserType.BUREAU)
         .active(true)
         .build();
 

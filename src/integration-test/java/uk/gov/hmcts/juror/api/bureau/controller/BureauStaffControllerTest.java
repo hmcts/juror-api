@@ -35,6 +35,8 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.TeamDto;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -42,6 +44,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
@@ -139,9 +142,12 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/StaffRepositoryTest_findByActiveOrderByNameAsc.sql")
     public void getAll_happyPath() throws Exception {
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("rprice")
-                .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
-                .daysToExpire(89).owner("400").build());
+            BureauJwtPayload.builder()
+                .userType(UserType.BUREAU)
+                .roles(Collections.singleton(Role.MANAGER))
+                .login("rprice")
+                .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).build())
+                .owner("400").build());
 
         final URI uri = URI.create("/api/v1/bureau/staff");
 
@@ -165,9 +171,11 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/StaffRepositoryTest_findByActiveOrderByNameAsc.sql")
     public void getAll_unhappyPath_notATeamLeader() throws Exception {
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("jpowers")
-                .staff(BureauJwtPayload.Staff.builder().name("Joanna Powers").active(1).rank(0).build())
-                .daysToExpire(89).owner("400").build());
+            BureauJwtPayload.builder()
+                .userType(UserType.BUREAU)
+                .login("jpowers")
+                .staff(BureauJwtPayload.Staff.builder().name("Joanna Powers").active(1).build())
+                .owner("400").build());
 
         final URI uri = URI.create("/api/v1/bureau/staff");
 
@@ -184,9 +192,12 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/StaffRepositoryTest_findByActiveOrderByNameAsc.sql")
     public void getOne_happyPath() throws Exception {
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("rprice")
-                .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
-                .daysToExpire(89).owner("400").build());
+            BureauJwtPayload.builder()
+                .userType(UserType.BUREAU)
+                .roles(Set.of(Role.MANAGER))
+                .login("rprice")
+                .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).build())
+                .owner("400").build());
 
         final URI uri = URI.create("/api/v1/bureau/staff/jpowers");
 
@@ -205,9 +216,12 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/StaffRepositoryTest_findByActiveOrderByNameAsc.sql")
     public void getOne_errorPath_noResult() throws Exception {
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("rprice")
-                .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
-                .daysToExpire(89).owner("400").build());
+            BureauJwtPayload.builder()
+                .userType(UserType.BUREAU)
+                .roles(Set.of(Role.MANAGER))
+                .login("rprice")
+                .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).build())
+                .owner("400").build());
 
         final URI uri = URI.create("/api/v1/bureau/staff/nresult");
 
@@ -1047,12 +1061,15 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauResponseController_reassign.sql")
-    public void reassignStaffMembersResponses_happyPath() throws Exception {
+    public void reassignStaffMembersResponses_happyPath() {
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("kfry").daysToExpire(89)
+            BureauJwtPayload.builder()
+                .userType(UserType.BUREAU)
+                .roles(Set.of(Role.MANAGER))
+                .login("kfry")
                 .owner("400").staff(
-                    BureauJwtPayload.Staff.builder().active(1).rank(1).name("kfry").courts(Collections.singletonList(
-                        "123"))
+                    BureauJwtPayload.Staff.builder().active(1).name("kfry").courts(Collections.singletonList(
+                            "123"))
                         .build()).build());
 
         final String staffToDeactivate = "ncrawford";
@@ -1105,10 +1122,12 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/BureauResponseController_reassign.sql")
     public void reassignStaffMembersResponses_unhappyPath_sendUrgentsToBacklog() throws Exception {
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("kfry").daysToExpire(89)
+            BureauJwtPayload.builder()
+                .userType(UserType.BUREAU)
+                .roles(Set.of(Role.MANAGER))
                 .owner("400").staff(
-                    BureauJwtPayload.Staff.builder().active(1).rank(1).name("kfry").courts(Collections.singletonList(
-                        "123"))
+                    BureauJwtPayload.Staff.builder().active(1).name("kfry").courts(Collections.singletonList(
+                            "123"))
                         .build()).build());
 
         final String staffToDeactivate = "ncrawford";
@@ -1152,12 +1171,17 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauResponseController_reassign.sql")
-    public void reassignStaffMembersResponses_unhappyPath_cantFindStaff() throws Exception {
+    public void reassignStaffMembersResponses_unhappyPath_cantFindStaff() {
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").passwordWarning(false).login("kfry").daysToExpire(89)
-                .owner("400").staff(
-                    BureauJwtPayload.Staff.builder().active(1).rank(1).name("kfry").courts(Collections.singletonList(
-                        "123"))
+            BureauJwtPayload.builder()
+                .userType(UserType.BUREAU)
+                .roles(Set.of(Role.MANAGER))
+                .login("kfry")
+                .owner("400")
+                .staff(
+                    BureauJwtPayload.Staff.builder()
+                        .active(1)
+                        .name("kfry").courts(Collections.singletonList("123"))
                         .build()).build());
 
         final String staffToReassignFrom = "NON-EXISTENT-USER";

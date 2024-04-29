@@ -35,6 +35,8 @@ import uk.gov.hmcts.juror.api.moj.domain.CoronerPool;
 import uk.gov.hmcts.juror.api.moj.domain.CoronerPoolDetail;
 import uk.gov.hmcts.juror.api.moj.domain.FilterPoolMember;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.VotersLocPostcodeTotals;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
@@ -50,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -121,7 +124,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql(statements = "delete from juror_mod.juror_pool")
     @Sql(statements = "delete from juror_mod.pool")
     public void getPoolRequestItem_poolRequestNotFound() throws Exception {
-        final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+        final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/pool-create/pool?poolNumber=415220110&owner=400");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -137,7 +140,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         String locationCode = "415";
         String attendanceDate = "2022-12-04";
-        final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+        final String bureauJwt = createJwtBureau("BUREAU_USER");
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
         final URI uri = URI.create("/api/v1/moj/pool-create/bureau-deferrals?locationCode="
@@ -160,7 +163,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         String locationCode = "419";
         String attendanceDate = "2022-12-09";
-        final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+        final String bureauJwt = createJwtBureau("BUREAU_USER");
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
         final URI uri = URI.create("/api/v1/moj/pool-create/bureau-deferrals?locationCode=" + locationCode
@@ -217,10 +220,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_createPool.sql"})
     public void createPool_noBureauDeferrals() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("BUREAU_USER")
-            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
-            .daysToExpire(89)
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
             .owner("400")
             .build());
 
@@ -241,10 +244,9 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_loadVotersWithFlags.sql"})
     public void createPool_withDisqualifiedOnSelection() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
+            .userType(UserType.BUREAU)
             .login("BUREAU_USER")
-            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
-            .daysToExpire(89)
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
             .owner("400")
             .build());
 
@@ -292,10 +294,9 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_createPoolWithDeferral.sql"})
     public void createPool_withBureauDeferral() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
+            .userType(UserType.BUREAU)
             .login("BUREAU_USER")
-            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
-            .daysToExpire(89)
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
             .owner("400")
             .build());
 
@@ -323,10 +324,9 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_createPoolWithDeferral.sql"})
     public void summonAdditionalCitizens() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
+            .userType(UserType.BUREAU)
             .login("BUREAU_USER")
-            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
-            .daysToExpire(89)
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
             .owner("400")
             .build());
 
@@ -359,7 +359,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     public void summonAdditionalCitizens_courtUser() throws Exception {
-        final String courtJwt = createBureauJwt("COURT_USER", "415");
+        final String courtJwt = createJwt("COURT_USER", "415");
 
         PoolAdditionalSummonsDto poolAdditionalSummons = setUpPoolAdditionalSummonsDto();
 
@@ -376,7 +376,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql(statements = "DELETE FROM JUROR_MOD.BULK_PRINT_DATA")
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadActivePool_and_loadSingleVoter.sql"})
     public void test_summonAdditionalCitizens_singleRecord() throws Exception {
-        final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+        final String bureauJwt = createJwtBureau("BUREAU_USER");
 
         PoolAdditionalSummonsDto poolAdditionalSummons = setUpPoolAdditionalSummonsDto();
 
@@ -404,10 +404,10 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_createPoolWithDeferral.sql"})
     public void summonAdditionalCitizens_tooManyCitizens() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("BUREAU_USER")
-            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
-            .daysToExpire(89)
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
             .owner("400")
             .build());
 
@@ -520,10 +520,9 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_requestPoolDetails.sql"})
     public void createPool_invalidUserType() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
+            .userType(UserType.COURT)
             .login("COURT_USER")
-            .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
-            .daysToExpire(89)
+            .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).build())
             .owner("774")
             .build());
 
@@ -1020,7 +1019,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql"})
     public void getCourtCatchmentItems_happyPath() throws Exception {
-        final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+        final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/pool-create/postcodes?areaCode=415");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1053,7 +1052,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVotersForCoroners.sql"})
     public void getCourtCatchmentItems_Coroners_NormalPool() throws Exception {
-        final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+        final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/pool-create/postcodes?areaCode=415");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1083,7 +1082,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVotersForCoroners.sql"})
     public void getCourtCatchmentItems_Coroners_happyPath() throws Exception {
-        final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+        final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/pool-create/postcodes?areaCode=415&isCoronersPool=true");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1112,7 +1111,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql(statements = "DELETE FROM JUROR_MOD.VOTERS")
     public void getCourtCatchmentItems_noCatchmentAreaItems() throws Exception {
-        final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+        final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/pool-create/postcodes?areaCode=415");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1124,7 +1123,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     public void getCourtCatchmentItems_invalidLocationCode() throws Exception {
-        final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+        final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/pool-create/postcodes?areaCode=100");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1212,7 +1211,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/moj/pool-create/nil-pool-check");
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("BUREAU_USER", "400"));
         RequestEntity<NilPoolRequestDto> requestEntity = new RequestEntity<>(nilPoolCheckRequest, httpHeaders,
             HttpMethod.POST, uri);
 
@@ -1284,7 +1283,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         final URI uri2 = URI.create("/api/v1/moj/pool-create/nil-pool-convert");
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("BUREAU_USER", "400"));
         RequestEntity<PoolRequestDto> requestEntity2 = new RequestEntity<>(poolRequestDto, httpHeaders,
             HttpMethod.PUT, uri2);
 
@@ -1335,7 +1334,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/moj/pool-create/nil-pool-create");
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("BUREAU_USER", "400"));
         RequestEntity<NilPoolRequestDto> requestEntity = new RequestEntity<>(nilPoolCheckRequest, httpHeaders,
             HttpMethod.POST, uri);
 
@@ -1368,7 +1367,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/moj/pool-create/create-coroner-pool");
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("BUREAU_USER", "400"));
         RequestEntity<CoronerPoolRequestDto> requestEntity = new RequestEntity<>(coronerPoolRequestDto, httpHeaders,
             HttpMethod.POST, uri);
 
@@ -1397,7 +1396,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/moj/pool-create/add-citizens");
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("BUREAU_USER", "400"));
         RequestEntity<CoronerPoolAddCitizenRequestDto> requestEntity = new RequestEntity<>(addCitizenRequestDto,
             httpHeaders,
             HttpMethod.POST, uri);
@@ -1427,7 +1426,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/moj/pool-create/add-citizens");
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("BUREAU_USER", "400"));
         RequestEntity<CoronerPoolAddCitizenRequestDto> requestEntity = new RequestEntity<>(addCitizenRequestDto,
             httpHeaders,
             HttpMethod.POST, uri);
@@ -1449,7 +1448,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/moj/pool-create/add-citizens");
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("BUREAU_USER", "400"));
         RequestEntity<CoronerPoolAddCitizenRequestDto> requestEntity = new RequestEntity<>(addCitizenRequestDto,
             httpHeaders,
             HttpMethod.POST, uri);
@@ -1471,7 +1470,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         final URI uri = URI.create("/api/v1/moj/pool-create/add-citizens");
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("BUREAU_USER", "400"));
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("BUREAU_USER", "400"));
         RequestEntity<CoronerPoolAddCitizenRequestDto> requestEntity = new RequestEntity<>(addCitizenRequestDto,
             httpHeaders,
             HttpMethod.POST, uri);
@@ -1486,7 +1485,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_createCoronerPool.sql"})
     public void getCoronerPoolDetails_happy() throws Exception {
-        final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+        final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/pool-create/coroner-pool?poolNumber=923040001");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1655,10 +1654,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     private String initCourtsJwt(String owner, List<String> courts) throws Exception {
 
         return mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.COURT)
             .login("COURT_USER")
-            .daysToExpire(89)
             .owner(owner)
             .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build());

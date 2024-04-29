@@ -17,7 +17,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/bureau", produces = MediaType.APPLICATION_JSON_VALUE)
-@PreAuthorize(SecurityUtil.BUREAU_TEAM_LEADER)
+@PreAuthorize(SecurityUtil.IS_BUREAU_MANAGER)
 public class BureauOfficerAllocatedRepliesController {
 
     private final BureauOfficerAllocatedRepliesService bureauOfficerAllocatedRepliesService;

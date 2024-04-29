@@ -55,7 +55,7 @@ public class TrialController {
      */
     @PostMapping("/create")
     @Operation(summary = "Enable the officer to create a trial")
-    @PreAuthorize(SecurityUtil.COURT_AUTH)
+    @PreAuthorize(SecurityUtil.IS_COURT)
     public ResponseEntity<TrialSummaryDto> createTrial(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid TrialDto trialDto) {
@@ -65,7 +65,7 @@ public class TrialController {
 
     @PatchMapping("/edit")
     @Operation(summary = "Enable the officer to edit a trial")
-    @PreAuthorize(SecurityUtil.COURT_AUTH)
+    @PreAuthorize(SecurityUtil.IS_COURT)
     public ResponseEntity<TrialSummaryDto> editTrial(
         @RequestBody @Valid TrialDto trialDto) {
         TrialSummaryDto trialSummaryDto = trialService.editTrial(trialDto);
@@ -74,7 +74,7 @@ public class TrialController {
 
     @GetMapping("/list")
     @Operation(summary = "Get a list of all trials")
-    @PreAuthorize(SecurityUtil.COURT_AUTH)
+    @PreAuthorize(SecurityUtil.IS_COURT)
     public ResponseEntity<PageDto<TrialListDto>> getTrials(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam("page_number") @PathVariable("pageNumber") @Valid int pageNumber,
@@ -90,7 +90,7 @@ public class TrialController {
 
     @GetMapping("/summary")
     @Operation(summary = "Get summary details for a trial")
-    @PreAuthorize(SecurityUtil.COURT_AUTH)
+    @PreAuthorize(SecurityUtil.IS_COURT)
     public ResponseEntity<TrialSummaryDto> getTrialSummary(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam(name = "trial_number") @PathVariable(name = "trialNumber") String trialNumber,
@@ -100,7 +100,7 @@ public class TrialController {
 
     @PostMapping("/return-panel")
     @Operation(summary = "Return panel members back to jurors in waiting")
-    @PreAuthorize(SecurityUtil.COURT_AUTH)
+    @PreAuthorize(SecurityUtil.IS_COURT)
     public ResponseEntity<Void> returnPanel(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam(name = "trial_number") @PathVariable(name = "trialNumber") String trialNumber,
@@ -113,7 +113,7 @@ public class TrialController {
 
     @PostMapping("/return-jury")
     @Operation(summary = "Return jury members back to jurors in waiting")
-    @PreAuthorize(SecurityUtil.COURT_AUTH)
+    @PreAuthorize(SecurityUtil.IS_COURT)
     public ResponseEntity<Void> returnJury(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestParam(name = "trial_number") @PathVariable(name = "trialNumber") String trialNumber,
@@ -126,7 +126,7 @@ public class TrialController {
 
     @PatchMapping("/end-trial")
     @Operation(summary = "End the trial")
-    @PreAuthorize(SecurityUtil.COURT_AUTH)
+    @PreAuthorize(SecurityUtil.IS_COURT)
     public ResponseEntity<Void> endTrial(@RequestBody EndTrialDto endTrialDto) {
         trialService.endTrial(endTrialDto);
         return ResponseEntity.ok(null);
