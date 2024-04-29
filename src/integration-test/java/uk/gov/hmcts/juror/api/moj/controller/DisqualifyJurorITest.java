@@ -77,8 +77,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
     //Tests related to controller method: disqualifyReasons()
     @Test
     public void disqualifyReasons() {
-        DisqualifyReasonsDto disqualifyReasonsDto = templateExchangeDisqualifyReasons(
-        );
+        DisqualifyReasonsDto disqualifyReasonsDto = templateExchangeDisqualifyReasons();
 
         assertThat(disqualifyReasonsDto.getDisqualifyReasons().size()).isEqualTo(10);
         assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(0).getCode()).isEqualTo("A");
