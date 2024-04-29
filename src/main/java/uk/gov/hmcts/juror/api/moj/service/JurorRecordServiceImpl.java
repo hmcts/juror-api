@@ -1284,7 +1284,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                     .postcode(tuple.get(QJuror.juror.postcode))
                     .poolNumber(tuple.get(QJurorPool.jurorPool.pool.poolNumber))
                     .courtName(tuple.get(QJurorPool.jurorPool.pool.courtLocation.name))
-                    .status(tuple.get(QJurorPool.jurorPool.status.statusDesc));
+                    .status(tuple.get(QJurorPool.jurorPool.status.statusDesc))
+                    .locCode(tuple.get(QJurorPool.jurorPool.pool.courtLocation.locCode));
                 return builder.build();
             },
             500L

@@ -95,6 +95,7 @@ public class JurorRepositoryImpl implements IJurorRepository {
             JUROR.postcode,
             JUROR_POOL.pool.poolNumber,
             JUROR_POOL.pool.courtLocation.name,
-            JUROR_POOL.status.statusDesc);
+            JUROR_POOL.status.statusDesc,
+            JUROR_POOL.pool.courtLocation.locCode);
     }
 }
