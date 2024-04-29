@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import uk.gov.hmcts.juror.api.TestConstants;
+import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.domain.QBureauJurorCjs;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
@@ -1031,18 +1032,19 @@ class AbstractReportTest {
         @Test
         void positiveTypical() {
             TrialRepository trialRepository = mock(TrialRepository.class);
+            Trial trial = mock(Trial.class);
 
-            Trial trial = new Trial();
-            trial.setTrialNumber(TestConstants.VALID_TRIAL_NUMBER);
+            securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
-            AbstractReport<Object> report = createReport();
-
-            doReturn(trial).when(report).getTrial(any(), any());
-
-            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(any(), any())).thenReturn(Optional.of(trial));
-
+            doReturn(Optional.of(trial)).when(trialRepository)
+                .findByTrialNumberAndCourtLocationLocCode(TestConstants.VALID_TRIAL_NUMBER,
+                    TestConstants.VALID_COURT_LOCATION);
             assertThat(createReport().getTrial(TestConstants.VALID_TRIAL_NUMBER, trialRepository))
                 .isEqualTo(trial);
+
+            verify(trialRepository, times(1)).findByTrialNumberAndCourtLocationLocCode(TestConstants.VALID_TRIAL_NUMBER,
+                TestConstants.VALID_COURT_LOCATION);
+
         }
 
         @Test
