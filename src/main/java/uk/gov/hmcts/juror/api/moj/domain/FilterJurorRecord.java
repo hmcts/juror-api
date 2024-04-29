@@ -38,4 +38,7 @@ public class FilterJurorRecord implements Serializable {
     @JsonProperty("status")
     private String status;
 
+    @JsonProperty("loc_code")
+    private String locCode;
+
 }

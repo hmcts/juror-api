@@ -91,10 +91,11 @@ public class JurorRepositoryImpl implements IJurorRepository {
 
         return partialQuery.distinct().select(
             JUROR.jurorNumber,
-            JUROR.firstName.concat(" ").concat(JUROR.lastName),
+            JUROR.firstName.concat(" ").concat(JUROR.lastName).as(JUROR_FULL_NAME),
             JUROR.postcode,
             JUROR_POOL.pool.poolNumber,
             JUROR_POOL.pool.courtLocation.name,
-            JUROR_POOL.status.statusDesc);
+            JUROR_POOL.status.statusDesc,
+            JUROR_POOL.pool.courtLocation.locCode);
     }
 }

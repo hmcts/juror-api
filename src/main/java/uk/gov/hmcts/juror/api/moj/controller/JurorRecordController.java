@@ -488,13 +488,10 @@ public class JurorRecordController {
     public ResponseEntity<PaginatedList<FilterJurorRecord>> searchForJurorRecord(
         @RequestBody @Valid JurorRecordFilterRequestQuery query) {
 
-        PaginatedList<FilterJurorRecord> poolRequests =
-            jurorRecordService.searchForJurorRecords(query);
-
-        if (null == poolRequests || poolRequests.isEmpty()) {
+        PaginatedList<FilterJurorRecord> jurorRecords = jurorRecordService.searchForJurorRecords(query);
+        if (null == jurorRecords || jurorRecords.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok().body(poolRequests);
-
+        return ResponseEntity.ok().body(jurorRecords);
     }
 }
