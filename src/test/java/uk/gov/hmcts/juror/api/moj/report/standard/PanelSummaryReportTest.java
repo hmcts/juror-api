@@ -183,4 +183,11 @@ class PanelSummaryReportTest extends AbstractStandardReportTestSupport<PanelSumm
         assertValidationFails(request, new ValidationFailure("locCode", "must not be null"));
     }
 
+    @Test
+    void negativeInvalidLocCode() {
+        StandardReportRequest request = getValidRequest();
+        request.setLocCode("12345678ikjgfdvhj");
+        assertValidationFails(request, new ValidationFailure("locCode", "must match \"^\\d{3}$\""));
+    }
+
 }
