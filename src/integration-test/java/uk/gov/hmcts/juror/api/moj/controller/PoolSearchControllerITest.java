@@ -23,13 +23,16 @@ import uk.gov.hmcts.juror.api.moj.controller.request.PoolSearchRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestSearchListDto;
 import uk.gov.hmcts.juror.api.moj.domain.FilterCoronerPool;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -54,10 +57,9 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
     private void initHeaders() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("BUREAU_USER")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -69,10 +71,9 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
     private String initCourtsJwt(String owner, List<String> courts) throws Exception {
 
         return mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.COURT)
+            .roles(Set.of(Role.MANAGER))
             .login("COURT_USER")
-            .daysToExpire(89)
             .owner(owner)
             .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build());
