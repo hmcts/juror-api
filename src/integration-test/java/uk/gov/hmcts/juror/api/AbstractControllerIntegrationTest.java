@@ -1,7 +1,9 @@
 package uk.gov.hmcts.juror.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -120,7 +122,6 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
         }
 
 
-
         @Getter
         @Setter
         @Accessors(chain = true, fluent = true)
@@ -164,6 +165,12 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
             @SuppressWarnings("PMD.SystemPrintln")
             public ControllerTestResponse<T> printResponse() {
                 System.out.println(responseEntity);
+                return this;
+            }
+
+            @SneakyThrows
+            public ControllerTestResponse<T> printResponseBodyAsJson() {
+                System.out.println(new ObjectMapper().findAndRegisterModules().writeValueAsString(body));
                 return this;
             }
 

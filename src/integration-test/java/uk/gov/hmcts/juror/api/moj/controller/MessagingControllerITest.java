@@ -3542,7 +3542,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 testBuilder()
                     .payload(payload)
                     .triggerValid()
-                    .printResponse()
                     .assertEquals(
                         "Juror Number,Title,First Name,Last Name,Email,Main Phone,Other Phone,Work Phone,Address Line"
                             + " 1,Address Line 2,Address Line 3,Address Line 4,Address Line 5,Postcode,Welsh language,"
