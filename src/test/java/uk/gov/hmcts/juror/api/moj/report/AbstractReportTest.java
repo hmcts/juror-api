@@ -1026,12 +1026,15 @@ class AbstractReportTest {
     }
 
     @Nested
-    @DisplayName("PoolRequest getTrial(String trialNumber, TrialRepository trialRepository)")
+    @DisplayName("Trial getTrial(String trialNumber, TrialRepository trialRepository)")
     class GetTrial {
         @Test
         void positiveTypical() {
             TrialRepository trialRepository = mock(TrialRepository.class);
-            Trial trial = mock(Trial.class);
+
+            Trial trial = new Trial();
+            trial.setTrialNumber(TestConstants.VALID_TRIAL_NUMBER);
+
             AbstractReport<Object> report = createReport();
 
             doReturn(trial).when(report).getTrial(any(), any());
