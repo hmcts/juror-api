@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
@@ -29,6 +30,8 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -91,7 +94,6 @@ class DeceasedResponseServiceTest {
             jurorDigitalResponseRepository,
             contactLogRepository
         );
-
     }
 
     @Test
@@ -249,12 +251,22 @@ class DeceasedResponseServiceTest {
         assertThat(paperResponse.getProcessingComplete()).isTrue();
         assertThat(paperResponse.getCompletedAt()).isNotNull();
 
+        final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
+
+        verify(jurorRepository, times(1))
+            .save(jurorArgumentCaptor.capture());
+
+        Juror juror = jurorArgumentCaptor.getValue();
+        assertThat(juror.getJurorNumber()).isEqualTo(jurorNumber);
+        assertThat(juror.getExcusalCode()).isEqualTo("D");
+        assertThat(juror.getExcusalDate()).isEqualTo(LocalDate.now(ZoneId.systemDefault()));
+        assertThat(juror.isResponded()).isTrue();
+
         verify(jurorDigitalResponseRepository, times(1))
             .findByJurorNumber(anyString());
         verify(contactCodeRepository, times(1)).findById(any());
         verify(contactLogRepository, times(1)).saveAndFlush(any());
     }
-
 
     @Test
     void markJurorAsDeceasedDigitalResponseExists() {
@@ -318,14 +330,22 @@ class DeceasedResponseServiceTest {
         assertThat(digitalResponse.getProcessingComplete()).isTrue();
         assertThat(digitalResponse.getCompletedAt()).isNotNull();
 
+        final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
+
+        verify(jurorRepository, times(1))
+            .save(jurorArgumentCaptor.capture());
+
+        Juror juror = jurorArgumentCaptor.getValue();
+        assertThat(juror.getJurorNumber()).isEqualTo(jurorNumber);
+        assertThat(juror.getExcusalCode()).isEqualTo("D");
+        assertThat(juror.getExcusalDate()).isEqualTo(LocalDate.now(ZoneId.systemDefault()));
+        assertThat(juror.isResponded()).isTrue();
+
         verify(jurorPaperResponseRepository, times(0))
             .findByJurorNumber(anyString());
         verify(contactCodeRepository, times(1)).findById(any());
         verify(contactLogRepository, times(1)).saveAndFlush(any());
     }
-
-
-
 
     private BureauJwtPayload buildPayload(String owner) {
         return BureauJwtPayload.builder()
