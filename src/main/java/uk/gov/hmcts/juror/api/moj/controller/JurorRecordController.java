@@ -489,7 +489,9 @@ public class JurorRecordController {
         @RequestBody @Valid JurorRecordFilterRequestQuery query) {
 
         PaginatedList<FilterJurorRecord> jurorRecords = jurorRecordService.searchForJurorRecords(query);
-
+        if (null == jurorRecords || jurorRecords.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
         return ResponseEntity.ok().body(jurorRecords);
     }
 }
