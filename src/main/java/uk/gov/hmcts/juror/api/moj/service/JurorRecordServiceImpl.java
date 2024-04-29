@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorAddressDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
@@ -46,6 +47,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryType;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
+import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -53,11 +55,14 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJuror;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
@@ -95,6 +100,7 @@ import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeServic
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
+import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -1261,6 +1267,28 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             .dateCreated(LocalDateTime.now())
             .build();
         jurorHistoryRepository.save(history);
+    }
+
+    @Override
+    public PaginatedList<FilterJurorRecord> searchForJurorRecords(JurorRecordFilterRequestQuery query) {
+
+        return PaginationUtil.toPaginatedList(
+            jurorRepository.fetchFilteredJurorRecords(query),
+            query,
+            query.getSortField(),
+            query.getSortMethod(),
+            tuple -> {
+                FilterJurorRecord.FilterJurorRecordBuilder builder = FilterJurorRecord.builder()
+                    .jurorNumber(tuple.get(QJuror.juror.jurorNumber))
+                    .jurorName(tuple.get(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName)))
+                    .postcode(tuple.get(QJuror.juror.postcode))
+                    .poolNumber(tuple.get(QJurorPool.jurorPool.pool.poolNumber))
+                    .courtName(tuple.get(QJurorPool.jurorPool.pool.courtLocation.name))
+                    .status(tuple.get(QJurorPool.jurorPool.status.statusDesc));
+                return builder.build();
+            },
+            500L
+        );
     }
 
     private JurorPool getJurorPool(String jurorNumber, String poolNumber) {

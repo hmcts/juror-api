@@ -1,9 +1,11 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
+import com.querydsl.core.Tuple;
+import com.querydsl.jpa.impl.JPAQuery;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -12,16 +14,6 @@ import java.util.List;
  */
 public interface IJurorRepository {
 
-    Juror findByJurorNumberAndOwnerAndDeferralDate(String jurorNumber, String owner, LocalDate deferralDate);
-
-    List<Juror> findByPoolNumberAndWasDeferredAndIsActive(String poolNumber, boolean wasDeferred, boolean isActive);
-
-    List<Juror> findByPoolNumberAndIsActive(String poolNumber, boolean isActive);
-
-    Juror findByJurorNumberAndPoolNumberAndIsActive(String jurorNumber, String poolNumber, boolean isActive);
-
-    List<Juror> findByJurorNumberAndIsActive(String jurorNumber, boolean isActive);
-
     Juror findByJurorNumberAndIsActiveAndCourt(String jurorNumber, boolean isActive, CourtLocation locCode);
 
     List<Juror> findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(List<String> jurorNumbers,
@@ -29,11 +21,5 @@ public interface IJurorRepository {
                                                                                CourtLocation court,
                                                                                List<Integer> status);
 
-    List<Juror> findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(List<String> jurorNumbers, boolean isActive,
-                                                                    String poolNumber, CourtLocation court);
-
-    Juror findByOwnerAndJurorNumberAndPoolNumber(String owner, String jurorNumber, String poolNumber);
-
-    List<Juror> findByPoolNumberAndOwnerAndIsActive(String poolNumber, String owner, boolean isActive);
-
+    JPAQuery<Tuple> fetchFilteredJurorRecords(JurorRecordFilterRequestQuery query);
 }
