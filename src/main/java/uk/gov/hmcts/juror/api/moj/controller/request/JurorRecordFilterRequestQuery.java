@@ -63,7 +63,7 @@ public class JurorRecordFilterRequestQuery implements IsPageable {
         POSTCODE(QJuror.juror.postcode),
         POOL_NUMBER(QJurorPool.jurorPool.pool.poolNumber),
         COURT_NAME(QJurorPool.jurorPool.pool.poolRequest.courtLocation.name),
-        STATUS(QJurorPool.jurorPool.status.status);
+        STATUS(QJurorPool.jurorPool.status.statusDesc);
 
         private final Expression<? extends Comparable<?>> comparableExpression;
 
