@@ -573,7 +573,6 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/EditPoolController_createPool.sql"})
-    @Sql(statements = "DELETE FROM JUROR.POOL_COMMENTS")
     public void test_editPoolCourtUser() throws Exception {
         initHeaders(Role.MANAGER);
         String poolNumber = "415221201";
@@ -651,8 +650,6 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/EditPoolController_createPool.sql"})
-    @Sql(statements = "DELETE FROM JUROR.POOL_COMMENTS")
-    @Sql(statements = "DELETE FROM JUROR_MOD.POOL_HISTORY")
     public void test_editPool_TotalRequiredLowerThanRequested_CourtUser() throws Exception {
         initHeaders(Role.MANAGER);
         String poolNumber = "415221201";
