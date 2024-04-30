@@ -55,7 +55,8 @@ public abstract class AbstractReport<T> {
         CLASS_TO_JOIN = new ConcurrentHashMap<>();
         CLASS_TO_JOIN.put(QJuror.juror, Map.of(
             QJurorPool.jurorPool, new Predicate[]{QJuror.juror.eq(QJurorPool.jurorPool.juror)},
-            QAppearance.appearance, new Predicate[]{QJuror.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber)}
+            QAppearance.appearance, new Predicate[]{QJuror.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber)},
+            QPanel.panel, new Predicate[]{QPanel.panel.juror.eq(QJuror.juror)}
         ));
         CLASS_TO_JOIN.put(QJurorPool.jurorPool, Map.of(
             QJuror.juror, new Predicate[]{QJurorPool.jurorPool.juror.eq(QJuror.juror)}
@@ -71,11 +72,9 @@ public abstract class AbstractReport<T> {
                 QJurorPool.jurorPool.pool.poolNumber.eq(QAppearance.appearance.poolNumber)
             }
         ));
-        CLASS_TO_JOIN.put(QPanel.panel.trial, Map.of(
-            QJuror.juror, new Predicate[]{QAppearance.appearance.jurorNumber.eq(QJuror.juror.jurorNumber)},
-            QJurorPool.jurorPool, new Predicate[]{
-                QJurorPool.jurorPool.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber),
-                QJurorPool.jurorPool.pool.poolNumber.eq(QAppearance.appearance.poolNumber)
+        CLASS_TO_JOIN.put(QPanel.panel, Map.of(
+            QJuror.juror, new Predicate[]{
+                QPanel.panel.juror.eq(QJuror.juror)
             }
         ));
     }
@@ -249,7 +248,7 @@ public abstract class AbstractReport<T> {
                 query.join(requiredTable).on(joinOptions.get(from));
             } else {
                 throw new MojException.InternalServerError(
-                    "Not Implemented yet: " + requiredTable + " from " + from.getClass(), null);
+                    "Not Implemented yet: " + requiredTable.getClass() + " from " + from.getClass(), null);
             }
         });
     }
@@ -338,12 +337,8 @@ public abstract class AbstractReport<T> {
         ));
     }
 
-    public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadJuryListHeaders(
-        StandardReportRequest request, boolean ownerMustMatch, boolean allowBureau) {
-        PoolRequest poolRequest = getPoolRequest(request.getPoolNumber());
-        if (ownerMustMatch) {
-            checkOwnership(poolRequest, allowBureau);
-        }
+    public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadStandardTrailHeaders(
+        StandardReportRequest request, TrialRepository trialRepository) {
 
         Trial trial = getTrial(request.getTrialNumber(), trialRepository);
         return new ConcurrentHashMap<>(Map.of(
@@ -356,11 +351,6 @@ public abstract class AbstractReport<T> {
                 .displayName("Names")
                 .dataType(String.class.getSimpleName())
                 .value(trial.getDescription())
-                .build(),
-            "trial_start_date", AbstractReportResponse.DataTypeValue.builder()
-                .displayName("Trial Start Date")
-                .dataType(LocalDate.class.getSimpleName())
-                .value(trial.getTrialStartDate())
                 .build(),
             "court_room", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Court Room")
@@ -381,15 +371,6 @@ public abstract class AbstractReport<T> {
         ));
     }
 
-    public Trial getTrial(String trialNumber, TrialRepository trialRepository) {
-        Optional<Trial> trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
-            SecurityUtil.getActiveOwner());
-        if (trial.isEmpty()) {
-            throw new MojException.NotFound("Trial not found", null);
-        }
-        return trial.get();
-    }
-
     protected String getCourtNameString(CourtLocationRepository courtLocationRepository, String locCode) {
         Optional<CourtLocation> courtLocation = courtLocationRepository.findByLocCode(locCode);
         if (courtLocation.isEmpty()) {
@@ -408,6 +389,15 @@ public abstract class AbstractReport<T> {
             throw new MojException.NotFound("Pool not found", null);
         }
         return poolRequest.get();
+    }
+
+    public Trial getTrial(String trialNumber, TrialRepository trialRepository) {
+        Optional<Trial> trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
+            SecurityUtil.getActiveOwner());
+        if (trial.isEmpty()) {
+            throw new MojException.NotFound("Trial not found", null);
+        }
+        return trial.get();
     }
 
     protected List<LinkedHashMap<String, Object>> getTableDataAsList(List<Tuple> data) {
@@ -432,16 +422,21 @@ public abstract class AbstractReport<T> {
 
         }
 
+        public interface RequireTrialNumber {
+
+        }
+
         public interface RequireFromDate {
         }
 
         public interface RequireToDate {
         }
 
+        public interface RequireLocCode {
+        }
+
         public interface RequireDate {
         }
 
-        public interface RequireLocCode {
-        }
     }
 }
