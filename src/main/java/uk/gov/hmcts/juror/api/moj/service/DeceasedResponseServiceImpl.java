@@ -40,6 +40,7 @@ import java.time.ZoneId;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings("PMD.LawOfDemeter")
 public class DeceasedResponseServiceImpl implements DeceasedResponseService {
 
     private static final String DECEASED_CODE = "D";
