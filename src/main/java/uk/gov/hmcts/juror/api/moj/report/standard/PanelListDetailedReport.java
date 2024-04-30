@@ -8,6 +8,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorTrial;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -27,7 +28,7 @@ public class PanelListDetailedReport extends AbstractStandardReport {
     public PanelListDetailedReport(PoolRequestRepository poolRequestRepository) {
         super(
             poolRequestRepository,
-            QJurorTrial.jurorTrial,
+            QPanel.panel.trial,
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
