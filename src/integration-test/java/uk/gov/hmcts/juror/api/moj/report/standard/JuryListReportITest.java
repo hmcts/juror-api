@@ -132,17 +132,17 @@ class JuryListReportITest extends AbstractStandardReportControllerITest {
                             .add("juror_number", "415000001")
                             .add("first_name", "FNAME1")
                             .add("last_name", "LNAME1")
-                            .add("juror_postcode", "M24 4BP"),
+                            .add("juror_postcode", "PO19 1SX"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "415000002")
                             .add("first_name", "FNAME2")
                             .add("last_name", "LNAME2")
-                            .add("juror_postcode", "M24 4BP"),
+                            .add("juror_postcode", "PO19 1SX"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "415000003")
                             .add("first_name", "FNAME3")
                             .add("last_name", "LNAME3")
-                            .add("juror_postcode", "M24 4BP")))
+                            .add("juror_postcode", "PO19 1SX")))
                     .build())
             .build();
     }

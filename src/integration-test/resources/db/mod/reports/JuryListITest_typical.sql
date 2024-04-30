@@ -1,8 +1,9 @@
 
-insert into juror_mod.juror (juror_number,last_name,first_name,address_line_1,postcode,responded) values
-('415000001','LNAME1','FNAME1','ADDRESS LINE 1', "M24 4BP", true),
-('415000002','LNAME2','FNAME2','ADDRESS LINE 1', "M24 4BP", true),
-('415000003','LNAME3','FNAME3','ADDRESS LINE 1', "M24 4BP", true);
+INSERT INTO juror_mod.juror (juror_number, title, last_name, first_name, dob, address_line_1, address_line_4, postcode, responded)
+VALUES
+('415000001', 'MR','LNAME1','FNAME1', '1988-01-01', '542 STREET NAME', 'Chichester', 'PO19 1SX', true),
+('415000002', 'MR','LNAME2','FNAME2', '1988-01-01', '542 STREET NAME', 'Chichester', 'PO19 1SX', true),
+('415000003', 'MR','LNAME3','FNAME3', '1988-01-01', '542 STREET NAME', 'Chichester', 'PO19 1SX', true);
 
 insert into juror_mod.appearance (attendance_date, juror_number,loc_code, time_in, time_out, non_attendance) values
 (current_date, '415000001', '415', current_time,null,false);
