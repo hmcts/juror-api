@@ -103,6 +103,7 @@ public class BureauJwtPayload {
         return Map.of(
             "owner", owner,
             "locCode", locCode,
+            "email", email,
             "login", login,
             "userLevel", userLevel,
             "passwordWarning", passwordWarning,
@@ -136,6 +137,7 @@ public class BureauJwtPayload {
         return BureauJwtPayload.builder()
             .daysToExpire(claims.get("daysToExpire", Integer.class))
             .login(claims.get("login", String.class))
+            .email(claims.get("email", String.class))
             .owner(claims.get("owner", String.class))
             .locCode(claims.get("locCode", String.class))
             .passwordWarning(claims.get("passwordWarning", Boolean.class))
