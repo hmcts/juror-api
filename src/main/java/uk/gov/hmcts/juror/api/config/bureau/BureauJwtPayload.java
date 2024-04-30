@@ -32,6 +32,7 @@ import java.util.Map;
 @EqualsAndHashCode
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BureauJwtPayload {
+    private String email;
     private String owner;
     private String locCode;
     private String login;
@@ -51,6 +52,7 @@ public class BureauJwtPayload {
             .filter(courtLocation -> CourtType.MAIN.equals(courtLocation.getType()))
             .toList().get(0).getOwner();
         this.locCode = locCode;
+        this.email = user.getEmail();
         this.login = user.getUsername();
         this.userLevel = String.valueOf(user.getLevel());
         this.passwordWarning = false;
@@ -83,7 +85,7 @@ public class BureauJwtPayload {
 
     public BureauJwtPayload(String owner, String login, String userLevel, Boolean passwordWarning, Integer daysToExpire,
                             Staff staff) {
-        this(owner, null, login, userLevel, passwordWarning, daysToExpire, staff, null, null);
+        this(null, owner, null, login, userLevel, passwordWarning, daysToExpire, staff, null, null);
     }
 
     public List<GrantedAuthority> getGrantedAuthority() {
