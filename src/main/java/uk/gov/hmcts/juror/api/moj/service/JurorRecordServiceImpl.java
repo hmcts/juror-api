@@ -1250,7 +1250,6 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         final JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
             SecurityUtil.getActiveOwner());
-        final String auditorUsername = SecurityUtil.getActiveLogin();
         final Juror juror = jurorPool.getJuror();
 
         if (null == juror.getDateOfBirth()) {
@@ -1258,6 +1257,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                 JUROR_DATE_OF_BIRTH_REQUIRED);
         }
 
+        final String auditorUsername = SecurityUtil.getActiveLogin();
         juror.setResponded(true);
         jurorRepository.save(juror);
         jurorPool.setUserEdtq(auditorUsername);

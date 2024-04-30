@@ -3718,7 +3718,7 @@ class JurorRecordServiceTest {
                 .save(jurorPoolArgumentCaptor.capture());
 
             JurorPool updatedJurorPool = jurorPoolArgumentCaptor.getValue();
-            assertEquals(IdCheckCodeEnum.L.getCode(), updatedJurorPool.getIdChecked());
+            assertEquals(IdCheckCodeEnum.L.getCode(), updatedJurorPool.getIdChecked(), "Id check code must match");
 
             verify(jurorHistoryService, times(1)).createIdentityConfirmedHistory(jurorPool);
 
@@ -3790,11 +3790,11 @@ class JurorRecordServiceTest {
         void shouldMarkJurorAsRespondedWhenJurorExistsAndDateOfBirthIsNotNull() {
             TestUtils.setUpMockAuthentication("400", "Bureau", "1", List.of("400"));
 
-            String jurorNumber = "123456789";
-            Juror juror = new Juror();
+            final String jurorNumber = "123456789";
+            final Juror juror = new Juror();
             juror.setDateOfBirth(LocalDate.now().minusYears(20));
 
-            PoolRequest poolRequest = new PoolRequest();
+            final PoolRequest poolRequest = new PoolRequest();
             poolRequest.setPoolNumber("123456789");
 
             JurorPool jurorPool = new JurorPool();
@@ -3834,8 +3834,8 @@ class JurorRecordServiceTest {
         void shouldThrowExceptionWhenJurorDateOfBirthIsNull() {
             TestUtils.setUpMockAuthentication("400", "Bureau", "1", List.of("400"));
 
-            String jurorNumber = "123456789";
-            Juror juror = new Juror();
+            final String jurorNumber = "123456789";
+            final Juror juror = new Juror();
 
             PoolRequest poolRequest = new PoolRequest();
             poolRequest.setPoolNumber("123456789");
@@ -3857,7 +3857,8 @@ class JurorRecordServiceTest {
             Exception exception = assertThrows(MojException.BusinessRuleViolation.class,
                 () -> jurorRecordService.markResponded(jurorNumber));
 
-            assertEquals("Juror date of birth is required to mark as responded", exception.getMessage());
+            assertEquals("Juror date of birth is required to mark as responded", exception.getMessage(),
+                "Exception message should match");
 
         }
     }
