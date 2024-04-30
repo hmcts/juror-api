@@ -64,14 +64,16 @@ class ExportContactDetailsRequestTest extends AbstractValidatorTest<ExportContac
         <T> void assertValid(ExportContactDetailsRequest.ExportItems value,
                              String title, Expression<?> expression,
                              T tupleResponse,
-                             String expectedResposne) {
+                             String expectedResponse) {
             assertThat(value.getTitle()).isEqualTo(title);
             assertThat(value.getExpression()).isEqualTo(expression);
 
             Tuple tuple = mock(Tuple.class);
             doReturn(tupleResponse).when(tuple).get(expression);
 
-            assertThat(value.getAsStringFunction().apply(tuple)).isEqualTo(expectedResposne);
+            value.getAsStringFunction().apply(tuple);
+
+            assertThat(value.getAsStringFunction().apply(tuple)).isEqualTo(expectedResponse);
         }
 
         @Test
@@ -183,16 +185,18 @@ class ExportContactDetailsRequestTest extends AbstractValidatorTest<ExportContac
         void positiveStatus() {
             JurorStatus jurorStatus = new JurorStatus();
             jurorStatus.setStatus(1);
+            jurorStatus.setStatusDesc("Summoned");
+
             assertValid(ExportContactDetailsRequest.ExportItems.STATUS,
                 "Status", QJurorPool.jurorPool.status,
-                jurorStatus, "1");
+                jurorStatus, "Summoned");
         }
 
         @Test
         void positiveStatusNull() {
             assertValid(ExportContactDetailsRequest.ExportItems.STATUS,
                 "Status", QJurorPool.jurorPool.status,
-                null, null);
+                null, "");
         }
 
         @Test
@@ -220,7 +224,7 @@ class ExportContactDetailsRequestTest extends AbstractValidatorTest<ExportContac
         void positiveDateDeferredToNull() {
             assertValid(ExportContactDetailsRequest.ExportItems.DATE_DEFERRED_TO,
                 "Date deferred to", QJurorPool.jurorPool.deferralDate,
-                null, null);
+                null, "");
         }
 
         @Test
@@ -234,7 +238,7 @@ class ExportContactDetailsRequestTest extends AbstractValidatorTest<ExportContac
         void positiveCompletionDateNull() {
             assertValid(ExportContactDetailsRequest.ExportItems.COMPLETION_DATE,
                 "Completion date", QJuror.juror.completionDate,
-                null, null);
+                null, "");
         }
 
         @Test

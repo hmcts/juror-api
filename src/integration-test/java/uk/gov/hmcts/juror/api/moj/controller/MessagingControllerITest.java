@@ -2132,13 +2132,13 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                     .englishOtherInfo("Sentence invite(email only)")
                                     .englishMessage("""
                                         The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.
-                                                                                
+
                                         Please contact the court if you wish to attend on 01244 356726.
-                                                                                
+
                                         Alternatively contact the court after the hearing date quoting reference number T100000002 if you would like to know the sentence.
-                                                                                
+
                                         Please note that jurors do not have a role in sentencing, and as such your attendance is entirely voluntary and travel and subsistence payments cannot be claimed.
-                                                                                
+
                                         Please do not reply to this email as this mailbox is unmonitored.""")
                                     .welshMessage(null)
                                     .build()
@@ -2177,13 +2177,13 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                     .welshOtherInfo("Welsh invite (email only)")
                                     .welshMessage("""
                                         Bydd y diffynnydd yn y treial yr oeddech yn rheithiwr ynddo yn cael ei ddedfrydu ar 02/01/2023.
-                                                                                
+
                                         Cysylltwch â'r llys os ydych yn dymuno bod yn bresennol drwy ffonio 01792 637000.
-                                                                                
+
                                         Fel arall, cysylltwch â'r llys ar ôl dyddiad y gwrandawiad, gan ddyfynnu'r cyfeirnod T100000003 os hoffech wybod beth oedd y ddedfryd.
-                                                                                
+
                                         Noder, nid oes gan reithwyr rôl i'w chwarae wrth ddedfrydu diffynyddion ac felly mae eich presenoldeb yn gyfan gwbl wirfoddol ac ni allwch hawlio costau teithio a chynhaliaeth.
-                                                                                
+
                                         Peidiwch ag ymateb i'r neges e-bost hon oherwydd nid yw'r mewnflwch hwn yn cael ei fonitro.""")
                                     .build())
                         )
@@ -2206,9 +2206,9 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                     .englishOtherInfo("Sentence date (email only)")
                                     .englishMessage("""
                                         The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.
-                                                                                
+
                                         Please contact the court after the hearing date on 01244 356726 quoting reference number T100000002 if you would like to know the sentence.
-                                                                                
+
                                         Please do not reply to this email as this mailbox is unmonitored.""")
                                     .welshMessage(null)
                                     .build(),
@@ -2219,9 +2219,9 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                     .englishOtherInfo("Sentence date (email only)")
                                     .englishMessage("""
                                         The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.
-                                                                                
+
                                         Please contact the court after the hearing date on 01244 356726 quoting reference number T100000002 if you would like to know the sentence.
-                                                                                
+
                                         Please do not reply to this email as this mailbox is unmonitored.""")
                                     .welshMessage(null)
                                     .build())
@@ -2241,9 +2241,9 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                     .englishMessage(
                                         """
                                             The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.
-                                                                                        
+
                                             Please contact the court after the hearing date on 01792 637000 quoting reference number T100000003 if you would like to know the sentence.
-                                                                                        
+
                                             Please do not reply to this email as this mailbox is unmonitored.""")
                                     .welshMessage(null)
                                     .build(),
@@ -2255,9 +2255,9 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                     .welshOtherInfo("Welsh Sentence (email only)")
                                     .welshMessage("""
                                         Bydd y diffynnydd yn y treial yr oeddech yn rheithiwr ynddo yn cael ei ddedfrydu ar 02/01/2023.
-                                                                                
+
                                         Cysylltwch â'r Llys ar ôl dyddiad y gwrandawiad drwy ffonio 01792 637000 a dyfynnu'r cyfeirnod T100000003 os hoffech wybod beth oedd y ddedfryd.
-                                                                                
+
                                         Peidiwch ag ymateb i'r neges e-bost hon oherwydd nid yw'r mewnflwch hwn yn cael ei fonitro.""")
                                     .build())
                         )
@@ -3500,10 +3500,10 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                             + " 1,Address Line 2,Address Line 3,Address Line 4,Address Line 5,Postcode,Welsh language,"
                             + "Status,Pool Number,Next due at court date,Date deferred to,Completion date\n"
                             + "641500024,T4,FName4,LName4,email4@email.com,1234567894,1234567884,1234567874,address1 "
-                            + "4,address2 4,address3 4,address4 4,address5 4,CF10 4AA,false,4,415230103,04/01/2023,"
-                            + "null,04/01/2023\n"
+                            + "4,address2 4,address3 4,address4 4,address5 4,CF10 4AA,false,Juror,415230103,04/01/2023,"
+                            + ",04/01/2023\n"
                             + "641500025,T5,FName5,LName5,email5@email.com,1234567896,1234567885,1234567875,address1 "
-                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,5,415230104,05/01/2023,"
+                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,Excused,415230104,05/01/2023,"
                             + "05/02/2023,05/01/2023"
                     );
             }
@@ -3547,10 +3547,10 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                             + " 1,Address Line 2,Address Line 3,Address Line 4,Address Line 5,Postcode,Welsh language,"
                             + "Status,Pool Number,Next due at court date,Date deferred to,Completion date\n"
                             + "641500021,T1,FName1,LName1,email1@email.com,1234567891,1234567881,1234567871,address1 "
-                            + "1,address2 1,address3 1,address4 1,address5 1,CF10 1AA,false,1,415230101,null,null,"
+                            + "1,address2 1,address3 1,address4 1,address5 1,CF10 1AA,false,Summoned,415230101,,,"
                             + "01/01/2023\n"
                             + "641500025,T5,FName5,LName5,email5@email.com,1234567896,1234567885,1234567875,address1 "
-                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,5,415230104,05/01/2023,"
+                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,Excused,415230104,05/01/2023,"
                             + "05/02/2023,05/01/2023");
             }
         }
