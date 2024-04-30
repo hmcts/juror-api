@@ -5,7 +5,6 @@ import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
-
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
@@ -14,7 +13,6 @@ import uk.gov.hmcts.juror.api.moj.report.DataType;
 
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -38,6 +36,8 @@ public class AbaccusReport extends AbstractStandardReport {
             DataType.DATE_SENT);
 
         this.clock = clock;
+
+        isBureauUserOnly();
     }
 
     @Override

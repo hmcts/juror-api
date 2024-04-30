@@ -109,11 +109,15 @@ public class AbaccusReportTest extends AbstractStandardReportNoPoolRepositoryTes
     }
     @Test
     public void negativeNullDateFrom() {
-
+        StandardReportRequest request = getValidRequest();
+        request.setFromDate(null);
+        assertValidationFails(request, new ValidationFailure("fromDate", "must not be null"));
     }
 
     @Test
     public void negativeNullDateTo() {
-
+        StandardReportRequest request = getValidRequest();
+        request.setToDate(null);
+        assertValidationFails(request, new ValidationFailure("toDate", "must not be null"));
     }
 }
