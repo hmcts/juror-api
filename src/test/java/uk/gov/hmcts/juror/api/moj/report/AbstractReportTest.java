@@ -970,7 +970,7 @@ class AbstractReportTest {
 
             when(request.getTrialNumber()).thenReturn(TestConstants.VALID_TRIAL_NUMBER);
 
-            assertThat(report.loadStandardTrailHeaders(request, trialRepository))
+            assertThat(report.loadStandardTrialHeaders(request, trialRepository))
                 .isEqualTo(Map.of(
                     "trial_number",
                     AbstractReportResponse.DataTypeValue.builder()
