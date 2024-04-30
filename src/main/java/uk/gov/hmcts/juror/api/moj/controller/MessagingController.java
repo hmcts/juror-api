@@ -103,7 +103,7 @@ public class MessagingController {
         produces = "text/csv;")
     @Operation(summary = "Convert message to CSV")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH + " or " + SecurityUtil.BUREAU_AUTH)
+    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH + " or " + SecurityUtil.IS_BUREAU)
     public ResponseEntity<String> toCsv(
         @P("loc_code") @Size(min = 3, max = 3) @PathVariable("loc_code") @Valid String locCode,
         @RequestBody @Valid @NotNull ExportContactDetailsRequest exportContactDetailsRequest

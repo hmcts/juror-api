@@ -23,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.letter.ExcusalLetterMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -304,7 +305,7 @@ public class ExcusalResponseServiceImplTest {
 
         ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
-        excusalDecisionDto.setExcusalReasonCode(uk.gov.hmcts.juror.api.bureau.domain.ExcusalCode.DECEASED);
+        excusalDecisionDto.setExcusalReasonCode(ExcusalCodeEnum.D.getCode());
 
         PaperResponse jurorPaperResponse = createTestJurorPaperResponse(JUROR_NUMBER);
         Mockito.doReturn(jurorPaperResponse).when(jurorPaperResponseRepository).findByJurorNumber(JUROR_NUMBER);
@@ -674,8 +675,7 @@ public class ExcusalResponseServiceImplTest {
 
     private void verifyHappyExcusalLetter(JurorPool jurorPool,
                                           ExcusalDecisionDto excusalDecisionDto) {
-        if (uk.gov.hmcts.juror.api.bureau.domain.ExcusalCode
-            .DECEASED.equals(excusalDecisionDto.getExcusalReasonCode())) {
+        if (ExcusalCodeEnum.D.getCode().equals(excusalDecisionDto.getExcusalReasonCode())) {
             Mockito.verify(printDataService, Mockito.never())
                 .printExcusalLetter(jurorPool);
         } else {

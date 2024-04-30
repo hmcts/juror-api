@@ -19,5 +19,5 @@ VALUES ('448','BUREAUGUY1','BUREAUGUY1@email.gov.uk','Bureau Guy',true,1,0),
        ('448','BUREAULADY9','BUREAULADY9@email.gov.uk','Bureau Lady',true,1,0);
 
 INSERT INTO juror_mod.user_roles (username, role)
-VALUES ('BUREAUGUY1', 'TEAM_LEADER'),
-       ('BUREAULADY9', 'TEAM_LEADER');
+VALUES ('BUREAUGUY1', 'MANAGER'),
+       ('BUREAULADY9', 'MANAGER');

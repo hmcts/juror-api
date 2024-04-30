@@ -91,7 +91,9 @@ public class BureauJwtPayload {
         if (roles != null) {
             roles.forEach(role -> authorities.add("ROLE_" + role.name()));
         }
-        authorities.add(getUserLevel());
+        if (getUserLevel() != null) {
+            authorities.add(getUserLevel());
+        }
         return AuthorityUtils.createAuthorityList(authorities);
     }
 

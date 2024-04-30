@@ -152,7 +152,7 @@ public class CreatePoolController {
     @PostMapping("/create-pool")
     @Operation(summary = "Create a Pool and summon citizens")
     //Only a Bureau user is allowed to create a pool
-    @PreAuthorize(SecurityUtil.BUREAU_AUTH)
+    @PreAuthorize(SecurityUtil.IS_BUREAU)
     public ResponseEntity<String> createPoolRequest(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Validated @RequestBody PoolCreateRequestDto poolCreateRequestDto) {
@@ -169,7 +169,7 @@ public class CreatePoolController {
      */
     @PostMapping("/additional-summons")
     @Operation(summary = "Summon additional citizens to a Pool")
-    @PreAuthorize(SecurityUtil.BUREAU_AUTH)
+    @PreAuthorize(SecurityUtil.IS_BUREAU)
     public ResponseEntity<String> additionalSummonsForPool(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Validated @RequestBody PoolAdditionalSummonsDto poolAdditionalSummonsDto) {
@@ -223,7 +223,7 @@ public class CreatePoolController {
      */
     @PutMapping("/nil-pool-convert")
     @Operation(summary = "Convert an existing Nil pool")
-    @PreAuthorize(SecurityUtil.BUREAU_AUTH)
+    @PreAuthorize(SecurityUtil.IS_BUREAU)
     public ResponseEntity<String> convertNilPool(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid PoolRequestDto poolRequestDto) {
@@ -239,7 +239,7 @@ public class CreatePoolController {
      */
     @PostMapping("/create-coroner-pool")
     @Operation(summary = "create a Coroner Pool for this court/date")
-    @PreAuthorize(SecurityUtil.BUREAU_AUTH)
+    @PreAuthorize(SecurityUtil.IS_BUREAU)
     public ResponseEntity<?> createCoronerPool(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Validated @RequestBody CoronerPoolRequestDto coronerPoolRequestDto) {
@@ -251,7 +251,7 @@ public class CreatePoolController {
 
     @GetMapping("/coroner-pool")
     @Operation(summary = "Retrieve details of an existing coroner pool")
-    @PreAuthorize(SecurityUtil.BUREAU_AUTH
+    @PreAuthorize(SecurityUtil.IS_BUREAU
     )
     public ResponseEntity<CoronerPoolItemDto> getCoronerPoolRequest(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
@@ -270,7 +270,7 @@ public class CreatePoolController {
      */
     @PostMapping("/add-citizens")
     @Operation(summary = "Add citizens to coroner pool")
-    @PreAuthorize(SecurityUtil.BUREAU_AUTH)
+    @PreAuthorize(SecurityUtil.IS_BUREAU)
     public ResponseEntity<String> addCitizensToCoronerPool(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Validated @RequestBody CoronerPoolAddCitizenRequestDto coronerPoolAddCitizenRequestDto) {

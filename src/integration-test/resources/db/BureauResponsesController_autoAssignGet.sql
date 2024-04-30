@@ -1,17 +1,17 @@
 --Staff
-INSERT INTO juror_mod.users (owner, username,email, name, active,team_id,version)
+INSERT INTO juror_mod.users (owner, username,email, name, active,team_id,version,user_type)
 VALUES
-    ('400','smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre',  true, 1, 1),
-    ('400','sbell','sbell@email.gov.uk', 'Sandra Bell',  true, 2, 1),
-    ('400','alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3, 1),
-    ('400','jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1, 1),
-    ('400','jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2, 1),
-    ('400','jbrown','jbrown@email.gov.uk', 'John Brown', true, 3, 1);
+    ('400','smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre',  true, 1, 1,'BUREAU'),
+    ('400','sbell','sbell@email.gov.uk', 'Sandra Bell',  true, 2, 1,'BUREAU'),
+    ('400','alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3, 1,'BUREAU'),
+    ('400','jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1, 1,'BUREAU'),
+    ('400','jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2, 1,'BUREAU'),
+    ('400','jbrown','jbrown@email.gov.uk', 'John Brown', true, 3, 1,'BUREAU');
 
 INSERT INTO juror_mod.user_roles (username, role)
-VALUES ('jbrown1', 'TEAM_LEADER'),
-       ('jwilliams', 'TEAM_LEADER'),
-       ('jbrown', 'TEAM_LEADER');
+VALUES ('jbrown1', 'MANAGER'),
+       ('jwilliams', 'MANAGER'),
+       ('jbrown', 'MANAGER');
 
 INSERT INTO juror_mod.pool (pool_no,"owner",return_date,no_requested,pool_type,loc_code,new_request,last_update,additional_summons,attend_time,nil_pool,total_no_required,date_created) VALUES
     ('101','415','2022-05-03',5,'CRO','416','N',NULL,NULL,NULL,false,5,NULL);

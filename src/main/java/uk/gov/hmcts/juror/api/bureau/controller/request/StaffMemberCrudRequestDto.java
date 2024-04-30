@@ -10,7 +10,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.io.Serializable;
 
@@ -49,7 +48,7 @@ public class StaffMemberCrudRequestDto implements Serializable {
     private Integer version;
 
     public Integer getLevel() {
-        return isTeamLeader() ? SecurityUtil.TEAM_LEADER_LEVEL : SecurityUtil.STANDARD_USER_LEVEL;
+        return isTeamLeader() ? 1 : 0;
     }
 
     /**

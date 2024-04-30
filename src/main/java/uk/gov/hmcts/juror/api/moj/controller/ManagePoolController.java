@@ -72,8 +72,7 @@ public class ManagePoolController {
     @Operation(summary = "Delete a pool record from the database")
     public ResponseEntity<?> deletePool(@Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
                                         @Valid @RequestParam() @Size(min = 9, max = 9) String poolNumber) {
-        deletePoolService.deletePool(payload, poolNumber);
-
+        deletePoolService.deletePool(poolNumber);
         return ResponseEntity.ok().build();
     }
 

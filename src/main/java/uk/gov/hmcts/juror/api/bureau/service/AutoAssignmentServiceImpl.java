@@ -13,13 +13,13 @@ import uk.gov.hmcts.juror.api.bureau.domain.UserQueries;
 import uk.gov.hmcts.juror.api.bureau.exception.AutoAssignException;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,7 +36,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.springframework.util.ObjectUtils.nullSafeEquals;
 
 /**
  * Implementation of the auto-assignment service using a round-robin strategy.
@@ -251,7 +250,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
      */
     private void checkForInvalidStaff(Collection<User> staff) throws AutoAssignException {
         List<User> ineligible =
-            staff.stream().filter(s -> !s.isActive() || !nullSafeEquals(s.getLevel(), SecurityUtil.STANDARD_USER_LEVEL))
+            staff.stream().filter(s -> !s.isActive() || !UserType.BUREAU.equals(s.getUserType()) || s.isTeamLeader())
                 .toList();
         if (!ineligible.isEmpty()) {
             final List<String> ineligibleLogins = Lists.transform(ineligible, User::getUsername);
