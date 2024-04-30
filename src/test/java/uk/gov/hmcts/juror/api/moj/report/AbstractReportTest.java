@@ -969,7 +969,6 @@ class AbstractReportTest {
             StandardReportRequest request = mock(StandardReportRequest.class);
 
             when(request.getTrialNumber()).thenReturn(TestConstants.VALID_TRIAL_NUMBER);
-            when(request.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
             assertThat(report.loadStandardTrailHeaders(request, trialRepository))
                 .isEqualTo(Map.of(

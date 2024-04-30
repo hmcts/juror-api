@@ -81,7 +81,7 @@ class PanelSummaryReportTest extends AbstractStandardReportTestSupport<PanelSumm
         verify(query, times(1))
             .where(QPanel.panel.trial.trialNumber.eq(TestConstants.VALID_TRIAL_NUMBER));
         verify(query, times(1))
-            .where(QPanel.panel.trial.courtLocation.locCode.eq(request.getLocCode()));
+            .where(QPanel.panel.trial.courtLocation.owner.eq(request.getLocCode()));
         verify(query, times(1))
             .orderBy(QJuror.juror.jurorNumber.asc());
     }
@@ -115,8 +115,6 @@ class PanelSummaryReportTest extends AbstractStandardReportTestSupport<PanelSumm
         when(trial.getJudge().getName()).thenReturn("Judge Dredd");
 
         when(request.getTrialNumber()).thenReturn("T000000001");
-        when(request.getLocCode()).thenReturn("415");
-
 
         when(data.size()).thenReturn(2);
         Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);
@@ -158,7 +156,6 @@ class PanelSummaryReportTest extends AbstractStandardReportTestSupport<PanelSumm
         return StandardReportRequest.builder()
             .reportType(report.getName())
             .trialNumber(TestConstants.VALID_TRIAL_NUMBER)
-            .locCode(TestConstants.VALID_COURT_LOCATION)
             .build();
     }
 
@@ -174,20 +171,6 @@ class PanelSummaryReportTest extends AbstractStandardReportTestSupport<PanelSumm
         StandardReportRequest request = getValidRequest();
         request.setTrialNumber("1234567890987654321§1234567890987654321");
         assertValidationFails(request, new ValidationFailure("trialNumber", "length must be between 0 and 16"));
-    }
-
-    @Test
-    void negativeMissingLocCode() {
-        StandardReportRequest request = getValidRequest();
-        request.setLocCode(null);
-        assertValidationFails(request, new ValidationFailure("locCode", "must not be null"));
-    }
-
-    @Test
-    void negativeInvalidLocCode() {
-        StandardReportRequest request = getValidRequest();
-        request.setLocCode("12345678ikjgfdvhj");
-        assertValidationFails(request, new ValidationFailure("locCode", "must match \"^\\d{3}$\""));
     }
 
 }

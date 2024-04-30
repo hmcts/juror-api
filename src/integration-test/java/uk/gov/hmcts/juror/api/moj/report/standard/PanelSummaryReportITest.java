@@ -59,27 +59,6 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    void negativeInvalidPayloadMissingLocCode() {
-        StandardReportRequest request = getValidPayload();
-        request.setLocCode(null);
-        testBuilder()
-            .payload(addReportType(request))
-            .triggerInvalid()
-            .assertInvalidPathParam("locCode: must not be null");
-    }
-
-    @Test
-    void negativeInvalidPayloadLocCodeInvalidAccess() {
-        StandardReportRequest request = getValidPayload();
-        request.setLocCode("475");
-        testBuilder()
-            .payload(addReportType(request))
-            .jwt(getCourtJwt("415"))
-            .triggerInvalid()
-            .assertMojForbiddenResponse("User not allowed to access this court");
-    }
-
-    @Test
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getBureauJwt())
