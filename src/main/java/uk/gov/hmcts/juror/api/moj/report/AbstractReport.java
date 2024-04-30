@@ -83,7 +83,6 @@ public abstract class AbstractReport<T> {
     private EntityManager entityManager;
 
     final PoolRequestRepository poolRequestRepository;
-    final TrialRepository trialRepository;
     final List<IDataType> dataTypes;
     final Set<EntityPath<?>> requiredTables;
     final List<IDataType> effectiveDataTypes;
@@ -91,14 +90,13 @@ public abstract class AbstractReport<T> {
 
     final List<Consumer<StandardReportRequest>> authenticationConsumers;
 
-    public AbstractReport(EntityPath<?> from, TrialRepository trialRepository, IDataType... dataType) {
-        this(null, trialRepository, from, dataType);
+    public AbstractReport(EntityPath<?> from,  IDataType... dataType) {
+        this(null, from, dataType);
     }
 
-    public AbstractReport(PoolRequestRepository poolRequestRepository, TrialRepository trialRepository,
+    public AbstractReport(PoolRequestRepository poolRequestRepository,
                           EntityPath<?> from, IDataType... dataType) {
         this.poolRequestRepository = poolRequestRepository;
-        this.trialRepository = trialRepository;
         this.from = from;
         this.dataTypes = List.of(dataType);
         this.effectiveDataTypes = dataTypes.stream()
