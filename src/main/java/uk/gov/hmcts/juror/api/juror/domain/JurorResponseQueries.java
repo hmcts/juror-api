@@ -22,18 +22,6 @@ public class JurorResponseQueries {
 
 
     /**
-     * Query to match 'backlog' responses.
-     * (Status is to-do, Neither urgent/super-urgent nor assigned to a bureau officer)
-     *
-     * @return QueryDSL filter
-     */
-    public static BooleanExpression backlog() {
-        return nonUrgent()
-            .and(jurorResponse.processingStatus.eq(
-                ProcessingStatus.TODO)).and(jurorResponse.staff.isNull());
-    }
-
-    /**
      * Query to match 'urgent' / 'super-urgent' responses which are assigned to any staff member.
      *
      * @return QueryDSL filter
@@ -46,12 +34,14 @@ public class JurorResponseQueries {
         return jurorResponse.staff.eq(staffMember);
     }
 
+
     private static BooleanExpression urgent() {
         return jurorResponse.urgent.isTrue().or(jurorResponse.superUrgent.isTrue());
     }
 
+
     private static BooleanExpression nonUrgent() {
-        return jurorResponse.urgent.isTrue().not().and(jurorResponse.superUrgent.isTrue().not());
+        return urgent().not();
     }
 
 
@@ -95,93 +85,67 @@ public class JurorResponseQueries {
         }
     }
 
-    /**
-     * Work allocation related methods, kept separate from the original work.
-     *
-     */
-
-    private static BooleanExpression backlogUrgent() {
-        return jurorResponse.urgent.isTrue().and(jurorResponse.superUrgent.isTrue().not());
-    }
-
-
-    /**
-     * returns a response - Super Urgent.
-     * @returns a response - Super Urgent
-     */
-    private static BooleanExpression backlogSuperUrgent() {
-        return jurorResponse.superUrgent.isTrue().and(jurorResponse.urgent.isTrue().not());
-    }
 
     /**
      * return all  responses.
+     *
      * @return all  responses
      */
-    public static BooleanExpression byStatusAll() {
+    public static BooleanExpression byUnassignedTodo() {
         return jurorResponse.staff.isNull()
             .and(byStatus(List.of(ProcessingStatus.TODO)));
     }
 
-
     /**
-     * return all urgent responses.
-     * @return all urgent responses
+     * Query to match 'backlog' responses.
+     * (Status is to-do, Neither urgent/super-urgent nor assigned to a bureau officer)
+     *
+     * @return QueryDSL filter
      */
-    public static BooleanExpression byStatusUrgent() {
-        return jurorResponse.staff.isNull()
-            .and(byStatus(List.of(ProcessingStatus.TODO))
-                .and(backlogUrgent()));
+    public static BooleanExpression byUnassignedTodoNonUrgent() {
+        return byUnassignedTodo()
+            .and(nonUrgent());
     }
 
     /**
-     * return all super urgent responses.
-     * @return all super urgent responses
+     * return all urgent responses.
+     *
+     * @return all urgent responses
      */
-    public static BooleanExpression byStatusSuperUrgent() {
-        return jurorResponse.staff.isNull()
-            .and(byStatus(List.of(ProcessingStatus.TODO))
-                .and(backlogSuperUrgent()));
+    public static BooleanExpression byUnassignedTodoUrgent() {
+        return byUnassignedTodo()
+            .and(urgent());
     }
 
 
     /**
      * return all un assigned responses assigned to staff.
+     *
      * @return all un assigned responses assigned to staff
      */
     public static BooleanExpression byAssignedNonUrgent(User staffMember) {
-        return jurorResponse.staff.isNotNull()
-            .and(notClosed())
-            .and(nonUrgent())
-            .and(assignedTo(staffMember));
+        return byAssignedAll(staffMember)
+            .and(nonUrgent());
     }
 
     /**
      * return all urgent responses assigned to staff.
+     *
      * @return all urgent responses assigned to staff
      */
     public static BooleanExpression byAssignedUrgent(User staffMember) {
-        return jurorResponse.staff.isNotNull()
-            .and(notClosed())
-            .and(backlogUrgent()).and(assignedTo(staffMember));
-    }
-
-    /**
-     * return all super urgent responses assigned to staff.
-     * @return all super urgent responses assigned to staff
-     */
-    public static BooleanExpression byAssignedSuperUrgent(User staffMember) {
-        return jurorResponse.staff.isNotNull().and(notClosed())
-            .and(backlogSuperUrgent()).and(assignedTo(staffMember));
+        return byAssignedAll(staffMember)
+            .and(urgent());
     }
 
     /**
      * return all responses assigned to staff.
+     *
      * @return all responses assigned to staff
      */
     public static BooleanExpression byAssignedAll(User staffMember) {
-        return jurorResponse.staff.isNotNull().and(notClosed())
+        return jurorResponse.staff.isNotNull()
+            .and(notClosed())
             .and(assignedTo(staffMember));
     }
-
-
 }

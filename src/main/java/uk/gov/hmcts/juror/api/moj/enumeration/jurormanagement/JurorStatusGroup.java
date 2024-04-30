@@ -10,7 +10,8 @@ public enum JurorStatusGroup {
 
     AT_COURT(List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL, IJurorStatus.JUROR)),
     IN_WAITING(List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL)),
-    ON_TRIAL(List.of(IJurorStatus.JUROR));
+    ON_TRIAL(List.of(IJurorStatus.JUROR)),
+    COMPLETED(List.of(IJurorStatus.COMPLETED));
 
     private List<Integer> statusList;
 

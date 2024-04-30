@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.TeamDto;
 import uk.gov.hmcts.juror.api.bureau.service.BureauAuthenticationService;
 import uk.gov.hmcts.juror.api.bureau.service.TeamService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class BureauTeamController {
     @Operation(summary = "team list",
         description = "Retrieve a list of all teams")
     public ResponseEntity<List<TeamDto>> getAllTeams(@Parameter(hidden = true) BureauJwtAuthentication principal) {
-        if (!bureauAuthService.userIsTeamLeader(principal)) {
+        if (!SecurityUtil.isBureauManager()) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         return ResponseEntity.ok(teamService.findAllTeams());

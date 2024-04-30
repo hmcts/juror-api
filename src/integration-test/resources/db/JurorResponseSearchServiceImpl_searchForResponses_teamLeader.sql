@@ -1,17 +1,17 @@
 --Staff
-INSERT INTO juror_mod.users (owner, username, email, name,  active, team_id,version)
+INSERT INTO juror_mod.users (owner, username, email, name,  active, team_id,version,user_type)
 VALUES
-('400','carneson','carneson@email.gov.uk', 'Chad Arneson', true, 1, 1),
-('400','sgomez','sgomez@email.gov.uk', 'Susie Gomez', true, 2, 1),
-('400','mruby','mruby@email.gov.uk', 'Martin Ruby', true, 3, 1),
-('400','cbeasley','cbeasley@email.gov.uk', 'Charles Beasley', true, 1, 1),
-('400','tgarrett','tgarrett@email.gov.uk', 'Timothy Garrett', true, 2, 1),
-('400','ksalazar','ksalazar@email.gov.uk', 'Kris Salazar',  true, 3, 1);
+('400','carneson','carneson@email.gov.uk', 'Chad Arneson', true, 1, 1,'BUREAU'),
+('400','sgomez','sgomez@email.gov.uk', 'Susie Gomez', true, 2, 1,'BUREAU'),
+('400','mruby','mruby@email.gov.uk', 'Martin Ruby', true, 3, 1,'BUREAU'),
+('400','cbeasley','cbeasley@email.gov.uk', 'Charles Beasley', true, 1, 1,'BUREAU'),
+('400','tgarrett','tgarrett@email.gov.uk', 'Timothy Garrett', true, 2, 1,'BUREAU'),
+('400','ksalazar','ksalazar@email.gov.uk', 'Kris Salazar',  true, 3, 1,'BUREAU');
 
 INSERT INTO juror_mod.user_roles (username, role)
-VALUES ('cbeasley', 'TEAM_LEADER'),
-       ('tgarrett', 'TEAM_LEADER'),
-       ('ksalazar', 'TEAM_LEADER');
+VALUES ('cbeasley', 'MANAGER'),
+       ('tgarrett', 'MANAGER'),
+       ('ksalazar', 'MANAGER');
 
 
 --Juror Pool

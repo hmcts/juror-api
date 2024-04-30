@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,10 +19,14 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolSearchRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolRequestSearchListDto;
+import uk.gov.hmcts.juror.api.moj.domain.FilterCoronerPool;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.exception.UserPermissionsException;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestSearchService;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,11 +63,27 @@ public class PoolSearchController {
         throw new UserPermissionsException.CourtUnavailable();
     }
 
+    @PostMapping("/coroner-pools")
+    @Operation(summary = "GET With Body", description = "Retrieve a list of all coroner pools, filtered by the "
+        + "provided search criteria (Bureau users only)")
+    @PreAuthorize(SecurityUtil.IS_BUREAU)
+    public ResponseEntity<PaginatedList<FilterCoronerPool>> searchCoronerPoolRequests(
+        @RequestBody @Valid CoronerPoolFilterRequestQuery query) {
+
+        PaginatedList<FilterCoronerPool> poolRequests =
+            poolRequestSearchService.searchForCoronerPools(query);
+
+        if (poolRequests == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok().body(poolRequests);
+
+    }
+
     private boolean validateCourtLocation(BureauJwtPayload payload, String locCode, List<String> courts) {
         log.trace(String.format("User %s is searching for pools in court location: %s", payload.getLogin(), locCode));
         return locCode == null || locCode.isEmpty()
             || payload.getOwner().equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)
             || courts.contains(locCode);
     }
-
 }

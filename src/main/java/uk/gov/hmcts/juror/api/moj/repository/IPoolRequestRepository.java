@@ -6,6 +6,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequestListAndCount;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -33,4 +34,7 @@ public interface IPoolRequestRepository extends IPoolRequestSearchQueries {
 
     List<Tuple> findActivePoolsForDateRange(String owner, String locCode, LocalDate minDate, LocalDate maxDate);
 
+    List<Tuple> findActivePoolsForDateRangeWithCourtCreatedRestriction(String owner, String locCode,
+                                                                       LocalDate minDate,
+                                                                       LocalDateTime courtCreationMinDate);
 }

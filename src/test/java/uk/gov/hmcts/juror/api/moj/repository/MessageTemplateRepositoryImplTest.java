@@ -140,6 +140,7 @@ class MessageTemplateRepositoryImplTest {
             new OrderSpecifier<?>[]{SortMethod.ASC.from(MessageSearch.SortField.JUROR_NUMBER)});
         verify(jpaQuery, times(1)).fetchResults();
 
+        verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.isTrue());
 
         verify(queryFactory, times(1))
             .select(
@@ -205,11 +206,12 @@ class MessageTemplateRepositoryImplTest {
 
         verify(jpaQuery, times(1)).leftJoin(PANEL);
         verify(jpaQuery, times(1)).on(
-            JUROR.eq(PANEL.juror),
-            PANEL.result.in(PanelResult.JUROR),
-            TRIAL.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode),
-            JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR));
+            JUROR.eq(PANEL.juror)
+                .and(PANEL.result.notIn(PanelResult.RETURNED, PanelResult.NOT_USED, PanelResult.CHALLENGED))
+                .and(PANEL.trial.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode))
+                .and(JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR)));
 
+        verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.isTrue());
 
         verify(jpaQuery, times(1)).leftJoin(PANEL);
 
@@ -290,6 +292,9 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1)).on(JUROR.eq(JUROR_POOL.juror));
         verify(jpaQuery, times(1))
             .where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
+        verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.isTrue());
+        verify(jpaQuery, times(1))
+            .where(JUROR_POOL.pool.owner.ne("400"));
 
         verify(jpaQuery, times(1)).limit(4L);
         verify(jpaQuery, times(1)).offset(0L);
@@ -361,13 +366,16 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1)).on(JUROR.eq(JUROR_POOL.juror));
         verify(jpaQuery, times(1))
             .where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
+        verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.isTrue());
+        verify(jpaQuery, times(1))
+            .where(JUROR_POOL.pool.owner.ne("400"));
 
         verify(jpaQuery, times(1)).leftJoin(PANEL);
         verify(jpaQuery, times(1)).on(
-            JUROR.eq(PANEL.juror),
-            PANEL.result.in(PanelResult.JUROR),
-            TRIAL.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode),
-            JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR));
+            JUROR.eq(PANEL.juror)
+                .and(PANEL.result.notIn(PanelResult.RETURNED, PanelResult.NOT_USED, PanelResult.CHALLENGED))
+                .and(PANEL.trial.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode))
+                .and(JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR)));
 
 
         verify(jpaQuery, times(1)).leftJoin(PANEL);
@@ -453,13 +461,16 @@ class MessageTemplateRepositoryImplTest {
         verify(jpaQuery, times(1)).on(JUROR.eq(JUROR_POOL.juror));
         verify(jpaQuery, times(1))
             .where(JUROR_POOL.pool.courtLocation.locCode.eq(TestConstants.VALID_COURT_LOCATION));
+        verify(jpaQuery, times(1)).where(JUROR_POOL.isActive.isTrue());
+        verify(jpaQuery, times(1))
+            .where(JUROR_POOL.pool.owner.ne("400"));
 
         verify(jpaQuery, times(1)).leftJoin(PANEL);
         verify(jpaQuery, times(1)).on(
-            JUROR.eq(PANEL.juror),
-            PANEL.result.in(PanelResult.JUROR),
-            TRIAL.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode),
-            JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR));
+            JUROR.eq(PANEL.juror)
+                .and(PANEL.result.notIn(PanelResult.RETURNED, PanelResult.NOT_USED, PanelResult.CHALLENGED))
+                .and(PANEL.trial.courtLocation.locCode.eq(JUROR_POOL.pool.courtLocation.locCode))
+                .and(JUROR_POOL.status.status.in(IJurorStatus.PANEL, IJurorStatus.JUROR)));
 
 
         verify(jpaQuery, times(1)).leftJoin(PANEL);

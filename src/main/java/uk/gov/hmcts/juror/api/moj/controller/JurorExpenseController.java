@@ -63,7 +63,7 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/moj/expenses/{loc_code}", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Expenses")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@PreAuthorize("(" + SecurityUtil.LOC_CODE_AUTH + " and " + SecurityUtil.COURT_AUTH + ")")
+@PreAuthorize("(" + SecurityUtil.LOC_CODE_AUTH + " and " + SecurityUtil.IS_COURT + ")")
 @SuppressWarnings("PMD.ExcessiveImports")
 public class JurorExpenseController {
 
@@ -211,7 +211,7 @@ public class JurorExpenseController {
     @PostMapping("/{payment_method}/approve")
     @Operation(summary = "Approve all expense records of a given type (for a single juror)")
     @PreAuthorize("(" + SecurityUtil.LOC_CODE_AUTH
-        + " and " + SecurityUtil.COURT_AUTH
+        + " and " + SecurityUtil.IS_COURT
         + " and " + SecurityUtil.IS_MANAGER + ")")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> approveExpenses(

@@ -31,6 +31,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolHistory;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CurrentlyDeferredRepository;
@@ -106,10 +107,8 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     private String initCourtsJwt(String owner, List<String> courts) throws Exception {
 
         return mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.COURT)
             .login("COURT_USER")
-            .daysToExpire(89)
             .owner(owner)
             .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build());
@@ -667,12 +666,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .as("Created Pool Request return date should be mapped from the request DTO")
             .isEqualTo(expectedAttendanceDate);
         assertThat(poolRequest.getNumberRequested())
-            .as("Created Pool Request number requested should be 0 for court-use only pools")
-            .isEqualTo(0);
+            .as("Created Pool Request number requested should be null for court-use only pools")
+            .isNull();
         assertThat(poolRequest.getPoolType().getPoolType())
             .as("Created Pool Request pool type should be mapped from the request DTO")
             .isEqualTo(requestedPoolData.getPoolType());
-        LocalTime expectedAttendTime = requestedPoolData.getAttendanceTime();
         assertThat(poolRequest.getAttendTime())
             .as("Created Pool Request attend time should be null for court-use only pools")
             .isNull();

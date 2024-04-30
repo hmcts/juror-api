@@ -4,7 +4,7 @@ VALUES ('BUREAU', 'test_bureau_inactive', 'test_bureau_inactive@email.gov.uk', '
        ('BUREAU', 'test_bureau_lead', 'test_bureau_lead@email.gov.uk', 'Bureau Team Lead', true, 1);
 
 INSERT INTO juror_mod.user_roles (username, role)
-VALUES ('test_bureau_lead', 'TEAM_LEADER');
+VALUES ('test_bureau_lead', 'MANAGER');
 
 INSERT INTO juror_mod.user_courts (username, loc_code)
 VALUES ('test_bureau_inactive', '400'),

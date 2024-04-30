@@ -123,7 +123,7 @@ values ('415', '1', 'large room fits 100 people'),
 
 insert into juror_mod.trial (trial_number, loc_code, description, judge, trial_type, trial_start_date, trial_end_date,
                              anonymous, courtroom)
-values ('T100000000', '415', 'TEST DEFENDANT', 22, 'CIV', current_date, current_date, false, 67),
+values ('T100000000', '415', 'TEST DEFENDANT', 22, 'CIV', current_date, null, false, 67),
        ('T100000001', '415', 'TEST DEFENDANT', 21, 'CIV', current_date, null, false, 66);
 
 INSERT INTO juror_mod.juror_trial

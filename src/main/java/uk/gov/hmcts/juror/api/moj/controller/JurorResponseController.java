@@ -106,6 +106,6 @@ public class JurorResponseController {
     public ResponseEntity<JurorResponseRetrieveResponseDto> retrieveJurorResponse(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid JurorResponseRetrieveRequestDto request) {
-        return ResponseEntity.ok().body(jurorResponseRetrieveService.retrieveJurorResponse(request, payload));
+        return ResponseEntity.ok().body(jurorResponseRetrieveService.retrieveJurorResponse(request));
     }
 }

@@ -8,8 +8,6 @@ public interface BureauBacklogCountService {
 
     long getBacklogUrgentCount();
 
-    long getBacklogSuperUrgentCount();
-
     long getBacklogAllRepliesCount();
 
     BureauBacklogCountData getBacklogResponseCount();

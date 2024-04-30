@@ -57,7 +57,7 @@ class FinancialAuditReportsITest extends AbstractControllerIntegrationTest<Void,
 
     @Override
     protected String getValidJwt() {
-        return createBureauJwt(
+        return createJwt(
             "test_court_standard",
             "415",
             UserType.COURT,
@@ -194,6 +194,8 @@ class FinancialAuditReportsITest extends AbstractControllerIntegrationTest<Void,
                         .parking(new BigDecimal("0.00"))
                         .foodAndDrink(new BigDecimal("17.88"))
                         .smartCard(new BigDecimal("1.00"))
+                        .totalPaid(BigDecimal.ZERO)
+                        .totalDue(new BigDecimal("122.40"))
                         .build())
                     .build())
                 .build());
@@ -341,6 +343,8 @@ class FinancialAuditReportsITest extends AbstractControllerIntegrationTest<Void,
                         .parking(new BigDecimal("0.00"))
                         .foodAndDrink(new BigDecimal("0.00"))
                         .smartCard(BigDecimal.ZERO)
+                        .totalPaid(BigDecimal.ZERO)
+                        .totalDue(new BigDecimal("52.76"))
                         .build())
                     .build())
                 .build());
@@ -592,6 +596,8 @@ class FinancialAuditReportsITest extends AbstractControllerIntegrationTest<Void,
                         .parking(new BigDecimal("0.00"))
                         .foodAndDrink(new BigDecimal("17.88"))
                         .smartCard(new BigDecimal("1.00"))
+                        .totalPaid(new BigDecimal("307.06"))
+                        .totalDue(new BigDecimal("307.06"))
                         .build())
                     .build())
                 .build());
@@ -771,6 +777,8 @@ class FinancialAuditReportsITest extends AbstractControllerIntegrationTest<Void,
                         .parking(new BigDecimal("0.00"))
                         .foodAndDrink(new BigDecimal("17.88"))
                         .smartCard(new BigDecimal("1.00"))
+                        .totalPaid(new BigDecimal("96.02"))
+                        .totalDue(new BigDecimal("127.22"))
                         .build())
                     .build())
                 .build());
@@ -886,6 +894,8 @@ class FinancialAuditReportsITest extends AbstractControllerIntegrationTest<Void,
                         .parking(new BigDecimal("0.00"))
                         .foodAndDrink(new BigDecimal("17.88"))
                         .smartCard(new BigDecimal("1.00"))
+                        .totalPaid(new BigDecimal("127.22"))
+                        .totalDue(new BigDecimal("127.22"))
                         .build())
                     .build())
                 .build());

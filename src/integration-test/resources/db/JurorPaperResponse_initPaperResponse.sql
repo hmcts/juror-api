@@ -8,7 +8,7 @@ INSERT INTO juror_mod.users ("owner", username, "name", active, last_logged_in, 
 
 -- user_roles
 INSERT INTO juror_mod.user_roles (username, role)
-VALUES ('MODTESTBUREAU', 'TEAM_LEADER');
+VALUES ('MODTESTBUREAU', 'MANAGER');
 
 -- user_courts
 INSERT INTO juror_mod.user_courts (username, loc_code)

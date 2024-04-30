@@ -162,13 +162,13 @@ public class AbstractJurorResponse extends Address implements Serializable {
      * Flag that this response is urgent.
      */
     @Column(name = "urgent")
-    private Boolean urgent;
+    private boolean urgent;
 
     /**
      * Flag this response as super urgent.
      */
     @Column(name = "super_urgent")
-    private Boolean superUrgent;
+    private boolean superUrgent;
 
     /**
      * Flag this response as welsh language.

@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
-import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.ExcusalDecisionDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
@@ -28,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
@@ -97,7 +97,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     public void refuseExcusalRequest_paperResponse_bureauUser_bureauOwner() throws Exception {
         final String jurorNumber = "123456789";
         final String login = "BUREAU_USER";
-        final String bureauJwt = createBureauJwt(login, "400");
+        final String bureauJwt = createJwt(login, "400");
         final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -122,7 +122,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     public void refuseExcusalRequest_paperResponse_courtUser_courtOwner() throws Exception {
         final String jurorNumber = "987654321";
         final String login = "COURT_USER";
-        final String courtJwt = createBureauJwt(login, "415");
+        final String courtJwt = createJwt(login, "415");
         final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -161,7 +161,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     public void grantExcusalRequest_paperResponse_bureauUser_bureauOwner() throws Exception {
         final String jurorNumber = "123456789";
         final String login = "BUREAU_USER";
-        final String bureauJwt = createBureauJwt(login, "400");
+        final String bureauJwt = createJwt(login, "400");
         final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -189,7 +189,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     public void grantExcusalRequest_paperResponse_courtUser_courtOwner() throws Exception {
         final String jurorNumber = "987654321";
         final String login = "COURT_USER";
-        final String courtJwt = createBureauJwt(login, "415");
+        final String courtJwt = createJwt(login, "415");
         final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -215,7 +215,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     public void refuseExcusalRequest_digitalResponse_bureauUser_bureauOwner() throws Exception {
         final String jurorNumber = "111222333";
         final String login = "BUREAU_USER";
-        final String bureauJwt = createBureauJwt(login, "400");
+        final String bureauJwt = createJwt(login, "400");
         final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -241,7 +241,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     public void refuseExcusalRequest_digitalResponse_courtUser_courtOwner() throws Exception {
         final String jurorNumber = "333222111";
         final String login = "COURT_USER";
-        final String courtJwt = createBureauJwt(login, "415");
+        final String courtJwt = createJwt(login, "415");
         final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -279,7 +279,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     public void grantExcusalRequest_digitalResponse_bureauUser_bureauOwner() throws Exception {
         final String jurorNumber = "111222333";
         final String login = "BUREAU_USER";
-        final String bureauJwt = createBureauJwt(login, "400");
+        final String bureauJwt = createJwt(login, "400");
         final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -306,7 +306,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     public void grantExcusalRequest_digitalResponse_courtUser_courtOwner() throws Exception {
         final String jurorNumber = "333222111";
         final String login = "COURT_USER";
-        final String courtJwt = createBureauJwt(login, "415");
+        final String courtJwt = createJwt(login, "415");
         final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -332,14 +332,14 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     public void grantExcusalRequest_excusalCodeDeceased() throws Exception {
         final String jurorNumber = "123456789";
         final String login = "BUREAU_USER";
-        final String bureauJwt = createBureauJwt(login, "400");
+        final String bureauJwt = createJwt(login, "400");
         final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
         ExcusalDecisionDto excusalDecisionDto = createExcusalDecisionDto();
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
-        excusalDecisionDto.setExcusalReasonCode(ExcusalCode.DECEASED);
+        excusalDecisionDto.setExcusalReasonCode(ExcusalCodeEnum.D.getCode());
 
         RequestEntity<ExcusalDecisionDto> requestEntity = new RequestEntity<>(excusalDecisionDto, httpHeaders,
             HttpMethod.PUT, uri);
@@ -359,7 +359,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     public void excusalRequest_bureauUser_courtOwner() throws Exception {
         final String jurorNumber = "987654321";
         final String login = "BUREAU_USER";
-        final String bureauJwt = createBureauJwt(login, "400");
+        final String bureauJwt = createJwt(login, "400");
         final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -377,7 +377,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     public void excusalRequest_courtUser_bureauOwner() throws Exception {
         final String jurorNumber = "123456789";
         final String login = "COURT_USER";
-        final String courtJwt = createBureauJwt(login, "415");
+        final String courtJwt = createJwt(login, "415");
         final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -395,7 +395,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     public void excusalRequest_paperResponse_alreadyProcessed() throws Exception {
         final String jurorNumber = "111111111";
         final String login = "BUREAU_USER";
-        final String bureauJwt = createBureauJwt(login, "400");
+        final String bureauJwt = createJwt(login, "400");
         final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -403,7 +403,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         ExcusalDecisionDto excusalDecisionDto = createExcusalDecisionDto();
         excusalDecisionDto.setReplyMethod(ReplyMethod.PAPER);
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
-        excusalDecisionDto.setExcusalReasonCode(ExcusalCode.DECEASED);
+        excusalDecisionDto.setExcusalReasonCode(ExcusalCodeEnum.D.getCode());
 
         RequestEntity<ExcusalDecisionDto> requestEntity = new RequestEntity<>(excusalDecisionDto, httpHeaders,
             HttpMethod.PUT, uri);
@@ -423,7 +423,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     public void excusalRequest_digitalResponse_alreadyProcessed() throws Exception {
         final String jurorNumber = "222222222";
         final String login = "BUREAU_USER";
-        final String bureauJwt = createBureauJwt(login, "400");
+        final String bureauJwt = createJwt(login, "400");
         final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -431,7 +431,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         ExcusalDecisionDto excusalDecisionDto = createExcusalDecisionDto();
         excusalDecisionDto.setReplyMethod(ReplyMethod.DIGITAL);
         excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
-        excusalDecisionDto.setExcusalReasonCode(ExcusalCode.DECEASED);
+        excusalDecisionDto.setExcusalReasonCode(ExcusalCodeEnum.D.getCode());
 
         RequestEntity<ExcusalDecisionDto> requestEntity = new RequestEntity<>(excusalDecisionDto, httpHeaders,
             HttpMethod.PUT, uri);
@@ -444,7 +444,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     public void excusalRequest_invalidExcusalCode() throws Exception {
         final String jurorNumber = "123456789";
         final String login = "BUREAU_USER";
-        final String bureauJwt = createBureauJwt(login, "400");
+        final String bureauJwt = createJwt(login, "400");
         final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -463,7 +463,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     public void excusalRequest_paperResponse_doesNotExist() throws Exception {
         final String jurorNumber = "222222222";
         final String login = "BUREAU_USER";
-        final String bureauJwt = createBureauJwt(login, "400");
+        final String bureauJwt = createJwt(login, "400");
         final URI uri = URI.create("/api/v1/moj/excusal-response/juror/" + jurorNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -581,7 +581,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         List<BulkPrintData> excusalLetters = new ArrayList<>();
         excusalLetterIterable.forEach(excusalLetters::add);
 
-        if (ExcusalCode.DECEASED.equals(excusalCode)) {
+        if (ExcusalCodeEnum.D.getCode().equals(excusalCode)) {
             assertThat(excusalLetters.size())
                 .as("Expect no excusal letter for deceased jurors")
                 .isEqualTo(0);

@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.CourtroomsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.CourtroomsListDto;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.net.URI;
@@ -90,16 +91,12 @@ public class CourtroomControllerITest extends AbstractIntegrationTest {
 
     private void initHeadersCourt() {
         BureauJwtPayload.Staff staff = createStaff("456", "MsCourt");
-
-        httpHeaders = initialiseHeaders("99", false, "COURT_USER", 89,
-            "456", staff);
+        httpHeaders = initialiseHeaders("COURT_USER", UserType.COURT,null,"456",staff);
     }
 
     private void initHeadersBureau() {
         BureauJwtPayload.Staff staff = createStaff("400", "MrBureau");
-
-        httpHeaders = initialiseHeaders("99", false, "BUREAU_USER", 89,
-            "400", staff);
+        httpHeaders = initialiseHeaders("BUREAU_USER", UserType.BUREAU,null,"400",staff);
     }
 
     private BureauJwtPayload.Staff createStaff(String owner, String staffName) {

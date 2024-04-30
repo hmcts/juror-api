@@ -19,10 +19,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.bureau.controller.request.BureauBacklogAllocateRequestDto;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -64,12 +67,11 @@ public class BureauBacklogAllocateControllerTest extends AbstractIntegrationTest
     public void backlogAllocateReplies_post_happyPath() throws Exception {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("ksalazar")
-            .daysToExpire(89)
             .owner("400")
-            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -80,11 +82,11 @@ public class BureauBacklogAllocateControllerTest extends AbstractIntegrationTest
             new RequestEntity<>(BureauBacklogAllocateRequestDto.builder()
                 .officerAllocations(Arrays.asList(
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1)
-                        .superUrgentCount(2).userId("carneson").build(),
+                        .userId("carneson").build(),
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1)
-                        .superUrgentCount(2).userId("sgomez").build(),
+                        .userId("sgomez").build(),
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1)
-                        .superUrgentCount(2).userId("mruby").build()
+                        .userId("mruby").build()
                 )).build(), httpHeaders, HttpMethod.POST, uri);
         ResponseEntity<Void> response = template.exchange(request, Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -97,12 +99,11 @@ public class BureauBacklogAllocateControllerTest extends AbstractIntegrationTest
     public void backlogAllocateReplies_post_errorPath_noRequestingUser() throws Exception {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login(null)
-            .daysToExpire(89)
             .owner("400")
-            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().active(1).name("Kris Salazar").build())
             .build());
 
 
@@ -114,11 +115,11 @@ public class BureauBacklogAllocateControllerTest extends AbstractIntegrationTest
             new RequestEntity<>(BureauBacklogAllocateRequestDto.builder()
                 .officerAllocations(Arrays.asList(
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1)
-                        .superUrgentCount(2).userId("carneson").build(),
+                        .userId("carneson").build(),
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1)
-                        .superUrgentCount(2).userId("sgomez").build(),
+                        .userId("sgomez").build(),
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1)
-                        .superUrgentCount(2).userId("mruby").build()
+                        .userId("mruby").build()
                 )).build(), httpHeaders, HttpMethod.POST, uri);
 
         ResponseEntity<Void> response = template.exchange(request, Void.class);
@@ -133,12 +134,11 @@ public class BureauBacklogAllocateControllerTest extends AbstractIntegrationTest
     public void backlogAllocateReplies_post_missingAllocations() throws Exception {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("ksalazar")
-            .daysToExpire(89)
             .owner("400")
-            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -148,10 +148,10 @@ public class BureauBacklogAllocateControllerTest extends AbstractIntegrationTest
         RequestEntity<BureauBacklogAllocateRequestDto> request =
             new RequestEntity<>(BureauBacklogAllocateRequestDto.builder()
                 .officerAllocations(Arrays.asList(
-                    BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).superUrgentCount(2)
+                    BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2)
                         .userId("carneson").build(),
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1)
-                        .superUrgentCount(2).userId("sgomez").build(),
+                        .userId("sgomez").build(),
                     BureauBacklogAllocateRequestDto.StaffAllocation.builder().nonUrgentCount(2).urgentCount(1).userId(
                         "mruby").build()
                 )).build(), httpHeaders, HttpMethod.POST, uri);
