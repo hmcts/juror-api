@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,16 +35,13 @@ public class PanelSummaryReport extends AbstractStandardReport {
 
         this.trialRepository = trialRepository;
         isCourtUserOnly();
-        addAuthenticationConsumer(standardReportRequest -> {
-            checkOwnership(standardReportRequest.getLocCode(), false);
-        });
     }
 
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
-        query.where(QPanel.panel.trial.courtLocation.locCode.eq(request.getLocCode()));
+        query.where(QPanel.panel.trial.courtLocation.owner.eq(SecurityUtil.getActiveOwner()));
         query.orderBy(QJuror.juror.jurorNumber.asc());
     }
 
@@ -64,8 +62,7 @@ public class PanelSummaryReport extends AbstractStandardReport {
 
     public interface RequestValidator extends
         Validators.AbstractRequestValidator,
-        Validators.RequireTrialNumber,
-        Validators.RequireLocCode {
+        Validators.RequireTrialNumber {
 
     }
 }
