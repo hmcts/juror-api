@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.exception.PoolEditException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolCommentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -49,7 +50,7 @@ public class EditPoolServiceImpl implements EditPoolService {
         String poolNumber = poolEditRequestDto.getPoolNumber();
         log.trace(String.format("Enter editPoolJurorsRequested for Pool Number: %s", poolNumber));
 
-        // check if Pool Request is in an editable state
+        // check if Pool Request is in an editable state - with the Bureau
         if (!poolRequestRepository.isActive(poolNumber)) {
             throw new PoolEditException.CannotEditPoolRequest(payload.getLogin(), poolNumber);
         }
@@ -115,16 +116,18 @@ public class EditPoolServiceImpl implements EditPoolService {
         String poolNumber = poolEditRequestDto.getPoolNumber();
         log.trace(String.format("Enter editPoolTotalCapacity for Pool Number: %s", poolNumber));
 
-        // check if Pool Request is in an editable state
-        if (!poolRequestRepository.isActive(poolNumber)) {
-            throw new PoolEditException.CannotEditPoolRequest(payload.getLogin(), poolNumber);
-        }
-
         Optional<PoolRequest> poolRequestOpt = poolRequestRepository.findByPoolNumber(poolNumber);
 
         if (poolRequestOpt.isPresent()) {
 
             PoolRequest poolRequest = poolRequestOpt.get();
+
+            // court users can update the total capacity of a pool request at any time but must have
+            // access to the pool request's court location
+            if (!SecurityUtil.getCourts().contains(poolRequest.getCourtLocation().getLocCode())) {
+                throw new PoolEditException.CannotEditPoolRequest(payload.getLogin(), poolNumber);
+            }
+
             final int noRequested = poolRequest.getNumberRequested();
             final Integer totalRequired = poolEditRequestDto.getTotalRequired();
 
