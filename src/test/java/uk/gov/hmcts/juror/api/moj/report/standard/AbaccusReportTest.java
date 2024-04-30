@@ -7,7 +7,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
-import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportNoPoolRepositoryTestSupport;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class AbaccusReportTest extends AbstractStandardReportNoPoolRepositoryTestSupport<AbaccusReport> {
+public class AbaccusReportTest extends AbstractStandardReportTestSupport<AbaccusReport> {
 
     private final Clock clock;
 
@@ -41,7 +41,7 @@ public class AbaccusReportTest extends AbstractStandardReportNoPoolRepositoryTes
             DataType.DOCUMENT_CODE,
             DataType.TOTAL_SENT_FOR_PRINTING,
             DataType.DATE_SENT);
-
+        setHasPoolRepository(false);
         String instantExpected = "2024-04-30T12:00:01Z";
         Instant instant = Instant.parse(instantExpected);
 
