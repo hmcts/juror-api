@@ -53,9 +53,7 @@ public class PanelListDetailedReport extends AbstractStandardReport {
         StandardReportRequest request,
         StandardReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
 
-        Map<String, StandardReportResponse.DataTypeValue> map = loadStandardTrailHeaders(request, trialRepository);
-
-        return map;
+        return loadStandardTrailHeaders(request, trialRepository);
     }
 
     @Override
