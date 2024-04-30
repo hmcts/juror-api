@@ -90,11 +90,12 @@ public abstract class AbstractReport<T> {
 
     final List<Consumer<StandardReportRequest>> authenticationConsumers;
 
-    public AbstractReport(EntityPath<?> from, IDataType... dataType) {
+    public AbstractReport(EntityPath<?> from,  IDataType... dataType) {
         this(null, from, dataType);
     }
 
-    public AbstractReport(PoolRequestRepository poolRequestRepository, EntityPath<?> from, IDataType... dataType) {
+    public AbstractReport(PoolRequestRepository poolRequestRepository,
+                          EntityPath<?> from, IDataType... dataType) {
         this.poolRequestRepository = poolRequestRepository;
         this.from = from;
         this.dataTypes = List.of(dataType);
@@ -334,7 +335,7 @@ public abstract class AbstractReport<T> {
         ));
     }
 
-    public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadStandardTrailHeaders(
+    public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadStandardTrialHeaders(
         StandardReportRequest request, TrialRepository trialRepository) {
 
         Trial trial = getTrial(request.getTrialNumber(), trialRepository);

@@ -37,6 +37,7 @@ public class StandardReportRequest {
         "UndeliverableListReport",
         "PanelSummaryReport",
         "IncompleteServiceReport",
+        "PanelListDetailedReport",
         //Grouped
         "PostponedListByDateReport"
     })
