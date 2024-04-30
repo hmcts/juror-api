@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -28,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
@@ -55,6 +57,8 @@ public class DeceasedResponseServiceImpl implements DeceasedResponseService {
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     @NonNull
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
+    @NonNull
+    private final JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
     @NonNull
     private final ContactLogRepository contactLogRepository;
 
@@ -87,17 +91,15 @@ public class DeceasedResponseServiceImpl implements DeceasedResponseService {
             createMinimalPaperSummonsRecord(juror, deceasedComment);
         } else {
             // Update any response record to closed to prevent further processing
-
-            // get the digital response
-            AbstractJurorResponse jurorResponse = jurorDigitalResponseRepository.findByJurorNumber(jurorNumber);
+            AbstractJurorResponse jurorResponse = jurorResponseCommonRepositoryMod.findByJurorNumber(jurorNumber);
 
             if (jurorResponse != null) {
+
                 setResponseToClosed(jurorResponse);
-                jurorDigitalResponseRepository.save((DigitalResponse)jurorResponse);
-            } else {
-                jurorResponse = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
-                if (jurorResponse != null) {
-                    setResponseToClosed(jurorResponse);
+
+                if (jurorResponse.getReplyType().getType().equals(ReplyMethod.DIGITAL.getDescription())) {
+                    jurorDigitalResponseRepository.save((DigitalResponse) jurorResponse);
+                } else {
                     jurorPaperResponseRepository.save((PaperResponse) jurorResponse);
                 }
             }

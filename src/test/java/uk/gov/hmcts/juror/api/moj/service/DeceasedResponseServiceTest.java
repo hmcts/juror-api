@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -59,6 +60,8 @@ class DeceasedResponseServiceTest {
     @Mock
     private JurorPoolRepository jurorPoolRepository;
     @Mock
+    private JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
+    @Mock
     private JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
     @Mock
     private JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
@@ -79,6 +82,7 @@ class DeceasedResponseServiceTest {
         contactCodeRepository = mock(ContactCodeRepository.class);
         jurorRepository = mock(JurorRepository.class);
         jurorPoolRepository = mock(JurorPoolRepository.class);
+        jurorResponseCommonRepositoryMod = mock(JurorResponseCommonRepositoryMod.class);
         jurorPaperResponseRepository = mock(JurorPaperResponseRepositoryMod.class);
         jurorDigitalResponseRepository = mock(JurorDigitalResponseRepositoryMod.class);
         contactEnquiryTypeRepository = mock(ContactEnquiryTypeRepository.class);
@@ -91,6 +95,7 @@ class DeceasedResponseServiceTest {
             jurorRepository,
             jurorPaperResponseRepository,
             jurorDigitalResponseRepository,
+            jurorResponseCommonRepositoryMod,
             contactLogRepository
         );
     }
@@ -225,7 +230,7 @@ class DeceasedResponseServiceTest {
         PaperResponse jurorResponse = new PaperResponse();
         jurorResponse.setJurorNumber(jurorNumber);
 
-        doReturn(jurorResponse).when(jurorPaperResponseRepository)
+        doReturn(jurorResponse).when(jurorResponseCommonRepositoryMod)
             .findByJurorNumber(jurorNumber);
 
         doReturn(null).when(jurorPaperResponseRepository)
@@ -236,7 +241,7 @@ class DeceasedResponseServiceTest {
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
         verify(jurorPoolRepository, times(1)).save(any());
-        verify(jurorPaperResponseRepository, times(1))
+        verify(jurorResponseCommonRepositoryMod, times(1))
             .findByJurorNumber(jurorNumber);
 
         final ArgumentCaptor<PaperResponse> PaperResponseCaptor = ArgumentCaptor.forClass(PaperResponse.class);
@@ -261,8 +266,6 @@ class DeceasedResponseServiceTest {
         assertThat(juror.getExcusalDate()).isEqualTo(LocalDate.now(ZoneId.systemDefault()));
         assertThat(juror.isResponded()).isTrue();
 
-        verify(jurorDigitalResponseRepository, times(1))
-            .findByJurorNumber(anyString());
         verify(contactCodeRepository, times(1)).findById(any());
         verify(contactLogRepository, times(1)).saveAndFlush(any());
     }
@@ -302,7 +305,7 @@ class DeceasedResponseServiceTest {
         DigitalResponse jurorResponse = new DigitalResponse();
         jurorResponse.setJurorNumber(jurorNumber);
 
-        doReturn(jurorResponse).when(jurorDigitalResponseRepository)
+        doReturn(jurorResponse).when(jurorResponseCommonRepositoryMod)
             .findByJurorNumber(jurorNumber);
         doReturn(null).when(jurorDigitalResponseRepository)
             .save(any(DigitalResponse.class));
@@ -312,7 +315,7 @@ class DeceasedResponseServiceTest {
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), anyBoolean());
         verify(jurorPoolRepository, times(1)).save(any());
-        verify(jurorDigitalResponseRepository, times(1))
+        verify(jurorResponseCommonRepositoryMod, times(1))
             .findByJurorNumber(jurorNumber);
 
         verify(jurorDigitalResponseRepository, times(1))
