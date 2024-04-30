@@ -317,8 +317,8 @@ public class JurorRecordController {
                              @Size(min = 9, max = 9)
                              @PathVariable("jurorNumber")
                              @Valid @JurorNumber String jurorNumber) {
-        boolean isBureauUser = JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner());
-        boolean isTeamLeader = payload.getStaff().getRank().equals(SecurityUtil.TEAM_LEADER_LEVEL);
+        boolean isBureauUser = SecurityUtil.isBureau();
+        boolean isTeamLeader = SecurityUtil.isBureauManager();
 
         if (isBureauUser && !isTeamLeader) {
             throw new MojException.Forbidden("User has insufficient permission to perform "

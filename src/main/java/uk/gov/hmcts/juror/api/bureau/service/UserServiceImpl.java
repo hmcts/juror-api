@@ -265,7 +265,7 @@ public class UserServiceImpl implements UserService {
         log.trace("Getting active staff roster");
         final List<User> activeStaffList =
             Lists.newArrayList(
-                userRepository.findAll(active().and(owner(SecurityUtil.getActiveUsersBureauPayload().getOwner())),
+                userRepository.findAll(active().and(owner(SecurityUtil.getActiveOwner())),
                     sortNameAsc()));
         log.debug("Found {} active staff members", activeStaffList.size());
         return StaffRosterResponseDto.builder()

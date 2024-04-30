@@ -20,7 +20,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
-import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.administration.JudgeCreateDto;
 import uk.gov.hmcts.juror.api.moj.domain.administration.JudgeDetailsDto;
 import uk.gov.hmcts.juror.api.moj.domain.administration.JudgeUpdateDto;
@@ -85,7 +84,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
 
             void assertValid(long judgeCode, JudgeDetailsDto expectedResponse) {
                 final String jwt =
-                    createBureauJwt(COURT_USER, "415", UserType.COURT, Set.of(Role.MANAGER), "415");
+                    createJwt(COURT_USER, Set.of(Role.MANAGER), "415", "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 ResponseEntity<JudgeDetailsDto> response = template.exchange(
@@ -132,7 +131,8 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
             }
 
             private ResponseEntity<String> triggerInvalid(String id, String owner, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, UserType.COURT, roles, owner);
+                final String jwt = createJwt(COURT_USER, roles, owner, owner);
+
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -189,7 +189,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
 
             void assertValid(long judgeCode) {
                 final String jwt =
-                    createBureauJwt(COURT_USER, "415", UserType.COURT, Set.of(Role.MANAGER), "415");
+                    createJwt(COURT_USER, Set.of(Role.MANAGER), "415", "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 ResponseEntity<Void> response = template.exchange(
@@ -216,7 +216,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
             }
 
             private ResponseEntity<String> triggerInvalid(String id, String owner, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, UserType.COURT, roles, owner);
+                final String jwt = createJwt(COURT_USER, roles, owner, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, DELETE,
@@ -276,8 +276,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
         class Positive {
 
             void assertValid(String owner, Boolean isActive, List<JudgeDetailsDto> expectedResponse) {
-                final String jwt =
-                    createBureauJwt(COURT_USER, owner, UserType.COURT, Set.of(Role.MANAGER), owner);
+                final String jwt = createJwt(COURT_USER, Set.of(Role.MANAGER), owner, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 String suffix = "";
@@ -371,7 +370,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
             }
 
             private ResponseEntity<String> triggerInvalid(String isActive, String owner, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, UserType.COURT, roles, owner);
+                final String jwt = createJwt(COURT_USER, roles, owner, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 String suffix = "";
                 if (isActive != null) {
@@ -414,8 +413,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
         class Positive {
 
             void assertValid(JudgeCreateDto request) {
-                final String jwt =
-                    createBureauJwt(COURT_USER, "415", UserType.COURT, Set.of(Role.MANAGER), "415");
+                final String jwt = createJwt(COURT_USER, Set.of(Role.MANAGER), "415", "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 ResponseEntity<Void> response = template.exchange(
@@ -446,7 +444,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
 
             private ResponseEntity<String> triggerInvalid(JudgeCreateDto request, String owner,
                                                           Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, UserType.COURT, roles, owner);
+                final String jwt = createJwt(COURT_USER, roles, owner, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, POST,
@@ -508,7 +506,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
 
             void assertValid(long judgeCode, JudgeUpdateDto request) {
                 final String jwt =
-                    createBureauJwt(COURT_USER, "415", UserType.COURT, Set.of(Role.MANAGER), "415");
+                    createJwt(COURT_USER, Set.of(Role.MANAGER), "415", "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 ResponseEntity<Void> response = template.exchange(
@@ -558,7 +556,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
 
             private ResponseEntity<String> triggerInvalid(String id, JudgeUpdateDto request, String owner,
                                                           Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, UserType.COURT, roles, owner);
+                final String jwt = createJwt(COURT_USER, roles, owner, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, PUT,

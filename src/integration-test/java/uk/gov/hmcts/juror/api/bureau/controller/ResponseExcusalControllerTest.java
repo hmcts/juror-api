@@ -20,10 +20,10 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.SpringBootErrorResponse;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalCodeDto;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalReasonsDto;
-import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeEntity;
 import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
 import uk.gov.hmcts.juror.api.bureau.domain.PartHist;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 
 import java.net.URI;
 import java.sql.Timestamp;
@@ -100,9 +100,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
             .owner("400")
             .build())
         );
-
-        ExcusalCodeEntity excusalCodeEntity = new ExcusalCodeEntity("B", "Student");
-        ExcusalCodeDto excusalDto = new ExcusalCodeDto(excusalCodeEntity);
+        ExcusalCodeDto excusalDto = new ExcusalCodeDto(ExcusalCodeEnum.B);
         excusalDto.setVersion(555);
 
         URI uri = URI.create("/api/v1/bureau/juror/excuse/644892530");
@@ -169,7 +167,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 jdbcTemplate.queryForObject("SELECT excusal_code FROM juror_mod.juror WHERE juror_number='644892530'",
                     String.class))
             .as("Jurors pool entry should have the appropriate excusal code set")
-            .isEqualTo(excusalCodeEntity.getExcusalCode());
+            .isEqualTo(excusalDto.getExcusalCode());
         softly.assertThat(
                 jdbcTemplate.queryForObject("SELECT USER_EDTQ FROM juror_mod.juror_pool WHERE juror_number='644892530'",
                     String.class))
@@ -196,7 +194,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         softly.assertThat(jdbcTemplate.queryForObject("SELECT OTHER_INFORMATION FROM juror_mod.juror_history "
                 + "WHERE juror_number='644892530' AND HISTORY_CODE='PEXC'", String.class))
             .as("Juror's PART_HIST entry should have the appropriate code set as OTHER_INFORMATION")
-            .isEqualTo("Add Excuse - " + excusalCodeEntity.getExcusalCode());
+            .isEqualTo("Add Excuse - " + excusalDto.getExcusalCode());
         softly.assertThat(jdbcTemplate.queryForObject("SELECT pool_number FROM juror_mod.juror_history WHERE "
                 + "juror_number='644892530' AND HISTORY_CODE='PEXC'", String.class))
             .as("Juror's PART_HIST entry should have the appropriate pool code set as POOL_NO")
@@ -204,7 +202,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         softly.assertThat(jdbcTemplate.queryForObject("SELECT EXC_CODE FROM JUROR.EXC_LETT WHERE PART_NO='644892530'",
                 String.class))
             .as("Juror's EXC_LETT entry should have the appropriate excusal code set")
-            .isEqualTo(excusalCodeEntity.getExcusalCode());
+            .isEqualTo(excusalDto.getExcusalCode());
         softly.assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.juror_response WHERE "
                 + "JUROR_NUMBER = '644892530'", String.class))
             .as("As response was in the backlog, it needs assigned to the logged in user changing it.")
@@ -230,8 +228,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
             .build())
         );
 
-        ExcusalCodeEntity excusalCodeEntity = new ExcusalCodeEntity("D", "Deceased");
-        ExcusalCodeDto excusalDto = new ExcusalCodeDto(excusalCodeEntity);
+        ExcusalCodeDto excusalDto = new ExcusalCodeDto(ExcusalCodeEnum.D);
         excusalDto.setVersion(555);
 
         URI uri = URI.create("/api/v1/bureau/juror/excuse/644892530");
@@ -293,7 +290,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 jdbcTemplate.queryForObject("SELECT excusal_code FROM juror_mod.juror WHERE juror_number='644892530'",
                     String.class))
             .as("Jurors pool entry should have the appropriate excusal code set")
-            .isEqualTo(excusalCodeEntity.getExcusalCode());
+            .isEqualTo(excusalDto.getExcusalCode());
         softly.assertThat(
                 jdbcTemplate.queryForObject("SELECT USER_EDTQ FROM juror_mod.juror_pool WHERE juror_number='644892530'",
                     String.class))
@@ -320,7 +317,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         softly.assertThat(jdbcTemplate.queryForObject("SELECT OTHER_INFORMATION FROM juror_mod.juror_history "
                 + "WHERE juror_number='644892530' AND HISTORY_CODE='PEXC'", String.class))
             .as("Juror's PART_HIST entry should have the appropriate code set as OTHER_INFORMATION")
-            .isEqualTo("Add Excuse - " + excusalCodeEntity.getExcusalCode());
+            .isEqualTo("Add Excuse - " + excusalDto.getExcusalCode());
         softly.assertThat(jdbcTemplate.queryForObject("SELECT pool_number FROM juror_mod.juror_history WHERE "
                 + "juror_number='644892530' AND HISTORY_CODE='PEXC'", String.class))
             .as("Juror's PART_HIST entry should have the appropriate pool code set as POOL_NO")
@@ -352,8 +349,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
             .build())
         );
 
-        ExcusalCodeEntity excusalCodeEntity = new ExcusalCodeEntity("ZINVALID", "Invalid Excusal");
-        ExcusalCodeDto excusalDto = new ExcusalCodeDto(excusalCodeEntity);
+        ExcusalCodeDto excusalDto = new ExcusalCodeDto(555, "ZINVALID", "Invalid Excusal");
 
         URI uri = URI.create("/api/v1/bureau/juror/excuse/644892530");
         RequestEntity<ExcusalCodeDto> requestEntity =
@@ -445,8 +441,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
             .build())
         );
 
-        ExcusalCodeEntity excusalCodeEntity = new ExcusalCodeEntity("B", "Student");
-        ExcusalCodeDto excusalDto = new ExcusalCodeDto(excusalCodeEntity);
+        ExcusalCodeDto excusalDto = new ExcusalCodeDto(ExcusalCodeEnum.B);
         excusalDto.setVersion(555);
 
         URI uri = URI.create("/api/v1/bureau/juror/excuse/123456789");
@@ -503,8 +498,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
             .build())
         );
 
-        ExcusalCodeEntity excusalCodeEntity = new ExcusalCodeEntity("B", "Student");
-        ExcusalCodeDto excusalDto = new ExcusalCodeDto(excusalCodeEntity);
+        ExcusalCodeDto excusalDto = new ExcusalCodeDto(ExcusalCodeEnum.B);
         excusalDto.setVersion(554);
 
         URI uri = URI.create("/api/v1/bureau/juror/excuse/644892530");
@@ -589,8 +583,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
             .build())
         );
 
-        ExcusalCodeEntity excusalCodeEntity = new ExcusalCodeEntity("B", "Student");
-        ExcusalCodeDto excusalDto = new ExcusalCodeDto(excusalCodeEntity);
+        ExcusalCodeDto excusalDto = new ExcusalCodeDto(ExcusalCodeEnum.B);
         excusalDto.setVersion(null);
 
         URI uri = URI.create("/api/v1/bureau/juror/excuse/644892530");
@@ -675,8 +668,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
             .build())
         );
 
-        ExcusalCodeEntity excusalCodeEntity = new ExcusalCodeEntity("B", "Student");
-        ExcusalCodeDto excusalDto = new ExcusalCodeDto(excusalCodeEntity);
+        ExcusalCodeDto excusalDto = new ExcusalCodeDto(ExcusalCodeEnum.B);
         excusalDto.setVersion(555);
 
         URI uri = URI.create("/api/v1/bureau/juror/excuse/reject/644892530");
@@ -734,7 +726,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 jdbcTemplate.queryForObject("SELECT excusal_code FROM juror_mod.juror WHERE juror_number='644892530'",
                     String.class))
             .as("Jurors pool entry should have the appropriate excusal code set")
-            .isEqualTo(excusalCodeEntity.getExcusalCode());
+            .isEqualTo(excusalDto.getExcusalCode());
         softly.assertThat(
                 jdbcTemplate.queryForObject("SELECT USER_EDTQ FROM juror_mod.juror_pool WHERE juror_number='644892530'",
                     String.class))
@@ -786,7 +778,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         softly.assertThat(jdbcTemplate.queryForObject("SELECT EXC_CODE FROM JUROR.EXC_DENIED_LETT WHERE "
                 + "PART_NO='644892530'", String.class))
             .as("Juror's EXC_DENIED_LETT entry should have the appropriate excusal code set")
-            .isEqualTo(excusalCodeEntity.getExcusalCode());
+            .isEqualTo(excusalDto.getExcusalCode());
         softly.assertThat(jdbcTemplate.queryForObject("SELECT DATE_EXCUSED FROM JUROR.EXC_DENIED_LETT WHERE "
                 + "PART_NO='644892530'", String.class))
             .as("Juror's EXC_DENIED_LETT entry should have a date set")
@@ -816,8 +808,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
             .build())
         );
 
-        ExcusalCodeEntity excusalCodeEntity = new ExcusalCodeEntity("ZINVALID", "Invalid Excusal");
-        ExcusalCodeDto excusalDto = new ExcusalCodeDto(excusalCodeEntity);
+        ExcusalCodeDto excusalDto = new ExcusalCodeDto(ExcusalCodeEnum.B);
 
         URI uri = URI.create("/api/v1/bureau/juror/excuse/reject/644892530");
         RequestEntity<ExcusalCodeDto> requestEntity =
@@ -887,8 +878,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
             .build())
         );
 
-        ExcusalCodeEntity excusalCodeEntity = new ExcusalCodeEntity("B", "Student");
-        ExcusalCodeDto excusalDto = new ExcusalCodeDto(excusalCodeEntity);
+        ExcusalCodeDto excusalDto = new ExcusalCodeDto(ExcusalCodeEnum.B);
         excusalDto.setVersion(555);
 
         URI uri = URI.create("/api/v1/bureau/juror/excuse/reject/123456789");

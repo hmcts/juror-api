@@ -127,7 +127,7 @@ class UserRepositoryImplTest {
                 .active(true)
                 .lastLoggedIn(LocalDateTime.now().minusDays(1))
                 .userType(UserType.BUREAU)
-                .roles(Set.of(Role.MANAGER, Role.TEAM_LEADER))
+                .roles(Set.of(Role.MANAGER))
                 .courts(Set.of(
                         CourtLocation.builder().owner("400").build()
                     )
@@ -180,7 +180,7 @@ class UserRepositoryImplTest {
                     .isActive(true)
                     .lastSignIn(user3.getLastLoggedIn())
                     .userType(UserType.BUREAU)
-                    .roles(Set.of(Role.MANAGER, Role.TEAM_LEADER))
+                    .roles(Set.of(Role.MANAGER))
                     .courts(List.of(
                         new UserCourtDto(List.of(courtLocation1, courtLocation2))
                     ))

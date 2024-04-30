@@ -32,7 +32,9 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
@@ -58,6 +60,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.POST;
@@ -80,7 +83,6 @@ import static org.springframework.http.HttpStatus.OK;
     "java:S5960",
     "PMD.LawOfDemeter"
 })
-
 class JurorResponseControllerITest extends AbstractIntegrationTest {
     private HttpHeaders httpHeaders;
 
@@ -423,10 +425,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             final URI uri = URI.create("/api/v1/moj/juror-response/update-status/644892530");
 
             final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-                .userLevel("99")
-                .passwordWarning(false)
+                .userType(UserType.BUREAU)
                 .login("testlogin")
-                .daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER)
                 .build());
 
@@ -480,10 +480,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             final URI uri = URI.create("/api/v1/moj/juror-response/update-status/644892530");
 
             final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-                .userLevel("99")
-                .passwordWarning(false)
+                .userType(UserType.BUREAU)
                 .login("testlogin")
-                .daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER)
                 .build());
 
@@ -532,10 +530,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             final URI uri = URI.create("/api/v1/moj/juror-response/update-status/644892530");
 
             final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-                .userLevel("99")
-                .passwordWarning(false)
+                .userType(UserType.BUREAU)
                 .login("testlogin")
-                .daysToExpire(89)
                 .owner(JurorDigitalApplication.JUROR_OWNER)
                 .build());
 
@@ -583,10 +579,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             final URI uri = URI.create("/api/v1/moj/juror-response/update-status/644892530");
 
             final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-                .userLevel("99")
-                .passwordWarning(false)
                 .login("testlogin")
-                .daysToExpire(89)
+                .userType(UserType.BUREAU)
                 .owner(JurorDigitalApplication.JUROR_OWNER)
                 .build());
 
@@ -642,12 +636,12 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     class RetrieveJurorResponses {
         @Test
         @DisplayName("Retrieve juror response, team leader - basic and advanced search criteria is okay")
-        void teamLeaderFilterByBasicAndAdvancedSearchCriteria()  {
+        void teamLeaderFilterByBasicAndAdvancedSearchCriteria() {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setJurorNumber(JUROR_NUMBER_111222333);
             request.setOfficerAssigned(OFFICER_ASSIGNED_BUREAU_OFFICER);
 
-            setHeaders(OWNER_400, TEAM_LEADER, "1");
+            setHeaders(OWNER_400, TEAM_LEADER, UserType.BUREAU, Role.MANAGER);
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, OK);
 
             JurorResponseRetrieveResponseDto body = response.getBody();
@@ -656,19 +650,19 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             // validate data
             JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
-            validateData(data,  JUROR_NUMBER_111222333, "415220502", "TestOne",
+            validateData(data, JUROR_NUMBER_111222333, "415220502", "TestOne",
                 "PersonOne", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8,0,0,0));
+                ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8, 0, 0, 0));
         }
 
         @Test
         @DisplayName("Retrieve juror response, team leader - advanced search for filter Processing Status Completed "
             + "is okay")
-        void teamLeaderFilterAdvancedSearchFilterIsProcessingStatusCompleted()  {
+        void teamLeaderFilterAdvancedSearchFilterIsProcessingStatusCompleted() {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setProcessingStatus(Collections.singletonList(ProcessingStatus.CLOSED));
 
-            setHeaders(OWNER_400, TEAM_LEADER, "1");
+            setHeaders(OWNER_400, TEAM_LEADER, UserType.BUREAU, Role.MANAGER);
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, OK);
 
             JurorResponseRetrieveResponseDto body = response.getBody();
@@ -678,19 +672,19 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             // validate data
             List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = body.getRecords();
 
-            validateData(records.get(0),  JUROR_NUMBER_222222222, "415220502", "Test4Paper",
+            validateData(records.get(0), JUROR_NUMBER_222222222, "415220502", "Test4Paper",
                 "Person4Paper", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 9,0,0,0));
+                ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 9, 0, 0, 0));
         }
 
         @Test
         @DisplayName("Retrieve juror response, team leader - advanced search for filter Processing Status Awaiting "
             + "Court Reply is okay")
-        void teamLeaderFilterAdvancedSearchFilterIsProcessingStatusAwaitingCourtReply()  {
+        void teamLeaderFilterAdvancedSearchFilterIsProcessingStatusAwaitingCourtReply() {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setProcessingStatus(Collections.singletonList(ProcessingStatus.AWAITING_COURT_REPLY));
 
-            setHeaders(OWNER_400, TEAM_LEADER, "1");
+            setHeaders(OWNER_400, TEAM_LEADER, UserType.BUREAU, Role.MANAGER);
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, OK);
 
             JurorResponseRetrieveResponseDto body = response.getBody();
@@ -699,18 +693,18 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             // validate data
             JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
-            validateData(data,  JUROR_NUMBER_555555555, "415220502", "Test5Paper",
+            validateData(data, JUROR_NUMBER_555555555, "415220502", "Test5Paper",
                 "Person5Paper", "CH1 2AN", "Chester", "JDoe",
-                ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9,10,0,0));
+                ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9, 10, 0, 0));
         }
 
         @Test
         @DisplayName("Retrieve juror response, team leader - basic search for filter lastname is okay")
-        void teamLeaderFilterBasicSearchFilterLastname()  {
+        void teamLeaderFilterBasicSearchFilterLastname() {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setLastName("Person5Paper");
 
-            setHeaders(OWNER_400, TEAM_LEADER, "1");
+            setHeaders(OWNER_400, TEAM_LEADER, UserType.BUREAU, Role.MANAGER);
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, OK);
 
             JurorResponseRetrieveResponseDto body = response.getBody();
@@ -719,18 +713,18 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             // validate data
             JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
-            validateData(data,  JUROR_NUMBER_555555555, "415220502", "Test5Paper",
+            validateData(data, JUROR_NUMBER_555555555, "415220502", "Test5Paper",
                 "Person5Paper", "CH1 2AN", "Chester", "JDoe",
-                ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9,10,0,0));
+                ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9, 10, 0, 0));
         }
 
         @Test
         @DisplayName("Retrieve juror response, team leader - advanced search for filter isUrgent is okay")
-        void teamLeaderFilterAdvancedSearchFilterIsUrgent()  {
+        void teamLeaderFilterAdvancedSearchFilterIsUrgent() {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setLastName("Person5Paper");
 
-            setHeaders(OWNER_400, TEAM_LEADER, "1");
+            setHeaders(OWNER_400, TEAM_LEADER, UserType.BUREAU, Role.MANAGER);
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, OK);
 
             JurorResponseRetrieveResponseDto body = response.getBody();
@@ -739,18 +733,18 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             // validate data
             JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
-            validateData(data,  JUROR_NUMBER_555555555, "415220502", "Test5Paper",
+            validateData(data, JUROR_NUMBER_555555555, "415220502", "Test5Paper",
                 "Person5Paper", "CH1 2AN", "Chester", "JDoe",
-                ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9,10,0,0));
+                ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9, 10, 0, 0));
         }
 
         @Test
         @DisplayName("Retrieve juror response, team leader - no records matching search criteria is okay")
-        void teamLeaderFilterNoRecordsMatchingSearchCriteria()  {
+        void teamLeaderFilterNoRecordsMatchingSearchCriteria() {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setLastName("Person99Paper");
 
-            setHeaders(OWNER_400, TEAM_LEADER, "1");
+            setHeaders(OWNER_400, TEAM_LEADER, UserType.BUREAU, Role.MANAGER);
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, OK);
 
             JurorResponseRetrieveResponseDto body = response.getBody();
@@ -764,7 +758,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setJurorNumber(JUROR_NUMBER_111222333);
 
-            setHeaders(OWNER_400, BUREAU_USER, "0");
+            setHeaders(OWNER_400, BUREAU_USER, UserType.BUREAU);
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, OK);
 
             JurorResponseRetrieveResponseDto body = response.getBody();
@@ -773,9 +767,9 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             // validate data
             JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
-            validateData(data,  JUROR_NUMBER_111222333, "415220502", "TestOne",
+            validateData(data, JUROR_NUMBER_111222333, "415220502", "TestOne",
                 "PersonOne", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8,0,0,0));
+                ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8, 0, 0, 0));
         }
 
         @Test
@@ -784,7 +778,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setPoolNumber("415220502");
 
-            setHeaders(OWNER_400, BUREAU_USER, "0");
+            setHeaders(OWNER_400, BUREAU_USER, UserType.BUREAU);
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, OK);
 
             JurorResponseRetrieveResponseDto body = response.getBody();
@@ -793,25 +787,25 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             // validate data - results should be in correct
             List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = body.getRecords();
-            validateData(records.get(0),  JUROR_NUMBER_111222333, "415220502", "TestOne",
+            validateData(records.get(0), JUROR_NUMBER_111222333, "415220502", "TestOne",
                 "PersonOne", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8,0,0,0));
+                ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8, 0, 0, 0));
 
-            validateData(records.get(1),  "333222111", "415220502", "TestTwo",
+            validateData(records.get(1), "333222111", "415220502", "TestTwo",
                 "PersonTwo", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8,10,0,0));
+                ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8, 10, 0, 0));
 
-            validateData(records.get(2),  "222222222", "415220502", "Test4Paper",
+            validateData(records.get(2), "222222222", "415220502", "Test4Paper",
                 "Person4Paper", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 9,0,0,0));
+                ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 9, 0, 0, 0));
 
-            validateData(records.get(3),  JUROR_NUMBER_555555555, "415220502", "Test5Paper",
+            validateData(records.get(3), JUROR_NUMBER_555555555, "415220502", "Test5Paper",
                 "Person5Paper", "CH1 2AN", "Chester", "JDoe",
-                ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9,10,0,0));
+                ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9, 10, 0, 0));
 
-            validateData(records.get(4),  "352004504", "415220502", "Test3",
+            validateData(records.get(4), "352004504", "415220502", "Test3",
                 "Person3", "CH1 2AN", "Chester", OFFICER_ASSIGNED_BUREAU_OFFICER,
-                ProcessingStatus.TODO, LocalDateTime.of(2024, 3, 15,0,0,0));
+                ProcessingStatus.TODO, LocalDateTime.of(2024, 3, 15, 0, 0, 0));
         }
 
         @Test
@@ -819,7 +813,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         void bureauOfficerEmptyRequest() {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
 
-            setHeaders(OWNER_400, BUREAU_USER, "0");
+            setHeaders(OWNER_400, BUREAU_USER, UserType.BUREAU);
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, BAD_REQUEST);
 
             JurorResponseRetrieveResponseDto body = response.getBody();
@@ -834,7 +828,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             request.setJurorNumber("352004504");
             request.setOfficerAssigned(OFFICER_ASSIGNED_BUREAU_OFFICER);
 
-            setHeaders(OWNER_400, BUREAU_USER, "0");
+            setHeaders(OWNER_400, BUREAU_USER, UserType.BUREAU);
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, FORBIDDEN);
 
             // validate body
@@ -849,7 +843,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setJurorNumber("352004504");
 
-            setHeaders(OWNER_415, COURT_USER, "1");
+            setHeaders(OWNER_415, COURT_USER, UserType.COURT, Role.MANAGER);
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, FORBIDDEN);
 
             // validate body
@@ -864,7 +858,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setJurorNumber("352004504");
 
-            setHeaders(OWNER_415, COURT_USER, "0");
+            setHeaders(OWNER_415, COURT_USER, UserType.COURT);
             ResponseEntity<JurorResponseRetrieveResponseDto> response = templateExchangeRetrieve(request, FORBIDDEN);
 
             JurorResponseRetrieveResponseDto body = response.getBody();
@@ -872,10 +866,8 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             assertThat(body.getRecordCount()).as("Record count should be 0").isEqualTo(0);
         }
 
-        private void setHeaders(String owner, String user, String userLevel) {
-            BureauJwtPayload.Staff staff = createStaff(owner, user, Integer.parseInt(userLevel));
-
-            httpHeaders = initialiseHeaders(userLevel, false, user, 89, owner, staff);
+        private void setHeaders(String owner, String user, UserType userType, Role... role) {
+            httpHeaders = initialiseHeaders(user, userType, Set.of(role), owner);
         }
 
         private BureauJwtPayload.Staff createStaff(String owner, String staffName, int userLevel) {
@@ -927,7 +919,9 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private void assertTemplateExchange(JurorPersonalDetailsDto jurorPersonalDetailsDto, String jurorNumber,
                                         String userType, String owner, HttpStatus httpStatus) {
         final URI uri = URI.create(String.format(URI_PERSONAL_DETAILS, jurorNumber));
-        httpHeaders = initialiseHeaders("1", false, userType, 89, owner);
+        httpHeaders =
+            initialiseHeaders(userType,
+                (owner.equals("400") ? UserType.BUREAU : UserType.COURT),Set.of(Role.MANAGER), owner);
 
         RequestEntity<JurorPersonalDetailsDto> requestEntity = new RequestEntity<>(jurorPersonalDetailsDto,
             httpHeaders, HttpMethod.PATCH, uri);

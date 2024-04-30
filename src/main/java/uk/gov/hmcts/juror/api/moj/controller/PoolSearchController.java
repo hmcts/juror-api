@@ -66,7 +66,7 @@ public class PoolSearchController {
     @PostMapping("/coroner-pools")
     @Operation(summary = "GET With Body", description = "Retrieve a list of all coroner pools, filtered by the "
         + "provided search criteria (Bureau users only)")
-    @PreAuthorize(SecurityUtil.BUREAU_AUTH)
+    @PreAuthorize(SecurityUtil.IS_BUREAU)
     public ResponseEntity<PaginatedList<FilterCoronerPool>> searchCoronerPoolRequests(
         @RequestBody @Valid CoronerPoolFilterRequestQuery query) {
 
@@ -86,5 +86,4 @@ public class PoolSearchController {
             || payload.getOwner().equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)
             || courts.contains(locCode);
     }
-
 }

@@ -24,8 +24,13 @@ import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
+import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -77,6 +82,7 @@ class AbstractReportTest {
     void beforeEach() {
         this.poolRequestRepository = mock(PoolRequestRepository.class);
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
+
     }
 
     @AfterEach
@@ -90,8 +96,9 @@ class AbstractReportTest {
     class ClassToJoinTest {
         @Test
         void sizeCheck() {
-            assertThat(AbstractReport.CLASS_TO_JOIN).hasSize(4);
-            assertThat(AbstractReport.CLASS_TO_JOIN.get(QJuror.juror)).hasSize(2);
+            assertThat(AbstractReport.CLASS_TO_JOIN).hasSize(5);
+            assertThat(AbstractReport.CLASS_TO_JOIN.get(QPanel.panel)).hasSize(1);
+            assertThat(AbstractReport.CLASS_TO_JOIN.get(QJuror.juror)).hasSize(3);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QJurorPool.jurorPool)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QAppearance.appearance)).hasSize(2);
@@ -163,6 +170,17 @@ class AbstractReportTest {
             assertThat(map.get(QJurorPool.jurorPool)).isEqualTo(
                 new Predicate[]{QJurorPool.jurorPool.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber),
                     QJurorPool.jurorPool.pool.poolNumber.eq(QAppearance.appearance.poolNumber)}
+            );
+        }
+
+        @Test
+        void jurorPanelToJuror() {
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QPanel.panel)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QPanel.panel);
+
+            assertThat(map.containsKey(QJuror.juror)).isTrue();
+            assertThat(map.get(QJuror.juror)).isEqualTo(
+                new Predicate[]{QPanel.panel.juror.eq(QJuror.juror)}
             );
         }
     }
@@ -682,7 +700,8 @@ class AbstractReportTest {
                 ).addJoins(query),
                 "Expected exception to be thrown when primary join is not found");
 
-            assertThat(exception.getMessage()).isEqualTo("Not Implemented yet: juror from " + from.getClass());
+            assertThat(exception.getMessage()).isEqualTo(
+                "Not Implemented yet: " + QJuror.juror.getClass() + " from " + from.getClass());
             assertThat(exception.getCause()).isNull();
         }
     }
@@ -914,6 +933,132 @@ class AbstractReportTest {
         }
     }
 
+    @Nested
+    @DisplayName("HashMap<String, AbstractReportResponse.DataTypeValue> loadTrialHeaders("
+        + "        StandardReportRequest request)")
+    class LoadTrialHeaders {
+        @Test
+        void positiveTypical() {
+            TrialRepository trialRepository = mock(TrialRepository.class);
+
+            Trial trial = mock(Trial.class);
+            AbstractReport<Object> report = createReport();
+
+            doReturn(trial).when(report).getTrial(any(), any());
+
+            CourtLocation courtLocation = mock(CourtLocation.class);
+
+            Courtroom courtroom = mock(Courtroom.class);
+
+            Judge judge = mock(Judge.class);
+
+            when(trial.getCourtLocation()).thenReturn(courtLocation);
+            when(trial.getCourtroom()).thenReturn(courtroom);
+            when(trial.getCourtLocation().getLocCode()).thenReturn("415");
+            when(trial.getCourtLocation().getName()).thenReturn("Chester");
+            when(trial.getCourtroom().getDescription()).thenReturn("COURT 3");
+
+            when(trial.getDescription()).thenReturn("Someone Name");
+
+            when(trial.getJudge()).thenReturn(judge);
+
+            when(trial.getJudge().getName()).thenReturn("Judge Dredd");
+
+            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(any(), any())).thenReturn(Optional.of(trial));
+
+            StandardReportRequest request = mock(StandardReportRequest.class);
+
+            when(request.getTrialNumber()).thenReturn(TestConstants.VALID_TRIAL_NUMBER);
+
+            assertThat(report.loadStandardTrailHeaders(request, trialRepository))
+                .isEqualTo(Map.of(
+                    "trial_number",
+                    AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Trial Number")
+                        .dataType(String.class.getSimpleName())
+                        .value(TestConstants.VALID_TRIAL_NUMBER)
+                        .build(),
+                    "names", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Names")
+                        .dataType(String.class.getSimpleName())
+                        .value("Someone Name")
+                        .build(),
+                    "court_room", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Court Room")
+                        .dataType(String.class.getSimpleName())
+                        .value("COURT 3")
+                        .build(),
+                    "judge", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Judge")
+                        .dataType(String.class.getSimpleName())
+                        .value("Judge Dredd")
+                        .build(),
+                    "court_name", AbstractReportResponse.DataTypeValue.builder()
+                        .displayName("Court Name")
+                        .dataType(String.class.getSimpleName())
+                        .value("Chester (415)")
+                        .build()
+                ));
+
+            verify(report, times(1))
+                .getTrial(TestConstants.VALID_TRIAL_NUMBER, trialRepository);
+            verify(request, times(2)).getTrialNumber();
+            verify(trial, times(2)).getCourtroom();
+            verify(trial, times(1)).getDescription();
+            verify(courtLocation, times(1)).getLocCode();
+            verify(trial, times(3)).getCourtLocation();
+        }
+
+        @Test
+        void negativeTrialNotFound() {
+            TrialRepository trialRepository = mock(TrialRepository.class);
+
+            AbstractReport<Object> report = createReport();
+
+            MojException.NotFound notFoundException =
+                assertThrows(MojException.NotFound.class,
+                    () -> report.getTrial(TestConstants.VALID_TRIAL_NUMBER, trialRepository),
+                    "Expected exception to be thrown when trial not found");
+            assertThat(notFoundException.getMessage()).isEqualTo("Trial not found");
+            assertThat(notFoundException.getCause()).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("Trial getTrial(String trialNumber, TrialRepository trialRepository)")
+    class GetTrial {
+        @Test
+        void positiveTypical() {
+            TrialRepository trialRepository = mock(TrialRepository.class);
+            Trial trial = mock(Trial.class);
+
+            securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
+
+            doReturn(Optional.of(trial)).when(trialRepository)
+                .findByTrialNumberAndCourtLocationLocCode(TestConstants.VALID_TRIAL_NUMBER,
+                    TestConstants.VALID_COURT_LOCATION);
+            assertThat(createReport().getTrial(TestConstants.VALID_TRIAL_NUMBER, trialRepository))
+                .isEqualTo(trial);
+
+            verify(trialRepository, times(1)).findByTrialNumberAndCourtLocationLocCode(TestConstants.VALID_TRIAL_NUMBER,
+                TestConstants.VALID_COURT_LOCATION);
+
+        }
+
+        @Test
+        void negativeNotFound() {
+            TrialRepository trialRepository = mock(TrialRepository.class);
+            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(TestConstants.VALID_TRIAL_NUMBER, "415"))
+                .thenReturn(null);
+
+            MojException.NotFound notFoundException =
+                assertThrows(MojException.NotFound.class,
+                    () -> createReport().getTrial(TestConstants.VALID_TRIAL_NUMBER, trialRepository),
+                    "Expected exception to be thrown when trial not found");
+            assertThat(notFoundException.getMessage()).isEqualTo("Trial not found");
+            assertThat(notFoundException.getCause()).isNull();
+        }
+    }
 
     @Test
     void positiveAddAuthenticationConsumer() {

@@ -21,6 +21,8 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.bureau.controller.request.StaffAssignmentRequestDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffAssignmentResponseDto;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
@@ -28,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.POST;
@@ -62,10 +65,9 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
     private void initHeadersTeamLeader() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("smcbob")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -76,10 +78,8 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
     private void initHeadersNormalUser() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
             .login("jmcbob")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -90,10 +90,9 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
     private void initHeadersBadUsername() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("jmccbob")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -104,10 +103,9 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
     private void initHeadersCourtUser() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.COURT)
+            .roles(Set.of(Role.MANAGER))
             .login("jmcbob")
-            .daysToExpire(89)
             .owner("415")
             .build());
 

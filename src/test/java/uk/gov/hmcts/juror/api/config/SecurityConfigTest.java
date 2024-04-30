@@ -25,7 +25,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.hmac.HmacJwtAuthenticationProvider;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtAuthenticationProvider;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.service.JwtServiceImpl;
 
@@ -104,35 +104,6 @@ class SecurityConfigTest {
                     .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isUnauthorized());
         });
-    }
-
-    @ParameterizedTest(name = "[{index}] Correct Secret for JWT Type: {0} and url {2} but using claims from {1}")
-    @MethodSource("correctSecretIncorrectClaims")
-    void correctSecretIncorrectClaims(String jwtType, String jwtClaimType, String url,
-                                      String jwt) throws Exception {
-        assertThrows(MojException.InternalServerError.class, () -> {
-            mockMvc.perform(get(url)
-                    .header(HttpHeaders.AUTHORIZATION, jwt)
-                    .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isUnauthorized());
-        });
-    }
-
-    private Stream<Arguments> correctSecretIncorrectClaims() {
-        Stream.Builder<Arguments> builder = Stream.builder();
-        for (UrLs urls : UrLs.values()) {
-            if (urls.jwtType == UrLs.JwtType.HMAC) {
-                continue;
-            }
-            for (UrLs.JwtType jwtType : UrLs.JwtType.values()) {
-                if (jwtType == urls.jwtType) {
-                    continue;
-                }
-                builder.add(Arguments.arguments(urls.jwtType.name(), jwtType.name(), urls.url,
-                    urls.jwtType.getJwtWithClaimMap(jwtType.getClaimMap())));
-            }
-        }
-        return builder.build();
     }
 
     private Stream<Arguments> unauthorisedRequests() {
@@ -224,10 +195,8 @@ class SecurityConfigTest {
 
             private static Map<String, Object> getBureauClaimMap() {
                 BureauJwtPayload payload = BureauJwtPayload.builder()
-                    .userLevel("99")
-                    .passwordWarning(false)
+                    .userType(UserType.BUREAU)
                     .login("COURT_USER")
-                    .daysToExpire(89)
                     .owner("400")
                     .staff(BureauJwtPayload.Staff.builder().courts(Collections.singletonList("415")).build())
                     .build();

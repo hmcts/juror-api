@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.moj.domain.system.HasCodeAndDescription;
 import uk.gov.hmcts.juror.api.moj.domain.system.HasEnabled;
+import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 
 import java.io.Serializable;
 
@@ -42,4 +43,8 @@ public class ExcusalCode implements HasCodeAndDescription<String>, HasEnabled, S
 
     @Column(name = "for_deferral")
     private boolean forDeferral;
+
+    public ExcusalCode(ExcusalCodeEnum excusalCodeEnum) {
+        this.code = excusalCodeEnum.getCode();
+    }
 }

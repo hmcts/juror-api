@@ -50,7 +50,7 @@ public class ETagConfigITest extends AbstractIntegrationTest {
         super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
-        bureauJwt = createBureauJwt("rprice", "400");
+        bureauJwt = createJwt("rprice", "400");
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
     }
 
