@@ -29,7 +29,7 @@ import java.util.Set;
 public class UserDetailsDto extends UserDetailsSimpleDto {
     @NotNull
     private Boolean isActive;
-    @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
+    @JsonFormat(pattern = ValidationConstants.DATETIME_FORMAT)
     private LocalDateTime lastSignIn;
     private UserType userType;
 
