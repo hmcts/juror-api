@@ -6,8 +6,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.request.MultipleStaffAssignmentDto;
 import uk.gov.hmcts.juror.api.bureau.controller.request.StaffAssignmentRequestDto;
@@ -17,11 +15,12 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
 import uk.gov.hmcts.juror.api.bureau.domain.StaffAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.TeamRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.UserQueries;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.PoolRepository;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -43,7 +42,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.bureau.domain.UserQueries.owner;
 
 /**
@@ -82,7 +80,8 @@ public class UserServiceImplTest {
     private static final User ASSIGNER_STAFF_ENTITY = User.builder()
         .username(ASSIGNING_LOGIN)
         .name("Bob")
-        .roles(Set.of(Role.TEAM_LEADER))
+        .userType(UserType.BUREAU)
+        .roles(Set.of(Role.MANAGER))
         .active(true)
         .build();
 
@@ -172,7 +171,6 @@ public class UserServiceImplTest {
         verify(mockStaffJurorResponseAuditRepository).save(any(StaffJurorResponseAuditMod.class));
     }
 
-    @SuppressWarnings("unchecked")
     @Test(expected = StaffAssignmentException.class)
     public void changeAssignment_unhappy_throwsExceptionOnNoStaffRecord() {
         given(mockuserRepository.findByUsername(ASSIGNING_LOGIN)).willReturn(null);
@@ -180,7 +178,6 @@ public class UserServiceImplTest {
         userService.changeAssignment(DTO, ASSIGNING_LOGIN);
     }
 
-    @SuppressWarnings("unchecked")
     @Test(expected = StaffAssignmentException.class)
     public void changeAssignment_unhappy_throwsExceptionOnNoJurorResponse() {
         given(mockuserRepository.findByUsername(ASSIGNING_LOGIN)).willReturn(ASSIGNER_STAFF_ENTITY);
@@ -189,7 +186,6 @@ public class UserServiceImplTest {
         userService.changeAssignment(DTO, ASSIGNING_LOGIN);
     }
 
-    @SuppressWarnings("unchecked")
     @Test(expected = StaffAssignmentException.class)
     public void changeAssignment_unhappy_throwsExceptionOnNoAssignmentTargetStaffRecord() {
         given(mockuserRepository.findByUsername(anyString()))
@@ -203,6 +199,12 @@ public class UserServiceImplTest {
 
     @Test
     public void activeStaffRoster_happy_convertsToDtos() {
+        TestUtils.mockSecurityUtil(
+            BureauJwtPayload.builder()
+                .owner("400")
+                .build()
+        );
+
         final List<User> staffList = new ArrayList<>(3);
         staffList.add(User.builder()
             .username("aaa")
@@ -223,13 +225,6 @@ public class UserServiceImplTest {
             .describedAs("Mock db query return is not ordered")
             .extracting("name").containsExactly("Bob", "Charlie", "Ali");
 
-        BureauJwtAuthentication auth = mock(BureauJwtAuthentication.class);
-        when(auth.getPrincipal())
-            .thenReturn(TestUtils.createJwt("400", "BUREAU_USER", "0", List.of("400")));
-        SecurityContext securityContext = mock(SecurityContext.class);
-
-        when(securityContext.getAuthentication()).thenReturn(auth);
-        SecurityContextHolder.setContext(securityContext);
 
         given(mockuserRepository.findAll(UserQueries.active().and(owner("400")), UserQueries.sortNameAsc()))
             .willReturn(staffList);

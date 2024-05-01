@@ -3718,7 +3718,7 @@ class JurorRecordServiceTest {
                 .save(jurorPoolArgumentCaptor.capture());
 
             JurorPool updatedJurorPool = jurorPoolArgumentCaptor.getValue();
-            assertEquals(IdCheckCodeEnum.L.getCode(), updatedJurorPool.getIdChecked());
+            assertEquals(IdCheckCodeEnum.L.getCode(), updatedJurorPool.getIdChecked(), "Id check code must match");
 
             verify(jurorHistoryService, times(1)).createIdentityConfirmedHistory(jurorPool);
 
@@ -3781,6 +3781,88 @@ class JurorRecordServiceTest {
 
         }
     }
+
+    @Nested
+    @DisplayName("Mark juror as responded")
+    class MarkAsRespondedTest {
+
+        @Test
+        void shouldMarkJurorAsRespondedWhenJurorExistsAndDateOfBirthIsNotNull() {
+            TestUtils.setUpMockAuthentication("400", "Bureau", "1", List.of("400"));
+
+            final String jurorNumber = "123456789";
+            final Juror juror = new Juror();
+            juror.setDateOfBirth(LocalDate.now().minusYears(20));
+
+            final PoolRequest poolRequest = new PoolRequest();
+            poolRequest.setPoolNumber("123456789");
+
+            JurorPool jurorPool = new JurorPool();
+            jurorPool.setOwner("400");
+            jurorPool.setPool(poolRequest);
+            CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setLocCode("415");
+            jurorPool.setLocation(courtLocation.getLocCode());
+            jurorPool.setJuror(juror);
+
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true))
+                    .thenReturn(List.of(jurorPool));
+            when(jurorStatusRepository.findById(IJurorStatus.RESPONDED)).thenReturn(Optional.of(jurorStatus));
+
+            jurorRecordService.markResponded(jurorNumber);
+
+            verify(jurorRepository, times(1)).save(juror);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorHistoryRepository, times(1)).save(any(JurorHistory.class));
+        }
+
+        @Test
+        void shouldThrowExceptionWhenJurorDoesNotExist() {
+
+            TestUtils.setUpMockAuthentication("415", "CourtUser", "1", List.of("415"));
+
+            String jurorNumber = "123456789";
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true)).thenReturn(List.of());
+
+            assertThrows(MojException.NotFound.class, () -> jurorRecordService.markResponded(jurorNumber));
+        }
+
+        @Test
+        void shouldThrowExceptionWhenJurorDateOfBirthIsNull() {
+            TestUtils.setUpMockAuthentication("400", "Bureau", "1", List.of("400"));
+
+            final String jurorNumber = "123456789";
+            final Juror juror = new Juror();
+
+            PoolRequest poolRequest = new PoolRequest();
+            poolRequest.setPoolNumber("123456789");
+
+            JurorPool jurorPool = new JurorPool();
+            jurorPool.setOwner("400");
+            jurorPool.setPool(poolRequest);
+            CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setLocCode("415");
+            jurorPool.setLocation(courtLocation.getLocCode());
+            jurorPool.setJuror(juror);
+
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true))
+                .thenReturn(List.of(jurorPool));
+
+            Exception exception = assertThrows(MojException.BusinessRuleViolation.class,
+                () -> jurorRecordService.markResponded(jurorNumber));
+
+            assertEquals("Juror date of birth is required to mark as responded", exception.getMessage(),
+                "Exception message should match");
+
+        }
+    }
+
 
     private BureauJurorDetailDto createBureauJurorDetailDto(String jurorNumber) {
 

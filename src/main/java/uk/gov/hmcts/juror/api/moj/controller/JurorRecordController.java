@@ -40,6 +40,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNotesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
@@ -56,6 +57,8 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -314,8 +317,8 @@ public class JurorRecordController {
                              @Size(min = 9, max = 9)
                              @PathVariable("jurorNumber")
                              @Valid @JurorNumber String jurorNumber) {
-        boolean isBureauUser = JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner());
-        boolean isTeamLeader = payload.getStaff().getRank().equals(SecurityUtil.TEAM_LEADER_LEVEL);
+        boolean isBureauUser = SecurityUtil.isBureau();
+        boolean isTeamLeader = SecurityUtil.isBureauManager();
 
         if (isBureauUser && !isTeamLeader) {
             throw new MojException.Forbidden("User has insufficient permission to perform "
@@ -477,5 +480,18 @@ public class JurorRecordController {
     public void markResponded(@Valid @JurorNumber @P("juror_number") @PathVariable("juror_number")
                                   @Parameter(description = "jurorNumber", required = true) String jurorNumber) {
         jurorRecordService.markResponded(jurorNumber);
+    }
+
+    @PostMapping("/search")
+    @Operation(summary = "GET With Body", description = "Retrieve a list of all jurors, filtered by the "
+        + "provided search criteria")
+    public ResponseEntity<PaginatedList<FilterJurorRecord>> searchForJurorRecord(
+        @RequestBody @Valid JurorRecordFilterRequestQuery query) {
+
+        PaginatedList<FilterJurorRecord> jurorRecords = jurorRecordService.searchForJurorRecords(query);
+        if (null == jurorRecords || jurorRecords.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok().body(jurorRecords);
     }
 }

@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Data
@@ -61,9 +62,9 @@ public class ExportContactDetailsRequest {
         STATUS("Status", QJurorPool.jurorPool.status, tuple -> {
             JurorStatus jurorStatus = tuple.get(QJurorPool.jurorPool.status);
             if (jurorStatus == null) {
-                return null;
+                return "";
             } else {
-                return String.valueOf(jurorStatus.getStatus());
+                return String.valueOf(jurorStatus.getStatusDesc());
             }
         }),
         POOL_NUMBER("Pool Number", QJurorPool.jurorPool.pool.poolNumber),
@@ -86,7 +87,7 @@ public class ExportContactDetailsRequest {
             this(title, expression, tuple -> {
                 LocalDate localDate = tuple.get(expression);
                 if (localDate == null) {
-                    return null;
+                    return "";
                 } else {
                     return localDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                 }
@@ -94,7 +95,7 @@ public class ExportContactDetailsRequest {
         }
 
         ExportItems(String title, StringPath expression) {
-            this(title, expression, tuple -> tuple.get(expression));
+            this(title, expression, tuple -> Objects.requireNonNullElse(tuple.get(expression), ""));
         }
 
         ExportItems(String title, BooleanPath expression) {

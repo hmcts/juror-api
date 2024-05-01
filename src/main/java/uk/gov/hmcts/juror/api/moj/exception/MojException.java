@@ -87,7 +87,8 @@ public class MojException extends RuntimeException {
             APPEARANCE_MUST_HAVE_NO_APPROVED_EXPENSES,
             JUROR_MUST_BE_CHECKED_IN,
             CANNOT_EDIT_TRIAL_WITH_JURORS,
-            CANNOT_EDIT_COMPLETED_TRIAL
+            CANNOT_EDIT_COMPLETED_TRIAL,
+            JUROR_DATE_OF_BIRTH_REQUIRED
         }
     }
 

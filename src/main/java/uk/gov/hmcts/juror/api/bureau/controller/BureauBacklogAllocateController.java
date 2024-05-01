@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.request.BureauBacklogAllocateReq
 import uk.gov.hmcts.juror.api.bureau.service.BureauAuthenticationService;
 import uk.gov.hmcts.juror.api.bureau.service.BureauBacklogAllocateService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 @Slf4j
 @RestController
@@ -41,14 +42,14 @@ public class BureauBacklogAllocateController {
     public ResponseEntity<Void> allocateBacklogReplies(
         @Parameter(hidden = true) BureauJwtAuthentication auth,
         @Validated @RequestBody BureauBacklogAllocateRequestDto bureauBacklogAllocateRequestDto) {
-        if (!authService.userIsTeamLeader(auth)) {
+        if (!SecurityUtil.isBureauManager()) {
             log.error("Allocate replies endpoint called by non-team leader");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         try {
             bureauBacklogAllocateService.allocateBacklogReplies(
                 bureauBacklogAllocateRequestDto,
-                authService.getUsername(auth)
+                SecurityUtil.getUsername()
             );
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {

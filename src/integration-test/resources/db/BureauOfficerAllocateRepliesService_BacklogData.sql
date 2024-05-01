@@ -17,9 +17,9 @@ values ('carneson', '400'),
 
 
 INSERT INTO juror_mod.user_roles (username, role)
-VALUES ('cbeasley', 'TEAM_LEADER'),
-       ('tgarrett', 'TEAM_LEADER'),
-       ('ksalazar', 'TEAM_LEADER');
+VALUES ('cbeasley', 'MANAGER'),
+       ('tgarrett', 'MANAGER'),
+       ('ksalazar', 'MANAGER');
 
 INSERT INTO juror_mod.pool (pool_no,"owner",return_date,no_requested,pool_type,loc_code,new_request,last_update,additional_summons,attend_time,nil_pool,total_no_required,date_created) VALUES
     ('101','400','2022-05-03',5,'CRO','448','N',NULL,NULL,NULL,false,5,NULL);

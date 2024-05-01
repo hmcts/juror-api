@@ -13,6 +13,8 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.JurorResponseRetrieveRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.JurorResponseRetrieveResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 
@@ -79,11 +81,11 @@ class JurorResponseRetrieveServiceImplTest {
                 request, false, 100);
 
             // mock jwt payload
-            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
-
+            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, UserType.BUREAU);
+            TestUtils.mockSecurityUtil(payload);
             // invoke service
             JurorResponseRetrieveResponseDto response =
-                jurorResponseRetrieveService.retrieveJurorResponse(request, payload);
+                jurorResponseRetrieveService.retrieveJurorResponse(request);
 
             // verify response
             assertThat(response).isNotNull();
@@ -99,11 +101,12 @@ class JurorResponseRetrieveServiceImplTest {
             request.setProcessingStatus(Collections.singletonList(ProcessingStatus.TODO));
 
             // mock jwt payload
-            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
+            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, UserType.BUREAU);
+            TestUtils.mockSecurityUtil(payload);
 
             MojException.Forbidden exception =
                 assertThrows(MojException.Forbidden.class, () ->
-                        jurorResponseRetrieveService.retrieveJurorResponse(request, payload),
+                        jurorResponseRetrieveService.retrieveJurorResponse(request),
                     "Should throw an exception");
             assertEquals("Advanced search is only available to team leaders", exception.getMessage(),
                 "Message should match");
@@ -129,11 +132,12 @@ class JurorResponseRetrieveServiceImplTest {
                 request, false, 100);
 
             // mock jwt payload
-            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
+            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, UserType.BUREAU);
+            TestUtils.mockSecurityUtil(payload);
 
             // invoke service
             JurorResponseRetrieveResponseDto response =
-                jurorResponseRetrieveService.retrieveJurorResponse(request, payload);
+                jurorResponseRetrieveService.retrieveJurorResponse(request);
 
             // verify response
             assertThat(response).isNotNull();
@@ -149,11 +153,12 @@ class JurorResponseRetrieveServiceImplTest {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
             request.setIsUrgent(Boolean.FALSE);
 
-            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
+            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, UserType.BUREAU);
+            TestUtils.mockSecurityUtil(payload);
 
             MojException.BadRequest exception =
                 assertThrows(MojException.BadRequest.class, () ->
-                        jurorResponseRetrieveService.retrieveJurorResponse(request, payload),
+                        jurorResponseRetrieveService.retrieveJurorResponse(request),
                     "Should throw an exception");
             assertEquals("No search filters supplied", exception.getMessage(),
                 "Message should match");
@@ -169,11 +174,12 @@ class JurorResponseRetrieveServiceImplTest {
             request.setProcessingStatus(Collections.singletonList(ProcessingStatus.TODO));
 
             // mock jwt payload
-            BureauJwtPayload payload = mockJwt(COURT_OWNER, COURT_USER, COURT_STAFF_NAME, 0);
+            BureauJwtPayload payload = mockJwt(COURT_OWNER, COURT_USER, COURT_STAFF_NAME, UserType.COURT);
+            TestUtils.mockSecurityUtil(payload);
 
             MojException.Forbidden exception =
                 assertThrows(MojException.Forbidden.class, () ->
-                        jurorResponseRetrieveService.retrieveJurorResponse(request, payload),
+                        jurorResponseRetrieveService.retrieveJurorResponse(request),
                     "Should throw an exception");
             assertEquals("This service is for Bureau users only", exception.getMessage(),
                 "Message should match");
@@ -189,11 +195,12 @@ class JurorResponseRetrieveServiceImplTest {
             JurorResponseRetrieveRequestDto request = new JurorResponseRetrieveRequestDto();
 
             // mock jwt payload
-            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, 0);
+            BureauJwtPayload payload = mockJwt(BUREAU_OWNER, BUREAU_USER, BUREAU_STAFF_NAME, UserType.BUREAU);
+            TestUtils.mockSecurityUtil(payload);
 
             MojException.BadRequest exception =
                 assertThrows(MojException.BadRequest.class, () ->
-                        jurorResponseRetrieveService.retrieveJurorResponse(request, payload),
+                        jurorResponseRetrieveService.retrieveJurorResponse(request),
                     "Should throw an exception");
             assertEquals("No search filters supplied", exception.getMessage(),
                 "Message should match");
@@ -219,10 +226,10 @@ class JurorResponseRetrieveServiceImplTest {
             assertThat(records.get(listIndex).getDateReceived()).isEqualTo(DATE_RECEIVED.plusDays(postfixId));
         }
 
-        private BureauJwtPayload mockJwt(String owner, String username, String staffName, int rank) {
-            BureauJwtPayload payload = TestUtils.createJwt(owner, username, String.valueOf(rank));
-            payload.setStaff(TestUtils.staffBuilder(staffName, rank, null));
-
+        private BureauJwtPayload mockJwt(String owner, String username, String staffName, UserType userType,
+                                         Role... roles) {
+            BureauJwtPayload payload = TestUtils.createJwt(owner, username, userType, List.of(roles));
+            payload.setStaff(TestUtils.staffBuilder(staffName,  null));
             return payload;
         }
 

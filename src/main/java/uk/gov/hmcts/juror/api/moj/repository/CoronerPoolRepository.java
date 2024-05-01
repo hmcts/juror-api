@@ -8,11 +8,10 @@ import uk.gov.hmcts.juror.api.moj.domain.CoronerPool;
 import java.util.Optional;
 
 @Repository
-public interface CoronerPoolRepository extends JpaRepository<CoronerPool, String>,
+public interface CoronerPoolRepository extends ICoronerPoolRepository, JpaRepository<CoronerPool, String>,
     QuerydslPredicateExecutor<CoronerPool> {
 
     Optional<CoronerPool> findFirstByOrderByPoolNumberDesc();
-
 }
 
 

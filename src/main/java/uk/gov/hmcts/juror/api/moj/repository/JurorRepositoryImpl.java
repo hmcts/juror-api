@@ -1,15 +1,18 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
+import com.querydsl.core.Tuple;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -24,68 +27,6 @@ public class JurorRepositoryImpl implements IJurorRepository {
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
     private static final QJuror JUROR = QJuror.juror;
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
-
-    @Override
-    public Juror findByJurorNumberAndOwnerAndDeferralDate(String jurorNumber, String owner, LocalDate deferralDate) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
-        return queryFactory.selectFrom(JUROR)
-            .where(JUROR.jurorNumber.eq(jurorNumber))
-            .join(JUROR_POOL).on(JUROR_POOL.juror.eq(JUROR))
-            .where(JUROR_POOL.owner.eq(owner))
-            .where(JUROR_POOL.deferralDate.eq(deferralDate))
-            .fetchOne();
-    }
-
-    @Override
-    public List<Juror> findByPoolNumberAndWasDeferredAndIsActive(String poolNumber, boolean wasDeferred,
-                                                                 boolean isActive) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
-        return queryFactory.selectFrom(JUROR)
-            .join(JUROR_POOL).on(JUROR_POOL.juror.eq(JUROR))
-            .where(JUROR_POOL.isActive.eq(isActive))
-            .where(JUROR_POOL.wasDeferred.eq(wasDeferred))
-            .join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
-            .where(POOL_REQUEST.poolNumber.eq(poolNumber))
-            .fetch();
-    }
-
-    @Override
-    public List<Juror> findByPoolNumberAndIsActive(String poolNumber, boolean isActive) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
-        return queryFactory.selectFrom(JUROR)
-            .join(JUROR_POOL).on(JUROR_POOL.juror.eq(JUROR))
-            .where(JUROR_POOL.isActive.eq(isActive))
-            .join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
-            .where(POOL_REQUEST.poolNumber.eq(poolNumber))
-            .fetch();
-    }
-
-    @Override
-    public Juror findByJurorNumberAndPoolNumberAndIsActive(String jurorNumber, String poolNumber, boolean isActive) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
-        return queryFactory.selectFrom(JUROR)
-            .where(JUROR.jurorNumber.eq(jurorNumber))
-            .join(JUROR_POOL).on(JUROR_POOL.juror.eq(JUROR))
-            .where(JUROR_POOL.isActive.eq(isActive))
-            .join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
-            .where(POOL_REQUEST.poolNumber.eq(poolNumber))
-            .fetchOne();
-    }
-
-    @Override
-    public List<Juror> findByJurorNumberAndIsActive(String jurorNumber, boolean isActive) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
-        return queryFactory.selectFrom(JUROR)
-            .where(JUROR.jurorNumber.eq(jurorNumber))
-            .join(JUROR_POOL).on(JUROR_POOL.juror.eq(JUROR))
-            .where(JUROR_POOL.isActive.eq(isActive))
-            .fetch();
-    }
 
     @Override
     public Juror findByJurorNumberAndIsActiveAndCourt(String jurorNumber, boolean isActive, CourtLocation locCode) {
@@ -119,43 +60,43 @@ public class JurorRepositoryImpl implements IJurorRepository {
     }
 
     @Override
-    public List<Juror> findByJurorNumberInAndIsActiveAndPoolNumberAndCourt(List<String> jurorNumbers, boolean isActive,
-                                                                           String poolNumber, CourtLocation court) {
+    public JPAQuery<Tuple> fetchFilteredJurorRecords(JurorRecordFilterRequestQuery query) {
+
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
-        return queryFactory.selectFrom(JUROR)
-            .where(JUROR.jurorNumber.in(jurorNumbers))
+        JPAQuery<?> partialQuery = queryFactory.from(JUROR)
             .join(JUROR_POOL).on(JUROR_POOL.juror.eq(JUROR))
-            .where(JUROR_POOL.isActive.eq(isActive))
-            .join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
-            .where(POOL_REQUEST.courtLocation.eq(court))
-            .fetch();
+            .where(JUROR_POOL.isActive.eq(true));
+
+        if (!SecurityUtil.isBureau()) {
+            // If the user is not a Bureau user, filter by the courts they have access to
+            partialQuery.where(JUROR_POOL.pool.courtLocation.locCode.in(SecurityUtil.getCourts()));
+        }
+
+        if (null != query.getJurorNumber()) {
+            partialQuery.where(JUROR.jurorNumber.startsWith(query.getJurorNumber()));
+        }
+
+        if (null != query.getJurorName()) {
+            partialQuery.where(JUROR.firstName.concat(" ").concat(JUROR.lastName).containsIgnoreCase(
+                query.getJurorName()));
+        }
+
+        if (null != query.getPostcode()) {
+            partialQuery.where(JUROR.postcode.startsWith(query.getPostcode()));
+        }
+
+        if (null != query.getPoolNumber()) {
+            partialQuery.where(JUROR_POOL.pool.poolNumber.startsWith(query.getPoolNumber()));
+        }
+
+        return partialQuery.distinct().select(
+            JUROR.jurorNumber,
+            JUROR.firstName.concat(" ").concat(JUROR.lastName).as(JUROR_FULL_NAME),
+            JUROR.postcode,
+            JUROR_POOL.pool.poolNumber,
+            JUROR_POOL.pool.courtLocation.name,
+            JUROR_POOL.status.statusDesc,
+            JUROR_POOL.pool.courtLocation.locCode);
     }
-
-    @Override
-    public Juror findByOwnerAndJurorNumberAndPoolNumber(String owner, String jurorNumber, String poolNumber) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
-        return queryFactory.selectFrom(JUROR)
-            .where(JUROR.jurorNumber.eq(jurorNumber))
-            .join(JUROR_POOL).on(JUROR_POOL.juror.eq(JUROR))
-            .where(JUROR_POOL.owner.eq(owner))
-            .join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
-            .where(POOL_REQUEST.poolNumber.eq(poolNumber))
-            .fetchOne();
-    }
-
-    @Override
-    public List<Juror> findByPoolNumberAndOwnerAndIsActive(String poolNumber, String owner, boolean isActive) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
-
-        return queryFactory.selectFrom(JUROR)
-            .join(JUROR_POOL).on(JUROR_POOL.juror.eq(JUROR))
-            .where(JUROR_POOL.owner.eq(owner))
-            .where(JUROR_POOL.isActive.eq(isActive))
-            .join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
-            .where(POOL_REQUEST.poolNumber.eq(poolNumber))
-            .fetch();
-    }
-
 }

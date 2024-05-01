@@ -18,6 +18,8 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -28,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.juror.api.moj.domain.IJurorStatus.RESPONDED;
@@ -76,7 +79,7 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
 
         //Setup data
         //Invoke service
-        templateExchangeDisqualifyJuror(JUROR_NUMBER_123456789, BUREAU_USER, "400", HttpStatus.OK);
+        templateExchangeDisqualifyJuror(UserType.BUREAU, JUROR_NUMBER_123456789, BUREAU_USER, "400", HttpStatus.OK);
 
         //Post-verification: Verify tables updated
         assertDigitalDisqualifyJurorPostVerification(JUROR_NUMBER_123456789);
@@ -91,7 +94,7 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
 
         //Setup data
         //Invoke service
-        templateExchangeDisqualifyJuror(JUROR_NUMBER_987654321, COURT_USER, "415", HttpStatus.OK);
+        templateExchangeDisqualifyJuror(UserType.COURT, JUROR_NUMBER_987654321, COURT_USER, "415", HttpStatus.OK);
 
         //Post-verification: Verify tables updated
         paperDisqualifyJurorPostVerification(COURT_USER, JUROR_NUMBER_987654321);
@@ -125,7 +128,7 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
             jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(JUROR_NUMBER_NO_RESPONSE, today);
         assertThat(jurorHistoryList).isEmpty();
 
-        templateExchangeDisqualifyJuror(JUROR_NUMBER_NO_RESPONSE, BUREAU_USER, "400", HttpStatus.OK);
+        templateExchangeDisqualifyJuror(UserType.BUREAU, JUROR_NUMBER_NO_RESPONSE, BUREAU_USER, "400", HttpStatus.OK);
 
         paperDisqualifyJurorPostVerification(BUREAU_USER, JUROR_NUMBER_NO_RESPONSE);
 
@@ -136,7 +139,7 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
     public void disqualifyJurorForbiddenException() {
         //Current location of the juror pool record is 416 - the user updating the request is 415 therefore a
         //403 Forbidden exception is thrown
-        templateExchangeDisqualifyJuror(JUROR_NUMBER_111111111, COURT_USER, "415",
+        templateExchangeDisqualifyJuror(UserType.COURT, JUROR_NUMBER_111111111, COURT_USER, "415",
             HttpStatus.FORBIDDEN);
     }
 
@@ -263,14 +266,14 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
     }
 
 
-    private void templateExchangeDisqualifyJuror(
+    private void templateExchangeDisqualifyJuror(UserType userType,
                                                  String jurorNumber,
-                                                 String userType,
+                                                 String username,
                                                  String owner,
                                                  HttpStatus httpStatus) {
         final URI uri = URI.create(String.format(URI_DISQUALIFY_JUROR, jurorNumber));
-
-        HttpHeaders httpHeaders = initialiseHeaders("1", false, userType, 89, owner);
+        HttpHeaders httpHeaders =
+            initialiseHeaders(username,userType,Set.of(Role.MANAGER),owner);
 
         RequestEntity<String> requestEntity = new RequestEntity<>(httpHeaders,
             HttpMethod.PATCH, uri);

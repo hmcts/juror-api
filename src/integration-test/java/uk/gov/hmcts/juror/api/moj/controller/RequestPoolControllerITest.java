@@ -31,6 +31,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolHistory;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CurrentlyDeferredRepository;
@@ -106,10 +107,8 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     private String initCourtsJwt(String owner, List<String> courts) throws Exception {
 
         return mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.COURT)
             .login("COURT_USER")
-            .daysToExpire(89)
             .owner(owner)
             .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build());
@@ -667,12 +666,11 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .as("Created Pool Request return date should be mapped from the request DTO")
             .isEqualTo(expectedAttendanceDate);
         assertThat(poolRequest.getNumberRequested())
-            .as("Created Pool Request number requested should be 0 for court-use only pools")
-            .isEqualTo(0);
+            .as("Created Pool Request number requested should be null for court-use only pools")
+            .isNull();
         assertThat(poolRequest.getPoolType().getPoolType())
             .as("Created Pool Request pool type should be mapped from the request DTO")
             .isEqualTo(requestedPoolData.getPoolType());
-        LocalTime expectedAttendTime = requestedPoolData.getAttendanceTime();
         assertThat(poolRequest.getAttendTime())
             .as("Created Pool Request attend time should be null for court-use only pools")
             .isNull();
@@ -969,7 +967,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @Sql("/db/RequestPoolController_initInvalidTests.sql")
+    @Sql("/db/mod/truncate.sql")
     public void test_requestNewPoolFromBureau_invalidPoolType_tooLong() {
         PoolRequestDto poolRequestDto = createValidPoolRequestDto();
         poolRequestDto.setPoolType("1234");
@@ -2116,6 +2114,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(5);
         assertThat(poolsAtCourtLocationDataDto.getPoolType()).as("Expect the pool type to be CROWN COURT")
             .isEqualTo("CRO");
+        assertThat(poolsAtCourtLocationDataDto.getJurorsOnTrials()).as("Jurors on trial").isEqualTo(7);
         LocalDate serviceStartDate = LocalDate.now().minusDays(10);
         assertThat(poolsAtCourtLocationDataDto.getServiceStartDate()).as("Expect the pool start date to be "
                 + serviceStartDate)
@@ -2160,18 +2159,26 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 418230101")
             .isEqualTo("418230101");
         validatePoolData(poolsAtCourtLocationDataDto, serviceStartDate);
+        assertThat(poolsAtCourtLocationDataDto.getJurorsOnTrials()).as("Expect there to be 0 juror(s) in trials")
+            .isEqualTo(0);
 
         poolsAtCourtLocationDataDto
             = poolsAtCourtLocationDataDtos.get(1);
         assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 418230102")
             .isEqualTo("418230102");
         validatePoolData(poolsAtCourtLocationDataDto, serviceStartDate);
+        assertThat(poolsAtCourtLocationDataDto.getJurorsOnTrials()).as("Expect there to be 1 juror(s) in trials")
+            .isEqualTo(1);
+
 
         poolsAtCourtLocationDataDto
             = poolsAtCourtLocationDataDtos.get(2);
         assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 418230103")
             .isEqualTo("418230103");
         validatePoolData(poolsAtCourtLocationDataDto, serviceStartDate);
+        assertThat(poolsAtCourtLocationDataDto.getJurorsOnTrials()).as("Expect there to be 1 juror(s) in trials")
+            .isEqualTo(1);
+
     }
 
     @Test
@@ -2223,8 +2230,6 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(0);
         assertThat(poolsAtCourtLocationDataDto.getOtherJurors()).as("Expect there to be 0 other jurors")
             .isEqualTo(0);
-        assertThat(poolsAtCourtLocationDataDto.getTotalJurors()).as("Expect there to be 1 juror in total")
-            .isEqualTo(1);
         assertThat(poolsAtCourtLocationDataDto.getPoolType()).as("Expect the pool type to be CROWN COURT")
             .isEqualTo("CRO");
         assertThat(poolsAtCourtLocationDataDto.getServiceStartDate()).as("Expect the pool start date to be "

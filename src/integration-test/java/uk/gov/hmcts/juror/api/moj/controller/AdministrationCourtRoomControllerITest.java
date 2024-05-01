@@ -100,7 +100,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             void assertValid(String locCode, UserType userType, Set<Role> roles,
                              CourtRoomWithIdDto... expectedResponse) {
                 final String jwt =
-                    createBureauJwt(COURT_USER, locCode, userType, roles, locCode);
+                    createJwt(COURT_USER, locCode, userType, roles, locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 ResponseEntity<List<CourtRoomWithIdDto>> response = template.exchange(
@@ -156,7 +156,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
 
             private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode,
                                                           UserType userType, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
+                final String jwt = createJwt(COURT_USER, owner, userType, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -198,7 +198,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
         class Positive {
             void assertValid(String locCode, CourtRoomDto request) {
                 final String jwt =
-                    createBureauJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
+                    createJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 ResponseEntity<Void> response = template.exchange(
@@ -240,7 +240,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode,
                                                           CourtRoomDto request,
                                                           UserType userType, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
+                final String jwt = createJwt(COURT_USER, owner, userType, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, POST,
@@ -307,7 +307,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
 
             void assertValid(String locCode, Long id, CourtRoomWithIdDto expectedResponse) {
                 final String jwt =
-                    createBureauJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
+                    createJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 ResponseEntity<CourtRoomWithIdDto> response = template.exchange(
@@ -342,7 +342,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode,
                                                           String id,
                                                           UserType userType, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
+                final String jwt = createJwt(COURT_USER, owner, userType, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET,
@@ -404,7 +404,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
         class Positive {
             void assertValid(String locCode, Long id, CourtRoomDto request) {
                 final String jwt =
-                    createBureauJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
+                    createJwt(COURT_USER, locCode, UserType.COURT, Set.of(Role.MANAGER), locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 ResponseEntity<Void> response = template.exchange(
@@ -448,7 +448,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
             private ResponseEntity<String> triggerInvalid(String owner, String urlLocCode,
                                                           String id, CourtRoomDto request,
                                                           UserType userType, Set<Role> roles) {
-                final String jwt = createBureauJwt(COURT_USER, owner, userType, roles, owner);
+                final String jwt = createJwt(COURT_USER, owner, userType, roles, owner);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, PUT,

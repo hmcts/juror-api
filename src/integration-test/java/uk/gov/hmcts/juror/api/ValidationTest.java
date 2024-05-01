@@ -40,6 +40,7 @@ public class ValidationTest extends ContainerTest {
     private Validator validator;
 
     @Test
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void testEmailValidation_validEmails() throws Exception {
         ArrayList<String> emailList = new ArrayList<>();
         emailList.add("address@domain.com");
@@ -68,6 +69,7 @@ public class ValidationTest extends ContainerTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void testEmailValidation_invalidEmails() throws Exception {
         ArrayList<String> emailList = new ArrayList<>();
         emailList.add("@domain.com");

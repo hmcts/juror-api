@@ -1,10 +1,10 @@
-INSERT INTO juror_mod.users (username,email, name, active)
-VALUES ('STAFF1','STAFF1@email.gov.uk','Staff One',true);
+INSERT INTO juror_mod.users (username,email, name, active, user_type)
+VALUES ('STAFF1','STAFF1@email.gov.uk','Staff One',true, 'BUREAU');
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('STAFF1', '448');
 INSERT INTO juror_mod.user_roles (username, role)
-VALUES ('STAFF1', 'TEAM_LEADER');
+VALUES ('STAFF1', 'MANAGER');
 
 INSERT INTO juror_mod.pool (pool_no,"owner",return_date,no_requested,pool_type,loc_code,new_request,last_update,additional_summons,attend_time,nil_pool,total_no_required,date_created) VALUES
     ('555','400','2022-05-03',5,'CRO','448','N',NULL,NULL,NULL,false,5,NULL);

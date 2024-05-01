@@ -19,11 +19,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.bureau.controller.response.TeamDto;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -57,11 +60,10 @@ public class BureauTeamControllerTest extends AbstractIntegrationTest {
     @Sql("/db/BureauTeamServicesTest_findAllTeams.sql")
     public void getAllTeams_happyPath() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("rprice")
-            .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
-            .daysToExpire(89)
+            .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).build())
             .owner("400")
             .build());
 

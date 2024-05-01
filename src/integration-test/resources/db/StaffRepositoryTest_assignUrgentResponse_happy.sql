@@ -16,9 +16,9 @@ values ('JPOWERS', '446'),
        ('ACOPELAND', '400');
 
 INSERT INTO juror_mod.user_roles (username, role)
-VALUES ('RPRICE', 'TEAM_LEADER'),
-       ('PBREWER', 'TEAM_LEADER'),
-       ('ACOPELAND', 'TEAM_LEADER');
+VALUES ('RPRICE', 'MANAGER'),
+       ('PBREWER', 'MANAGER'),
+       ('ACOPELAND', 'MANAGER');
 
 INSERT INTO juror_mod.pool (pool_no, "owner", return_date, no_requested, pool_type, loc_code, new_request, last_update,
                             additional_summons, attend_time, nil_pool, total_no_required, date_created)

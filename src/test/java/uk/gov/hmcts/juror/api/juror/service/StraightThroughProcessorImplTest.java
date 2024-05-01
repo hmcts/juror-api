@@ -107,7 +107,7 @@ public class StraightThroughProcessorImplTest {
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn("Relationship");
         given(jurorResponse.getThirdPartyReason()).willReturn("Deceased");
-        given(jurorResponse.getSuperUrgent()).willReturn(false);
+        given(jurorResponse.isSuperUrgent()).willReturn(false);
         JurorStatus jurorStatus = mock(JurorStatus.class);
         when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
         given(jurorPool.getStatus()).willReturn(jurorStatus);
@@ -187,7 +187,7 @@ public class StraightThroughProcessorImplTest {
         when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
         given(jurorPool.getStatus()).willReturn(jurorStatus);
 
-        when(jurorResponse.getSuperUrgent()).thenReturn(true);
+        when(jurorResponse.isSuperUrgent()).thenReturn(true);
 
         try {
             // process response
@@ -235,7 +235,7 @@ public class StraightThroughProcessorImplTest {
         // configure jurorResponse status to get through Age-Excusal logic successfully
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
-        given(jurorResponse.getSuperUrgent()).willReturn(false);
+        given(jurorResponse.isSuperUrgent()).willReturn(false);
         JurorStatus jurorStatus = mock(JurorStatus.class);
         when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
         given(jurorPool.getStatus()).willReturn(jurorStatus);
@@ -284,7 +284,7 @@ public class StraightThroughProcessorImplTest {
         // configure jurorResponse status to get through Age-Excusal logic successfully
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
-        given(jurorResponse.getSuperUrgent()).willReturn(false);
+        given(jurorResponse.isSuperUrgent()).willReturn(false);
         JurorStatus jurorStatus = mock(JurorStatus.class);
         when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
         given(jurorPool.getStatus()).willReturn(jurorStatus);
@@ -327,7 +327,7 @@ public class StraightThroughProcessorImplTest {
         // configure jurorResponse
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
-        given(jurorResponse.getSuperUrgent()).willReturn(false);
+        given(jurorResponse.isSuperUrgent()).willReturn(false);
         JurorStatus jurorStatus = mock(JurorStatus.class);
         when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
         given(jurorPool.getStatus()).willReturn(jurorStatus);
@@ -360,7 +360,7 @@ public class StraightThroughProcessorImplTest {
         // configure jurorResponse
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
-        given(jurorResponse.getSuperUrgent()).willReturn(false);
+        given(jurorResponse.isSuperUrgent()).willReturn(false);
         JurorStatus jurorStatus = mock(JurorStatus.class);
         when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
         given(jurorPool.getStatus()).willReturn(jurorStatus);
@@ -411,7 +411,7 @@ public class StraightThroughProcessorImplTest {
         // configure jurorResponse status to fail validation
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getRelationship()).willReturn(null);
-        given(jurorResponse.getSuperUrgent()).willReturn(true);
+        given(jurorResponse.isSuperUrgent()).willReturn(true);
         JurorStatus jurorStatus = mock(JurorStatus.class);
         when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
         given(jurorPool.getStatus()).willReturn(jurorStatus);
@@ -602,7 +602,7 @@ public class StraightThroughProcessorImplTest {
     public void processAcceptance_response_isUrgent() {
         // configure single jurorResponse property to fail processing
         setupMock_UrgentSuperUrgent();
-        given(jurorResponse.getUrgent()).willReturn(true);
+        given(jurorResponse.isUrgent()).willReturn(true);
 
         try {
             // process response
@@ -621,7 +621,7 @@ public class StraightThroughProcessorImplTest {
     public void process_acceptance_response_isSuperUrgent() {
         // configure single jurorResponse property to fail processing
         setupMock_UrgentSuperUrgent();
-        given(jurorResponse.getSuperUrgent()).willReturn(true);
+        given(jurorResponse.isSuperUrgent()).willReturn(true);
 
         try {
             // process response

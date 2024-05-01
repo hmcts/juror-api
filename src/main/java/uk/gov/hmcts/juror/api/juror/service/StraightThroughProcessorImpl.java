@@ -173,12 +173,12 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             }
 
             // JDB-3747  urgent responses will not be auto processed.
-            if (savedDigitalResponse.getUrgent()) {
+            if (savedDigitalResponse.isUrgent()) {
                 throw new StraightThroughProcessingServiceException(MESSAGE);
             }
 
             // JDB-126 l. the submission of the response must not be so late as to be considered super urgent.
-            if (savedDigitalResponse.getSuperUrgent()) {
+            if (savedDigitalResponse.isSuperUrgent()) {
                 throw new StraightThroughProcessingServiceException(
                     "Super urgent response does not qualify for straight-through");
             }
@@ -364,12 +364,12 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             }
 
             // JDB-3747  urgent responses will not be auto processed.
-            if (savedDigitalResponse.getUrgent()) {
+            if (savedDigitalResponse.isUrgent()) {
                 throw new StraightThroughProcessingServiceException.DeceasedExcusal(MESSAGE);
             }
 
             //JDB-73 d. the submission of the response must not be so late as to be considered super urgent.
-            if (savedDigitalResponse.getSuperUrgent()) {
+            if (savedDigitalResponse.isSuperUrgent()) {
                 throw new StraightThroughProcessingServiceException.DeceasedExcusal(
                     "Super urgent response does not qualify for excusal straight-through");
             }
@@ -456,12 +456,12 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             }
 
             // JDB-3747  urgent responses will not be auto processed.
-            if (savedDigitalResponse.getUrgent()) {
+            if (savedDigitalResponse.isUrgent()) {
                 throw new StraightThroughProcessingServiceException(MESSAGE);
             }
 
             //JDB-91 d. the submission of the response must not be so late as to be considered super urgent.
-            if (savedDigitalResponse.getSuperUrgent()) {
+            if (savedDigitalResponse.isSuperUrgent()) {
                 throw new StraightThroughProcessingServiceException.AgeExcusal(
                     "Super urgent response does not qualify for excusal straight-through");
             }

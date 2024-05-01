@@ -156,8 +156,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
 
         PoolRequest poolRequest = poolRequestDto.isCourtOnly()
             ? createPoolForCourtUse(poolRequestDto, payload)
-            :
-                requestPoolFromBureau(poolRequestDto, payload);
+            : requestPoolFromBureau(poolRequestDto, payload);
 
         poolRequestRepository.saveAndFlush(poolRequest);
 
@@ -315,6 +314,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         PoolRequest poolRequest = convertFromDto(poolRequestDto, owner, payload.getLogin());
         poolRequest.setOwner(payload.getOwner());
         poolRequest.setNewRequest(CREATED_REQUEST_STATE);
+        poolRequest.setNumberRequested(null);
 
         poolRequestRepository.save(poolRequest);
 
@@ -558,7 +558,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
                         .jurorsOnCall(jurorsOnCall)
                         .otherJurors(others)
                         .totalJurors(jurorsInAttendance + jurorsOnCall + others)
-                        .jurorsOnTrials(poolDetails.get(5).equals("null") ? 0 : Integer.parseInt(poolDetails.get(5)))
+                        .jurorsOnTrials(poolDetails.get(4).equals("null") ? 0 : Integer.parseInt(poolDetails.get(4)))
                         .poolType(poolDetails.get(6))
                         .serviceStartDate(LocalDate.parse(poolDetails.get(7)))
                         .build();

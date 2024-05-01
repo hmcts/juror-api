@@ -3,18 +3,26 @@ package uk.gov.hmcts.juror.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterAll;
+import org.mockito.MockedStatic;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 public final class TestUtils {
 
@@ -52,6 +60,16 @@ public final class TestUtils {
             .build();
     }
 
+    public static BureauJwtPayload createJwt(String owner, String username, UserType userType, List<Role> roles) {
+        return BureauJwtPayload.builder()
+            .owner(owner)
+            .userType(userType)
+            .roles(roles)
+            .login(username)
+            .staff(staffBuilder(username, List.of(owner)))
+            .build();
+    }
+
     public static BureauJwtPayload createJwt(String owner, String username, String userLevel, List<String> courts) {
         return BureauJwtPayload.builder()
             .owner(owner)
@@ -68,6 +86,13 @@ public final class TestUtils {
         return BureauJwtPayload.Staff.builder()
             .name(staffName)
             .rank(rank)
+            .courts(courts)
+            .build();
+    }
+
+    public static BureauJwtPayload.Staff staffBuilder(String staffName, List<String> courts) {
+        return BureauJwtPayload.Staff.builder()
+            .name(staffName)
             .courts(courts)
             .build();
     }
@@ -129,4 +154,24 @@ public final class TestUtils {
         SecurityContextHolder.setContext(securityContext);
     }
 
+    private static MockedStatic<SecurityUtil> SECURITY_UTIL_MOCK;
+
+    @AfterAll
+    public static void afterAll() {
+        if (SECURITY_UTIL_MOCK != null) {
+            SECURITY_UTIL_MOCK.close();
+        }
+    }
+
+    public static MockedStatic<SecurityUtil> getSecurityUtilMock() {
+        if (SECURITY_UTIL_MOCK == null) {
+            SECURITY_UTIL_MOCK = mockStatic(SecurityUtil.class, withSettings().defaultAnswer(CALLS_REAL_METHODS));
+        }
+        return SECURITY_UTIL_MOCK;
+    }
+
+    public static void mockSecurityUtil(BureauJwtPayload payload) {
+        MockedStatic<SecurityUtil> securityUtil = getSecurityUtilMock();
+        securityUtil.when(SecurityUtil::getActiveUsersBureauPayload).thenReturn(payload);
+    }
 }

@@ -1025,7 +1025,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             private ResponseEntity<ViewMessageTemplateDto> triggerValid(
                 MessageType messageType, String locCode) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, "415", locCode);
+                final String jwt = createJwt(COURT_USER, "415", locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 ResponseEntity<ViewMessageTemplateDto> response = template.exchange(
                     new RequestEntity<>(httpHeaders, GET, toUri(messageType, locCode)),
@@ -1083,7 +1083,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
         class Negative {
             private ResponseEntity<String> triggerInvalid(
                 String messageType, String locCode, String court) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, "415", court);
+                final String jwt = createJwt(COURT_USER, court, court);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(httpHeaders, GET, toUri(messageType, locCode)),
@@ -1180,18 +1180,13 @@ class MessagingControllerITest extends AbstractIntegrationTest {
             }
 
 
-            private ResponseEntity<PaginatedList<JurorToSendMessageCourt>> triggerValidCourt(
-                String locCode, MessageSearch search) throws Exception {
-                return triggerValidCourt("415", locCode, search);
-            }
 
-            private ResponseEntity<PaginatedList<JurorToSendMessageCourt>> triggerValidCourt(
-                String owner, String locCode, MessageSearch search) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, owner, UserType.COURT, Set.of(), locCode);
+            private ResponseEntity<PaginatedList<JurorToSendMessageCourt>> triggerValidCourt(MessageSearch search) {
+                final String jwt = createJwt(COURT_USER,"415", UserType.COURT, Set.of(), "415");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = template.exchange(
-                    new RequestEntity<>(search, httpHeaders, POST, toUri(locCode, isSimple)),
+                    new RequestEntity<>(search, httpHeaders, POST, toUri("415", isSimple)),
                     new ParameterizedTypeReference<>() {
                     });
                 assertThat(response.getStatusCode())
@@ -1201,12 +1196,12 @@ class MessagingControllerITest extends AbstractIntegrationTest {
             }
 
             private ResponseEntity<PaginatedList<JurorToSendMessageBureau>> triggerValidBureau(
-                String owner, String locCode, MessageSearch search) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, owner, locCode);
+                MessageSearch search) {
+                final String jwt = createJwt(COURT_USER, "400", "400");
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 ResponseEntity<PaginatedList<JurorToSendMessageBureau>> response = template.exchange(
-                    new RequestEntity<>(search, httpHeaders, POST, toUri(locCode, isSimple)),
+                    new RequestEntity<>(search, httpHeaders, POST, toUri("415", isSimple)),
                     new ParameterizedTypeReference<>() {
                     });
                 assertThat(response.getStatusCode())
@@ -1279,7 +1274,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void jurorNameSearch() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .jurorSearch(JurorSearch.builder()
                             .jurorName("FNAME0")
@@ -1299,7 +1294,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void jurorNumberSearch() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .jurorSearch(JurorSearch.builder()
                             .jurorNumber("10000001")
@@ -1321,7 +1316,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void jurorPostcodeSearch() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .jurorSearch(JurorSearch.builder()
                             .postcode("CH02 1AN")
@@ -1339,7 +1334,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void poolNumberSearch() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .poolNumber("20000001")
                         .sortField(MessageSearch.SortField.POOL_NUMBER)
@@ -1358,7 +1353,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void trialNumberSearch() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .trialNumber("T100000000")
                         .pageLimit(5)
@@ -1374,7 +1369,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void nextDueAtCourtDateSearch() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .nextDueAtCourt(LocalDate.of(2022, 1, 1))
                         .pageLimit(5)
@@ -1392,7 +1387,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void dateDeferredToSearch() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .dateDeferredTo(LocalDate.of(2022, 3, 12))
                         .pageLimit(5)
@@ -1408,7 +1403,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeOnCall() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .filters(List.of(MessageSearch.Filter.INCLUDE_ON_CALL))
                         .jurorSearch(JurorSearch.builder()
@@ -1427,7 +1422,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeFailedToAttend() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .filters(List.of(MessageSearch.Filter.INCLUDE_FAILED_TO_ATTEND))
                         .jurorSearch(JurorSearch.builder()
@@ -1448,7 +1443,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeDeferred() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .filters(List.of(MessageSearch.Filter.INCLUDE_DEFERRED))
                         .jurorSearch(JurorSearch.builder()
@@ -1469,7 +1464,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeJurorsAndPanelled() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .filters(List.of(MessageSearch.Filter.INCLUDE_JURORS_AND_PANELLED))
                         .jurorSearch(JurorSearch.builder()
@@ -1491,7 +1486,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeCompleted() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .filters(List.of(MessageSearch.Filter.INCLUDE_COMPLETED))
                         .jurorSearch(JurorSearch.builder()
@@ -1511,7 +1506,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeTransferred() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .filters(List.of(MessageSearch.Filter.INCLUDE_TRANSFERRED))
                         .jurorSearch(JurorSearch.builder()
@@ -1531,7 +1526,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeDisqualifiedAndExcused() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .filters(List.of(MessageSearch.Filter.INCLUDE_DISQUALIFIED_AND_EXCUSED))
                         .jurorSearch(JurorSearch.builder()
@@ -1553,7 +1548,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void includeMultiple() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .filters(List.of(
                             MessageSearch.Filter.INCLUDE_COMPLETED,
@@ -1581,7 +1576,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void showOnlyOnCall() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .filters(List.of(
                             MessageSearch.Filter.SHOW_ONLY_ON_CALL
@@ -1605,7 +1600,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void showOnlyFailedToAttend() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .filters(List.of(
                             MessageSearch.Filter.SHOW_ONLY_FAILED_TO_ATTEND
@@ -1628,7 +1623,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void showOnlyDeferred() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .filters(List.of(
                             MessageSearch.Filter.SHOW_ONLY_DEFERRED
@@ -1651,7 +1646,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void showOnlyDeferredAsBureau() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageBureau>> response = triggerValidBureau("400", "415",
+                ResponseEntity<PaginatedList<JurorToSendMessageBureau>> response = triggerValidBureau(
                     MessageSearch.builder()
                         .filters(List.of(
                             MessageSearch.Filter.SHOW_ONLY_DEFERRED
@@ -1674,7 +1669,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void showOnlyResponded() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .filters(List.of(
                             MessageSearch.Filter.SHOW_ONLY_RESPONDED
@@ -1697,7 +1692,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @Test
             void showOnlyMultiple() throws Exception {
-                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt("415",
+                ResponseEntity<PaginatedList<JurorToSendMessageCourt>> response = triggerValidCourt(
                     MessageSearch.builder()
                         .filters(List.of(
                             MessageSearch.Filter.SHOW_ONLY_RESPONDED,
@@ -1723,7 +1718,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
         class Negative {
             private ResponseEntity<String> triggerInvalid(
                 String locCode, String court, MessageSearch search) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, "415", court);
+                final String jwt = createJwt(COURT_USER, court, court);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
                 return template.exchange(
@@ -2137,13 +2132,13 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                     .englishOtherInfo("Sentence invite(email only)")
                                     .englishMessage("""
                                         The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.
-                                                                                
+
                                         Please contact the court if you wish to attend on 01244 356726.
-                                                                                
+
                                         Alternatively contact the court after the hearing date quoting reference number T100000002 if you would like to know the sentence.
-                                                                                
+
                                         Please note that jurors do not have a role in sentencing, and as such your attendance is entirely voluntary and travel and subsistence payments cannot be claimed.
-                                                                                
+
                                         Please do not reply to this email as this mailbox is unmonitored.""")
                                     .welshMessage(null)
                                     .build()
@@ -2182,13 +2177,13 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                     .welshOtherInfo("Welsh invite (email only)")
                                     .welshMessage("""
                                         Bydd y diffynnydd yn y treial yr oeddech yn rheithiwr ynddo yn cael ei ddedfrydu ar 02/01/2023.
-                                                                                
+
                                         Cysylltwch â'r llys os ydych yn dymuno bod yn bresennol drwy ffonio 01792 637000.
-                                                                                
+
                                         Fel arall, cysylltwch â'r llys ar ôl dyddiad y gwrandawiad, gan ddyfynnu'r cyfeirnod T100000003 os hoffech wybod beth oedd y ddedfryd.
-                                                                                
+
                                         Noder, nid oes gan reithwyr rôl i'w chwarae wrth ddedfrydu diffynyddion ac felly mae eich presenoldeb yn gyfan gwbl wirfoddol ac ni allwch hawlio costau teithio a chynhaliaeth.
-                                                                                
+
                                         Peidiwch ag ymateb i'r neges e-bost hon oherwydd nid yw'r mewnflwch hwn yn cael ei fonitro.""")
                                     .build())
                         )
@@ -2211,9 +2206,9 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                     .englishOtherInfo("Sentence date (email only)")
                                     .englishMessage("""
                                         The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.
-                                                                                
+
                                         Please contact the court after the hearing date on 01244 356726 quoting reference number T100000002 if you would like to know the sentence.
-                                                                                
+
                                         Please do not reply to this email as this mailbox is unmonitored.""")
                                     .welshMessage(null)
                                     .build(),
@@ -2224,9 +2219,9 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                     .englishOtherInfo("Sentence date (email only)")
                                     .englishMessage("""
                                         The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.
-                                                                                
+
                                         Please contact the court after the hearing date on 01244 356726 quoting reference number T100000002 if you would like to know the sentence.
-                                                                                
+
                                         Please do not reply to this email as this mailbox is unmonitored.""")
                                     .welshMessage(null)
                                     .build())
@@ -2246,9 +2241,9 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                     .englishMessage(
                                         """
                                             The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.
-                                                                                        
+
                                             Please contact the court after the hearing date on 01792 637000 quoting reference number T100000003 if you would like to know the sentence.
-                                                                                        
+
                                             Please do not reply to this email as this mailbox is unmonitored.""")
                                     .welshMessage(null)
                                     .build(),
@@ -2260,9 +2255,9 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                     .welshOtherInfo("Welsh Sentence (email only)")
                                     .welshMessage("""
                                         Bydd y diffynnydd yn y treial yr oeddech yn rheithiwr ynddo yn cael ei ddedfrydu ar 02/01/2023.
-                                                                                
+
                                         Cysylltwch â'r Llys ar ôl dyddiad y gwrandawiad drwy ffonio 01792 637000 a dyfynnu'r cyfeirnod T100000003 os hoffech wybod beth oedd y ddedfryd.
-                                                                                
+
                                         Peidiwch ag ymateb i'r neges e-bost hon oherwydd nid yw'r mewnflwch hwn yn cael ei fonitro.""")
                                     .build())
                         )
@@ -2649,7 +2644,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             private ResponseEntity<String> triggerInvalid(
                 String messageType, String locCode, String court, MessageSendRequest request) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, "415", court);
+                final String jwt = createJwt(COURT_USER, court, court);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, POST, toUri(messageType, locCode)), String.class);
@@ -3347,7 +3342,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             private ResponseEntity<String> triggerInvalid(
                 String messageType, String locCode, String court, Map<String, String> request) throws Exception {
-                final String jwt = createBureauJwt(COURT_USER, "415", court);
+                final String jwt = createJwt(COURT_USER, court, court);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, POST, toUri(messageType, locCode)), String.class);
@@ -3505,10 +3500,10 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                             + " 1,Address Line 2,Address Line 3,Address Line 4,Address Line 5,Postcode,Welsh language,"
                             + "Status,Pool Number,Next due at court date,Date deferred to,Completion date\n"
                             + "641500024,T4,FName4,LName4,email4@email.com,1234567894,1234567884,1234567874,address1 "
-                            + "4,address2 4,address3 4,address4 4,address5 4,CF10 4AA,false,4,415230103,04/01/2023,"
-                            + "null,04/01/2023\n"
+                            + "4,address2 4,address3 4,address4 4,address5 4,CF10 4AA,false,Juror,415230103,04/01/2023,"
+                            + ",04/01/2023\n"
                             + "641500025,T5,FName5,LName5,email5@email.com,1234567896,1234567885,1234567875,address1 "
-                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,5,415230104,05/01/2023,"
+                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,Excused,415230104,05/01/2023,"
                             + "05/02/2023,05/01/2023"
                     );
             }
@@ -3547,16 +3542,15 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 testBuilder()
                     .payload(payload)
                     .triggerValid()
-                    .printResponse()
                     .assertEquals(
                         "Juror Number,Title,First Name,Last Name,Email,Main Phone,Other Phone,Work Phone,Address Line"
                             + " 1,Address Line 2,Address Line 3,Address Line 4,Address Line 5,Postcode,Welsh language,"
                             + "Status,Pool Number,Next due at court date,Date deferred to,Completion date\n"
                             + "641500021,T1,FName1,LName1,email1@email.com,1234567891,1234567881,1234567871,address1 "
-                            + "1,address2 1,address3 1,address4 1,address5 1,CF10 1AA,false,1,415230101,null,null,"
+                            + "1,address2 1,address3 1,address4 1,address5 1,CF10 1AA,false,Summoned,415230101,,,"
                             + "01/01/2023\n"
                             + "641500025,T5,FName5,LName5,email5@email.com,1234567896,1234567885,1234567875,address1 "
-                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,5,415230104,05/01/2023,"
+                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,Excused,415230104,05/01/2023,"
                             + "05/02/2023,05/01/2023");
             }
         }

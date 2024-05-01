@@ -3,9 +3,16 @@ package uk.gov.hmcts.juror.api.bureau.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import uk.gov.hmcts.juror.api.bureau.controller.BureauAuthenticationController;
+import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 
 /**
  * Implementation for Authentication service interface for bureau authentication operations.
@@ -38,5 +45,17 @@ public class BureauAuthenticationServiceImpl implements BureauAuthenticationServ
     public String getOwner(BureauJwtAuthentication auth) {
         return auth.getPrincipal() == null || !(auth.getPrincipal() instanceof BureauJwtPayload)
             ? null : ((BureauJwtPayload) auth.getPrincipal()).getOwner();
+    }
+
+    /**
+     * Failed to validate bureau officer credentials.
+     * Created by jonny on 24/03/17.
+     */
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public class InvalidBureauCredentialsException extends RuntimeException {
+
+        public InvalidBureauCredentialsException(String message) {
+            super(message);
+        }
     }
 }

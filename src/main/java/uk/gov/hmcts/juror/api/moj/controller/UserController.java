@@ -45,7 +45,7 @@ public class UserController {
 
     @PostMapping
     @Operation(summary = "View all users")
-    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR + " or " + SecurityUtil.IS_MANAGER)
+    @PreAuthorize(SecurityUtil.IS_ADMINISTRATOR + " or " + SecurityUtil.IS_MANAGER)
     public ResponseEntity<PaginatedList<UserDetailsDto>> viewAllUsers(
         @RequestBody @Valid UserSearchDto userSearchDto
     ) {
@@ -54,7 +54,7 @@ public class UserController {
 
     @PostMapping("/create")
     @Operation(summary = "Create a new user")
-    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR)
+    @PreAuthorize(SecurityUtil.IS_ADMINISTRATOR)
     public ResponseEntity<UsernameDto> createUser(
         @RequestBody @Valid CreateUserDto createUserDto
     ) {
@@ -63,7 +63,7 @@ public class UserController {
 
     @GetMapping("/{username}")
     @Operation(summary = "View user")
-    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR + " or " + SecurityUtil.IS_MANAGER)
+    @PreAuthorize(SecurityUtil.IS_ADMINISTRATOR + " or " + SecurityUtil.IS_MANAGER)
     public ResponseEntity<UserDetailsDto> getUser(
         @PathVariable("username")
         @Parameter(description = "username", required = true)
@@ -73,7 +73,7 @@ public class UserController {
 
     @PutMapping("/{username}")
     @Operation(summary = "Update a new user")
-    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR + " or " + SecurityUtil.IS_MANAGER)
+    @PreAuthorize(SecurityUtil.IS_ADMINISTRATOR + " or " + SecurityUtil.IS_MANAGER)
     public ResponseEntity<Void> updateUser(
         @PathVariable("username")
         @Parameter(description = "username", required = true)
@@ -86,7 +86,7 @@ public class UserController {
 
     @PatchMapping("/{username}/courts")
     @Operation(summary = "Add courts to user")
-    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR)
+    @PreAuthorize(SecurityUtil.IS_ADMINISTRATOR)
     public ResponseEntity<Void> addCourt(
         @PathVariable("username")
         @Parameter(description = "username", required = true)
@@ -99,7 +99,7 @@ public class UserController {
 
     @DeleteMapping("/{username}/courts")
     @Operation(summary = "Remove courts from user")
-    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR)
+    @PreAuthorize(SecurityUtil.IS_ADMINISTRATOR)
     public ResponseEntity<Void> removeCourt(
         @PathVariable("username")
         @Parameter(description = "username", required = true)
@@ -112,7 +112,7 @@ public class UserController {
 
     @PatchMapping("/{username}/type/{type}")
     @Operation(summary = "Update the type of user")
-    @PreAuthorize(SecurityUtil.USER_TYPE_ADMINISTRATOR)
+    @PreAuthorize(SecurityUtil.IS_ADMINISTRATOR)
     public ResponseEntity<Void> updateUserType(
         @PathVariable("username")
         @Parameter(description = "username", required = true)

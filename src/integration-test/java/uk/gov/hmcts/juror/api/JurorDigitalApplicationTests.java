@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api;
 
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +28,7 @@ public class JurorDigitalApplicationTests extends AbstractIntegrationTest {
 
     @Test
     public void contextLoads() {
-        AssertionsForClassTypes.assertThat(controller)
+        assertThat(controller)
             .as("Application Settings Controller should exist when the application context starts")
             .isNotNull();
     }

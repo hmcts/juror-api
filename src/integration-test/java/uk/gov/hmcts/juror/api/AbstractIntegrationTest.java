@@ -28,9 +28,12 @@ import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,7 +45,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SuppressWarnings({
     "PMD.AbstractClassWithoutAbstractMethod",
     "PMD.TooManyMethods",
-    "PMD.LawOfDemeter"
+    "PMD.LawOfDemeter",
+    "PMD.ExcessiveImports",
 })
 public abstract class AbstractIntegrationTest extends ContainerTest {
 
@@ -92,41 +96,22 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
         log.info("Reset sequence {} to {}.", sequenceNameCommaSeperated, resetToValue);
     }
 
-    protected HttpHeaders initialiseHeaders(String userLevel, Boolean passwordWarning,
-                                            String loginUser, int daysToExpire, String owner) {
-
-        BureauJwtPayload payload = buildJwtPayload(userLevel, passwordWarning, loginUser, daysToExpire, owner);
+    protected HttpHeaders initialiseHeaders(String loginUser, UserType userType, Set<Role> roles, String owner) {
+        BureauJwtPayload payload = createBureauJwtPayload(loginUser, userType, roles, owner);
         return buildHttpHeaders(payload);
     }
 
-    protected HttpHeaders initialiseHeaders(String userLevel, Boolean passwordWarning,
-                                            String loginUser, int daysToExpire, String owner,
+    protected HttpHeaders initialiseHeaders(String loginUser, UserType userType, Set<Role> roles, String owner,
                                             BureauJwtPayload.Staff staff) {
-
-        BureauJwtPayload payload = buildJwtPayload(userLevel, passwordWarning, loginUser, daysToExpire, owner);
+        BureauJwtPayload payload = createBureauJwtPayload(loginUser, userType, roles, owner);
         payload.setStaff(staff);
         return buildHttpHeaders(payload);
     }
 
-    private BureauJwtPayload buildJwtPayload(String userLevel, Boolean passwordWarning, String loginUser,
-                                             int daysToExpire, String owner) {
-        return BureauJwtPayload.builder()
-            .userLevel(userLevel)
-            .passwordWarning(passwordWarning)
-            .login(loginUser)
-            .daysToExpire(daysToExpire)
-            .owner(owner)
-            .build();
-    }
-
     private HttpHeaders buildHttpHeaders(BureauJwtPayload payload) {
-        final String bureauJwt = TestUtil.mintBureauJwt(payload, SignatureAlgorithm.HS256, bureauSecret,
-            Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
-
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(payload));
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
         return httpHeaders;
     }
 
@@ -140,32 +125,46 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }
 
-    protected String createBureauJwt(String login, String owner) {
-        return createBureauJwt(login, owner, owner);
+
+    protected String createJwtBureau(String login) {
+        return createJwtBureau(login, Collections.emptyList());
     }
 
+    protected String createJwtBureau(String login, Collection<Role> roles) {
+        return createJwt(login, "400", UserType.BUREAU, roles, "400");
+    }
+
+    protected String createJwtCourt(String login, Collection<Role> roles, String owner, String... courts) {
+        return createJwt(login, owner, UserType.COURT, roles, courts);
+    }
+
+    protected String createJwtAdministrator(String login) {
+        return createJwt(login, "400", UserType.ADMINISTRATOR, null);
+    }
+
+    protected String createJwt(String login, String owner, String... courts) {
+        return createJwt(login, Collections.emptyList(), owner, courts);
+    }
+
+    protected String createJwt(String login, Collection<Role> roles, String owner, String... courts) {
+        if ("400".equals(owner)) {
+            return createJwtBureau(login, roles);
+        }
+        return createJwtCourt(login, roles, owner, courts);
+    }
+
+    protected String createJwt(String login, String owner, UserType userType, Collection<Role> roles,
+                               String... courts) {
+        return mintBureauJwt(createBureauJwtPayload(login, userType, roles, owner, courts));
+    }
+
+    @Deprecated(forRemoval = true)
     protected String createBureauJwt(String login, String owner, String... courts) {
-        return createBureauJwt(login, owner, null, null, courts);
+        return createJwt(login, owner, null, null, courts);
     }
 
-    protected String createBureauJwt(String login, String owner, UserType userType, Collection<Role> roles,
-                                     String... courts) {
-        return mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
-            .login(login)
-            .staff(BureauJwtPayload.Staff.builder()
-                .name("Test User")
-                .active(1)
-                .rank(1)
-                .courts(List.of(courts))
-                .build())
-            .daysToExpire(89)
-            .userType(userType)
-            .roles(roles)
-            .owner(owner)
-            .build());
-    }
 
+    @Deprecated(forRemoval = true)
     protected String createBureauJwt(String login, String owner, int rank) {
         return mintBureauJwt(BureauJwtPayload.builder()
             .userLevel(String.valueOf(rank))
@@ -178,6 +177,24 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
             .daysToExpire(89)
             .owner(owner)
             .build());
+    }
+
+    protected BureauJwtPayload createBureauJwtPayload(String login, UserType userType, Collection<Role> roles,
+                                                      String owner, String... courts) {
+        Set<String> courtsToSet = new HashSet<>(Arrays.asList(courts));
+        courtsToSet.add(owner);
+
+        return BureauJwtPayload.builder()
+            .login(login)
+            .staff(BureauJwtPayload.Staff.builder()
+                .name("Test User")
+                .active(1)
+                .courts(new ArrayList<>(courtsToSet))
+                .build())
+            .userType(userType)
+            .roles(roles)
+            .owner(owner)
+            .build();
     }
 
     protected void assertForbiddenResponse(ResponseEntity<String> response, String url) {
@@ -324,12 +341,12 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     }
 
     public String getBureauJwt() {
-        return createBureauJwt("test_bureau_standard", "400",
+        return createJwt("test_bureau_standard", "400",
             UserType.BUREAU, Set.of(), "400");
     }
 
     public String getCourtJwt(String number) {
-        return createBureauJwt("test_court_standard", number,
+        return createJwt("test_court_standard", number,
             UserType.COURT, Set.of(), number);
     }
 }

@@ -149,7 +149,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void requestInformationBureauPaperUserHappyPath() throws Exception {
             final String jurorNumber = "222222222";
             final String owner = "400";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", owner);
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
             final String expectedRequestString = "Part 2 Section D, Part 2 Section A";
 
@@ -184,7 +184,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void requestInformationCourtUserForbidden() throws Exception {
             final String jurorNumber = "222222222";
             final String courtOwner = "415";
-            final String courtJwt = createBureauJwt("COURT_USER", courtOwner);
+            final String courtJwt = createJwt("COURT_USER", courtOwner);
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -209,7 +209,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void requestInformationBureauUserPaperAllCategoriesMissing() throws Exception {
             final String jurorNumber = "222222222";
             final String owner = "400";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", owner);
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
             final String expectedRequestString = "Part 1 Date of Birth, Part 1 Telephone No., Part 2 Section B, "
                 + "Part 2 Section C, Part 2 Section C, Part 2 Section E, Part 2 Section A, Part 3 Section A/B/C, Part"
@@ -257,7 +257,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void requestInformationBureauUserPaperAllCategoriesMissingWelsh() throws Exception {
             final String jurorNumber = "222222223";
             final String owner = "400";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", owner);
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
             final String expectedRequestString = "Rhan 1 Dyddiad Geni, Rhan 1 Rhif FFon., Rhan 2 Adran B, "
                 + "Rhan 2 Adran C, Rhan 2 Adran C, Rhan 2 Adran E, Rhan 2 Adran A, Rhan 3 Adran A/B/C, Rhan 2 Adran D, "
@@ -305,7 +305,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void requestInformationBureauUserPaperEmptyMissingInformation() throws Exception {
             final String jurorNumber = "222222222";
             final String owner = "400";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", owner);
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -329,7 +329,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         void requestInformationBureauUserPaperMissingSignature() throws Exception {
             final String jurorNumber = "222222222";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -356,7 +356,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void requestInformationBureauUserDigitalHappyPath() throws Exception {
             final String jurorNumber = "111111000";
             final String owner = "400";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", owner);
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
             final String expectedRequestString = "Part 2 Section D, Part 2 Section A";
 
@@ -391,7 +391,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void requestInformationBureauUserDigitalAllCategoriesMissing() throws Exception {
             final String jurorNumber = "111111000";
             final String owner = "400";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", owner);
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
             final String expectedRequestString = "Part 1 Date of Birth, Part 1 Telephone No., Part 2 Section B, "
                 + "Part 2 Section C, Part 2 Section C, Part 2 Section E, Part 2 Section A, Part 3 Section A/B/C, Part"
@@ -439,7 +439,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void requestInformationBureauUserDigitalAllCategoriesMissingWelsh() throws Exception {
             final String jurorNumber = "111111001";
             final String owner = "400";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", owner);
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
             final String expectedRequestString = "Rhan 1 Dyddiad Geni, Rhan 1 Rhif FFon., Rhan 2 Adran B, "
                 + "Rhan 2 Adran C, Rhan 2 Adran C, Rhan 2 Adran E, Rhan 2 Adran A, Rhan 3 Adran A/B/C, Rhan 2 Adran D, "
@@ -483,7 +483,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/LetterController_initPoolMemberAndResponse.sql"})
         void requestInformationBureauUserPaperMissingReplyMethod() throws Exception {
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/request-information");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -530,7 +530,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void jurorNumberSearchExcludePrinted() {
 
                 final String jurorNumber = "555555562";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -561,7 +561,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void jurorNumberSearchIncludePrinted() {
 
                 final String jurorNumber = "555555562";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -605,7 +605,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void jurorNumberSearchBureauDeferral() {
 
                 final String jurorNumber = "555555561";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -636,7 +636,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void jurorNameSearchExcludePrinted() {
 
                 final String jurorName = "TEST_SEVEN";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -678,7 +678,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_DeferralGranted.sql"})
             void jurorNameSearchIncludePrinted() {
                 final String jurorName = "TEST_SEVEN";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -719,7 +719,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void jurorPostcodeSearchExcludePrinted() {
 
                 final String postcode = "CH1 2AN";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -758,7 +758,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void jurorPostcodeSearchIncludePrinted() {
 
                 final String postcode = "CH1 2AN";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -803,7 +803,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void poolNumberSearchExcludePrinted() {
 
                 final String poolNumber = "415220401";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -842,7 +842,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void poolNumberSearchIncludePrinted() {
 
                 final String poolNumber = "415220401";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -886,7 +886,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_DeferralGranted.sql"})
             void invalidUser() {
                 final String jurorNumber = "555555562";
-                final String payload = createBureauJwt("BUREAU_USER", "400");
+                final String payload = createJwtBureau("BUREAU_USER");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -912,7 +912,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void invalidRequestBody() {
                 final String jurorNumber = "555555562";
                 final String poolNumber = "415220401";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -946,7 +946,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void jurorNumberSearchExcludePrinted() {
 
                 final String jurorNumber = "555555567";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -977,7 +977,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void jurorNumberSearchIncludePrinted() {
 
                 final String jurorNumber = "555555567";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1021,7 +1021,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void jurorNumberSearchBureauDeniedDeferral() {
 
                 final String jurorNumber = "555555562";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1052,7 +1052,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void jurorNameSearchExcludePrinted() {
 
                 final String jurorName = "TEST_SIX";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1094,7 +1094,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_DeferralDenied.sql"})
             void jurorNameSearchIncludePrinted() {
                 final String jurorName = "TEST_SIX";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1140,7 +1140,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void jurorPostcodeSearchExcludePrinted() {
 
                 final String postcode = "CH1 2AN";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1179,7 +1179,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void jurorPostcodeSearchIncludePrinted() {
 
                 final String postcode = "CH1 2AN";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1225,7 +1225,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void poolNumberSearchExcludePrinted() {
 
                 final String poolNumber = "415220401";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1264,7 +1264,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void poolNumberSearchIncludePrinted() {
 
                 final String poolNumber = "415220401";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1308,7 +1308,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_DeferralDenied.sql"})
             void invalidUser() {
                 final String jurorNumber = "555555566";
-                final String payload = createBureauJwt("BUREAU_USER", "400");
+                final String payload = createJwtBureau("BUREAU_USER");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1333,7 +1333,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void invalidRequestBody() {
                 final String jurorNumber = "555555562";
                 final String poolNumber = "415220401";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create(GET_LETTER_LIST_URI);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1368,7 +1368,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void courtLetterListExcusalGrantedJurorNumberSearchExcludePrinted() {
 
             final String jurorNumber = "555555562";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1398,7 +1398,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void courtLetterListExcusalGrantedJurorNumberSearchIncludePrinted() {
 
             final String jurorNumber = "555555562";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1440,7 +1440,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void courtLetterListExcusalGrantedJurorNumberSearchBureauExcusal() {
 
             final String jurorNumber = "555555561";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1471,7 +1471,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             final String jurorNumber = "555555563";
             final String jurorName = "FNAME3";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1511,7 +1511,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_ExcusalGranted.sql"})
         void courtLetterListExcusalGrantedJurorNameSearchIncludePrinted() {
             final String jurorName = "FNAME3";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1549,7 +1549,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void courtLetterListExcusalGrantedJurorPostcodeSearch() {
 
             final String postcode = "CH1 2AN";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1586,7 +1586,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void courtLetterListExcusalGrantedJurorPostcodeSearchIncludePrinted() {
 
             final String postcode = "CH1 2AN";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1624,7 +1624,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void courtLetterListExcusalGrantedPoolNumberSearchExcludePrinted() {
 
             final String poolNumber = "415220502";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1661,7 +1661,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void courtLetterListExcusalGrantedPoolNumberSearchIncludePrinted() {
 
             final String poolNumber = "415220502";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -1702,7 +1702,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initPoolReissueDeferralLetter.sql"})
         void reissueDeferralGrantedLetterListByJurorNumber() throws Exception {
             final String jurorNumber = "555555561";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1747,7 +1747,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initPoolReissueDeferralLetter.sql"})
         void reissueDeferralGrantedLetterListByJurorNumberBiLingual() throws Exception {
             final String jurorNumber = "555555567";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1792,7 +1792,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initPoolReissueDeferralLetter.sql"})
         void reissueDeferralGrantedLetterListByPoolNumber() throws Exception {
             final String poolNumber = "415220401";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1835,7 +1835,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initPoolReissueDeferralLetter.sql"})
         void reissueDeferralGrantedLetterListShowAllPending() throws Exception {
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1874,7 +1874,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void reissueDeferralGrantedLetterListUnhappyNotFound() throws Exception {
             final String jurorNumber = "995555561";
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -1896,7 +1896,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissuePostponeLetter.sql"})
         void reissuePostponeLetterListHappy() throws Exception {
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final String jurorNumber = "555555551";
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -1941,7 +1941,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void reissueListCourtUnhappyNoAccess() throws Exception {
             final String jurorNumber = "555555561";
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
-            final String bureauJwt = createBureauJwt("COURT_USER", "415");
+            final String bureauJwt = createJwt("COURT_USER", "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -1964,7 +1964,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueConfirmationLetter.sql"})
         void reissueConfirmationLetterListByJurorNumber() throws Exception {
             final String jurorNumber = "555555561";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -2004,7 +2004,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueConfirmationLetter.sql"})
         void reissueConfirmationLetterListByJurorNumberWelsh() throws Exception {
             final String jurorNumber = "555555562";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -2044,7 +2044,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueConfirmationLetter.sql"})
         void reissueConfirmationLetterListByPoolNumber() throws Exception {
             final String poolNumber = "415220504";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -2075,7 +2075,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueConfirmationLetter.sql"})
         void reissueConfirmationLetterListByPending() throws Exception {
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -2115,7 +2115,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initPoolReissueDeferralDeniedLetter.sql"})
         void reissueDeferralDeniedLetterListByJurorNumber() throws Exception {
             final String jurorNumber = "555555561";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -2160,7 +2160,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initPoolReissueDeferralDeniedLetter.sql"})
         void reissueDeferralDeniedLetterListByJurorNumberWelsh() throws Exception {
             final String jurorNumber = "555555565";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -2205,7 +2205,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initPoolReissueDeferralDeniedLetter.sql"})
         void reissueDeferralDeniedLetterListByPoolNumber() throws Exception {
             final String poolNumber = "415220401";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -2238,7 +2238,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initPoolReissueDeferralDeniedLetter.sql"})
         void reissueDeferralDeniedLetterListByPending() throws Exception {
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -2272,7 +2272,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueWithdrawalLetter.sql"})
         void reissueWithdrawalLetterListByJurorNumber() throws Exception {
             final String jurorNumber = "555555561";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -2317,7 +2317,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueWithdrawalLetter.sql"})
         void reissueWithdrawalLetterListByJurorNumberWelsh() throws Exception {
             final String jurorNumber = "555555562";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -2361,7 +2361,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Test
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueWithdrawalLetter.sql"})
         void reissueWithdrawalLetterListShowAllPending() throws Exception {
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -2543,7 +2543,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueInitialSummons.sql"})
         void reissueInitialSummonsLetterListByJurorNumber() throws Exception {
             final String jurorNumber = "555555561";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -2585,7 +2585,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueInitialSummons.sql"})
         void reissueInitialSummonsLetterListByPoolNumber() throws Exception {
             final String poolNumber = "415220401";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -2619,7 +2619,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueInitialSummons.sql"})
         void reissueInitialSummonsLetterListByJurorNumberWelsh() throws Exception {
             final String jurorNumber = "555555562";
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -2668,7 +2668,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initPoolReissueDeferralLetter.sql"})
         void reissueDeferralGrantedLetterHappy() {
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -2695,7 +2695,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueConfirmationLetter.sql"})
         void reissueConfirmationLetterHappy() {
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -2722,7 +2722,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/LetterController_initReissueConfirmationLetter.sql"})
         @DisplayName("Reissue excusal letter - expect okay response")
         void reissueExcusalLetterHappy() {
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -2749,7 +2749,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initPoolReissueDeferralDeniedLetter.sql"})
         void reissueDeferralDeniedLetterHappy() {
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -2778,7 +2778,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueWithdrawalLetter.sql"})
         void reissueWithdrawalLetterHappy() {
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -2808,7 +2808,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void reissueWithdrawalListUnhappyNotFound() {
             final String jurorNumber = "995555561";
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -2831,7 +2831,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissuePostponeLetter.sql"})
         void reissuePostponeLetterHappy() {
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -2993,7 +2993,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
                 // invoke api again for same juror and letter
                 final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
-                final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+                final String bureauJwt = createJwtBureau("BUREAU_USER");
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -3026,7 +3026,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void summonsReminderLetterDoesNotMeetCriteria() {
                 final String jurorNumber = "555555566";
                 final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
-                final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+                final String bureauJwt = createJwtBureau("BUREAU_USER");
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -3153,7 +3153,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             void summonsReminderReprintNotAllowedForLettersNotExtractedYet() {
                 final String jurorNumber = "555555577";
                 final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
-                final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+                final String bureauJwt = createJwtBureau("BUREAU_USER");
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -3270,7 +3270,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         private void triggerValidBureau(
             ReissueLetterRequestDto.ReissueLetterRequestData... requestBody) {
             final URI uri = URI.create("/api/v1/moj/letter/reissue-letter");
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -3311,7 +3311,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/LetterController_deletePendingBureauLetter.sql"})
         void deleteLetterHappy(String formCode) {
             final URI uri = URI.create("/api/v1/moj/letter/delete-pending-letter");
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -3340,7 +3340,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initPoolReissueDeferralLetter.sql"})
         void deleteLetterUnhappyNotFound() {
             final URI uri = URI.create("/api/v1/moj/letter/delete-pending-letter");
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -3369,7 +3369,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initPoolReissueDeferralLetter.sql"})
         void deleteLetterCourtUserUnhappyNoAccess() {
             final URI uri = URI.create("/api/v1/moj/letter/delete-pending-letter");
-            final String bureauJwt = createBureauJwt("COURT_USER", "415");
+            final String bureauJwt = createJwt("COURT_USER", "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
@@ -3682,7 +3682,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         }
 
         private void setHeaders() {
-            final String bureauJwt = createBureauJwt("BUREAU_USER", "400");
+            final String bureauJwt = createJwtBureau("BUREAU_USER");
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         }
     }
@@ -3882,7 +3882,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         }
 
         protected ReissueLetterListResponseDto triggerValid(ReissueLetterListRequestDto requestDto) throws Exception {
-            final String jwt = createBureauJwt("BUREAU_USER", "400");
+            final String jwt = createJwtBureau("BUREAU_USER");
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
             httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
@@ -3953,7 +3953,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_DeferralGranted.sql"})
         void invalidRequestBureauUser() {
             final String jurorNumber = "555555562";
-            final String payload = createBureauJwt("BUREAU_USER", "400");
+            final String payload = createJwtBureau("BUREAU_USER");
             final URI uri = URI.create("/api/v1/moj/letter/print-court-letter");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -3985,7 +3985,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_DeferralGranted.sql"})
             void reissueDeferralLetterHappy() {
                 final String jurorNumber = "555555562";
-                final String payload = createBureauJwt("COURT_USER", "415");
+                final String payload = createJwt("COURT_USER", "415");
                 final URI uri = URI.create("/api/v1/moj/letter/print-court-letter");
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -4088,7 +4088,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_DeferralGranted.sql"})
             void reissueDeferralLetterHappyWelsh() {
                 final String jurorNumber = "555555568";
-                final String payload = createBureauJwt("COURT_USER", "457");
+                final String payload = createJwt("COURT_USER", "457");
                 final URI uri = URI.create("/api/v1/moj/letter/print-court-letter");
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -4198,7 +4198,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void englishLetter() {
             final String jurorNumber = "555555566";
             final String courtOwner = "415";
-            final String payload = createBureauJwt("COURT_USER", courtOwner);
+            final String payload = createJwt("COURT_USER", courtOwner);
             final URI uri = URI.create("/api/v1/moj/letter/print-court-letter");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -4298,7 +4298,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_DeferralDenied.sql"})
         void welshLetter() {
             final String jurorNumber = "555555568";
-            final String payload = createBureauJwt("COURT_USER", "457");
+            final String payload = createJwt("COURT_USER", "457");
             final URI uri = URI.create("/api/v1/moj/letter/print-court-letter");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -4403,7 +4403,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void courtLetterListWithdrawalJurorNumberSearchExcludePrinted() {
 
             final String jurorNumber = "555555555";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -4433,7 +4433,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void courtLetterListWithdrawalJurorNumberSearchIncludePrinted() {
 
             final String jurorNumber = "555555555";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -4475,7 +4475,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void courtLetterListWithdrawalJurorNumberSearchBureauWithdrawal() {
 
             final String jurorNumber = "555555556";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -4506,7 +4506,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             final String jurorNumber = "555555557";
             final String jurorName = "FNAME3";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -4546,7 +4546,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Sql({"/db/mod/truncate.sql", "/db/letter/CourtLetterList_Withdrawal.sql"})
         void courtLetterListWithdrawalJurorNameSearchIncludePrinted() {
             final String jurorName = "FNAME3";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -4584,7 +4584,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void courtLetterListWithdrawalJurorPostcodeSearch() {
 
             final String postcode = "CH1 2AN";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -4621,7 +4621,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void courtLetterListWithdrawalJurorPostcodeSearchIncludePrinted() {
 
             final String postcode = "CH1 2AN";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -4659,7 +4659,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void courtLetterListWithdrawalPoolNumberSearchExcludePrinted() {
 
             final String poolNumber = "415220502";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -4696,7 +4696,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void courtLetterListWithdrawalPoolNumberSearchIncludePrinted() {
 
             final String poolNumber = "415220502";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
             final URI uri = URI.create("/api/v1/moj/letter/court-letter-list");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
@@ -4745,7 +4745,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             jurorNumbers.add(JUROR_NUMBER + "62");
             jurorNumbers.add(JUROR_NUMBER + "63");
 
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -4846,7 +4846,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("Print Certificate of exemption - Override judge name")
                 void printCertificateOfExemptionOverrideJudgeName() {
-                    final String payload = createBureauJwt("COURT_USER", "415");
+                    final String payload = createJwt("COURT_USER", "415");
 
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -4881,7 +4881,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("Print Certificate of exemption - Happy path - English")
                 void printCertificateOfExemption() {
-                    final String payload = createBureauJwt("COURT_USER", "415");
+                    final String payload = createJwt("COURT_USER", "415");
 
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -4918,7 +4918,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("Print Certificate of exemption - trial not found")
                 void printCertificateOfExemptionTrialNotFound() {
-                    final String payload = createBureauJwt("COURT_USER", "415");
+                    final String payload = createJwt("COURT_USER", "415");
 
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -4947,7 +4947,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("Print Certificate of exemption - accessing wrong court information")
                 void printCertificateOfExemptionNoAccessToCourtTrial() {
-                    final String payload = createBureauJwt("COURT_USER", "415");
+                    final String payload = createJwt("COURT_USER", "415");
 
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -4975,7 +4975,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("Print Certificate of exemption - juror number incorrect")
                 void printCertificateOfExemptionTrialFoundJurorNumberIncorrect() {
-                    final String payload = createBureauJwt("COURT_USER", "415");
+                    final String payload = createJwt("COURT_USER", "415");
 
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -5001,7 +5001,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("Print Certificate of exemption - Unhappy path - Bureau user")
                 void printCertificateOfExemptionBureauUser() {
-                    final String payload = createBureauJwt("BUREAU_USER", "400");
+                    final String payload = createJwtBureau("BUREAU_USER");
 
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -5039,7 +5039,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("Certificate of exemption - trials exemption list - Happy path ")
                 void trialsExemptionList() {
-                    final String payload = createBureauJwt("COURT_USER", "415");
+                    final String payload = createJwt("COURT_USER", "415");
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
                     String url = TRIAL_EXEMPTION_URL + "?court_location=415";
@@ -5106,7 +5106,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("trials exemption list - No Active trials")
                 void trialsExemptionListNoActiveTrialsFound() {
-                    final String payload = createBureauJwt("COURT_USER", "761");
+                    final String payload = createJwt("COURT_USER", "761");
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
                     String url = TRIAL_EXEMPTION_URL + "?court_location=761";
@@ -5126,7 +5126,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("trials exemption list - No court location provided")
                 void trialsExemptionListNoCourtLocation() {
-                    final String payload = createBureauJwt("COURT_USER", "761");
+                    final String payload = createJwt("COURT_USER", "761");
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
                     RequestEntity<Void> request = new RequestEntity<>(null, httpHeaders, GET,
@@ -5147,7 +5147,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("trials exemption list - Invalid court location")
                 void trialsExemptionListInvalidCourtLocation() {
-                    final String payload = createBureauJwt("COURT_USER", "761");
+                    final String payload = createJwt("COURT_USER", "761");
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
                     RequestEntity<Void> request = new RequestEntity<>(null, httpHeaders, GET,
@@ -5165,7 +5165,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("trials exemption list - No access to court location")
                 void trialsExemptionListNoAccessToCourtLocation() {
-                    final String payload = createBureauJwt("COURT_USER", "761");
+                    final String payload = createJwt("COURT_USER", "761");
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
                     String url = TRIAL_EXEMPTION_URL + "?court_location=415";
@@ -5187,7 +5187,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("trial exemption list - Unhappy path - Bureau user")
                 void trialsExemptionListBureauUser() {
-                    final String payload = createBureauJwt("BUREAU_USER", "400");
+                    final String payload = createJwtBureau("BUREAU_USER");
 
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -5217,7 +5217,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("Certificate of exemption - jurors exemption list - Happy path")
                 void jurorsForExemptionList() {
-                    final String payload = createBureauJwt("COURT_USER", "415");
+                    final String payload = createJwt("COURT_USER", "415");
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
                     RequestEntity<Void> request = new RequestEntity<>(null, httpHeaders, GET,
@@ -5256,7 +5256,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("Jurors exemption list - unhappy path - no court location found in token")
                 void jurorsForExemptionListNoCourtLocationFoundInToken() {
-                    final String payload = createBureauJwt("COURT_USER", "415", "416");
+                    final String payload = createJwt("COURT_USER", "416", "416");
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
                     RequestEntity<Void> request = new RequestEntity<>(null, httpHeaders, GET,
                         URI.create(buildJurorExemptionUri("T10000002", "415")));
@@ -5277,7 +5277,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("Jurors exemption list - No Panel members - Unhappy path")
                 void jurorsForExemptionListNoPanelMembers() {
-                    final String payload = createBureauJwt("COURT_USER", "415");
+                    final String payload = createJwt("COURT_USER", "415");
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
                     RequestEntity<Void> request = new RequestEntity<>(null, httpHeaders, GET,
                         URI.create(buildJurorExemptionUri("T10000002", "415")));
@@ -5296,7 +5296,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("Juror exemption list - Unhappy path - Bureau user")
                 void jurorsForExemptionListBureauUser() {
-                    final String payload = createBureauJwt("BUREAU_USER", "400");
+                    final String payload = createJwtBureau("BUREAU_USER");
 
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -5320,7 +5320,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("Juror exemption list - invalid court location")
                 void jurorExemptionListInvalidCourtLocation() {
-                    final String payload = createBureauJwt("BUREAU_USER", "999");
+                    final String payload = createJwt("BUREAU_USER", "999");
 
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
                     CertificateOfExemptionRequestDto requestDto =
@@ -5346,7 +5346,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("Juror exemption list - no court provided")
                 void jurorExemptionListNoCourtProvided() {
-                    final String payload = createBureauJwt("BUREAU_USER", "415");
+                    final String payload = createJwt("BUREAU_USER", "415");
 
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
                     CertificateOfExemptionRequestDto requestDto =
@@ -5373,7 +5373,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 @SneakyThrows
                 @DisplayName("Juror exemption list - no case number provided")
                 void jurorExemptionListNoCaseNumberProvided() {
-                    final String payload = createBureauJwt("BUREAU_USER", "415");
+                    final String payload = createJwt("BUREAU_USER", "415");
 
                     httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
                     CertificateOfExemptionRequestDto requestDto =
@@ -5476,7 +5476,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Postponement letter criteria met - juror number is valid and exclude printed letters")
         void courtLetterListPostponedJurorNumberSearchExcludePrinted() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -5503,7 +5503,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Postponement letter criteria met - juror number and include printed")
         void courtLetterListPostponedJurorNumberSearchIncludePrinted() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -5543,7 +5543,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Postponement letter criteria not met - bureau deferral")
         void courtLetterListPostponedJurorNumberSearchBureauDeferral() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -5571,7 +5571,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @DisplayName("Postponement letter criteria met - juror forename")
         void courtLetterListPostponedJurorNameSearch() {
             final String jurorName = "JurorForename67";
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -5634,7 +5634,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Show Cause letter - juror number and include printed letters")
         void courtLetterListShowCauseJurorNumberSearchIncludePrinted() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -5666,7 +5666,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Show Cause letter - juror number and exclude printed letters")
         void courtLetterListShowCauseJurorNumberSearchExcludePrinted() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -5694,7 +5694,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Show Cause letter - fails dto validation (mandatory fields missing)")
         void courtLetterListShowCauseIncludePrinted() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -5723,7 +5723,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Show Cause letter - pool number and exclude printed letters")
         void courtLetterListShowCausePoolNumberSearchExcludePrinted() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -5759,7 +5759,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Show Cause letter - pool number and include printed letters")
         void courtLetterListShowCausePoolNumber() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -5789,7 +5789,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Show Cause letter criteria not met - no_show is null (turned up for jury service")
         void courtLetterListShowCauseJurorNumberSearchAndNoShowIsNull() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -5814,7 +5814,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Show Cause letter criteria not met - bureau owner")
         void courtLetterListShowCauseBureauOwner() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -5997,7 +5997,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @SneakyThrows
             @DisplayName("Missing url path variable - includePrinted")
             void defaultIncludePrintedFlag() {
-                final String payload = createBureauJwt(COURT_USER, OWNER_415);
+                final String payload = createJwt(COURT_USER, OWNER_415);
 
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -6010,7 +6010,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         }
 
         List<?> invokeApiHappy(boolean includePrinted, String owner, URI url) {
-            final String payload = createBureauJwt(COURT_USER, owner);
+            final String payload = createJwt(COURT_USER, owner);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -6071,7 +6071,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - Happy path - English")
         void printCourtLettersShowCauseHappyEnglish() {
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt(COURT_USER, OWNER_415));
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt(COURT_USER, OWNER_415));
 
             List<PrintLettersRequestDto.DetailsPerLetter> detailsPerLetter = new ArrayList<>();
             detailsPerLetter.add(createDetailsPerLetter("61", 10));
@@ -6097,7 +6097,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - Happy path - Welsh")
         void printCourtLettersShowCauseHappyWelsh() {
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt(COURT_USER, "457"));
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt(COURT_USER, "457"));
 
             List<PrintLettersRequestDto.DetailsPerLetter> detailsPerLetter = new ArrayList<>();
             detailsPerLetter.add(createDetailsPerLetter("68", 0));
@@ -6123,7 +6123,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - invalid request - missing mandatory data for letter type")
         void printCourtLettersShowCauseInvalidRequestMissingShowCauseDateAndTime() {
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt(COURT_USER, OWNER_415));
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt(COURT_USER, OWNER_415));
 
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "61");
@@ -6153,7 +6153,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - invalid request - missing mandatory data: showCauseDate")
         void printCourtLettersShowCauseInvalidRequestMissingShowCauseDate() {
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt("COURT_USER", "415"));
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("COURT_USER", "415"));
 
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "61");
@@ -6186,7 +6186,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "61");
 
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -6216,7 +6216,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Show Cause letter - juror with multiple absences")
         void failedToAttendLetterJurorWithMultipleAbsences() {
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt(COURT_USER, OWNER_415));
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt(COURT_USER, OWNER_415));
 
             List<PrintLettersRequestDto.DetailsPerLetter> detailsPerLetter = new ArrayList<>();
             detailsPerLetter.add(createDetailsPerLetter("72", 8));
@@ -6375,7 +6375,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "62");
 
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -6457,7 +6457,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "55");
 
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -6537,7 +6537,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Reissue Excusal Denied Letter - Happy path - English")
         void printCourtLetterExcusalDeniedHappyPath() {
-            final String payload = createBureauJwt("COURT_USER", "415");
+            final String payload = createJwt("COURT_USER", "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -6566,7 +6566,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Reissue Excusal Denied Letter - Happy path - Welsh")
         void printCourtLetterExcusalDeniedHappyPathWelsh() {
-            final String payload = createBureauJwt("COURT_USER", "457");
+            final String payload = createJwt("COURT_USER", "457");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -6726,7 +6726,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Failed To Attend list - juror number and include printed letters")
         void courtLetterListFailedToAttendJurorNumberSearchIncludePrinted() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -6759,7 +6759,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Failed To Attend list - juror number and exclude printed letters")
         void courtLetterListFailedToAttendJurorNumberSearchExcludePrinted() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -6786,7 +6786,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Failed To Attend list - juror number and has multiple absences")
         void courtLetterListFailedToAttendJurorNumberHasMultipleAbsences() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -6816,7 +6816,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Failed To Attend list - pool number and exclude printed letters")
         void courtLetterListFailedToAttendPoolNumberSearchExcludePrinted() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -6852,7 +6852,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Failed To Attend list - pool number and include printed letters")
         void courtLetterListFailedToAttendPoolNumber() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -6883,7 +6883,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Failed To Attend list - no_show is null (turned up for jury service")
         void courtLetterListFailedToAttendJurorNumberSearchAndNoShowIsNull() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -6908,7 +6908,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Failed To Attend list criteria not met - bureau owner")
         void courtLetterListFailedToAttendBureauOwner() {
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -6971,7 +6971,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void englishLetter() {
             String jurorNumber = "555555561";
 
-            final String payload = createBureauJwt(COURT_USER, OWNER_415);
+            final String payload = createJwt(COURT_USER, OWNER_415);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -7000,7 +7000,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void welshLetter() {
             String jurorNumber = "555555562";
 
-            final String payload = createBureauJwt(COURT_USER, "457");
+            final String payload = createJwt(COURT_USER, "457");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -7029,7 +7029,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void englishLetterInvalidOwner() {
             final String jurorNumber = "555555561";
             final String bureauOwner = "400";
-            final String payload = createBureauJwt("BUREAU_USER", bureauOwner);
+            final String payload = createJwtBureau("BUREAU_USER");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -7053,7 +7053,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         void englishLetterAbsentJuror() {
             final String jurorNumber = "555555563";
             final String courtOwner = "415";
-            final String payload = createBureauJwt("COURT_USER", courtOwner);
+            final String payload = createJwt("COURT_USER", courtOwner);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
@@ -7253,7 +7253,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Failed To Attend letter - Happy path - English")
         void failedToAttendLetterHappyEnglish() {
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt(COURT_USER, OWNER_415));
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt(COURT_USER, OWNER_415));
 
             List<PrintLettersRequestDto.DetailsPerLetter> detailsPerLetter = new ArrayList<>();
             detailsPerLetter.add(createDetailsPerLetter("61", 10));
@@ -7279,7 +7279,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Failed To Attend letter - juror with multiple absences")
         void failedToAttendLetterJurorWithMultipleAbsences() {
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt(COURT_USER, OWNER_415));
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt(COURT_USER, OWNER_415));
 
             List<PrintLettersRequestDto.DetailsPerLetter> detailsPerLetter = new ArrayList<>();
             detailsPerLetter.add(createDetailsPerLetter("70", 9));
@@ -7305,7 +7305,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Failed To Attend letter - Happy path - Welsh")
         void failedToAttendLetterHappyWelsh() {
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, createBureauJwt(COURT_USER, "457"));
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt(COURT_USER, "457"));
 
             List<PrintLettersRequestDto.DetailsPerLetter> detailsPerLetter = new ArrayList<>();
             detailsPerLetter.add(createDetailsPerLetter("68", 0));

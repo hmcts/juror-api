@@ -21,10 +21,13 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauOfficerAllocatedData;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauOfficerAllocatedResponses;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,10 +69,9 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
 
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -82,6 +84,9 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
                 + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'Y' AND SUPER_URGENT='N' ",
             Integer.class)).isEqualTo(2);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
+                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and (URGENT = 'Y' OR SUPER_URGENT='Y') ",
+            Integer.class)).isEqualTo(3);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
                 + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'N' and  SUPER_URGENT='Y' ",
             Integer.class)).isEqualTo(1);
@@ -101,8 +106,7 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
         assertThat(exchange).isNotNull();
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(exchange.getBody().getBureauBacklogCount().getNonUrgent()).isEqualTo(4);
-        assertThat(exchange.getBody().getBureauBacklogCount().getUrgent()).isEqualTo(2);
-        assertThat(exchange.getBody().getBureauBacklogCount().getSuperUrgent()).isEqualTo(1);
+        assertThat(exchange.getBody().getBureauBacklogCount().getUrgent()).isEqualTo(3);
         assertThat(exchange.getBody().getData().size()).isEqualTo(6);
 
         List<BureauOfficerAllocatedData> carneson =
@@ -111,8 +115,7 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
         assertThat(carneson.size()).isEqualTo(1);
         assertThat(carneson.get(0).getName()).isEqualToIgnoringCase("Chad Arneson");
         assertThat(carneson.get(0).getAllReplies()).isEqualTo(8);
-        assertThat(carneson.get(0).getUrgent()).isEqualTo(4);
-        assertThat(carneson.get(0).getSuperUrgent()).isEqualTo(2);
+        assertThat(carneson.get(0).getUrgent()).isEqualTo(6);
         assertThat(carneson.get(0).getNonUrgent()).isEqualTo(2);
 
         List<BureauOfficerAllocatedData> mruby =
@@ -122,9 +125,7 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
         assertThat(mruby.get(0).getName()).isEqualToIgnoringCase("Martin Ruby");
         assertThat(mruby.get(0).getAllReplies()).isEqualTo(4);
         assertThat(mruby.get(0).getUrgent()).isEqualTo(2);
-        assertThat(mruby.get(0).getSuperUrgent()).isEqualTo(0);
         assertThat(mruby.get(0).getNonUrgent()).isEqualTo(2);
-
 
     }
 

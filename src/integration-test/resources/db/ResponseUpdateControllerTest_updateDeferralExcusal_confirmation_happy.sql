@@ -23,5 +23,5 @@ values ('BUREAUGUY1', '448'),
        ('BUREAULADY9', '448');
 
 INSERT INTO juror_mod.user_roles (username, role)
-VALUES ('BUREAUGUY1', 'TEAM_LEADER'),
-       ('BUREAULADY9', 'TEAM_LEADER');
+VALUES ('BUREAUGUY1', 'MANAGER'),
+       ('BUREAULADY9', 'MANAGER');

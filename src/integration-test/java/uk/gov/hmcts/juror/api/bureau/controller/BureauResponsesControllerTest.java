@@ -24,10 +24,13 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseOverviewD
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
 import uk.gov.hmcts.juror.api.bureau.controller.response.JurorResponseSearchResults;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.juror.api.bureau.service.JurorResponseSearchServiceImplTest.assertResponsesSortedCorrectly;
@@ -353,12 +356,11 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void searchForResponses_teamLeaderHasHigherLimit() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("ksalazar")
-            .daysToExpire(89)
             .owner("400")
-            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().active(1).name("Kris Salazar").build())
             .build());
 
         final URI uri = URI.create("/api/v1/bureau/responses/search");
@@ -388,12 +390,11 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void autoAssign_post_happyPath() throws Exception {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("ksalazar")
-            .daysToExpire(89)
             .owner("400")
-            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -419,10 +420,9 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void autoAssign_post_alternatePath_insufficientCapacity() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("ksalazar")
-            .daysToExpire(89)
             .owner("400")
             .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
             .build());
@@ -450,12 +450,11 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void autoAssign_post_errorPath_staffMemberDoesNotExist() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("ksalazar")
-            .daysToExpire(89)
             .owner("400")
-            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -481,12 +480,11 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void autoAssign_post_errorPath_staffMemberIsTeamLeader() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("ksalazar")
-            .daysToExpire(89)
             .owner("400")
-            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -542,12 +540,11 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void autoAssign_post_errorPath_duplicateCapacityValue() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("ksalazar")
-            .daysToExpire(89)
             .owner("400")
-            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -578,12 +575,11 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void autoAssign_post_errorPath_bureauOfficerDoesNotExist() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("ksalazar")
-            .daysToExpire(89)
             .owner("400")
-            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -612,12 +608,11 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void autoAssign_post_errorPath_bureauOfficerInactive() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("ksalazar")
-            .daysToExpire(89)
             .owner("400")
-            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -646,12 +641,11 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void autoAssign_post_errorPath_capacityForTeamLeader() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("ksalazar")
-            .daysToExpire(89)
             .owner("400")
-            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Kris Salazar").build())
+            .staff(BureauJwtPayload.Staff.builder().active(1).name("Kris Salazar").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -677,12 +671,11 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         + "VALUES ('AUTO_ASSIGNMENT_DEFAULT_CAPACITY', '50');")
     public void autoAssign_get_happyPath() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("jbrown1")
-            .daysToExpire(89)
             .owner("400")
-            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Jared Brown").build())
+            .staff(BureauJwtPayload.Staff.builder().active(1).name("Jared Brown").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -720,12 +713,11 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void autoAssign_get_alternatePath_noSettingInDatabase() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
-            .passwordWarning(false)
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
             .login("jbrown1")
-            .daysToExpire(89)
             .owner("400")
-            .staff(BureauJwtPayload.Staff.builder().rank(1).active(1).name("Jared Brown").build())
+            .staff(BureauJwtPayload.Staff.builder().active(1).name("Jared Brown").build())
             .build());
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);

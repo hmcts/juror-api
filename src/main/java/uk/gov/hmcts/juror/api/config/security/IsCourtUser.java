@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@PreAuthorize(SecurityUtil.COURT_AUTH)
+@PreAuthorize(SecurityUtil.IS_COURT)
 public @interface IsCourtUser {
 }

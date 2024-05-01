@@ -8,16 +8,16 @@ delete from juror_mod.juror;
 delete from juror_mod.pool;
 delete from juror_mod.users;
 
-INSERT INTO juror_mod.users (username,email, name, active, team_id,version)
-VALUES ('bureauOfficer','bureauOfficer@email.gov.uk','Bureau Officer',true,1,0),
-       ('teamLeader','teamLeader@email.gov.uk','Team Leader',true,2,0);
+INSERT INTO juror_mod.users (username,email, name, active, team_id,version,user_type)
+VALUES ('bureauOfficer','bureauOfficer@email.gov.uk','Bureau Officer',true,1,0,'BUREAU'),
+       ('teamLeader','teamLeader@email.gov.uk','Team Leader',true,2,0,'BUREAU');
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('bureauOfficer', '400'),
        ('teamLeader', '400');
 
 INSERT INTO juror_mod.user_roles (username, role)
-VALUES ('teamLeader', 'TEAM_LEADER');
+VALUES ('teamLeader', 'MANAGER');
 
 
 insert into juror_mod.pool(pool_no, owner, return_date, date_created, total_no_required, loc_code)

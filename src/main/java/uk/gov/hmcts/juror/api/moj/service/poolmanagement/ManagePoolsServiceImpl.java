@@ -12,7 +12,6 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.AvailablePoolsInCourtLocationDto;
-import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -22,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -76,22 +76,16 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
 
         log.debug("Court location code {}: Find available pools for user {}", locCode, payload.getLogin());
 
+
+        LocalDate weekCommencing = DateUtils.getStartOfWeekFromDate(LocalDate.now().minusYears(1));
+        LocalDateTime courtCreatedWeekCommencing = LocalDateTime.now().minusDays(7);
+
         List<AvailablePoolsInCourtLocationDto.AvailablePoolsDto> availablePoolsDtos =
-            populateAvailablePoolsDto(locCode, owner);
-
-        List<String> poolNumbers = availablePoolsDtos.stream().map(pool -> pool.getPoolNumber()).toList();
-
-        List<PoolRequest> poolRequests = poolRequestRepository.findByOwnerAndPoolNumberIn(owner, poolNumbers);
-
-        List<String> courtOwnedPoolNumbers = poolRequests.stream()
-            .map(poolRequest -> poolRequest.getPoolNumber()).toList();
-
-        List<AvailablePoolsInCourtLocationDto.AvailablePoolsDto> availablePoolsDtosCourtOwned =
-            availablePoolsDtos.stream()
-                .filter(pool -> courtOwnedPoolNumbers.contains(pool.getPoolNumber())).toList();
+            mapAvailablePoolsToDto(poolRequestRepository.findActivePoolsForDateRangeWithCourtCreatedRestriction(
+                owner, locCode, weekCommencing,courtCreatedWeekCommencing), owner);
 
         AvailablePoolsInCourtLocationDto availablePools = new AvailablePoolsInCourtLocationDto();
-        availablePools.setAvailablePools(availablePoolsDtosCourtOwned);
+        availablePools.setAvailablePools(availablePoolsDtos);
 
         log.trace("Court location code {}: Exit method findAvailablePoolsCourtOwned", locCode);
         return availablePools;

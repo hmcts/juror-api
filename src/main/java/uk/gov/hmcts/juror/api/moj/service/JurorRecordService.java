@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsReque
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
@@ -25,7 +26,9 @@ import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 
@@ -92,4 +95,6 @@ public interface JurorRecordService {
     void confirmIdentity(ConfirmIdentityDto dto);
 
     void markResponded(String jurorNumber);
+
+    PaginatedList<FilterJurorRecord> searchForJurorRecords(JurorRecordFilterRequestQuery query);
 }

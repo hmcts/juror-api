@@ -274,10 +274,10 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             partialQuery.where(JUROR.jurorNumber.like(search.getJurorNumber() + "%"));
         }
         if (null != search.getFirstName()) {
-            partialQuery.where(JUROR.firstName.like(search.getFirstName().toUpperCase() + "%"));
+            partialQuery.where(JUROR.firstName.startsWithIgnoreCase(search.getFirstName()));
         }
         if (null != search.getLastName()) {
-            partialQuery.where(JUROR.lastName.like(search.getLastName().toUpperCase() + "%"));
+            partialQuery.where(JUROR.lastName.startsWithIgnoreCase(search.getLastName()));
         }
         if (null != search.getCheckedIn() && search.getCheckedIn()) {
             partialQuery.where(getCheckedInBoolean());

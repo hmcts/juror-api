@@ -78,6 +78,9 @@ public class BureauBacklogCountControllerTest extends AbstractIntegrationTest {
                 + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'Y' AND SUPER_URGENT='N' ",
             Integer.class)).isEqualTo(2);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
+                + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and (URGENT = 'Y' or SUPER_URGENT='Y') ",
+            Integer.class)).isEqualTo(3);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
                 + "PROCESSING_STATUS = 'TODO' and STAFF_LOGIN IS NULL and URGENT = 'N' and  SUPER_URGENT='Y' ",
             Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.JUROR_RESPONSE where "
@@ -93,9 +96,7 @@ public class BureauBacklogCountControllerTest extends AbstractIntegrationTest {
         assertThat(exchange).isNotNull();
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(exchange.getBody().getNonUrgent()).isEqualTo(4);
-        assertThat(exchange.getBody().getUrgent()).isEqualTo(2);
-        assertThat(exchange.getBody().getSuperUrgent()).isEqualTo(1);
-
+        assertThat(exchange.getBody().getUrgent()).isEqualTo(3);
     }
 
 

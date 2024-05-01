@@ -20,6 +20,8 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationDataDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtRates;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 
 import java.math.BigDecimal;
@@ -27,6 +29,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.GET;
@@ -159,8 +162,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
                                                                                String owner, HttpStatus httpStatus) {
         final URI uri =
             URI.create(String.format("/api/v1/moj/court-location/catchment-areas?postcode=%s", postcode));
-        httpHeaders = initialiseHeaders("1", false, userType, 89, owner);
-
+        httpHeaders = initialiseHeaders(userType, UserType.BUREAU, Set.of(Role.MANAGER), owner);
         RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, GET, uri);
         if (httpStatus.is2xxSuccessful()) {
             ResponseEntity<CourtLocationDataDto[]> response =
