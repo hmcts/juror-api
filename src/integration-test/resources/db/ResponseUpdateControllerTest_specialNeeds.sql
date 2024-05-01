@@ -17,9 +17,9 @@ INSERT INTO juror_mod.juror_reasonable_adjustment (juror_number,reasonable_adjus
                                                                                                                         ('352004504','V','Partial sight in one eye');
 
 -- staff
-INSERT INTO juror_mod.users (username,email, name, active,version,team_id)
-VALUES ('BUREAUGUY1','BUREAUGUY1@email.gov.uk','Bureau Guy',true,0,1),
-       ('BUREAULADY9','BUREAULADY9@email.gov.uk','Bureau Lady',false,0,1);
+INSERT INTO juror_mod.users (username,email, name, active,team_id)
+VALUES ('BUREAUGUY1','BUREAUGUY1@email.gov.uk','Bureau Guy',true,1),
+       ('BUREAULADY9','BUREAULADY9@email.gov.uk','Bureau Lady',false,1);
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('BUREAUGUY1', '448'),

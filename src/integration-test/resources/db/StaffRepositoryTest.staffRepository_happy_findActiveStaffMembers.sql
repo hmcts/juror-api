@@ -1,9 +1,9 @@
-INSERT INTO juror_mod.users (username,email, name, active, team_id,version)
-VALUES ('AACTIVE123','AACTIVE123@email.gov.uk','Andy Active', true, 1, 0),
-       ('AACTIVE5','AACTIVE5@email.gov.uk','Alison Active', true, 2, 0),
-       ('JINACTIVE1','JINACTIVE1@email.gov.uk','Joe Inactive', false, 3, 0),
-       ('MCBBOBBIE','MCBBOBBIE@email.gov.uk','Bobbie McActive', true, 1, 0),
-       ('ACTIVEX','ACTIVEX@email.gov.uk','Xavier Activez', true, 2, 0);
+INSERT INTO juror_mod.users (username,email, name, active, team_id)
+VALUES ('AACTIVE123','AACTIVE123@email.gov.uk','Andy Active', true, 1),
+       ('AACTIVE5','AACTIVE5@email.gov.uk','Alison Active', true, 2),
+       ('JINACTIVE1','JINACTIVE1@email.gov.uk','Joe Inactive', false, 3),
+       ('MCBBOBBIE','MCBBOBBIE@email.gov.uk','Bobbie McActive', true, 1),
+       ('ACTIVEX','ACTIVEX@email.gov.uk','Xavier Activez', true, 2);
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('AACTIVE123', '400'),

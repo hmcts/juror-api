@@ -66,32 +66,32 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         StaffDto.builder()
             .login("jpowers").name("Joanna Powers")
             .isActive(true).isTeamLeader(false)
-            .team(TEAM_1).version(0)
+            .team(TEAM_1)
             .build(),
         StaffDto.builder()
             .login("tsanchez").name("Todd Sanchez")
             .isActive(true).isTeamLeader(false)
-            .team(TEAM_2).version(0)
+            .team(TEAM_2)
             .build(),
         StaffDto.builder()
             .login("gbeck").name("Grant Beck")
             .isActive(true).isTeamLeader(false)
-            .team(TEAM_3).version(0)
+            .team(TEAM_3)
             .build(),
         StaffDto.builder()
             .login("rprice").name("Roxanne Price")
             .isActive(true).isTeamLeader(true)
-            .team(TEAM_1).version(0)
+            .team(TEAM_1)
             .build(),
         StaffDto.builder()
             .login("pbrewer").name("Preston Brewer")
             .isActive(true).isTeamLeader(true)
-            .team(TEAM_2).version(0)
+            .team(TEAM_2)
             .build(),
         StaffDto.builder()
             .login("acopeland").name("Amelia Copeland")
             .isActive(true).isTeamLeader(true)
-            .team(TEAM_3).version(0)
+            .team(TEAM_3)
             .build()
     );
 
@@ -100,19 +100,19 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
             .login("jphillips")
             .name("Joan Phillips")
             .isActive(false).isTeamLeader(false)
-            .team(TEAM_1).version(0)
+            .team(TEAM_1)
             .build(),
         StaffDto.builder()
             .login("srogers")
             .name("Shawn Rogers")
             .isActive(false).isTeamLeader(false)
-            .team(TEAM_2).version(0)
+            .team(TEAM_2)
             .build(),
         StaffDto.builder()
             .login("pbrooks")
             .name("Paul Brooks")
             .isActive(false).isTeamLeader(false)
-            .team(TEAM_3).version(0)
+            .team(TEAM_3)
             .build()
     );
 

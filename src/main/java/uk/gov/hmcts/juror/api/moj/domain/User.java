@@ -13,7 +13,6 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -65,9 +64,6 @@ public class User implements Serializable {
     @ManyToOne
     @Deprecated(forRemoval = true)//TODO confirm
     private Team team;
-
-    @Version
-    private Integer version;
 
     @Column(name = "approval_limit")
     private BigDecimal approvalLimit;

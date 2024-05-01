@@ -86,7 +86,6 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
             .team(toTeamDto(staffMember.getTeam()))
             .isActive(staffMember.isActive())
             .isTeamLeader(staffMember.isTeamLeader())
-            .version(staffMember.getVersion())
             .build();
     }
 

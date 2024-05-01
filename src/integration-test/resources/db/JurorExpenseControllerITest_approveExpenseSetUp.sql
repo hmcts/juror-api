@@ -4,11 +4,11 @@ SELECT setval('juror_mod.payment_data_invoice_number_seq', 1, true);
 INSERT INTO juror_mod.app_setting (setting, value)
 VALUES ('PAYMENT_AUTH_CODE', 'testValue');
 delete from juror_mod.users where users.username in ('COURT_USER', 'COURT_USER2');
-INSERT INTO juror_mod.users (username,email, name, active, team_id, version,
+INSERT INTO juror_mod.users (username,email, name, active, team_id,
                              approval_limit)
-VALUES ('COURT_USER','COURT_USER@email.gov.uk', 'Stephanie Mcintyre', true, 1, 1,  10000),
-       ('COURT_USER2','COURT_USER2@email.gov.uk', 'Stephanie Mcintyre', true, 1, 1,  100),
-       ('COURT_USER3','COURT_USER3@email.gov.uk', 'Stephanie Mcintyre', true, 1, 1,  100);
+VALUES ('COURT_USER','COURT_USER@email.gov.uk', 'Stephanie Mcintyre', true, 1,  10000),
+       ('COURT_USER2','COURT_USER2@email.gov.uk', 'Stephanie Mcintyre', true, 1,  100),
+       ('COURT_USER3','COURT_USER3@email.gov.uk', 'Stephanie Mcintyre', true, 1,  100);
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('COURT_USER', '415'), ('COURT_USER2', '415'), ('COURT_USER3', '415');
@@ -83,13 +83,13 @@ values ('415', '641500020', '415230101', 2, '415', true),
 
 
 
-INSERT INTO juror_mod.users (username,email, name, active, team_id, version)
-VALUES ('smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre', true, 1, 1),
-       ('sbell','sbell@email.gov.uk', 'Sandra Bell', true, 2, 1),
-       ('alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3, 1),
-       ('jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1, 1),
-       ('jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2, 1),
-       ('jbrown','jbrown@email.gov.uk', 'John Brown', true, 3, 1);
+INSERT INTO juror_mod.users (username,email, name, active, team_id)
+VALUES ('smcintyre','smcintyre@email.gov.uk', 'Stephanie Mcintyre', true, 1),
+       ('sbell','sbell@email.gov.uk', 'Sandra Bell', true, 2),
+       ('alineweaver','alineweaver@email.gov.uk', 'Albert Lineweaver', true, 3),
+       ('jbrown1','jbrown1@email.gov.uk', 'Jared Brown', true, 1),
+       ('jwilliams','jwilliams@email.gov.uk', 'Jeremy Williams', true, 2),
+       ('jbrown','jbrown@email.gov.uk', 'John Brown', true, 3);
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('smcintyre', '415'), ('sbell', '415'), ('alineweaver', '415'), ('jbrown1', '416'), ('jwilliams', '417'),

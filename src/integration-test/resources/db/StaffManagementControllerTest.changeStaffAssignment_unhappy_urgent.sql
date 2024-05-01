@@ -1,7 +1,7 @@
 --staff
-INSERT INTO juror_mod.users (username,email, name, active,team_id,version, user_type)
-VALUES ('jmcbob','jmcbob@email.gov.uk','Joe McBob',true,1,0,'BUREAU'),
-       ('smcbob','smcbob@email.gov.uk','Sarah McBob',true,2,0,'BUREAU');
+INSERT INTO juror_mod.users (username,email, name, active,team_id, user_type)
+VALUES ('jmcbob','jmcbob@email.gov.uk','Joe McBob',true,1,'BUREAU'),
+       ('smcbob','smcbob@email.gov.uk','Sarah McBob',true,2,'BUREAU');
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('jmcbob', '400'),

@@ -1,7 +1,7 @@
 
 
-INSERT INTO juror_mod.users(username,email, name, active, last_logged_in, version, team_id)
-VALUES ('ksalazar','ksalazar@email.gov.uk', 'Kris Salazar', true, CURRENT_DATE-3, 0, 1);
+INSERT INTO juror_mod.users(username,email, name, active, last_logged_in, team_id)
+VALUES ('ksalazar','ksalazar@email.gov.uk', 'Kris Salazar', true, CURRENT_DATE-3, 1);
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('ksalazar', '400');
