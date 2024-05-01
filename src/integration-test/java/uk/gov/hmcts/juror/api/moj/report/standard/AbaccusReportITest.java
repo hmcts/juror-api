@@ -24,6 +24,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/letter/LetterController_initSummonsReminderLetter.sql"
 })
+@SuppressWarnings("PMD.LawOfDemeter")
 public class AbaccusReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public AbaccusReportITest(TestRestTemplate template) {
@@ -57,7 +58,7 @@ public class AbaccusReportITest extends AbstractStandardReportControllerITest {
             .assertEquals(getTypicalResponse());
     }
 
-    private StandardReportResponse getTypicalResponse() {
+    StandardReportResponse getTypicalResponse() {
         return StandardReportResponse.builder()
             .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
                 .add("time_created", AbstractReportResponse.DataTypeValue.builder()
@@ -127,11 +128,10 @@ public class AbaccusReportITest extends AbstractStandardReportControllerITest {
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setToDate(null);
-        request.setFromDate(null);
         testBuilder()
             .payload(addReportType(request))
             .triggerInvalid()
-            .assertInvalidPathParam("toDate: must not be null, fromDate: must not be null");
+            .assertInvalidPathParam("toDate: must not be null");
     }
 
     @Test

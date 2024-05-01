@@ -55,7 +55,7 @@ public class AbaccusReport extends AbstractStandardReport {
 
     @Override
     public Map<String, DataTypeValue> getHeadings(StandardReportRequest request,
-                                                  AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
+                                  AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
         Map<String, DataTypeValue> map = new ConcurrentHashMap<>();
         map.put("date_from", DataTypeValue.builder()
             .displayName("Date from")
