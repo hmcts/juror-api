@@ -49,7 +49,10 @@ import static org.springframework.http.HttpMethod.POST;
 @Sql(value = {"/db/administration/teardownUsers.sql",
     "/db/administration/createUsers.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "/db/administration/teardownUsers.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+@SuppressWarnings({
+    "PMD.JUnitTestsShouldIncludeAssert",
+    "PMD.JUnitAssertionsShouldIncludeMessage"//False positive
+})
 public class AuthenticationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/auth/moj";
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
