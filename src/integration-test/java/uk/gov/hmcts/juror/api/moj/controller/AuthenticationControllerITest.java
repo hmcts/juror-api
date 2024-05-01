@@ -49,7 +49,10 @@ import static org.springframework.http.HttpMethod.POST;
 @Sql(value = {"/db/administration/teardownUsers.sql",
     "/db/administration/createUsers.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "/db/administration/teardownUsers.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+@SuppressWarnings({
+    "PMD.JUnitTestsShouldIncludeAssert",
+    "PMD.JUnitAssertionsShouldIncludeMessage"//False positive
+})
 public class AuthenticationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/auth/moj";
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
@@ -226,6 +229,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
 
                 assertThat(claims)
                     .containsEntry("owner", expectedJwtClaims.getOwner())
+                    .containsEntry("email", expectedJwtClaims.getEmail())
                     .containsEntry("locCode", expectedJwtClaims.getLocCode())
                     .containsEntry("login", expectedJwtClaims.getLogin())
                     .containsEntry("userLevel", expectedJwtClaims.getUserLevel())
@@ -239,7 +243,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                         "courts", expectedJwtClaims.getStaff().getCourts()
                     ));
 
-                assertThat(claims).hasSize(13)
+                assertThat(claims).hasSize(14)
                     .containsEntry("roles", expectedJwtClaims.getRoles()
                         .stream().map(Enum::name).toList());
             }
@@ -255,6 +259,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                         "test_court_primary",
                         BureauJwtPayload.builder()
                             .owner("408")
+                            .email("test_court_primary" + EMAIL_SUFFIX)
                             .locCode("408")
                             .login("test_court_primary")
                             .userLevel("1")
@@ -282,6 +287,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                         BureauJwtPayload.builder()
                             .owner("415")
                             .locCode("462")
+                            .email("test_court_standard" + EMAIL_SUFFIX)
                             .login("test_court_standard")
                             .userLevel("1")
                             .userType(UserType.COURT)
@@ -308,6 +314,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                         BureauJwtPayload.builder()
                             .owner("415")
                             .locCode("767")
+                            .email("test_admin_standard" + EMAIL_SUFFIX)
                             .login("test_admin_standard")
                             .userLevel("0")
                             .userType(UserType.ADMINISTRATOR)
@@ -332,6 +339,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                         "test_bureau_standard",
                         BureauJwtPayload.builder()
                             .owner("400")
+                            .email("test_bureau_standard" + EMAIL_SUFFIX)
                             .locCode("400")
                             .login("test_bureau_standard")
                             .userLevel("0")
@@ -358,6 +366,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                         BureauJwtPayload.builder()
                             .owner("400")
                             .locCode("400")
+                            .email("test_admin_standard" + EMAIL_SUFFIX)
                             .login("test_admin_standard")
                             .userLevel("0")
                             .userType(UserType.ADMINISTRATOR)
@@ -383,6 +392,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
                         BureauJwtPayload.builder()
                             .owner("415")
                             .locCode("415")
+                            .email("test_court_sjo_mangr" + EMAIL_SUFFIX)
                             .login("test_court_sjo_mangr")
                             .userLevel("9")
                             .userType(UserType.COURT)
