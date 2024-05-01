@@ -11,9 +11,7 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 
-import java.time.Clock;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,10 +24,8 @@ import static uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractRep
 @SuppressWarnings("PMD.LawOfDemeter")
 public class AbaccusReport extends AbstractStandardReport {
 
-    private final Clock clock;
-
     @Autowired
-    public AbaccusReport(Clock clock) {
+    public AbaccusReport() {
         super(
             null,
             QBulkPrintData.bulkPrintData,
@@ -37,7 +33,6 @@ public class AbaccusReport extends AbstractStandardReport {
             DataType.TOTAL_SENT_FOR_PRINTING,
             DataType.DATE_SENT);
 
-        this.clock = clock;
         isBureauUserOnly();
     }
 
@@ -67,11 +62,6 @@ public class AbaccusReport extends AbstractStandardReport {
             .displayName("Date to")
             .dataType(LocalDate.class.getSimpleName())
             .value(DateTimeFormatter.ISO_DATE.format(request.getToDate()))
-            .build());
-        map.put("time_created", DataTypeValue.builder()
-            .displayName("Time created")
-            .dataType(LocalTime.class.getSimpleName())
-            .value(LocalTime.now(clock).format(DateTimeFormatter.ISO_LOCAL_TIME))
             .build());
         return map;
     }

@@ -11,9 +11,7 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
-import java.time.Clock;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,9 +34,6 @@ public class AbaccusReportITest extends AbstractStandardReportControllerITest {
         return getBureauJwt();
     }
 
-    @Autowired
-    private Clock clock;
-
 
     @Override
     protected StandardReportRequest getValidPayload() {
@@ -52,7 +47,6 @@ public class AbaccusReportITest extends AbstractStandardReportControllerITest {
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalBureau() {
         testBuilder()
-            .jwt(getBureauJwt())
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
@@ -61,11 +55,6 @@ public class AbaccusReportITest extends AbstractStandardReportControllerITest {
     StandardReportResponse getTypicalResponse() {
         return StandardReportResponse.builder()
             .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
-                .add("time_created", AbstractReportResponse.DataTypeValue.builder()
-                    .displayName("Time created")
-                    .dataType(LocalTime.class.getSimpleName())
-                    .value(LocalTime.now(clock).format(DateTimeFormatter.ISO_LOCAL_TIME))
-                    .build())
                 .add("date_to", AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Date to")
                     .dataType(LocalDate.class.getSimpleName())

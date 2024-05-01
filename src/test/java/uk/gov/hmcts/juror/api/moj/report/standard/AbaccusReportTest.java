@@ -11,11 +11,7 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
@@ -25,16 +21,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("PMD.LawOfDemeter")
 public class AbaccusReportTest extends AbstractStandardReportTestSupport<AbaccusReport> {
-
-    private final Clock clock;
-
 
     public AbaccusReportTest() {
         super(
@@ -44,19 +36,11 @@ public class AbaccusReportTest extends AbstractStandardReportTestSupport<Abaccus
             DataType.TOTAL_SENT_FOR_PRINTING,
             DataType.DATE_SENT);
         setHasPoolRepository(false);
-        String instantExpected = "2024-04-30T12:00:01Z";
-        Instant instant = Instant.parse(instantExpected);
-
-        this.clock = mock(Clock.class);
-        when(clock.instant()).thenReturn(instant);
-        when(clock.getZone()).thenReturn(ZoneId.systemDefault());
-
-
     }
 
     @Override
     public AbaccusReport createReport(PoolRequestRepository poolRequestRepository) {
-        return new AbaccusReport(this.clock);
+        return new AbaccusReport();
     }
 
     @Override
@@ -70,8 +54,8 @@ public class AbaccusReportTest extends AbstractStandardReportTestSupport<Abaccus
 
     @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
-        LocalDate fromDate = LocalDate.now(clock).minus(7, ChronoUnit.DAYS);
-        LocalDate toDate = LocalDate.now(clock);
+        LocalDate fromDate = LocalDate.now().minus(7, ChronoUnit.DAYS);
+        LocalDate toDate = LocalDate.now();
 
         request.setFromDate(fromDate);
         request.setToDate(toDate);
@@ -94,12 +78,12 @@ public class AbaccusReportTest extends AbstractStandardReportTestSupport<Abaccus
 
     @Override
     public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(StandardReportRequest request,
-                                        AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
-                                        List<LinkedHashMap<String,
-                                            Object>> data) {
+                                    AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
+                                    List<LinkedHashMap<String,
+                                        Object>> data) {
 
-        LocalDate fromDate = LocalDate.now(clock).minus(7, ChronoUnit.DAYS);
-        LocalDate toDate = LocalDate.now(clock);
+        LocalDate fromDate = LocalDate.now().minus(7, ChronoUnit.DAYS);
+        LocalDate toDate = LocalDate.now();
 
         when(request.getFromDate()).thenReturn(fromDate);
         when(request.getToDate()).thenReturn(toDate);
@@ -114,11 +98,6 @@ public class AbaccusReportTest extends AbstractStandardReportTestSupport<Abaccus
             .displayName("Date to")
             .dataType(LocalDate.class.getSimpleName())
             .value(DateTimeFormatter.ISO_DATE.format(request.getToDate()))
-            .build());
-        expected.put("time_created", AbstractReportResponse.DataTypeValue.builder()
-            .displayName("Time created")
-            .dataType(LocalTime.class.getSimpleName())
-            .value(DateTimeFormatter.ISO_LOCAL_TIME.format(LocalTime.now(clock)))
             .build());
 
         Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);
