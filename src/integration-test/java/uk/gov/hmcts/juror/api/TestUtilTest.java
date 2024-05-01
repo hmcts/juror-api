@@ -73,7 +73,8 @@ public class TestUtilTest {
 
     @Test
     public void testMintBureauJwt() throws Exception {
-        BureauJwtPayload jwtPayload = new BureauJwtPayload(TEST_BUREAU_OWNER, TEST_BUREAU_LOGIN, TEST_BUREAU_USER_LEVEL, null);
+        BureauJwtPayload jwtPayload = new BureauJwtPayload(TEST_BUREAU_OWNER, TEST_BUREAU_LOGIN,
+            TEST_BUREAU_USER_LEVEL, null);
 
         // encode a token
         final String jwt = TestUtil.mintBureauJwt(jwtPayload, SignatureAlgorithm.HS256, SECRET_KEY_BUREAU,
