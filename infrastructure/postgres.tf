@@ -44,6 +44,24 @@ module "postgresql_flexible" {
   pgsql_version = "16"
 }
 
+data "azurerm_client_config" "current" {}
+
+data "azuread_group" "db_admin" {
+  display_name     = "DTS Juror Admin (env:${var.env == "prod" ? "production" : var.env == "stg" ? "staging" : var.env})"
+  security_enabled = true
+}
+
+resource "azurerm_postgresql_flexible_server_active_directory_administrator" "db_admin" {
+  server_name         = "juror-api-${var.env}"
+  resource_group_name = local.rg_name
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+  object_id           = data.azuread_group.db_admin.object_id
+  principal_name      = data.azuread_group.db_admin.display_name
+  principal_type      = "Group"
+
+  depends_on = [module.postgresql_flexible]
+}
+
 data "azurerm_key_vault" "key_vault" {
   name                = local.vault_name
   resource_group_name = local.rg_name
