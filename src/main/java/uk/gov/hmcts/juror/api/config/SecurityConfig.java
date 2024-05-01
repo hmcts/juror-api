@@ -6,6 +6,7 @@ import org.springframework.boot.web.servlet.error.DefaultErrorAttributes;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.juror.api.config.public1.PublicJwtAuthenticationProvider;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
+@EnableJpaAuditing
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class SecurityConfig {
     private final PublicJwtAuthenticationProvider publicJwtAuthenticationProvider;

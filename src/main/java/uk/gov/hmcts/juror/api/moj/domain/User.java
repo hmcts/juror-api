@@ -5,6 +5,7 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
@@ -21,6 +22,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import uk.gov.hmcts.juror.api.bureau.domain.Team;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 
@@ -31,10 +37,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "users", schema = "juror_mod")
 @Data
 @Builder
 @AllArgsConstructor
+@Audited
 @EqualsAndHashCode(exclude = {"team", "courts"})
 public class User implements Serializable {
 
@@ -63,13 +71,16 @@ public class User implements Serializable {
     @Builder.Default
     private boolean active = true;
 
+    @NotAudited
     @JsonProperty("last_logged_in")
     private LocalDateTime lastLoggedIn;
 
+    @NotAudited
     @ManyToOne
     @Deprecated(forRemoval = true)//TODO confirm
     private Team team;
 
+    @NotAudited
     @Version
     private Integer version;
 
@@ -95,6 +106,15 @@ public class User implements Serializable {
     )
     @ManyToMany
     private Set<CourtLocation> courts;
+
+    @Column(name = "created_by")
+    @CreatedBy
+    @NotEmpty
+    private String createdBy;
+
+    @Column(name = "updated_by")
+    @LastModifiedBy
+    private String updatedBy;
 
 
     public User() {
