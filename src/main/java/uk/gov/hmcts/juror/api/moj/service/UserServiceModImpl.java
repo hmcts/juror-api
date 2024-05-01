@@ -117,31 +117,25 @@ public class UserServiceModImpl implements UserService {
             throw new MojException.Forbidden("User must be an admin", null);
         }
 
+        final UserType activeUserType;
         if (UserType.ADMINISTRATOR.equals(user.getUserType())) {
             if ("ADMIN".equals(locCode)) {
-                return new JwtDto(
-                    jwtService.generateBureauJwtToken(
-                        user.getUsername(),
-                        new BureauJwtPayload(user, UserType.ADMINISTRATOR, locCode, List.of())
-                    ));
+                activeUserType = UserType.ADMINISTRATOR;
+                locCode = "400";
+            } else {
+                activeUserType = (SecurityUtil.BUREAU_OWNER.equals(locCode) ? UserType.BUREAU : UserType.COURT);
             }
-            return new JwtDto(
-                jwtService.generateBureauJwtToken(
-                    user.getUsername(),
-                    new BureauJwtPayload(user,
-                        (SecurityUtil.BUREAU_OWNER.equals(locCode) ? UserType.BUREAU : UserType.COURT),
-                         locCode, List.of())
-                ));
+        } else {
+            activeUserType = user.getUserType();
         }
-
 
         CourtLocation loggedInCourt = getCourtLocation(locCode);
         List<CourtLocation> courtLocations = getCourtsByOwner(loggedInCourt.getOwner());
-        if (user.hasCourtByOwner(loggedInCourt.getOwner())) {
+        if (UserType.ADMINISTRATOR.equals(user.getUserType()) || user.hasCourtByOwner(loggedInCourt.getOwner())) {
             return new JwtDto(
                 jwtService.generateBureauJwtToken(
                     user.getUsername(),
-                    new BureauJwtPayload(user, locCode, courtLocations)
+                    new BureauJwtPayload(user, activeUserType, locCode, courtLocations)
                 ));
         }
         throw new MojException.Forbidden("User not part of court", null);

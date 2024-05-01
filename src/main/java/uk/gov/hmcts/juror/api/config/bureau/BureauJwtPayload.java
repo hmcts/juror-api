@@ -39,10 +39,6 @@ public class BureauJwtPayload {
     private String login;
     @Deprecated(forRemoval = true)
     private String userLevel;
-    @Deprecated(forRemoval = true)
-    private Boolean passwordWarning;
-    @Deprecated(forRemoval = true)
-    private Integer daysToExpire;
     private Staff staff;
     private UserType userType;
     private UserType activeUserType;
@@ -61,8 +57,6 @@ public class BureauJwtPayload {
         this.email = user.getEmail();
         this.login = user.getUsername();
         this.userLevel = String.valueOf(user.getLevel());
-        this.passwordWarning = false;
-        this.daysToExpire = 999;
         this.userType = user.getUserType();
         this.activeUserType = activeType;
 
@@ -90,9 +84,9 @@ public class BureauJwtPayload {
     }
 
 
-    public BureauJwtPayload(String owner, String login, String userLevel, Boolean passwordWarning, Integer daysToExpire,
+    public BureauJwtPayload(String owner, String login, String userLevel,
                             Staff staff) {
-        this(null, owner, null, login, userLevel, passwordWarning, daysToExpire, staff, null, null, null);
+        this(null, owner, null, login, userLevel, staff, null, null, null);
     }
 
     public List<GrantedAuthority> getGrantedAuthority() {
@@ -113,8 +107,6 @@ public class BureauJwtPayload {
         data.put("email", email);
         data.put("login", login);
         data.put("userLevel", userLevel);
-        data.put("passwordWarning", passwordWarning);
-        data.put("daysToExpire", daysToExpire);
         data.put("staff", staff.toClaims());
         data.put("roles", roles);
         data.put("userType", userType);
@@ -147,12 +139,10 @@ public class BureauJwtPayload {
             : null;
 
         return BureauJwtPayload.builder()
-            .daysToExpire(claims.get("daysToExpire", Integer.class))
             .login(claims.get("login", String.class))
             .email(claims.get("email", String.class))
             .owner(claims.get("owner", String.class))
             .locCode(claims.get("locCode", String.class))
-            .passwordWarning(claims.get("passwordWarning", Boolean.class))
             .userLevel(claims.get("userLevel", String.class))
             .activeUserType(activeUserType)
             .staff(staff)

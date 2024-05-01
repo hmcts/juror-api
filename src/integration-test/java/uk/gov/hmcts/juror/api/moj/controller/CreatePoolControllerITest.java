@@ -99,7 +99,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .userLevel("1")
             .login("rprice")
             .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -188,7 +187,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .userLevel("1")
             .login("rprice")
             .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -477,7 +475,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .userLevel("1")
             .login("BUREAU_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -545,7 +542,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("415")
             .build());
 
@@ -569,7 +565,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("415")
             .build());
 
@@ -596,7 +591,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("415")
             .build());
 
@@ -618,7 +612,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("415")
             .build());
 
@@ -639,7 +632,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("415")
             .build());
 
@@ -662,7 +654,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("414")
             .build());
 
@@ -684,7 +675,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .userLevel("1")
             .login("BUREAU_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -724,7 +714,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .userLevel("1")
             .login("BUREAU_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -764,7 +753,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("415")
             .build());
 
@@ -802,7 +790,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("415")
             .build());
 
@@ -831,7 +818,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User")
                 .active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("415")
             .build());
 
@@ -861,7 +847,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User")
                 .active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("415")
             .build());
 
@@ -894,7 +879,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User")
                 .active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("415")
             .build());
 
@@ -926,7 +910,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User")
                 .active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("415")
             .build());
 
@@ -959,7 +942,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User")
                 .active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("415")
             .build());
 
@@ -990,7 +972,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
-            .daysToExpire(89)
             .owner("415")
             .build());
 

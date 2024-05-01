@@ -55,8 +55,6 @@ public final class TestUtils {
             .login(username)
             .staff(staffBuilder(username, Integer.valueOf(userLevel), List.of("415", "400")))
             .userLevel(userLevel)
-            .daysToExpire(89)
-            .passwordWarning(false)
             .build();
     }
 
@@ -76,8 +74,6 @@ public final class TestUtils {
             .login(username)
             .staff(staffBuilder(username, Integer.valueOf(userLevel), courts))
             .userLevel(userLevel)
-            .daysToExpire(89)
-            .passwordWarning(false)
             .build();
     }
 

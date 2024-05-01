@@ -174,7 +174,6 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
                 .active(1)
                 .rank(rank)
                 .build())
-            .daysToExpire(89)
             .owner(owner)
             .build());
     }

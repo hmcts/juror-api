@@ -91,10 +91,8 @@ public final class TestUtil {
         final Map<String, Object> claimsMap = new HashMap<>();
         claimsMap.put(Claims.EXPIRATION, Date.from(expires));
         claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
-        claimsMap.put("daysToExpire", payload.getDaysToExpire());
         claimsMap.put("login", payload.getLogin());
         claimsMap.put("owner", payload.getOwner());
-        claimsMap.put("passwordWarning", payload.getPasswordWarning());
         claimsMap.put("userLevel", payload.getUserLevel());
         claimsMap.put("staff", payload.getStaff());
 
