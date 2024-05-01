@@ -17,9 +17,9 @@ public final class SecurityUtil {
 
     public static final String IS_MANAGER = "hasRole('ROLE_MANAGER')";
     public static final String IS_SJO = "hasRole('ROLE_SENIOR_JUROR_OFFICER')";
-    public static final String IS_BUREAU = "principal.userType.name() == 'BUREAU'";
-    public static final String IS_COURT = "principal.userType.name() == 'COURT'";
-    public static final String IS_ADMINISTRATOR = "principal.userType.name() == 'ADMINISTRATOR'";
+    public static final String IS_BUREAU = "principal.activeUserType.name() == 'BUREAU'";
+    public static final String IS_COURT = "principal.activeUserType.name() == 'COURT'";
+    public static final String IS_ADMINISTRATOR = "principal.activeUserType.name() == 'ADMINISTRATOR'";
 
     public static final String IS_BUREAU_MANAGER = IS_BUREAU + " && " + IS_MANAGER;
     public static final String IS_COURT_MANAGER = IS_COURT + " && " + IS_MANAGER;
