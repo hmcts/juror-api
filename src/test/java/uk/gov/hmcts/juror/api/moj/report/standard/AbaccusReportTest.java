@@ -81,13 +81,15 @@ public class AbaccusReportTest extends AbstractStandardReportTestSupport<Abaccus
 
         verify(query).where(QBulkPrintData.bulkPrintData.creationDate.between(request.getFromDate(),
             request.getToDate()));
-
-        verify(query).orderBy(QBulkPrintData.bulkPrintData.formAttribute.formType.asc());
+        verify(query).groupBy(QBulkPrintData.bulkPrintData.formAttribute.formType,
+            QBulkPrintData.bulkPrintData.creationDate);
 
         verify(report, times(1)).addGroupBy(query,
             DataType.DOCUMENT_CODE,
             DataType.DATE_SENT
         );
+
+        verify(query).orderBy(QBulkPrintData.bulkPrintData.formAttribute.formType.asc());
     }
 
     @Override
