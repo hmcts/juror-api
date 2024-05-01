@@ -20,7 +20,8 @@ VALUES ('641600091', 'MR','LNAMEFIVEFOURZERO','FNAMEFIVEFOURZERO', '1989-03-31',
 ('641500100', 'MR','Lnamenineten','Fnamenineten', '1988-01-01', '543 STREET NAME', 'ANYTOWN', 'CH1 2AN', true);
 
 INSERT INTO juror_mod.juror_pool (owner, juror_number, pool_number, is_active, status)
-VALUES ('400', '641600091', '416220902', true, 2),
+VALUES ('400', '641600091', '416220901', false, 7),
+('400', '641600091', '416220902', true, 2),
 ('416', '641600090', '416220901', true, 2),
 ('415', '641500091', '415220901', true, 2),
 ('415', '641500092', '415220901', true, 2),
