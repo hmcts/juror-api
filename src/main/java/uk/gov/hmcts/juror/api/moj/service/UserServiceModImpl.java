@@ -85,7 +85,19 @@ public class UserServiceModImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<CourtDto> getCourts(String email) {
-        return findUserByEmail(email).getCourts()
+        User user = findUserByEmail(email);
+
+        if (UserType.ADMINISTRATOR.equals(user.getUserType())) {
+            return List.of(
+                CourtDto.builder()
+                    .name("ADMIN")
+                    .locCode("ADMIN")
+                    .courtType(null)
+                    .build()
+            );
+        }
+
+        return user.getCourts()
             .stream()
             .map(courtLocation -> getCourtsByOwner(courtLocation.getOwner()))
             .flatMap(Collection::stream)
@@ -101,10 +113,31 @@ public class UserServiceModImpl implements UserService {
         if (!user.isActive()) {
             throw new MojException.Forbidden("User is not active", null);
         }
+        if ("ADMIN".equals(locCode) && !UserType.ADMINISTRATOR.equals(user.getUserType())) {
+            throw new MojException.Forbidden("User must be an admin", null);
+        }
+
+        if (UserType.ADMINISTRATOR.equals(user.getUserType())) {
+            if ("ADMIN".equals(locCode)) {
+                return new JwtDto(
+                    jwtService.generateBureauJwtToken(
+                        user.getUsername(),
+                        new BureauJwtPayload(user, UserType.ADMINISTRATOR, locCode, List.of())
+                    ));
+            }
+            return new JwtDto(
+                jwtService.generateBureauJwtToken(
+                    user.getUsername(),
+                    new BureauJwtPayload(user,
+                        (SecurityUtil.BUREAU_OWNER.equals(locCode) ? UserType.BUREAU : UserType.COURT),
+                         locCode, List.of())
+                ));
+        }
+
 
         CourtLocation loggedInCourt = getCourtLocation(locCode);
         List<CourtLocation> courtLocations = getCourtsByOwner(loggedInCourt.getOwner());
-        if (UserType.ADMINISTRATOR.equals(user.getUserType()) || user.hasCourtByOwner(loggedInCourt.getOwner())) {
+        if (user.hasCourtByOwner(loggedInCourt.getOwner())) {
             return new JwtDto(
                 jwtService.generateBureauJwtToken(
                     user.getUsername(),
