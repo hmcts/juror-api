@@ -27,7 +27,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
-import uk.gov.hmcts.juror.api.bureau.service.BureauAuthenticationService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -45,7 +44,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class BureauStaffController {
 
-    private final BureauAuthenticationService bureauAuthService;
     private final UserService userService;
 
 

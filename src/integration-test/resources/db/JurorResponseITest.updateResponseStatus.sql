@@ -38,7 +38,7 @@ insert into juror_mod.juror_reasonable_adjustment (juror_number, reasonable_adju
 INSERT INTO juror_mod.users (username,email, name, active,last_logged_in,team_id,version, user_type)
 VALUES ('testlogin','testlogin@email.gov.uk','Test Login',true,CURRENT_DATE - 3,1,0, 'BUREAU');
 INSERT INTO juror_mod.user_roles (username, role)
-VALUES ('testlogin', 'TEAM_LEADER');
+VALUES ('testlogin', 'MANAGER');
 
 insert into juror_mod.user_courts (username, loc_code)
 values ('testlogin', '400');
