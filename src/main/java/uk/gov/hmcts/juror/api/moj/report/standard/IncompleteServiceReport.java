@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.report.standard;
 
+import com.querydsl.core.JoinType;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,10 +40,12 @@ public class IncompleteServiceReport extends AbstractStandardReport {
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
             DataType.POOL_NUMBER_BY_JP,
-            DataType.NEXT_ATTENDANCE_DATE);
+            DataType.NEXT_ATTENDANCE_DATE,
+            DataType.LAST_ATTENDANCE_DATE);
         this.courtLocationRepository = courtLocationRepository;
         isCourtUserOnly();
         addAuthenticationConsumer(request -> checkOwnership(request.getLocCode(), false));
+        addJoinOverride(QJuror.juror, JoinType.LEFTJOIN, QAppearance.appearance);
     }
 
 
@@ -53,13 +56,20 @@ public class IncompleteServiceReport extends AbstractStandardReport {
             .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(request.getLocCode()))
             .where(QJurorPool.jurorPool.status.status.in(List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL,
                 IJurorStatus.JUROR)))
-            .where(QAppearance.appearance.attendanceType.notIn(AttendanceType.ABSENT, AttendanceType.EXCUSED))
+            .where(
+                QAppearance.appearance.attendanceType.isNull()
+                    .or(QAppearance.appearance.attendanceType.notIn(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE,
+                        AttendanceType.NON_ATTENDANCE_LONG_TRIAL))
+            )
             .orderBy(QJuror.juror.jurorNumber.asc());
+
+        addGroupBy(query, DataType.JUROR_NUMBER, DataType.FIRST_NAME, DataType.LAST_NAME, DataType.POOL_NUMBER_BY_JP,
+            DataType.NEXT_ATTENDANCE_DATE);
     }
 
     @Override
     public Map<String, StandardReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-        StandardReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
+                                                                         StandardReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
 
         Map<String, StandardReportResponse.DataTypeValue> map = new HashMap<>();
         map.put("total_incomplete_service", StandardReportResponse.DataTypeValue.builder()

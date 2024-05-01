@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.report;
 
+import com.querydsl.core.JoinType;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
@@ -33,6 +34,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +52,7 @@ import java.util.stream.Collectors;
 })
 public abstract class AbstractReport<T> {
     static final Map<EntityPath<?>, Map<EntityPath<?>, Predicate[]>> CLASS_TO_JOIN;
+
 
     static {
         CLASS_TO_JOIN = new ConcurrentHashMap<>();
@@ -87,10 +90,11 @@ public abstract class AbstractReport<T> {
     final Set<EntityPath<?>> requiredTables;
     final List<IDataType> effectiveDataTypes;
     final EntityPath<?> from;
+    final Map<EntityPath<?>, Map<EntityPath<?>, JoinType>> classToJoinOverrides = new HashMap<>();
 
     final List<Consumer<StandardReportRequest>> authenticationConsumers;
 
-    public AbstractReport(EntityPath<?> from,  IDataType... dataType) {
+    public AbstractReport(EntityPath<?> from, IDataType... dataType) {
         this(null, from, dataType);
     }
 
@@ -108,6 +112,13 @@ public abstract class AbstractReport<T> {
             .flatMap(List::stream)
             .collect(Collectors.toSet());
         this.authenticationConsumers = new ArrayList<>();
+    }
+
+    public void addJoinOverride(EntityPath<?> from, JoinType joinType, EntityPath<?> to) {
+        if (!classToJoinOverrides.containsKey(from)) {
+            classToJoinOverrides.put(from, new HashMap<>());
+        }
+        classToJoinOverrides.get(from).put(to, joinType);
     }
 
     public void addAuthenticationConsumer(Consumer<StandardReportRequest> consumer) {
@@ -241,9 +252,32 @@ public abstract class AbstractReport<T> {
                 throw new MojException.InternalServerError("No join found for " + requiredTable, null);
             }
             Map<EntityPath<?>, Predicate[]> joinOptions = CLASS_TO_JOIN.get(requiredTable);
+            System.out.println("TMP1: " + requiredTable);
+            System.out.println("TMP2: " + from);
 
             if (joinOptions.containsKey(from)) {
-                query.join(requiredTable).on(joinOptions.get(from));
+                JoinType joinType = JoinType.DEFAULT;
+                if (classToJoinOverrides.containsKey(from) && classToJoinOverrides.get(from)
+                    .containsKey(requiredTable)) {
+                    joinType = classToJoinOverrides.get(from).get(requiredTable);
+                }
+                switch (joinType) {
+                    case DEFAULT:
+                    case FULLJOIN:
+                        query.join(requiredTable).on(joinOptions.get(from));
+                        break;
+                    case LEFTJOIN:
+                        query.leftJoin(requiredTable).on(joinOptions.get(from));
+                        break;
+                    case RIGHTJOIN:
+                        query.rightJoin(requiredTable).on(joinOptions.get(from));
+                        break;
+                    case INNERJOIN:
+                        query.innerJoin(requiredTable).on(joinOptions.get(from));
+                        break;
+                    default:
+                        throw new MojException.InternalServerError("Join type not supported: " + joinType, null);
+                }
             } else {
                 throw new MojException.InternalServerError(
                     "Not Implemented yet: " + requiredTable.getClass() + " from " + from.getClass(), null);
