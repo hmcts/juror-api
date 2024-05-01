@@ -65,7 +65,8 @@ public class JurorRepositoryImpl implements IJurorRepository {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
         JPAQuery<?> partialQuery = queryFactory.from(JUROR)
-            .join(JUROR_POOL).on(JUROR_POOL.juror.eq(JUROR));
+            .join(JUROR_POOL).on(JUROR_POOL.juror.eq(JUROR))
+            .where(JUROR_POOL.isActive.eq(true));
 
         if (!SecurityUtil.isBureau()) {
             // If the user is not a Bureau user, filter by the courts they have access to
