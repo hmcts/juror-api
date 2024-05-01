@@ -60,7 +60,6 @@ public class BureauJwtPayload {
         this.userType = user.getUserType();
         this.activeUserType = activeType;
 
-
         if (UserType.ADMINISTRATOR.equals(user.getUserType())) {
             this.roles = List.of(Role.values());
         } else {
