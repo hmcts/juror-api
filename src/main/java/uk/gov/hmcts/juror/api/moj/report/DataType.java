@@ -15,6 +15,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 
+import static com.querydsl.jpa.JPAExpressions.max;
+
 @Getter
 @SuppressWarnings("PMD.ArrayIsStoredDirectly")
 public enum DataType implements IDataType {
@@ -68,7 +70,9 @@ public enum DataType implements IDataType {
     POOL_NUMBER("Pool Number", String.class, QPoolRequest.poolRequest.poolNumber, QPoolRequest.poolRequest),
     POOL_NUMBER_BY_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.poolNumber,
         QJurorPool.jurorPool),
-    NEXT_ATTENDANCE_DATE("Next attendance date", LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool);
+    NEXT_ATTENDANCE_DATE("Next attendance date", LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool),
+    LAST_ATTENDANCE_DATE("Last attended on", LocalDate.class, QAppearance.appearance.attendanceDate.max(),
+        QAppearance.appearance);
 
 
     private final List<EntityPath<?>> requiredTables;

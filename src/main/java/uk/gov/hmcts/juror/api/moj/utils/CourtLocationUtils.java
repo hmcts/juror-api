@@ -3,9 +3,14 @@ package uk.gov.hmcts.juror.api.moj.utils;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.juror.domain.HolidaysQueries;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
+
+import java.time.LocalDate;
+
+import static java.time.DayOfWeek.SATURDAY;
 
 
 public final class CourtLocationUtils {
@@ -36,6 +41,30 @@ public final class CourtLocationUtils {
         }
 
         return courtLocation;
+    }
+
+    public static LocalDate getNextWorkingDay(String locCode) {
+        LocalDate nextWorkingDay = LocalDate.now().plusDays(1);
+
+        nextWorkingDay = checkWeekend(nextWorkingDay);
+
+        // check if the day is a public holiday
+        while (HolidaysQueries.isCourtHoliday(locCode, nextWorkingDay).equals(true)) {
+            nextWorkingDay = nextWorkingDay.plusDays(1);
+            nextWorkingDay = checkWeekend(nextWorkingDay);
+        }
+        return nextWorkingDay;
+    }
+
+    public static LocalDate checkWeekend(LocalDate date) {
+        switch (date.getDayOfWeek()) {
+            case SATURDAY:
+                return date.plusDays(2);
+            case SUNDAY:
+                return date.plusDays(1);
+            default:
+                return date;
+        }
     }
 
 }

@@ -56,6 +56,7 @@ import java.util.Set;
 
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.APPEARANCE_RECORD_BEFORE_SERVICE_START_DATE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.ATTENDANCE_RECORD_ALREADY_EXISTS;
+import static uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils.getNextWorkingDay;
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.isEmptyOrNull;
 import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkOwnershipForCurrentUser;
 import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.getActiveJurorRecord;
@@ -180,7 +181,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         appearanceRepository.saveAndFlush(appearance);
 
         // update the juror next date and clear on call flag in case it is set
-        jurorPool.setNextDate(appearanceDate);
+        jurorPool.setNextDate(getNextWorkingDay(locCode));
+
         jurorPool.setOnCall(false);
         jurorPoolRepository.saveAndFlush(jurorPool);
 
@@ -310,7 +312,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 .contains(jurorPool.getStatus().getStatus())) {
 
                 // update the juror next (attendance) date and clear on call flag in case it is set
-                jurorPool.setNextDate(request.getAttendanceDate());
+                jurorPool.setNextDate(getNextWorkingDay(jurorPool.getPool().getCourtLocation().getLocCode()));
                 jurorPool.setOnCall(Boolean.FALSE);
 
                 updatedJurorPools.add(jurorPool);
