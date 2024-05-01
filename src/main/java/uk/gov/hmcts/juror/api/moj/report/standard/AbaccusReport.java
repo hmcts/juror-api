@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.moj.report.DataType;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,13 +37,15 @@ public class AbaccusReport extends AbstractStandardReport {
             DataType.DATE_SENT);
 
         this.clock = clock;
-
         isBureauUserOnly();
     }
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
+        query.where(QBulkPrintData.bulkPrintData.creationDate.between(request.getFromDate(), request.getToDate()))
+            .orderBy(QBulkPrintData.bulkPrintData.formAttribute.formType.asc());
         addGroupBy(query, DataType.DOCUMENT_CODE, DataType.DATE_SENT);
+
     }
 
     @Override
@@ -57,17 +60,17 @@ public class AbaccusReport extends AbstractStandardReport {
         map.put("date_from", DataTypeValue.builder()
             .displayName("Date from")
             .dataType(LocalDate.class.getSimpleName())
-            .value(request.getFromDate())
+            .value(DateTimeFormatter.ISO_DATE.format(request.getFromDate()))
             .build());
         map.put("date_to", DataTypeValue.builder()
             .displayName("Date to")
             .dataType(LocalDate.class.getSimpleName())
-            .value(request.getToDate())
+            .value(DateTimeFormatter.ISO_DATE.format(request.getToDate()))
             .build());
         map.put("time_created", DataTypeValue.builder()
             .displayName("Time created")
             .dataType(LocalTime.class.getSimpleName())
-            .value(LocalTime.now(clock))
+            .value(LocalTime.now(clock).format(DateTimeFormatter.ISO_LOCAL_TIME))
             .build());
         return map;
     }
@@ -77,5 +80,4 @@ public class AbaccusReport extends AbstractStandardReport {
         AbstractReport.Validators.RequireFromDate,
         AbstractReport.Validators.RequireToDate {
     }
-
 }
