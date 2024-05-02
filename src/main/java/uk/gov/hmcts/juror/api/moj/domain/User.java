@@ -101,13 +101,11 @@ public class User implements Serializable {
 
     @Column(name = "created_by", updatable = false)
     @CreatedBy
-    @Audited(targetAuditMode = RelationTargetAuditMode.AUDITED)
     @NotEmpty
     private String createdBy;
 
     @Column(name = "updated_by")
     @LastModifiedBy
-    @Audited(targetAuditMode = RelationTargetAuditMode.AUDITED)
     private String updatedBy;
 
 
