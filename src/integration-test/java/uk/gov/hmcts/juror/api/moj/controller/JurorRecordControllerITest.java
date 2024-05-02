@@ -5068,6 +5068,29 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
+        void searchForJurorRecordsCourtUserBureauOwnedJuror() throws Exception {
+
+            String bureauJwt = createBureauJwt("Court_User", "416", "416");
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
+                .jurorNumber("641500101")
+                .pageNumber(1)
+                .pageLimit(10)
+                .sortMethod(SortMethod.ASC)
+                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
+                .build();
+
+            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
+                    URI.create(URL)), new ParameterizedTypeReference<>() {});
+
+            assertThat(response.getStatusCode())
+                .as("Expect the HTTP POST request (GET With Body) to be NO CONTENT")
+                .isEqualTo(HttpStatus.NO_CONTENT);
+
+        }
+
+        @Test
         void searchForJurorRecordsBureauByPool() throws Exception {
             JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
                 .poolNumber("415220901")
