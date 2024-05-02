@@ -59,7 +59,7 @@ public class PostponedListByPoolReport extends AbstractStandardReport {
     }
 
     @Override
-    public Class<?> getRequestValidatorClass() {
+    public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
         return PostponedListByPoolReport.RequestValidator.class;
     }
 

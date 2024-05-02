@@ -48,7 +48,7 @@ public class PostponedListByDateReport extends AbstractGroupedReport {
     }
 
     @Override
-    public Class<?> getRequestValidatorClass() {
+    public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
         return RequestValidator.class;
     }
 

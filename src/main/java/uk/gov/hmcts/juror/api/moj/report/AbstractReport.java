@@ -131,7 +131,7 @@ public abstract class AbstractReport<T> {
         });
     }
 
-    public abstract Class<?> getRequestValidatorClass();
+    public abstract Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass();
 
     public final String getName() {
         return getClass().getSimpleName();
