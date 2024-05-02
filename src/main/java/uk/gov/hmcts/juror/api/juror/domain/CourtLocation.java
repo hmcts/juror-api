@@ -198,4 +198,8 @@ public class CourtLocation implements Serializable {
     public CourtType getType() {
         return owner.equals(locCode) ? CourtType.MAIN : CourtType.SATELLITE;
     }
+
+    public boolean isPrimaryCourt() {
+        return owner.equals(locCode);
+    }
 }

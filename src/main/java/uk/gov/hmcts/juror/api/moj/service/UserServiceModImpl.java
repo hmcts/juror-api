@@ -146,7 +146,10 @@ public class UserServiceModImpl implements UserService {
     @Transactional
     public void addCourt(String username, List<String> courts) {
         User user = findUserByUsername(username);
-        courts.forEach(string -> user.addCourt(getCourtLocation(string)));
+        courts.stream()
+            .map(this::getCourtLocation)
+            .filter(CourtLocation::isPrimaryCourt)
+            .forEach(user::addCourt);
         //TEMP until AD move
         if (!courts.isEmpty()) {
             user.setOwner(courts.get(0));
