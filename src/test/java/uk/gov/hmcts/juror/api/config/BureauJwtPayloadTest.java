@@ -108,6 +108,7 @@ class BureauJwtPayloadTest {
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveToClaims() {
         BureauJwtPayload payload = new BureauJwtPayload(
+            "email@email.com",
             "owner",
             "locCode",
             "login",
@@ -124,7 +125,8 @@ class BureauJwtPayloadTest {
             Set.of(Role.MANAGER)
         );
         assertThat(payload.toClaims())
-            .hasSize(9)
+            .hasSize(10)
+            .containsEntry("email", "email@email.com")
             .containsEntry("owner", "owner")
             .containsEntry("locCode", "locCode")
             .containsEntry("login", "login")
@@ -158,6 +160,7 @@ class BureauJwtPayloadTest {
         when(claims.get("daysToExpire", Integer.class)).thenReturn(999);
 
 
+        when(claims.get("email",String.class)).thenReturn("email@email.com");
         when(claims.get("login", String.class)).thenReturn("login");
         when(claims.get("owner", String.class)).thenReturn("owner");
         when(claims.get("locCode", String.class)).thenReturn("locCode");
@@ -169,6 +172,7 @@ class BureauJwtPayloadTest {
         assertThat(BureauJwtPayload.fromClaims(claims))
             .isEqualTo(
                 new BureauJwtPayload(
+                    "email@email.com",
                     "owner",
                     "locCode",
                     "login",
@@ -201,7 +205,7 @@ class BureauJwtPayloadTest {
 
         when(claims.get("daysToExpire", Integer.class)).thenReturn(999);
 
-
+        when(claims.get("email",String.class)).thenReturn("email@email.com");
         when(claims.get("login", String.class)).thenReturn("login");
         when(claims.get("owner", String.class)).thenReturn("owner");
         when(claims.get("locCode", String.class)).thenReturn("locCode");
@@ -213,6 +217,7 @@ class BureauJwtPayloadTest {
         assertThat(BureauJwtPayload.fromClaims(claims))
             .isEqualTo(
                 new BureauJwtPayload(
+                    "email@email.com",
                     "owner",
                     "locCode",
                     "login",

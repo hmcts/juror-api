@@ -104,7 +104,7 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
         }
 
         if (request.getLastName() != null && !request.getLastName().isBlank()) {
-            query.where(JUROR_RESPONSE_COMMON.lastName.eq(request.getLastName()));
+            query.where(JUROR_RESPONSE_COMMON.lastName.equalsIgnoreCase(request.getLastName()));
         }
 
         if (request.getPoolNumber() != null && !request.getPoolNumber().isBlank()) {
@@ -122,7 +122,7 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
         }
 
         if (request.getOfficerAssigned() != null && !request.getOfficerAssigned().isBlank()) {
-            query.where(JUROR_RESPONSE_COMMON.staff.username.eq(request.getOfficerAssigned()));
+            query.where(JUROR_RESPONSE_COMMON.staff.username.equalsIgnoreCase(request.getOfficerAssigned()));
         }
 
         if (isNotEmptyOrNull(request.getProcessingStatus())) {
