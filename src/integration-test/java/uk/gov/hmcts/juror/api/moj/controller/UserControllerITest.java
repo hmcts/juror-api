@@ -60,6 +60,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
 
     public static final String BASE_URL = "/api/v1/moj/users";
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
+    private static final String SYSTEM_USER = "test_system";
 
     private final TestRestTemplate template;
     private HttpHeaders httpHeaders;
@@ -1350,6 +1351,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .triggerValid()
                     .assertValidNoBody();
                 assertUserHasCourts("test_court_multi", "415", "421");
+                assertUserIsUpdatedBy("test_court_multi", SYSTEM_USER);
             }
         }
 
@@ -1462,7 +1464,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .triggerValid()
                     .assertValidNoBody();
                 assertUserHasCourts("test_court_multi", "415", "421");
-                assertUserIsUpdatedBy("test_court_multi", "test_system");
+                assertUserIsUpdatedBy("test_court_multi", SYSTEM_USER);
             }
         }
 
@@ -1573,7 +1575,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .url(toUrl("test_court_manager", UserType.COURT))
                     .triggerValid()
                     .assertValidNoBody();
-                assertUser("test_court_manager", UserType.COURT, Set.of(Role.MANAGER), "test_system", "415");
+                assertUser("test_court_manager", UserType.COURT, Set.of(Role.MANAGER), SYSTEM_USER, "415");
             }
 
             @Test
