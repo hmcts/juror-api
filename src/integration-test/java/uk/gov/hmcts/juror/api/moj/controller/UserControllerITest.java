@@ -1340,7 +1340,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .triggerValid()
                     .assertValidNoBody();
                 assertUserHasCourts("test_court_multi", "415", "421", "466");
-                assertUserIsUpdatedBy("test_court_multi", "test_admin_standard");
+                assertUserIsUpdatedBy("test_court_multi", SYSTEM_USER);
             }
 
             @Test
@@ -1452,7 +1452,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .triggerValid()
                     .assertValidNoBody();
                 assertUserHasCourts("test_court_multi", "421");
-                assertUserIsUpdatedBy("test_court_multi", "test_admin_standard");
+                assertUserIsUpdatedBy("test_court_multi", SYSTEM_USER);
             }
 
 

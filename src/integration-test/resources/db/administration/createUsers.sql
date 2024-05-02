@@ -12,15 +12,15 @@ VALUES ('test_bureau_inactive', '400'),
        ('test_bureau_lead', '400');
 
 
-INSERT INTO juror_mod.users (owner, user_type, username, email, name, active, created_by, updated_by)
-VALUES (null, 'COURT', 'test_court_no_courts', 'test_court_no_courts@email.gov.uk', 'Court No Courts', false, 'test_system', 'test_system'),
-       ('415', 'COURT', 'test_court_inactive', 'test_court_inactive@email.gov.uk', 'Court Inactive', false, 'test_system', 'test_system'),
-       ('415', 'COURT', 'test_court_standard', 'test_court_standard@email.gov.uk', 'Court Standard', true, 'test_system', 'test_system'),
-       ('415', 'COURT', 'test_court_manager', 'test_court_manager@email.gov.uk', 'Court Manager', true, 'test_system', 'test_system'),
-       ('415', 'COURT', 'test_court_sjo', 'test_court_sjo@email.gov.uk', 'Court SJO', true, 'test_system', 'test_system'),
-       ('415', 'COURT', 'test_court_sjo_mangr', 'test_court_sjo_mangr@email.gov.uk', 'Court SJO & Manager', true, 'test_system', 'test_system'),
-       ('408', 'COURT', 'test_court_primary', 'test_court_primary@email.gov.uk', 'Court Primary Only', true, 'test_system', 'test_system'),
-       ('415', 'COURT', 'test_court_multi', 'test_court_multi@email.gov.uk', 'Court Multiple Linked', true, 'test_system', 'test_system')
+INSERT INTO juror_mod.users (user_type, username, email, name, active, created_by, updated_by)
+VALUES ('COURT', 'test_court_no_courts', 'test_court_no_courts@email.gov.uk', 'Court No Courts', false, 'test_system', 'test_system'),
+       ('COURT', 'test_court_inactive', 'test_court_inactive@email.gov.uk', 'Court Inactive', false, 'test_system', 'test_system'),
+       ('COURT', 'test_court_standard', 'test_court_standard@email.gov.uk', 'Court Standard', true, 'test_system', 'test_system'),
+       ('COURT', 'test_court_manager', 'test_court_manager@email.gov.uk', 'Court Manager', true, 'test_system', 'test_system'),
+       ('COURT', 'test_court_sjo', 'test_court_sjo@email.gov.uk', 'Court SJO', true, 'test_system', 'test_system'),
+       ('COURT', 'test_court_sjo_mangr', 'test_court_sjo_mangr@email.gov.uk', 'Court SJO & Manager', true, 'test_system', 'test_system'),
+       ('COURT', 'test_court_primary', 'test_court_primary@email.gov.uk', 'Court Primary Only', true, 'test_system', 'test_system'),
+       ('COURT', 'test_court_multi', 'test_court_multi@email.gov.uk', 'Court Multiple Linked', true, 'test_system', 'test_system')
 ;
 
 INSERT INTO juror_mod.user_roles (username, role)

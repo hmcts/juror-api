@@ -23,6 +23,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
+import org.hibernate.envers.RelationTargetAuditMode;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -100,11 +101,13 @@ public class User implements Serializable {
 
     @Column(name = "created_by", updatable = false)
     @CreatedBy
+    @Audited(targetAuditMode = RelationTargetAuditMode.AUDITED)
     @NotEmpty
     private String createdBy;
 
     @Column(name = "updated_by")
     @LastModifiedBy
+    @Audited(targetAuditMode = RelationTargetAuditMode.AUDITED)
     private String updatedBy;
 
 
