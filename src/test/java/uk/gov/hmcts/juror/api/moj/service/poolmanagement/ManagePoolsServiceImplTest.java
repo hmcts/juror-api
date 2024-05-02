@@ -29,6 +29,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -74,10 +75,11 @@ public class ManagePoolsServiceImplTest extends TestCase {
     public void findAvailablePools_courtUser_happy() {
         doReturn(createCourtLocations()).when(courtLocationRepository).findByOwner(any());
         doReturn(createActivePools()).when(poolRequestRepository).findActivePoolsForDateRange(any(), any(), any(),
-            any());
+            any(), anyBoolean());
 
         BureauJwtPayload payload = TestUtils.createJwt("404", "COURT_USER", "99");
-        AvailablePoolsInCourtLocationDto availablePools = managePoolsService.findAvailablePools("404", payload);
+        AvailablePoolsInCourtLocationDto availablePools = managePoolsService.findAvailablePools("404", payload,
+            false);
 
         assertThat(availablePools.getAvailablePools()).hasSize(1);
         assertThat(availablePools.getAvailablePools().get(0).getPoolNumber()).isEqualTo("111111111");
@@ -96,7 +98,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
         AvailablePoolsInCourtLocationDto availablePools = new AvailablePoolsInCourtLocationDto();
 
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(
-            () -> managePoolsService.findAvailablePools("404", payload));
+            () -> managePoolsService.findAvailablePools("404", payload, false));
         assertThat(availablePools.getAvailablePools()).isEmpty();
         mockitoVerificationFindAvailablePools(0);
     }
@@ -109,7 +111,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
         AvailablePoolsInCourtLocationDto availablePools = new AvailablePoolsInCourtLocationDto();
 
         assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(
-            () -> managePoolsService.findAvailablePools("999", payload));
+            () -> managePoolsService.findAvailablePools("999", payload, false));
         assertThat(availablePools.getAvailablePools()).isEmpty();
         mockitoVerificationFindAvailablePools(0);
     }
@@ -117,10 +119,12 @@ public class ManagePoolsServiceImplTest extends TestCase {
     @Test
     public void findAvailablePools_courtUser_noActivePools() {
         doReturn(createCourtLocations()).when(courtLocationRepository).findByOwner(any());
-        doReturn(new ArrayList<>()).when(poolRequestRepository).findActivePoolsForDateRange(any(), any(), any(), any());
+        doReturn(new ArrayList<>()).when(poolRequestRepository).findActivePoolsForDateRange(any(), any(), any(),
+            any(), anyBoolean());
 
         BureauJwtPayload payload = TestUtils.createJwt("404", "COURT_USER", "99");
-        AvailablePoolsInCourtLocationDto availablePools = managePoolsService.findAvailablePools("404", payload);
+        AvailablePoolsInCourtLocationDto availablePools = managePoolsService.findAvailablePools("404", payload,
+            false);
 
         assertThat(availablePools.getAvailablePools()).isEmpty();
         mockitoVerificationFindAvailablePools(1);
@@ -131,7 +135,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
         verify(courtLocationRepository, times(0)).findById(anyString());
         verify(courtLocationRepository, times(1)).findByOwner(anyString());
         verify(poolRequestRepository, times(poolRequestFindActivePoolsForDateRange)).findActivePoolsForDateRange(any(),
-            any(), any(), any());
+            any(), any(), any(), anyBoolean());
     }
 
     private List<Tuple> createActivePools() {

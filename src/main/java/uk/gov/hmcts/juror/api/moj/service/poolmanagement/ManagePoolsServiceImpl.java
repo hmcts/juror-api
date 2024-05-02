@@ -45,7 +45,7 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
     @Override
     @Transactional(readOnly = true)
     public AvailablePoolsInCourtLocationDto findAvailablePools(String locCode, BureauJwtPayload payload,
-                                                               boolean isReassignment) {
+                                                               boolean isReassign) {
         log.trace("Location code: {}: Enter method findAvailablePools", locCode);
 
         String owner = payload.getOwner();
@@ -60,7 +60,7 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
 
         log.debug("Court location code {}: Find available pools for user {}", locCode, payload.getLogin());
         AvailablePoolsInCourtLocationDto availablePools = new AvailablePoolsInCourtLocationDto();
-        availablePools.setAvailablePools(populateAvailablePoolsDto(locCode, owner, isReassignment));
+        availablePools.setAvailablePools(populateAvailablePoolsDto(locCode, owner, isReassign));
 
         log.trace("Court location code {}: Exit method findAvailablePools", locCode);
         return availablePools;
@@ -210,14 +210,14 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
 
     private List<AvailablePoolsInCourtLocationDto.AvailablePoolsDto> populateAvailablePoolsDto(String courtLocation,
                                                                                                String owner,
-                                                                                               boolean isReassignment) {
+                                                                                               boolean isReassign) {
         log.debug("Owner: {}, Court Location: {} - Get available active pools for the given court location", owner,
             courtLocation);
 
         // Get all active pools with minimum time span of 1 year ago
         LocalDate weekCommencing = DateUtils.getStartOfWeekFromDate(LocalDate.now().minusYears(1));
         List<Tuple> activePoolsData = poolRequestRepository.findActivePoolsForDateRange(owner, courtLocation,
-            weekCommencing, null, isReassignment);
+            weekCommencing, null, isReassign);
 
         log.debug("Owner: {}, Court Location: {} - Found {} available active pools for the given court location",
             owner, courtLocation, activePoolsData.size());

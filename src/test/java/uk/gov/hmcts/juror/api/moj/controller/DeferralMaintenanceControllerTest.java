@@ -42,6 +42,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -238,7 +239,7 @@ class DeferralMaintenanceControllerTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
 
-            verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any());
+            verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any(), anyBoolean());
 
             verify(currentlyDeferredRepository, never()).count(any(BooleanExpression.class));
         }
@@ -287,7 +288,7 @@ class DeferralMaintenanceControllerTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
 
-            verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any());
+            verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any(), anyBoolean());
 
             verify(currentlyDeferredRepository, never()).count(any(BooleanExpression.class));
         }
@@ -310,7 +311,7 @@ class DeferralMaintenanceControllerTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
 
-            verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any());
+            verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any(), anyBoolean());
 
             verify(currentlyDeferredRepository, never()).count(any(BooleanExpression.class));
         }

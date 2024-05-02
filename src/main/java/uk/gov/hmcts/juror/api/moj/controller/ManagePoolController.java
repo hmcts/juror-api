@@ -136,8 +136,9 @@ public class ManagePoolController {
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Parameter(description = "3-digit numeric string to identify the court") @PathVariable(name = "locCode")
         @Size(min = 3, max = 3) @Valid String locCode,
-        @Valid @RequestParam("is-reassignment") Boolean isReassignment) {
-        AvailablePoolsInCourtLocationDto responseBody = managePoolsService.findAvailablePools(locCode, payload, isReassignment);
+        @RequestParam(value = "is-reassign", required = false) boolean isReassign) {
+        AvailablePoolsInCourtLocationDto responseBody = managePoolsService.findAvailablePools(locCode, payload,
+            isReassign);
         return ResponseEntity.ok().body(responseBody);
     }
 
