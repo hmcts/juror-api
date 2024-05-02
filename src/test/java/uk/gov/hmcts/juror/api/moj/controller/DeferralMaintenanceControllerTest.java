@@ -239,7 +239,8 @@ class DeferralMaintenanceControllerTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
 
-            verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any(), anyBoolean());
+            verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any(),
+                anyBoolean());
 
             verify(currentlyDeferredRepository, never()).count(any(BooleanExpression.class));
         }
@@ -288,7 +289,8 @@ class DeferralMaintenanceControllerTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
 
-            verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any(), anyBoolean());
+            verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any(),
+                anyBoolean());
 
             verify(currentlyDeferredRepository, never()).count(any(BooleanExpression.class));
         }
@@ -311,7 +313,8 @@ class DeferralMaintenanceControllerTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest());
 
-            verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any(), anyBoolean());
+            verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any(),
+                anyBoolean());
 
             verify(currentlyDeferredRepository, never()).count(any(BooleanExpression.class));
         }
