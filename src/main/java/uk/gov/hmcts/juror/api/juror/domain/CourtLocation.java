@@ -200,6 +200,6 @@ public class CourtLocation implements Serializable {
     }
 
     public boolean isPrimaryCourt() {
-        return owner.equals(locCode);
+        return CourtType.MAIN.equals(getType());
     }
 }
