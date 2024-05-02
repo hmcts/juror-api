@@ -63,6 +63,8 @@ class JuryListReportTest extends AbstractStandardReportTestSupport<JuryListRepor
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
             DataType.JUROR_POSTCODE);
+        setHasPoolRepository(false);
+
     }
 
 
@@ -138,7 +140,7 @@ class JuryListReportTest extends AbstractStandardReportTestSupport<JuryListRepor
                 "trial_start_date", AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Trial Start Date")
                     .dataType(LocalDate.class.getSimpleName())
-                    .value(LocalDate.of(2024, 7, 11))
+                    .value("2024-07-11")
                     .build(),
                 "court_room", AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Court Room")

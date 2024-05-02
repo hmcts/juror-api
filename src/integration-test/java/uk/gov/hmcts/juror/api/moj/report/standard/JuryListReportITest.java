@@ -83,7 +83,7 @@ class JuryListReportITest extends AbstractStandardReportControllerITest {
                 .add("trial_start_date", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Trial Start Date")
                     .dataType(LocalDate.class.getSimpleName())
-                    .value(LocalDate.of(2024,7,11))
+                    .value("2024-07-11")
                     .build())
                 .add("court_room", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Court Room")

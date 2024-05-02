@@ -33,6 +33,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -335,16 +336,16 @@ public abstract class AbstractReport<T> {
         ));
     }
 
-    public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadStandardTrialHeaders(
+    public Map<String, AbstractReportResponse.DataTypeValue> loadStandardTrialHeaders(
         StandardReportRequest request, TrialRepository trialRepository) {
         return loadStandardTrailHeaders(request, trialRepository, false);
     }
 
-    public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadStandardTrailHeaders(
+    public Map<String, AbstractReportResponse.DataTypeValue> loadStandardTrailHeaders(
         StandardReportRequest request, TrialRepository trialRepository, boolean addTrialStartDate) {
 
         Trial trial = getTrial(request.getTrialNumber(), trialRepository);
-        ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> trialHeaders = new ConcurrentHashMap<>(Map.of(
+        Map<String, AbstractReportResponse.DataTypeValue> trialHeaders = new HashMap<>(Map.of(
             "trial_number", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Trial Number")
                 .dataType(String.class.getSimpleName())
