@@ -107,7 +107,7 @@ public class User implements Serializable {
     @ManyToMany
     private Set<CourtLocation> courts;
 
-    @Column(name = "created_by")
+    @Column(name = "created_by", updatable = false)
     @CreatedBy
     @NotEmpty
     private String createdBy;
@@ -189,4 +189,5 @@ public class User implements Serializable {
     public void clearRoles() {
         this.getRoles().clear();
     }
+
 }

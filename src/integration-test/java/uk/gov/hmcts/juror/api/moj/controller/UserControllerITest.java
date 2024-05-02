@@ -90,6 +90,14 @@ public class UserControllerITest extends AbstractIntegrationTest {
         });
     }
 
+    private void assertUserIsUpdatedBy(String username, String updateBy) {
+        transactionTemplate.execute(status -> {
+            User user = getUserFromUsername(username);
+            assertThat(user.getUpdatedBy()).isEqualTo(updateBy);
+            return null;
+        });
+    }
+
     private User getUserFromUsername(String username) {
         return transactionTemplate.execute(status -> {
             User user = userRepository.findByUsername(username);
@@ -699,7 +707,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                                 .isActive(true)
                                 .lastSignIn(null)
                                 .userType(UserType.COURT)
-                                .roles(Set.of(Role.MANAGER,Role.SENIOR_JUROR_OFFICER))
+                                .roles(Set.of(Role.MANAGER, Role.SENIOR_JUROR_OFFICER))
                                 .courts(List.of(UserCourtDto.builder()
                                     .primaryCourt(CourtDto.builder()
                                         .name("CHESTER")
@@ -790,6 +798,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
             void assertUserCreated(
                 CreateUserDto userDto,
                 String expectedUsername,
+                String createdBy,
                 String... courtLocCodes
             ) {
                 transactionTemplate.execute(status -> {
@@ -800,6 +809,8 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     assertThat(user.getRoles()).isEqualTo(Optional.ofNullable(userDto.getRoles()).orElse(Set.of()));
                     assertThat(user.isActive()).isTrue();
                     assertThat(user.getUsername()).isEqualTo(expectedUsername);
+                    assertThat(user.getCreatedBy()).isEqualTo(createdBy);
+                    assertThat(user.getUpdatedBy()).isEqualTo(createdBy);
                     assertThat(user.getApprovalLimit()).isEqualTo(
                         Optional.ofNullable(userDto.getApprovalLimit()).orElse(new BigDecimal("0.00")));
                     assertThat(user.getCourts()).hasSize(courtLocCodes.length);
@@ -818,7 +829,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .payload(userDto)
                     .triggerValid()
                     .assertEquals(new UsernameDto("test_new_user"));
-                assertUserCreated(userDto, "test_new_user");
+                assertUserCreated(userDto, "test_new_user", "test_admin_standard");
             }
 
             @Test
@@ -829,7 +840,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .payload(userDto)
                     .triggerValid()
                     .assertEquals(new UsernameDto("test_new_user"));
-                assertUserCreated(userDto, "test_new_user", "400");
+                assertUserCreated(userDto, "test_new_user", "test_admin_standard", "400");
             }
 
             @Test
@@ -840,7 +851,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .payload(userDto)
                     .triggerValid()
                     .assertEquals(new UsernameDto("test_new_user"));
-                assertUserCreated(userDto, "test_new_user", "400");
+                assertUserCreated(userDto, "test_new_user", "test_admin_standard", "400");
             }
 
             @Test
@@ -853,7 +864,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .payload(userDto)
                     .triggerValid()
                     .assertEquals(new UsernameDto("test_court_sjo1"));
-                assertUserCreated(userDto, "test_court_sjo1");
+                assertUserCreated(userDto, "test_court_sjo1", "test_admin_standard");
             }
         }
 
@@ -1142,7 +1153,8 @@ public class UserControllerITest extends AbstractIntegrationTest {
                 User oldUser,
                 UpdateUserDto userDto,
                 boolean isAdmin,
-                String username
+                String username,
+                String updatedBy
             ) {
                 transactionTemplate.execute(status -> {
                     User user = getUserFromUsername(username);
@@ -1159,6 +1171,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                         assertThat(user.getApprovalLimit()).isEqualTo(oldUser.getApprovalLimit());
                     }
                     assertThat(user.getRoles()).isEqualTo(Optional.ofNullable(userDto.getRoles()).orElse(Set.of()));
+                    assertThat(user.getUpdatedBy()).isEqualTo(updatedBy);
                     return null;
                 });
             }
@@ -1174,7 +1187,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .payload(payload)
                     .triggerValid()
                     .assertValidNoBody();
-                assertUserUpdated(userBeforeUpdate, payload, false, username);
+                assertUserUpdated(userBeforeUpdate, payload, false, username, "test_court_manager");
             }
 
             @Test
@@ -1188,7 +1201,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .payload(payload)
                     .triggerValid()
                     .assertValidNoBody();
-                assertUserUpdated(userBeforeUpdate, payload, false, username);
+                assertUserUpdated(userBeforeUpdate, payload, false, username, "test_bureau_lead");
             }
 
             @Test
@@ -1202,7 +1215,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .payload(payload)
                     .triggerValid()
                     .assertValidNoBody();
-                assertUserUpdated(userBeforeUpdate, payload, true, username);
+                assertUserUpdated(userBeforeUpdate, payload, true, username, "test_admin_standard");
             }
 
             @Test
@@ -1216,7 +1229,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .payload(payload)
                     .triggerValid()
                     .assertValidNoBody();
-                assertUserUpdated(userBeforeUpdate, payload, true, username);
+                assertUserUpdated(userBeforeUpdate, payload, true, username, "test_admin_standard");
             }
         }
 
@@ -1326,6 +1339,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .triggerValid()
                     .assertValidNoBody();
                 assertUserHasCourts("test_court_multi", "415", "421", "466");
+                assertUserIsUpdatedBy("test_court_multi", "test_admin_standard");
             }
 
             @Test
@@ -1436,6 +1450,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .triggerValid()
                     .assertValidNoBody();
                 assertUserHasCourts("test_court_multi", "421");
+                assertUserIsUpdatedBy("test_court_multi", "test_admin_standard");
             }
 
 
@@ -1447,6 +1462,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .triggerValid()
                     .assertValidNoBody();
                 assertUserHasCourts("test_court_multi", "415", "421");
+                assertUserIsUpdatedBy("test_court_multi", "test_system");
             }
         }
 
@@ -1536,7 +1552,8 @@ public class UserControllerITest extends AbstractIntegrationTest {
         @DisplayName("Positive")
         @Nested
         class Positive {
-            private void assertUser(String username, UserType userType, Set<Role> roles, String... locCodes) {
+            private void assertUser(String username, UserType userType, Set<Role> roles,
+                                    String updatedBy, String... locCodes) {
                 transactionTemplate.execute(status -> {
                     User user = getUserFromUsername(username);
                     assertThat(user.getUserType()).isEqualTo(userType);
@@ -1544,6 +1561,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     assertThat(user.getCourts()
                         .stream().map(CourtLocation::getLocCode).toList())
                         .containsExactlyInAnyOrder(locCodes);
+                    assertThat(user.getUpdatedBy()).isEqualTo(updatedBy);
                     assertThat(user.getRoles()).isEqualTo(roles);
                     return null;
                 });
@@ -1555,7 +1573,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .url(toUrl("test_court_manager", UserType.COURT))
                     .triggerValid()
                     .assertValidNoBody();
-                assertUser("test_court_manager", UserType.COURT, Set.of(Role.MANAGER), "415");
+                assertUser("test_court_manager", UserType.COURT, Set.of(Role.MANAGER), "test_system", "415");
             }
 
             @Test
@@ -1564,7 +1582,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .url(toUrl("test_admin_standard", UserType.COURT))
                     .triggerValid()
                     .assertValidNoBody();
-                assertUser("test_admin_standard", UserType.COURT, Set.of());
+                assertUser("test_admin_standard", UserType.COURT, Set.of(), "test_admin_standard");
             }
 
 
@@ -1574,7 +1592,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .url(toUrl("test_admin_standard", UserType.BUREAU))
                     .triggerValid()
                     .assertValidNoBody();
-                assertUser("test_admin_standard", UserType.BUREAU, Set.of(), "400");
+                assertUser("test_admin_standard", UserType.BUREAU, Set.of(), "test_admin_standard", "400");
             }
 
             @Test
@@ -1583,7 +1601,7 @@ public class UserControllerITest extends AbstractIntegrationTest {
                     .url(toUrl("test_bureau_standard", UserType.COURT))
                     .triggerValid()
                     .assertValidNoBody();
-                assertUser("test_bureau_standard", UserType.COURT, Set.of());
+                assertUser("test_bureau_standard", UserType.COURT, Set.of(), "test_admin_standard");
             }
         }
 
