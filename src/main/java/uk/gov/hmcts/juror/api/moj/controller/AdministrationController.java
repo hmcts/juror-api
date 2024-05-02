@@ -58,8 +58,7 @@ public class AdministrationController {
     @GetMapping("/courts/{loc_code}")
     @Operation(summary = "View court details")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("(" + SecurityUtil.IS_COURT + " and " + SecurityUtil.LOC_CODE_AUTH + ") or ("
-        + SecurityUtil.IS_ADMINISTRATOR + ")")
+    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH + " or " + SecurityUtil.IS_ADMINISTRATOR)
     public ResponseEntity<CourtDetailsDto> viewCourtDetails(
         @P("loc_code")
         @PathVariable("loc_code")

@@ -74,9 +74,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -110,9 +108,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -147,9 +143,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void getCompletedToday() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -183,9 +177,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void getOverview() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -214,9 +206,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void searchForResponses_jurorNumberOnly_errorPath_notANumber() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -241,9 +231,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void searchForResponses_lastNameOnly_errorPath_blank() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -268,9 +256,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void searchForResponses_postcodeOnly_errorPath_blank() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -295,9 +281,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void searchForResponses_poolNumber_errorPath_notANumber() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -322,9 +306,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void searchForResponses_lastNameOnly() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 
@@ -511,9 +493,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void autoAssign_post_errorPath_userIsNotTeamLeader() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("carneson")
-            .daysToExpire(89)
             .owner("400")
             .staff(BureauJwtPayload.Staff.builder().rank(0).active(1).name("Chad Arneson").build())
             .build());
@@ -753,9 +733,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void autoAssign_get_errorPath_userIsNotTeamLeader() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("sbell")
-            .daysToExpire(89)
             .owner("400")
             .staff(BureauJwtPayload.Staff.builder().rank(0).active(1).name("Sandra Bell").build())
             .build());

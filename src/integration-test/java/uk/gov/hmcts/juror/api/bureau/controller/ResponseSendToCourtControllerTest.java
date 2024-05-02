@@ -254,9 +254,7 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ncrawford")
-            .daysToExpire(89)
             .owner("400")
             .build());
 

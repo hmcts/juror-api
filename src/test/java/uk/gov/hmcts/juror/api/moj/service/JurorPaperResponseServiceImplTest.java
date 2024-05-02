@@ -1289,9 +1289,7 @@ public class JurorPaperResponseServiceImplTest {
     private BureauJwtPayload buildPayload() {
         return BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("SOME_USER")
-            .daysToExpire(89)
             .owner("400")
             .build();
     }

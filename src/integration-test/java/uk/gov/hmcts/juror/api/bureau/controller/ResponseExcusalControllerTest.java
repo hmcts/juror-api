@@ -61,9 +61,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(loginName)
-            .daysToExpire(89)
             .owner("400")
             .build())
         );
@@ -94,9 +92,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(loginName)
-            .daysToExpire(89)
             .owner("400")
             .build())
         );
@@ -221,9 +217,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(loginName)
-            .daysToExpire(89)
             .owner("400")
             .build())
         );
@@ -342,9 +336,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(loginName)
-            .daysToExpire(89)
             .owner("400")
             .build())
         );
@@ -434,9 +426,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(loginName)
-            .daysToExpire(89)
             .owner("400")
             .build())
         );
@@ -491,9 +481,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(loginName)
-            .daysToExpire(89)
             .owner("400")
             .build())
         );
@@ -576,9 +564,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(loginName)
-            .daysToExpire(89)
             .owner("400")
             .build())
         );
@@ -661,9 +647,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(loginName)
-            .daysToExpire(89)
             .owner("400")
             .build())
         );
@@ -801,9 +785,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(loginName)
-            .daysToExpire(89)
             .owner("400")
             .build())
         );
@@ -871,9 +853,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(loginName)
-            .daysToExpire(89)
             .owner("400")
             .build())
         );

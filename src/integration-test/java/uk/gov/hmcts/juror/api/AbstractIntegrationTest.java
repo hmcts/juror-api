@@ -174,7 +174,6 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
                 .active(1)
                 .rank(rank)
                 .build())
-            .daysToExpire(89)
             .owner(owner)
             .build());
     }
@@ -192,6 +191,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
                 .courts(new ArrayList<>(courtsToSet))
                 .build())
             .userType(userType)
+            .activeUserType(userType)
             .roles(roles)
             .owner(owner)
             .build();

@@ -512,8 +512,6 @@ class TrialServiceImplTest {
         bureauJwtPayload.setOwner(owner);
         bureauJwtPayload.setLogin(userType);
         bureauJwtPayload.setUserLevel("99");
-        bureauJwtPayload.setDaysToExpire(89);
-        bureauJwtPayload.setPasswordWarning(Boolean.FALSE);
         return bureauJwtPayload;
     }
 

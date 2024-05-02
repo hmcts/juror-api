@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.CourtType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,31 +33,32 @@ import java.util.Map;
 @EqualsAndHashCode
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BureauJwtPayload {
+    private String email;
     private String owner;
     private String locCode;
     private String login;
     @Deprecated(forRemoval = true)
     private String userLevel;
-    @Deprecated(forRemoval = true)
-    private Boolean passwordWarning;
-    @Deprecated(forRemoval = true)
-    private Integer daysToExpire;
     private Staff staff;
     private UserType userType;
+    private UserType activeUserType;
 
     private Collection<Role> roles;
 
     public BureauJwtPayload(User user, String locCode, List<CourtLocation> courtLocations) {
+        this(user, user.getUserType(), locCode, courtLocations);
+    }
+
+    public BureauJwtPayload(User user, UserType activeType, String locCode, List<CourtLocation> courtLocations) {
         this.owner = courtLocations.stream()
             .filter(courtLocation -> CourtType.MAIN.equals(courtLocation.getType()))
             .toList().get(0).getOwner();
         this.locCode = locCode;
+        this.email = user.getEmail();
         this.login = user.getUsername();
         this.userLevel = String.valueOf(user.getLevel());
-        this.passwordWarning = false;
-        this.daysToExpire = 999;
         this.userType = user.getUserType();
-
+        this.activeUserType = activeType;
 
         if (UserType.ADMINISTRATOR.equals(user.getUserType())) {
             this.roles = List.of(Role.values());
@@ -81,9 +83,9 @@ public class BureauJwtPayload {
     }
 
 
-    public BureauJwtPayload(String owner, String login, String userLevel, Boolean passwordWarning, Integer daysToExpire,
+    public BureauJwtPayload(String owner, String login, String userLevel,
                             Staff staff) {
-        this(owner, null, login, userLevel, passwordWarning, daysToExpire, staff, null, null);
+        this(null, owner, null, login, userLevel, staff, null, null, null);
     }
 
     public List<GrantedAuthority> getGrantedAuthority() {
@@ -98,17 +100,17 @@ public class BureauJwtPayload {
     }
 
     public Map<String, Object> toClaims() {
-        return Map.of(
-            "owner", owner,
-            "locCode", locCode,
-            "login", login,
-            "userLevel", userLevel,
-            "passwordWarning", passwordWarning,
-            "daysToExpire", daysToExpire,
-            "staff", staff.toClaims(),
-            "roles", roles,
-            "userType", userType
-        );
+        Map<String, Object> data = new HashMap<>();
+        data.put("owner", owner);
+        data.put("locCode", locCode);
+        data.put("email", email);
+        data.put("login", login);
+        data.put("userLevel", userLevel);
+        data.put("staff", staff.toClaims());
+        data.put("roles", roles);
+        data.put("userType", userType);
+        data.put("activeUserType", activeUserType);
+        return data;
     }
 
     @SuppressWarnings("unchecked")
@@ -131,13 +133,17 @@ public class BureauJwtPayload {
             ? UserType.valueOf(claims.get("userType", String.class))
             : null;
 
+        UserType activeUserType = claims.containsKey("activeUserType")
+            ? UserType.valueOf(claims.get("activeUserType", String.class))
+            : null;
+
         return BureauJwtPayload.builder()
-            .daysToExpire(claims.get("daysToExpire", Integer.class))
             .login(claims.get("login", String.class))
+            .email(claims.get("email", String.class))
             .owner(claims.get("owner", String.class))
             .locCode(claims.get("locCode", String.class))
-            .passwordWarning(claims.get("passwordWarning", Boolean.class))
             .userLevel(claims.get("userLevel", String.class))
+            .activeUserType(activeUserType)
             .staff(staff)
             .roles(roles)
             .userType(userType)

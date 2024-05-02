@@ -29,20 +29,19 @@ DELETE FROM juror_mod.juror_response;
 --
 DELETE FROM juror_mod.juror;
 
---DELETE FROM juror_mod.message;
 --DELETE FROM juror_mod.notify_template_field;
 --DELETE FROM juror_mod.notify_template_mapping;
---DELETE FROM juror_mod.password;
---DELETE FROM juror_mod.payment_data;
-
 --DELETE FROM juror_mod.region_notify_template;
+
+DELETE FROM juror_mod.user_roles_audit;
+DELETE FROM juror_mod.user_courts_audit;
+DELETE FROM juror_mod.users_audit;
 
 DELETE FROM juror_mod.user_roles;
 DELETE FROM juror_mod.user_courts;
 DELETE FROM juror_mod.users;
 
 DELETE FROM juror_mod.rev_info;
---DELETE FROM JUROR_DIGITAL.STAFF_AUDIT;
 
 --DELETE FROM juror_mod.utilisation_stats;
 

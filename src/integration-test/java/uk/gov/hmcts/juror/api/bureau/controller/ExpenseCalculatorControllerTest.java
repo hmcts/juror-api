@@ -57,9 +57,7 @@ public class ExpenseCalculatorControllerTest extends AbstractIntegrationTest {
 
         bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("ksalazar")
-            .daysToExpire(89)
             .owner("400")
             .build());
     }

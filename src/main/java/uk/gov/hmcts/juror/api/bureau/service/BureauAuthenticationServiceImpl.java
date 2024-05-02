@@ -52,6 +52,7 @@ public class BureauAuthenticationServiceImpl implements BureauAuthenticationServ
                     999,
                     false,
                     user.getUserType(),
+                    user.getUserType(),
                     user.getRoles(),
                     BureauAuthenticationController.UserDto.from(courtLocationRepository, entityManager, user)
                 );
