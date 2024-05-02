@@ -149,6 +149,7 @@ public class UserServiceModImpl implements UserService {
         courts.stream()
             .map(this::getCourtLocation)
             .filter(CourtLocation::isPrimaryCourt)
+            .filter(courtLocation -> !user.hasCourtByOwner(courtLocation.getOwner()))
             .forEach(user::addCourt);
         //TEMP until AD move
         if (!courts.isEmpty()) {
