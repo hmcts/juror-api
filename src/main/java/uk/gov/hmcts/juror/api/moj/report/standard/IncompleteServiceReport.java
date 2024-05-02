@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -40,20 +41,21 @@ public class IncompleteServiceReport extends AbstractStandardReport {
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
             DataType.POOL_NUMBER_BY_JP,
-            DataType.NEXT_ATTENDANCE_DATE,
-            DataType.LAST_ATTENDANCE_DATE);
+            DataType.LAST_ATTENDANCE_DATE,
+            DataType.NEXT_ATTENDANCE_DATE);
         this.courtLocationRepository = courtLocationRepository;
         isCourtUserOnly();
         addAuthenticationConsumer(request -> checkOwnership(request.getLocCode(), false));
         addJoinOverride(QJuror.juror, JoinType.LEFTJOIN, QAppearance.appearance);
     }
 
-
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query
-            .where(QJurorPool.jurorPool.nextDate.loe(request.getDate()))
+            .where(QJurorPool.jurorPool.pool.returnDate.loe(request.getDate()))
             .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(request.getLocCode()))
+            .where(QJurorPool.jurorPool.pool.owner.eq(SecurityUtil.getActiveOwner()))
+            .where(QJurorPool.jurorPool.isActive.eq(true))
             .where(QJurorPool.jurorPool.status.status.in(List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL,
                 IJurorStatus.JUROR)))
             .where(
@@ -65,6 +67,9 @@ public class IncompleteServiceReport extends AbstractStandardReport {
 
         addGroupBy(query, DataType.JUROR_NUMBER, DataType.FIRST_NAME, DataType.LAST_NAME, DataType.POOL_NUMBER_BY_JP,
             DataType.NEXT_ATTENDANCE_DATE);
+
+
+
     }
 
     @Override

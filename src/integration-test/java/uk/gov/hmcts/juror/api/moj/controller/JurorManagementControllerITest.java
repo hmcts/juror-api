@@ -45,6 +45,7 @@ import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
+import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -1228,12 +1229,14 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .as(String.format(RESPONSE_MESSAGE, 2))
                 .isEqualTo(String.format(RESPONSE_EQUAL_TO, 2));
 
+            LocalDate expectedNextAttendDate = CourtLocationUtils.getNextWorkingDay("415");
+
             // verify the attendance date was updated successfully
             LocalDate attendanceDateAfterJuror1 = retrieveAttendanceDate(JUROR1, POOL_NUMBER_415230101);
-            assertThat(attendanceDateAfterJuror1).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isEqualTo(ATTENDANCE_DATE);
+            assertThat(attendanceDateAfterJuror1).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isEqualTo(expectedNextAttendDate);
 
             LocalDate attendanceDateAfterJuror2 = retrieveAttendanceDate(JUROR2, POOL_NUMBER_415230101);
-            assertThat(attendanceDateAfterJuror2).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isEqualTo(ATTENDANCE_DATE);
+            assertThat(attendanceDateAfterJuror2).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isEqualTo(expectedNextAttendDate);
         }
 
         @Test
@@ -1254,12 +1257,14 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 .as(String.format(RESPONSE_MESSAGE, 2))
                 .isEqualTo(String.format(RESPONSE_EQUAL_TO, 2));
 
+            LocalDate expectedNextAttendDate = CourtLocationUtils.getNextWorkingDay("415");
+
             // verify the attendance date was updated successfully for two jurors
             LocalDate attendanceDateAfterJuror1 = retrieveAttendanceDate(JUROR1, POOL_NUMBER_415230101);
-            assertThat(attendanceDateAfterJuror1).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isEqualTo(ATTENDANCE_DATE);
+            assertThat(attendanceDateAfterJuror1).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isEqualTo(expectedNextAttendDate);
 
             LocalDate attendanceDateAfterJuror2 = retrieveAttendanceDate(JUROR2, POOL_NUMBER_415230101);
-            assertThat(attendanceDateAfterJuror2).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isEqualTo(ATTENDANCE_DATE);
+            assertThat(attendanceDateAfterJuror2).as(UPDATED_ATTENDANCE_DATE_MESSAGE).isEqualTo(expectedNextAttendDate);
         }
 
         @Test

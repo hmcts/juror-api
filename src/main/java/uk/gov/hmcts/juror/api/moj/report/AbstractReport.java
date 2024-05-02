@@ -252,8 +252,6 @@ public abstract class AbstractReport<T> {
                 throw new MojException.InternalServerError("No join found for " + requiredTable, null);
             }
             Map<EntityPath<?>, Predicate[]> joinOptions = CLASS_TO_JOIN.get(requiredTable);
-            System.out.println("TMP1: " + requiredTable);
-            System.out.println("TMP2: " + from);
 
             if (joinOptions.containsKey(from)) {
                 JoinType joinType = JoinType.DEFAULT;
