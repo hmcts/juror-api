@@ -69,9 +69,7 @@ public class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel(level)
-            .passwordWarning(false)
             .login("BUREAU_USER")
-            .daysToExpire(89)
             .owner("400")
             .build());
 

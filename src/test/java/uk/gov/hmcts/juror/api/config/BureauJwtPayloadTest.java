@@ -53,8 +53,6 @@ class BureauJwtPayloadTest {
         assertThat(payload.getLocCode()).isEqualTo("401");
         assertThat(payload.getLogin()).isEqualTo("username");
         assertThat(payload.getUserLevel()).isEqualTo("3");
-        assertThat(payload.getPasswordWarning()).isFalse();
-        assertThat(payload.getDaysToExpire()).isEqualTo(999);
         assertThat(payload.getUserType()).isEqualTo(UserType.COURT);
         assertThat(payload.getRoles()).containsExactly(Role.MANAGER);
         assertThat(payload.getStaff()).isEqualTo(
@@ -90,8 +88,6 @@ class BureauJwtPayloadTest {
         assertThat(payload.getLocCode()).isEqualTo("401");
         assertThat(payload.getLogin()).isEqualTo("username");
         assertThat(payload.getUserLevel()).isEqualTo("3");
-        assertThat(payload.getPasswordWarning()).isFalse();
-        assertThat(payload.getDaysToExpire()).isEqualTo(999);
         assertThat(payload.getUserType()).isEqualTo(UserType.ADMINISTRATOR);
         assertThat(payload.getRoles()).containsExactly(Role.values());
         assertThat(payload.getStaff()).isEqualTo(
@@ -113,8 +109,6 @@ class BureauJwtPayloadTest {
             "locCode",
             "login",
             "userLevel",
-            false,
-            999,
             new BureauJwtPayload.Staff(
                 "staffName",
                 1,
@@ -122,18 +116,18 @@ class BureauJwtPayloadTest {
                 List.of("400", "415")
             ),
             UserType.COURT,
+            UserType.COURT,
             Set.of(Role.MANAGER)
         );
         assertThat(payload.toClaims())
-            .hasSize(10)
+            .hasSize(9)
             .containsEntry("email", "email@email.com")
             .containsEntry("owner", "owner")
             .containsEntry("locCode", "locCode")
             .containsEntry("login", "login")
             .containsEntry("userLevel", "userLevel")
-            .containsEntry("passwordWarning", false)
-            .containsEntry("daysToExpire", 999)
             .containsEntry("userType", UserType.COURT)
+            .containsEntry("activeUserType", UserType.COURT)
             .containsEntry("roles", Set.of(Role.MANAGER))
             .containsEntry("staff", Map.of(
                 "name", "staffName",
@@ -156,16 +150,15 @@ class BureauJwtPayloadTest {
         when(claims.get("roles", List.class)).thenReturn(List.of(Role.MANAGER.name()));
         when(claims.containsKey("userType")).thenReturn(true);
         when(claims.get("userType", String.class)).thenReturn(UserType.COURT.name());
-
-        when(claims.get("daysToExpire", Integer.class)).thenReturn(999);
-
+        when(claims.containsKey("activeUserType")).thenReturn(true);
+        when(claims.get("activeUserType", String.class)).thenReturn(UserType.COURT.name());
 
         when(claims.get("email",String.class)).thenReturn("email@email.com");
         when(claims.get("login", String.class)).thenReturn("login");
         when(claims.get("owner", String.class)).thenReturn("owner");
         when(claims.get("locCode", String.class)).thenReturn("locCode");
-        when(claims.get("passwordWarning", Boolean.class)).thenReturn(false);
         when(claims.containsKey("userLevel")).thenReturn(true);
+
         when(claims.get("userLevel", String.class)).thenReturn("userLevel");
 
 
@@ -177,14 +170,13 @@ class BureauJwtPayloadTest {
                     "locCode",
                     "login",
                     "userLevel",
-                    false,
-                    999,
                     new BureauJwtPayload.Staff(
                         "staffName",
                         1,
                         2,
                         List.of("400", "415")
                     ),
+                    UserType.COURT,
                     UserType.COURT,
                     List.of(Role.MANAGER)
                 )
@@ -222,14 +214,13 @@ class BureauJwtPayloadTest {
                     "locCode",
                     "login",
                     "userLevel",
-                    false,
-                    999,
                     new BureauJwtPayload.Staff(
                         "staffName",
                         1,
                         2,
                         List.of("400", "415")
                     ),
+                    null,
                     null,
                     Collections.emptyList()
                 )

@@ -2117,9 +2117,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         return mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("COURT_USER")
-            .daysToExpire(89)
             .owner(owner)
             .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build());

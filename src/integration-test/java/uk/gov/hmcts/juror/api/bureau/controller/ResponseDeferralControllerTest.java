@@ -88,9 +88,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(staffLogin)
-            .daysToExpire(89)
             .owner(staffLogin)
             .build());
 
@@ -297,9 +295,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(staffLogin)
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -397,9 +393,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(staffLogin)
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -490,9 +484,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(staffLogin)
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -674,9 +666,7 @@ public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login(staffLogin)
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 

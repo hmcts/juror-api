@@ -99,9 +99,7 @@ public class UndeliverableResponseServiceTest {
     private BureauJwtPayload buildPayload(String owner) {
         return BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("BUREAU_USER")
-            .daysToExpire(89)
             .owner(owner)
             .build();
     }

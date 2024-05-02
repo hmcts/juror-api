@@ -1654,7 +1654,6 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 .rank(1)
                 .courts(List.of("415", "400"))
                 .build())
-            .daysToExpire(89)
             .owner(owner)
             .build());
     }
