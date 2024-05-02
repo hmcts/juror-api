@@ -98,6 +98,8 @@ public final class TestUtil {
 
         claimsMap.put("roles", payload.getRoles());
         claimsMap.put("userType", payload.getUserType());
+        claimsMap.put("activeUserType", payload.getActiveUserType() == null
+            ? payload.getUserType() : payload.getActiveUserType());
 
         return Jwts.builder()
             .setClaims(claimsMap)

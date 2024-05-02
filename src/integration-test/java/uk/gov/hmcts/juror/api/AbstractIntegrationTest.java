@@ -191,6 +191,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
                 .courts(new ArrayList<>(courtsToSet))
                 .build())
             .userType(userType)
+            .activeUserType(userType)
             .roles(roles)
             .owner(owner)
             .build();

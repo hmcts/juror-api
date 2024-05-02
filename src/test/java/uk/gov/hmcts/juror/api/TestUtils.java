@@ -62,6 +62,7 @@ public final class TestUtils {
         return BureauJwtPayload.builder()
             .owner(owner)
             .userType(userType)
+            .activeUserType(userType)
             .roles(roles)
             .login(username)
             .staff(staffBuilder(username, List.of(owner)))
