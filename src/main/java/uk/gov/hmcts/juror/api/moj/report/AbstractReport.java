@@ -9,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.Builder;
 import lombok.Getter;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
@@ -90,7 +91,7 @@ public abstract class AbstractReport<T> {
     final Set<EntityPath<?>> requiredTables;
     final List<IDataType> effectiveDataTypes;
     final EntityPath<?> from;
-    final Map<EntityPath<?>, Map<EntityPath<?>, JoinType>> classToJoinOverrides = new HashMap<>();
+    final Map<EntityPath<?>, Map<EntityPath<?>, JoinOverrideDetails>> classToJoinOverrides = new HashMap<>();
 
     final List<Consumer<StandardReportRequest>> authenticationConsumers;
 
@@ -114,11 +115,21 @@ public abstract class AbstractReport<T> {
         this.authenticationConsumers = new ArrayList<>();
     }
 
-    public void addJoinOverride(EntityPath<?> from, JoinType joinType, EntityPath<?> to) {
-        if (!classToJoinOverrides.containsKey(from)) {
-            classToJoinOverrides.put(from, new HashMap<>());
+    @Builder
+    @Getter
+    public static class JoinOverrideDetails {
+        private EntityPath<?> from;
+        private EntityPath<?> to;
+        private JoinType joinType;
+        private List<Predicate> predicatesToAdd;
+        private List<Predicate> predicatesOverride;
+    }
+
+    public void addJoinOverride(JoinOverrideDetails joinDetails) {
+        if (!classToJoinOverrides.containsKey(joinDetails.getFrom())) {
+            classToJoinOverrides.put(joinDetails.getFrom(), new HashMap<>());
         }
-        classToJoinOverrides.get(from).put(to, joinType);
+        classToJoinOverrides.get(from).put(joinDetails.getTo(), joinDetails);
     }
 
     public void addAuthenticationConsumer(Consumer<StandardReportRequest> consumer) {
@@ -254,27 +265,41 @@ public abstract class AbstractReport<T> {
             Map<EntityPath<?>, Predicate[]> joinOptions = CLASS_TO_JOIN.get(requiredTable);
 
             if (joinOptions.containsKey(from)) {
-                JoinType joinType = JoinType.DEFAULT;
+                JoinOverrideDetails joinOverrideDetails = JoinOverrideDetails.builder().joinType(JoinType.DEFAULT).build();
+
                 if (classToJoinOverrides.containsKey(from) && classToJoinOverrides.get(from)
                     .containsKey(requiredTable)) {
-                    joinType = classToJoinOverrides.get(from).get(requiredTable);
+                    joinOverrideDetails = classToJoinOverrides.get(from).get(requiredTable);
                 }
-                switch (joinType) {
+
+                final ArrayList<Predicate> predicates;
+                if (joinOverrideDetails.getPredicatesOverride() != null) {
+                    predicates = new ArrayList<>(joinOverrideDetails.getPredicatesOverride());
+                } else {
+                    predicates = new ArrayList<>(Arrays.asList(joinOptions.get(from)));
+                }
+
+                if (joinOverrideDetails.getPredicatesToAdd() != null) {
+                    predicates.addAll(joinOverrideDetails.getPredicatesToAdd());
+                }
+
+                switch (joinOverrideDetails.getJoinType()) {
                     case DEFAULT:
                     case FULLJOIN:
-                        query.join(requiredTable).on(joinOptions.get(from));
+                        query.join(requiredTable).on(predicates.toArray(new Predicate[0]));
                         break;
                     case LEFTJOIN:
-                        query.leftJoin(requiredTable).on(joinOptions.get(from));
+                        query.leftJoin(requiredTable).on(predicates.toArray(new Predicate[0]));
                         break;
                     case RIGHTJOIN:
-                        query.rightJoin(requiredTable).on(joinOptions.get(from));
+                        query.rightJoin(requiredTable).on(predicates.toArray(new Predicate[0]));
                         break;
                     case INNERJOIN:
-                        query.innerJoin(requiredTable).on(joinOptions.get(from));
+                        query.innerJoin(requiredTable).on(predicates.toArray(new Predicate[0]));
                         break;
                     default:
-                        throw new MojException.InternalServerError("Join type not supported: " + joinType, null);
+                        throw new MojException.InternalServerError(
+                            "Join type not supported: " + joinOverrideDetails.getJoinType(), null);
                 }
             } else {
                 throw new MojException.InternalServerError(

@@ -46,7 +46,17 @@ public class IncompleteServiceReport extends AbstractStandardReport {
         this.courtLocationRepository = courtLocationRepository;
         isCourtUserOnly();
         addAuthenticationConsumer(request -> checkOwnership(request.getLocCode(), false));
-        addJoinOverride(QJuror.juror, JoinType.LEFTJOIN, QAppearance.appearance);
+        addJoinOverride(JoinOverrideDetails.builder()
+            .from(QJuror.juror)
+            .joinType(JoinType.LEFTJOIN)
+            .to(QAppearance.appearance)
+            .predicatesToAdd(
+                List.of(QAppearance.appearance.attendanceType.isNull()
+                    .or(QAppearance.appearance.attendanceType.notIn(AttendanceType.ABSENT,
+                        AttendanceType.NON_ATTENDANCE,
+                        AttendanceType.NON_ATTENDANCE_LONG_TRIAL)))
+            )
+            .build());
     }
 
     @Override
@@ -58,18 +68,10 @@ public class IncompleteServiceReport extends AbstractStandardReport {
             .where(QJurorPool.jurorPool.isActive.eq(true))
             .where(QJurorPool.jurorPool.status.status.in(List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL,
                 IJurorStatus.JUROR)))
-            .where(
-                QAppearance.appearance.attendanceType.isNull()
-                    .or(QAppearance.appearance.attendanceType.notIn(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE,
-                        AttendanceType.NON_ATTENDANCE_LONG_TRIAL))
-            )
             .orderBy(QJuror.juror.jurorNumber.asc());
 
         addGroupBy(query, DataType.JUROR_NUMBER, DataType.FIRST_NAME, DataType.LAST_NAME, DataType.POOL_NUMBER_BY_JP,
             DataType.NEXT_ATTENDANCE_DATE);
-
-
-
     }
 
     @Override
