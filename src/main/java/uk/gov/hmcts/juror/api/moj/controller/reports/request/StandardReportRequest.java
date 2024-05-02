@@ -39,6 +39,7 @@ public class StandardReportRequest {
         "IncompleteServiceReport",
         "PanelListDetailedReport",
         "AbaccusReport",
+        "JuryListReport",
         //Grouped
         "PostponedListByDateReport"
     })

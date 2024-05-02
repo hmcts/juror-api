@@ -8,10 +8,8 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
-import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -19,27 +17,25 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+
 @Component
 @SuppressWarnings("PMD.LawOfDemeter")
-public class PanelListDetailedReport extends AbstractStandardReport {
-
+public class JuryListReport extends AbstractStandardReport {
     private final TrialRepository trialRepository;
 
     @Autowired
-    public PanelListDetailedReport(PoolRequestRepository poolRequestRepository, TrialRepository trialRepository) {
+    public JuryListReport(TrialRepository trialRepository) {
         super(
-            poolRequestRepository,
             QPanel.panel,
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
-            DataType.JUROR_POSTCODE,
-            DataType.CONTACT_DETAILS);
-
+            DataType.JUROR_POSTCODE);
 
         this.trialRepository = trialRepository;
         isCourtUserOnly();
     }
+
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
@@ -53,16 +49,17 @@ public class PanelListDetailedReport extends AbstractStandardReport {
         StandardReportRequest request,
         StandardReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
 
-        return loadStandardTrialHeaders(request, trialRepository);
+        return loadStandardTrailHeaders(request, trialRepository, true);
     }
 
     @Override
     public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
-        return PanelListDetailedReport.RequestValidator.class;
+        return JuryListReport.RequestValidator.class;
     }
 
-    public interface RequestValidator extends Validators.AbstractRequestValidator,
-        AbstractReport.Validators.RequireTrialNumber {
+    public interface RequestValidator extends
+        Validators.AbstractRequestValidator,
+        Validators.RequireTrialNumber {
 
     }
 }

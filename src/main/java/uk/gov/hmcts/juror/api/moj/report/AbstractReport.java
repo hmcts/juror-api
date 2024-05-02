@@ -33,6 +33,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -130,7 +131,7 @@ public abstract class AbstractReport<T> {
         });
     }
 
-    public abstract Class<?> getRequestValidatorClass();
+    public abstract Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass();
 
     public final String getName() {
         return getClass().getSimpleName();
@@ -335,11 +336,16 @@ public abstract class AbstractReport<T> {
         ));
     }
 
-    public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadStandardTrialHeaders(
+    public Map<String, AbstractReportResponse.DataTypeValue> loadStandardTrialHeaders(
         StandardReportRequest request, TrialRepository trialRepository) {
+        return loadStandardTrailHeaders(request, trialRepository, false);
+    }
+
+    public Map<String, AbstractReportResponse.DataTypeValue> loadStandardTrailHeaders(
+        StandardReportRequest request, TrialRepository trialRepository, boolean addTrialStartDate) {
 
         Trial trial = getTrial(request.getTrialNumber(), trialRepository);
-        return new ConcurrentHashMap<>(Map.of(
+        Map<String, AbstractReportResponse.DataTypeValue> trialHeaders = new HashMap<>(Map.of(
             "trial_number", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Trial Number")
                 .dataType(String.class.getSimpleName())
@@ -367,7 +373,18 @@ public abstract class AbstractReport<T> {
                     getCourtNameString(trial.getCourtLocation()))
                 .build()
         ));
+
+        if (addTrialStartDate) {
+            trialHeaders.put("trial_start_date", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Trial Start Date")
+                .dataType(LocalDate.class.getSimpleName())
+                .value(DateTimeFormatter.ISO_DATE.format(trial.getTrialStartDate()))
+                .build());
+        }
+
+        return trialHeaders;
     }
+
 
     protected String getCourtNameString(CourtLocationRepository courtLocationRepository, String locCode) {
         Optional<CourtLocation> courtLocation = courtLocationRepository.findByLocCode(locCode);
