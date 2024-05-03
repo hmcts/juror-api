@@ -174,7 +174,8 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
      *     </ol>
      */
     @Override
-    public List<Tuple> findActivePoolsForDateRange(String owner, String locCode, LocalDate minDate, LocalDate maxDate) {
+    public List<Tuple> findActivePoolsForDateRange(String owner, String locCode, LocalDate minDate, LocalDate maxDate,
+                                                   boolean isReassign) {
 
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         JPAQuery<Tuple> query = queryFactory.select(
@@ -194,7 +195,7 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
             .groupBy(POOL_REQUEST.returnDate)
             .groupBy(POOL_REQUEST.numberRequested);
 
-        if (owner.equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)) {
+        if (owner.equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER) || isReassign) {
             query.where(POOL_REQUEST.owner.eq(owner));
         }
 

@@ -419,7 +419,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             payload.getOwner(),
             courtLocation,
             weekCommencing,
-            null
+            null,
+            false
         );
         List<DeferralOptionsDto.DeferralOptionDto> optionsDtos = new ArrayList<>();
         mapActivePoolStatsToDto(activePoolsData, optionsDtos, payload.getOwner());
@@ -951,7 +952,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             poolSummary.setWeekCommencing(weekCommencing);
 
             List<Tuple> activePoolsData = poolRequestRepository.findActivePoolsForDateRange(owner,
-                currentCourtLocation, weekCommencing, weekEnding);
+                currentCourtLocation, weekCommencing, weekEnding, false);
 
             log.debug("Found {} available active pools for preferred date: {}", activePoolsData.size(),
                 preferredDate
