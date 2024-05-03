@@ -105,7 +105,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
 
-    implementation('com.google.guava:guava:33.1.0-jre')
+    implementation('com.google.guava:guava:33.2.0-jre')
 
     implementation('org.hibernate.orm:hibernate-core:6.3.0.CR1')
 
