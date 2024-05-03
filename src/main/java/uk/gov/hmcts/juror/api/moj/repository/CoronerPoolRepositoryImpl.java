@@ -40,7 +40,7 @@ public class CoronerPoolRepositoryImpl implements ICoronerPoolRepository {
         }
 
         if (null != query.getRequestedBy()) {
-            partialQuery.where(CORONER_POOL.name.like(query.getRequestedBy() + "%"));
+            partialQuery.where(CORONER_POOL.name.containsIgnoreCase(query.getRequestedBy()));
         }
 
         return partialQuery.distinct().select(
