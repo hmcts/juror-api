@@ -313,7 +313,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 appearance.getAttendanceDate().toString());
             appearance.setDraftExpense(false);
         }
-        saveAppearancesWithExpenseRateIdUpdate(appearances);
+        updateExpenseRatesId(appearances);
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(
                 jurorNumber,
