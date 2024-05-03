@@ -162,7 +162,7 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
                             .add("last_name", "LNAMETHREE")
                             .add("pool_number_by_jp", "415240601")
                             .add("last_attendance_date",
-                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(2)))
+                                DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(1)))
                             .add("next_attendance_date",
                                 DateTimeFormatter.ISO_DATE.format(LocalDate.now().plusDays(1))),
                         new ReportLinkedMap<String, Object>()
@@ -179,7 +179,6 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
                             .add("first_name", "FNAMETWOONE")
                             .add("last_name", "LNAMETWOONE")
                             .add("pool_number_by_jp", "415240601")
-                            .add("last_attendance_date", null)
                             .add("next_attendance_date",
                                 DateTimeFormatter.ISO_DATE.format(LocalDate.now().plusDays(1)))))
                     .build())

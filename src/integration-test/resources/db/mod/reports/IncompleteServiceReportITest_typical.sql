@@ -24,10 +24,8 @@ INSERT INTO juror_mod.juror_pool (juror_number,pool_number,"owner",user_edtq,is_
 	 ('641500007','415240601','415','MODTESTCOURT',true,13,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0005',NULL,
 	 current_date-1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2024-04-22 15:14:10.871528',NULL,NULL,'2024-04-22 12:26:40.848865');
 
-
 insert into juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code,time_in,time_out,non_attendance,appearance_stage,attendance_type) values
---(current_date - interval '2 days','641500021','415240601','415','09:30:00','16:31:00',false,'EXPENSE_ENTERED',
---'FULL_DAY'),
 (current_date - interval '1 day','641500021','415240601','415',null,null,false,null,'ABSENT'),
 (current_date - interval '2 days','641500011','415240601','415','09:30:00','16:31:00',false,'EXPENSE_ENTERED','FULL_DAY'),
+(current_date - interval '1 days','641500003','415240601','415','09:30:00','16:31:00',false,'EXPENSE_ENTERED','FULL_DAY'),
 (current_date - interval '2 days','641500003','415240601','415','09:30:00','16:31:00',false,'EXPENSE_ENTERED','FULL_DAY');
