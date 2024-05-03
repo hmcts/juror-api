@@ -8,6 +8,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
@@ -33,16 +34,8 @@ public class PoolStatusReport extends AbstractGroupedReport {
             QJurorPool.jurorPool,
             DataType.IS_ACTIVE,
             true,
-            DataType.TOTAL_RESPONDED,
-            DataType.TOTAL_SUMMMONED,
-            DataType.TOTAL_PANELLED,
-            DataType.TOTAL_JUROR,
-            DataType.TOTAL_EXCUSED,
-            DataType.TOTAL_DEFERRED,
-            DataType.TOTAL_DISQUALIFIED,
-            DataType.TOTAL_REASSIGNED,
-            DataType.TOTAL_TRANSFERRED,
-            DataType.TOTAL_UNDELIVERED);
+            DataType.STATUS,
+            DataType.POOL_MEMBER_COUNT);
 
         this.jurorPoolRepository = jurorPoolRepository;
     }
@@ -54,8 +47,10 @@ public class PoolStatusReport extends AbstractGroupedReport {
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        query.where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber()));
-        addGroupBy(query, DataType.IS_ACTIVE, DataType.STATUS);
+        query.where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber())
+            .or(QJurorPool.jurorPool.pool.poolNumber.isNull()));
+        query.where(QJurorStatus.jurorStatus.status.notIn(0,11,12,13));
+        addGroupBy(query, DataType.STATUS, DataType.IS_ACTIVE, DataType.JUROR_STATUS);
     }
 
     @Override

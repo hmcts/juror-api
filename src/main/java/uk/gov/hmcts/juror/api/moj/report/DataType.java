@@ -4,13 +4,12 @@ import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import lombok.Getter;
-import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
@@ -80,29 +79,15 @@ public enum DataType implements IDataType {
         QBulkPrintData.bulkPrintData),
     DATE_SENT("Date sent", LocalDate.class, QBulkPrintData.bulkPrintData.creationDate, QBulkPrintData.bulkPrintData),
 
-    IS_ACTIVE("Is active", Boolean.class, QJurorPool.jurorPool.isActive, QJurorPool.jurorPool),
+    IS_ACTIVE("Is active", Boolean.class,
+        new CaseBuilder().when(QJurorStatus.jurorStatus.status.loe(4))
+            .then(true)
+            .otherwise(false),
+        QJurorStatus.jurorStatus),
 
-    TOTAL_RESPONDED("Responded", Long.class, QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED).count(),
-        QJurorPool.jurorPool),
-    TOTAL_SUMMMONED("Summoned", Long.class, QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED).count(),
-        QJurorPool.jurorPool),
-    TOTAL_PANELLED("Panelled", Long.class, QJurorPool.jurorPool.status.status.eq(IJurorStatus.PANEL).count(),
-        QJurorPool.jurorPool),
-    TOTAL_JUROR("Juror", Long.class, QJurorPool.jurorPool.status.status.eq(IJurorStatus.JUROR).count(),
-        QJurorPool.jurorPool),
-    TOTAL_EXCUSED("Excused", Long.class, QJurorPool.jurorPool.status.status.eq(IJurorStatus.EXCUSED).count(),
-        QJurorPool.jurorPool),
-    TOTAL_DEFERRED("Deferred", Long.class, QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED).count(),
-        QJurorPool.jurorPool),
-    TOTAL_DISQUALIFIED("Disqualified", Long.class,
-        QJurorPool.jurorPool.status.status.eq(IJurorStatus.DISQUALIFIED).count(),QJurorPool.jurorPool),
-    TOTAL_REASSIGNED("Reassigned", Long.class, QJurorPool.jurorPool.status.status.eq(IJurorStatus.REASSIGNED).count()
-        , QJurorPool.jurorPool),
-    TOTAL_TRANSFERRED("Transferred", Long.class,
-        QJurorPool.jurorPool.status.status.eq(IJurorStatus.TRANSFERRED).count(), QJurorPool.jurorPool),
-    TOTAL_UNDELIVERED("Undelivered", Long.class,
-        QJurorPool.jurorPool.status.status.eq(IJurorStatus.UNDELIVERABLE).count(), QJurorPool.jurorPool),
-    NEXT_ATTENDANCE_DATE("Next attendance date",LocalDate .class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool);
+    JUROR_STATUS("Juror Status", Integer.class, QJurorStatus.jurorStatus.status, QJurorStatus.jurorStatus),
+    POOL_MEMBER_COUNT("Count", Long.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
+    NEXT_ATTENDANCE_DATE("Next attendance date", LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool);
 
 
     private final List<EntityPath<?>> requiredTables;

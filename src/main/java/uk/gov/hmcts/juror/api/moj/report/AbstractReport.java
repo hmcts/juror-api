@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
@@ -79,6 +80,11 @@ public abstract class AbstractReport<T> {
         CLASS_TO_JOIN.put(QPanel.panel, Map.of(
             QJuror.juror, new Predicate[]{
                 QPanel.panel.juror.eq(QJuror.juror)
+            }
+        ));
+        CLASS_TO_JOIN.put(QJurorStatus.jurorStatus, Map.of(
+            QJurorPool.jurorPool, new Predicate[]{
+                QJurorPool.jurorPool.status.eq(QJurorStatus.jurorStatus)
             }
         ));
     }
