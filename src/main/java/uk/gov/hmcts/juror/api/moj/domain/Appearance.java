@@ -47,7 +47,6 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 @AllArgsConstructor
 @IdClass(AppearanceId.class)
 @Builder
-@ToString
 @Getter
 @Setter
 @Audited

@@ -298,6 +298,13 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         if (appearances.isEmpty()) {
             throw new MojException.NotFound("No appearances found for juror: " + jurorNumber, null);
         }
+        if (appearances.stream()
+            .anyMatch(appearance -> !appearance.isDraftExpense()
+                || !AppearanceStage.EXPENSE_ENTERED.equals(appearance.getAppearanceStage()))) {
+            throw new MojException.BusinessRuleViolation(
+                "All appearances must be in draft and have stage EXPENSE_ENTERED",
+                MojException.BusinessRuleViolation.ErrorCode.INVALID_APPEARANCES_STATUS);
+        }
 
         // update each expense record to assign the financial audit details object
         // and update the is_draft_expense property to false (marking the batch of expenses as ready for approval)
@@ -306,7 +313,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 appearance.getAttendanceDate().toString());
             appearance.setDraftExpense(false);
         }
-
+        saveAppearancesWithExpenseRateIdUpdate(appearances);
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(
                 jurorNumber,
@@ -317,7 +324,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             jurorHistoryService.createExpenseForApprovalHistory(financialAuditDetails,
                 appearance));
 
-        saveAppearancesWithExpenseRateIdUpdate(appearances);
         log.trace("Exit submitDraftExpensesForApproval");
     }
 
