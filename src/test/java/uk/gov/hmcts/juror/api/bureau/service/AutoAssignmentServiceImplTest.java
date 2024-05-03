@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,6 +71,7 @@ public class AutoAssignmentServiceImplTest {
     private User user1;
     private User user2;
     private User user3;
+    private User testUser;
 
     private List<DigitalResponse> backlog;
 
@@ -79,11 +81,13 @@ public class AutoAssignmentServiceImplTest {
         user1 = User.builder().userType(UserType.BUREAU).name("Post Staff 1").username("staff1").active(true).build();
         user2 = User.builder().userType(UserType.BUREAU).name("Post Staff 2").username("staff2").active(true).build();
         user3 = User.builder().userType(UserType.BUREAU).name("Post Staff 3").username("staff3").active(true).build();
+        testUser = User.builder().userType(UserType.BUREAU).name("Test User").username("testUser").active(true).build();
 
         doReturn(Arrays.asList(user1, user2)).when(userRepo).findAll(UserQueries.activeBureauOfficers());
         doReturn(user1).when(userRepo).findByUsername("staff1");
         doReturn(user2).when(userRepo).findByUsername("staff2");
         doReturn(user3).when(userRepo).findByUsername("staff3");
+        doReturn(testUser).when(userRepo).findByUsername("testUser");
 
         //doReturn(Arrays.asList(user1, user2, user3)).when(userRepo).findAll(StaffQueries.activeBureauOfficers());
         doReturn(Arrays.asList(user1, user2, user3)).when(userRepo)
@@ -155,11 +159,12 @@ public class AutoAssignmentServiceImplTest {
         assertThat(backlog.parallelStream().filter(r -> r.getStaff().equals(user2)).count()).isEqualTo(60);
         assertThat(backlog.parallelStream().filter(r -> r.getStaff().equals(user3)).count()).isEqualTo(60);
 
-        ArgumentCaptor<UserJurorResponseAudit> auditCaptor =
-            ArgumentCaptor.forClass(UserJurorResponseAudit.class);
+        ArgumentCaptor<Iterable<UserJurorResponseAudit>> auditCaptor =
+            ArgumentCaptor.forClass(Iterable.class);
         verify(responseRepo, times(1)).saveAll(backlog);
         verify(auditRepo).saveAll(auditCaptor.capture());
-        List<UserJurorResponseAudit> auditEntries = auditCaptor.getAllValues();
+        List<UserJurorResponseAudit> auditEntries =
+            Lists.newLinkedList((auditCaptor.getValue()));
 
         for (DigitalResponse backlogItem : backlog) {
 
