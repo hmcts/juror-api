@@ -233,8 +233,8 @@ public class JurorServiceImpl implements JurorService {
 
         //convert the dto to the entity type
         final List<JurorReasonableAdjustment> reasonableAdjustmentsEntities = new ArrayList<>();
-        if (dto.getSpecialNeeds() != null) {
-            dto.getSpecialNeeds().forEach(reasonableAdjustment ->
+        if (dto.getReasonableAdjustments() != null) {
+            dto.getReasonableAdjustments().forEach(reasonableAdjustment ->
                 reasonableAdjustmentsEntities.add(
                     JurorReasonableAdjustment.builder()
                         .jurorNumber(jurorNumber)

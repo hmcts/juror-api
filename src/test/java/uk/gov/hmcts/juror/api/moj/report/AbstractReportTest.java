@@ -1169,7 +1169,7 @@ class AbstractReportTest {
         }
 
         @Override
-        public Class<?> getRequestValidatorClass() {
+        public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
             throw new UnsupportedOperationException();//Only used on service layer
         }
 

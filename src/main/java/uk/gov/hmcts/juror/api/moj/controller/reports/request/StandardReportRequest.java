@@ -38,6 +38,8 @@ public class StandardReportRequest {
         "PanelSummaryReport",
         "IncompleteServiceReport",
         "PanelListDetailedReport",
+        "AbaccusReport",
+        "JuryListReport",
         //Grouped
         "PostponedListByDateReport"
     })

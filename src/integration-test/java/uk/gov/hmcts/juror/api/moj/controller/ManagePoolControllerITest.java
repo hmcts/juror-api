@@ -1448,7 +1448,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     public void availablePoolsInCourtLocationBureauUserHappy() {
         ResponseEntity<AvailablePoolsInCourtLocationDto> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/manage-pool/available-pools/415")), AvailablePoolsInCourtLocationDto.class);
+                URI.create("/api/v1/moj/manage-pool/available-pools/415?is-reassign=true")),
+                AvailablePoolsInCourtLocationDto.class);
 
         assertThat(responseEntity.getStatusCode()).as(EXPECT_HTTP_RESPONSE_SUCCESSFUL).isEqualTo(HttpStatus.OK);
 

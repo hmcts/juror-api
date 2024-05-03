@@ -2105,9 +2105,7 @@ class JurorAppearanceServiceTest {
     private BureauJwtPayload buildPayload(String owner, List<String> courts) {
         return BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("COURT_USER")
-            .daysToExpire(89)
             .owner(owner)
             .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build();

@@ -201,10 +201,8 @@ class SecurityConfigTest {
                     .staff(BureauJwtPayload.Staff.builder().courts(Collections.singletonList("415")).build())
                     .build();
                 final Map<String, Object> claimsMap = new HashMap<>();
-                claimsMap.put("daysToExpire", payload.getDaysToExpire());
                 claimsMap.put("login", payload.getLogin());
                 claimsMap.put("owner", payload.getOwner());
-                claimsMap.put("passwordWarning", payload.getPasswordWarning());
                 claimsMap.put("userLevel", payload.getUserLevel());
                 claimsMap.put("staff", payload.getStaff());
                 return claimsMap;

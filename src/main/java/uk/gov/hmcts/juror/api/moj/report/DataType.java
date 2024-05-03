@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
+import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
@@ -70,7 +71,12 @@ public enum DataType implements IDataType {
         QJurorPool.jurorPool),
     NEXT_ATTENDANCE_DATE("Next attendance date", LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool),
     LAST_ATTENDANCE_DATE("Last attended on", LocalDate.class, QAppearance.appearance.attendanceDate.max(),
-        QAppearance.appearance);
+        QAppearance.appearance),
+    DOCUMENT_CODE("Document code", String.class, QBulkPrintData.bulkPrintData.formAttribute.formType,
+        QBulkPrintData.bulkPrintData),
+    TOTAL_SENT_FOR_PRINTING("Sent for printing", Long.class, QBulkPrintData.bulkPrintData.jurorNo.count(),
+        QBulkPrintData.bulkPrintData),
+    DATE_SENT("Date sent", LocalDate.class, QBulkPrintData.bulkPrintData.creationDate,  QBulkPrintData.bulkPrintData);
 
 
     private final List<EntityPath<?>> requiredTables;

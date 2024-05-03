@@ -71,6 +71,7 @@ public class JurorRepositoryImpl implements IJurorRepository {
         if (!SecurityUtil.isBureau()) {
             // If the user is not a Bureau user, filter by the courts they have access to
             partialQuery.where(JUROR_POOL.pool.courtLocation.locCode.in(SecurityUtil.getCourts()));
+            partialQuery.where(JUROR_POOL.owner.eq(SecurityUtil.getActiveOwner()));
         }
 
         if (null != query.getJurorNumber()) {

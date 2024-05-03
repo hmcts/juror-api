@@ -234,7 +234,7 @@ public class JurorServiceImplTest {
                 .cjsEmployer(cjsEmployer)
                 .cjsEmployerDetails(cjsEmployerDetails)
                 .build()))
-            .specialNeeds(Collections.singletonList(JurorResponseDto.ReasonableAdjustment.builder()
+            .reasonableAdjustments(Collections.singletonList(JurorResponseDto.ReasonableAdjustment.builder()
                 .assistanceType(specialNeedType)
                 .assistanceTypeDetails(specialNeedDetail)
                 .build()))

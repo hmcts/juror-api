@@ -1252,17 +1252,20 @@ class ManageDeferralsServiceTest {
             bureauOwner,
             currentCourtLocation,
             LocalDate.of(2023, 5, 29),
-            LocalDate.of(2023, 6, 2)
+            LocalDate.of(2023, 6, 2),
+            false
         );
         doReturn(secondDateQueryResult).when(poolRequestRepository).findActivePoolsForDateRange(
             bureauOwner,
             currentCourtLocation,
             LocalDate.of(2023, 6, 12),
-            LocalDate.of(2023, 6, 16)
+            LocalDate.of(2023, 6, 16),
+            false
         );
         doReturn(thirdDateQueryResult).when(poolRequestRepository)
             .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
-                LocalDate.of(2023, 7, 3), LocalDate.of(2023, 7, 7));
+                LocalDate.of(2023, 7, 3), LocalDate.of(2023, 7, 7),
+                false);
 
         long deferralMaintenanceCount = 5L;
         doReturn(deferralMaintenanceCount).when(currentlyDeferredRepository)
@@ -1298,13 +1301,16 @@ class ManageDeferralsServiceTest {
 
         verify(poolRequestRepository, times(1))
             .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
-                LocalDate.of(2023, 5, 29), LocalDate.of(2023, 6, 2));
+                LocalDate.of(2023, 5, 29), LocalDate.of(2023, 6, 2),
+                false);
         verify(poolRequestRepository, times(1))
             .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
-                LocalDate.of(2023, 6, 12), LocalDate.of(2023, 6, 16));
+                LocalDate.of(2023, 6, 12), LocalDate.of(2023, 6, 16),
+                false);
         verify(poolRequestRepository, times(1))
             .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
-                LocalDate.of(2023, 7, 3), LocalDate.of(2023, 7, 7));
+                LocalDate.of(2023, 7, 3), LocalDate.of(2023, 7, 7),
+                false);
 
         verify(currentlyDeferredRepository, never()).count(filterByCourtAndDate(
             bureauOwner,
@@ -1419,17 +1425,20 @@ class ManageDeferralsServiceTest {
             bureauOwner,
             currentCourtLocation,
             LocalDate.of(2023, 5, 29),
-            LocalDate.of(2023, 6, 2));
+            LocalDate.of(2023, 6, 2),
+            false);
         verify(poolRequestRepository, never()).findActivePoolsForDateRange(
             bureauOwner,
             currentCourtLocation,
             LocalDate.of(2023, 6, 12),
-            LocalDate.of(2023, 6, 16));
+            LocalDate.of(2023, 6, 16),
+            false);
         verify(poolRequestRepository, never()).findActivePoolsForDateRange(
             bureauOwner,
             currentCourtLocation,
             LocalDate.of(2023, 7, 3),
-            LocalDate.of(2023, 7, 7));
+            LocalDate.of(2023, 7, 7),
+            false);
 
         verify(currentlyDeferredRepository, never()).count(filterByCourtAndDate(
             bureauOwner,
@@ -1564,17 +1573,20 @@ class ManageDeferralsServiceTest {
             bureauOwner,
             currentCourtLocation,
             LocalDate.of(2023, 5, 29),
-            LocalDate.of(2023, 6, 2)
+            LocalDate.of(2023, 6, 2),
+            false
         );
         doReturn(secondDateQueryResult).when(poolRequestRepository).findActivePoolsForDateRange(
             bureauOwner,
             currentCourtLocation,
             LocalDate.of(2023, 6, 12),
-            LocalDate.of(2023, 6, 16)
+            LocalDate.of(2023, 6, 16),
+            false
         );
         doReturn(thirdDateQueryResult).when(poolRequestRepository)
             .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
-                LocalDate.of(2023, 7, 3), LocalDate.of(2023, 7, 7));
+                LocalDate.of(2023, 7, 3), LocalDate.of(2023, 7, 7),
+                false);
 
         long deferralMaintenanceCount = 5L;
         doReturn(deferralMaintenanceCount).when(currentlyDeferredRepository)
@@ -1593,13 +1605,16 @@ class ManageDeferralsServiceTest {
 
         verify(poolRequestRepository, times(1))
             .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
-                LocalDate.of(2023, 5, 29), LocalDate.of(2023, 6, 2));
+                LocalDate.of(2023, 5, 29), LocalDate.of(2023, 6, 2),
+                false);
         verify(poolRequestRepository, times(1))
             .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
-                LocalDate.of(2023, 6, 12), LocalDate.of(2023, 6, 16));
+                LocalDate.of(2023, 6, 12), LocalDate.of(2023, 6, 16),
+                false);
         verify(poolRequestRepository, times(1))
             .findActivePoolsForDateRange(bureauOwner, currentCourtLocation,
-                LocalDate.of(2023, 7, 3), LocalDate.of(2023, 7, 7));
+                LocalDate.of(2023, 7, 3), LocalDate.of(2023, 7, 7),
+                false);
 
         verify(currentlyDeferredRepository, never()).count(filterByCourtAndDate(
             bureauOwner,
@@ -1743,7 +1758,7 @@ class ManageDeferralsServiceTest {
                 null,
                 payload)).as("Verify a Bad Request exception is thrown");
 
-        verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any());
+        verify(poolRequestRepository, never()).findActivePoolsForDateRange(any(), any(), any(), any(), anyBoolean());
 
         verify(currentlyDeferredRepository, never()).count(any(BooleanExpression.class));
 
@@ -2088,7 +2103,7 @@ class ManageDeferralsServiceTest {
         results.add(tuple);
 
         doReturn(results).when(poolRequestRepository).findActivePoolsForDateRange(any(), any(),
-            any(), any());
+            any(), any(), anyBoolean());
 
         DeferralOptionsDto deferralOptionsDto = manageDeferralsService.findActivePoolsForCourtLocation(
             payload,
@@ -2098,7 +2113,8 @@ class ManageDeferralsServiceTest {
             any(),
             any(),
             any(),
-            any());
+            any(),
+            anyBoolean());
 
         DeferralOptionsDto.OptionSummaryDto summaryDto = deferralOptionsDto.getDeferralPoolsSummary().get(0);
         assertThat(summaryDto.getDeferralOptions().get(0).getPoolNumber()).isEqualTo("111111111");
@@ -2126,21 +2142,24 @@ class ManageDeferralsServiceTest {
                 "400",
                 "415",
                 LocalDate.of(2023, 5, 29),
-                LocalDate.of(2023, 6, 2));
+                LocalDate.of(2023, 6, 2),
+                false);
 
         doReturn(createActivePoolsForDeferralsSecondDate())
             .when(poolRequestRepository).findActivePoolsForDateRange(
                 "400",
                 "415",
                 LocalDate.of(2023, 6, 12),
-                LocalDate.of(2023, 6, 16));
+                LocalDate.of(2023, 6, 16),
+                false);
 
         doReturn(createActivePoolsForDeferralsThirdDate())
             .when(poolRequestRepository).findActivePoolsForDateRange(
                 "400",
                 "415",
                 LocalDate.of(2023, 7, 3),
-                LocalDate.of(2023, 7, 7));
+                LocalDate.of(2023, 7, 7),
+                false);
 
         //Invoke service method under test
         BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
@@ -2229,21 +2248,21 @@ class ManageDeferralsServiceTest {
                 "400",
                 "415",
                 LocalDate.of(2023, 5, 29),
-                LocalDate.of(2023, 6, 2));
+                LocalDate.of(2023, 6, 2), false);
 
         doReturn(new ArrayList<>())
             .when(poolRequestRepository).findActivePoolsForDateRange(
                 "400",
                 "415",
                 LocalDate.of(2023, 6, 12),
-                LocalDate.of(2023, 6, 16));
+                LocalDate.of(2023, 6, 16), false);
 
         doReturn(new ArrayList<>())
             .when(poolRequestRepository).findActivePoolsForDateRange(
                 "400",
                 "415",
                 LocalDate.of(2023, 7, 3),
-                LocalDate.of(2023, 7, 7));
+                LocalDate.of(2023, 7, 7), false);
 
         //Invoke service method under test
         BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
@@ -2324,7 +2343,7 @@ class ManageDeferralsServiceTest {
             any(String.class), any(Boolean.class));
         verify(digitalResponseRepository, times(1)).findByJurorNumber(any(String.class));
         verify(poolRequestRepository, never()).findActivePoolsForDateRange(
-            any(String.class), any(String.class), any(LocalDate.class), any(LocalDate.class));
+            any(String.class), any(String.class), any(LocalDate.class), any(LocalDate.class), anyBoolean());
     }
 
     @Test
@@ -2341,7 +2360,7 @@ class ManageDeferralsServiceTest {
             any(String.class), any(Boolean.class));
         verify(digitalResponseRepository, never()).findById(any(String.class));
         verify(poolRequestRepository, never()).findActivePoolsForDateRange(
-            any(String.class), any(String.class), any(LocalDate.class), any(LocalDate.class));
+            any(String.class), any(String.class), any(LocalDate.class), any(LocalDate.class), anyBoolean());
     }
 
     @Test
@@ -2359,7 +2378,7 @@ class ManageDeferralsServiceTest {
             any(String.class), any(Boolean.class));
         verify(digitalResponseRepository, never()).findById(any(String.class));
         verify(poolRequestRepository, never()).findActivePoolsForDateRange(
-            any(String.class), any(String.class), any(LocalDate.class), any(LocalDate.class));
+            any(String.class), any(String.class), any(LocalDate.class), any(LocalDate.class), any(Boolean.class));
     }
 
     @Test
@@ -2379,7 +2398,7 @@ class ManageDeferralsServiceTest {
             any(String.class), any(Boolean.class));
         verify(digitalResponseRepository, times(1)).findByJurorNumber(any(String.class));
         verify(poolRequestRepository, never()).findActivePoolsForDateRange(
-            any(String.class), any(String.class), any(LocalDate.class), any(LocalDate.class));
+            any(String.class), any(String.class), any(LocalDate.class), any(LocalDate.class), anyBoolean());
     }
 
     private void setUpDeferralQueryResult(Tuple deferral, String courtLocation,

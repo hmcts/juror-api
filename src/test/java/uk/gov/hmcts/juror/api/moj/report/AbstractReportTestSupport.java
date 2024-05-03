@@ -51,10 +51,15 @@ public abstract class AbstractReportTestSupport<
     private final Class<?> validatorClass;
     protected R report;
     private PoolRequestRepository poolRequestRepository;
+    public boolean hasPoolRepository = true;
+
     private final Validator validator;
 
     public abstract R createReport(PoolRequestRepository poolRequestRepository);
 
+    public void setHasPoolRepository(boolean hasPoolRepository) {
+        this.hasPoolRepository = hasPoolRepository;
+    }
 
     public AbstractReportTestSupport(EntityPath<?> from,
                                      Class<?> validatorClass, IDataType... dataTypes) {
@@ -91,7 +96,11 @@ public abstract class AbstractReportTestSupport<
     @Test
     void positiveConstructor() {
         assertThat(report).isNotNull();
-        assertThat(report.getPoolRequestRepository()).isEqualTo(poolRequestRepository);
+        if (hasPoolRepository) {
+            assertThat(report.getPoolRequestRepository()).isEqualTo(poolRequestRepository);
+        } else {
+            assertThat(report.getPoolRequestRepository()).isNull();
+        }
         assertThat(report.getFrom()).isEqualTo(from);
         assertThat(report.getDataTypes()).containsExactly(dataTypes);
         //Other fields don't need testing as they will be tested via the dedicated AbstractReportTest

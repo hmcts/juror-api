@@ -12,7 +12,6 @@ import uk.gov.hmcts.juror.api.bureau.controller.request.StaffAssignmentRequestDt
 import uk.gov.hmcts.juror.api.bureau.controller.response.OperationFailureListDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffAssignmentResponseDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffRosterResponseDto;
-import uk.gov.hmcts.juror.api.bureau.domain.StaffAuditRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.TeamRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.UserQueries;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -70,8 +69,6 @@ public class UserServiceImplTest {
     @Mock
     private TeamRepository mockTeamRepository;
 
-    @Mock
-    private StaffAuditRepository mockStaffAuditRepository;
 
     @InjectMocks
     private UserServiceImpl userService;

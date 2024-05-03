@@ -61,7 +61,7 @@ public class DeferredListByDateReport extends AbstractStandardReport {
     }
 
     @Override
-    public Class<?> getRequestValidatorClass() {
+    public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
         return DeferredListByDateReport.RequestValidator.class;
     }
 

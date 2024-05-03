@@ -91,7 +91,7 @@ class AbstractStandardReportTest {
         }
 
         @Override
-        public Class<?> getRequestValidatorClass() {
+        public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
             throw new UnsupportedOperationException("Not implemented");
         }
 

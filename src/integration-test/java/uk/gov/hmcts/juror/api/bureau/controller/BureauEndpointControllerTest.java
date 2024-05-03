@@ -93,9 +93,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String publicJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -120,9 +118,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build())
         );
@@ -173,9 +169,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build())
         );
@@ -205,9 +199,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -292,9 +284,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -371,9 +361,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -449,9 +437,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -525,9 +511,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -601,9 +585,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -677,9 +659,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 
@@ -753,9 +733,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
-            .passwordWarning(false)
             .login("testlogin")
-            .daysToExpire(89)
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
 

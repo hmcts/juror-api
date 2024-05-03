@@ -99,7 +99,7 @@ public class BureauAuthenticationController {
         private Boolean passwordWarning;
 
         private UserType userType;
-
+        private UserType activeUserType;
 
         private Set<Role> roles;
 
