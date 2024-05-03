@@ -33,15 +33,15 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.UserJurorResponseAudit;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.UserJurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
-    private final StaffJurorResponseAuditRepositoryMod staffJurorResponseAuditRepository;
+    private final UserJurorResponseAuditRepository userJurorResponseAuditRepository;
     private final JurorPoolRepository poolRepository;
     private final EntityManager entityManager;
     private final BureauTransformsService bureauTransformsService;
@@ -183,42 +183,33 @@ public class UserServiceImpl implements UserService {
             ));
         }
 
-        final LocalDate assignmentDate = LocalDate.now();
-        if (log.isTraceEnabled()) {
-            log.trace("Assignment date: {}", assignmentDate);
-        }
+        final LocalDateTime assignmentDate = LocalDateTime.now();
+        log.trace("Assignment date: {}", assignmentDate);
 
         // 2. audit entity
-        final StaffJurorResponseAuditMod staffJurorResponseAudit = StaffJurorResponseAuditMod.realBuilder()
-            .teamLeaderLogin(assigningUser.getUsername())
-            .staffLogin(assignToUser != null
-                ?
-                assignToUser.getUsername()
-                :
-                    null)
+        final UserJurorResponseAudit userJurorResponseAudit = UserJurorResponseAudit.builder()
             .jurorNumber(jurorResponse.getJurorNumber())
-            .dateReceived(jurorResponse.getDateReceived())
-            .staffAssignmentDate(assignmentDate)
+            .assignedBy(assigningUser)
+            .assignedTo(assignToUser)
+            .assignedOn(assignmentDate)
             .build();
 
         // 3. perform update
         //detach the entity so that it will have to reattached by hibernate on save trigger optimistic locking.
         entityManager.detach(jurorResponse);
         jurorResponse.setStaff(assignToUser);// may be null!
-        jurorResponse.setStaffAssignmentDate(assignmentDate);
+        jurorResponse.setStaffAssignmentDate(assignmentDate.toLocalDate());
+
         // set optimistic lock version from UI
         log.debug("Version: DB={}, UI={}", jurorResponse.getVersion(), staffAssignmentRequestDto.getVersion());
         jurorResponse.setVersion(staffAssignmentRequestDto.getVersion());
 
         // 4. persist
-        if (log.isTraceEnabled()) {
-            log.trace("Updating assignment on {}", jurorResponse);
-        }
+        log.trace("Updating assignment on {}", jurorResponse);
         jurorResponseRepository.save(jurorResponse);
-        if (log.isTraceEnabled()) {
-            log.trace("Auditing assignment {}", staffJurorResponseAudit);
-        }
-        staffJurorResponseAuditRepository.save(staffJurorResponseAudit);
+
+        log.trace("Auditing assignment {}", userJurorResponseAudit);
+        userJurorResponseAuditRepository.save(userJurorResponseAudit);
 
         // 5. response
         final String assignedTo = jurorResponse.getStaff() != null
@@ -292,6 +283,7 @@ public class UserServiceImpl implements UserService {
      * Assign urgent response.
      *
      * @param urgentJurorResponse Previously persisted juror response entity
+     *
      * @throws StaffAssignmentException Failed to assign the response to a staff member
      */
     @Override
@@ -319,27 +311,28 @@ public class UserServiceImpl implements UserService {
             // assign a random staff member to the juror response
             final User staffToAssign = availableStaff.get(RandomUtils.nextInt(0, availableStaff.size()));
             updateResponse.setStaff(staffToAssign);
-            final LocalDate now = LocalDate.now();
-            if (log.isDebugEnabled()) {
-                log.debug("Setting now as {}", now);
-            }
-            updateResponse.setStaffAssignmentDate(now);
-            if (log.isTraceEnabled()) {
-                log.trace("Assigning juror response {}", urgentJurorResponse);
-            }
+
+            final LocalDateTime now = LocalDateTime.now();
+            log.debug("Setting now as {}", now);
+            updateResponse.setStaffAssignmentDate(now.toLocalDate());
+
+            log.trace("Assigning juror response {}", urgentJurorResponse);
             jurorResponseRepository.save(updateResponse);
 
-            final StaffJurorResponseAuditMod staffJurorResponseAudit = StaffJurorResponseAuditMod.realBuilder()
-                .teamLeaderLogin(AUTO_USER)
-                .staffLogin(staffToAssign.getUsername())
-                .jurorNumber(urgentJurorResponse.getJurorNumber())
-                .dateReceived(urgentJurorResponse.getDateReceived())
-                .staffAssignmentDate(now)
-                .build();
-            if (log.isTraceEnabled()) {
-                log.trace("Auditing urgent assignment {}", staffJurorResponseAudit);
+            final User assignedBy = userRepository.findByUsername(AUTO_USER);
+            if (ObjectUtils.isEmpty(userRepository)) {
+                throw new StaffAssignmentException("Assigning staff record does not exist!");
             }
-            staffJurorResponseAuditRepository.save(staffJurorResponseAudit);
+
+            final UserJurorResponseAudit userJurorResponseAudit = UserJurorResponseAudit.builder()
+                .jurorNumber(urgentJurorResponse.getJurorNumber())
+                .assignedBy(assignedBy)
+                .assignedTo(staffToAssign)
+                .assignedOn(now)
+                .build();
+
+            log.trace("Auditing urgent assignment {}", userJurorResponseAudit);
+            userJurorResponseAuditRepository.save(userJurorResponseAudit);
         } else {
             // business logic dictates that if no staff exist for the court leave the response unassigned.
             log.warn("No staff matched court {}. Leaving juror {} response unassigned!", courtId,
@@ -443,6 +436,7 @@ public class UserServiceImpl implements UserService {
      *
      * @param multipleStaffAssignmentDto Multiple staff assignment request payload.
      * @param currentUser                The user carrying out this operation.
+     *
      * @throws StaffAssignmentException Failed to assign the staff member to the response.
      * @see #changeAssignment(StaffAssignmentRequestDto, String)
      */
@@ -579,34 +573,33 @@ public class UserServiceImpl implements UserService {
 
         Iterable<DigitalResponse> jurorResponses = jurorResponseRepository.findAll(responseGroupFilter);
 
+        User assignedBy = userRepository.findByUsername(assigningUser);
+        if (assignedBy == null) {
+            throw new ReassignException.StaffMemberNotFound(assigningUser);
+        }
+
         for (DigitalResponse jurorResponse : jurorResponses) {
-            final LocalDate assignmentDate = LocalDate.now();
-            if (log.isTraceEnabled()) {
-                log.trace("Assignment date: {}", assignmentDate);
-            }
+            final LocalDateTime assignmentDate = LocalDateTime.now();
+            log.trace("Assignment date: {}", assignmentDate);
 
             // audit entity
-            final StaffJurorResponseAuditMod staffJurorResponseAudit = StaffJurorResponseAuditMod.realBuilder()
-                .teamLeaderLogin(assigningUser)
-                .staffLogin(assignToUser)
+            final UserJurorResponseAudit userJurorResponseAudit = UserJurorResponseAudit.builder()
                 .jurorNumber(jurorResponse.getJurorNumber())
-                .dateReceived(jurorResponse.getDateReceived())
-                .staffAssignmentDate(assignmentDate)
+                .assignedBy(assignedBy)
+                .assignedTo(newStaffToAssign)
+                .assignedOn(assignmentDate)
                 .build();
 
             // perform update
             jurorResponse.setStaff(newStaffToAssign);// may be null!
-            jurorResponse.setStaffAssignmentDate(assignmentDate);
+            jurorResponse.setStaffAssignmentDate(assignmentDate.toLocalDate());
 
             // persist
-            if (log.isTraceEnabled()) {
-                log.trace("Updating assignment on {}", jurorResponse);
-            }
+            log.trace("Updating assignment on {}", jurorResponse);
             jurorResponseRepository.save(jurorResponse);
-            if (log.isTraceEnabled()) {
-                log.trace("Auditing reassignment {}", staffJurorResponseAudit);
-            }
-            staffJurorResponseAuditRepository.save(staffJurorResponseAudit);
+            log.trace("Auditing reassignment {}", userJurorResponseAudit);
+
+            userJurorResponseAuditRepository.save(userJurorResponseAudit);
         }
     }
 }

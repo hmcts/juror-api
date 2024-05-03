@@ -16,14 +16,15 @@ import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.UserJurorResponseAudit;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.UserJurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -62,7 +63,7 @@ public class AutoAssignmentServiceImplTest {
     private AppSettingService appSettingService;
 
     @Mock
-    private StaffJurorResponseAuditRepositoryMod auditRepo;
+    private UserJurorResponseAuditRepository auditRepo;
 
     private AutoAssignmentServiceImpl autoAssignmentService;
 
@@ -80,7 +81,9 @@ public class AutoAssignmentServiceImplTest {
         user3 = User.builder().userType(UserType.BUREAU).name("Post Staff 3").username("staff3").active(true).build();
 
         doReturn(Arrays.asList(user1, user2)).when(userRepo).findAll(UserQueries.activeBureauOfficers());
-
+        doReturn(user1).when(userRepo).findByUsername("staff1");
+        doReturn(user2).when(userRepo).findByUsername("staff2");
+        doReturn(user3).when(userRepo).findByUsername("staff3");
 
         //doReturn(Arrays.asList(user1, user2, user3)).when(userRepo).findAll(StaffQueries.activeBureauOfficers());
         doReturn(Arrays.asList(user1, user2, user3)).when(userRepo)
@@ -152,22 +155,22 @@ public class AutoAssignmentServiceImplTest {
         assertThat(backlog.parallelStream().filter(r -> r.getStaff().equals(user2)).count()).isEqualTo(60);
         assertThat(backlog.parallelStream().filter(r -> r.getStaff().equals(user3)).count()).isEqualTo(60);
 
-        ArgumentCaptor<Iterable<StaffJurorResponseAuditMod>> auditCaptor = ArgumentCaptor.forClass(Iterable.class);
+        ArgumentCaptor<UserJurorResponseAudit> auditCaptor =
+            ArgumentCaptor.forClass(UserJurorResponseAudit.class);
         verify(responseRepo, times(1)).saveAll(backlog);
         verify(auditRepo).saveAll(auditCaptor.capture());
-        List<StaffJurorResponseAuditMod> auditEntries =
-            Lists.newLinkedList(((Iterable<StaffJurorResponseAuditMod>) auditCaptor.getValue()));
+        List<UserJurorResponseAudit> auditEntries = auditCaptor.getAllValues();
 
         for (DigitalResponse backlogItem : backlog) {
 
-            List<StaffJurorResponseAuditMod> itemAudit = auditEntries.parallelStream()
+            List<UserJurorResponseAudit> itemAudit = auditEntries.parallelStream()
                 .filter(audit -> audit.getJurorNumber().equals(backlogItem.getJurorNumber()))
                 .collect(Collectors.toList());
             assertThat(itemAudit).hasSize(1);
 
-            StaffJurorResponseAuditMod audit = itemAudit.get(0);
-            assertThat(audit.getTeamLeaderLogin()).isEqualTo("testUser");
-            assertThat(audit.getStaffLogin()).isEqualTo(backlogItem.getStaff().getUsername());
+            UserJurorResponseAudit audit = itemAudit.get(0);
+            assertThat(audit.getAssignedBy().getUsername()).isEqualTo("testUser");
+            assertThat(audit.getAssignedTo().getUsername()).isEqualTo(backlogItem.getStaff().getUsername());
         }
     }
 

@@ -1,4 +1,4 @@
-delete from juror_mod.staff_juror_response_audit ;
+delete from juror_mod.user_juror_response_audit ;
 delete from juror_mod.juror_response_aud;
 delete from juror_mod.juror_response;
 delete from juror_mod.juror_history;

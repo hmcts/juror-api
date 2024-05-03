@@ -21,11 +21,11 @@ import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.UserJurorResponseAudit;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.UserJurorResponseAuditRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,7 +55,7 @@ public class UserServiceImplTest {
     private JurorDigitalResponseRepositoryMod mockJurorResponseRepository;
 
     @Mock
-    private StaffJurorResponseAuditRepositoryMod mockStaffJurorResponseAuditRepository;
+    private UserJurorResponseAuditRepository mockUserJurorResponseAuditRepository;
 
     @Mock
     private EntityManager mockEntityManager;
@@ -144,7 +144,7 @@ public class UserServiceImplTest {
         verify(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
         verify(mockuserRepository).findByUsername(TARGET_LOGIN);
-        verify(mockStaffJurorResponseAuditRepository).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository).save(any(UserJurorResponseAudit.class));
         verify(mockEntityManager).detach(any());
     }
 
@@ -165,7 +165,7 @@ public class UserServiceImplTest {
 
         verify(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
-        verify(mockStaffJurorResponseAuditRepository).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository).save(any(UserJurorResponseAudit.class));
     }
 
     @Test(expected = StaffAssignmentException.class)
@@ -270,9 +270,9 @@ public class UserServiceImplTest {
         verify(mockuserRepository, times(4)).findByUsername(anyString());
         verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
         verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER_2);
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository, times(2)).save(any(UserJurorResponseAudit.class));
         verify(mockJurorResponseRepository, times(2)).save(any(DigitalResponse.class));
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository, times(2)).save(any(UserJurorResponseAudit.class));
     }
 
     @Test
@@ -305,9 +305,9 @@ public class UserServiceImplTest {
         // members record!
         verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER);
         verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER_2);
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository, times(2)).save(any(UserJurorResponseAudit.class));
         verify(mockJurorResponseRepository, times(2)).save(any(DigitalResponse.class));
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository, times(2)).save(any(UserJurorResponseAudit.class));
     }
 
     @Test
@@ -352,9 +352,9 @@ public class UserServiceImplTest {
         verify(mockJurorResponseRepository).findByJurorNumber(JUROR_NUMBER_3);
 
         // only two attempts to update should have occurred
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository, times(2)).save(any(UserJurorResponseAudit.class));
         verify(mockJurorResponseRepository, times(2)).save(any(DigitalResponse.class));
-        verify(mockStaffJurorResponseAuditRepository, times(2)).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository, times(2)).save(any(UserJurorResponseAudit.class));
 
 
     }

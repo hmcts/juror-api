@@ -797,10 +797,10 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         // assert staff assignment on response has changed and been audited
         assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.juror_response", String.class))
             .isEqualTo("testlogin");
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class))
             .isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT ASSIGNED_TO FROM juror_mod.user_juror_response_audit",
             String.class))
             .isEqualTo("testlogin");
     }

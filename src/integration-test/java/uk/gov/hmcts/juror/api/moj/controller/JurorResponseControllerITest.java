@@ -77,7 +77,6 @@ import static org.springframework.http.HttpStatus.OK;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: /api/v1/moj/juror-response/")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-
 @SuppressWarnings({
     "java:S2259",
     "java:S5960",
@@ -921,7 +920,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         final URI uri = URI.create(String.format(URI_PERSONAL_DETAILS, jurorNumber));
         httpHeaders =
             initialiseHeaders(userType,
-                (owner.equals("400") ? UserType.BUREAU : UserType.COURT),Set.of(Role.MANAGER), owner);
+                (owner.equals("400") ? UserType.BUREAU : UserType.COURT), Set.of(Role.MANAGER), owner);
 
         RequestEntity<JurorPersonalDetailsDto> requestEntity = new RequestEntity<>(jurorPersonalDetailsDto,
             httpHeaders, HttpMethod.PATCH, uri);
@@ -1128,10 +1127,10 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private void validateStaffAssignment(User staff) {
         assertThat(staff).isNotNull();
         assertThat(staff.getUsername()).isEqualTo("testlogin");
-        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.STAFF_JUROR_RESPONSE_AUDIT",
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.user_juror_response_audit",
             Integer.class))
             .isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT STAFF_LOGIN FROM juror_mod.STAFF_JUROR_RESPONSE_AUDIT",
+        assertThat(jdbcTemplate.queryForObject("SELECT assigned_to FROM juror_mod.user_juror_response_audit",
             String.class))
             .isEqualTo("testlogin");
     }
