@@ -255,7 +255,7 @@ public abstract class AbstractReport<T> {
                 .toArray(Expression[]::new)).from(from);
     }
 
-    protected void addJoins(JPAQuery<Tuple> query) {
+    void addJoins(JPAQuery<Tuple> query) {
         requiredTables.forEach(requiredTable -> {
             if (from.equals(requiredTable)) {
                 return;

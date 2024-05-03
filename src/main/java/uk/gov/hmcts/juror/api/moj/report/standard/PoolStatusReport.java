@@ -84,9 +84,4 @@ public class PoolStatusReport extends AbstractStandardReport {
 
         return map;
     }
-
-    @Override
-    protected void addJoins(JPAQuery<Tuple> query) {
-
-    }
 }
