@@ -188,8 +188,8 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
                 return this;
             }
 
-            public <P> ControllerTestResponse<T> assertJsonPath(String path, P value) {
-                if(body instanceof String) {
+            public <V> ControllerTestResponse<T> assertJsonPath(String path, V value) {
+                if (body instanceof String) {
                     assertThat(body).asString().contains(path);
                 } else {
                     assertThat(body).extracting(path).isEqualTo(value);

@@ -30,6 +30,7 @@ public class IFinancialAuditDetailsAppearancesRepositoryImpl
     }
 
     @Override
+    @SuppressWarnings("LineLength")
     public Optional<FinancialAuditDetailsAppearances> findPreviousFinancialAuditDetailsAppearancesWithGenericTypeExcludingProvidedAuditDetails(
         FinancialAuditDetails.Type.GenericType genericType, FinancialAuditDetails financialAuditDetails,
         Appearance appearance) {

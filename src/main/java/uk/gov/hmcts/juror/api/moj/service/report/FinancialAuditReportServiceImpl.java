@@ -88,7 +88,7 @@ public class FinancialAuditReportServiceImpl implements FinancialAuditReportServ
         if (FinancialAuditDetails.Type.GenericType.EDIT.equals(financialAuditDetails.getType().getGenericType())) {
             origionalAppearanceFunction =
                 appearance -> financialAuditService.getPreviousAppearance(financialAuditDetails, appearance);
-        }else if (Set.of(FinancialAuditDetails.Type.REAPPROVED_BACS,
+        } else if (Set.of(FinancialAuditDetails.Type.REAPPROVED_BACS,
             FinancialAuditDetails.Type.REAPPROVED_CASH).contains(financialAuditDetails.getType())) {
             origionalAppearanceFunction = appearance -> financialAuditService
                 .getPreviousApprovedValue(financialAuditDetails, appearance);

@@ -124,8 +124,8 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
         return getAppearanceFromFinancialAuditDetailsAppearances(
             financialAuditDetails.getLocCode(),
             financialAuditDetails.getJurorNumber(),
-            getPreviousFinancialAuditDetailsAppearancesWithGenericTypeExcludingAuditNumber
-                (FinancialAuditDetails.Type.GenericType.APPROVED, financialAuditDetails, appearance));
+            getPreviousFinancialAuditDetailsAppearancesWithGenericTypeExcludingAuditNumber(
+                FinancialAuditDetails.Type.GenericType.APPROVED, financialAuditDetails, appearance));
 
     }
 
@@ -148,6 +148,8 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
                 () -> new MojException.NotFound("No previous appearance found for appearance", null));
     }
 
+
+    @SuppressWarnings("LineLength")
     private FinancialAuditDetailsAppearances getPreviousFinancialAuditDetailsAppearancesWithGenericTypeExcludingAuditNumber(
         FinancialAuditDetails.Type.GenericType genericType,
         FinancialAuditDetails financialAuditDetails,
