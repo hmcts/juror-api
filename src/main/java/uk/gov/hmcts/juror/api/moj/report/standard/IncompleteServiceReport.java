@@ -21,10 +21,10 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @SuppressWarnings("PMD.LawOfDemeter")
@@ -76,9 +76,11 @@ public class IncompleteServiceReport extends AbstractStandardReport {
 
     @Override
     public Map<String, StandardReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                                                         StandardReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
+                                                                         StandardReportResponse.TableData<
+                                                                             List<LinkedHashMap<String, Object>>>
+                                                                             tableData) {
 
-        Map<String, StandardReportResponse.DataTypeValue> map = new HashMap<>();
+        Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
         map.put("total_incomplete_service", StandardReportResponse.DataTypeValue.builder()
             .displayName("Total incomplete service")
             .dataType(Integer.class.getSimpleName())

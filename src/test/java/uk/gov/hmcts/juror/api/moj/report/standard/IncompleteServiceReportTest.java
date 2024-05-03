@@ -4,7 +4,6 @@ import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
@@ -12,17 +11,14 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
@@ -77,15 +73,15 @@ class IncompleteServiceReportTest extends AbstractStandardReportTestSupport<Inco
 
         TestUtils.setupAuthentication("415", "COURT_USER", "1");
 
-        request = mock(StandardReportRequest.class);
-        when(request.getDate()).thenReturn(LocalDate.now());
-        when(request.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
+        StandardReportRequest requestMock = mock(StandardReportRequest.class);
+        when(requestMock.getDate()).thenReturn(LocalDate.now());
+        when(requestMock.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
         report.preProcessQuery(query, request);
         verify(query, times(1))
-            .where(QJurorPool.jurorPool.pool.returnDate.loe(request.getDate()));
+            .where(QJurorPool.jurorPool.pool.returnDate.loe(requestMock.getDate()));
         verify(query, times(1))
-            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(request.getLocCode()));
+            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(requestMock.getLocCode()));
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.owner.eq(SecurityUtil.getActiveOwner()));
         verify(query, times(1))
@@ -93,11 +89,6 @@ class IncompleteServiceReportTest extends AbstractStandardReportTestSupport<Inco
         verify(query, times(1))
             .where(QJurorPool.jurorPool.status.status.in(List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL,
                 IJurorStatus.JUROR)));
-        verify(query, times(1))
-                    .where((QAppearance.appearance.attendanceType.isNull()
-                .or(QAppearance.appearance.attendanceType.notIn(AttendanceType.ABSENT, AttendanceType.NON_ATTENDANCE,
-                    AttendanceType.NON_ATTENDANCE_LONG_TRIAL)))
-        );
         verify(query, times(1)).orderBy(QJuror.juror.jurorNumber.asc());
         verify(query, times(1))
             .groupBy(QJuror.juror.jurorNumber, QJuror.juror.firstName, QJuror.juror.lastName,

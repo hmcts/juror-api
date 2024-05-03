@@ -265,7 +265,8 @@ public abstract class AbstractReport<T> {
             Map<EntityPath<?>, Predicate[]> joinOptions = CLASS_TO_JOIN.get(requiredTable);
 
             if (joinOptions.containsKey(from)) {
-                JoinOverrideDetails joinOverrideDetails = JoinOverrideDetails.builder().joinType(JoinType.DEFAULT).build();
+                JoinOverrideDetails joinOverrideDetails = JoinOverrideDetails.builder().joinType(JoinType.DEFAULT)
+                    .build();
 
                 if (classToJoinOverrides.containsKey(from) && classToJoinOverrides.get(from)
                     .containsKey(requiredTable)) {

@@ -15,8 +15,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 
-import static com.querydsl.jpa.JPAExpressions.max;
-
 @Getter
 @SuppressWarnings("PMD.ArrayIsStoredDirectly")
 public enum DataType implements IDataType {
