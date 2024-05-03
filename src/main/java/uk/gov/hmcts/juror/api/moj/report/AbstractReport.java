@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.report;
 
+import com.querydsl.core.JoinType;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
@@ -8,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.Builder;
 import lombok.Getter;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
@@ -52,6 +54,7 @@ import java.util.stream.Collectors;
 public abstract class AbstractReport<T> {
     static final Map<EntityPath<?>, Map<EntityPath<?>, Predicate[]>> CLASS_TO_JOIN;
 
+
     static {
         CLASS_TO_JOIN = new ConcurrentHashMap<>();
         CLASS_TO_JOIN.put(QJuror.juror, Map.of(
@@ -88,10 +91,11 @@ public abstract class AbstractReport<T> {
     final Set<EntityPath<?>> requiredTables;
     final List<IDataType> effectiveDataTypes;
     final EntityPath<?> from;
+    final Map<EntityPath<?>, Map<EntityPath<?>, JoinOverrideDetails>> classToJoinOverrides = new HashMap<>();
 
     final List<Consumer<StandardReportRequest>> authenticationConsumers;
 
-    public AbstractReport(EntityPath<?> from,  IDataType... dataType) {
+    public AbstractReport(EntityPath<?> from, IDataType... dataType) {
         this(null, from, dataType);
     }
 
@@ -109,6 +113,23 @@ public abstract class AbstractReport<T> {
             .flatMap(List::stream)
             .collect(Collectors.toSet());
         this.authenticationConsumers = new ArrayList<>();
+    }
+
+    @Builder
+    @Getter
+    public static class JoinOverrideDetails {
+        private EntityPath<?> from;
+        private EntityPath<?> to;
+        private JoinType joinType;
+        private List<Predicate> predicatesToAdd;
+        private List<Predicate> predicatesOverride;
+    }
+
+    public void addJoinOverride(JoinOverrideDetails joinDetails) {
+        if (!classToJoinOverrides.containsKey(joinDetails.getFrom())) {
+            classToJoinOverrides.put(joinDetails.getFrom(), new HashMap<>());
+        }
+        classToJoinOverrides.get(from).put(joinDetails.getTo(), joinDetails);
     }
 
     public void addAuthenticationConsumer(Consumer<StandardReportRequest> consumer) {
@@ -244,7 +265,43 @@ public abstract class AbstractReport<T> {
             Map<EntityPath<?>, Predicate[]> joinOptions = CLASS_TO_JOIN.get(requiredTable);
 
             if (joinOptions.containsKey(from)) {
-                query.join(requiredTable).on(joinOptions.get(from));
+                JoinOverrideDetails joinOverrideDetails = JoinOverrideDetails.builder().joinType(JoinType.DEFAULT)
+                    .build();
+
+                if (classToJoinOverrides.containsKey(from) && classToJoinOverrides.get(from)
+                    .containsKey(requiredTable)) {
+                    joinOverrideDetails = classToJoinOverrides.get(from).get(requiredTable);
+                }
+
+                final ArrayList<Predicate> predicates;
+                if (joinOverrideDetails.getPredicatesOverride() != null) {
+                    predicates = new ArrayList<>(joinOverrideDetails.getPredicatesOverride());
+                } else {
+                    predicates = new ArrayList<>(Arrays.asList(joinOptions.get(from)));
+                }
+
+                if (joinOverrideDetails.getPredicatesToAdd() != null) {
+                    predicates.addAll(joinOverrideDetails.getPredicatesToAdd());
+                }
+
+                switch (joinOverrideDetails.getJoinType()) {
+                    case DEFAULT:
+                    case FULLJOIN:
+                        query.join(requiredTable).on(predicates.toArray(new Predicate[0]));
+                        break;
+                    case LEFTJOIN:
+                        query.leftJoin(requiredTable).on(predicates.toArray(new Predicate[0]));
+                        break;
+                    case RIGHTJOIN:
+                        query.rightJoin(requiredTable).on(predicates.toArray(new Predicate[0]));
+                        break;
+                    case INNERJOIN:
+                        query.innerJoin(requiredTable).on(predicates.toArray(new Predicate[0]));
+                        break;
+                    default:
+                        throw new MojException.InternalServerError(
+                            "Join type not supported: " + joinOverrideDetails.getJoinType(), null);
+                }
             } else {
                 throw new MojException.InternalServerError(
                     "Not Implemented yet: " + requiredTable.getClass() + " from " + from.getClass(), null);
