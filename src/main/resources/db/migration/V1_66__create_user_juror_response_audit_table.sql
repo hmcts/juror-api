@@ -13,3 +13,5 @@ create table juror_mod.user_juror_response_audit (
 	assigned_on timestamp(0) not null,
 	constraint user_juror_response_fk foreign key (juror_number) references juror_mod.juror_response(juror_number)
 );
+
+drop table juror_mod.staff_juror_response_audit;
