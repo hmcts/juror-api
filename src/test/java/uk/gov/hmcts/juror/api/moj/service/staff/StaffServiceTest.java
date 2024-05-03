@@ -20,13 +20,13 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReplyType;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.StaffJurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.UserJurorResponseAudit;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.UserJurorResponseAuditRepository;
 
 import java.util.Map;
 import java.util.Set;
@@ -53,7 +53,7 @@ public class StaffServiceTest {
     private JurorPaperResponseRepositoryMod paperResponseRepositoryMod;
 
     @Mock
-    private StaffJurorResponseAuditRepositoryMod mockStaffJurorResponseAuditRepository;
+    private UserJurorResponseAuditRepository mockUserJurorResponseAuditRepository;
 
     @Mock
     private JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
@@ -139,7 +139,7 @@ public class StaffServiceTest {
         verify(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         verify(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
         verify(mockuserRepository).findByUsername(TARGET_LOGIN);
-        verify(mockStaffJurorResponseAuditRepository).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository).save(any(UserJurorResponseAudit.class));
         if ("Digital".equals(replyType)) {
             verify(mockEntityManager).detach(any());
         }
@@ -207,7 +207,7 @@ public class StaffServiceTest {
 
         verify(mockuserRepository).findByUsername(ASSIGNING_LOGIN);
         verify(jurorResponseCommonRepositoryMod).findByJurorNumber(JUROR_NUMBER);
-        verify(mockStaffJurorResponseAuditRepository).save(any(StaffJurorResponseAuditMod.class));
+        verify(mockUserJurorResponseAuditRepository).save(any(UserJurorResponseAudit.class));
         if ("Digital".equals(replyType)) {
             ArgumentCaptor<DigitalResponse> digitalResponseArgumentCaptor =
                 ArgumentCaptor.forClass(DigitalResponse.class);
