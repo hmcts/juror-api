@@ -1,4 +1,4 @@
-package uk.gov.hmcts.juror.api.moj.report.grouped;
+package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -8,10 +8,9 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
-import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
+import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
@@ -24,40 +23,40 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @SuppressWarnings("PMD.LawOfDemeter")
-public class PoolStatusReport extends AbstractGroupedReport {
+public class PoolStatusReport extends AbstractStandardReport {
     private final JurorPoolRepository jurorPoolRepository;
 
     @Autowired
-    public PoolStatusReport(PoolRequestRepository poolRequestRepository,
-                            JurorPoolRepository jurorPoolRepository) {
+    public PoolStatusReport(PoolRequestRepository poolRequestRepository, JurorPoolRepository jurorPoolRepository) {
         super(poolRequestRepository,
             QJurorPool.jurorPool,
-            DataType.IS_ACTIVE,
-            true,
-            DataType.STATUS,
-            DataType.POOL_MEMBER_COUNT);
+            DataType.SUMMONS_TOTAL,
+            DataType.RESPONDED_TOTAL,
+            DataType.PANEL_TOTAL,
+            DataType.JUROR_TOTAL,
+            DataType.EXCUSED_TOTAL,
+            DataType.DISQUALIFIED_TOTAL,
+            DataType.DEFERRED_TOTAL,
+            DataType.REASSIGNED_TOTAL,
+            DataType.UNDELIVERABLE_TOTAL,
+            DataType.TRANSFERRED_TOTAL);
 
         this.jurorPoolRepository = jurorPoolRepository;
     }
 
     @Override
-    public Class<?> getRequestValidatorClass() {
+    public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
         return AbstractReport.Validators.AbstractRequestValidator.class;
     }
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        query.where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber())
-            .or(QJurorPool.jurorPool.pool.poolNumber.isNull()));
-        query.where(QJurorStatus.jurorStatus.status.notIn(0,11,12,13));
-        addGroupBy(query, DataType.STATUS, DataType.IS_ACTIVE, DataType.JUROR_STATUS);
+        query.where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber()));
     }
 
     @Override
     public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                                                         AbstractReportResponse.TableData<Map<String,
-                                                                             List<LinkedHashMap<String, Object>>>> tableData) {
-
+                                                                         AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
         Optional<PoolRequest> optionalPoolRequest =
             getPoolRequestRepository().findByPoolNumber(request.getPoolNumber());
         if (optionalPoolRequest.isEmpty()) {
@@ -84,5 +83,10 @@ public class PoolStatusReport extends AbstractGroupedReport {
             .build());
 
         return map;
+    }
+
+    @Override
+    protected void addJoins(JPAQuery<Tuple> query) {
+
     }
 }

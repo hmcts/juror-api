@@ -82,11 +82,6 @@ public abstract class AbstractReport<T> {
                 QPanel.panel.juror.eq(QJuror.juror)
             }
         ));
-        CLASS_TO_JOIN.put(QJurorStatus.jurorStatus, Map.of(
-            QJurorPool.jurorPool, new Predicate[]{
-                QJurorPool.jurorPool.status.eq(QJurorStatus.jurorStatus)
-            }
-        ));
     }
 
     @PersistenceContext
@@ -260,7 +255,7 @@ public abstract class AbstractReport<T> {
                 .toArray(Expression[]::new)).from(from);
     }
 
-    void addJoins(JPAQuery<Tuple> query) {
+    protected void addJoins(JPAQuery<Tuple> query) {
         requiredTables.forEach(requiredTable -> {
             if (from.equals(requiredTable)) {
                 return;
