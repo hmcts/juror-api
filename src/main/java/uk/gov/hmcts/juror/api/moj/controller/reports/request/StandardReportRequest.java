@@ -40,9 +40,9 @@ public class StandardReportRequest {
         "PanelListDetailedReport",
         "AbaccusReport",
         "JuryListReport",
+        "PoolStatusReport",
         //Grouped
         "PostponedListByDateReport",
-        "PoolStatusReport"
     })
     private String reportType;
 

@@ -42,11 +42,12 @@ public class PoolStatusReport extends AbstractStandardReport {
             DataType.TRANSFERRED_TOTAL);
 
         this.jurorPoolRepository = jurorPoolRepository;
+        isBureauUserOnly();
     }
 
     @Override
     public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
-        return AbstractReport.Validators.AbstractRequestValidator.class;
+        return RequestValidator.class;
     }
 
     @Override
@@ -56,7 +57,7 @@ public class PoolStatusReport extends AbstractStandardReport {
 
     @Override
     public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                                                         AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
+                                     AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
         Optional<PoolRequest> optionalPoolRequest =
             getPoolRequestRepository().findByPoolNumber(request.getPoolNumber());
         if (optionalPoolRequest.isEmpty()) {
@@ -83,5 +84,10 @@ public class PoolStatusReport extends AbstractStandardReport {
             .build());
 
         return map;
+    }
+
+    public interface RequestValidator extends
+        AbstractReport.Validators.AbstractRequestValidator,
+        AbstractReport.Validators.RequirePoolNumber {
     }
 }
