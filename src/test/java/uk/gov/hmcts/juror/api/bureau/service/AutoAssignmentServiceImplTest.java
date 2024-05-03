@@ -84,9 +84,6 @@ public class AutoAssignmentServiceImplTest {
         testUser = User.builder().userType(UserType.BUREAU).name("Test User").username("testUser").active(true).build();
 
         doReturn(Arrays.asList(user1, user2)).when(userRepo).findAll(UserQueries.activeBureauOfficers());
-        doReturn(user1).when(userRepo).findByUsername("staff1");
-        doReturn(user2).when(userRepo).findByUsername("staff2");
-        doReturn(user3).when(userRepo).findByUsername("staff3");
         doReturn(testUser).when(userRepo).findByUsername("testUser");
 
         //doReturn(Arrays.asList(user1, user2, user3)).when(userRepo).findAll(StaffQueries.activeBureauOfficers());
