@@ -1455,12 +1455,14 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
             List<Appearance> appearances =
-                transactionTemplate.execute(status -> appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(COURT_LOCATION, JUROR_NUMBER));
+                transactionTemplate.execute(
+                    status -> appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(COURT_LOCATION,
+                        JUROR_NUMBER));
 
             List<Appearance> modifiedAppearances =
                 appearances.stream().filter(app -> appearanceDates.contains(app.getAttendanceDate())).toList();
             assertThat(modifiedAppearances).hasSize(1);
-            verifyExpenseSubmittedForApproval(modifiedAppearances.get(0),2);
+            verifyExpenseSubmittedForApproval(modifiedAppearances.get(0), 2);
 
             List<Appearance> unmodifiedAppearances =
                 appearances.stream().filter(app -> !appearanceDates.contains(app.getAttendanceDate())).toList();
@@ -1632,11 +1634,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getAppearanceStage())
                 .as("Appearance stage should remain unchanged (still entered)")
                 .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
-            if(!appearance.getAttendanceDate().equals(LocalDate.of(2024,1,5))) {
+            if (!appearance.getAttendanceDate().equals(LocalDate.of(2024, 1, 5))) {
                 assertThat(appearance.isDraftExpense())
                     .as("Is draft expense flag should remain unchanged (expense still in draft)")
                     .isTrue();
-            }else{
+            } else {
                 assertThat(appearance.isDraftExpense())
                     .as("Is draft expense flag should remain unchanged")
                     .isFalse();
@@ -2605,7 +2607,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                                             String paymentMethod,
                                                             ApproveExpenseDto... expenseDto) throws Exception {
                 return triggerInvalid(owner, locCode, paymentMethod,
-                    COURT_USER, owner.equals("400") ? UserType.BUREAU :  UserType.COURT,
+                    COURT_USER, owner.equals("400") ? UserType.BUREAU : UserType.COURT,
                     Set.of(Role.MANAGER), expenseDto);
             }
 
