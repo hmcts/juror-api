@@ -7,7 +7,6 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -33,7 +32,7 @@ public class PoolStatusReportTest extends AbstractStandardReportTestSupport<Pool
 
     public PoolStatusReportTest() {
         super(QJurorPool.jurorPool,
-            PoolStatusReport.Validators.class,
+            PoolStatusReport.RequestValidator.class,
             DataType.SUMMONS_TOTAL,
             DataType.RESPONDED_TOTAL,
             DataType.PANEL_TOTAL,
@@ -68,8 +67,8 @@ public class PoolStatusReportTest extends AbstractStandardReportTestSupport<Pool
     @Override
     public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(StandardReportRequest request,
                                         AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
-                                        List<LinkedHashMap<String,
-                                            Object>> data) {
+                                                                                        List<LinkedHashMap<String,
+                                                                                            Object>> data) {
         PoolRequestRepository repository = mock(PoolRequestRepository.class);
         PoolRequest poolRequest = createPoolRequest();
         when(repository.findByPoolNumber(request.getPoolNumber())).thenReturn(Optional.of(poolRequest));

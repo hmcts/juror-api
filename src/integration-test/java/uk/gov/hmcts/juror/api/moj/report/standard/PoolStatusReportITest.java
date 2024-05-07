@@ -7,7 +7,6 @@ import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
@@ -21,9 +20,10 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/reports/poolstatus.sql"
 })
-public class PoolStatusReportITest extends AbstractStandardReportControllerITest {
+@SuppressWarnings({"PMD.LawOfDemeter"})
+class PoolStatusReportITest extends AbstractStandardReportControllerITest {
     @Autowired
-    public PoolStatusReportITest(TestRestTemplate template) {
+    PoolStatusReportITest(TestRestTemplate template) {
         super(template, PoolStatusReport.class);
     }
 
@@ -51,7 +51,7 @@ public class PoolStatusReportITest extends AbstractStandardReportControllerITest
 
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-//False positive
+    //False positive
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setPoolNumber(null);
@@ -63,7 +63,7 @@ public class PoolStatusReportITest extends AbstractStandardReportControllerITest
 
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-//False positive
+    //False positive
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getCourtJwt("414"))
