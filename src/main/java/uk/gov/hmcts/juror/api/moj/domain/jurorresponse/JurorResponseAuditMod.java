@@ -32,10 +32,14 @@ public class JurorResponseAuditMod {
     @Id
     @Column(name = "changed")
     private LocalDateTime changed;
+
     @Column(name = "login")
     private String login;
+
     @Column(name = "old_processing_status")
     private ProcessingStatus oldProcessingStatus;
+
     @Column(name = "new_processing_status")
     private ProcessingStatus newProcessingStatus;
+
 }

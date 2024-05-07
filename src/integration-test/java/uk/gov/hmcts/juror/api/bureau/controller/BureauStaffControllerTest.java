@@ -268,7 +268,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(2);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -299,7 +299,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(2);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -328,7 +328,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(2);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -358,7 +358,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(2);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -387,7 +387,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -413,7 +413,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -442,7 +442,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -468,7 +468,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -497,7 +497,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -523,7 +523,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -552,7 +552,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -578,7 +578,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -607,7 +607,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -633,7 +633,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -662,7 +662,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(2);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -688,7 +688,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(2);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -717,7 +717,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -745,7 +745,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT VERSION FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -813,7 +813,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(6);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(6);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -863,7 +863,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(2);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -896,7 +896,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(2);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(2);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(2);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -928,7 +928,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -961,7 +961,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(1);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -992,7 +992,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -1036,7 +1036,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(4);
         assertThat(
             jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror_response", Integer.class)).isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.staff_juror_response_audit",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(2);
         assertThat(
             jdbcTemplate.queryForObject("SELECT SUM(VERSION) FROM juror_mod.juror_response", Integer.class)).isEqualTo(
@@ -1161,7 +1161,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
                 "SELECT active FROM juror_mod.users WHERE username='" + staffToDeactivate + "'", Boolean.class))
             .as("Staff member should not be deactivated").isEqualTo(true);
         softly.assertThat(jdbcTemplate.queryForObject(
-            "SELECT count(*) FROM juror_mod.staff_juror_response_audit WHERE staff_login='" + staffToDeactivate
+            "SELECT count(*) FROM juror_mod.user_juror_response_audit WHERE assigned_to ='" + staffToDeactivate
                 + "'", Integer.class)).as("There should be no audit entry for the staff member").isEqualTo(0);
         softly.assertAll();
     }

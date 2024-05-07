@@ -21,7 +21,7 @@ DELETE FROM juror_mod.juror_pool;
 DELETE FROM juror_mod.pool;
 DELETE FROM juror_mod.message;
 
-DELETE FROM juror_mod.staff_juror_response_audit;
+DELETE FROM juror_mod.user_juror_response_audit;
 DELETE FROM juror_mod.juror_response_aud;
 DELETE FROM juror_mod.juror_response_cjs_employment;
 DELETE FROM juror_mod.juror_reasonable_adjustment;
