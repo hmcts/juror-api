@@ -21,8 +21,7 @@ public interface FinancialAuditService {
     FinancialAuditDetails getLastFinancialAuditDetailsWithType(
         FinancialAuditDetails financialAuditDetails, FinancialAuditDetails.Type.GenericType genericType);
 
-    FinancialAuditDetails getFirstFinancialAuditDetailsWithType(FinancialAuditDetails financialAuditDetails,
-                                                                FinancialAuditDetails.Type.GenericType genericType);
-
     Appearance getPreviousAppearance(FinancialAuditDetails financialAuditDetails, Appearance appearance);
+
+    Appearance getPreviousApprovedValue(FinancialAuditDetails financialAuditDetails, Appearance appearance);
 }

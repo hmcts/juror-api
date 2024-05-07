@@ -99,7 +99,7 @@ public class UserServiceImplIntegrationTest extends AbstractIntegrationTest {
         final DigitalResponse jurorResponse = jurorDigitalResponseRepositoryMod.findByJurorNumber(_jurorNumber);
 
         //assert initial db state
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.STAFF_JUROR_RESPONSE_AUDIT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.JUROR_RESPONSE", Integer.class)).isEqualTo(
@@ -137,7 +137,7 @@ public class UserServiceImplIntegrationTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject(
             "SELECT STAFF_ASSIGNMENT_DATE FROM juror_mod.JUROR_RESPONSE WHERE JUROR_NUMBER = '" + _jurorNumber
                 + "'", Date.class)).describedAs("Is today").isToday();
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.STAFF_JUROR_RESPONSE_AUDIT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(1);
     }
 
@@ -154,7 +154,7 @@ public class UserServiceImplIntegrationTest extends AbstractIntegrationTest {
         final DigitalResponse jurorResponse = jurorDigitalResponseRepositoryMod.findByJurorNumber(_jurorNumber);
 
         //assert initial db state
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.STAFF_JUROR_RESPONSE_AUDIT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(0);
         assertThat(
             jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.JUROR_RESPONSE", Integer.class)).isEqualTo(
@@ -192,7 +192,7 @@ public class UserServiceImplIntegrationTest extends AbstractIntegrationTest {
         assertThat(jdbcTemplate.queryForObject(
             "SELECT STAFF_ASSIGNMENT_DATE FROM juror_mod.JUROR_RESPONSE WHERE JUROR_NUMBER = '" + _jurorNumber
                 + "'", Date.class)).describedAs("Is today").isToday();
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.STAFF_JUROR_RESPONSE_AUDIT",
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.user_juror_response_audit",
             Integer.class)).isEqualTo(1);
     }
 }

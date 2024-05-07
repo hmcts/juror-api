@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.expense.CalculateTotalExpen
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.CombinedExpenseDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.DateDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseDetailsDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseTotal;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.ExpenseType;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.GetEnteredExpenseRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.expense.draft.DailyExpense;
@@ -2119,9 +2120,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .paymentMethod(PaymentMethod.BACS)
                         .build()
                 );
-                CombinedExpenseDetailsDto.Total total = body.getTotal();
+                ExpenseTotal total = body.getTotal();
                 assertThat(total).isEqualTo(
-                    CombinedExpenseDetailsDto.Total.builder()
+                    ExpenseTotal.builder()
                         .totalDays(3)
                         .lossOfEarnings(new BigDecimal("273.00"))
                         .extraCare(new BigDecimal("213.00"))
@@ -2146,9 +2147,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 assertThat(body.getExpenseDetails()).hasSize(0);
 
-                CombinedExpenseDetailsDto.Total total = body.getTotal();
+                ExpenseTotal total = body.getTotal();
                 assertThat(total).isEqualTo(
-                    CombinedExpenseDetailsDto.Total.builder()
+                    ExpenseTotal.builder()
                         .totalDays(0)
                         .lossOfEarnings(BigDecimal.ZERO)
                         .extraCare(BigDecimal.ZERO)
@@ -2298,9 +2299,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .paymentMethod(PaymentMethod.BACS)
                         .build()
                 );
-                CombinedExpenseDetailsDto.Total total = body.getTotal();
+                ExpenseTotal total = body.getTotal();
                 assertThat(total).isEqualTo(
-                    CombinedExpenseDetailsDto.Total.builder()
+                    ExpenseTotal.builder()
                         .totalDays(3)
                         .lossOfEarnings(new BigDecimal("206.00"))
                         .extraCare(new BigDecimal("186.00"))
@@ -3354,7 +3355,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .smartCard(new BigDecimal("4.10"))
                         .build());
                 assertThat(response.getTotal()).isEqualTo(
-                    CombinedExpenseDetailsDto.Total.builder()
+                    ExpenseTotal.builder()
                         .totalDays(2)
                         .lossOfEarnings(new BigDecimal("40.02"))
                         .extraCare(new BigDecimal("16.00"))
@@ -3414,7 +3415,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .smartCard(new BigDecimal("29.00"))
                         .build());
                 assertThat(response.getTotal()).isEqualTo(
-                    CombinedExpenseDetailsDto.Total.builder()
+                    ExpenseTotal.builder()
                         .totalDays(1)
                         .lossOfEarnings(new BigDecimal("25.01"))
                         .extraCare(new BigDecimal("10.00"))
@@ -3481,7 +3482,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .smartCard(new BigDecimal("4.20"))
                         .build());
                 assertThat(response.getTotal()).isEqualTo(
-                    CombinedExpenseDetailsDto.Total.builder()
+                    ExpenseTotal.builder()
                         .totalDays(1)
                         .lossOfEarnings(new BigDecimal("50.12"))
                         .extraCare(new BigDecimal("14.83000"))
@@ -3571,9 +3572,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         .foodAndDrink(new BigDecimal("12.17000"))
                         .smartCard(new BigDecimal("4.10"))
                         .build());
-                CombinedExpenseDetailsDto.Total total = response.getTotal();
+                ExpenseTotal total = response.getTotal();
                 assertThat(total).isEqualTo(
-                    CombinedExpenseDetailsDto.Total.builder()
+                    ExpenseTotal.builder()
                         .totalDays(2)
                         .lossOfEarnings(new BigDecimal("105.01"))
                         .extraCare(new BigDecimal("76.00"))

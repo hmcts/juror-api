@@ -17,7 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.staff.StaffJurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.staff.UserJurorResponseAuditRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,7 +49,7 @@ public class BureauBacklogAllocateServiceImplTest {
     private UserRepository userRepo;
 
     @Mock
-    private StaffJurorResponseAuditRepositoryMod auditRepo;
+    private UserJurorResponseAuditRepository auditRepo;
 
     private BureauBacklogAllocateServiceImpl bureauBacklogAllocateService;
 
@@ -168,10 +168,11 @@ public class BureauBacklogAllocateServiceImplTest {
      * @param urgent        urgent repsonse boolean.
      * @param superUrgent   superurgent response boolean.
      * @param now           datetime stamp.
+     *
      * @return List JurorResponses
      */
     private List<DigitalResponse> generateResponses(int responseCount, Boolean urgent, Boolean superUrgent,
-                                                  LocalDateTime now) {
+                                                    LocalDateTime now) {
 
         List<DigitalResponse> responses = Lists.newLinkedList();
         for (int i = 0;
