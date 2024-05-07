@@ -120,11 +120,7 @@ public enum DataType implements IDataType {
     TRANSFERRED_TOTAL("Transferred", Integer.class,
         new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.TRANSFERRED)).then(1).otherwise(0)
             .sum(),
-        QJurorPool.jurorPool),
-
-
-    NEXT_ATTENDANCE_DATE("Next attendance date", LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool);
-
+        QJurorPool.jurorPool);
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;
