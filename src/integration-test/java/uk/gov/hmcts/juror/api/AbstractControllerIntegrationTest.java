@@ -99,10 +99,14 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
 
         public ControllerTestResponse<R> triggerValid() {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+            return triggerValid(ParameterizedTypeReference.forType(returnType));
+        }
+
+        public <T> ControllerTestResponse<T> triggerValid(ParameterizedTypeReference<T> type) {
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
             return new ControllerTestResponse<>(template.exchange(
                 new RequestEntity<>(payload, httpHeaders, method,
-                    URI.create(getUrlWithQueryParams())),
-                ParameterizedTypeReference.forType(returnType)));
+                    URI.create(getUrlWithQueryParams())), type));
         }
 
 
@@ -135,31 +139,36 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
                 this.body = responseEntity.getBody();
             }
 
-            void assertValidStatusCode() {
+            public ControllerTestResponse<T> assertValidStatusCode() {
                 assertThat(responseEntity.getStatusCode())
                     .isEqualTo(validStatus);
+                return this;
             }
 
-            public void assertValidNoBody() {
+            public ControllerTestResponse<T> assertValidNoBody() {
                 assertValidStatusCode();
                 assertThat(body).isNull();
+                return this;
             }
 
-            public void assertValid(BiConsumer<ControllerTest<P1, R1>, T> responseValidator) {
+            public ControllerTestResponse<T> assertValid(BiConsumer<ControllerTest<P1, R1>, T> responseValidator) {
                 assertValidStatusCode();
                 responseValidator.accept(ControllerTest.this, body);
+                return this;
             }
 
             @SuppressWarnings("unchecked")
-            public void assertValidCollectionExactOrder(Object... responseItems) {
+            public ControllerTestResponse<T> assertValidCollectionExactOrder(Object... responseItems) {
                 assertValidStatusCode();
                 assertThat(body).isInstanceOf(Collection.class);
                 assertThat((Collection<Object>) body).containsExactly(responseItems);
+                return this;
             }
 
-            public void assertEquals(Object object) {
+            public ControllerTestResponse<T> assertEquals(Object object) {
                 assertValidStatusCode();
                 assertThat(body).isEqualTo(object);
+                return this;
             }
 
             @SuppressWarnings("PMD.SystemPrintln")
@@ -176,6 +185,15 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
 
             public ControllerTestResponse<T> responseConsumer(Consumer<T> consumer) {
                 consumer.accept(body);
+                return this;
+            }
+
+            public <V> ControllerTestResponse<T> assertJsonPath(String path, V value) {
+                if (body instanceof String) {
+                    assertThat(body).asString().contains(path);
+                } else {
+                    assertThat(body).extracting(path).isEqualTo(value);
+                }
                 return this;
             }
         }

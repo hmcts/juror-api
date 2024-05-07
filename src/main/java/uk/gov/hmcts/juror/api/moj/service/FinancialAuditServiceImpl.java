@@ -112,22 +112,23 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
     }
 
     @Override
-    public FinancialAuditDetails getFirstFinancialAuditDetailsWithType(
-        FinancialAuditDetails financialAuditDetails,
-        FinancialAuditDetails.Type.GenericType genericType) {
-        return getFinancialAuditDetailsWithType(
-            financialAuditDetails,
-            genericType,
-            SortMethod.DESC);
-    }
-
-    @Override
     public Appearance getPreviousAppearance(FinancialAuditDetails financialAuditDetails, Appearance appearance) {
         return getAppearanceFromFinancialAuditDetailsAppearances(
             financialAuditDetails.getLocCode(),
             financialAuditDetails.getJurorNumber(),
             getPreviousFinancialAuditDetailsAppearances(financialAuditDetails, appearance));
     }
+
+    @Override
+    public Appearance getPreviousApprovedValue(FinancialAuditDetails financialAuditDetails, Appearance appearance) {
+        return getAppearanceFromFinancialAuditDetailsAppearances(
+            financialAuditDetails.getLocCode(),
+            financialAuditDetails.getJurorNumber(),
+            getPreviousFinancialAuditDetailsAppearancesWithGenericTypeExcludingAuditNumber(
+                FinancialAuditDetails.Type.GenericType.APPROVED, financialAuditDetails, appearance));
+
+    }
+
 
     private FinancialAuditDetails getFinancialAuditDetailsWithType(FinancialAuditDetails financialAuditDetails,
                                                                    FinancialAuditDetails.Type.GenericType genericType,
@@ -146,6 +147,22 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
             .orElseThrow(
                 () -> new MojException.NotFound("No previous appearance found for appearance", null));
     }
+
+
+    @SuppressWarnings("LineLength")
+    private FinancialAuditDetailsAppearances getPreviousFinancialAuditDetailsAppearancesWithGenericTypeExcludingAuditNumber(
+        FinancialAuditDetails.Type.GenericType genericType,
+        FinancialAuditDetails financialAuditDetails,
+        Appearance appearance) {
+        return financialAuditDetailsAppearancesRepository
+            .findPreviousFinancialAuditDetailsAppearancesWithGenericTypeExcludingProvidedAuditDetails(
+                genericType,
+                financialAuditDetails,
+                appearance)
+            .orElseThrow(
+                () -> new MojException.NotFound("No previous appearance found for appearance", null));
+    }
+
 
     private Appearance getAppearanceFromFinancialAuditDetailsAppearances(
         String locCode,
