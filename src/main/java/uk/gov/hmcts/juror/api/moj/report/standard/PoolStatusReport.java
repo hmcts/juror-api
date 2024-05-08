@@ -18,7 +18,6 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
@@ -57,7 +56,7 @@ public class PoolStatusReport extends AbstractStandardReport {
 
     @Override
     public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                     AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
+                                 AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
 
         PoolRequest poolRequest =
             getPoolRequestRepository().findByPoolNumber(request.getPoolNumber()).orElseThrow(() ->
