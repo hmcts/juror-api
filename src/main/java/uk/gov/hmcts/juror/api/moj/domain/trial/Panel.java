@@ -59,7 +59,7 @@ public class Panel implements Serializable {
     private PanelResult result;
 
     /**
-    /* boolean flag to indicate whether empanelment has taken place (true = empanelment completed)
+    /* boolean flag to indicate whether empanelment has taken place (true = empanelment completed).
     */
     @Column(name = "completed")
     private boolean completed;
