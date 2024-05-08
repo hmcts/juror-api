@@ -88,7 +88,8 @@ public class MojException extends RuntimeException {
             JUROR_MUST_BE_CHECKED_IN,
             CANNOT_EDIT_TRIAL_WITH_JURORS,
             CANNOT_EDIT_COMPLETED_TRIAL,
-            JUROR_DATE_OF_BIRTH_REQUIRED
+            JUROR_DATE_OF_BIRTH_REQUIRED,
+            INVALID_APPEARANCES_STATUS
         }
     }
 

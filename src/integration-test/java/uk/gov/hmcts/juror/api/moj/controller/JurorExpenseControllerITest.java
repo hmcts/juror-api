@@ -18,6 +18,8 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
@@ -128,6 +130,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     private final CourtLocationRepository courtLocationRepository;
     private final JurorHistoryRepository jurorHistoryRepository;
     private final PaymentDataRepository paymentDataRepository;
+    private final PlatformTransactionManager transactionManager;
+    private TransactionTemplate transactionTemplate;
 
     private HttpHeaders httpHeaders;
 
@@ -140,6 +144,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         super.setUp();
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
     private void assertJurorHistory(String jurorNumber, HistoryCodeMod historyCodeMod, String courtUser,
@@ -1394,9 +1399,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Happy path")
+        @DisplayName("Positive Typical")
         @SneakyThrows
-        void happyPath() {
+        void positiveTypical() {
             final String jwt = createJwt(COURT_USER, COURT_LOCATION);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
@@ -1413,15 +1418,57 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
             List<Appearance> appearances =
-                appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(COURT_LOCATION, JUROR_NUMBER);
+                transactionTemplate.execute(status -> appearanceRepository
+                    .findAllByCourtLocationLocCodeAndJurorNumber(COURT_LOCATION, JUROR_NUMBER));
 
-            for (Appearance appearance :
-                appearances.stream().filter(app -> appearanceDates.contains(app.getAttendanceDate())).toList()) {
-                verifyExpenseSubmittedForApproval(appearance);
+
+            List<Appearance> modifiedAppearances =
+                appearances.stream().filter(app -> appearanceDates.contains(app.getAttendanceDate())).toList();
+            assertThat(modifiedAppearances).hasSize(2);
+            verifyExpenseSubmittedForApproval(modifiedAppearances.get(0), 2);
+            verifyExpenseSubmittedForApproval(modifiedAppearances.get(1), 3);
+
+            List<Appearance> unmodifiedAppearances =
+                appearances.stream().filter(app -> !appearanceDates.contains(app.getAttendanceDate())).toList();
+            assertThat(unmodifiedAppearances).hasSize(3);
+            for (Appearance appearance : unmodifiedAppearances) {
+                verifyExpenseStillInDraft(appearance);
             }
 
-            for (Appearance appearance :
-                appearances.stream().filter(app -> !appearanceDates.contains(app.getAttendanceDate())).toList()) {
+        }
+
+        @Test
+        @DisplayName("Positive Typical - Non Attendance")
+        @SneakyThrows
+        void positiveTypicalNonAttendance() {
+            final String jwt = createJwt(COURT_USER, COURT_LOCATION);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+
+            DateDto payload = new DateDto();
+            List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 4, 9));
+            payload.setDates(appearanceDates);
+
+            RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
+                URI.create(toUrl(COURT_LOCATION, JUROR_NUMBER)));
+            ResponseEntity<Void> response = template.exchange(request, Void.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+            List<Appearance> appearances =
+                transactionTemplate.execute(
+                    status -> appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumber(COURT_LOCATION,
+                        JUROR_NUMBER));
+
+            List<Appearance> modifiedAppearances =
+                appearances.stream().filter(app -> appearanceDates.contains(app.getAttendanceDate())).toList();
+            assertThat(modifiedAppearances).hasSize(1);
+            verifyExpenseSubmittedForApproval(modifiedAppearances.get(0), 2);
+
+            List<Appearance> unmodifiedAppearances =
+                appearances.stream().filter(app -> !appearanceDates.contains(app.getAttendanceDate())).toList();
+            assertThat(unmodifiedAppearances).hasSize(4);
+            for (Appearance appearance : unmodifiedAppearances) {
                 verifyExpenseStillInDraft(appearance);
             }
         }
@@ -1485,6 +1532,28 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
+        @DisplayName("Business Validation Rule - INVALID_APPEARANCES_STATUS")
+        @SneakyThrows
+        void invalidAppearanceStatus() {
+            final String jwt = createJwt(COURT_USER, COURT_LOCATION);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+
+            DateDto payload = new DateDto();
+            List<LocalDate> appearanceDates = List.of(LocalDate.of(2024, 1, 5));
+            payload.setDates(appearanceDates);
+
+            RequestEntity<DateDto> request = new RequestEntity<>(payload, httpHeaders, POST,
+                URI.create(toUrl(COURT_LOCATION, JUROR_NUMBER)));
+            ResponseEntity<String> response = template.exchange(request, String.class);
+
+            assertBusinessRuleViolation(response,
+                "All appearances must be in draft and have stage EXPENSE_ENTERED",
+                MojException.BusinessRuleViolation.ErrorCode.INVALID_APPEARANCES_STATUS);
+
+        }
+
+        @Test
         @DisplayName("Bad Request - Empty attendance date list")
         @SneakyThrows
         void invalidAttendanceDates() {
@@ -1522,7 +1591,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         }
 
-        private void verifyExpenseSubmittedForApproval(Appearance appearance) {
+        private void verifyExpenseSubmittedForApproval(Appearance appearance, long version) {
             assertThat(appearance.getFinancialAuditDetails())
                 .as("Financial Audit Details object should be created/associated")
                 .isNotNull();
@@ -1547,6 +1616,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getAppearanceStage())
                 .as("Appearance stage should remain unchanged (still entered)")
                 .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
+
+            assertThat(appearance.getVersion())
+                .as("Appearance version should be incremented")
+                .isEqualTo(version);
             assertThat(appearance.isDraftExpense())
                 .as("Is draft expense flag should be updated to false (expense no longer draft)")
                 .isFalse();
@@ -1562,9 +1635,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getAppearanceStage())
                 .as("Appearance stage should remain unchanged (still entered)")
                 .isEqualTo(AppearanceStage.EXPENSE_ENTERED);
-            assertThat(appearance.isDraftExpense())
-                .as("Is draft expense flag should remain unchanged (expense still in draft)")
-                .isTrue();
+            if (!appearance.getAttendanceDate().equals(LocalDate.of(2024, 1, 5))) {
+                assertThat(appearance.isDraftExpense())
+                    .as("Is draft expense flag should remain unchanged (expense still in draft)")
+                    .isTrue();
+            } else {
+                assertThat(appearance.isDraftExpense())
+                    .as("Is draft expense flag should remain unchanged")
+                    .isFalse();
+            }
         }
     }
 
@@ -2529,7 +2608,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                                             String paymentMethod,
                                                             ApproveExpenseDto... expenseDto) throws Exception {
                 return triggerInvalid(owner, locCode, paymentMethod,
-                    COURT_USER, owner.equals("400") ? UserType.BUREAU :  UserType.COURT,
+                    COURT_USER, owner.equals("400") ? UserType.BUREAU : UserType.COURT,
                     Set.of(Role.MANAGER), expenseDto);
             }
 
@@ -3692,6 +3771,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     .totalForReapproval(1)
                     .build());
             }
+
 
             @Test
             void notAppearances() throws Exception {
