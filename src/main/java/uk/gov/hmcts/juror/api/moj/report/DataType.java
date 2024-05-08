@@ -10,7 +10,6 @@ import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
@@ -79,12 +78,6 @@ public enum DataType implements IDataType {
     TOTAL_SENT_FOR_PRINTING("Sent for printing", Long.class, QBulkPrintData.bulkPrintData.jurorNo.count(),
         QBulkPrintData.bulkPrintData),
     DATE_SENT("Date sent", LocalDate.class, QBulkPrintData.bulkPrintData.creationDate, QBulkPrintData.bulkPrintData),
-
-    IS_ACTIVE("Is active", Boolean.class,
-        new CaseBuilder().when(QJurorStatus.jurorStatus.status.loe(4))
-            .then(true)
-            .otherwise(false),
-        QJurorStatus.jurorStatus),
 
     SUMMONS_TOTAL("Summoned", Integer.class,
         new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)).then(1).otherwise(0).sum(),

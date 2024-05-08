@@ -58,13 +58,11 @@ public class PoolStatusReport extends AbstractStandardReport {
     @Override
     public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
                                      AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData) {
-        Optional<PoolRequest> optionalPoolRequest =
-            getPoolRequestRepository().findByPoolNumber(request.getPoolNumber());
-        if (optionalPoolRequest.isEmpty()) {
-            throw new MojException.NotFound("Cannot find pool number " + request.getPoolNumber(), null);
-        }
 
-        PoolRequest poolRequest = optionalPoolRequest.get();
+        PoolRequest poolRequest =
+            getPoolRequestRepository().findByPoolNumber(request.getPoolNumber()).orElseThrow(() ->
+                new MojException.NotFound("Cannot find pool number " + request.getPoolNumber(),
+                    null));
 
         Map<String, AbstractReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
         map.put("pool_number", AbstractReportResponse.DataTypeValue.builder()
