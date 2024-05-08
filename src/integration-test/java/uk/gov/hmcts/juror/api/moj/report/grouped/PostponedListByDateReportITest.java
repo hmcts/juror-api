@@ -325,7 +325,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
 
     public GroupByResponse getTypicalGroupByResponse() {
         return GroupByResponse.builder()
-            .name(DataType.POOL_NUMBER)
+            .name(DataType.POOL_NUMBER.name())
             .nested(null)
             .build();
     }
