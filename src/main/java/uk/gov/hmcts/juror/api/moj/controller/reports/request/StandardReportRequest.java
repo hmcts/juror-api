@@ -42,7 +42,7 @@ public class StandardReportRequest {
         "JuryListReport",
         "PoolStatusReport",
         //Grouped
-        "PostponedListByDateReport",
+        "PostponedListByDateReport"
     })
     private String reportType;
 
