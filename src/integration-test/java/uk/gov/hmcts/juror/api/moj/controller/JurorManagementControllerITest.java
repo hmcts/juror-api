@@ -45,7 +45,6 @@ import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
-import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 
 import java.math.BigDecimal;
 import java.net.URI;
