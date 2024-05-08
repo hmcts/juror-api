@@ -583,7 +583,7 @@ class JurorExpenseServiceTest {
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
             ArgumentCaptor<List<Appearance>> appearanceArgumentCaptor = ArgumentCaptor.forClass(List.class);
 
-            verify(jurorExpenseService, times(1)).saveAppearancesWithExpenseRateIdUpdate(
+            verify(jurorExpenseService, times(1)).updateExpenseRatesId(
                 appearanceArgumentCaptor.capture());
 
             verify(financialAuditService, times(1))
@@ -644,7 +644,7 @@ class JurorExpenseServiceTest {
                 .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
             verify(jurorExpenseService, times(1))
-                .saveAppearancesWithExpenseRateIdUpdate(appearanceArgumentCaptor.capture());
+                .updateExpenseRatesId(appearanceArgumentCaptor.capture());
             verify(financialAuditService, times(1))
                 .createFinancialAuditDetail(TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_COURT_LOCATION,
                     FinancialAuditDetails.Type.FOR_APPROVAL,
