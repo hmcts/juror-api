@@ -15,7 +15,10 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+@SuppressWarnings("PMD.LawOfDemeter")
 public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonResponseRepositoryMod {
     @PersistenceContext
     EntityManager entityManager;
@@ -24,9 +27,7 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
     public List<Tuple> getJurorResponseDetailsByUsernameAndStatus(String staffLogin,
                                                                   Collection<ProcessingStatus> processingStatus,
                                                                   Predicate... predicates) {
-        JPAQueryFactory queryFactory = getJpaQueryFactory();
-
-        JPAQuery<Tuple> query = queryFactory.select(
+        JPAQuery<Tuple> query = getJpaQueryFactory().select(
                 QCombinedJurorResponse.combinedJurorResponse,
                 QJuror.juror,
                 QJurorPool.jurorPool,
@@ -49,6 +50,32 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
         }
         query.orderBy(QCombinedJurorResponse.combinedJurorResponse.dateReceived.asc());
         return query.fetch();
+    }
+
+    @Override
+    public Map<ProcessingStatus, Long> getJurorResponseCounts(Predicate... predicates) {
+        JPAQuery<Tuple> query = getJpaQueryFactory().select(
+                QCombinedJurorResponse.combinedJurorResponse.processingStatus,
+                QCombinedJurorResponse.combinedJurorResponse.count()
+            )
+            .from(QCombinedJurorResponse.combinedJurorResponse)
+            .join(QJuror.juror)
+            .on(QJuror.juror.jurorNumber.eq(QCombinedJurorResponse.combinedJurorResponse.jurorNumber))
+            .join(QJurorPool.jurorPool).on(QJurorPool.jurorPool.juror.eq(QJuror.juror))
+            .where(QJurorPool.jurorPool.isActive.isTrue())
+            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER));
+
+        if (predicates != null && predicates.length > 0) {
+            query.where(predicates);
+        }
+
+        return query.groupBy(QCombinedJurorResponse.combinedJurorResponse.processingStatus)
+            .fetch()
+            .stream()
+            .collect(Collectors.toMap(
+                tuple -> tuple.get(QCombinedJurorResponse.combinedJurorResponse.processingStatus),
+                tuple -> tuple.get(QCombinedJurorResponse.combinedJurorResponse.count())
+            ));
     }
 
     JPAQueryFactory getJpaQueryFactory() {
