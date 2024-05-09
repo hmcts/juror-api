@@ -47,6 +47,7 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
         if (predicates != null && predicates.length > 0) {
             query.where(predicates);
         }
+        query.orderBy(QCombinedJurorResponse.combinedJurorResponse.dateReceived.asc());
         return query.fetch();
     }
 

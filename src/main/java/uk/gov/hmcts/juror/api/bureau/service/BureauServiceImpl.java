@@ -256,17 +256,6 @@ public class BureauServiceImpl implements BureauService {
         return overviewDto;
     }
 
-    /**
-     * Gets entities in the order required by the AC.
-     *
-     * @param query query to run
-     * @return matching entities
-     * @since JDB-2142
-     */
-    private Iterable<ModJurorDetail> getInDisplayOrder(Predicate query) {
-        return bureauJurorDetailRepository.findAll(query, BureauJurorDetailQueries.dateReceivedAscending());
-    }
-
 
     private LocalDateTime startOfToday() {
         return LocalDate.now().atStartOfDay();
