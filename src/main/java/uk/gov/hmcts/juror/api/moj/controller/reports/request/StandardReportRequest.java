@@ -41,7 +41,8 @@ public class StandardReportRequest {
         "AbaccusReport",
         "JuryListReport",
         //Grouped
-        "PostponedListByDateReport"
+        "PostponedListByDateReport",
+        "UnpaidAttendanceSummaryReport"
     })
     private String reportType;
 
