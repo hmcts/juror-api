@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.JurorResp
 import uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement.JurorResponseRetrieveResponseDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDateTime;
@@ -25,11 +26,12 @@ import static uk.gov.hmcts.juror.api.moj.utils.converters.ConversionUtils.toProp
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorResponseRetrieveServiceImpl implements JurorResponseRetrieveService {
-    private static final int SEARCH_RESULT_LIMIT_BUREAU_OFFICER = 100;
-    private static final int SEARCH_RESULT_LIMIT_TEAM_LEADER = 250;
 
     @Autowired
     private JurorResponseCommonRepositoryMod jurorResponseRepository;
+
+    @Autowired
+    private AppSettingService appSettingService;
 
     @Override
     @Transactional(readOnly = true)
@@ -100,6 +102,8 @@ public class JurorResponseRetrieveServiceImpl implements JurorResponseRetrieveSe
     }
 
     private int getResultsLimit(boolean isTeamLeader) {
-        return isTeamLeader ? SEARCH_RESULT_LIMIT_TEAM_LEADER : SEARCH_RESULT_LIMIT_BUREAU_OFFICER;
+        return isTeamLeader ?
+            appSettingService.getTeamLeaderSearchResultLimit() :
+            appSettingService.getBureauOfficerSearchResultLimit();
     }
 }
