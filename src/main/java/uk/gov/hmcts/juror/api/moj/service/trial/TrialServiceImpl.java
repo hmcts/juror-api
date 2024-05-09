@@ -283,6 +283,7 @@ public class TrialServiceImpl implements TrialService {
 
             panel.setResult(PanelResult.RETURNED);
             panel.setCompleted(true);
+            panel.setReturnDate(LocalDate.now());
             panelRepository.saveAndFlush(panel);
 
             jurorPool.setStatus(jurorStatus);
