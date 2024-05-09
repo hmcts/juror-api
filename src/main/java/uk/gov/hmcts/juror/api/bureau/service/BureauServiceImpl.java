@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -111,6 +112,7 @@ public class BureauServiceImpl implements BureauService {
         BureauResponseSummaryWrapper wrapper = new BureauResponseSummaryWrapper();
 
         wrapper.setResponses(filteredResponses);
+
         wrapper.setTodoCount(
             jurorCommonResponseRepositoryMod.countByProcessingStatusIn(JurorCommonResponseRepositoryMod.TODO_STATUS));
 
@@ -124,26 +126,43 @@ public class BureauServiceImpl implements BureauService {
         return wrapper;
     }
 
+    private Map<ProcessingStatus, Long> getJurorResponseCounts(String username) {
+        return jurorCommonResponseRepositoryMod.getJurorResponseCounts(
+            QCombinedJurorResponse.combinedJurorResponse.staff.username.eq(username));
+    }
+
     @Override
     @Transactional(readOnly = true)
     public BureauYourWorkCounts getCounts(String staffLogin) {
-        long todoCount = getTodoCount(staffLogin);
+        Map<ProcessingStatus, Long> countMap = getJurorResponseCounts(staffLogin);
+
+        long todoCount = getTodoCount(countMap);
         return BureauYourWorkCounts.builder()
             .todoCount(todoCount)
-            .workCount(todoCount + getPendingCount(staffLogin))
+            .workCount(todoCount + getPendingCount(countMap))
             .build();
     }
 
-    long getTodoCount(String staffLogin) {
-        return jurorCommonResponseRepositoryMod.countTodo(staffLogin);
+    long getTodoCount(Map<ProcessingStatus, Long> countMap) {
+        return combineMapCounts(countMap, JurorCommonResponseRepositoryMod.TODO_STATUS);
     }
 
-    long getPendingCount(String staffLogin) {
-        return jurorCommonResponseRepositoryMod.countPending(staffLogin);
+    long getPendingCount(Map<ProcessingStatus, Long> countMap) {
+        return combineMapCounts(countMap, JurorCommonResponseRepositoryMod.PENDING_STATUS);
     }
+
 
     long getCompleteCount(String staffLogin, LocalDateTime start, LocalDateTime end) {
-        return jurorCommonResponseRepositoryMod.countComplete(staffLogin, start, end);
+        return combineMapCounts(jurorCommonResponseRepositoryMod.getJurorResponseCounts(
+                QCombinedJurorResponse.combinedJurorResponse.staff.username.eq(staffLogin),
+                QCombinedJurorResponse.combinedJurorResponse.completedAt.between(start, end)),
+            JurorCommonResponseRepositoryMod.COMPLETE_STATUS);
+    }
+
+    long combineMapCounts(Map<ProcessingStatus, Long> countMap, Collection<ProcessingStatus> processingStatuses) {
+        return processingStatuses.stream()
+            .mapToLong(value -> countMap.getOrDefault(value, 0L))
+            .sum();
     }
 
     private BureauResponseSummaryWrapper getBureauResponseSummaryWrapperFromUsernameAndStatus(
@@ -153,7 +172,7 @@ public class BureauServiceImpl implements BureauService {
 
         List<Tuple> tuples = jurorCommonResponseRepositoryMod
             .getJurorResponseDetailsByUsernameAndStatus(staffLogin, processingStatus, predicates);
-        return BureauResponseSummaryWrapper.builder()
+        BureauResponseSummaryWrapper wrapper = BureauResponseSummaryWrapper.builder()
             .responses(
                 tuples.stream()
                     .map(tuple -> {
@@ -165,55 +184,45 @@ public class BureauServiceImpl implements BureauService {
                         return bureauTransformsService.detailToDto(jurorResponseRepository1, juror, jurorPool, pool);
                     }).toList()
             ).build();
+
+        Map<ProcessingStatus, Long> countMap = getJurorResponseCounts(staffLogin);
+        wrapper.setCompletedCount(getCompleteCount(staffLogin, startOfToday(), endOfToday()));
+        wrapper.setTodoCount(getTodoCount(countMap));
+        wrapper.setRepliesPendingCount(getPendingCount(countMap));
+        return wrapper;
     }
 
     @Override
     @Transactional(readOnly = true)
     public BureauResponseSummaryWrapper getTodo(String staffLogin) {
         log.debug("Getting todo responses assigned to {}", staffLogin);
-        final BureauResponseSummaryWrapper wrapper = getBureauResponseSummaryWrapperFromUsernameAndStatus(
+        return getBureauResponseSummaryWrapperFromUsernameAndStatus(
             staffLogin,
             JurorCommonResponseRepositoryMod.TODO_STATUS
         );
-        wrapper.setTodoCount((long) wrapper.getResponses().size());
-        wrapper.setRepliesPendingCount(getPendingCount(staffLogin));
-        wrapper.setCompletedCount(getCompleteCount(staffLogin, startOfToday(), endOfToday()));
-        return wrapper;
     }
-
 
     @Override
     @Transactional(readOnly = true)
     public BureauResponseSummaryWrapper getPending(String staffLogin) {
         log.debug("Getting pending responses assigned to {}", staffLogin);
-        final BureauResponseSummaryWrapper wrapper = getBureauResponseSummaryWrapperFromUsernameAndStatus(
+        return getBureauResponseSummaryWrapperFromUsernameAndStatus(
             staffLogin,
             JurorCommonResponseRepositoryMod.PENDING_STATUS
         );
-        wrapper.setRepliesPendingCount((long) wrapper.getResponses().size());
-        wrapper.setTodoCount(jurorCommonResponseRepositoryMod.countTodo(staffLogin));
-        wrapper.setCompletedCount(
-            jurorCommonResponseRepositoryMod.countComplete(staffLogin, startOfToday(), endOfToday()));
-        return wrapper;
     }
 
     @Override
     @Transactional(readOnly = true)
     public BureauResponseSummaryWrapper getCompletedToday(String staffLogin) {
         log.debug("Getting responses assigned to {} which were marked as complete today", staffLogin);
-        final BureauResponseSummaryWrapper wrapper = getBureauResponseSummaryWrapperFromUsernameAndStatus(
+        return getBureauResponseSummaryWrapperFromUsernameAndStatus(
             staffLogin,
             JurorCommonResponseRepositoryMod.COMPLETE_STATUS,
             QCombinedJurorResponse.combinedJurorResponse.completedAt.between(startOfToday(), endOfToday())
         );
-
-        wrapper.setCompletedCount((long) wrapper.getResponses().size());
-        wrapper.setTodoCount(
-            jurorCommonResponseRepositoryMod.countTodo(staffLogin));
-        wrapper.setRepliesPendingCount(
-            jurorCommonResponseRepositoryMod.countPending(staffLogin));
-        return wrapper;
     }
+
 
     @Override
     @Transactional(readOnly = true)
