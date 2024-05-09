@@ -102,8 +102,8 @@ public class JurorResponseRetrieveServiceImpl implements JurorResponseRetrieveSe
     }
 
     private int getResultsLimit(boolean isTeamLeader) {
-        return isTeamLeader ?
-            appSettingService.getTeamLeaderSearchResultLimit() :
-            appSettingService.getBureauOfficerSearchResultLimit();
+        return isTeamLeader
+            ? appSettingService.getTeamLeaderSearchResultLimit()
+            : appSettingService.getBureauOfficerSearchResultLimit();
     }
 }
