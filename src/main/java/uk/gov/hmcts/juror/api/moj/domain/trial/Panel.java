@@ -58,6 +58,9 @@ public class Panel implements Serializable {
     @Convert(converter = PanelResultConverter.class)
     private PanelResult result;
 
+    /**
+    /* boolean flag to indicate whether empanelment has taken place (true = empanelment completed).
+    */
     @Column(name = "completed")
     private boolean completed;
 

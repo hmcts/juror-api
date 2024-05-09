@@ -685,7 +685,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 // get the currently active trial the juror is on
                 Panel panel = panelRepository
                     .findByTrialCourtLocationLocCodeAndJurorJurorNumberAndCompleted(locCode,
-                        jurorNumber, false);
+                        jurorNumber, true);
                 if (panel != null) {
                     appearance.setTrialNumber(panel.getTrial().getTrialNumber());
                 }
