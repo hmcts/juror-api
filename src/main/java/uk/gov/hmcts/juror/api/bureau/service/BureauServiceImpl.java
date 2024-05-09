@@ -1,10 +1,10 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
 import com.google.common.collect.Lists;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Predicate;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +16,16 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauYourWorkCounts;
 import uk.gov.hmcts.juror.api.bureau.domain.BureauJurorDetailQueries;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QModJurorDetail;
+import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.CombinedJurorResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QCombinedJurorResponse;
 import uk.gov.hmcts.juror.api.moj.repository.JurorDetailRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
@@ -26,6 +34,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -137,29 +146,50 @@ public class BureauServiceImpl implements BureauService {
         return jurorCommonResponseRepositoryMod.countComplete(staffLogin, start, end);
     }
 
+    private BureauResponseSummaryWrapper getBureauResponseSummaryWrapperFromUsernameAndStatus(
+        String staffLogin,
+        Collection<ProcessingStatus> processingStatus,
+        Predicate... predicates) {
+
+        List<Tuple> tuples = jurorCommonResponseRepositoryMod
+            .getJurorResponseDetailsByUsernameAndStatus(staffLogin, processingStatus, predicates);
+        return BureauResponseSummaryWrapper.builder()
+            .responses(
+                tuples.stream()
+                    .map(tuple -> {
+                        CombinedJurorResponse jurorResponseRepository1 =
+                            tuple.get(QCombinedJurorResponse.combinedJurorResponse);
+                        Juror juror = tuple.get(QJuror.juror);
+                        JurorPool jurorPool = tuple.get(QJurorPool.jurorPool);
+                        PoolRequest pool = tuple.get(QPoolRequest.poolRequest);
+                        return bureauTransformsService.detailToDto(jurorResponseRepository1, juror, jurorPool, pool);
+                    }).toList()
+            ).build();
+    }
+
     @Override
     @Transactional(readOnly = true)
     public BureauResponseSummaryWrapper getTodo(String staffLogin) {
         log.debug("Getting todo responses assigned to {}", staffLogin);
-        final BureauResponseSummaryWrapper wrapper = bureauTransformsService.prepareOutput(getInDisplayOrder(
-            BureauJurorDetailQueries.byAssignmentAndProcessingStatus(staffLogin, queryableStatusList(TODO))));
-
+        final BureauResponseSummaryWrapper wrapper = getBureauResponseSummaryWrapperFromUsernameAndStatus(
+            staffLogin,
+            JurorCommonResponseRepositoryMod.TODO_STATUS
+        );
         wrapper.setTodoCount((long) wrapper.getResponses().size());
         wrapper.setRepliesPendingCount(getPendingCount(staffLogin));
-
-        StopWatch countCompleteStopWatch = StopWatch.createStarted();
         wrapper.setCompletedCount(getCompleteCount(staffLogin, startOfToday(), endOfToday()));
-        countCompleteStopWatch.stop();
-
         return wrapper;
     }
+
 
     @Override
     @Transactional(readOnly = true)
     public BureauResponseSummaryWrapper getPending(String staffLogin) {
         log.debug("Getting pending responses assigned to {}", staffLogin);
-        final BureauResponseSummaryWrapper wrapper = bureauTransformsService.prepareOutput(getInDisplayOrder(
-            BureauJurorDetailQueries.byAssignmentAndProcessingStatus(staffLogin, queryableStatusList(PENDING))));
+        final BureauResponseSummaryWrapper wrapper = getBureauResponseSummaryWrapperFromUsernameAndStatus(
+            staffLogin,
+            JurorCommonResponseRepositoryMod.PENDING_STATUS
+        );
         wrapper.setRepliesPendingCount((long) wrapper.getResponses().size());
         wrapper.setTodoCount(jurorCommonResponseRepositoryMod.countTodo(staffLogin));
         wrapper.setCompletedCount(
@@ -171,8 +201,12 @@ public class BureauServiceImpl implements BureauService {
     @Transactional(readOnly = true)
     public BureauResponseSummaryWrapper getCompletedToday(String staffLogin) {
         log.debug("Getting responses assigned to {} which were marked as complete today", staffLogin);
-        final BureauResponseSummaryWrapper wrapper = bureauTransformsService.prepareOutput(getInDisplayOrder(
-            BureauJurorDetailQueries.byCompletedAt(staffLogin, startOfToday(), endOfToday())));
+        final BureauResponseSummaryWrapper wrapper = getBureauResponseSummaryWrapperFromUsernameAndStatus(
+            staffLogin,
+            JurorCommonResponseRepositoryMod.COMPLETE_STATUS,
+            QCombinedJurorResponse.combinedJurorResponse.completedAt.between(startOfToday(), endOfToday())
+        );
+
         wrapper.setCompletedCount((long) wrapper.getResponses().size());
         wrapper.setTodoCount(
             jurorCommonResponseRepositoryMod.countTodo(staffLogin));
@@ -222,17 +256,6 @@ public class BureauServiceImpl implements BureauService {
             )));
 
         return overviewDto;
-    }
-
-    /**
-     * Gets entities in the order required by the AC.
-     *
-     * @param query query to run
-     * @return matching entities
-     * @since JDB-2142
-     */
-    private Iterable<ModJurorDetail> getInDisplayOrder(Predicate query) {
-        return bureauJurorDetailRepository.findAll(query, BureauJurorDetailQueries.dateReceivedAscending());
     }
 
 

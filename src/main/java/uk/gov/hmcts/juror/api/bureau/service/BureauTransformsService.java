@@ -5,8 +5,12 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWr
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.TeamDto;
 import uk.gov.hmcts.juror.api.bureau.domain.Team;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.CombinedJurorResponse;
 
 import java.util.List;
 
@@ -38,6 +42,13 @@ public interface BureauTransformsService {
      * @return response DTO
      */
     BureauResponseSummaryDto detailToDto(ModJurorDetail detail);
+
+    BureauResponseSummaryDto detailToDto(
+        CombinedJurorResponse jurorResponse,
+        Juror juror,
+        JurorPool jurorPool,
+        PoolRequest pool
+    );
 
     /**
      * Transforms Staff entity to StaffDto.
