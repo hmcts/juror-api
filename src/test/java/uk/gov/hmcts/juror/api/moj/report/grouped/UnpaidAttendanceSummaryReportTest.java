@@ -51,7 +51,7 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
     private CourtLocationService courtLocationService;
 
     public UnpaidAttendanceSummaryReportTest() {
-        super(QJurorPool.jurorPool,
+        super(QAppearance.appearance,
             UnpaidAttendanceSummaryReport.RequestValidator.class,
             DataType.POOL_NUMBER,
             true,

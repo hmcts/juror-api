@@ -85,11 +85,9 @@ public class UnpaidAttendanceSummaryReport extends AbstractGroupedReport {
                 .map(List::size)
                 .reduce(0, Integer::sum))
             .build());
-        map.put("court_name", GroupedReportResponse.DataTypeValue.builder()
-            .displayName("Court Name")
-            .dataType(String.class.getSimpleName())
-            .value(getCourtNameHeader(courtLocationService.getCourtLocation(SecurityUtil.getActiveOwner())))
-            .build());
+        Map.Entry<String, GroupedReportResponse.DataTypeValue> entry =
+            getCourtNameHeader(courtLocationService.getCourtLocation(SecurityUtil.getActiveOwner()));
+        map.put(entry.getKey(), entry.getValue());
 
         return map;
     }
