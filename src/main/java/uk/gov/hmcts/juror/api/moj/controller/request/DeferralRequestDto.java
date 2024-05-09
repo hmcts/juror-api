@@ -38,9 +38,9 @@ public class DeferralRequestDto {
 
     @NotNull
     @JsonProperty("deferralReason")
-    @Size(min = 1, max = 1)
-    @Schema(description = "Excusal code reason. Single character.", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String deferralReason; //is an EXC_CODE char
+    @Size(min = 1, max = 2)
+    @Schema(description = "Excusal code reason.", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String deferralReason; //is an EXC_CODE
 
     @JsonProperty("deferralDecision")
     @Schema(description = "Deferral Decision, either GRANT or REFUSE", requiredMode = Schema.RequiredMode.REQUIRED)
