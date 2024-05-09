@@ -146,9 +146,11 @@ public class BureauServiceImpl implements BureauService {
         return jurorCommonResponseRepositoryMod.countComplete(staffLogin, start, end);
     }
 
-    private BureauResponseSummaryWrapper getBureauResponseSummaryWrapperFromUsernameAndStatus(String staffLogin,
-                                                                                              Collection<ProcessingStatus> processingStatus,
-                                                                                              Predicate... predicates) {
+    private BureauResponseSummaryWrapper getBureauResponseSummaryWrapperFromUsernameAndStatus(
+        String staffLogin,
+        Collection<ProcessingStatus> processingStatus,
+        Predicate... predicates) {
+
         List<Tuple> tuples = jurorCommonResponseRepositoryMod
             .getJurorResponseDetailsByUsernameAndStatus(staffLogin, processingStatus, predicates);
         return BureauResponseSummaryWrapper.builder()
