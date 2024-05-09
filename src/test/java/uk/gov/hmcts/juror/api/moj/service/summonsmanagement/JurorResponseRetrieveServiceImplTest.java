@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -59,6 +60,9 @@ class JurorResponseRetrieveServiceImplTest {
     @Mock
     private JurorResponseCommonRepositoryMod jurorResponseCommonRepository;
 
+    @Mock
+    private AppSettingService appSettingService;
+
     @InjectMocks
     private JurorResponseRetrieveServiceImpl jurorResponseRetrieveService;
 
@@ -77,6 +81,7 @@ class JurorResponseRetrieveServiceImplTest {
             List<Tuple> tupleList = new ArrayList<>();
             tupleList.add(tuple);
 
+            doReturn(100).when(appSettingService).getBureauOfficerSearchResultLimit();
             doReturn(tupleList).when(jurorResponseCommonRepository).retrieveJurorResponseDetails(
                 request, false, 100);
 
@@ -127,7 +132,7 @@ class JurorResponseRetrieveServiceImplTest {
             Tuple tuple = createMockedDbResponse(1, ProcessingStatus.TODO);
             List<Tuple> tupleList = new ArrayList<>();
             tupleList.add(tuple);
-
+            doReturn(100).when(appSettingService).getBureauOfficerSearchResultLimit();
             doReturn(tupleList).when(jurorResponseCommonRepository).retrieveJurorResponseDetails(
                 request, false, 100);
 
