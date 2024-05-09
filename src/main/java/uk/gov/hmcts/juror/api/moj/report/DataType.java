@@ -4,6 +4,7 @@ import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import lombok.Getter;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
@@ -76,8 +77,43 @@ public enum DataType implements IDataType {
         QBulkPrintData.bulkPrintData),
     TOTAL_SENT_FOR_PRINTING("Sent for printing", Long.class, QBulkPrintData.bulkPrintData.jurorNo.count(),
         QBulkPrintData.bulkPrintData),
-    DATE_SENT("Date sent", LocalDate.class, QBulkPrintData.bulkPrintData.creationDate,  QBulkPrintData.bulkPrintData);
+    DATE_SENT("Date sent", LocalDate.class, QBulkPrintData.bulkPrintData.creationDate, QBulkPrintData.bulkPrintData),
 
+    SUMMONS_TOTAL("Summoned", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)).then(1).otherwise(0).sum(),
+        QJurorPool.jurorPool),
+    RESPONDED_TOTAL("Responded", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED)).then(1).otherwise(0)
+            .sum(),
+        QJurorPool.jurorPool),
+    PANEL_TOTAL("Panel", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.PANEL)).then(1).otherwise(0).sum(),
+        QJurorPool.jurorPool),
+    JUROR_TOTAL("Juror", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.JUROR)).then(1).otherwise(0).sum(),
+        QJurorPool.jurorPool),
+    EXCUSED_TOTAL("Excused", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.EXCUSED)).then(1).otherwise(0).sum(),
+        QJurorPool.jurorPool),
+    DISQUALIFIED_TOTAL("Disqualified", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DISQUALIFIED)).then(1).otherwise(0)
+            .sum(),
+        QJurorPool.jurorPool),
+    DEFERRED_TOTAL("Deferred", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED)).then(1).otherwise(0).sum(),
+        QJurorPool.jurorPool),
+    REASSIGNED_TOTAL("Reassigned", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.REASSIGNED)).then(1).otherwise(0)
+            .sum(),
+        QJurorPool.jurorPool),
+    UNDELIVERABLE_TOTAL("Undeliverable", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.UNDELIVERABLE)).then(1).otherwise(0)
+            .sum(),
+        QJurorPool.jurorPool),
+    TRANSFERRED_TOTAL("Transferred", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.TRANSFERRED)).then(1).otherwise(0)
+            .sum(),
+        QJurorPool.jurorPool);
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;
