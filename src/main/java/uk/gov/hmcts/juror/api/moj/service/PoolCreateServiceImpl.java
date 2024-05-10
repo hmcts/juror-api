@@ -421,17 +421,13 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 // Increment the previous sequence number by one to get the new sequence number
                 sequenceNumber++;
 
-//                if (!Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)) {
-//
-//                    printDataService.printSummonsLetter(jurorPool);
-//                }
-
                 if (jurorsFound == poolCreateRequestDto.getCitizensToSummon()) {
                     break;  // we've found the number of jurors required, no need to process any further.
                 }
 
             }
 
+            // Saving records (bulk)
             jurorRepository.saveAll(jurorPools.stream().map(JurorPool::getJuror).toList());
             jurorPoolRepository.saveAll(jurorPools);
 
