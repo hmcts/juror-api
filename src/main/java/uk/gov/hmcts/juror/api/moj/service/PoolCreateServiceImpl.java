@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -357,6 +358,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
     private void updateJurorHistory(String owner, String userId, List<JurorPool> jurorPools) {
 
+        List<JurorHistory> historyList = new ArrayList<>();
         jurorPools.forEach(jurorPool -> {
             Juror juror = jurorPool.getJuror();
             log.trace(String.format(
@@ -377,9 +379,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 jurorHistBuilder.otherInformation(HistoryCodeMod.PRINT_SUMMONS.getDescription());
                 jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
             }
-            jurorHistoryRepository.save(jurorHistBuilder.build());
+            historyList.add(jurorHistBuilder.build());
         });
-
+        jurorHistoryRepository.saveAll(historyList);
     }
 
     private List<JurorPool> getJurorPools(String login, String owner, PoolCreateRequestDto poolCreateRequestDto) {
@@ -420,10 +422,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 // Increment the previous sequence number by one to get the new sequence number
                 sequenceNumber++;
 
-                if (!Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)) {
-                    // create a summons letter for juror
-                    printDataService.printSummonsLetter(jurorPool);
-                }
+//                if (!Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)) {
+//
+//                    printDataService.printSummonsLetter(jurorPool);
+//                }
 
                 if (jurorsFound == poolCreateRequestDto.getCitizensToSummon()) {
                     break;  // we've found the number of jurors required, no need to process any further.
@@ -431,13 +433,21 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
             }
 
+            jurorRepository.saveAll(jurorPools.stream().map(JurorPool::getJuror).toList());
+            jurorPoolRepository.saveAll(jurorPools);
+
+            // create a summons letter for juror
+            printDataService.bulkPrintSummonsLetter(jurorPools.stream()
+                .filter(jurorPool -> !Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED))
+                .toList());
+
             if (jurorsFound < poolCreateRequestDto.getCitizensToSummon()) {
                 throw new RuntimeException(); // we were unable to find the required number of jurors who can serve.
             }
 
             // increment the pool total by the number of new pool members
             poolRequest.setNewRequest('N');
-            poolRequestRepository.saveAndFlush(poolRequest);
+            poolRequestRepository.save(poolRequest);
 
         } catch (Exception e) {
             log.error("Exception occurred when adding members to pool - {}", e.getMessage());
@@ -501,7 +511,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         juror.setResponded(false);
         juror.setContactPreference(null);
 
-        juror = jurorRepository.saveAndFlush(juror);
+        //juror = jurorRepository.save(juror);
 
         jurorPool.setIsActive(true);
 
@@ -513,7 +523,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
         jurorPool.setJuror(juror);
 
-        jurorPoolRepository.saveAndFlush(jurorPool);
+        //jurorPoolRepository.save(jurorPool);
         log.info("Pool member {} added to the Pool Member table", juror.getJurorNumber());
 
         return jurorPool;
