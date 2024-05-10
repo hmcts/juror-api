@@ -45,7 +45,7 @@ public class PersonAttendingSummaryReport extends AbstractStandardReport {
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorPool.jurorPool.nextDate.eq(request.getDate()));
         query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(request.getLocCode()));
-        if (request.getIncludeSummoned().equals(true)) {
+        if (request.getIncludeSummoned()) {
             query.where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED,
                                                               IJurorStatus.RESPONDED,
                                                               IJurorStatus.PANEL,

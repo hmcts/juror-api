@@ -37,7 +37,6 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
-            .reportType("PersonAttendingSummaryReport")
             .date(LocalDate.now().plusDays(1))
             .locCode("415")
             .includeSummoned(false)
@@ -86,7 +85,7 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
     }
 
     @Test
-    void negativeInvalidPayloadCutOffDateMissing() {
+    void negativeInvalidPayloadAttendanceDateMissing() {
         StandardReportRequest request = getValidPayload();
         request.setDate(null);
         testBuilder()
