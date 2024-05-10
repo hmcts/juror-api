@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -421,10 +422,23 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 // Increment the previous sequence number by one to get the new sequence number
                 sequenceNumber++;
 
+//                if (!Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)) {
+//
+//                    printDataService.printSummonsLetter(jurorPool);
+//                }
+
                 if (jurorsFound == poolCreateRequestDto.getCitizensToSummon()) {
                     break;  // we've found the number of jurors required, no need to process any further.
                 }
             }
+
+            jurorRepository.saveAll(jurorPools.stream().map(JurorPool::getJuror).toList());
+            jurorPoolRepository.saveAll(jurorPools);
+
+            // create a summons letter for juror
+            printDataService.bulkPrintSummonsLetter(jurorPools.stream()
+                .filter(jurorPool -> !Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED))
+                .toList());
 
             if (jurorsFound < poolCreateRequestDto.getCitizensToSummon()) {
                 throw new RuntimeException(); // we were unable to find the required number of jurors who can serve.
@@ -507,6 +521,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         juror.setDateOfBirth(voter.getDateOfBirth());
         juror.setResponded(false);
         juror.setContactPreference(null);
+
+        //juror = jurorRepository.save(juror);
+
         jurorPool.setIsActive(true);
 
         // pool sequence
@@ -516,6 +533,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         jurorPool.setLastUpdate(LocalDateTime.now());
 
         jurorPool.setJuror(juror);
+
+        //jurorPoolRepository.save(jurorPool);
         log.info("Pool member {} added to the Pool Member table", juror.getJurorNumber());
 
         return jurorPool;
