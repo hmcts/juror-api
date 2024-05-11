@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
 import java.time.LocalDate;
@@ -113,7 +114,27 @@ public enum DataType implements IDataType {
     TRANSFERRED_TOTAL("Transferred", Integer.class,
         new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.TRANSFERRED)).then(1).otherwise(0)
             .sum(),
-        QJurorPool.jurorPool);
+        QJurorPool.jurorPool),
+
+    ATTENDANCE_DATE("Attendance Date", LocalDate.class, QAppearance.appearance.attendanceDate, QAppearance.appearance),
+    ATTENDANCE_TYPE("Attendance Type", String.class, QAppearance.appearance.attendanceType, QAppearance.appearance),
+
+    EXPENSE_STATUS("Expense Status", String.class,
+        new CaseBuilder()
+            .when(QAppearance.appearance.isDraftExpense.isTrue()).then("Draft")
+            .when(QAppearance.appearance.isDraftExpense.isFalse()
+                .and(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_ENTERED)))
+            .then("For approval")
+            .when(QAppearance.appearance.isDraftExpense.isFalse()
+                .and(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_EDITED)))
+            .then("For re-approval")
+            .when(QAppearance.appearance.isDraftExpense.isFalse()
+                .and(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_AUTHORISED)))
+            .then("Authorised")
+            .otherwise(""), QAppearance.appearance),
+
+    AUDIT_NUMBER("Audit number", String.class, QAppearance.appearance.attendanceAuditNumber, QAppearance.appearance)
+    ;
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;
