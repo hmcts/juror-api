@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
+import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -36,7 +37,7 @@ public class PostponedListByDateReport extends AbstractGroupedReport {
                                      CourtLocationService courtLocationService) {
         super(poolRequestRepository,
             QJurorPool.jurorPool,
-            GroupBy.builder()
+            ReportGroupBy.builder()
                 .dataType(DataType.POOL_NUMBER)
                 .removeGroupByFromResponse(true)
                 .build(),

@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import uk.gov.hmcts.juror.api.moj.report.DataType;
 
 @Data
 @SuperBuilder
@@ -15,7 +14,7 @@ import uk.gov.hmcts.juror.api.moj.report.DataType;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class GroupByResponse {
 
-    private DataType name;
+    private String name;
 
     private GroupByResponse nested;
 }

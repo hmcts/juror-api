@@ -133,8 +133,9 @@ public enum DataType implements IDataType {
             .then("Authorised")
             .otherwise(""), QAppearance.appearance),
 
-    AUDIT_NUMBER("Audit number", String.class, QAppearance.appearance.attendanceAuditNumber, QAppearance.appearance)
-    ;
+    AUDIT_NUMBER("Audit number", String.class, QAppearance.appearance.attendanceAuditNumber, QAppearance.appearance),
+    APPEARANCE_TRIAL_NUMBER("Trial Number", String.class, QAppearance.appearance.trialNumber, QAppearance.appearance),
+    APPEARANCE_POOL_NUMBER("Pool Number", String.class, QAppearance.appearance.poolNumber, QAppearance.appearance);
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;

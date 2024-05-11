@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupByResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
@@ -13,12 +14,17 @@ import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
+import uk.gov.hmcts.juror.api.moj.report.IDataType;
+import uk.gov.hmcts.juror.api.moj.report.IReportGroupBy;
+import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,10 +40,46 @@ public class UnpaidAttendanceReportDetailed extends AbstractGroupedReport {
                                           CourtLocationService courtLocationService) {
         super(poolRequestRepository,
             QAppearance.appearance,
-            GroupBy.builder()
-                .dataType(DataType.ATTENDANCE_DATE)
-                .removeGroupByFromResponse(true)
-                .build(),
+            new IReportGroupBy() {
+
+                @Override
+                public String getGroupFunction(GroupedTableData groupedTableData) {
+                    Object trialNumber = groupedTableData.get(DataType.APPEARANCE_TRIAL_NUMBER.getId());
+                    if (trialNumber != null) {
+                        return "Trial " + trialNumber;
+                    } else {
+                        Object poolNumber = groupedTableData.get(DataType.APPEARANCE_POOL_NUMBER.getId());
+                        return "Pool " + poolNumber;
+                    }
+                }
+
+                @Override
+                public IReportGroupBy getNested() {
+                    return ReportGroupBy.builder()
+                        .dataType(DataType.ATTENDANCE_DATE)
+                        .removeGroupByFromResponse(true)
+                        .build();
+                }
+
+                @Override
+                public GroupByResponse getGroupedByResponse() {
+                    return GroupByResponse.builder()
+                        .name("TRIAL_NUMBER_OR_POOL_NUMBER")
+                        .build();
+                }
+
+                @Override
+                public Collection<? extends IDataType> getRequiredDataTypes() {
+                    return List.of(DataType.APPEARANCE_TRIAL_NUMBER, DataType.APPEARANCE_POOL_NUMBER,
+                        DataType.ATTENDANCE_DATE);
+                }
+
+                @Override
+                public Collection<String> getKeysToRemove() {
+                    return List.of(DataType.APPEARANCE_TRIAL_NUMBER.getId(), DataType.APPEARANCE_POOL_NUMBER.getId(),
+                        DataType.ATTENDANCE_DATE.getId());
+                }
+            },
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
             DataType.LAST_NAME,
