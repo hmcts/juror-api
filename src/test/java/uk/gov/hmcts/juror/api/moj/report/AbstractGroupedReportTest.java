@@ -7,7 +7,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupByResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
@@ -36,17 +38,16 @@ class AbstractGroupedReportTest {
     @Test
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveConstructor() {
+        AbstractGroupedReport.GroupBy groupBy = createGroupBy();
         AbstractGroupedReport report = new AbstractStandardReportTestImpl(
             poolRequestRepository,
             QJuror.juror,
-            DataType.JUROR_NUMBER,
-            false,
+            groupBy,
             DataType.FIRST_NAME,
             DataType.CONTACT_DETAILS,
             DataType.STATUS);
 
-        assertThat(report.groupBy).isEqualTo(DataType.JUROR_NUMBER);
-        assertThat(report.removeGroupByFromResponse).isEqualTo(false);
+        assertThat(report.groupBy).isEqualTo(groupBy);
         assertThat(report.poolRequestRepository).isEqualTo(poolRequestRepository);
         assertThat(report.from).isEqualTo(QJuror.juror);
         assertThat(report.dataTypes).containsExactly(DataType.JUROR_NUMBER, DataType.FIRST_NAME,
@@ -59,14 +60,20 @@ class AbstractGroupedReportTest {
 
     @Test
     void positiveCombine() {
-        IDataType[] dataTypes = AbstractGroupedReport.combine(DataType.JUROR_NUMBER,
+        AbstractGroupedReport.GroupBy groupBy = AbstractGroupedReport.GroupBy.builder()
+            .dataType(DataType.JUROR_NUMBER)
+            .build();
+        IDataType[] dataTypes = AbstractGroupedReport.combine(groupBy,
             DataType.FIRST_NAME, DataType.CONTACT_DETAILS);
         assertThat(dataTypes).containsExactly(DataType.JUROR_NUMBER, DataType.FIRST_NAME, DataType.CONTACT_DETAILS);
     }
 
     @Test
     void positiveCombineNoAdditional() {
-        IDataType[] dataTypes = AbstractGroupedReport.combine(DataType.JUROR_NUMBER);
+        AbstractGroupedReport.GroupBy groupBy = AbstractGroupedReport.GroupBy.builder()
+            .dataType(DataType.JUROR_NUMBER)
+            .build();
+        IDataType[] dataTypes = AbstractGroupedReport.combine(groupBy);
         assertThat(dataTypes).containsExactly(DataType.JUROR_NUMBER);
     }
 
@@ -76,19 +83,23 @@ class AbstractGroupedReportTest {
         final List<Tuple> data = List.of(mock(Tuple.class), mock(Tuple.class));
 
         List<LinkedHashMap<String, Object>> tableData = new ArrayList<>();
-        tableData.add(new ReportLinkedMap<String, Object>()
+        tableData.add(new GroupedTableData()
+            .setType(GroupedTableData.Type.DATA)
             .add(DataType.JUROR_NUMBER.getId(), "1231")
             .add(DataType.FIRST_NAME.getId(), "John1")
             .add(DataType.LAST_NAME.getId(), "Doe1"));
-        tableData.add(new ReportLinkedMap<String, Object>()
+        tableData.add(new GroupedTableData()
+            .setType(GroupedTableData.Type.DATA)
             .add(DataType.JUROR_NUMBER.getId(), "1232")
             .add(DataType.FIRST_NAME.getId(), "John2")
             .add(DataType.LAST_NAME.getId(), "Doe2"));
-        tableData.add(new ReportLinkedMap<String, Object>()
+        tableData.add(new GroupedTableData()
+            .setType(GroupedTableData.Type.DATA)
             .add(DataType.JUROR_NUMBER.getId(), "1231")
             .add(DataType.FIRST_NAME.getId(), "John1.1")
             .add(DataType.LAST_NAME.getId(), "Doe1.1"));
-        tableData.add(new ReportLinkedMap<String, Object>()
+        tableData.add(new GroupedTableData()
+            .setType(GroupedTableData.Type.DATA)
             .add(DataType.JUROR_NUMBER.getId(), "1233")
             .add(DataType.FIRST_NAME.getId(), "John3")
             .add(DataType.LAST_NAME.getId(), "Doe3"));
@@ -97,16 +108,21 @@ class AbstractGroupedReportTest {
         AbstractGroupedReport report = createReport();
         doReturn(tableData).when(report).getTableDataAsList(data);
 
-        Map<String, List<LinkedHashMap<String, Object>>> result = report.getTableData(data);
+        GroupedTableData result = report.getTableData(data);
         assertThat(result).isNotNull();
         assertThat(result).hasSize(3);
-        assertThat(result.get("1231")).hasSize(2)
+        assertThat(toLinkedHashMapList(result.get("1231"))).hasSize(2)
             .contains(tableData.get(0), tableData.get(2));
-        assertThat(result.get("1232")).hasSize(1)
+        assertThat(toLinkedHashMapList(result.get("1232"))).hasSize(1)
             .contains(tableData.get(1));
-        assertThat(result.get("1233")).hasSize(1)
+        assertThat(toLinkedHashMapList(result.get("1233"))).hasSize(1)
             .contains(tableData.get(3));
         verify(report).getTableDataAsList(data);
+    }
+
+    @SuppressWarnings("unchecked")//TODO
+    private List<LinkedHashMap<String, Object>> toLinkedHashMapList(Object o) {
+        return (List<LinkedHashMap<String, Object>>) o;
     }
 
     @Test
@@ -114,31 +130,39 @@ class AbstractGroupedReportTest {
         AbstractGroupedReport report = createReport();
         GroupedReportResponse response = report.createBlankResponse();
         assertThat(response).isNotNull();
-        assertThat(response.getGroupBy()).isEqualTo(DataType.JUROR_NUMBER);
-        assertThat(response).isEqualTo(new GroupedReportResponse(DataType.JUROR_NUMBER));
+        GroupByResponse groupByResponse = GroupByResponse.builder()
+            .name(DataType.JUROR_NUMBER)
+            .nested(null)
+            .build();
+        assertThat(response.getGroupBy()).isEqualTo(groupByResponse);
+        assertThat(response).isEqualTo(new GroupedReportResponse(groupByResponse));
     }
 
     private AbstractGroupedReport createReport() {
-        return createReport(false);
+        return createReport(createGroupBy());
     }
 
-    private AbstractGroupedReport createReport(boolean removeGroupByFromResponse) {
+    private AbstractGroupedReport createReport(AbstractGroupedReport.GroupBy groupBy) {
         return spy(new AbstractStandardReportTestImpl(
             poolRequestRepository,
             QJuror.juror,
-            DataType.JUROR_NUMBER,
-            removeGroupByFromResponse,
+            groupBy,
             DataType.FIRST_NAME,
             DataType.LAST_NAME));
+    }
+
+    private AbstractGroupedReport.GroupBy createGroupBy() {
+        return AbstractGroupedReport.GroupBy.builder()
+            .dataType(DataType.JUROR_NUMBER)
+            .build();
     }
 
 
     private static class AbstractStandardReportTestImpl extends AbstractGroupedReport {
 
         public AbstractStandardReportTestImpl(PoolRequestRepository poolRequestRepository, EntityPath<?> from,
-                                              DataType groupBy,
-                                              boolean removeGroupByFromResponse, DataType... dataType) {
-            super(poolRequestRepository, from, groupBy, removeGroupByFromResponse, dataType);
+                                              GroupBy groupBy, DataType... dataType) {
+            super(poolRequestRepository, from, groupBy, dataType);
         }
 
         @Override
@@ -155,7 +179,7 @@ class AbstractGroupedReportTest {
         @Override
         public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
             StandardReportRequest request,
-            AbstractReportResponse.TableData<Map<String, List<LinkedHashMap<String, Object>>>> tableData) {
+            AbstractReportResponse.TableData<GroupedTableData> tableData) {
             throw new UnsupportedOperationException("Not implemented");
         }
     }
