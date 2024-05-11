@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
+import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -51,7 +52,7 @@ class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<Pos
     public PostponedListByDateReportTest() {
         super(QJurorPool.jurorPool,
             PostponedListByDateReport.RequestValidator.class,
-            AbstractGroupedReport.GroupBy.builder()
+            ReportGroupBy.builder()
                 .dataType(DataType.POOL_NUMBER)
                 .removeGroupByFromResponse(true)
                 .build(),

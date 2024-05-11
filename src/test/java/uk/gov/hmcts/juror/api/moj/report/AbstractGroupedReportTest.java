@@ -38,7 +38,7 @@ class AbstractGroupedReportTest {
     @Test
     @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveConstructor() {
-        AbstractGroupedReport.GroupBy groupBy = createGroupBy();
+        IReportGroupBy groupBy = createGroupBy();
         AbstractGroupedReport report = new AbstractStandardReportTestImpl(
             poolRequestRepository,
             QJuror.juror,
@@ -60,9 +60,7 @@ class AbstractGroupedReportTest {
 
     @Test
     void positiveCombine() {
-        AbstractGroupedReport.GroupBy groupBy = AbstractGroupedReport.GroupBy.builder()
-            .dataType(DataType.JUROR_NUMBER)
-            .build();
+        IReportGroupBy groupBy = createGroupBy();
         IDataType[] dataTypes = AbstractGroupedReport.combine(groupBy,
             DataType.FIRST_NAME, DataType.CONTACT_DETAILS);
         assertThat(dataTypes).containsExactly(DataType.JUROR_NUMBER, DataType.FIRST_NAME, DataType.CONTACT_DETAILS);
@@ -70,9 +68,7 @@ class AbstractGroupedReportTest {
 
     @Test
     void positiveCombineNoAdditional() {
-        AbstractGroupedReport.GroupBy groupBy = AbstractGroupedReport.GroupBy.builder()
-            .dataType(DataType.JUROR_NUMBER)
-            .build();
+        IReportGroupBy groupBy = createGroupBy();
         IDataType[] dataTypes = AbstractGroupedReport.combine(groupBy);
         assertThat(dataTypes).containsExactly(DataType.JUROR_NUMBER);
     }
@@ -131,7 +127,7 @@ class AbstractGroupedReportTest {
         GroupedReportResponse response = report.createBlankResponse();
         assertThat(response).isNotNull();
         GroupByResponse groupByResponse = GroupByResponse.builder()
-            .name(DataType.JUROR_NUMBER)
+            .name(DataType.JUROR_NUMBER.name())
             .nested(null)
             .build();
         assertThat(response.getGroupBy()).isEqualTo(groupByResponse);
@@ -142,7 +138,7 @@ class AbstractGroupedReportTest {
         return createReport(createGroupBy());
     }
 
-    private AbstractGroupedReport createReport(AbstractGroupedReport.GroupBy groupBy) {
+    private AbstractGroupedReport createReport(IReportGroupBy groupBy) {
         return spy(new AbstractStandardReportTestImpl(
             poolRequestRepository,
             QJuror.juror,
@@ -151,8 +147,8 @@ class AbstractGroupedReportTest {
             DataType.LAST_NAME));
     }
 
-    private AbstractGroupedReport.GroupBy createGroupBy() {
-        return AbstractGroupedReport.GroupBy.builder()
+    private IReportGroupBy createGroupBy() {
+        return ReportGroupBy.builder()
             .dataType(DataType.JUROR_NUMBER)
             .build();
     }
@@ -161,7 +157,7 @@ class AbstractGroupedReportTest {
     private static class AbstractStandardReportTestImpl extends AbstractGroupedReport {
 
         public AbstractStandardReportTestImpl(PoolRequestRepository poolRequestRepository, EntityPath<?> from,
-                                              GroupBy groupBy, DataType... dataType) {
+                                              IReportGroupBy groupBy, DataType... dataType) {
             super(poolRequestRepository, from, groupBy, dataType);
         }
 

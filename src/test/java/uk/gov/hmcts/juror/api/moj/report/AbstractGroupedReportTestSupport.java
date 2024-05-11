@@ -11,11 +11,11 @@ public abstract class AbstractGroupedReportTestSupport
     extends AbstractReportTestSupport<GroupedTableData, R> {
 
 
-    private final AbstractGroupedReport.GroupBy groupBy;
+    private final IReportGroupBy groupBy;
 
     public AbstractGroupedReportTestSupport(EntityPath<?> from,
                                             Class<?> validatorClass,
-                                            AbstractGroupedReport.GroupBy groupBy,
+                                            IReportGroupBy groupBy,
                                             IDataType... dataTypes) {
         super(from, validatorClass, AbstractGroupedReport.combine(groupBy, dataTypes));
         this.groupBy = groupBy;
