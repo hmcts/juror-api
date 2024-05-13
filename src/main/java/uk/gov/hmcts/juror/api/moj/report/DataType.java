@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
@@ -60,13 +61,18 @@ public enum DataType implements IDataType {
     NUMBER_DEFERRED("Number Deferred", Long.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
 
     REASONABLE_ADJUSTMENT_CODE("Reasonable Adjustment Code", String.class,
-        QJuror.juror.reasonableAdjustmentCode, QJuror.juror),
-    REASONABLE_ADJUSTMENT_MESSAGE("Reasonable Adjustment Message", String.class,
+        QReasonableAdjustments.reasonableAdjustments.code, QReasonableAdjustments.reasonableAdjustments),
+
+    REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION("Reasonable Adjustment Code with description", String.class,
+        QReasonableAdjustments.reasonableAdjustments.code
+            .concat(" - ")
+            .concat(QReasonableAdjustments.reasonableAdjustments.description),
+        QReasonableAdjustments.reasonableAdjustments),
+
+    JUROR_EASONABLE_ADJUSTMENT_MESSAGE("Reasonable Adjustment Message", String.class,
         QJuror.juror.reasonableAdjustmentMessage, QJuror.juror),
-    REASONABLE_ADJUSTMENT("Reasonable Adjustment", List.class, REASONABLE_ADJUSTMENT_CODE,
-        REASONABLE_ADJUSTMENT_MESSAGE),
-    REASONABLE_ADJUSTMENT_F("Reasonable Adjustment", String.class, REASONABLE_ADJUSTMENT_CODE,
-                          REASONABLE_ADJUSTMENT_MESSAGE),
+    JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE("Reasonable Adjustment", String.class,
+        REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION, JUROR_EASONABLE_ADJUSTMENT_MESSAGE),
 
     ON_CALL("On Call", Boolean.class, QJurorPool.jurorPool.onCall, QJurorPool.jurorPool),
     SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate,
