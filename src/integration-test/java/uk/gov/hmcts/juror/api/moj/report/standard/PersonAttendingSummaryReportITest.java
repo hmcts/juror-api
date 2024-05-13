@@ -57,7 +57,6 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
         request.setIncludeSummoned(true);
         request.setDate(LocalDate.now().plusDays(2));
         testBuilder()
-            .payload(addReportType(request))
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getIncludeSummonsResponse());
@@ -68,7 +67,6 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
         StandardReportRequest request = getValidPayload();
         request.setDate(LocalDate.now().minusDays(100));
         testBuilder()
-            .payload(addReportType(request))
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getNoRecordsResponse());
@@ -79,7 +77,6 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
         StandardReportRequest request = getValidPayload();
         request.setLocCode(null);
         testBuilder()
-            .payload(addReportType(request))
             .triggerInvalid()
             .assertInvalidPathParam("locCode: must not be null");
     }
@@ -89,7 +86,6 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
         StandardReportRequest request = getValidPayload();
         request.setDate(null);
         testBuilder()
-            .payload(addReportType(request))
             .triggerInvalid()
             .assertInvalidPathParam("date: must not be null");
     }

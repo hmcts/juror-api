@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -38,13 +39,12 @@ public class PersonAttendingSummaryReport extends AbstractStandardReport {
 
         this.courtLocationRepository = courtLocationRepository;
         isCourtUserOnly();
-        addAuthenticationConsumer(request -> checkOwnership(request.getLocCode(), false));
     }
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJurorPool.jurorPool.nextDate.eq(request.getDate()));
-        query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(request.getLocCode()));
+        query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
         if (request.getIncludeSummoned()) {
             query.where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED,
                                                               IJurorStatus.RESPONDED,
@@ -76,21 +76,20 @@ public class PersonAttendingSummaryReport extends AbstractStandardReport {
 
         map.put("court_name", AbstractReportResponse.DataTypeValue.builder().displayName("Court Name")
             .dataType(String.class.getSimpleName())
-            .value(getCourtNameString(courtLocationRepository, request.getLocCode()))
+            .value(getCourtNameString(courtLocationRepository, SecurityUtil.getLocCode()))
             .build());
 
         return map;
     }
 
     @Override
-    public Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass() {
+    public Class<PersonAttendingSummaryReport.RequestValidator> getRequestValidatorClass() {
         return PersonAttendingSummaryReport.RequestValidator.class;
     }
 
     public interface RequestValidator extends
         Validators.AbstractRequestValidator,
         Validators.RequireDate,
-        Validators.RequireLocCode,
         Validators.RequireIncludeSummoned {
 
     }

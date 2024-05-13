@@ -2,16 +2,19 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -24,10 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 @SuppressWarnings("PMD.LawOfDemeter")
 class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport<PersonAttendingSummaryReport> {
@@ -66,21 +72,51 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
 
     @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
-        TestUtils.setupAuthentication("415", "COURT_USER", "1");
+        String locCode = "415";
+//        TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
 
         StandardReportRequest requestMock = mock(StandardReportRequest.class);
         when(requestMock.getDate()).thenReturn(LocalDate.now());
-        when(requestMock.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
         report.preProcessQuery(query, request);
         verify(query, times(1))
             .where(QJurorPool.jurorPool.nextDate.eq(requestMock.getDate()));
         verify(query, times(1))
-            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(requestMock.getLocCode()));
+            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locCode));
         verify(query, times(1))
             .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED,
                                                          IJurorStatus.PANEL,
                                                          IJurorStatus.JUROR));
+    }
+
+    @Test
+    public void positivePreProcessQueryWithSummoned() {
+        String locCode = "415";
+//        TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
+
+        StandardReportRequest requestMock = mock(StandardReportRequest.class);
+        when(requestMock.getDate()).thenReturn(LocalDate.now());
+
+        JPAQuery<Tuple> query = mock(JPAQuery.class,
+                                     withSettings().defaultAnswer(RETURNS_SELF));
+        StandardReportRequest request = getValidRequest();
+
+        request.setIncludeSummoned(true);
+
+        report.preProcessQuery(query, request);
+        verify(query, times(1))
+            .where(QJurorPool.jurorPool.nextDate.eq(requestMock.getDate()));
+        verify(query, times(1))
+            .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locCode));
+        verify(query, times(1))
+            .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED,
+                                                         IJurorStatus.RESPONDED,
+                                                         IJurorStatus.PANEL,
+                                                         IJurorStatus.JUROR));
+
+        verifyNoMoreInteractions(query);
+
+        TestUtils.afterAll();
     }
 
     @Override
@@ -125,24 +161,9 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
     }
 
     @Test
-    void negativeMissingLocationCode() {
-        StandardReportRequest request = getValidRequest();
-        request.setLocCode(null);
-        assertValidationFails(request, new ValidationFailure("locCode", "must not be null"));
-    }
-
-    @Test
     void negativeMissingDate() {
         StandardReportRequest request = getValidRequest();
         request.setDate(null);
         assertValidationFails(request, new ValidationFailure("date", "must not be null"));
     }
-
-    @Test
-    void negativeInvalidLocationCode() {
-        StandardReportRequest request = getValidRequest();
-        request.setLocCode(TestConstants.INVALID_COURT_LOCATION);
-        assertValidationFails(request, new ValidationFailure("locCode", "must match \"^\\d{3}$\""));
-    }
-
 }
