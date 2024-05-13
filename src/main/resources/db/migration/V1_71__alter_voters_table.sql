@@ -1,0 +1,1 @@
+create index voters_loc_code_idx on juror_mod.voters (loc_code);

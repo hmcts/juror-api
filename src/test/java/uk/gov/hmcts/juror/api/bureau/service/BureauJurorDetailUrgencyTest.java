@@ -177,14 +177,14 @@ public class BureauJurorDetailUrgencyTest {
 
     @Test
     public void testAddWorkingDaysIgnoresWeekendsJdb810() throws Exception {
-        final Integer testDays = 9;
-        final LocalDateTime fixedDateTime = LocalDateTime.of(2016, Month.DECEMBER, 31, 12, 0, 0);
-        LocalDateTime modifiedDateTime = urgency.addWorkingDays(fixedDateTime, testDays);
+        final int testDays = 9;
+        final LocalDate fixedDateTime = LocalDate.of(2016, Month.DECEMBER, 31);
+        LocalDate modifiedDateTime = urgency.addWorkingDays(fixedDateTime, testDays);
 
         assertThat(fixedDateTime.getDayOfWeek()).isEqualTo(DayOfWeek.SATURDAY);
         assertThat(modifiedDateTime).isAfter(fixedDateTime.toString());
         assertThat(modifiedDateTime).isAfter(fixedDateTime.plusDays(testDays));
-        assertThat(modifiedDateTime).isEqualToIgnoringHours(LocalDateTime.of(2017, Month.JANUARY, 12, 12, 0, 0));
+        assertThat(modifiedDateTime).isEqualTo(LocalDate.of(2017, Month.JANUARY, 12));
     }
 
     @Test
@@ -197,7 +197,6 @@ public class BureauJurorDetailUrgencyTest {
 
         assertThat(urgency.isUrgent(jurorResponse, poolDetails)).isTrue();
         assertThat(urgency.isSuperUrgent(jurorResponse, poolDetails)).isFalse();
-
     }
 
     @Test

@@ -29,11 +29,11 @@ public class BureauResponseSummaryDto {
     private String postcode;
     @Schema(description = "Name of court assigned to juror")
     private String courtName;
-    @Schema(description = "Response processing status")
+    @Schema(description = "court code")
     private String courtCode;
     @Schema(description = "Juror Reply method, Paper or Digital")
     private String replyMethod;
-    @Schema(description = "court code")
+    @Schema(description = "Response processing status")
     private String processingStatus;
     @Schema(description = "Juror residency")
     private Boolean residency;

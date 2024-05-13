@@ -8,8 +8,13 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWr
 import uk.gov.hmcts.juror.api.bureau.controller.response.StaffDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.TeamDto;
 import uk.gov.hmcts.juror.api.bureau.domain.Team;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
+import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.CombinedJurorResponse;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -34,7 +39,7 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
     @Override
     public List<BureauResponseSummaryDto> convertToDtos(Iterable<ModJurorDetail> details) {
         return StreamSupport.stream(details.spliterator(), false)
-            // .map(urgencyCalculator::flagSlaOverdueForResponse)
+            .map(urgencyCalculator::flagSlaOverdueForResponse)
             .map(this::detailToDto)
             .collect(Collectors.toCollection(LinkedList::new));
     }
@@ -71,6 +76,46 @@ public class BureauTransformsServiceImpl implements BureauTransformsService {
                 ? toStaffDto(detail.getAssignedStaffMember()) : null)
             .completedAt(detail.getCompletedAt())
             .version(detail.getVersion())
+            .build();
+    }
+
+
+    @Override
+    public BureauResponseSummaryDto detailToDto(
+        CombinedJurorResponse jurorResponse,
+        Juror juror,
+        JurorPool jurorPool,
+        PoolRequest pool
+
+    ) {
+        CourtLocation courtLocation = pool.getCourtLocation();
+        Boolean slaOverdue =
+            urgencyCalculator.slaBreached(jurorResponse.getProcessingStatus(), jurorPool.getNextDate());
+        return BureauResponseSummaryDto.builder()
+            .jurorNumber(juror.getJurorNumber())
+            .title(juror.getTitle())
+            .firstName(juror.getFirstName())
+            .lastName(juror.getLastName())
+            .courtCode(courtLocation.getLocCode())
+            .courtName(courtLocation.getName())
+            .postcode(juror.getPostcode())
+            .processingStatus(jurorResponse.getProcessingStatus().name())
+            .residency(jurorResponse.getResidency())
+            .mentalHealthAct(jurorResponse.getMentalHealthAct())
+            .bail(jurorResponse.getBail())
+            .convictions(jurorResponse.getConvictions())
+            .deferralDate(jurorResponse.getDeferralDate())
+            .excusalReason(jurorResponse.getExcusalReason())
+            .poolNumber(pool.getPoolNumber())
+            .replyMethod(jurorResponse.getReplyType().getType())
+            .urgent(jurorResponse.isUrgent())
+            .superUrgent(jurorResponse.isSuperUrgent())
+            .slaOverdue(slaOverdue)
+            .dateReceived(jurorResponse.getDateReceived().toLocalDate())
+            .assignedStaffMember(jurorResponse.getStaff() != null
+                ? toStaffDto(jurorResponse.getStaff()) : null)
+            .completedAt(jurorResponse.getCompletedAt())
+            .version(jurorResponse.getVersion())
             .build();
     }
 
