@@ -69,10 +69,10 @@ public enum DataType implements IDataType {
             .concat(QReasonableAdjustments.reasonableAdjustments.description),
         QReasonableAdjustments.reasonableAdjustments),
 
-    JUROR_EASONABLE_ADJUSTMENT_MESSAGE("Reasonable Adjustment Message", String.class,
+    JUROR_REASONABLE_ADJUSTMENT_MESSAGE("Reasonable Adjustment Message", String.class,
         QJuror.juror.reasonableAdjustmentMessage, QJuror.juror),
     JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE("Reasonable Adjustment", String.class,
-        REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION, JUROR_EASONABLE_ADJUSTMENT_MESSAGE),
+        REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION, JUROR_REASONABLE_ADJUSTMENT_MESSAGE),
 
     ON_CALL("On Call", Boolean.class, QJurorPool.jurorPool.onCall, QJurorPool.jurorPool),
     SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate,
