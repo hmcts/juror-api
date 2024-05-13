@@ -135,7 +135,7 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
                 .add("court_name", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Court Name")
                     .dataType("String")
-                    .value("Chelmsford  (414)")
+                    .value("CHESTER  (415)")
                     .build()))
             .tableData(
                 AbstractReportResponse.TableData.<Map<String, List<LinkedHashMap<String, Object>>>>builder()
