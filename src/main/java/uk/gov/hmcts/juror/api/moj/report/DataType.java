@@ -4,6 +4,7 @@ import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import lombok.Getter;
+import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
@@ -64,6 +65,8 @@ public enum DataType implements IDataType {
         QJuror.juror.reasonableAdjustmentMessage, QJuror.juror),
     REASONABLE_ADJUSTMENT("Reasonable Adjustment", List.class, REASONABLE_ADJUSTMENT_CODE,
         REASONABLE_ADJUSTMENT_MESSAGE),
+    REASONABLE_ADJUSTMENT_F("Reasonable Adjustment", String.class, REASONABLE_ADJUSTMENT_CODE,
+                          REASONABLE_ADJUSTMENT_MESSAGE),
 
     ON_CALL("On Call", Boolean.class, QJurorPool.jurorPool.onCall, QJurorPool.jurorPool),
     SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate,
@@ -135,7 +138,10 @@ public enum DataType implements IDataType {
 
     AUDIT_NUMBER("Audit number", String.class, QAppearance.appearance.attendanceAuditNumber, QAppearance.appearance),
     APPEARANCE_TRIAL_NUMBER("Trial Number", String.class, QAppearance.appearance.trialNumber, QAppearance.appearance),
-    APPEARANCE_POOL_NUMBER("Pool Number", String.class, QAppearance.appearance.poolNumber, QAppearance.appearance);
+    APPEARANCE_POOL_NUMBER("Pool Number", String.class, QAppearance.appearance.poolNumber, QAppearance.appearance),
+
+    COURT_LOCATION_NAME_AND_CODE("Court location name and code", String.class, QCourtLocation.courtLocation.name.concat(" (")
+        .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;
