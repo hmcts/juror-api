@@ -426,15 +426,6 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 }
             }
 
-            // Saving records (bulk)
-            jurorRepository.saveAll(jurorPools.stream().map(JurorPool::getJuror).toList());
-            jurorPoolRepository.saveAll(jurorPools);
-
-            // create a summons letter for juror
-            printDataService.bulkPrintSummonsLetter(jurorPools.stream()
-                .filter(jurorPool -> !Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED))
-                .toList());
-
             if (jurorsFound < poolCreateRequestDto.getCitizensToSummon()) {
                 throw new RuntimeException(); // we were unable to find the required number of jurors who can serve.
             }
@@ -516,9 +507,6 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         juror.setDateOfBirth(voter.getDateOfBirth());
         juror.setResponded(false);
         juror.setContactPreference(null);
-
-        //juror = jurorRepository.save(juror);
-
         jurorPool.setIsActive(true);
 
         // pool sequence
@@ -528,8 +516,6 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         jurorPool.setLastUpdate(LocalDateTime.now());
 
         jurorPool.setJuror(juror);
-
-        //jurorPoolRepository.save(jurorPool);
         log.info("Pool member {} added to the Pool Member table", juror.getJurorNumber());
 
         return jurorPool;
