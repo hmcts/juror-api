@@ -6,7 +6,9 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupByResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -14,9 +16,7 @@ import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
 import java.time.LocalDate;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @Sql({
     "/db/truncate.sql",
@@ -39,8 +39,8 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
-            .fromDate(LocalDate.of(2023, 1, 1))
-            .toDate(LocalDate.of(2023, 1, 2))
+            .fromDate(LocalDate.of(2024, 10, 9))
+            .toDate(LocalDate.of(2024, 10, 16))
             .build());
     }
 
@@ -48,32 +48,34 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     @SuppressWarnings({
         "PMD.JUnitTestsShouldIncludeAssert"//False positive
     })
-    void positiveTypicalCourt() {
+    void positiveTypical() {
         testBuilder()
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
+            .printResponse()
+            .printResponseBodyAsJson()
             .assertEquals(getTypicalResponse());
     }
 
 
     private GroupedReportResponse getTypicalResponse() {
         return GroupedReportResponse.builder()
-            .groupBy(DataType.POOL_NUMBER)
+            .groupBy(GroupByResponse.builder().name(DataType.POOL_NUMBER_BY_APPEARANCE.name()).build())
             .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
                 .add("total_unpaid_attendances", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Total Unpaid Attendance")
+                    .displayName("Total Unpaid Attendances")
                     .dataType("Long")
-                    .value(0)
+                    .value(6)
                     .build())
                 .add("date_to", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Date To")
                     .dataType("LocalDate")
-                    .value("2023-01-02")
+                    .value("2024-10-16")
                     .build())
                 .add("date_from", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Date From")
                     .dataType("LocalDate")
-                    .value("2023-01-01")
+                    .value("2024-10-09")
                     .build())
                 .add("court_name", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Court Name")
@@ -81,7 +83,7 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
                     .value("CHESTER  (415)")
                     .build()))
             .tableData(
-                AbstractReportResponse.TableData.<Map<String, List<LinkedHashMap<String, Object>>>>builder()
+                AbstractReportResponse.TableData.<GroupedTableData> builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")
@@ -101,7 +103,25 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
                             .dataType("String")
                             .headings(null)
                             .build()))
-                    .data(new ReportLinkedMap<>())
+                    .data(new GroupedTableData()
+                    .add("415230103", List.of(
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "641500023")
+                            .add("first_name", "John3")
+                            .add("last_name", "Smith3"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "641500024")
+                            .add("first_name", "John4")
+                            .add("last_name", "Smith4")))
+                    .add("415230104", List.of(
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "641500026")
+                            .add("first_name", "John6")
+                            .add("last_name", "Smith6"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "641500026")
+                            .add("first_name", "John6")
+                            .add("last_name", "Smith6"))))
                     .build())
             .build();
     }

@@ -32,10 +32,10 @@ values ('415', '641500023', '415230103', 7, true, '2023-01-01 09:30:00.000','P')
 
 -- create appearance records
 insert into juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code, time_in, misc_total_paid,
-appearance_stage, non_attendance) values
-('2024-10-10', '641500023', '415230103', '415','08:00',0,'EXPENSE_ENTERED',false),
-('2024-10-11', '641500023', '415230103', '415', '08:00',0,'EXPENSE_ENTERED',false),
-('2024-10-12', '641500023', '415230103', '415', '08:00',0,'EXPENSE_ENTERED',false),
-('2024-10-13', '641500023', '415230103', '415', '08:00',0,'EXPENSE_ENTERED',false),
-('2024-10-14', '641500023', '415230103', '415', '08:00',0,'EXPENSE_ENTERED',false),
-('2024-10-15', '641500023', '415230103', '415', '08:00',0,'EXPENSE_ENTERED',false);
+appearance_stage, non_attendance, is_draft_expense) values
+('2024-10-10', '641500023', '415230103', '415','08:00',0,'EXPENSE_ENTERED',false, false),
+('2024-10-11', '641500023', '415230103', '415', '08:00',0,'EXPENSE_ENTERED',false, false),
+('2024-10-12', '641500024', '415230103', '415', '08:00',0,'EXPENSE_ENTERED',false, false),
+('2024-10-13', '641500024', '415230103', '415', '08:00',0,'EXPENSE_ENTERED',false, false),
+('2024-10-14', '641500026', '415230104', '415', '08:00',0,'EXPENSE_ENTERED',false, false),
+('2024-10-15', '641500026', '415230104', '415', '08:00',0,'EXPENSE_ENTERED',false, false);

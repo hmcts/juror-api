@@ -12,34 +12,26 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.QPool;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
-import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
+import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
 
 @SuppressWarnings({
     "PMD.LawOfDemeter",
@@ -53,8 +45,10 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
     public UnpaidAttendanceSummaryReportTest() {
         super(QAppearance.appearance,
             UnpaidAttendanceSummaryReport.RequestValidator.class,
-            DataType.POOL_NUMBER,
-            true,
+            ReportGroupBy.builder()
+                .dataType(DataType.POOL_NUMBER_BY_APPEARANCE)
+                .removeGroupByFromResponse(true)
+                .build(),
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
             DataType.LAST_NAME);
@@ -111,18 +105,13 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
     @SuppressWarnings("unchecked")
     public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
-        AbstractReportResponse.TableData<Map<String, List<LinkedHashMap<String, Object>>>> tableData,
-        Map<String, List<LinkedHashMap<String, Object>>> data) {
+        AbstractReportResponse.TableData<GroupedTableData> tableData,
+        GroupedTableData data) {
 
         when(request.getFromDate()).thenReturn(LocalDate.of(2023, 3, 1));
         when(request.getToDate()).thenReturn(LocalDate.of(2023, 3, 2));
         when(request.getLocCode()).thenReturn("415");
-        when(tableData.getData()).thenReturn(
-            Map.of(
-                "2023-03-01", List.of(new LinkedHashMap<>(), new LinkedHashMap()),
-                "2023-03-02", List.of(new LinkedHashMap<>())
-            )
-        );
+        when(data.getSize()).thenReturn(2);
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
