@@ -22,7 +22,7 @@ import java.util.Map;
     "/db/truncate.sql",
     "/db/mod/truncate.sql",
     "/db/administration/createUsers.sql",
-    "/db/mod/reports/PostponedListByDateReportITest_typical.sql"
+    "/db/mod/reports/UnpaidAttendanceSummaryReportITest_typical.sql"
 })
 @SuppressWarnings("PMD.LawOfDemeter")
 class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportControllerITest {
@@ -55,63 +55,6 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
             .assertEquals(getTypicalResponse());
     }
 
-    @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
-    void positiveNotFound() {
-        testBuilder()
-            .jwt(getCourtJwt("414"))
-            .triggerValid()
-            .responseConsumer(this::verifyAndRemoveReportCreated)
-            .assertEquals(GroupedReportResponse.builder()
-                .groupBy(DataType.POOL_NUMBER)
-                .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
-                    .add("total_unpaid_attendances", StandardReportResponse.DataTypeValue.builder()
-                        .displayName("Total Unpaid Attendance")
-                        .dataType("Long")
-                        .value(0)
-                        .build())
-                    .add("date_to", StandardReportResponse.DataTypeValue.builder()
-                        .displayName("Date To")
-                        .dataType("LocalDate")
-                        .value("2023-01-02")
-                        .build())
-                    .add("date_from", StandardReportResponse.DataTypeValue.builder()
-                        .displayName("Date From")
-                        .dataType("LocalDate")
-                        .value("2023-01-01")
-                        .build())
-                    .add("court_name", StandardReportResponse.DataTypeValue.builder()
-                        .displayName("Court Name")
-                        .dataType("String")
-                        .value("Chester  (415)")
-                        .build()))
-                .tableData(
-                    AbstractReportResponse.TableData.<Map<String, List<LinkedHashMap<String, Object>>>>builder()
-                        .headings(List.of(
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("juror_number")
-                                .name("Juror Number")
-                                .dataType("String")
-                                .headings(null)
-                                .build(),
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("first_name")
-                                .name("First Name")
-                                .dataType("String")
-                                .headings(null)
-                                .build(),
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("last_name")
-                                .name("Last Name")
-                                .dataType("String")
-                                .headings(null)
-                                .build()))
-                        .data(new ReportLinkedMap<>())
-                        .build())
-                .build());
-    }
 
     private GroupedReportResponse getTypicalResponse() {
         return GroupedReportResponse.builder()

@@ -37,7 +37,7 @@ public class UnpaidAttendanceSummaryReport extends AbstractGroupedReport {
                                          CourtLocationService courtLocationService) {
         super(poolRequestRepository,
             QAppearance.appearance,
-            DataType.POOL_NUMBER,
+            DataType.POOL_NUMBER_BY_APPEARANCE,
             true,
             DataType.JUROR_NUMBER,
             DataType.FIRST_NAME,
@@ -59,7 +59,7 @@ public class UnpaidAttendanceSummaryReport extends AbstractGroupedReport {
                 .and(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_ENTERED))
                     .or(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_EDITED))
                     .and(QAppearance.appearance.isDraftExpense.isFalse()));
-        query.orderBy(QPool.pool.poolNumber.asc(), QJuror.juror.jurorNumber.asc());
+        query.orderBy(QAppearance.appearance.poolNumber.asc(), QJuror.juror.jurorNumber.asc());
     }
 
     @Override
