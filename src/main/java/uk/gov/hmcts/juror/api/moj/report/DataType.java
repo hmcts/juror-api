@@ -63,15 +63,15 @@ public enum DataType implements IDataType {
     REASONABLE_ADJUSTMENT_CODE("Reasonable Adjustment Code", String.class,
         QReasonableAdjustments.reasonableAdjustments.code, QReasonableAdjustments.reasonableAdjustments),
 
-    REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION("Reasonable Adjustment Code with description", String.class,
+    REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION("Reasonable Adjustment Code With Description", String.class,
         QReasonableAdjustments.reasonableAdjustments.code
             .concat(" - ")
             .concat(QReasonableAdjustments.reasonableAdjustments.description),
         QReasonableAdjustments.reasonableAdjustments),
 
-    JUROR_REASONABLE_ADJUSTMENT_MESSAGE("Reasonable Adjustment Message", String.class,
+    JUROR_REASONABLE_ADJUSTMENT_MESSAGE("Juror Reasonable Adjustment Message", String.class,
         QJuror.juror.reasonableAdjustmentMessage, QJuror.juror),
-    JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE("Reasonable Adjustment", List.class,
+    JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE("Reasonable Adjustments", List.class,
         REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION, JUROR_REASONABLE_ADJUSTMENT_MESSAGE),
 
     ON_CALL("On Call", Boolean.class, QJurorPool.jurorPool.onCall, QJurorPool.jurorPool),
@@ -146,7 +146,7 @@ public enum DataType implements IDataType {
     APPEARANCE_TRIAL_NUMBER("Trial Number", String.class, QAppearance.appearance.trialNumber, QAppearance.appearance),
     APPEARANCE_POOL_NUMBER("Pool Number", String.class, QAppearance.appearance.poolNumber, QAppearance.appearance),
 
-    COURT_LOCATION_NAME_AND_CODE("Court location name and code", String.class, QCourtLocation.courtLocation.name.concat(" (")
+    COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class, QCourtLocation.courtLocation.name.concat(" (")
         .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
 
     private final List<EntityPath<?>> requiredTables;
