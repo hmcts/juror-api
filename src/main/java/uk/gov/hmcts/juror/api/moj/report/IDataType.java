@@ -17,4 +17,5 @@ public interface IDataType {
     Expression<?> getExpression();
 
     IDataType[] getReturnTypes();
+
 }
