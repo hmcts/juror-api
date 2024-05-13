@@ -880,6 +880,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         return AttendanceDetailsResponse.builder().details(details).summary(summary).build();
     }
 
+    @Transactional
     AttendanceDetailsResponse updateConfirmAttendance(UpdateAttendanceDto.CommonData updateCommonData,
                                                       List<String> jurors) {
         // 1. retrieve details of jurors who attended court for the given attendance date (checked-in)
@@ -888,37 +889,20 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         retrieveCommonData.setLocationCode(updateCommonData.getLocationCode());
         retrieveCommonData.setTag(RetrieveAttendanceDetailsTag.CONFIRM_ATTENDANCE);
 
-        RetrieveAttendanceDetailsDto request = RetrieveAttendanceDetailsDto.builder()
-            .commonData(retrieveCommonData)
-            .build();
-
-        List<Tuple> checkedInJurors = appearanceRepository.retrieveAttendanceDetails(request);
-
-        if (!jurors.isEmpty()) {
-            checkedInJurors = checkedInJurors.stream()
-                .filter(tuple -> jurors.contains(tuple.get(0, String.class)))
-                .toList();
-        }
 
         // 2. checked-in jurors - update and save records
-        List<AppearanceId> appearanceIds = new ArrayList<>();
-
         CourtLocation courtLocation = courtLocationRepository.findByLocCode(updateCommonData.getLocationCode())
             .orElseThrow(() -> new MojException.NotFound("Court location not found", null));
-
-        checkedInJurors.forEach(tuple -> {
-            // build array of appearanceIds
-            AppearanceId appearanceId = new AppearanceId(tuple.get(0, String.class),
-                updateCommonData.getAttendanceDate(),
-                courtLocation);
-            appearanceIds.add(appearanceId);
-        });
 
         // one attendance audit number applies to ALL jurors in this batch of attendances being confirmed
         final String poolAttendancePrefix = "P";
         final String poolAttendanceNumber = getAttendanceAuditNumber(poolAttendancePrefix);
 
-        List<Appearance> checkedInAttendances = appearanceRepository.findAllById(appearanceIds);
+        List<Appearance> checkedInAttendances = appearanceRepository
+            .findAllByAttendanceDateAndCourtLocationAndTimeInIsNotNull(
+                updateCommonData.getAttendanceDate(),
+                courtLocation
+            );
         checkedInAttendances.forEach(appearance -> {
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
             appearance.setAttendanceAuditNumber(poolAttendanceNumber);

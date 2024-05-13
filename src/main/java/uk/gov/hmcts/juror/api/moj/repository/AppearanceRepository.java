@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.history.RevisionRepository;
 import org.springframework.stereotype.Repository;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.AppearanceId;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
@@ -76,4 +77,9 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
 
 
     List<Appearance> findAllByJurorNumberAndPoolNumber(String jurorNumber, String poolNumber);
+
+    List<Appearance> findAllByAttendanceDateAndCourtLocationAndTimeInIsNotNull(
+        LocalDate attendanceDate,
+        CourtLocation courtLocation
+    );
 }
