@@ -8,7 +8,6 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @SuperBuilder
@@ -23,16 +22,6 @@ public class ReportGroupBy implements IReportGroupBy {
     public String getGroupFunction(GroupedTableData groupedTableData) {
         System.out.println(dataType.getId());
         System.out.println(groupedTableData);
-
-//        if (dataType.getId().equals("court_location")) {
-//            Object courtLocation = groupedTableData.get("court_location");
-//
-//            Object courtLocationName = ((LinkedHashMap) courtLocation).get("court_location_name");
-//            Object courtLocationCode = ((LinkedHashMap) courtLocation).get("court_location_code");
-//
-//            return courtLocationName + " (" + courtLocationCode + ")";
-//        }
-
         return groupedTableData.get(dataType.getId()).toString();
     }
 

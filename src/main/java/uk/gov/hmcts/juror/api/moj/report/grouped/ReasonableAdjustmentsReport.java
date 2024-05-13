@@ -44,13 +44,12 @@ public class ReasonableAdjustmentsReport extends AbstractGroupedReport {
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QJuror.juror.reasonableAdjustmentCode.isNotNull()
-            .and(QJurorPool.jurorPool.nextDate.between(request.getFromDate(), request.getToDate()))
-            .and(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner())));
-
+            .and(QJurorPool.jurorPool.nextDate.between(request.getFromDate(), request.getToDate())));
 
         if (SecurityUtil.isCourt()) {
             query.where(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner()));
         }
+
         query.orderBy(QJuror.juror.jurorNumber.asc());
     }
 

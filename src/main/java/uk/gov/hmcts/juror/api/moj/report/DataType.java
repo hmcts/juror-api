@@ -71,7 +71,7 @@ public enum DataType implements IDataType {
 
     JUROR_REASONABLE_ADJUSTMENT_MESSAGE("Reasonable Adjustment Message", String.class,
         QJuror.juror.reasonableAdjustmentMessage, QJuror.juror),
-    JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE("Reasonable Adjustment", String.class,
+    JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE("Reasonable Adjustment", List.class,
         REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION, JUROR_REASONABLE_ADJUSTMENT_MESSAGE),
 
     ON_CALL("On Call", Boolean.class, QJurorPool.jurorPool.onCall, QJurorPool.jurorPool),
