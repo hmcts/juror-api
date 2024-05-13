@@ -701,6 +701,8 @@ class TrialControllerITest extends AbstractIntegrationTest {
         for (Panel panel : panelList) {
             assertThat(panel.getResult()).as("Expect result to be Returned")
                 .isEqualTo(PanelResult.RETURNED);
+            assertThat(panel.getReturnDate()).as("Expect result to be today's date")
+                .isEqualTo(LocalDate.now());
 
             JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
             assertThat(jurorPool.getStatus().getStatus()).as(
@@ -753,6 +755,8 @@ class TrialControllerITest extends AbstractIntegrationTest {
         for (Panel panel : panelList) {
             assertThat(panel.getResult()).as("Expect result to be Returned")
                 .isEqualTo(PanelResult.RETURNED);
+            assertThat(panel.getReturnDate()).as("Expect result to be today's date")
+                .isEqualTo(LocalDate.now());
 
             JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
             assertThat(jurorPool.getStatus().getStatus()).as(
@@ -803,6 +807,8 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 .as("Expect one history item for juror " + panel.getJurorNumber())
                 .isEqualTo(2);
             assertThat(panel.isCompleted()).as("Expect completed status to be true").isTrue();
+            assertThat(panel.getReturnDate()).as("Expect result to be today's date")
+                .isEqualTo(LocalDate.now());
 
             JurorPool jurorPool = PanelUtils.getAssociatedJurorPool(jurorPoolRepository, panel);
             assertThat(jurorPool.getStatus().getStatus()).as("Expect status to be COMPLETED")

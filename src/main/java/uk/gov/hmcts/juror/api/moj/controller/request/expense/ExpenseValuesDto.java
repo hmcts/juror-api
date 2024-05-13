@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 @Data
-@SuperBuilder
+@SuperBuilder(builderMethodName = "expenseValuesDtoBuilder")
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString

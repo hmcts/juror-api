@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResultConverter;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import javax.annotation.Nullable;
 
@@ -54,10 +55,25 @@ public class Panel implements Serializable {
     @NotNull
     private LocalDateTime dateSelected;
 
+    /**
+     /* The date the juror started sitting on the trial.
+     */
+    @Column(name = "empanelled_date")
+    private LocalDate empanelledDate;
+
+    /**
+     /* The date the juror was returned from the trial and no longer sitting.
+     */
+    @Column(name = "return_date")
+    private LocalDate returnDate;
+
     @Column(name = "result")
     @Convert(converter = PanelResultConverter.class)
     private PanelResult result;
 
+    /**
+    /* boolean flag to indicate whether empanelment has taken place (true = empanelment completed).
+    */
     @Column(name = "completed")
     private boolean completed;
 

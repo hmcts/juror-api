@@ -25,7 +25,7 @@ class CombinedExpenseDetailsDtoTest {
     @Test
     void positiveAddExpenseDetail() {
         CombinedExpenseDetailsDto<ExpenseDetailsDto> combinedExpenseDetailsDto = new CombinedExpenseDetailsDto<>();
-        CombinedExpenseDetailsDto.Total total = mock(CombinedExpenseDetailsDto.Total.class);
+        ExpenseTotal total = mock(ExpenseTotal.class);
         combinedExpenseDetailsDto.setTotal(total);
         ExpenseDetailsDto expenseDetailsDto = mock(ExpenseDetailsDto.class);
 
@@ -40,7 +40,7 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveTotalConstructor() {
-            CombinedExpenseDetailsDto.Total total = new CombinedExpenseDetailsDto.Total(false);
+            ExpenseTotal total = new ExpenseTotal(false);
             assertThat(total.getTotalDays()).isEqualTo(0);
             assertThat(total.getLossOfEarnings()).isEqualTo(BigDecimal.ZERO);
             assertThat(total.getExtraCare()).isEqualTo(BigDecimal.ZERO);
@@ -58,7 +58,7 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveAdd() {
-            final CombinedExpenseDetailsDto.Total total = new CombinedExpenseDetailsDto.Total(false);
+            final ExpenseTotal total = new ExpenseTotal(false);
             ExpenseDetailsDto expenseDetailsDto = new ExpenseDetailsDto();
             expenseDetailsDto.setLossOfEarnings(new BigDecimal("20.01"));
             expenseDetailsDto.setExtraCare(new BigDecimal("20.02"));
@@ -115,7 +115,7 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveAddWithTotals() {
-            final CombinedExpenseDetailsDto.Total total = new CombinedExpenseDetailsDto.Total(true);
+            final ExpenseTotal total = new ExpenseTotal(true);
             ExpenseDetailsForTotals expenseDetailsDto = new ExpenseDetailsForTotals();
             expenseDetailsDto.setLossOfEarnings(new BigDecimal("20.01"));
             expenseDetailsDto.setExtraCare(new BigDecimal("20.02"));
@@ -177,7 +177,7 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveGetTotalOutstandingDoesNotHaveTotals() {
-            final CombinedExpenseDetailsDto.Total total = spy(new CombinedExpenseDetailsDto.Total(false));
+            final ExpenseTotal total = spy(new ExpenseTotal(false));
             doReturn(new BigDecimal("20.00")).when(total).getTotalDue();
             doReturn(new BigDecimal("10.00")).when(total).getTotalPaid();
             assertThat(total.getTotalOutstanding()).isNull();
@@ -185,7 +185,7 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveGetTotalOutstandingHasTotals() {
-            final CombinedExpenseDetailsDto.Total total = spy(new CombinedExpenseDetailsDto.Total(true));
+            final ExpenseTotal total = spy(new ExpenseTotal(true));
             doReturn(new BigDecimal("25.00")).when(total).getTotalDue();
             doReturn(new BigDecimal("10.00")).when(total).getTotalPaid();
             assertThat(total.getTotalOutstanding()).isEqualTo(new BigDecimal("15.00"));
@@ -193,27 +193,27 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveGetTotalDueDoesNotHaveTotals() {
-            final CombinedExpenseDetailsDto.Total total = spy(new CombinedExpenseDetailsDto.Total(false));
+            final ExpenseTotal total = spy(new ExpenseTotal(false));
             assertThat(total.getTotalDue()).isNull();
 
         }
 
         @Test
         void positiveGetTotalDueHasTotals() {
-            final CombinedExpenseDetailsDto.Total total = spy(new CombinedExpenseDetailsDto.Total(true));
+            final ExpenseTotal total = spy(new ExpenseTotal(true));
             total.setTotalDue(new BigDecimal("20.00"));
             assertThat(total.getTotalDue()).isEqualTo(new BigDecimal("20.00"));
         }
 
         @Test
         void positiveGetTotalPaidDoesNotHaveTotals() {
-            final CombinedExpenseDetailsDto.Total total = spy(new CombinedExpenseDetailsDto.Total(false));
+            final ExpenseTotal total = spy(new ExpenseTotal(false));
             assertThat(total.getTotalPaid()).isNull();
         }
 
         @Test
         void positiveGetTotalHaveTotals() {
-            final CombinedExpenseDetailsDto.Total total = spy(new CombinedExpenseDetailsDto.Total(true));
+            final ExpenseTotal total = spy(new ExpenseTotal(true));
             assertThat(total.getTotalDue()).isEqualTo(BigDecimal.ZERO);
             assertThat(total.getTotalPaid()).isEqualTo(BigDecimal.ZERO);
             assertThat(total.getTotalOutstanding()).isEqualTo(BigDecimal.ZERO);
@@ -221,7 +221,7 @@ class CombinedExpenseDetailsDtoTest {
 
         @Test
         void positiveGetTotalPaidHasTotals() {
-            final CombinedExpenseDetailsDto.Total total = spy(new CombinedExpenseDetailsDto.Total(true));
+            final ExpenseTotal total = spy(new ExpenseTotal(true));
             total.setTotalPaid(new BigDecimal("10.00"));
             assertThat(total.getTotalPaid()).isEqualTo(new BigDecimal("10.00"));
         }

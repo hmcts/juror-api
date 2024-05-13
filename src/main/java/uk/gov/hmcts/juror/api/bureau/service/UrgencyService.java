@@ -1,10 +1,12 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
 
+import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,6 +32,11 @@ public interface UrgencyService {
      */
     ModJurorDetail flagSlaOverdueForResponse(ModJurorDetail modJurorDetail);
 
+    boolean slaBreached(
+        ProcessingStatus processingStatus,
+        LocalDate dateReceived
+    );
+
     /**
      * The friday before the friday before a date.  (The 2nd friday before the date).
      *
@@ -45,7 +52,7 @@ public interface UrgencyService {
      * @param workingDays Number of working days to add
      * @return The adjusted date
      */
-    LocalDateTime addWorkingDays(LocalDateTime date, Integer workingDays);
+    LocalDate addWorkingDays(LocalDate date, Integer workingDays);
 
     /**
      * Subtract and amount of working days from a date.

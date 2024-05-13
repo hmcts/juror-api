@@ -66,6 +66,10 @@ public class JurorManagementRequestDto {
     @NumericString
     private String sendingCourtLocCode;
 
+    @JsonProperty("deferral_maintenance")
+    @Schema(description = "Deferral is occurring from deferral maintenance")
+    public Boolean deferralMaintenance;
+
     //constructor to handle transfer jurors requests
     public JurorManagementRequestDto(String sourcePoolNumber, String sendingCourtLocCode, String receivingCourtLocCode,
                                      LocalDate serviceStartDate, List<String> jurorNumbers) {

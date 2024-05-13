@@ -519,6 +519,42 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/EditPoolController_createPool.sql"})
+    public void test_editPoolBureauUser_newRequest() throws Exception {
+        initHeaders(Role.MANAGER);
+        String poolNumber = "415221202";
+
+        //create a Pool request edit DTO
+        PoolEditRequestDto poolEditRequestDto = getPoolEditRequestDto(poolNumber);
+
+        RequestEntity<?> requestEntity = new RequestEntity<>(poolEditRequestDto, httpHeaders,
+            HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/edit-pool"));
+        ResponseEntity<?> response = restTemplate.exchange(requestEntity, String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        // check the values have changed as per request DTO
+
+        Optional<PoolRequest> poolRequestEdited = poolRequestRepository.findByPoolNumber(poolNumber);
+        assertThat(poolRequestEdited).isPresent();
+        assertThat(poolRequestEdited.get().getNewRequest()).isEqualTo('Y');
+
+        PoolRequest poolRequest = poolRequestEdited.get();
+        assertThat(poolRequest.getNumberRequested()).as("Expect the Number Requested to be updated to 55")
+            .isEqualTo(55);
+
+        assertThat(poolCommentRepository.count(POOL_COMMENTS.pool.poolNumber.eq(poolNumber)))
+            .as("Expect a record to be added to POOL_COMMENTS table")
+            .isEqualTo(1);
+
+        assertThat(poolHistoryRepository.count(QPoolHistory.poolHistory.historyCode.eq(HistoryCode.PREQ)))
+            .as("Expect a record to be added to POOL_HISTORY with a History code of PREQ")
+            .isEqualTo(1);
+
+    }
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/EditPoolController_createPool.sql"})
     public void test_editPool_NoRequestedSame_BureauUser() throws Exception {
         initHeaders(Role.MANAGER);
         String poolNumber = "415221201";

@@ -312,7 +312,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 .contains(jurorPool.getStatus().getStatus())) {
 
                 // update the juror next (attendance) date and clear on call flag in case it is set
-                jurorPool.setNextDate(getNextWorkingDay(jurorPool.getPool().getCourtLocation().getLocCode()));
+                jurorPool.setNextDate(request.getAttendanceDate());
                 jurorPool.setOnCall(Boolean.FALSE);
 
                 updatedJurorPools.add(jurorPool);
@@ -685,7 +685,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 // get the currently active trial the juror is on
                 Panel panel = panelRepository
                     .findByTrialCourtLocationLocCodeAndJurorJurorNumberAndCompleted(locCode,
-                        jurorNumber, false);
+                        jurorNumber, true);
                 if (panel != null) {
                     appearance.setTrialNumber(panel.getTrial().getTrialNumber());
                 }

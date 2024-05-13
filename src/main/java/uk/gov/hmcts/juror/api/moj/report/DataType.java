@@ -4,12 +4,14 @@ import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import lombok.Getter;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
 import java.time.LocalDate;
@@ -78,8 +80,64 @@ public enum DataType implements IDataType {
         QBulkPrintData.bulkPrintData),
     TOTAL_SENT_FOR_PRINTING("Sent for printing", Long.class, QBulkPrintData.bulkPrintData.jurorNo.count(),
         QBulkPrintData.bulkPrintData),
-    DATE_SENT("Date sent", LocalDate.class, QBulkPrintData.bulkPrintData.creationDate,  QBulkPrintData.bulkPrintData);
+    DATE_SENT("Date sent", LocalDate.class, QBulkPrintData.bulkPrintData.creationDate, QBulkPrintData.bulkPrintData),
 
+    SUMMONS_TOTAL("Summoned", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)).then(1).otherwise(0).sum(),
+        QJurorPool.jurorPool),
+    RESPONDED_TOTAL("Responded", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED)).then(1).otherwise(0)
+            .sum(),
+        QJurorPool.jurorPool),
+    PANEL_TOTAL("Panel", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.PANEL)).then(1).otherwise(0).sum(),
+        QJurorPool.jurorPool),
+    JUROR_TOTAL("Juror", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.JUROR)).then(1).otherwise(0).sum(),
+        QJurorPool.jurorPool),
+    EXCUSED_TOTAL("Excused", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.EXCUSED)).then(1).otherwise(0).sum(),
+        QJurorPool.jurorPool),
+    DISQUALIFIED_TOTAL("Disqualified", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DISQUALIFIED)).then(1).otherwise(0)
+            .sum(),
+        QJurorPool.jurorPool),
+    DEFERRED_TOTAL("Deferred", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED)).then(1).otherwise(0).sum(),
+        QJurorPool.jurorPool),
+    REASSIGNED_TOTAL("Reassigned", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.REASSIGNED)).then(1).otherwise(0)
+            .sum(),
+        QJurorPool.jurorPool),
+    UNDELIVERABLE_TOTAL("Undeliverable", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.UNDELIVERABLE)).then(1).otherwise(0)
+            .sum(),
+        QJurorPool.jurorPool),
+    TRANSFERRED_TOTAL("Transferred", Integer.class,
+        new CaseBuilder().when(QJurorPool.jurorPool.status.status.eq(IJurorStatus.TRANSFERRED)).then(1).otherwise(0)
+            .sum(),
+        QJurorPool.jurorPool),
+
+    ATTENDANCE_DATE("Attendance Date", LocalDate.class, QAppearance.appearance.attendanceDate, QAppearance.appearance),
+    ATTENDANCE_TYPE("Attendance Type", String.class, QAppearance.appearance.attendanceType, QAppearance.appearance),
+
+    EXPENSE_STATUS("Expense Status", String.class,
+        new CaseBuilder()
+            .when(QAppearance.appearance.isDraftExpense.isTrue()).then("Draft")
+            .when(QAppearance.appearance.isDraftExpense.isFalse()
+                .and(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_ENTERED)))
+            .then("For approval")
+            .when(QAppearance.appearance.isDraftExpense.isFalse()
+                .and(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_EDITED)))
+            .then("For re-approval")
+            .when(QAppearance.appearance.isDraftExpense.isFalse()
+                .and(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_AUTHORISED)))
+            .then("Authorised")
+            .otherwise(""), QAppearance.appearance),
+
+    AUDIT_NUMBER("Audit number", String.class, QAppearance.appearance.attendanceAuditNumber, QAppearance.appearance),
+    APPEARANCE_TRIAL_NUMBER("Trial Number", String.class, QAppearance.appearance.trialNumber, QAppearance.appearance),
+    APPEARANCE_POOL_NUMBER("Pool Number", String.class, QAppearance.appearance.poolNumber, QAppearance.appearance);
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;
