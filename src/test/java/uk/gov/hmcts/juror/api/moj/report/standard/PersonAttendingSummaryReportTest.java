@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
@@ -115,8 +114,6 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
                                                          IJurorStatus.JUROR));
 
         verifyNoMoreInteractions(query);
-
-        TestUtils.afterAll();
     }
 
     @Override
@@ -124,6 +121,8 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
         StandardReportRequest request,
         AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
         List<LinkedHashMap<String, Object>> data) {
+        String locCode = "415";
+//        TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
 
         when(request.getDate()).thenReturn(LocalDate.now());
         when(request.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);

@@ -38,7 +38,6 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
             .date(LocalDate.now().plusDays(1))
-            .locCode("415")
             .includeSummoned(false)
             .build());
     }
@@ -57,6 +56,7 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
         request.setIncludeSummoned(true);
         request.setDate(LocalDate.now().plusDays(2));
         testBuilder()
+            .payload(request)
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getIncludeSummonsResponse());
@@ -67,18 +67,10 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
         StandardReportRequest request = getValidPayload();
         request.setDate(LocalDate.now().minusDays(100));
         testBuilder()
+            .payload(request)
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getNoRecordsResponse());
-    }
-
-    @Test
-    void negativeInvalidPayloadLocCodeMissing() {
-        StandardReportRequest request = getValidPayload();
-        request.setLocCode(null);
-        testBuilder()
-            .triggerInvalid()
-            .assertInvalidPathParam("locCode: must not be null");
     }
 
     @Test
@@ -86,16 +78,9 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
         StandardReportRequest request = getValidPayload();
         request.setDate(null);
         testBuilder()
+            .payload(request)
             .triggerInvalid()
             .assertInvalidPathParam("date: must not be null");
-    }
-
-    @Test
-    void negativeUnauthorised() {
-        testBuilder()
-            .jwt(getCourtJwt("414"))
-            .triggerInvalid()
-            .assertMojForbiddenResponse("User not allowed to access this court");
     }
 
     @Test

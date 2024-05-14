@@ -155,7 +155,9 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
 
     protected String createJwt(String login, String owner, UserType userType, Collection<Role> roles,
                                String... courts) {
-        return mintBureauJwt(createBureauJwtPayload(login, userType, roles, owner, courts));
+        BureauJwtPayload payload = createBureauJwtPayload(login, userType, roles, owner, courts);
+        String jwt = mintBureauJwt(payload);
+        return jwt;
     }
 
     @Deprecated(forRemoval = true)
@@ -190,6 +192,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
                 .active(1)
                 .courts(new ArrayList<>(courtsToSet))
                 .build())
+            .locCode(courts.length >= 1 ? courts[0] : null)
             .userType(userType)
             .activeUserType(userType)
             .roles(roles)
