@@ -903,14 +903,17 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 updateCommonData.getAttendanceDate(),
                 courtLocation
             );
+
+        List<JurorPool> jurorPools = jurorPoolRepository.findByJurorNumberInAndIsActiveAndOwner(jurors,true,
+            courtLocation.getOwner());
+
         checkedInAttendances.forEach(appearance -> {
             appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
             appearance.setAttendanceAuditNumber(poolAttendanceNumber);
-
-            JurorPool jurorPool = JurorPoolUtils.getActiveJurorPool(jurorPoolRepository, appearance.getJurorNumber(),
-                appearance.getCourtLocation());
-            jurorHistoryService.createPoolAttendanceHistory(jurorPool, poolAttendanceNumber);
         });
+
+        jurorPools.forEach(jurorPool ->
+            jurorHistoryService.createPoolAttendanceHistory(jurorPool, poolAttendanceNumber));
 
         jurorExpenseService.applyDefaultExpenses(checkedInAttendances);
 

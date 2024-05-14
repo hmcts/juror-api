@@ -115,6 +115,17 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
     }
 
     @Override
+    public List<JurorPool> findByJurorNumberInAndIsActiveAndOwner(List<String> jurors, boolean isActive, String owner) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        return queryFactory.selectFrom(JUROR_POOL)
+            .where(JUROR_POOL.juror.jurorNumber.in(jurors))
+            .where(JUROR_POOL.isActive.eq(isActive))
+            .where(JUROR_POOL.owner.eq(owner))
+            .fetch();
+    }
+
+    @Override
     public List<JurorPool> findJurorsOnCallAtCourtLocation(String locCode, List<String> poolNumbers) {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
 
