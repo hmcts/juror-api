@@ -1,0 +1,1 @@
+CREATE INDEX juror_history_juror_number_idx ON juror_mod.juror_history USING btree (juror_number, date_created DESC);
