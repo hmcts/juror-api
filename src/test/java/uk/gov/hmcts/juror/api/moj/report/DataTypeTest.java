@@ -173,7 +173,7 @@ class DataTypeTest {
 
     @Test
     void serviceNextAttendanceDate() {
-        assertMatchesStandard(DataType.NEXT_ATTENDANCE_DATE, "next_attendance_date", "Next attendance",
+        assertMatchesStandard(DataType.NEXT_ATTENDANCE_DATE, "next_attendance_date", "Next attendance date",
             LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool);
     }
 
