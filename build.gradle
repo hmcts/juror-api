@@ -82,8 +82,8 @@ dependencies {
 
     //Internal dependency overrides
     implementation 'org.yaml:snakeyaml:2.2'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.23'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.23'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.24'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.24'
     //
     implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
@@ -139,7 +139,7 @@ dependencies {
     //testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
     testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:3.2.7'
     testImplementation('org.assertj:assertj-core:3.25.3')
-    testImplementation 'org.mockito:mockito-core:5.11.0'
+    testImplementation 'org.mockito:mockito-core:5.12.0'
 
     testImplementation('org.projectlombok:lombok')
     testAnnotationProcessor('org.projectlombok:lombok')
