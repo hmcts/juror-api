@@ -76,6 +76,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
                     int workingDays = Integer.parseInt(res.get(1));
                     if (workingDays == 0 && (date.getDayOfWeek().equals(DayOfWeek.SATURDAY) || date.getDayOfWeek().equals(DayOfWeek.SUNDAY))) {
+                        // ignore weekends with no working days
                         continue;
                     }
 
@@ -112,7 +113,6 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         return response;
     }
 
-
     private Map<String, AbstractReportResponse.DataTypeValue>
         getReportHeaders(LocalDate reportFromDate, LocalDate reportToDate, String courtName) {
 
@@ -124,7 +124,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                 .build(),
             "date_to", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(DailyUtilisationReportResponse.ReportHeading.DATE_TO.getDisplayName())
-                .dataType(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .dataType(DailyUtilisationReportResponse.ReportHeading.DATE_TO.getDataType())
                 .value(reportToDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .build(),
             "report_created", AbstractReportResponse.DataTypeValue.builder()
