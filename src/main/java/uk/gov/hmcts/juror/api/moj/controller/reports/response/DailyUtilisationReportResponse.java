@@ -53,8 +53,13 @@ public class DailyUtilisationReportResponse {
     @AllArgsConstructor
     public static class TableData {
         private List<Heading> headings;
-
         private List<Week> weeks;
+
+        private int overallTotalJurorWorkingDays;
+        private int overallTotalSittingDays;
+        private int overallTotalAttendanceDays;
+        private int overallTotalNonAttendanceDays;
+        private double overallTotalUtilisation;
 
         public TableData(List<Heading> headings) {
             this.headings = headings;
@@ -101,14 +106,7 @@ public class DailyUtilisationReportResponse {
                 private double utilisation;
 
             }
-
         }
-
-        private int overallTotalJurorWorkingDays;
-        private int overallTotalSittingDays;
-        private int overallTotalAttendanceDays;
-        private int overallTotalNonAttendanceDays;
-        private double overallTotalUtilisation;
 
         public enum TableHeading {
             DATE("Date", LocalDate.class.getSimpleName()),

@@ -102,6 +102,14 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                         (double) week.getWeeklyTotalSittingDays() / week.getWeeklyTotalJurorWorkingDays() * 100;
                     week.setWeeklyTotalUtilisation(weekUtilisation);
 
+                    tableData.setOverallTotalJurorWorkingDays(tableData.getOverallTotalJurorWorkingDays() + workingDays);
+                    tableData.setOverallTotalSittingDays(tableData.getOverallTotalSittingDays() + sittingDays);
+                    tableData.setOverallTotalAttendanceDays(tableData.getOverallTotalAttendanceDays() + attendanceDays);
+                    tableData.setOverallTotalNonAttendanceDays(tableData.getOverallTotalNonAttendanceDays() + nonAttendanceDays);
+
+                    Double overallUtilisation = tableData.getOverallTotalJurorWorkingDays() == 0 ? 0.0 :
+                        (double) tableData.getOverallTotalSittingDays() / tableData.getOverallTotalJurorWorkingDays() * 100;
+                    tableData.setOverallTotalUtilisation(overallUtilisation);
                 }
             }
 
