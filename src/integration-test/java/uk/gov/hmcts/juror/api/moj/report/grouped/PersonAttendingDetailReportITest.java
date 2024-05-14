@@ -9,11 +9,12 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupByResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.report.*;
+import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportControllerITest;
+import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
+import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Sql({

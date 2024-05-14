@@ -26,7 +26,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.RETURNS_SELF;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
+
 
 @SuppressWarnings("PMD.LawOfDemeter")
 class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<PersonAttendingDetailReport> {
