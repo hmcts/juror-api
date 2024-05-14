@@ -82,6 +82,11 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
                     .displayName("Total jurors with reasonable adjustments")
                     .dataType("Long")
                     .value(0)
+                    .build())
+                .add("court_name", StandardReportResponse.DataTypeValue.builder()
+                    .displayName("Court name")
+                    .dataType("String")
+                    .value("BRISTOL (408)")
                     .build()))
                 .tableData(
                     AbstractReportResponse.TableData.<GroupedTableData>builder()
@@ -169,6 +174,28 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
                     .build());
     }
 
+    @Test
+    void negativeInvalidPayloadFromDateMissing() {
+        StandardReportRequest request = getValidPayload();
+        request.setFromDate(null);
+        testBuilder()
+            .jwt(getBureauJwt())
+            .payload(request)
+            .triggerInvalid()
+            .assertInvalidPathParam("fromDate: must not be null");
+    }
+
+    @Test
+    void negativeInvalidPayloadToDateMissing() {
+        StandardReportRequest request = getValidPayload();
+        request.setToDate(null);
+        testBuilder()
+            .jwt(getBureauJwt())
+            .payload(request)
+            .triggerInvalid()
+            .assertInvalidPathParam("toDate: must not be null");
+    }
+
     private GroupedReportResponse getTypicalResponseCourt() {
         return GroupedReportResponse.builder()
             .groupBy(getTypicalGroupByResponse())
@@ -177,6 +204,11 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
                 .displayName("Total jurors with reasonable adjustments")
                 .dataType("Long")
                 .value(1)
+                .build())
+            .add("court_name", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Court name")
+                .dataType("String")
+                .value("CHESTER (415)")
                 .build()))
             .tableData(
                 AbstractReportResponse.TableData.<GroupedTableData>builder()

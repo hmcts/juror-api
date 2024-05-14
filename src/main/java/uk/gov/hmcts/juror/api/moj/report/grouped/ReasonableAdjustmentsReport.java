@@ -2,7 +2,9 @@ package uk.gov.hmcts.juror.api.moj.report.grouped;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
@@ -13,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
+import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.Map;
@@ -21,7 +24,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class ReasonableAdjustmentsReport extends AbstractGroupedReport {
 
-    public ReasonableAdjustmentsReport() {
+    private final CourtLocationRepository courtLocationRepository;
+
+    @Autowired
+    public ReasonableAdjustmentsReport(CourtLocationRepository courtLocationRepository) {
         super(QJurorPool.jurorPool,
               ReportGroupBy.builder()
                   .dataType(DataType.COURT_LOCATION_NAME_AND_CODE)
@@ -34,6 +40,8 @@ public class ReasonableAdjustmentsReport extends AbstractGroupedReport {
               DataType.CONTACT_DETAILS,
               DataType.NEXT_ATTENDANCE_DATE,
               DataType.JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE);
+
+        this.courtLocationRepository = courtLocationRepository;
     }
 
     @Override
@@ -64,6 +72,18 @@ public class ReasonableAdjustmentsReport extends AbstractGroupedReport {
             .dataType(Long.class.getSimpleName())
             .value(tableData.getData().getSize())
             .build());
+
+        if (SecurityUtil.isCourt()) {
+            String courtName = courtLocationRepository.findByLocCode(SecurityUtil.getActiveOwner())
+                .map(CourtLocation::getName)
+                .orElse(null);
+
+            map.put("court_name", GroupedReportResponse.DataTypeValue.builder()
+                .displayName("Court name")
+                .dataType(String.class.getSimpleName())
+                .value(courtName.concat(" (").concat(SecurityUtil.getActiveOwner()).concat(")"))
+                .build());
+        }
 
         return map;
     }
