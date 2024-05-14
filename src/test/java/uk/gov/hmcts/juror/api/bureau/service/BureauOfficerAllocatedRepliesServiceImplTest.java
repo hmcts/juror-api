@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.Expressions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,9 +45,9 @@ public class BureauOfficerAllocatedRepliesServiceImplTest {
         User user2 = User.builder().username("staff2").name("Staff 2").active(true).build();
 
         when(responseRepo.getAssignRepliesStatistics()).thenReturn(backlogStats);
-        when(backlogStats.get(0, Integer.class)).thenReturn(7);
-        when(backlogStats.get(1, Integer.class)).thenReturn(8);
-        when(backlogStats.get(2, Integer.class)).thenReturn(20);
+        when(backlogStats.get(Expressions.numberPath(Integer.class, "nonUrgent"))).thenReturn(7);
+        when(backlogStats.get(Expressions.numberPath(Integer.class,"urgent"))).thenReturn(8);
+        when(backlogStats.get(Expressions.numberPath(Integer.class,"allReplies"))).thenReturn(20);
 
         doReturn(Arrays.asList(user1, user2)).when(userRepo).findAll(UserQueries.activeBureauOfficers());
         Tuple user1Data = setupUserData(user1, 10, 15, 25);
@@ -77,11 +78,11 @@ public class BureauOfficerAllocatedRepliesServiceImplTest {
 
     private Tuple setupUserData(User user, int nonUrgent, int urgent, int allReplies) {
         Tuple data = Mockito.mock(Tuple.class);
-        when(data.get(0, String.class)).thenReturn(user.getUsername());
-        when(data.get(1, String.class)).thenReturn(user.getName());
-        when(data.get(2, Integer.class)).thenReturn(nonUrgent);
-        when(data.get(3, Integer.class)).thenReturn(urgent);
-        when(data.get(4, Integer.class)).thenReturn(allReplies);
+        when(data.get(Expressions.stringPath("login"))).thenReturn(user.getUsername());
+        when(data.get(Expressions.stringPath("name"))).thenReturn(user.getName());
+        when(data.get(Expressions.numberPath(Integer.class,"nonUrgent"))).thenReturn(nonUrgent);
+        when(data.get(Expressions.numberPath(Integer.class,"urgent"))).thenReturn(urgent);
+        when(data.get(Expressions.numberPath(Integer.class,"allReplies"))).thenReturn(allReplies);
         return data;
     }
 }
