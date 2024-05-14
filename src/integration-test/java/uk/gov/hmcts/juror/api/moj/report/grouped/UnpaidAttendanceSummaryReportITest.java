@@ -83,7 +83,7 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
                     .value("CHESTER (415)")
                     .build()))
             .tableData(
-                AbstractReportResponse.TableData.<GroupedTableData> builder()
+                AbstractReportResponse.TableData.<GroupedTableData>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
                             .id("juror_number")
@@ -104,20 +104,20 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
                             .headings(null)
                             .build()))
                     .data(new GroupedTableData()
-                    .add("415230103", List.of(
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "641500023")
-                            .add("first_name", "John3")
-                            .add("last_name", "Smith3"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "641500024")
-                            .add("first_name", "John4")
-                            .add("last_name", "Smith4")))
-                    .add("415230104", List.of(
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "641500026")
-                            .add("first_name", "John6")
-                            .add("last_name", "Smith6"))))
+                        .add("415230103", List.of(
+                            new ReportLinkedMap<String, Object>()
+                                .add("juror_number", "641500023")
+                                .add("first_name", "John3")
+                                .add("last_name", "Smith3"),
+                            new ReportLinkedMap<String, Object>()
+                                .add("juror_number", "641500024")
+                                .add("first_name", "John4")
+                                .add("last_name", "Smith4")))
+                        .add("415230104", List.of(
+                            new ReportLinkedMap<String, Object>()
+                                .add("juror_number", "641500026")
+                                .add("first_name", "John6")
+                                .add("last_name", "Smith6"))))
                     .build())
             .build();
     }
