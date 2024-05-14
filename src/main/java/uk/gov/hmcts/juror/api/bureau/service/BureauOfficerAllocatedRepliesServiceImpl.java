@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.bureau.service;
 
 import com.google.common.collect.Lists;
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.dsl.Expressions;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +33,9 @@ public class BureauOfficerAllocatedRepliesServiceImpl implements BureauOfficerAl
 
         log.trace("Extracting backlog data");
         BureauBacklogCountData bureauBacklogCountDto = BureauBacklogCountData.builder()
-            .nonUrgent(backlogStats.get(Expressions.numberPath(Integer.class, "nonUrgent")).longValue())
-            .urgent(backlogStats.get(Expressions.numberPath(Integer.class,"urgent")).longValue())
-            .allReplies(backlogStats.get(Expressions.numberPath(Integer.class,"allReplies")).longValue())
+            .nonUrgent(backlogStats.get(0, Integer.class).longValue())
+            .urgent(backlogStats.get(1, Integer.class).longValue())
+            .allReplies(backlogStats.get(2, Integer.class).longValue())
             .build();
 
         log.trace("No of Bureau officers {}", bureauOfficers.size());
@@ -48,11 +47,11 @@ public class BureauOfficerAllocatedRepliesServiceImpl implements BureauOfficerAl
                     .map(data ->
                         BureauOfficerAllocatedData
                             .staffAllocationResponseBuilder()
-                            .login(data.get(Expressions.stringPath("login")))
-                            .name(data.get(Expressions.stringPath("name")))
-                            .nonUrgent(data.get(Expressions.numberPath(Integer.class,"nonUrgent")).longValue())
-                            .urgent(data.get(Expressions.numberPath(Integer.class,"urgent")).longValue())
-                            .all(data.get(Expressions.numberPath(Integer.class,"allReplies")).longValue())
+                            .login(data.get(0, String.class))
+                            .name(data.get(1, String.class))
+                            .nonUrgent(data.get(2, Integer.class).longValue())
+                            .urgent(data.get(3, Integer.class).longValue())
+                            .all(data.get(4, Integer.class).longValue())
                             .build()
                     ).toList()
             )
