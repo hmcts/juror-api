@@ -34,7 +34,6 @@ import static org.assertj.core.api.Assertions.assertThat;
     "/db/mod/truncate.sql",
     "/db/mod/reports/DailyUtilisationReportsITest_typical.sql",
 })
-// TODO use the new abstract test class
 class UtilisationReportsITest extends AbstractIntegrationTest {
 
     @Autowired
@@ -70,14 +69,13 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
 
         ResponseEntity<DailyUtilisationReportResponse> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create(DAILY_UTILISATION_REPORT_URL + "/415?reportFromDate=2024-04-01&reportToDate=2024-05-13")),
+                    URI.create(DAILY_UTILISATION_REPORT_URL
+                        + "/415?reportFromDate=2024-04-01&reportToDate=2024-05-13")),
                 DailyUtilisationReportResponse.class);
 
         assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
 
         DailyUtilisationReportResponse responseBody = responseEntity.getBody();
         assertThat(responseBody).isNotNull();
-
     }
-
 }

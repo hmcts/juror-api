@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Data
 @NoArgsConstructor
+@SuppressWarnings("PMD.ShortClassName")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DailyUtilisationReportResponse {
 
@@ -46,7 +47,6 @@ public class DailyUtilisationReportResponse {
         this.tableData.setWeeks(new ArrayList<>());
     }
 
-
     @Data
     @NoArgsConstructor
     @ToString
@@ -54,7 +54,6 @@ public class DailyUtilisationReportResponse {
     public static class TableData {
         private List<Heading> headings;
         private List<Week> weeks;
-
         private int overallTotalJurorWorkingDays;
         private int overallTotalSittingDays;
         private int overallTotalAttendanceDays;
@@ -85,7 +84,6 @@ public class DailyUtilisationReportResponse {
              * A week is usually from Monday to Friday but could include weekends as well.
              * */
             private List<Day> days;
-
             private int weeklyTotalJurorWorkingDays;
             private int weeklyTotalSittingDays;
             private int weeklyTotalAttendanceDays;
@@ -104,7 +102,6 @@ public class DailyUtilisationReportResponse {
                 private int attendanceDays;
                 private int nonAttendanceDays;
                 private double utilisation;
-
             }
         }
 
@@ -131,7 +128,6 @@ public class DailyUtilisationReportResponse {
             public String getDataType() {
                 return dataType;
             }
-
         }
     }
 
@@ -159,5 +155,4 @@ public class DailyUtilisationReportResponse {
             return dataType;
         }
     }
-
 }
