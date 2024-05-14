@@ -155,9 +155,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
 
     protected String createJwt(String login, String owner, UserType userType, Collection<Role> roles,
                                String... courts) {
-        BureauJwtPayload payload = createBureauJwtPayload(login, userType, roles, owner, courts);
-        String jwt = mintBureauJwt(payload);
-        return jwt;
+        return mintBureauJwt(createBureauJwtPayload(login, userType, roles, owner, courts));
     }
 
     @Deprecated(forRemoval = true)
