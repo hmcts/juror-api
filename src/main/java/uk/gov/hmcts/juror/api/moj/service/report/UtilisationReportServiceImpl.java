@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -39,8 +41,8 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
             SecurityUtil.getActiveOwner(),
             courtLocationRepository);
 
-        List<DailyUtilisationReportResponse.Heading> reportHeadings = getReportHeaders(reportFromDate,
-            reportToDate, courtLocation.getName());
+        Map<String, AbstractReportResponse.DataTypeValue> reportHeadings
+            = getReportHeaders(reportFromDate, reportToDate, courtLocation.getName());
 
         DailyUtilisationReportResponse response = new DailyUtilisationReportResponse(reportHeadings);
 
@@ -111,34 +113,37 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
     }
 
 
-    private List<DailyUtilisationReportResponse.Heading> getReportHeaders(LocalDate reportFromDate,
-                                                                          LocalDate reportToDate, String courtName) {
-             return List.of(
-            DailyUtilisationReportResponse.Heading.builder()
-            .name(DailyUtilisationReportResponse.ReportHeading.DATE_FROM)
-            .displayName(DailyUtilisationReportResponse.ReportHeading.DATE_FROM.getDisplayName())
+    private Map<String, AbstractReportResponse.DataTypeValue>
+        getReportHeaders(LocalDate reportFromDate, LocalDate reportToDate, String courtName) {
+
+       return Map.of(
+            "date_from", AbstractReportResponse.DataTypeValue.builder()
+                .displayName(DailyUtilisationReportResponse.ReportHeading.DATE_FROM.getDisplayName())
+                .dataType(DailyUtilisationReportResponse.ReportHeading.DATE_FROM.getDataType())
                 .value(reportFromDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
-                .dataType(DailyUtilisationReportResponse.ReportHeading.DATE_FROM.getDataType()).build(),
-            DailyUtilisationReportResponse.Heading.builder()
-                .name(DailyUtilisationReportResponse.ReportHeading.DATE_TO)
+                .build(),
+            "date_to", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(DailyUtilisationReportResponse.ReportHeading.DATE_TO.getDisplayName())
+                .dataType(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .value(reportToDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
-                .dataType(DailyUtilisationReportResponse.ReportHeading.DATE_TO.getDataType()).build(),
-            DailyUtilisationReportResponse.Heading.builder()
-                .name(DailyUtilisationReportResponse.ReportHeading.REPORT_CREATED)
+                .build(),
+            "report_created", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(DailyUtilisationReportResponse.ReportHeading.REPORT_CREATED.getDisplayName())
+                .dataType(DailyUtilisationReportResponse.ReportHeading.REPORT_CREATED.getDataType())
                 .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
-                .dataType(DailyUtilisationReportResponse.ReportHeading.REPORT_CREATED.getDataType()).build(),
-            DailyUtilisationReportResponse.Heading.builder()
-                .name(DailyUtilisationReportResponse.ReportHeading.TIME_CREATED)
+                .build(),
+            "time_created", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(DailyUtilisationReportResponse.ReportHeading.TIME_CREATED.getDisplayName())
+                .dataType(DailyUtilisationReportResponse.ReportHeading.TIME_CREATED.getDataType())
                 .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME))
-                .dataType(DailyUtilisationReportResponse.ReportHeading.TIME_CREATED.getDataType()).build(),
-            DailyUtilisationReportResponse.Heading.builder()
-                .name(DailyUtilisationReportResponse.ReportHeading.COURT_NAME)
+                .build(),
+            "court_name", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(DailyUtilisationReportResponse.ReportHeading.COURT_NAME.getDisplayName())
                 .dataType(DailyUtilisationReportResponse.ReportHeading.COURT_NAME.getDataType())
-                .value(courtName).build());
+                .value(courtName)
+                .build()
+            );
+
     }
 
 

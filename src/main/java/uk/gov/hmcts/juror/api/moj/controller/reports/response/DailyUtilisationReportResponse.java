@@ -11,50 +11,41 @@ import lombok.ToString;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DailyUtilisationReportResponse {
 
-    private List<Heading> headings;
+    private Map<String, AbstractReportResponse.DataTypeValue> headings;
     private TableData tableData;
 
-    public DailyUtilisationReportResponse(List<Heading> reportHeadings) {
+    public DailyUtilisationReportResponse(Map<String, AbstractReportResponse.DataTypeValue> reportHeadings) {
         this.headings = reportHeadings;
         this.tableData = new TableData(List.of(
-            TableData.Heading.builder().name(TableData.TableHeading.DATE)
-                .displayName(TableData.TableHeading.DATE.getDisplayName())
+            TableData.Heading.builder().id(TableData.TableHeading.DATE)
+                .name(TableData.TableHeading.DATE.getDisplayName())
                 .dataType(TableData.TableHeading.DATE.getDataType()).build(),
-            TableData.Heading.builder().name(TableData.TableHeading.JUROR_WORKING_DAYS)
-                .displayName(TableData.TableHeading.JUROR_WORKING_DAYS.getDisplayName())
+            TableData.Heading.builder().id(TableData.TableHeading.JUROR_WORKING_DAYS)
+                .name(TableData.TableHeading.JUROR_WORKING_DAYS.getDisplayName())
                 .dataType(TableData.TableHeading.JUROR_WORKING_DAYS.getDataType()).build(),
-            TableData.Heading.builder().name(TableData.TableHeading.SITTING_DAYS)
-                .displayName(TableData.TableHeading.SITTING_DAYS.getDisplayName())
+            TableData.Heading.builder().id(TableData.TableHeading.SITTING_DAYS)
+                .name(TableData.TableHeading.SITTING_DAYS.getDisplayName())
                 .dataType(TableData.TableHeading.SITTING_DAYS.getDataType()).build(),
-            TableData.Heading.builder().name(TableData.TableHeading.ATTENDANCE_DAYS)
-                .displayName(TableData.TableHeading.ATTENDANCE_DAYS.getDisplayName())
+            TableData.Heading.builder().id(TableData.TableHeading.ATTENDANCE_DAYS)
+                .name(TableData.TableHeading.ATTENDANCE_DAYS.getDisplayName())
                 .dataType(TableData.TableHeading.ATTENDANCE_DAYS.getDataType()).build(),
-            TableData.Heading.builder().name(TableData.TableHeading.NON_ATTENDANCE_DAYS)
-                .displayName(TableData.TableHeading.NON_ATTENDANCE_DAYS.getDisplayName())
+            TableData.Heading.builder().id(TableData.TableHeading.NON_ATTENDANCE_DAYS)
+                .name(TableData.TableHeading.NON_ATTENDANCE_DAYS.getDisplayName())
                 .dataType(TableData.TableHeading.NON_ATTENDANCE_DAYS.getDataType()).build(),
-            TableData.Heading.builder().name(TableData.TableHeading.UTILISATION)
-                .displayName(TableData.TableHeading.UTILISATION.getDisplayName())
+            TableData.Heading.builder().id(TableData.TableHeading.UTILISATION)
+                .name(TableData.TableHeading.UTILISATION.getDisplayName())
                 .dataType(TableData.TableHeading.UTILISATION.getDataType()).build()
         ));
         this.tableData.setWeeks(new ArrayList<>());
     }
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Heading {
-        private ReportHeading name;
-        private String displayName;
-        private String dataType;
-        private Object value;
-    }
 
     @Data
     @NoArgsConstructor
@@ -75,8 +66,8 @@ public class DailyUtilisationReportResponse {
         @ToString
         @AllArgsConstructor
         public static class Heading {
-            private TableHeading name;
-            private String displayName;
+            private TableHeading id;
+            private String name;
             private String dataType;
         }
 
