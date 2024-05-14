@@ -78,11 +78,13 @@ data "azuread_group" "dts_jit_access_juror_db_admin" {
 }
 
 resource "azurerm_postgresql_flexible_server_active_directory_administrator" "jit" {
-  server_name         = module.postgresql_flexible.server_name
+  server_name         = "juror-api-${var.env}"
   resource_group_name = local.rg_name
   tenant_id           = data.azurerm_client_config.current.tenant_id
   object_id           = data.azuread_group.dts_jit_access_juror_db_admin.object_id
   principal_name      = data.azuread_group.dts_jit_access_juror_db_admin.display_name
   principal_type      = "Group"
+
+  depends_on = [module.postgresql_flexible]
 }
 
