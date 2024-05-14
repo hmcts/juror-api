@@ -158,6 +158,7 @@ public final class TestUtils {
     public static void afterAll() {
         if (SECURITY_UTIL_MOCK != null) {
             SECURITY_UTIL_MOCK.close();
+            SECURITY_UTIL_MOCK = null;
         }
     }
 

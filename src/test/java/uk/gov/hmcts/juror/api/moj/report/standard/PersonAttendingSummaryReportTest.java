@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
@@ -54,6 +55,11 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
         super.beforeEach();
     }
 
+    @AfterEach
+    public void afterEach() {
+        TestUtils.afterAll();
+    }
+
     @Override
     public PersonAttendingSummaryReport createReport(PoolRequestRepository poolRequestRepository) {
         return new PersonAttendingSummaryReport(poolRequestRepository, this.courtLocationRepository);
@@ -63,7 +69,6 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
     protected StandardReportRequest getValidRequest() {
         return StandardReportRequest.builder()
             .reportType(report.getName())
-            .locCode(TestConstants.VALID_COURT_LOCATION)
             .date(LocalDate.now())
             .includeSummoned(false)
             .build();
@@ -72,7 +77,7 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
     @Override
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         String locCode = "415";
-//        TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
+        TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
 
         StandardReportRequest requestMock = mock(StandardReportRequest.class);
         when(requestMock.getDate()).thenReturn(LocalDate.now());
@@ -89,9 +94,9 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
     }
 
     @Test
-    public void positivePreProcessQueryWithSummoned() {
+    void positivePreProcessQueryWithSummoned() {
         String locCode = "415";
-//        TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
+        TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
 
         StandardReportRequest requestMock = mock(StandardReportRequest.class);
         when(requestMock.getDate()).thenReturn(LocalDate.now());
@@ -122,7 +127,7 @@ class PersonAttendingSummaryReportTest extends AbstractStandardReportTestSupport
         AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
         List<LinkedHashMap<String, Object>> data) {
         String locCode = "415";
-//        TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
+        TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
 
         when(request.getDate()).thenReturn(LocalDate.now());
         when(request.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
