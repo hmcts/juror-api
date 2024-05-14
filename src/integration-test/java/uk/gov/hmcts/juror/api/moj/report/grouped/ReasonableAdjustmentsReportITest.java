@@ -10,7 +10,10 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupByResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.report.*;
+import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportControllerITest;
+import uk.gov.hmcts.juror.api.moj.report.DataType;
+import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
+import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -84,7 +87,7 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
                     .value(0)
                     .build())
                 .add("court_name", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Court name")
+                    .displayName("Court Name")
                     .dataType("String")
                     .value("BRISTOL (408)")
                     .build()))
@@ -206,7 +209,7 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
                 .value(1)
                 .build())
             .add("court_name", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Court name")
+                .displayName("Court Name")
                 .dataType("String")
                 .value("CHESTER (415)")
                 .build()))
@@ -305,9 +308,10 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
                                           .add("email", "041500005@email.gov.uk")
                                       )
                                       .add("next_attendance_date", "2024-01-01")
-                                      .add("juror_reasonable_adjustment_with_message", new ReportLinkedMap<String, Object>()
-                                          .add("reasonable_adjustment_code_with_description", "M - MULTIPLE")
-                                          .add("juror_reasonable_adjustment_message", "multiple requests")
+                                      .add("juror_reasonable_adjustment_with_message",
+                                           new ReportLinkedMap<String, Object>()
+                                              .add("reasonable_adjustment_code_with_description", "M - MULTIPLE")
+                                              .add("juror_reasonable_adjustment_message", "multiple requests")
                                       )
                               ))).build())
             .build();

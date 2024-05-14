@@ -84,9 +84,11 @@ public abstract class AbstractReport<T> {
         ));
         CLASS_TO_JOIN.put(QReasonableAdjustments.reasonableAdjustments, Map.of(
             QJuror.juror,
-            new Predicate[]{QReasonableAdjustments.reasonableAdjustments.code.eq(QJuror.juror.reasonableAdjustmentCode)},
+            new Predicate[]{QReasonableAdjustments.reasonableAdjustments.code.eq(
+                QJuror.juror.reasonableAdjustmentCode)},
             QJurorPool.jurorPool,
-            new Predicate[]{QReasonableAdjustments.reasonableAdjustments.code.eq(QJurorPool.jurorPool.juror.reasonableAdjustmentCode)}
+            new Predicate[]{QReasonableAdjustments.reasonableAdjustments.code.eq(
+                QJurorPool.jurorPool.juror.reasonableAdjustmentCode)}
         ));
     }
 

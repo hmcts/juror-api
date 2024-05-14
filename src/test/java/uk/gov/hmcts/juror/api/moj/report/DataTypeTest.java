@@ -141,11 +141,13 @@ class DataTypeTest {
 
     @Test
     void reasonableAdjustmentCodeWithDescription() {
-        assertMatchesStandard(DataType.REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION, "reasonable_adjustment_code_with_description",
+        assertMatchesStandard(DataType.REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION,
+            "reasonable_adjustment_code_with_description",
             "Reasonable Adjustment Code With Description", String.class,
             QReasonableAdjustments.reasonableAdjustments.code
-              .concat(" - ")
-              .concat(QReasonableAdjustments.reasonableAdjustments.description), QReasonableAdjustments.reasonableAdjustments);
+                .concat(" - ")
+                .concat(QReasonableAdjustments.reasonableAdjustments.description),
+                        QReasonableAdjustments.reasonableAdjustments);
     }
 
     @Test
@@ -157,7 +159,8 @@ class DataTypeTest {
 
     @Test
     void jurorReasonableAdjustmentWithMessage() {
-        assertMatchesCombined(DataType.JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE, "juror_reasonable_adjustment_with_message",
+        assertMatchesCombined(DataType.JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE,
+            "juror_reasonable_adjustment_with_message",
             "Reasonable Adjustments", List.class, DataType.REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION,
             DataType.JUROR_REASONABLE_ADJUSTMENT_MESSAGE);
     }

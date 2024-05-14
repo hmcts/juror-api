@@ -151,7 +151,7 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
                             .id("next_attendance_date")
-                            .name("Next attendance date")
+                            .name("Next attendance")
                             .dataType("LocalDate")
                             .headings(null)
                             .build()))
@@ -238,7 +238,7 @@ class IncompleteServiceReportITest extends AbstractStandardReportControllerITest
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
                             .id("next_attendance_date")
-                            .name("Next attendance date")
+                            .name("Next attendance")
                             .dataType("LocalDate")
                             .headings(null)
                             .build()))
