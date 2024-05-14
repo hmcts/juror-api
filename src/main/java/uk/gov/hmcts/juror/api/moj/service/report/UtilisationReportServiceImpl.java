@@ -34,7 +34,6 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
     public DailyUtilisationReportResponse viewDailyUtilisationReport(String locCode, LocalDate reportFromDate,
                                                                      LocalDate reportToDate) {
 
-
         // check the user has permission to view the location
         CourtLocation courtLocation = CourtLocationUtils.validateAccessToCourtLocation(locCode,
             SecurityUtil.getActiveOwner(),
@@ -44,7 +43,6 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
             reportToDate, courtLocation.getName());
 
         DailyUtilisationReportResponse response = new DailyUtilisationReportResponse(reportHeadings);
-
 
         try {
             List<String> results = jurorRepository.callDailyUtilStats(locCode, reportFromDate, reportToDate);
@@ -119,22 +117,27 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
             DailyUtilisationReportResponse.Heading.builder()
             .name(DailyUtilisationReportResponse.ReportHeading.DATE_FROM)
             .displayName(DailyUtilisationReportResponse.ReportHeading.DATE_FROM.getDisplayName())
-                .value(reportFromDate.format(DateTimeFormatter.ISO_LOCAL_DATE)).build(),
+                .value(reportFromDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .dataType(DailyUtilisationReportResponse.ReportHeading.DATE_FROM.getDataType()).build(),
             DailyUtilisationReportResponse.Heading.builder()
                 .name(DailyUtilisationReportResponse.ReportHeading.DATE_TO)
                 .displayName(DailyUtilisationReportResponse.ReportHeading.DATE_TO.getDisplayName())
-                .value(reportToDate.format(DateTimeFormatter.ISO_LOCAL_DATE)).build(),
+                .value(reportToDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .dataType(DailyUtilisationReportResponse.ReportHeading.DATE_TO.getDataType()).build(),
             DailyUtilisationReportResponse.Heading.builder()
                 .name(DailyUtilisationReportResponse.ReportHeading.REPORT_CREATED)
                 .displayName(DailyUtilisationReportResponse.ReportHeading.REPORT_CREATED.getDisplayName())
-                .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE)).build(),
+                .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .dataType(DailyUtilisationReportResponse.ReportHeading.REPORT_CREATED.getDataType()).build(),
             DailyUtilisationReportResponse.Heading.builder()
                 .name(DailyUtilisationReportResponse.ReportHeading.TIME_CREATED)
                 .displayName(DailyUtilisationReportResponse.ReportHeading.TIME_CREATED.getDisplayName())
-                .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME)).build(),
+                .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME))
+                .dataType(DailyUtilisationReportResponse.ReportHeading.TIME_CREATED.getDataType()).build(),
             DailyUtilisationReportResponse.Heading.builder()
                 .name(DailyUtilisationReportResponse.ReportHeading.COURT_NAME)
                 .displayName(DailyUtilisationReportResponse.ReportHeading.COURT_NAME.getDisplayName())
+                .dataType(DailyUtilisationReportResponse.ReportHeading.COURT_NAME.getDataType())
                 .value(courtName).build());
     }
 
