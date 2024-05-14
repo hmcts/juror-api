@@ -54,11 +54,8 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
             if (results != null && !results.isEmpty()) {
 
-                DailyUtilisationReportResponse.TableData tableData =
-                    new DailyUtilisationReportResponse.TableData();
-
+                DailyUtilisationReportResponse.TableData tableData = response.getTableData();
                 tableData.setWeeks(new ArrayList<>());
-                response.setTableData(tableData);
 
                 boolean firstPass = true;
                 DailyUtilisationReportResponse.TableData.Week week = null;
@@ -77,16 +74,32 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                         firstPass = false;
                     }
 
+                    int workingDays = Integer.parseInt(res.get(1));
+                    if (workingDays == 0 && (date.getDayOfWeek().equals(DayOfWeek.SATURDAY) || date.getDayOfWeek().equals(DayOfWeek.SUNDAY))) {
+                        continue;
+                    }
+
+                    int sittingDays = Integer.parseInt(res.get(2));
+                    int attendanceDays = Integer.parseInt(res.get(3));
+                    int nonAttendanceDays = Integer.parseInt(res.get(4));
+
                     DailyUtilisationReportResponse.TableData.Week.Day day = DailyUtilisationReportResponse.TableData.Week.Day.builder()
                         .date(date)
-                        .jurorWorkingDays(Integer.parseInt(res.get(1)))
-                        .sittingDays(Integer.parseInt(res.get(2)))
-                        .attendanceDays(Integer.parseInt(res.get(3)))
-                        .nonAttendanceDays(Integer.parseInt(res.get(4)))
+                        .jurorWorkingDays(workingDays)
+                        .sittingDays(sittingDays)
+                        .attendanceDays(attendanceDays)
+                        .nonAttendanceDays(nonAttendanceDays)
                         .utilisation(Math.round(utilisation * 100.0))
                         .build();
-
                     week.getDays().add(day);
+                    week.setWeeklyTotalJurorWorkingDays(week.getWeeklyTotalJurorWorkingDays() + workingDays);
+                    week.setWeeklyTotalSittingDays(week.getWeeklyTotalSittingDays() + sittingDays);
+                    week.setWeeklyTotalAttendanceDays(week.getWeeklyTotalAttendanceDays() + attendanceDays);
+                    week.setWeeklyTotalNonAttendanceDays(week.getWeeklyTotalNonAttendanceDays() + nonAttendanceDays);
+
+                    Double weekUtilisation = week.getWeeklyTotalJurorWorkingDays() == 0 ? 0.0 :
+                        (double) week.getWeeklyTotalSittingDays() / week.getWeeklyTotalJurorWorkingDays() * 100;
+                    week.setWeeklyTotalUtilisation(weekUtilisation);
 
                 }
             }
