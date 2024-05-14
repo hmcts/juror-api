@@ -80,7 +80,7 @@ public enum DataType implements IDataType {
     POOL_NUMBER("Pool Number", String.class, QPoolRequest.poolRequest.poolNumber, QPoolRequest.poolRequest),
     POOL_NUMBER_BY_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.poolNumber,
         QJurorPool.jurorPool),
-    NEXT_ATTENDANCE_DATE("Next attendance date", LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool),
+    NEXT_ATTENDANCE_DATE("Next attendance", LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool),
     LAST_ATTENDANCE_DATE("Last attended on", LocalDate.class, QAppearance.appearance.attendanceDate.max(),
         QAppearance.appearance),
     DOCUMENT_CODE("Document code", String.class, QBulkPrintData.bulkPrintData.formAttribute.formType,
