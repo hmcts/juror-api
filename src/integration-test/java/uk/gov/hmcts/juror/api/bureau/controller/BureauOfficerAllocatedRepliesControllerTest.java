@@ -66,8 +66,6 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauOfficerAllocateRepliesService_BacklogData.sql")
     public void bureauAllocationReplies_happy() throws Exception {
-
-
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
             .roles(Set.of(Role.MANAGER))
@@ -107,7 +105,8 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(exchange.getBody().getBureauBacklogCount().getNonUrgent()).isEqualTo(4);
         assertThat(exchange.getBody().getBureauBacklogCount().getUrgent()).isEqualTo(3);
-        assertThat(exchange.getBody().getData().size()).isEqualTo(6);
+
+        assertThat(exchange.getBody().getData().size()).isEqualTo(2);
 
         List<BureauOfficerAllocatedData> carneson =
             exchange.getBody().getData().stream().filter(r -> r.getLogin().equals("carneson"))

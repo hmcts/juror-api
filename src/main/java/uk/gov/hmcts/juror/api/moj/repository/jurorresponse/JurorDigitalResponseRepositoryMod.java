@@ -7,7 +7,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReplyType;
 
 @Repository
 public interface JurorDigitalResponseRepositoryMod extends JurorResponseRepositoryMod<DigitalResponse>,
-    QuerydslPredicateExecutor<DigitalResponse> {
+    QuerydslPredicateExecutor<DigitalResponse>, IJurorDigitalResponseRepositoryMod {
     DigitalResponse findByJurorNumberAndReplyType(String jurorNumber, ReplyType replyType);
 
     default DigitalResponse findByJurorNumber(String jurorNumber) {
