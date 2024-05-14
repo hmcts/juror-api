@@ -65,7 +65,7 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
                 .add("total_unpaid_attendances", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total Unpaid Attendances")
                     .dataType("Long")
-                    .value(6)
+                    .value(3)
                     .build())
                 .add("date_to", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Date To")
@@ -80,7 +80,7 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
                 .add("court_name", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Court Name")
                     .dataType("String")
-                    .value("CHESTER  (415)")
+                    .value("CHESTER (415)")
                     .build()))
             .tableData(
                 AbstractReportResponse.TableData.<GroupedTableData> builder()
@@ -114,10 +114,6 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
                             .add("first_name", "John4")
                             .add("last_name", "Smith4")))
                     .add("415230104", List.of(
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "641500026")
-                            .add("first_name", "John6")
-                            .add("last_name", "Smith6"),
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500026")
                             .add("first_name", "John6")
