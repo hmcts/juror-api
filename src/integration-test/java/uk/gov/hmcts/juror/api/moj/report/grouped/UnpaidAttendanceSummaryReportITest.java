@@ -56,6 +56,21 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
+    @SuppressWarnings({
+        "PMD.JUnitTestsShouldIncludeAssert"//False positive
+    })
+    void positiveTypicalDifferentDates() {
+        StandardReportRequest request = getValidPayload();
+        request.setFromDate(LocalDate.of(2024, 11, 9));
+        request.setToDate(LocalDate.of(2024, 11, 16));
+        testBuilder()
+            .payload(request)
+            .triggerValid()
+            .responseConsumer(this::verifyAndRemoveReportCreated)
+            .assertEquals(getTypicalResponseChangedDates());
+    }
+
+    @Test
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -91,6 +106,70 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
                     .displayName("Date From")
                     .dataType("LocalDate")
                     .value("2024-10-09")
+                    .build())
+                .add("court_name", StandardReportResponse.DataTypeValue.builder()
+                    .displayName("Court Name")
+                    .dataType("String")
+                    .value("CHESTER (415)")
+                    .build()))
+            .tableData(
+                AbstractReportResponse.TableData.<GroupedTableData>builder()
+                    .headings(List.of(
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("juror_number")
+                            .name("Juror Number")
+                            .dataType("String")
+                            .headings(null)
+                            .build(),
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("first_name")
+                            .name("First Name")
+                            .dataType("String")
+                            .headings(null)
+                            .build(),
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("last_name")
+                            .name("Last Name")
+                            .dataType("String")
+                            .headings(null)
+                            .build()))
+                    .data(new GroupedTableData()
+                        .add("415230103", List.of(
+                            new ReportLinkedMap<String, Object>()
+                                .add("juror_number", "641500023")
+                                .add("first_name", "John3")
+                                .add("last_name", "Smith3"),
+                            new ReportLinkedMap<String, Object>()
+                                .add("juror_number", "641500024")
+                                .add("first_name", "John4")
+                                .add("last_name", "Smith4")))
+                        .add("415230104", List.of(
+                            new ReportLinkedMap<String, Object>()
+                                .add("juror_number", "641500026")
+                                .add("first_name", "John6")
+                                .add("last_name", "Smith6"))))
+                    .build())
+            .build();
+    }
+
+    private GroupedReportResponse getTypicalResponseChangedDates() {
+        return GroupedReportResponse.builder()
+            .groupBy(GroupByResponse.builder().name(DataType.POOL_NUMBER_BY_APPEARANCE.name()).build())
+            .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
+                .add("total_unpaid_attendances", StandardReportResponse.DataTypeValue.builder()
+                    .displayName("Total Unpaid Attendances")
+                    .dataType("Long")
+                    .value(3)
+                    .build())
+                .add("date_to", StandardReportResponse.DataTypeValue.builder()
+                    .displayName("Date To")
+                    .dataType("LocalDate")
+                    .value("2024-11-16")
+                    .build())
+                .add("date_from", StandardReportResponse.DataTypeValue.builder()
+                    .displayName("Date From")
+                    .dataType("LocalDate")
+                    .value("2024-11-09")
                     .build())
                 .add("court_name", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Court Name")

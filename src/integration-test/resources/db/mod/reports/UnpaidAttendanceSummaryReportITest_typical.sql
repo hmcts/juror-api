@@ -39,3 +39,14 @@ appearance_stage, non_attendance, is_draft_expense) values
 ('2024-10-13', '641500024', '415230103', '415', '08:00',0,'EXPENSE_ENTERED',false, false),
 ('2024-10-14', '641500026', '415230104', '415', '08:00',0,'EXPENSE_ENTERED',false, false),
 ('2024-10-15', '641500026', '415230104', '415', '08:00',0,'EXPENSE_ENTERED',false, false);
+
+
+-- create appearance records alternate date
+insert into juror_mod.appearance (attendance_date,juror_number,pool_number,loc_code, time_in, misc_total_paid,
+appearance_stage, non_attendance, is_draft_expense) values
+('2024-11-10', '641500023', '415230103', '415','08:00',0,'EXPENSE_ENTERED',false, false),
+('2024-11-11', '641500023', '415230103', '415', '08:00',0,'EXPENSE_ENTERED',false, false),
+('2024-11-12', '641500024', '415230103', '415', '08:00',0,'EXPENSE_ENTERED',false, false),
+('2024-11-13', '641500024', '415230103', '415', '08:00',0,'EXPENSE_ENTERED',false, false),
+('2024-11-14', '641500026', '415230104', '415', '08:00',0,'EXPENSE_ENTERED',false, false),
+('2024-11-15', '641500026', '415230104', '415', '08:00',0,'EXPENSE_ENTERED',false, false);
