@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -41,6 +42,11 @@ public class DeletePoolServiceTest {
     JurorPoolRepository jurorPoolRepository;
     @InjectMocks
     DeletePoolServiceImpl deletePoolService;
+
+    @AfterEach
+    public void afterEach() {
+        TestUtils.afterAll();
+    }
 
     @Test
     public void test_deletePool_poolNotFound() {

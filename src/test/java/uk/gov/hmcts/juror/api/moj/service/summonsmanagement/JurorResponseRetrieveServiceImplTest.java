@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service.summonsmanagement;
 
 import com.querydsl.core.Tuple;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -65,6 +66,11 @@ class JurorResponseRetrieveServiceImplTest {
 
     @InjectMocks
     private JurorResponseRetrieveServiceImpl jurorResponseRetrieveService;
+
+    @AfterEach
+    public void afterEach() {
+        TestUtils.afterAll();
+    }
 
     @DisplayName("Retrieve juror responses based on search criteria")
     @Nested

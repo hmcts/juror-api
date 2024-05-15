@@ -190,6 +190,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
                 .active(1)
                 .courts(new ArrayList<>(courtsToSet))
                 .build())
+            .locCode(courts.length >= 1 ? courts[0] : null)
             .userType(userType)
             .activeUserType(userType)
             .roles(roles)

@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
@@ -96,12 +97,14 @@ class AbstractReportTest {
     class ClassToJoinTest {
         @Test
         void sizeCheck() {
-            assertThat(AbstractReport.CLASS_TO_JOIN).hasSize(5);
+            assertThat(AbstractReport.CLASS_TO_JOIN).hasSize(6);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QPanel.panel)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QJuror.juror)).hasSize(3);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QJurorPool.jurorPool)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QAppearance.appearance)).hasSize(2);
+            assertThat(AbstractReport.CLASS_TO_JOIN.get(QReasonableAdjustments.reasonableAdjustments))
+                .hasSize(2);
         }
 
         @Test
@@ -181,6 +184,32 @@ class AbstractReportTest {
             assertThat(map.containsKey(QJuror.juror)).isTrue();
             assertThat(map.get(QJuror.juror)).isEqualTo(
                 new Predicate[]{QPanel.panel.juror.eq(QJuror.juror)}
+            );
+        }
+
+        @Test
+        void reasonableAdjustmentsToJurorPool() {
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QReasonableAdjustments.reasonableAdjustments)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(
+                QReasonableAdjustments.reasonableAdjustments);
+
+            assertThat(map.containsKey(QJurorPool.jurorPool)).isTrue();
+            assertThat(map.get(QJurorPool.jurorPool)).isEqualTo(
+                new Predicate[]{QReasonableAdjustments.reasonableAdjustments.code.eq(
+                    QJurorPool.jurorPool.juror.reasonableAdjustmentCode)}
+            );
+        }
+
+        @Test
+        void reasonableAdjustmentsToJuror() {
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QReasonableAdjustments.reasonableAdjustments)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(
+                QReasonableAdjustments.reasonableAdjustments);
+
+            assertThat(map.containsKey(QJuror.juror)).isTrue();
+            assertThat(map.get(QJuror.juror)).isEqualTo(
+                new Predicate[]{QReasonableAdjustments.reasonableAdjustments.code.eq(
+                    QJuror.juror.reasonableAdjustmentCode)}
             );
         }
     }
@@ -1040,7 +1069,8 @@ class AbstractReportTest {
             assertThat(createReport().getTrial(TestConstants.VALID_TRIAL_NUMBER, trialRepository))
                 .isEqualTo(trial);
 
-            verify(trialRepository, times(1)).findByTrialNumberAndCourtLocationLocCode(TestConstants.VALID_TRIAL_NUMBER,
+            verify(trialRepository, times(1)).findByTrialNumberAndCourtLocationLocCode(
+                TestConstants.VALID_TRIAL_NUMBER,
                 TestConstants.VALID_COURT_LOCATION);
 
         }
@@ -1048,7 +1078,8 @@ class AbstractReportTest {
         @Test
         void negativeNotFound() {
             TrialRepository trialRepository = mock(TrialRepository.class);
-            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(TestConstants.VALID_TRIAL_NUMBER, "415"))
+            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(TestConstants.VALID_TRIAL_NUMBER,
+                                                                          "415"))
                 .thenReturn(null);
 
             MojException.NotFound notFoundException =

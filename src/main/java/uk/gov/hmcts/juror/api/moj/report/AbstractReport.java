@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -80,6 +81,14 @@ public abstract class AbstractReport<T> {
             QJuror.juror, new Predicate[]{
                 QPanel.panel.juror.eq(QJuror.juror)
             }
+        ));
+        CLASS_TO_JOIN.put(QReasonableAdjustments.reasonableAdjustments, Map.of(
+            QJuror.juror,
+            new Predicate[]{QReasonableAdjustments.reasonableAdjustments.code.eq(
+                QJuror.juror.reasonableAdjustmentCode)},
+            QJurorPool.jurorPool,
+            new Predicate[]{QReasonableAdjustments.reasonableAdjustments.code.eq(
+                QJurorPool.jurorPool.juror.reasonableAdjustmentCode)}
         ));
     }
 
@@ -508,6 +517,9 @@ public abstract class AbstractReport<T> {
         }
 
         public interface RequireDate {
+        }
+
+        public interface RequireIncludeSummoned {
         }
 
     }

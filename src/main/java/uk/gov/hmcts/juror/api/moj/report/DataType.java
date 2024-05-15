@@ -4,6 +4,7 @@ import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import lombok.Getter;
+import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
@@ -11,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
@@ -59,11 +61,18 @@ public enum DataType implements IDataType {
     NUMBER_DEFERRED("Number Deferred", Long.class, QJurorPool.jurorPool.count(), QJurorPool.jurorPool),
 
     REASONABLE_ADJUSTMENT_CODE("Reasonable Adjustment Code", String.class,
-        QJuror.juror.reasonableAdjustmentCode, QJuror.juror),
-    REASONABLE_ADJUSTMENT_MESSAGE("Reasonable Adjustment Message", String.class,
+        QReasonableAdjustments.reasonableAdjustments.code, QReasonableAdjustments.reasonableAdjustments),
+
+    REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION("Reasonable Adjustment Code With Description", String.class,
+        QReasonableAdjustments.reasonableAdjustments.code
+            .concat(" - ")
+            .concat(QReasonableAdjustments.reasonableAdjustments.description),
+        QReasonableAdjustments.reasonableAdjustments),
+
+    JUROR_REASONABLE_ADJUSTMENT_MESSAGE("Juror Reasonable Adjustment Message", String.class,
         QJuror.juror.reasonableAdjustmentMessage, QJuror.juror),
-    REASONABLE_ADJUSTMENT("Reasonable Adjustment", List.class, REASONABLE_ADJUSTMENT_CODE,
-        REASONABLE_ADJUSTMENT_MESSAGE),
+    JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE("Reasonable Adjustments", List.class,
+        REASONABLE_ADJUSTMENT_CODE_WITH_DESCRIPTION, JUROR_REASONABLE_ADJUSTMENT_MESSAGE),
 
     ON_CALL("On Call", Boolean.class, QJurorPool.jurorPool.onCall, QJurorPool.jurorPool),
     SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate,
@@ -137,7 +146,11 @@ public enum DataType implements IDataType {
 
     AUDIT_NUMBER("Audit number", String.class, QAppearance.appearance.attendanceAuditNumber, QAppearance.appearance),
     APPEARANCE_TRIAL_NUMBER("Trial Number", String.class, QAppearance.appearance.trialNumber, QAppearance.appearance),
-    APPEARANCE_POOL_NUMBER("Pool Number", String.class, QAppearance.appearance.poolNumber, QAppearance.appearance);
+    APPEARANCE_POOL_NUMBER("Pool Number", String.class, QAppearance.appearance.poolNumber, QAppearance.appearance),
+
+    COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
+                                 QCourtLocation.courtLocation.name.concat(" (")
+        .concat(QCourtLocation.courtLocation.locCode).concat(")"), QPoolRequest.poolRequest);
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;

@@ -79,8 +79,8 @@ public class ResponseDeferralController {
         private Boolean acceptDeferral;
 
         @NotEmpty
-        @Size(min = 1, max = 1)
-        @Schema(description = "Excusal code reason. Single character.", requiredMode = Schema.RequiredMode.REQUIRED)
+        @Size(min = 1, max = 2)
+        @Schema(description = "Excusal code reason.", requiredMode = Schema.RequiredMode.REQUIRED)
         private String deferralReason;//is an EXC_CODE char
 
         @Future
