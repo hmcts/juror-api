@@ -3482,16 +3482,18 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             "111111122"})
         @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
         void updatePncCheckStatusEligible(String jurorNumber) {
-            ResponseEntity<Void> response =
+            ResponseEntity<PoliceCheckStatusDto> response =
                 restTemplate.exchange(new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.ELIGIBLE),
                         httpHeaders, HttpMethod.PATCH,
                         URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
-                    Void.class);
+                    PoliceCheckStatusDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be accepted")
                 .isEqualTo(HttpStatus.ACCEPTED);
 
+            assertThat(response.getBody())
+                .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.ELIGIBLE));
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
             final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
@@ -3532,16 +3534,18 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             "111111122"})
         @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
         void updatePncCheckStatusIneligible(String jurorNumber) {
-            ResponseEntity<Void> response =
+            ResponseEntity<PoliceCheckStatusDto> response =
                 restTemplate.exchange(new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.INELIGIBLE),
                         httpHeaders, HttpMethod.PATCH,
                         URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
-                    Void.class);
+                    PoliceCheckStatusDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be accepted")
                 .isEqualTo(HttpStatus.ACCEPTED);
 
+            assertThat(response.getBody())
+                .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.INELIGIBLE));
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
             final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
@@ -3580,16 +3584,19 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         })
         @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
         void updatePncCheckStatusInError(String jurorNumber) {
-            ResponseEntity<Void> response =
+            ResponseEntity<PoliceCheckStatusDto> response =
                 restTemplate.exchange(
                     new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR),
                         httpHeaders, HttpMethod.PATCH,
                         URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
-                    Void.class);
+                    PoliceCheckStatusDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be accepted")
                 .isEqualTo(HttpStatus.ACCEPTED);
+
+            assertThat(response.getBody())
+                .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR));
 
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
@@ -3618,17 +3625,19 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         })
         @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
         void updatePncCheckStatusMaxRetiesError(String jurorNumber) {
-            ResponseEntity<Void> response =
+            ResponseEntity<PoliceCheckStatusDto> response =
                 restTemplate.exchange(
                     new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR),
                         httpHeaders, HttpMethod.PATCH,
                         URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
-                    Void.class);
+                    PoliceCheckStatusDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be accepted")
                 .isEqualTo(HttpStatus.ACCEPTED);
 
+            assertThat(response.getBody())
+                .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED));
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
             final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
