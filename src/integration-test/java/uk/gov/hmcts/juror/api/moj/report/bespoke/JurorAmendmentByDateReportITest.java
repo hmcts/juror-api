@@ -34,11 +34,7 @@ public class JurorAmendmentByDateReportITest extends AbstractJurorAmendmentRepor
     void positiveTypical() {
         testBuilder()
             .triggerValid()
-            .printResponse()
             .responseConsumer(this::verifyAndRemoveReportCreated)
-            .responseConsumer(response -> {
-                System.out.println(TmpSupport.asString(response));
-            })
             .assertEquals(
                 JurorAmendmentReportResponse.builder()
                     .headings(new ReportHashMap<String, AbstractReportResponse.DataTypeValue>()
