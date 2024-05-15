@@ -88,7 +88,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                         .sittingDays(sittingDays)
                         .attendanceDays(attendanceDays)
                         .nonAttendanceDays(nonAttendanceDays)
-                        .utilisation(Math.round(utilisation * 100.0))
+                        .utilisation(utilisation * 100)
                         .build();
                     week.getDays().add(day);
                     week.setWeeklyTotalJurorWorkingDays(week.getWeeklyTotalJurorWorkingDays() + workingDays);
@@ -108,16 +108,22 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                     tableData.setOverallTotalNonAttendanceDays(tableData.getOverallTotalNonAttendanceDays()
                         + nonAttendanceDays);
 
-                    Double overallUtilisation = tableData.getOverallTotalJurorWorkingDays() == 0
-                        ? 0.0 : (double) tableData.getOverallTotalSittingDays()
-                        / tableData.getOverallTotalJurorWorkingDays() * 100;
-                    tableData.setOverallTotalUtilisation(overallUtilisation);
                 }
+
+                Double overallUtilisation = tableData.getOverallTotalJurorWorkingDays() == 0
+                    ? 0.0 : (double) tableData.getOverallTotalSittingDays()
+                    / tableData.getOverallTotalJurorWorkingDays() * 100;
+                tableData.setOverallTotalUtilisation(overallUtilisation);
+
             }
         } catch (SQLException exc) {
             log.error("Error while fetching daily utilisation stats", exc.getMessage());
             throw new MojException.InternalServerError("Error while fetching daily utilisation stats", exc);
         }
+
+        log.info("Fetched daily utilisation stats for location: {} from: {} to: {}", locCode, reportFromDate,
+            reportToDate);
+
         return response;
     }
 
@@ -142,7 +148,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
             "time_created", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(DailyUtilisationReportResponse.ReportHeading.TIME_CREATED.getDisplayName())
                 .dataType(DailyUtilisationReportResponse.ReportHeading.TIME_CREATED.getDataType())
-                .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME))
+                .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
                 .build(),
             "court_name", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(DailyUtilisationReportResponse.ReportHeading.COURT_NAME.getDisplayName())

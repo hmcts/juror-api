@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -135,7 +136,7 @@ public class DailyUtilisationReportResponse {
         DATE_FROM("Date from", LocalDate.class.getSimpleName()),
         DATE_TO("Date to", LocalDate.class.getSimpleName()),
         REPORT_CREATED("Report created", LocalDate.class.getSimpleName()),
-        TIME_CREATED("Time created", LocalDate.class.getSimpleName()),
+        TIME_CREATED("Time created", LocalDateTime.class.getSimpleName()),
         COURT_NAME("Court name", String.class.getSimpleName());
 
         private String displayName;

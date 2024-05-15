@@ -1,5 +1,5 @@
 -- Function to return daily utilisation stats for a court between two dates
-CREATE OR REPLACE FUNCTION juror_mod.util_daily_summary(p_loc_code text, p_start_date date, p_end_date date)
+CREATE OR REPLACE FUNCTION juror_mod.util_report_daily_summary(p_loc_code text, p_start_date date, p_end_date date)
  RETURNS TABLE(
 	report_date date,
 	working bigint,
@@ -79,9 +79,9 @@ return query select
 	from
 	(select * from juror_mod.util_report_juror_service_list(p_loc_code, p_start_date, p_end_date)) as pool_members
 	left join (select * from juror_mod.util_trial_participation_list(p_loc_code, p_start_date, p_end_date)) as panel_members
-	on pool_members.juror_number = panel_members.juror_number
+	on pool_members.juror_number = panel_members.juror_number and pool_members.report_date = panel_members.report_date
 	left join (select * from juror_mod.util_report_appearance_list(p_loc_code, p_start_date, p_end_date)) as appearance
-	on pool_members.juror_number = appearance.juror_number
+	on pool_members.juror_number = appearance.juror_number and pool_members.report_date = appearance.report_date
 	group by pool_members.juror_number,
 	pool_members.report_date,
 	pool_members.service_from,

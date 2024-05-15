@@ -16,12 +16,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,12 +74,16 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         ResponseEntity<DailyUtilisationReportResponse> responseEntity =
             restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
                     URI.create(DAILY_UTILISATION_REPORT_URL
-                        + "/415?reportFromDate=2024-04-01&reportToDate=2024-05-13")),
+                        + "/415?reportFromDate=2024-04-20&reportToDate=2024-05-13")),
                 DailyUtilisationReportResponse.class);
 
         assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
-
         DailyUtilisationReportResponse responseBody = responseEntity.getBody();
         assertThat(responseBody).isNotNull();
+
+
+
+
+
     }
 }

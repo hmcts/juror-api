@@ -21,7 +21,8 @@ public interface JurorRepository extends RevisionRepository<Juror, String, Long>
     /**
      * Function to return daily utilisation stats for jurors.
      */
-    @Query(nativeQuery = true, value = "SELECT * from juror_mod.util_daily_summary( :LocCode, :fromDate, :toDate)")
+    @Query(nativeQuery = true, value = "SELECT * from juror_mod.util_report_daily_summary( :LocCode, :fromDate, "
+        + ":toDate)")
     List<String> callDailyUtilStats(@Param("LocCode") String locCode,
                                    @Param("fromDate") LocalDate fromDate,
                                    @Param("toDate") LocalDate toDate) throws SQLException;
