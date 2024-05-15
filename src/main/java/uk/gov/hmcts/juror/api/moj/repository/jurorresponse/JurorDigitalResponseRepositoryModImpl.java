@@ -10,7 +10,6 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.QUser;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.List;
 
