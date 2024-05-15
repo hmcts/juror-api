@@ -1530,6 +1530,30 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     }
 
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/pool-management/create_voters_disqualified_only.sql",
+        "/db/CreatePoolController_createPool.sql"})
+    public void createPool_NotEnoughVoters_OnlyDisqualified() throws Exception {
+
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
+            .userType(UserType.BUREAU)
+            .login("BUREAU_USER")
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
+            .owner("400")
+            .build());
+
+        PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
+        poolCreateRequest.setCitizensToSummon(1);
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
+            HttpMethod.POST, uri);
+        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     private void confirmCoronerPoolRecordAsExpected(CoronerPoolItemDto coronerPoolItemDto) {
         assertThat(coronerPoolItemDto.getPoolNumber()).as("Expect Coroner pool number to be 923040001")
             .isEqualTo("923040001");
@@ -1641,5 +1665,4 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
             .build());
     }
-
 }

@@ -93,6 +93,7 @@ public final class TestUtil {
         claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
         claimsMap.put("login", payload.getLogin());
         claimsMap.put("owner", payload.getOwner());
+        claimsMap.put("locCode", payload.getLocCode());
         claimsMap.put("userLevel", payload.getUserLevel());
         claimsMap.put("staff", payload.getStaff());
 

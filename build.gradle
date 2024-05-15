@@ -4,7 +4,7 @@ buildscript {
         notifyVersion = '5.0.1-RELEASE'
         springDocVersion = '2.5.0'
         queryDslVersion = '5.1.0'
-        flywayVersion = '10.12.0'
+        flywayVersion = '10.13.0'
         postgresVersion = '42.7.3'
     }
     dependencies {
@@ -279,10 +279,10 @@ pmdIntegrationTest {
     maxFailures = 366
 }
 pmdTest {
-    maxFailures = 381
+    maxFailures = 374
 }
 pmdMain {
-    maxFailures = 1113
+    maxFailures = 1109
 }
 pmd {
     maxFailures = 0
