@@ -34,8 +34,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
-    "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.LawOfDemeter",
+    "PMD.AssertionsShouldIncludeMessage"
 })
 class UtilisationReportServiceImplTest {
     private final CourtLocationRepository courtLocationRepository;
@@ -174,7 +174,7 @@ class UtilisationReportServiceImplTest {
     private void mockCurrentUser(String owner) {
         securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
-            .thenReturn("415");
+            .thenReturn(owner);
     }
 
 

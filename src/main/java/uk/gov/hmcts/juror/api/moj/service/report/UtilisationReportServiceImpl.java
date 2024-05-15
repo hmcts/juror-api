@@ -33,6 +33,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
     @Override
     @Transactional(readOnly = true)
+    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
     public DailyUtilisationReportResponse viewDailyUtilisationReport(String locCode, LocalDate reportFromDate,
                                                                      LocalDate reportToDate) {
         log.info("Fetching daily utilisation stats for location: {} from: {} to: {}", locCode, reportFromDate,
@@ -77,8 +78,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
                     if (date.getDayOfWeek().equals(DayOfWeek.MONDAY) || firstPass) {
                         week = new DailyUtilisationReportResponse.TableData.Week();
-                        tableData.getWeeks().add(week);
-                        week.setDays(new ArrayList<>());
+                        initialiseWeek(tableData, week);
                         firstPass = false;
                     }
 
@@ -95,30 +95,14 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                         .nonAttendanceDays(nonAttendanceDays)
                         .utilisation(utilisation * 100)
                         .build();
-                    week.getDays().add(day);
-                    week.setWeeklyTotalJurorWorkingDays(week.getWeeklyTotalJurorWorkingDays() + workingDays);
-                    week.setWeeklyTotalSittingDays(week.getWeeklyTotalSittingDays() + sittingDays);
-                    week.setWeeklyTotalAttendanceDays(week.getWeeklyTotalAttendanceDays() + attendanceDays);
-                    week.setWeeklyTotalNonAttendanceDays(week.getWeeklyTotalNonAttendanceDays() + nonAttendanceDays);
 
-                    Double weekUtilisation = week.getWeeklyTotalJurorWorkingDays() == 0 ? 0.0 :
-                        (double) week.getWeeklyTotalSittingDays() / week.getWeeklyTotalJurorWorkingDays() * 100;
-                    week.setWeeklyTotalUtilisation(weekUtilisation);
+                    updateWeek(week, workingDays, sittingDays, attendanceDays, nonAttendanceDays, day);
 
-                    tableData.setOverallTotalJurorWorkingDays(tableData.getOverallTotalJurorWorkingDays()
-                        + workingDays);
-                    tableData.setOverallTotalSittingDays(tableData.getOverallTotalSittingDays() + sittingDays);
-                    tableData.setOverallTotalAttendanceDays(tableData.getOverallTotalAttendanceDays()
-                        + attendanceDays);
-                    tableData.setOverallTotalNonAttendanceDays(tableData.getOverallTotalNonAttendanceDays()
-                        + nonAttendanceDays);
+                    updateOverallTotals(tableData, workingDays, sittingDays, attendanceDays, nonAttendanceDays);
 
                 }
 
-                Double overallUtilisation = tableData.getOverallTotalJurorWorkingDays() == 0
-                    ? 0.0 : (double) tableData.getOverallTotalSittingDays()
-                    / tableData.getOverallTotalJurorWorkingDays() * 100;
-                tableData.setOverallTotalUtilisation(overallUtilisation);
+                calculateOverallUtilisation(tableData);
 
             }
         } catch (SQLException exc) {
@@ -130,6 +114,44 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
             reportToDate);
 
         return response;
+    }
+
+    private static void initialiseWeek(DailyUtilisationReportResponse.TableData tableData,
+                                  DailyUtilisationReportResponse.TableData.Week week) {
+        tableData.getWeeks().add(week);
+        week.setDays(new ArrayList<>());
+    }
+
+    private void calculateOverallUtilisation(DailyUtilisationReportResponse.TableData tableData) {
+        Double overallUtilisation = tableData.getOverallTotalJurorWorkingDays() == 0
+            ? 0.0 : (double) tableData.getOverallTotalSittingDays()
+            / tableData.getOverallTotalJurorWorkingDays() * 100;
+        tableData.setOverallTotalUtilisation(overallUtilisation);
+    }
+
+    private void updateOverallTotals(DailyUtilisationReportResponse.TableData tableData, int workingDays,
+                                     int sittingDays, int attendanceDays, int nonAttendanceDays) {
+        tableData.setOverallTotalJurorWorkingDays(tableData.getOverallTotalJurorWorkingDays()
+            + workingDays);
+        tableData.setOverallTotalSittingDays(tableData.getOverallTotalSittingDays() + sittingDays);
+        tableData.setOverallTotalAttendanceDays(tableData.getOverallTotalAttendanceDays()
+            + attendanceDays);
+        tableData.setOverallTotalNonAttendanceDays(tableData.getOverallTotalNonAttendanceDays()
+            + nonAttendanceDays);
+    }
+
+    private void updateWeek(DailyUtilisationReportResponse.TableData.Week week, int workingDays, int sittingDays,
+                                  int attendanceDays, int nonAttendanceDays,
+                                  DailyUtilisationReportResponse.TableData.Week.Day day) {
+        week.getDays().add(day);
+        week.setWeeklyTotalJurorWorkingDays(week.getWeeklyTotalJurorWorkingDays() + workingDays);
+        week.setWeeklyTotalSittingDays(week.getWeeklyTotalSittingDays() + sittingDays);
+        week.setWeeklyTotalAttendanceDays(week.getWeeklyTotalAttendanceDays() + attendanceDays);
+        week.setWeeklyTotalNonAttendanceDays(week.getWeeklyTotalNonAttendanceDays() + nonAttendanceDays);
+
+        Double weekUtilisation = week.getWeeklyTotalJurorWorkingDays() == 0 ? 0.0 :
+            (double) week.getWeeklyTotalSittingDays() / week.getWeeklyTotalJurorWorkingDays() * 100;
+        week.setWeeklyTotalUtilisation(weekUtilisation);
     }
 
     private Map<String, AbstractReportResponse.DataTypeValue>

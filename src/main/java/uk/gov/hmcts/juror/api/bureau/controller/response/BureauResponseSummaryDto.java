@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@SuppressWarnings("PMD.TooManyFields")
 @Schema(description = "Summary returning most important fields of relative to juror response")
 public class BureauResponseSummaryDto {
     @Schema(description = "Juror number")

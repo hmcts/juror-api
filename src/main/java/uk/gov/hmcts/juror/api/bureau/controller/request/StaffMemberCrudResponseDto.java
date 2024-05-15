@@ -20,6 +20,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@SuppressWarnings("PMD.TooManyFields")
 @Schema(description = "Staff member profile dto")
 public class StaffMemberCrudResponseDto implements Serializable {
     @NotEmpty
