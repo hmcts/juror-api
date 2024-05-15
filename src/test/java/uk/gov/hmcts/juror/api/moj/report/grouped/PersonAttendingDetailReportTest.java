@@ -99,6 +99,7 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
             .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.RESPONDED,
                                                          IJurorStatus.PANEL,
                                                          IJurorStatus.JUROR));
+        verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
 
@@ -126,6 +127,7 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
                                                          IJurorStatus.RESPONDED,
                                                          IJurorStatus.PANEL,
                                                          IJurorStatus.JUROR));
+        verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
 
         verifyNoMoreInteractions(query);
     }

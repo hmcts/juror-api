@@ -217,22 +217,6 @@ class PersonAttendingDetailReportITest extends AbstractGroupedReportControllerIT
         return buildResponse(new GroupedTableData()
                                  .add("415240601", List.of(
                                      new ReportLinkedMap<String, Object>()
-                                         .add("juror_number", "641500021")
-                                         .add("first_name", "FNAMETWOONE")
-                                         .add("last_name", "LNAMETWOONE")
-                                         .add("juror_postal_address", new ReportLinkedMap<String, Object>()
-                                             .add("juror_address_line_1", "21 STREET NAME")
-                                             .add("juror_address_line_2", "ANYTOWN")
-                                             .add("juror_postcode", "CH1 2AN")),
-                                     new ReportLinkedMap<String, Object>()
-                                         .add("juror_number", "641500011")
-                                         .add("first_name", "FNAMEONEONE")
-                                         .add("last_name", "LNAMEONEONE")
-                                         .add("juror_postal_address", new ReportLinkedMap<String, Object>()
-                                             .add("juror_address_line_1", "11 STREET NAME")
-                                             .add("juror_address_line_2", "ANYTOWN")
-                                             .add("juror_postcode", "CH2 2AB")),
-                                     new ReportLinkedMap<String, Object>()
                                          .add("juror_number", "641500003")
                                          .add("first_name", "FNAMETHREE")
                                          .add("last_name", "LNAMETHREE")
@@ -244,7 +228,23 @@ class PersonAttendingDetailReportITest extends AbstractGroupedReportControllerIT
                                              .add("juror_address_line_5", "")
                                              .add("juror_postcode", "CH1 2AN"))
                                          .add("contact_details", new ReportLinkedMap<String, Object>()
-                                             .add("email", "")))), 1);
+                                             .add("email", "")),
+                                     new ReportLinkedMap<String, Object>()
+                                         .add("juror_number", "641500011")
+                                         .add("first_name", "FNAMEONEONE")
+                                         .add("last_name", "LNAMEONEONE")
+                                         .add("juror_postal_address", new ReportLinkedMap<String, Object>()
+                                             .add("juror_address_line_1", "11 STREET NAME")
+                                             .add("juror_address_line_2", "ANYTOWN")
+                                             .add("juror_postcode", "CH2 2AB")),
+                                     new ReportLinkedMap<String, Object>()
+                                         .add("juror_number", "641500021")
+                                         .add("first_name", "FNAMETWOONE")
+                                         .add("last_name", "LNAMETWOONE")
+                                         .add("juror_postal_address", new ReportLinkedMap<String, Object>()
+                                             .add("juror_address_line_1", "21 STREET NAME")
+                                             .add("juror_address_line_2", "ANYTOWN")
+                                             .add("juror_postcode", "CH1 2AN")))), 1);
     }
 
     private GroupedReportResponse getIncludeSummonsResponse() {

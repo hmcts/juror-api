@@ -62,6 +62,7 @@ public class PersonAttendingDetailReport extends AbstractGroupedReport {
                                                               IJurorStatus.PANEL,
                                                               IJurorStatus.JUROR));
         }
+        query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override

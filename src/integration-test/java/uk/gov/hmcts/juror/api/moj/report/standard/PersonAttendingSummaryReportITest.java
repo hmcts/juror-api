@@ -132,17 +132,17 @@ class PersonAttendingSummaryReportITest extends AbstractStandardReportController
                             .build()))
                     .data(List.of(
                         new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "641500021")
-                            .add("first_name", "FNAMETWOONE")
-                            .add("last_name", "LNAMETWOONE"),
-                            new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "641500003")
+                            .add("first_name", "FNAMETHREE")
+                            .add("last_name", "LNAMETHREE"),
+                        new ReportLinkedMap<String, Object>()
                             .add("juror_number", "641500011")
                             .add("first_name", "FNAMEONEONE")
                             .add("last_name", "LNAMEONEONE"),
                         new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "641500003")
-                            .add("first_name", "FNAMETHREE")
-                            .add("last_name", "LNAMETHREE")))
+                            .add("juror_number", "641500021")
+                            .add("first_name", "FNAMETWOONE")
+                            .add("last_name", "LNAMETWOONE")))
                     .build())
             .build();
     }

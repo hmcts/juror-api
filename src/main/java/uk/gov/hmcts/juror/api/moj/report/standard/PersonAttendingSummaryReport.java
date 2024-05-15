@@ -55,6 +55,7 @@ public class PersonAttendingSummaryReport extends AbstractStandardReport {
                                                               IJurorStatus.PANEL,
                                                               IJurorStatus.JUROR));
         }
+        query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
     }
 
     @Override
