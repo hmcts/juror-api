@@ -30,6 +30,7 @@ import java.util.Map;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -84,20 +85,21 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
     @Override
     @DisplayName("positivePreProcessQueryTypicalCourt")
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
-        request.setToDate(LocalDate.of(2023, 1, 1));
-        request.setToDate(LocalDate.of(2023, 1, 2));
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
         report.preProcessQuery(query, request);
 
-        verify(query).where(
+        verify(query, times(1)).where(
             QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate())
                 .and(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_ENTERED))
                 .or(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_EDITED))
                 .and(QAppearance.appearance.isDraftExpense.isFalse()));
+        verify(query, times(1)).where(QAppearance.appearance.locCode.in(SecurityUtil.getCourts()));
 
-        verify(query)
-            .orderBy(QPool.pool.poolNumber.asc(), QJuror.juror.jurorNumber.asc());
+        verify(report, times(1)).addGroupBy(query,
+            DataType.JUROR_NUMBER,
+            DataType.POOL_NUMBER_BY_APPEARANCE);
+
     }
 
     @Override
@@ -140,7 +142,7 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
                 StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total Unpaid Attendances")
                     .dataType(Long.class.getSimpleName())
-                    .value(3)
+                    .value(2)
                     .build(),
                 "court_name",
                 StandardReportResponse.DataTypeValue.builder()

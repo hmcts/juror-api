@@ -52,11 +52,26 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
         testBuilder()
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
-            .printResponse()
-            .printResponseBodyAsJson()
             .assertEquals(getTypicalResponse());
     }
 
+    @Test
+    void negativeUnauthorised() {
+        testBuilder()
+            .jwt(getBureauJwt())
+            .triggerInvalid()
+            .assertMojForbiddenResponse("User not allowed to access this report");
+    }
+
+    @Test
+    void negativeInvalidPayloadMissingDate() {
+        StandardReportRequest request = getValidPayload();
+        request.setToDate(null);
+        testBuilder()
+            .payload(addReportType(request))
+            .triggerInvalid()
+            .assertInvalidPathParam("toDate: must not be null");
+    }
 
     private GroupedReportResponse getTypicalResponse() {
         return GroupedReportResponse.builder()
