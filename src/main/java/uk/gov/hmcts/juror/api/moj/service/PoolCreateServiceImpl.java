@@ -41,7 +41,6 @@ import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.Voters;
 import uk.gov.hmcts.juror.api.moj.domain.VotersLocPostcodeTotals;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.PoolCreateException;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolDetailRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolRepository;
@@ -449,8 +448,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
         } catch (Exception e) {
             log.error("Exception occurred when adding members to pool - {}", e.getMessage());
-            throw new MojException.BusinessRuleViolation("Something went wrong while trying to summon jurors",
-                MojException.BusinessRuleViolation.ErrorCode.UNABLE_TO_CREATE_POOL);
+            throw new PoolCreateException.UnableToCreatePool();
         } finally {
             //make sure to unlock the voters lock
             unlockVoters(locCode);

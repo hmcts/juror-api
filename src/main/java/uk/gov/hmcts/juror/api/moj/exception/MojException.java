@@ -89,8 +89,7 @@ public class MojException extends RuntimeException {
             CANNOT_EDIT_TRIAL_WITH_JURORS,
             CANNOT_EDIT_COMPLETED_TRIAL,
             JUROR_DATE_OF_BIRTH_REQUIRED,
-            INVALID_APPEARANCES_STATUS,
-            UNABLE_TO_CREATE_POOL
+            INVALID_APPEARANCES_STATUS
         }
     }
 
