@@ -11,12 +11,11 @@ import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
+import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -25,10 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.BDDAssertions.within;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SuppressWarnings({
     "PMD.ExcessiveImports",
@@ -37,12 +40,10 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 class UtilisationReportServiceImplTest {
     private final CourtLocationRepository courtLocationRepository;
     private final JurorRepository jurorRepository;
-    private final Clock clock;
     private final UtilisationReportService utilisationReportService;
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     public UtilisationReportServiceImplTest() {
-        this.clock = mock(Clock.class);
         this.courtLocationRepository = mock(CourtLocationRepository.class);
         this.jurorRepository = mock(JurorRepository.class);
         this.utilisationReportService = new UtilisationReportServiceImpl(courtLocationRepository, jurorRepository);
@@ -80,9 +81,9 @@ class UtilisationReportServiceImplTest {
         when(jurorRepository.callDailyUtilStats(locCode, reportFromDate, reportToDate))
             .thenReturn(List.of());
 
-       DailyUtilisationReportResponse response = utilisationReportService.viewDailyUtilisationReport(locCode,
-           reportFromDate,
-           reportToDate);
+        DailyUtilisationReportResponse response = utilisationReportService.viewDailyUtilisationReport(locCode,
+            reportFromDate,
+            reportToDate);
 
         assertThat(response.getHeadings()).isNotNull();
         Map<String, AbstractReportResponse.DataTypeValue> headings = response.getHeadings();
@@ -122,7 +123,9 @@ class UtilisationReportServiceImplTest {
 
         DailyUtilisationReportResponse.TableData.TableHeading[] expectedHeadingsArray =
             DailyUtilisationReportResponse.TableData.TableHeading.values();
-        for (int i = 0; i < expectedHeadingsArray.length; i++) {
+        for (int i = 0;
+             i < expectedHeadingsArray.length;
+             i++) {
             DailyUtilisationReportResponse.TableData.TableHeading expectedHeading = expectedHeadingsArray[i];
             DailyUtilisationReportResponse.TableData.Heading actualHeading = tableData.getHeadings().get(i);
             assertThat(actualHeading.getId()).isEqualTo(expectedHeading);
@@ -137,7 +140,36 @@ class UtilisationReportServiceImplTest {
         assertThat(tableData.getOverallTotalNonAttendanceDays()).isZero();
         assertThat(tableData.getOverallTotalUtilisation()).isZero();
 
+        verify(courtLocationRepository, times(1)).findById(locCode);
+        verify(jurorRepository, times(1)).callDailyUtilStats(locCode, reportFromDate, reportToDate);
+
     }
+
+    @Test
+    void viewDailyUtilisationReportInvalidCourtLocation() {
+
+        final String locCode = "416";
+        final LocalDate reportFromDate = LocalDate.of(2024, 4, 20);
+        final LocalDate reportToDate = LocalDate.of(2024, 5, 13);
+
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setName("Test Court");
+        courtLocation.setLocCode(locCode);
+        courtLocation.setOwner("416");
+        when(courtLocationRepository.findById(locCode))
+            .thenReturn(Optional.of(courtLocation));
+
+        mockCurrentUser(locCode);
+
+        assertThatExceptionOfType(MojException.Forbidden.class)
+            .isThrownBy(() -> utilisationReportService.viewDailyUtilisationReport(locCode, reportFromDate,
+                reportToDate));
+
+        verify(courtLocationRepository, times(1)).findById(locCode);
+        verifyNoInteractions(jurorRepository);
+
+    }
+
 
     private void mockCurrentUser(String owner) {
         securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);

@@ -37,6 +37,11 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                                                                      LocalDate reportToDate) {
         log.info("Fetching daily utilisation stats for location: {} from: {} to: {}", locCode, reportFromDate,
             reportToDate);
+
+        if (reportFromDate.isAfter(reportToDate)) {
+            throw new MojException.BadRequest("Report from date cannot be after report to date", null);
+        }
+
         // check the user has permission to view the location
         CourtLocation courtLocation = CourtLocationUtils.validateAccessToCourtLocation(locCode,
             SecurityUtil.getActiveOwner(),
@@ -63,18 +68,18 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                     LocalDate date = LocalDate.parse(res.get(0), DateTimeFormatter.ISO_LOCAL_DATE);
                     Double utilisation = Double.parseDouble(res.get(5));
 
-                    if (date.getDayOfWeek().equals(DayOfWeek.MONDAY) || firstPass) {
-                        week = new DailyUtilisationReportResponse.TableData.Week();
-                        tableData.getWeeks().add(week);
-                        week.setDays(new ArrayList<>());
-                        firstPass = false;
-                    }
-
                     int workingDays = Integer.parseInt(res.get(1));
                     if (workingDays == 0 && (date.getDayOfWeek().equals(DayOfWeek.SATURDAY)
                         || date.getDayOfWeek().equals(DayOfWeek.SUNDAY))) {
                         // ignore weekends with no working days
                         continue;
+                    }
+
+                    if (date.getDayOfWeek().equals(DayOfWeek.MONDAY) || firstPass) {
+                        week = new DailyUtilisationReportResponse.TableData.Week();
+                        tableData.getWeeks().add(week);
+                        week.setDays(new ArrayList<>());
+                        firstPass = false;
                     }
 
                     int sittingDays = Integer.parseInt(res.get(2));
