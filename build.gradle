@@ -279,7 +279,7 @@ pmdIntegrationTest {
     maxFailures = 366
 }
 pmdTest {
-    maxFailures = 379
+    maxFailures = 374
 }
 pmdMain {
     maxFailures = 1109
