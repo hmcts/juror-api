@@ -25,13 +25,18 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.time.LocalDate;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
+    "unchecked",
     "PMD.LawOfDemeter",
     "PMD.ExcessiveImports"
 })
@@ -54,6 +59,8 @@ public class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSu
             DataType.CONTACT_DETAILS,
             DataType.NEXT_ATTENDANCE_DATE,
             DataType.JUROR_REASONABLE_ADJUSTMENT_WITH_MESSAGE);
+
+        setHasPoolRepository(false);
     }
 
     @BeforeEach
@@ -61,7 +68,6 @@ public class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSu
     public void beforeEach() {
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         this.courtLocationService = mock(CourtLocationService.class);
-        this.hasPoolRepository = false;
         super.beforeEach();
     }
 
@@ -90,7 +96,7 @@ public class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSu
         request.setFromDate(LocalDate.of(2024, 1, 1));
         request.setToDate(LocalDate.of(2024, 1, 2));
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
-        securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn("415");
+        securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
         report.preProcessQuery(query, request);
 
         verify(query).where(
@@ -116,6 +122,8 @@ public class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSu
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn("415");
 
+        when(data.getSize()).thenReturn(5);
+
         CourtLocation courtLocation = mock(CourtLocation.class);
         when(courtLocationService.getCourtLocation(TestConstants.VALID_COURT_LOCATION)).thenReturn(courtLocation);
         doReturn(getCourtNameEntry()).when(report).getCourtNameHeader(courtLocation);
@@ -129,7 +137,7 @@ public class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSu
                 StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total jurors with reasonable adjustments")
                     .dataType(Long.class.getSimpleName())
-                    .value(tableData.getData().getSize())
+                    .value(5)
                     .build(),
                 "court_name",
                 StandardReportResponse.DataTypeValue.builder()
@@ -140,7 +148,60 @@ public class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSu
             )
         );
         verify(report).getHeadings(request, tableData);
+        verify(report, times(1)).getCourtNameHeader(any());
         return map;
+    }
+
+    @Test
+    void positivePreProcessQueryTypicalBureau() {
+        StandardReportRequest request = new StandardReportRequest();
+        JPAQuery<Tuple> query = mock(JPAQuery.class);
+
+        request.setFromDate(LocalDate.of(2024, 1, 1));
+        request.setToDate(LocalDate.of(2024, 1, 2));
+        securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(false);
+        securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
+        report.preProcessQuery(query, request);
+
+        verify(query).where(
+            QJuror.juror.reasonableAdjustmentCode.isNotNull()
+                .and(QJurorPool.jurorPool.nextDate.between(request.getFromDate(), request.getToDate()))
+        );
+        verify(query, times(0))
+            .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.getActiveOwner()));
+        verify(query).orderBy(QJuror.juror.jurorNumber.asc());
+        verifyNoMoreInteractions(query);
+    }
+
+    @Test
+    void positiveGetHeadingsTypicalBureau() {
+        StandardReportRequest request = mock(StandardReportRequest.class);
+        AbstractReportResponse.TableData<GroupedTableData> tableData = mock(AbstractReportResponse.TableData.class);
+        GroupedTableData data = mock(GroupedTableData.class);
+
+        when(data.getSize()).thenReturn(5);
+        doReturn(data).when(tableData).getData();
+
+        request.setFromDate(LocalDate.of(2024, 1, 1));
+        request.setToDate(LocalDate.of(2024, 1, 2));
+        securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(false);
+
+        Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);
+        assertHeadingContains(map,
+            request,
+            false,
+            Map.of(
+                "total_reasonable_adjustments",
+                StandardReportResponse.DataTypeValue.builder()
+                    .displayName("Total jurors with reasonable adjustments")
+                    .dataType(Long.class.getSimpleName())
+                    .value(5)
+                    .build()
+            )
+        );
+        verify(report).getHeadings(request, tableData);
+        verify(report, never()).getCourtNameHeader(any());
+        verifyNoMoreInteractions(report);
     }
 
     @Test

@@ -24,7 +24,10 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/ReasonableAdjustmentsReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings({
+    "PMD.LawOfDemeter",
+    "PMD.JUnitTestsShouldIncludeAssert"
+})
 class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
@@ -46,33 +49,23 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveTypicalCourt() {
         testBuilder()
-            .jwt(getCourtJwt("415"))
+            .jwt(getValidJwt())
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponseCourt());
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveTypicalBureau() {
         testBuilder()
-            .jwt(getBureauJwt())
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponseBureau());
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveNotFound() {
         testBuilder()
             .jwt(getCourtJwt("408"))
@@ -182,7 +175,6 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
         StandardReportRequest request = getValidPayload();
         request.setFromDate(null);
         testBuilder()
-            .jwt(getBureauJwt())
             .payload(request)
             .triggerInvalid()
             .assertInvalidPathParam("fromDate: must not be null");
@@ -193,7 +185,6 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
         StandardReportRequest request = getValidPayload();
         request.setToDate(null);
         testBuilder()
-            .jwt(getBureauJwt())
             .payload(request)
             .triggerInvalid()
             .assertInvalidPathParam("toDate: must not be null");
@@ -422,8 +413,8 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
                                 )
                                 .add("next_attendance_date", "2024-01-01")
                                 .add("juror_reasonable_adjustment_with_message", new ReportLinkedMap<String, Object>()
-                                    .add("reasonable_adjustment_code_with_description", "M - MULTIPLE")
-                                    .add("juror_reasonable_adjustment_message", "multiple requests")
+                                    .add("reasonable_adjustment_code_with_description", "M - ALLERGIES")
+                                    .add("juror_reasonable_adjustment_message", "has got allergies")
                                 ),
                             new ReportLinkedMap<String, Object>()
                                 .add("juror_number", "041500002")
@@ -470,8 +461,8 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
                                 )
                                 .add("next_attendance_date", "2024-01-01")
                                 .add("juror_reasonable_adjustment_with_message", new ReportLinkedMap<String, Object>()
-                                    .add("reasonable_adjustment_code_with_description", "M - MULTIPLE")
-                                    .add("juror_reasonable_adjustment_message", "multiple requests")
+                                    .add("reasonable_adjustment_code_with_description", "T - TRAVELLING DIFFICULTIES")
+                                    .add("juror_reasonable_adjustment_message", "no transport available")
                                 ),
                             new ReportLinkedMap<String, Object>()
                                 .add("juror_number", "041500005")
@@ -486,8 +477,8 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
                                 )
                                 .add("next_attendance_date", "2024-01-01")
                                 .add("juror_reasonable_adjustment_with_message", new ReportLinkedMap<String, Object>()
-                                    .add("reasonable_adjustment_code_with_description", "M - MULTIPLE")
-                                    .add("juror_reasonable_adjustment_message", "multiple requests")
+                                    .add("reasonable_adjustment_code_with_description", "O - OTHER")
+                                    .add("juror_reasonable_adjustment_message", "other reasons")
                                 )
                         ))
                         .add("BRISTOL (408)", List.of(
@@ -504,8 +495,8 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
                                 )
                                 .add("next_attendance_date", "2024-01-02")
                                 .add("juror_reasonable_adjustment_with_message", new ReportLinkedMap<String, Object>()
-                                    .add("reasonable_adjustment_code_with_description", "M - MULTIPLE")
-                                    .add("juror_reasonable_adjustment_message", "multiple requests")
+                                    .add("reasonable_adjustment_code_with_description", "U - MEDICATION")
+                                    .add("juror_reasonable_adjustment_message", "needs medication")
                                 ),
                             new ReportLinkedMap<String, Object>()
                                 .add("juror_number", "040800002")
