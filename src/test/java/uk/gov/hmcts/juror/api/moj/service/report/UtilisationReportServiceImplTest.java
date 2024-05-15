@@ -159,7 +159,7 @@ class UtilisationReportServiceImplTest {
         when(courtLocationRepository.findById(locCode))
             .thenReturn(Optional.of(courtLocation));
 
-        mockCurrentUser(locCode);
+        mockCurrentUser("415");
 
         assertThatExceptionOfType(MojException.Forbidden.class)
             .isThrownBy(() -> utilisationReportService.viewDailyUtilisationReport(locCode, reportFromDate,
