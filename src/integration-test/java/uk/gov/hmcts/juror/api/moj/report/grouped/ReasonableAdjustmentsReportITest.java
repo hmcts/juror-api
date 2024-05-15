@@ -51,7 +51,6 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
     @Test
     void positiveTypicalCourt() {
         testBuilder()
-            .jwt(getValidJwt())
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponseCourt());
@@ -60,6 +59,7 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
     @Test
     void positiveTypicalBureau() {
         testBuilder()
+            .jwt(getBureauJwt())
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponseBureau());
@@ -73,98 +73,10 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(GroupedReportResponse.builder()
                 .groupBy(getTypicalGroupByResponse())
-                .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
-                .add("total_reasonable_adjustments", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Total jurors with reasonable adjustments")
-                    .dataType("Long")
-                    .value(0)
-                    .build())
-                .add("court_name", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Court Name")
-                    .dataType("String")
-                    .value("BRISTOL (408)")
-                    .build()))
+                .headings(getResponseHeadings(0, "BRISTOL (408)"))
                 .tableData(
                     AbstractReportResponse.TableData.<GroupedTableData>builder()
-                        .headings(List.of(
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("juror_number")
-                                .name("Juror Number")
-                                .dataType("String")
-                                .headings(null)
-                                .build(),
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("first_name")
-                                .name("First Name")
-                                .dataType("String")
-                                .headings(null)
-                                .build(),
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("last_name")
-                                .name("Last Name")
-                                .dataType("String")
-                                .headings(null)
-                                .build(),
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("pool_number_by_jp")
-                                .name("Pool Number")
-                                .dataType("String")
-                                .headings(null)
-                                .build(),
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("contact_details")
-                                .name("Contact Details")
-                                .dataType("List")
-                                .headings(List.of(
-                                    StandardReportResponse.TableData.Heading.builder()
-                                        .id("main_phone")
-                                        .name("Main Phone")
-                                        .dataType("String")
-                                        .headings(null)
-                                        .build(),
-                                    StandardReportResponse.TableData.Heading.builder()
-                                        .id("other_phone")
-                                        .name("Other Phone")
-                                        .dataType("String")
-                                        .headings(null)
-                                        .build(),
-                                    StandardReportResponse.TableData.Heading.builder()
-                                        .id("work_phone")
-                                        .name("Work Phone")
-                                        .dataType("String")
-                                        .headings(null)
-                                        .build(),
-                                    StandardReportResponse.TableData.Heading.builder()
-                                        .id("email")
-                                        .name("Email")
-                                        .dataType("String")
-                                        .headings(null)
-                                        .build())
-                                ).build(),
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("next_attendance_date")
-                                .name("Next attendance date")
-                                .dataType("LocalDate")
-                                .headings(null)
-                                .build(),
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("juror_reasonable_adjustment_with_message")
-                                .name("Reasonable Adjustments")
-                                .dataType("List")
-                                .headings(List.of(
-                                    StandardReportResponse.TableData.Heading.builder()
-                                        .id("reasonable_adjustment_code_with_description")
-                                        .name("Reasonable Adjustment Code With Description")
-                                        .dataType("String")
-                                        .headings(null)
-                                        .build(),
-                                    StandardReportResponse.TableData.Heading.builder()
-                                        .id("juror_reasonable_adjustment_message")
-                                        .name("Juror Reasonable Adjustment Message")
-                                        .dataType("String")
-                                        .headings(null)
-                                        .build())
-                                ).build()))
+                        .headings(getListOfTableHeadings())
                         .data(new GroupedTableData())
                         .build())
                     .build());
@@ -193,211 +105,40 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
     private GroupedReportResponse getTypicalResponseCourt() {
         return GroupedReportResponse.builder()
             .groupBy(getTypicalGroupByResponse())
-            .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
-            .add("total_reasonable_adjustments", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Total jurors with reasonable adjustments")
-                .dataType("Long")
-                .value(1)
-                .build())
-            .add("court_name", StandardReportResponse.DataTypeValue.builder()
-                .displayName("Court Name")
-                .dataType("String")
-                .value("CHESTER (415)")
-                .build()))
+            .headings(getResponseHeadings(1, "CHESTER (415)"))
             .tableData(
                 AbstractReportResponse.TableData.<GroupedTableData>builder()
-                    .headings(List.of(
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("juror_number")
-                            .name("Juror Number")
-                            .dataType("String")
-                            .headings(null)
-                            .build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("first_name")
-                            .name("First Name")
-                            .dataType("String")
-                            .headings(null)
-                            .build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("last_name")
-                            .name("Last Name")
-                            .dataType("String")
-                            .headings(null)
-                            .build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("pool_number_by_jp")
-                            .name("Pool Number")
-                            .dataType("String")
-                            .headings(null)
-                            .build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("contact_details")
-                            .name("Contact Details")
-                            .dataType("List")
-                            .headings(List.of(
-                                StandardReportResponse.TableData.Heading.builder()
-                                    .id("main_phone")
-                                    .name("Main Phone")
-                                    .dataType("String")
-                                    .headings(null)
-                                    .build(),
-                                StandardReportResponse.TableData.Heading.builder()
-                                    .id("other_phone")
-                                    .name("Other Phone")
-                                    .dataType("String")
-                                    .headings(null)
-                                    .build(),
-                                StandardReportResponse.TableData.Heading.builder()
-                                    .id("work_phone")
-                                    .name("Work Phone")
-                                    .dataType("String")
-                                    .headings(null)
-                                    .build(),
-                                StandardReportResponse.TableData.Heading.builder()
-                                    .id("email")
-                                    .name("Email")
-                                    .dataType("String")
-                                    .headings(null)
-                                    .build())
-                            ).build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("next_attendance_date")
-                            .name("Next attendance date")
-                            .dataType("LocalDate")
-                            .headings(null)
-                            .build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("juror_reasonable_adjustment_with_message")
-                            .name("Reasonable Adjustments")
-                            .dataType("List")
-                            .headings(List.of(
-                                StandardReportResponse.TableData.Heading.builder()
-                                    .id("reasonable_adjustment_code_with_description")
-                                    .name("Reasonable Adjustment Code With Description")
-                                    .dataType("String")
-                                    .headings(null)
-                                    .build(),
-                                StandardReportResponse.TableData.Heading.builder()
-                                    .id("juror_reasonable_adjustment_message")
-                                    .name("Juror Reasonable Adjustment Message")
-                                    .dataType("String")
-                                    .headings(null)
-                                    .build())
-                            ).build()))
+                    .headings(getListOfTableHeadings())
                     .data(new GroupedTableData()
-                              .add("CHESTER (415)", List.of(
-                                  new ReportLinkedMap<String, Object>()
-                                      .add("juror_number", "041500005")
-                                      .add("first_name", "CName5")
-                                      .add("last_name", "CSurname5")
-                                      .add("pool_number_by_jp", "415240101")
-                                      .add("contact_details", new ReportLinkedMap<String, Object>()
-                                          .add("main_phone", "400000001")
-                                          .add("other_phone", "400000002")
-                                          .add("work_phone", "400000003")
-                                          .add("email", "041500005@email.gov.uk")
-                                      )
-                                      .add("next_attendance_date", "2024-01-01")
-                                      .add("juror_reasonable_adjustment_with_message",
-                                           new ReportLinkedMap<String, Object>()
-                                              .add("reasonable_adjustment_code_with_description", "M - MULTIPLE")
-                                              .add("juror_reasonable_adjustment_message", "multiple requests")
-                                      )
-                              ))).build())
+                    .add("CHESTER (415)", List.of(
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "041500005")
+                            .add("first_name", "CName5")
+                            .add("last_name", "CSurname5")
+                            .add("pool_number_by_jp", "415240101")
+                            .add("contact_details", new ReportLinkedMap<String, Object>()
+                                .add("main_phone", "400000001")
+                                .add("other_phone", "400000002")
+                                .add("work_phone", "400000003")
+                                .add("email", "041500005@email.gov.uk")
+                            )
+                            .add("next_attendance_date", "2024-01-01")
+                            .add("juror_reasonable_adjustment_with_message",
+                                new ReportLinkedMap<String, Object>()
+                                    .add("reasonable_adjustment_code_with_description", "O - OTHER")
+                                    .add("juror_reasonable_adjustment_message", "other reasons")
+                            )
+                    ))).build())
             .build();
     }
 
     private GroupedReportResponse getTypicalResponseBureau() {
         return GroupedReportResponse.builder()
             .groupBy(getTypicalGroupByResponse())
-            .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
-                .add("total_reasonable_adjustments", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Total jurors with reasonable adjustments")
-                    .dataType("Long")
-                    .value(7)
-                    .build()))
+            .headings(getResponseHeadings(7, null))
             .tableData(
                 AbstractReportResponse.TableData.<GroupedTableData>builder()
-                    .headings(List.of(
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("juror_number")
-                            .name("Juror Number")
-                            .dataType("String")
-                            .headings(null)
-                            .build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("first_name")
-                            .name("First Name")
-                            .dataType("String")
-                            .headings(null)
-                            .build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("last_name")
-                            .name("Last Name")
-                            .dataType("String")
-                            .headings(null)
-                            .build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("pool_number_by_jp")
-                            .name("Pool Number")
-                            .dataType("String")
-                            .headings(null)
-                            .build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("contact_details")
-                            .name("Contact Details")
-                            .dataType("List")
-                            .headings(List.of(
-                                StandardReportResponse.TableData.Heading.builder()
-                                    .id("main_phone")
-                                    .name("Main Phone")
-                                    .dataType("String")
-                                    .headings(null)
-                                    .build(),
-                                StandardReportResponse.TableData.Heading.builder()
-                                    .id("other_phone")
-                                    .name("Other Phone")
-                                    .dataType("String")
-                                    .headings(null)
-                                    .build(),
-                                StandardReportResponse.TableData.Heading.builder()
-                                    .id("work_phone")
-                                    .name("Work Phone")
-                                    .dataType("String")
-                                    .headings(null)
-                                    .build(),
-                                StandardReportResponse.TableData.Heading.builder()
-                                    .id("email")
-                                    .name("Email")
-                                    .dataType("String")
-                                    .headings(null)
-                                    .build())
-                            ).build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("next_attendance_date")
-                            .name("Next attendance date")
-                            .dataType("LocalDate")
-                            .headings(null)
-                            .build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("juror_reasonable_adjustment_with_message")
-                            .name("Reasonable Adjustments")
-                            .dataType("List")
-                            .headings(List.of(
-                                StandardReportResponse.TableData.Heading.builder()
-                                    .id("reasonable_adjustment_code_with_description")
-                                    .name("Reasonable Adjustment Code With Description")
-                                    .dataType("String")
-                                    .headings(null)
-                                    .build(),
-                                StandardReportResponse.TableData.Heading.builder()
-                                    .id("juror_reasonable_adjustment_message")
-                                    .name("Juror Reasonable Adjustment Message")
-                                    .dataType("String")
-                                    .headings(null)
-                                    .build())
-                            ).build()))
+                    .headings(getListOfTableHeadings())
                     .data(new GroupedTableData()
                         .add("CHESTER (415)", List.of(
                             new ReportLinkedMap<String, Object>()
@@ -413,7 +154,7 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
                                 )
                                 .add("next_attendance_date", "2024-01-01")
                                 .add("juror_reasonable_adjustment_with_message", new ReportLinkedMap<String, Object>()
-                                    .add("reasonable_adjustment_code_with_description", "M - ALLERGIES")
+                                    .add("reasonable_adjustment_code_with_description", "D - ALLERGIES")
                                     .add("juror_reasonable_adjustment_message", "has got allergies")
                                 ),
                             new ReportLinkedMap<String, Object>()
@@ -523,5 +264,108 @@ class ReasonableAdjustmentsReportITest extends AbstractGroupedReportControllerIT
             .name(DataType.COURT_LOCATION_NAME_AND_CODE.name())
             .nested(null)
             .build();
+    }
+
+    private ReportHashMap<String, StandardReportResponse.DataTypeValue> getResponseHeadings(
+        int totalReasonableAdjustments, String courtName) {
+        ReportHashMap<String, StandardReportResponse.DataTypeValue> map =
+            new ReportHashMap<String, AbstractReportResponse.DataTypeValue>()
+            .add("total_reasonable_adjustments", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Total jurors with reasonable adjustments")
+                .dataType("Long")
+                .value(totalReasonableAdjustments)
+                .build());
+
+        if (courtName != null) {
+            map.add("court_name", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Court Name")
+                .dataType("String")
+                .value(courtName)
+                .build());
+        }
+
+        return map;
+    }
+
+    private List<AbstractReportResponse.TableData.Heading> getListOfTableHeadings() {
+        return List.of(
+            StandardReportResponse.TableData.Heading.builder()
+                .id("juror_number")
+                .name("Juror Number")
+                .dataType("String")
+                .headings(null)
+                .build(),
+            StandardReportResponse.TableData.Heading.builder()
+                .id("first_name")
+                .name("First Name")
+                .dataType("String")
+                .headings(null)
+                .build(),
+            StandardReportResponse.TableData.Heading.builder()
+                .id("last_name")
+                .name("Last Name")
+                .dataType("String")
+                .headings(null)
+                .build(),
+            StandardReportResponse.TableData.Heading.builder()
+                .id("pool_number_by_jp")
+                .name("Pool Number")
+                .dataType("String")
+                .headings(null)
+                .build(),
+            StandardReportResponse.TableData.Heading.builder()
+                .id("contact_details")
+                .name("Contact Details")
+                .dataType("List")
+                .headings(List.of(
+                    StandardReportResponse.TableData.Heading.builder()
+                        .id("main_phone")
+                        .name("Main Phone")
+                        .dataType("String")
+                        .headings(null)
+                        .build(),
+                    StandardReportResponse.TableData.Heading.builder()
+                        .id("other_phone")
+                        .name("Other Phone")
+                        .dataType("String")
+                        .headings(null)
+                        .build(),
+                    StandardReportResponse.TableData.Heading.builder()
+                        .id("work_phone")
+                        .name("Work Phone")
+                        .dataType("String")
+                        .headings(null)
+                        .build(),
+                    StandardReportResponse.TableData.Heading.builder()
+                        .id("email")
+                        .name("Email")
+                        .dataType("String")
+                        .headings(null)
+                        .build())
+                ).build(),
+            StandardReportResponse.TableData.Heading.builder()
+                .id("next_attendance_date")
+                .name("Next attendance date")
+                .dataType("LocalDate")
+                .headings(null)
+                .build(),
+            StandardReportResponse.TableData.Heading.builder()
+                .id("juror_reasonable_adjustment_with_message")
+                .name("Reasonable Adjustments")
+                .dataType("List")
+                .headings(List.of(
+                    StandardReportResponse.TableData.Heading.builder()
+                        .id("reasonable_adjustment_code_with_description")
+                        .name("Reasonable Adjustment Code With Description")
+                        .dataType("String")
+                        .headings(null)
+                        .build(),
+                    StandardReportResponse.TableData.Heading.builder()
+                        .id("juror_reasonable_adjustment_message")
+                        .name("Juror Reasonable Adjustment Message")
+                        .dataType("String")
+                        .headings(null)
+                        .build())
+                ).build());
     }
 }
