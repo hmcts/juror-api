@@ -155,12 +155,13 @@ public class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSu
     @Test
     void positivePreProcessQueryTypicalBureau() {
         StandardReportRequest request = new StandardReportRequest();
-        JPAQuery<Tuple> query = mock(JPAQuery.class);
 
         request.setFromDate(LocalDate.of(2024, 1, 1));
         request.setToDate(LocalDate.of(2024, 1, 2));
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(false);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
+
+        JPAQuery<Tuple> query = mock(JPAQuery.class);
         report.preProcessQuery(query, request);
 
         verify(query).where(
