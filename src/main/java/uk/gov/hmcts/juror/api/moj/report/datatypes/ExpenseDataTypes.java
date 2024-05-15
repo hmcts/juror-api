@@ -2,23 +2,21 @@ package uk.gov.hmcts.juror.api.moj.report.datatypes;
 
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.Expressions;
 import lombok.Getter;
-import uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 import uk.gov.hmcts.juror.api.moj.report.IDataType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 @Getter
-@SuppressWarnings("PMD.ArrayIsStoredDirectly")
+@SuppressWarnings({
+    "PMD.ArrayIsStoredDirectly",
+    "LineLength"
+})
 public enum ExpenseDataTypes implements IDataType {
 
     JUROR_NUMBER("Juror Number", String.class,
@@ -26,11 +24,11 @@ public enum ExpenseDataTypes implements IDataType {
         QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 
     PAYMENT_AUDIT_RAW("Payment Audit", String.class,
-        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.fAudit,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.financialAudit,
         QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 
     PAYMENT_AUDIT("Payment Audit", String.class,
-        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.fAudit.prepend(
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.financialAudit.prepend(
             "F"),
         QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 

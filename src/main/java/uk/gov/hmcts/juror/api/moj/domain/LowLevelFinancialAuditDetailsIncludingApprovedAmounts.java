@@ -97,7 +97,7 @@ public class LowLevelFinancialAuditDetailsIncludingApprovedAmounts {
     private Boolean payCash;
 
     @Column(name = "f_audit")
-    private String fAudit;
+    private String financialAudit;
 
     @Column(name = "attendance_audit_number")
     private String attendanceAuditNumber;

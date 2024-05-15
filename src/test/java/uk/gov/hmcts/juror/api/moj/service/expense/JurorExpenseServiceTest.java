@@ -543,6 +543,7 @@ class JurorExpenseServiceTest {
 
         @Test
         @DisplayName("Successfully submit one expense for approval")
+        @SuppressWarnings("LineLength")
         void singleExpenseHappyPath() {
 
             final Appearance appearanceToSubmit = buildTestAppearance(TestConstants.VALID_JUROR_NUMBER,
@@ -579,7 +580,8 @@ class JurorExpenseServiceTest {
                 attendanceDates);
 
             verify(appearanceRepository, times(1))
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(TestConstants.VALID_COURT_LOCATION,
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                    TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
             ArgumentCaptor<List<Appearance>> appearanceArgumentCaptor = ArgumentCaptor.forClass(List.class);
 
@@ -641,7 +643,8 @@ class JurorExpenseServiceTest {
                 attendanceDates);
 
             verify(appearanceRepository, times(1))
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(TestConstants.VALID_COURT_LOCATION,
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                    TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
             verify(jurorExpenseService, times(1))
                 .updateExpenseRatesId(appearanceArgumentCaptor.capture());
@@ -667,7 +670,8 @@ class JurorExpenseServiceTest {
             List<LocalDate> attendanceDates = List.of(LocalDate.of(2024, 1, 1));
 
             doReturn(new ArrayList<Appearance>()).when(appearanceRepository)
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(TestConstants.VALID_COURT_LOCATION,
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                    TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
 
             assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
@@ -677,7 +681,8 @@ class JurorExpenseServiceTest {
                     attendanceDates));
 
             verify(appearanceRepository, times(1))
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(TestConstants.VALID_COURT_LOCATION,
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                    TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
             verify(appearanceRepository, never())
                 .save(Mockito.any());
@@ -3691,9 +3696,11 @@ class JurorExpenseServiceTest {
             List<LocalDate> localDates = List.of(mock(LocalDate.class), mock(LocalDate.class), mock(LocalDate.class));
 
             List<Appearance> appearances = List.of(mock(Appearance.class), mock(Appearance.class));
-            when(appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, localDates))
-                .thenReturn(appearances);
+            when(
+                appearanceRepository
+                    .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                        TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, localDates)
+            ).thenReturn(appearances);
             CombinedExpenseDetailsDto<ExpenseDetailsDto> result = mock(CombinedExpenseDetailsDto.class);
             doReturn(result).when(jurorExpenseService).getExpenses(appearances);
             when(result.getExpenseDetails()).thenReturn(List.of(mock(ExpenseDetailsDto.class),
@@ -3714,9 +3721,12 @@ class JurorExpenseServiceTest {
             List<LocalDate> localDates = List.of(mock(LocalDate.class), mock(LocalDate.class), mock(LocalDate.class));
 
             List<Appearance> appearances = List.of(mock(Appearance.class), mock(Appearance.class));
-            when(appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, localDates))
-                .thenReturn(appearances);
+            when(
+                appearanceRepository
+                    .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                        TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, localDates
+                    )
+            ).thenReturn(appearances);
             CombinedExpenseDetailsDto<ExpenseDetailsDto> result = mock(CombinedExpenseDetailsDto.class);
             doReturn(result).when(jurorExpenseService).getExpenses(appearances);
             when(result.getExpenseDetails()).thenReturn(
@@ -5684,7 +5694,8 @@ class JurorExpenseServiceTest {
                 TestConstants.VALID_JUROR_NUMBER, attendanceDates))
                 .isEqualTo(appearances);
 
-            verify(appearanceRepository, times(1)).findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+            verify(appearanceRepository,
+                times(1)).findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                 TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
             );
         }
@@ -5714,12 +5725,14 @@ class JurorExpenseServiceTest {
                     + "Dates provided");
 
 
-            verify(appearanceRepository, times(1)).findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
-            );
+            verify(appearanceRepository, times(1))
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
+                );
         }
 
         @Test
+        @SuppressWarnings("LineLength")
         void negativeSizeDoNoMatch() {
             List<LocalDate> attendanceDates = List.of(
                 LocalDate.of(2023, 1, 1),
@@ -5729,9 +5742,9 @@ class JurorExpenseServiceTest {
             doReturn(new ArrayList<>(List.of(
                 mockAppearance(LocalDate.of(2023, 1, 1)),
                 mockAppearance(LocalDate.of(2023, 1, 2))
-            ))).when(appearanceRepository).findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
-                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
-            );
+            ))).when(appearanceRepository)
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
+                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates);
 
 
             MojException.NotFound exception = assertThrows(MojException.NotFound.class,

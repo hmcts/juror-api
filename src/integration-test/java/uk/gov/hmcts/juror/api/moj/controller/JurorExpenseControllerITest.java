@@ -1599,12 +1599,12 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
 
         private void verifyExpenseSubmittedForApproval(Appearance appearance, long version) {
-            assertThat(appearance.getFAudit())
+            assertThat(appearance.getFinancialAudit())
                 .as("Financial Audit Details object should be created/associated")
                 .isNotNull();
             FinancialAuditDetails financialAuditDetails =
                 transactionTemplate.execute(status -> financialAuditDetailsRepository.findById(
-                    new FinancialAuditDetails.IdClass(appearance.getFAudit(), appearance.getLocCode())
+                    new FinancialAuditDetails.IdClass(appearance.getFinancialAudit(), appearance.getLocCode())
                 ).orElseThrow());
 
             assertThat(financialAuditDetails.getCreatedOn())
@@ -1640,7 +1640,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
 
         private void verifyExpenseStillInDraft(Appearance appearance) {
-            assertThat(appearance.getFAudit())
+            assertThat(appearance.getFinancialAudit())
                 .as("Financial Audit Details object should not be created/associated")
                 .isNull();
 
@@ -2591,7 +2591,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 }
             )
             void typicalReApproved() throws Exception {
-//                Thread.sleep(Long.MAX_VALUE);
                 ApproveExpenseDto approveExpenseDto = ApproveExpenseDto.builder()
                     .jurorNumber(JUROR_NUMBER)
                     .approvalType(ApproveExpenseDto.ApprovalType.FOR_REAPPROVAL)

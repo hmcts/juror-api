@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
-import uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.ExpenseDataTypes;
 import uk.gov.hmcts.juror.api.moj.report.grouped.groupby.GroupByPaymentType;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
@@ -16,6 +15,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 
 @Component
 public class JurorExpenditureReportMidLevelReport extends AbstractJurorExpenditureReport {
@@ -39,14 +40,15 @@ public class JurorExpenditureReportMidLevelReport extends AbstractJurorExpenditu
             ExpenseDataTypes.CREATED_ON_DATE
         );
         query.orderBy(
-            QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOnDate.asc()
+            lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOnDate.asc()
         );
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                                                         AbstractReportResponse.TableData<GroupedTableData> tableData) {
+    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
+        StandardReportRequest request,
+        AbstractReportResponse.TableData<GroupedTableData> tableData) {
 
         Map<String, AbstractReportResponse.DataTypeValue> headings = super.getHeadings(request, tableData);
 

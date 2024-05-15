@@ -80,7 +80,7 @@ public class Appearance implements Serializable {
     private String locCode;
 
     @JoinColumn(name = "f_audit")
-    private Long fAudit;
+    private Long financialAudit;
 
     @Length(max = 9)
     @Column(name = "pool_number")

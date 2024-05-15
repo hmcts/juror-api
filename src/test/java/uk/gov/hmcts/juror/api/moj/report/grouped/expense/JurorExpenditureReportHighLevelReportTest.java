@@ -13,18 +13,13 @@ import uk.gov.hmcts.juror.api.moj.report.datatypes.ExpenseDataTypes;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -62,9 +57,10 @@ public class JurorExpenditureReportHighLevelReportTest
     }
 
     @Override
-    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(StandardReportRequest request,
-                                                                                        AbstractReportResponse.TableData<GroupedTableData> tableData,
-                                                                                        GroupedTableData data) {
+    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(
+        StandardReportRequest request,
+        AbstractReportResponse.TableData<GroupedTableData> tableData,
+        GroupedTableData data) {
         when(request.getFromDate()).thenReturn(LocalDate.of(2023, 3, 1));
         when(request.getToDate()).thenReturn(LocalDate.of(2023, 3, 2));
 

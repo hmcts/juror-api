@@ -9,7 +9,6 @@ import org.mockito.MockedStatic;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
-import uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.IDataType;
@@ -25,6 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 
 public abstract class AbstractJurorExpenditureReportTestSupport<R extends AbstractGroupedReport>
     extends AbstractGroupedReportTestSupport<R> {
@@ -36,7 +36,7 @@ public abstract class AbstractJurorExpenditureReportTestSupport<R extends Abstra
         boolean includeNested,
         IDataType... dataTypes) {
         super(
-            QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts,
+            lowLevelFinancialAuditDetailsIncludingApprovedAmounts,
             AbstractJurorExpenditureReport.RequestValidator.class,
             new GroupByPaymentType(includeNested),
             dataTypes);
@@ -82,17 +82,17 @@ public abstract class AbstractJurorExpenditureReportTestSupport<R extends Abstra
 
     protected void verifyStandardPreProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         verify(query, times(1)).where(
-            QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.locCode.eq(
+            lowLevelFinancialAuditDetailsIncludingApprovedAmounts.locCode.eq(
                 TestConstants.VALID_COURT_LOCATION));
         verify(query, times(1)).where(
-            QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.type.in(
+            lowLevelFinancialAuditDetailsIncludingApprovedAmounts.type.in(
                 FinancialAuditDetails.Type.APPROVED_BACS,
                 FinancialAuditDetails.Type.APPROVED_CASH,
                 FinancialAuditDetails.Type.REAPPROVED_BACS,
                 FinancialAuditDetails.Type.REAPPROVED_CASH
             ));
         verify(query, times(1)).where(
-            QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOn.between(
+            lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOn.between(
                 LocalDateTime.of(request.getFromDate(), LocalTime.MIN),
                 LocalDateTime.of(request.getToDate(), LocalTime.MAX)));
     }

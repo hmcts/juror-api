@@ -222,13 +222,12 @@ public class FinancialAuditServiceImplTest {
 
             Appearance lastApprovedAppearances1 =
                 mock(Appearance.class);
-            when(lastApprovedAppearances1.getFAudit()).thenReturn(321L);
+            when(lastApprovedAppearances1.getFinancialAudit()).thenReturn(321L);
 
             doReturn(lastApprovedAppearances1).when(financialAuditService)
                 .getPreviousApprovedValue(
                     currentFinancialAuditDetails1,
-                    appearance1
-                );
+                    appearance1);
 
 
             Appearance appearance2 = mock(Appearance.class);
@@ -244,13 +243,12 @@ public class FinancialAuditServiceImplTest {
 
             Appearance lastApprovedAppearances2 =
                 mock(Appearance.class);
-            when(lastApprovedAppearances2.getFAudit()).thenReturn(4321L);
+            when(lastApprovedAppearances2.getFinancialAudit()).thenReturn(4321L);
 
             doReturn(lastApprovedAppearances2).when(financialAuditService)
                 .getPreviousApprovedValue(
                     currentFinancialAuditDetails2,
-                    appearance2
-                );
+                    appearance2);
 
             Appearance appearance3 = mock(Appearance.class);
             when(appearance3.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
@@ -265,14 +263,12 @@ public class FinancialAuditServiceImplTest {
 
             Appearance lastApprovedAppearances3 =
                 mock(Appearance.class);
-            when(lastApprovedAppearances3.getFAudit()).thenReturn(321L);
+            when(lastApprovedAppearances3.getFinancialAudit()).thenReturn(321L);
 
             doReturn(lastApprovedAppearances3).when(financialAuditService)
                 .getPreviousApprovedValue(
                     currentFinancialAuditDetails3,
-                    appearance3
-                );
-
+                    appearance3);
 
             doAnswer(invocation -> invocation.<Appearance>getArgument(0))
                 .when(appearanceRepository).saveAndFlush(any());
@@ -280,7 +276,7 @@ public class FinancialAuditServiceImplTest {
 
             FinancialAuditDetails response = financialAuditService.createFinancialAuditDetail(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_COURT_LOCATION, type,
-                List.of(appearance1, appearance2,appearance3));
+                List.of(appearance1, appearance2, appearance3));
 
             assertThat(response).isEqualTo(auditDetails);
             auditDetails.setId(null);//ID is null when first save gets called

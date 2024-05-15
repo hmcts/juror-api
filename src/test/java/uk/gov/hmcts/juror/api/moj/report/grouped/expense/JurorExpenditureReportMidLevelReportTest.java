@@ -8,7 +8,6 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 import uk.gov.hmcts.juror.api.moj.report.IDataType;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.ExpenseDataTypes;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
@@ -30,6 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 
 public class JurorExpenditureReportMidLevelReportTest
     extends AbstractJurorExpenditureReportTestSupport<JurorExpenditureReportMidLevelReport> {
@@ -56,7 +56,7 @@ public class JurorExpenditureReportMidLevelReportTest
         verifyStandardPreProcessQuery(query, request);
         verify(query, times(1))
             .orderBy(
-                QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOnDate.asc());
+                lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOnDate.asc());
 
         verify(report, times(1)).addGroupBy(
             query,
@@ -67,9 +67,10 @@ public class JurorExpenditureReportMidLevelReportTest
     }
 
     @Override
-    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(StandardReportRequest request,
-                                                                                        AbstractReportResponse.TableData<GroupedTableData> tableData,
-                                                                                        GroupedTableData data) {
+    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(
+        StandardReportRequest request,
+        AbstractReportResponse.TableData<GroupedTableData> tableData,
+        GroupedTableData data) {
         when(request.getFromDate()).thenReturn(LocalDate.of(2023, 3, 1));
         when(request.getToDate()).thenReturn(LocalDate.of(2023, 3, 2));
 

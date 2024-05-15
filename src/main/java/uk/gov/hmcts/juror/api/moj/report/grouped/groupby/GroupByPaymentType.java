@@ -47,10 +47,10 @@ public class GroupByPaymentType implements IReportGroupBy {
     public GroupByResponse getGroupedByResponse() {
         return GroupByResponse.builder()
             .name(ExpenseDataTypes.IS_CASH.name())
-            .nested(includeNested ?
-                GroupByResponse.builder()
-                    .name(ExpenseDataTypes.CREATED_ON_DATE.name())
-                    .build() : null)
+            .nested(includeNested
+                ? GroupByResponse.builder()
+                .name(ExpenseDataTypes.CREATED_ON_DATE.name())
+                .build() : null)
             .build();
     }
 

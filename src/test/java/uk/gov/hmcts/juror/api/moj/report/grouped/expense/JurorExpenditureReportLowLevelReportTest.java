@@ -8,7 +8,6 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.report.IDataType;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.ExpenseDataTypes;
@@ -30,6 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 
 public class JurorExpenditureReportLowLevelReportTest
     extends AbstractJurorExpenditureReportTestSupport<JurorExpenditureReportLowLevelReport> {
@@ -63,9 +63,9 @@ public class JurorExpenditureReportLowLevelReportTest
         verifyStandardPreProcessQuery(query, request);
         verify(query, times(1))
             .orderBy(
-                QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOnDate.asc(),
-                QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.jurorNumber.asc(),
-                QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.fAudit.asc()
+                lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOnDate.asc(),
+                lowLevelFinancialAuditDetailsIncludingApprovedAmounts.jurorNumber.asc(),
+                lowLevelFinancialAuditDetailsIncludingApprovedAmounts.financialAudit.asc()
             );
 
         verify(report, times(1)).addGroupBy(
@@ -80,9 +80,10 @@ public class JurorExpenditureReportLowLevelReportTest
     }
 
     @Override
-    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(StandardReportRequest request,
-                                                                                        AbstractReportResponse.TableData<GroupedTableData> tableData,
-                                                                                        GroupedTableData data) {
+    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(
+        StandardReportRequest request,
+        AbstractReportResponse.TableData<GroupedTableData> tableData,
+        GroupedTableData data) {
 
         when(request.getFromDate()).thenReturn(LocalDate.of(2023, 3, 1));
         when(request.getToDate()).thenReturn(LocalDate.of(2023, 3, 2));
@@ -131,7 +132,6 @@ public class JurorExpenditureReportLowLevelReportTest
         doReturn(groupedTableDataList).when(data).getAllDataItems();
 
         doNothing().when(report).addCourtNameHeader(any(), any());
-
 
 
         Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);

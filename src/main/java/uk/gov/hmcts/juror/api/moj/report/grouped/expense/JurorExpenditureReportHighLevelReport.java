@@ -5,7 +5,6 @@ import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
-import uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.ExpenseDataTypes;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 

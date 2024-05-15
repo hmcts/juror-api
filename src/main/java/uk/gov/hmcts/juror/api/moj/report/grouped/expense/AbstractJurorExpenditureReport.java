@@ -8,7 +8,6 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResp
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
-import uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.IDataType;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.ExpenseDataTypes;
@@ -24,6 +23,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 
 public abstract class AbstractJurorExpenditureReport extends AbstractGroupedReport {
 
@@ -45,7 +46,7 @@ public abstract class AbstractJurorExpenditureReport extends AbstractGroupedRepo
         boolean includeNested,
         IDataType... dataType) {
         super(
-            QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts,
+            lowLevelFinancialAuditDetailsIncludingApprovedAmounts,
             new GroupByPaymentType(includeNested), dataType);
         this.expenseTotalPaidDataType = expenseTotalPaidDataType;
         this.courtLocationService = courtLocationService;
@@ -57,23 +58,24 @@ public abstract class AbstractJurorExpenditureReport extends AbstractGroupedRepo
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(
-            QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.locCode.eq(
+            lowLevelFinancialAuditDetailsIncludingApprovedAmounts.locCode.eq(
                 SecurityUtil.getLocCode()));
         query.where(
-            QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.type.in(
+            lowLevelFinancialAuditDetailsIncludingApprovedAmounts.type.in(
                 FinancialAuditDetails.Type.APPROVED_BACS,
                 FinancialAuditDetails.Type.APPROVED_CASH,
                 FinancialAuditDetails.Type.REAPPROVED_BACS,
                 FinancialAuditDetails.Type.REAPPROVED_CASH
             ));
         query.where(
-            QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOn.between(
+            lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOn.between(
                 request.getFromDate().atTime(LocalTime.MIN), request.getToDate().atTime(LocalTime.MAX)));
     }
 
     @Override
-    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(StandardReportRequest request,
-                                                                         AbstractReportResponse.TableData<GroupedTableData> tableData) {
+    public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
+        StandardReportRequest request,
+        AbstractReportResponse.TableData<GroupedTableData> tableData) {
 
         Map<String, AbstractReportResponse.DataTypeValue> headings = new ConcurrentHashMap<>();
 
@@ -117,9 +119,9 @@ public abstract class AbstractJurorExpenditureReport extends AbstractGroupedRepo
     }
 
     public BigDecimal addTotalHeader(Map<String, AbstractReportResponse.DataTypeValue> headings,
-                                        AbstractReportResponse.TableData<GroupedTableData> tableData,
-                                        String headingToSearchFor,
-                                        String headerId, String headerText) {
+                                     AbstractReportResponse.TableData<GroupedTableData> tableData,
+                                     String headingToSearchFor,
+                                     String headerId, String headerText) {
 
         List<GroupedTableData> dataItems = tableData.getData()
             .getAllDataItemsIfExist(headingToSearchFor);
@@ -134,8 +136,8 @@ public abstract class AbstractJurorExpenditureReport extends AbstractGroupedRepo
     }
 
     public BigDecimal addTotalHeader(Map<String, AbstractReportResponse.DataTypeValue> headings,
-                                        BigDecimal total,
-                                        String headerId, String headerText) {
+                                     BigDecimal total,
+                                     String headerId, String headerText) {
         headings.put(headerId, GroupedReportResponse.DataTypeValue.builder()
             .displayName(headerText)
             .dataType(String.class.getSimpleName())

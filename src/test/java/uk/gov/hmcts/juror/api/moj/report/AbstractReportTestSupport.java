@@ -197,7 +197,7 @@ public abstract class AbstractReportTestSupport<
         if (hasStandardPoolHeaders) {
             standardPoolMappings.putAll(getStandardPoolHeaders());
         }
-        assertThat(actualMap).hasSize(expectedData.size());
+        assertThat(actualMap).hasSize(standardPoolMappings.size());
         assertThat(actualMap).containsExactlyInAnyOrderEntriesOf(standardPoolMappings);
         if (hasStandardPoolHeaders) {
             verify(report, times(1)).loadStandardPoolHeaders(request, true, true);

@@ -5,10 +5,11 @@ import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
-import uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.ExpenseDataTypes;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
+
+import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 
 @Component
 public class JurorExpenditureReportLowLevelReport extends AbstractJurorExpenditureReport {
@@ -34,9 +35,9 @@ public class JurorExpenditureReportLowLevelReport extends AbstractJurorExpenditu
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         super.preProcessQuery(query, request);
         query.orderBy(
-            QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOnDate.asc(),
-            QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.jurorNumber.asc(),
-            QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.fAudit.asc()
+            lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOnDate.asc(),
+            lowLevelFinancialAuditDetailsIncludingApprovedAmounts.jurorNumber.asc(),
+            lowLevelFinancialAuditDetailsIncludingApprovedAmounts.financialAudit.asc()
         );
 
         addGroupBy(

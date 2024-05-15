@@ -23,7 +23,6 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
@@ -68,6 +67,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
+import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 
 @SuppressWarnings({
     "unchecked",
@@ -140,13 +140,13 @@ class AbstractReportTest {
                 .get(QJuror.juror);
 
             assertThat(map.containsKey(
-                QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts
+                lowLevelFinancialAuditDetailsIncludingApprovedAmounts
             )).isTrue();
             assertThat(map.get(
-                QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts))
+                lowLevelFinancialAuditDetailsIncludingApprovedAmounts))
                 .isEqualTo(
                     new Predicate[]{
-                        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.jurorNumber
+                        lowLevelFinancialAuditDetailsIncludingApprovedAmounts.jurorNumber
                             .eq(QJuror.juror.jurorNumber)}
                 );
         }

@@ -67,9 +67,9 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
                 lastApprovedAuditNumber = getPreviousApprovedValue(
                     findFromAppearance(appearance),
                     appearance
-                ).getFAudit();
+                ).getFinancialAudit();
             }
-            appearance.setFAudit(financialAuditDetails.getId());
+            appearance.setFinancialAudit(financialAuditDetails.getId());
             Appearance savedAppearance = appearanceRepository.saveAndFlush(appearance);
             financialAuditDetailsAppearances.add(
                 new FinancialAuditDetailsAppearances(
@@ -144,7 +144,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
 
     @Override
     public FinancialAuditDetails findFromAppearance(Appearance appearance) {
-        return getFinancialAuditDetails(appearance.getFAudit(), appearance.getLocCode());
+        return getFinancialAuditDetails(appearance.getFinancialAudit(), appearance.getLocCode());
     }
 
 
@@ -164,7 +164,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
                 financialAuditDetails, appearance)
             .orElseThrow(
                 () -> new MojException.NotFound("No previous appearance found for appearance: "
-                    + appearance.getFAudit()
+                    + appearance.getFinancialAudit()
                     + " locCode: " + appearance.getLocCode(),
                     null));
     }

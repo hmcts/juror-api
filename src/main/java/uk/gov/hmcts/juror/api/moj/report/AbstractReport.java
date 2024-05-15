@@ -20,7 +20,6 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
@@ -48,6 +47,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts;
+
 @Getter
 @SuppressWarnings({
     "PMD.LawOfDemeter",
@@ -64,8 +65,10 @@ public abstract class AbstractReport<T> {
             QJurorPool.jurorPool, new Predicate[]{QJuror.juror.eq(QJurorPool.jurorPool.juror)},
             QAppearance.appearance, new Predicate[]{QJuror.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber)},
             QPanel.panel, new Predicate[]{QPanel.panel.juror.eq(QJuror.juror)},
-            QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts, new Predicate[]{
-                QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.jurorNumber.eq(QJuror.juror.jurorNumber)
+            lowLevelFinancialAuditDetailsIncludingApprovedAmounts,
+            new Predicate[]{
+                lowLevelFinancialAuditDetailsIncludingApprovedAmounts
+                    .jurorNumber.eq(QJuror.juror.jurorNumber)
             }
         ));
         CLASS_TO_JOIN.put(QJurorPool.jurorPool, Map.of(
@@ -459,7 +462,7 @@ public abstract class AbstractReport<T> {
 
 
     public void addCourtNameHeader(Map<String, AbstractReportResponse.DataTypeValue> headings,
-                                      CourtLocation courtLocation) {
+                                   CourtLocation courtLocation) {
         Map.Entry<String, GroupedReportResponse.DataTypeValue> entry = getCourtNameHeader(courtLocation);
         headings.put(entry.getKey(), entry.getValue());
     }

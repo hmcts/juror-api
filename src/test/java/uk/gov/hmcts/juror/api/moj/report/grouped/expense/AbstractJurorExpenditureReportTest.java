@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings("unchecked")
 class AbstractJurorExpenditureReportTest {
 
-    private final static String EXPENSE_TOTAL_PAID_DATA_TYPE_ID = "expense_total_paid_data_type_id";
+    private static final String EXPENSE_TOTAL_PAID_DATA_TYPE_ID = "expense_total_paid_data_type_id";
 
     private GroupedTableData mockGroupedTableData(BigDecimal value) {
         GroupedTableData groupedTableData = mock(GroupedTableData.class);
@@ -63,7 +63,7 @@ class AbstractJurorExpenditureReportTest {
             "Header Text"
         )).isEqualTo(expectedValue);
 
-        verify(report,times(1))
+        verify(report, times(1))
             .addTotalHeader(map, expectedValue, "header_id", "Header Text");
 
     }
