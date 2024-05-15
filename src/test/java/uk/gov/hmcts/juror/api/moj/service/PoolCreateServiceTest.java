@@ -227,18 +227,21 @@ public class PoolCreateServiceTest {
 
         //CREATE POOL MEMBER
         JurorPool jurorPool = createValidJurorPool();
-        Mockito.when(jurorRepository.saveAndFlush(Mockito.any())).thenReturn(jurorPool.getJuror());
-        Mockito.when(jurorPoolRepository.saveAndFlush(Mockito.any())).thenReturn(jurorPool);
-        Mockito.when(poolRequestRepository.saveAndFlush(Mockito.any()))
+        List<JurorPool> jurorPoolList = List.of(jurorPool);
+        List<Juror> jurorList = List.of(jurorPool.getJuror());
+        Mockito.when(jurorRepository.saveAll(Mockito.any())).thenReturn(jurorList);
+        Mockito.when(jurorPoolRepository.saveAll(Mockito.any())).thenReturn(List.of(jurorPool));
+        Mockito.when(poolRequestRepository.save(Mockito.any()))
             .thenReturn(createValidPoolRequest("415220110"));
 
         //UPDATE POOL HISTORY
         Mockito.when(poolHistoryRepository.save(Mockito.any())).thenReturn(createPoolHistory());
 
         //UPDATE JUROR HISTORY
-        Mockito.when(jurorHistoryRepository.save(Mockito.any())).thenReturn(createValidJurorHist());
+        Mockito.when(jurorHistoryRepository.saveAll(Mockito.any())).thenReturn(List.of(createValidJurorHist()));
 
-        Mockito.when(jurorHistoryRepository.save(Mockito.any())).thenReturn(createValidJurorHist());
+        Mockito.when(jurorHistoryRepository.saveAll(Mockito.any()))
+            .thenReturn((List.of(createValidJurorHist())));
 
         poolCreateService.createPool(payload, poolCreateRequestDto);
 
@@ -252,10 +255,10 @@ public class PoolCreateServiceTest {
             .markVoterAsSelected(Mockito.any(), Mockito.any());
         Mockito.verify(poolMemberSequenceService, Mockito.times(jurorNumber.size())).leftPadInteger(1);
         Mockito.verify(jurorStatusRepository, Mockito.times(jurorNumber.size())).findById(1);
-        Mockito.verify(jurorPoolRepository, Mockito.times(jurorNumber.size())).saveAndFlush(Mockito.any());
-        Mockito.verify(poolRequestRepository, Mockito.times(1)).saveAndFlush(Mockito.any());
+        Mockito.verify(jurorPoolRepository, Mockito.times(1)).saveAll(Mockito.any());
+        Mockito.verify(poolRequestRepository, Mockito.times(1)).save(Mockito.any());
         Mockito.verify(poolHistoryRepository, Mockito.times(1)).save(Mockito.any());
-        Mockito.verify(jurorHistoryRepository, Mockito.times(1)).save(Mockito.any());
+        Mockito.verify(jurorHistoryRepository, Mockito.times(1)).saveAll(Mockito.any());
     }
 
     @Test

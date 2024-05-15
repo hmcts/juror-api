@@ -44,7 +44,6 @@ import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 import uk.gov.hmcts.juror.api.moj.service.CompleteServiceServiceImpl;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -324,7 +323,7 @@ class TrialServiceImplTest {
             }
 
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
-                LocalDate.now())).thenReturn(Optional.of(appearance));
+                now())).thenReturn(Optional.of(appearance));
         }
 
         trialService.returnJury(payload, trialNumber, "415",
@@ -352,7 +351,7 @@ class TrialServiceImplTest {
             Appearance appearance = createAppearance(panel.getJurorNumber());
             appearance.setTimeIn(null);
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
-                LocalDate.now())).thenReturn(Optional.of(appearance));
+                now())).thenReturn(Optional.of(appearance));
         }
 
         trialService
@@ -378,7 +377,7 @@ class TrialServiceImplTest {
             createJurorPool(panel.getJuror(), panel.getTrial().getCourtLocation(), IJurorStatus.JUROR);
             Appearance appearance = createAppearance(panel.getJurorNumber());
             when(appearanceRepository.findByJurorNumberAndAttendanceDate(panel.getJurorNumber(),
-                LocalDate.now())).thenReturn(Optional.of(appearance));
+                now())).thenReturn(Optional.of(appearance));
         }
 
         trialService.returnJury(payload, trialNumber, "415",
@@ -590,7 +589,9 @@ class TrialServiceImplTest {
     public List<Panel> createPanelMembers(int totalMembers, PanelResult panelResult, String trialNumber, int status) {
         List<Panel> panelList = new ArrayList<>();
         String jurorNumber = "1111111%02d";
-        for (int i = 0; i < totalMembers; i++) {
+        for (int i = 0;
+             i < totalMembers;
+             i++) {
             Panel temp = createSinglePanelData(panelResult, trialNumber, status, String.format(jurorNumber, i + 1));
             temp.getJuror().setJurorNumber(jurorNumber.formatted(i + 1));
             temp.setResult(panelResult);
