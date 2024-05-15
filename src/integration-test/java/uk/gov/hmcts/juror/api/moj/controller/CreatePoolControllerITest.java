@@ -1533,7 +1533,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/pool-management/create_voters_disqualified_only.sql",
         "/db/CreatePoolController_createPool.sql"})
-    public void createPool_NotEnoughJurors_OnlyDisqualified() throws Exception {
+    public void createPool_NotEnoughVoters_OnlyDisqualified() throws Exception {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
