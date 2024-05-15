@@ -38,11 +38,12 @@ public class JurorAmendmentByDateReport extends AbstractJurorAmendmentReport {
 
         SecurityUtil.validateCanAccessRole(Role.SENIOR_JUROR_OFFICER);
 
-        response.setTableData(getTableDataAudits(
+        AbstractReportResponse.TableData<List<JurorAmendmentReportRow>> tableData = getTableDataAudits(true,
             jurorAuditService
                 .getAllAuditsChangedBetweenAndHasCourt(request.getFromDate(), request.getToDate(),
                     SecurityUtil.getCourts())
-        ));
+        );
+        response.setTableData(tableData);
         response.setHeadings(getHeadings(request));
         return response;
     }

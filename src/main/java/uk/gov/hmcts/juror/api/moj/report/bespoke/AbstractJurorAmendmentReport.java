@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -101,14 +100,18 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
 
     protected AbstractReportResponse.TableData<List<JurorAmendmentReportRow>>
     getTableDataAudits(List<Juror> jurorAudits) {
+        return getTableDataAudits(false, jurorAudits);
+    }
+
+    protected AbstractReportResponse.TableData<List<JurorAmendmentReportRow>>
+    getTableDataAudits(boolean includeOneAuditEitherSide, List<Juror> jurorAudits) {
         Map<String, List<Juror>> jurorNumberToJurorMap = jurorAudits
             .stream()
             .collect(Collectors.groupingBy(Juror::getJurorNumber));
 
         List<JurorAmendmentReportRow> changedData = new ArrayList<>();
-        jurorNumberToJurorMap.forEach((jurorNumber, jurors) -> {
-            changedData.addAll(getChangesFromJurorAudits(jurorNumber, jurors));
-        });
+        jurorNumberToJurorMap.forEach((jurorNumber, jurors) -> changedData.addAll(
+            getChangesFromJurorAudits(includeOneAuditEitherSide, jurorNumber, jurors)));
         changedData.sort(Comparator.comparing(JurorAmendmentReportRow::getChangedOn).reversed());
         StandardReportResponse.TableData<List<JurorAmendmentReportRow>> tableData =
             new StandardReportResponse.TableData<>();
@@ -150,17 +153,33 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
         return tableData;
     }
 
-    private Collection<JurorAmendmentReportRow> getChangesFromJurorAudits(String jurorNumber, List<Juror> jurors) {
+    private Collection<JurorAmendmentReportRow> getChangesFromJurorAudits(boolean includeOneAuditEitherSide,
+                                                                          String jurorNumber,
+                                                                          List<Juror> jurors) {
         jurors.sort(Comparator.comparing(Juror::getLastUpdate).reversed());
+        if (jurors.isEmpty()) {
+            return List.of();
+        }
 
-        Juror currentJurorValue = jurorService.getJurorFromJurorNumber(jurorNumber);
+        Juror currentJurorValue = null;
+        if (includeOneAuditEitherSide) {
+            Juror previousJurorAudit = jurorAuditService.getPreviousJurorAudit(jurors.get(jurors.size() - 1));
+            if (previousJurorAudit != null) {
+                jurors.add(previousJurorAudit);
+            }
+        } else {
+            currentJurorValue = jurorService.getJurorFromJurorNumber(jurorNumber);
+        }
 
         List<JurorAmendmentReportRow> changes = new ArrayList<>();
         for (Juror juror : jurors) {
+            if (currentJurorValue == null) {
+                currentJurorValue = juror;
+                continue;
+            }
             changes.addAll(Changed.getChanges(userService, currentJurorValue, juror));
             currentJurorValue = juror;
         }
-
         return changes;
     }
 

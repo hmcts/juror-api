@@ -10,4 +10,8 @@ public interface JurorAuditService {
 
     List<Juror> getAllAuditsChangedBetweenAndHasCourt(LocalDate fromDate, LocalDate toDate,
                                                      List<String> locCodes);
+
+    Juror getNextJurorAudit(Juror juror);
+
+    Juror getPreviousJurorAudit(Juror juror);
 }

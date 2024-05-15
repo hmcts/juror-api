@@ -36,7 +36,7 @@ public class JurorAuditServiceImpl implements JurorAuditService {
 
     @Override
     public List<Juror> getAllAuditsChangedBetweenAndHasCourt(LocalDate fromDate, LocalDate toDate,
-                                                            List<String> locCodes) {
+                                                             List<String> locCodes) {
         List<Juror> jurors = (List<Juror>) AuditReaderFactory.get(entityManager)
             .createQuery()
             .forRevisionsOfEntity(Juror.class, true, true)
@@ -56,5 +56,37 @@ public class JurorAuditServiceImpl implements JurorAuditService {
             .stream()
             .filter(juror -> allowedJurorNumbers.contains(juror.getJurorNumber()))
             .toList();
+    }
+
+    @Override
+    public Juror getNextJurorAudit(Juror juror) {
+        List<Juror> jurors = (List<Juror>) AuditReaderFactory.get(entityManager)
+            .createQuery()
+            .forRevisionsOfEntity(Juror.class, true, true)
+            .add(AuditEntity.property("jurorNumber").eq(juror.getJurorNumber()))
+            .add(AuditEntity.property("lastUpdate").gt(juror.getLastUpdate()))
+            .addOrder(AuditEntity.property("lastUpdate").asc())
+            .setMaxResults(1)
+            .getResultList();
+        if (jurors.isEmpty()) {
+            return null;
+        }
+        return jurors.get(0);
+    }
+
+    @Override
+    public Juror getPreviousJurorAudit(Juror juror) {
+        List<Juror> jurors = (List<Juror>) AuditReaderFactory.get(entityManager)
+            .createQuery()
+            .forRevisionsOfEntity(Juror.class, true, true)
+            .add(AuditEntity.property("jurorNumber").eq(juror.getJurorNumber()))
+            .add(AuditEntity.property("lastUpdate").lt(juror.getLastUpdate()))
+            .addOrder(AuditEntity.property("lastUpdate").desc())
+            .setMaxResults(1)
+            .getResultList();
+        if (jurors.isEmpty()) {
+            return null;
+        }
+        return jurors.get(0);
     }
 }
