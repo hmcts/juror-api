@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.report.grouped;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
@@ -59,6 +60,11 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
     public void beforeEach() {
         this.courtLocationRepository = mock(CourtLocationRepository.class);
         super.beforeEach();
+    }
+
+    @AfterEach
+    public void afterEach() {
+        TestUtils.afterAll();
     }
 
     @Override
@@ -122,8 +128,6 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
                                                          IJurorStatus.JUROR));
 
         verifyNoMoreInteractions(query);
-
-        TestUtils.afterAll();
     }
 
     @Override
