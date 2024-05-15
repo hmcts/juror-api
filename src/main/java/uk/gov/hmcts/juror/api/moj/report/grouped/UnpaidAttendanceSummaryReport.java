@@ -59,7 +59,7 @@ public class UnpaidAttendanceSummaryReport extends AbstractGroupedReport {
             QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate())
                 .and(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_ENTERED))
                 .or(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_EDITED)
-                .and(QAppearance.appearance.isDraftExpense.isFalse())));
+                    .and(QAppearance.appearance.isDraftExpense.isFalse())));
         query.where(QAppearance.appearance.locCode.in(SecurityUtil.getCourts()));
         query.orderBy(QAppearance.appearance.poolNumber.asc(), QJuror.juror.jurorNumber.asc());
         addGroupBy(query, DataType.JUROR_NUMBER, DataType.POOL_NUMBER_BY_APPEARANCE);

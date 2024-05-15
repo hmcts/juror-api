@@ -9,13 +9,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.juror.domain.QPool;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
-import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -93,7 +91,7 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
             QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate())
                 .and(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_ENTERED))
                 .or(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_EDITED)
-                .and(QAppearance.appearance.isDraftExpense.isFalse())));
+                    .and(QAppearance.appearance.isDraftExpense.isFalse())));
         verify(query, times(1)).where(QAppearance.appearance.locCode.in(SecurityUtil.getCourts()));
 
         verify(report, times(1)).addGroupBy(query,
