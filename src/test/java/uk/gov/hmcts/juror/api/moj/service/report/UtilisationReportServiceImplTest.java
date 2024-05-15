@@ -4,6 +4,8 @@ import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -61,113 +63,118 @@ class UtilisationReportServiceImplTest {
         }
     }
 
-    @Test
-    @SneakyThrows
-    void viewDailyUtilisationReportNoResultsAndValidHeadings() {
+    @Nested
+    @DisplayName("Daily Utilisation report tests")
+    class DailyUtilisationTests {
 
-        final String locCode = "415";
-        final LocalDate reportFromDate = LocalDate.of(2024, 4, 20);
-        final LocalDate reportToDate = LocalDate.of(2024, 5, 13);
+        @Test
+        @SneakyThrows
+        void viewDailyUtilisationReportNoResultsAndValidHeadings() {
 
-        CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setName("Test Court");
-        courtLocation.setLocCode(locCode);
-        courtLocation.setOwner("415");
-        when(courtLocationRepository.findById(locCode))
-            .thenReturn(Optional.of(courtLocation));
+            final String locCode = "415";
+            final LocalDate reportFromDate = LocalDate.of(2024, 4, 20);
+            final LocalDate reportToDate = LocalDate.of(2024, 5, 13);
 
-        mockCurrentUser(locCode);
+            CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setName("Test Court");
+            courtLocation.setLocCode(locCode);
+            courtLocation.setOwner("415");
+            when(courtLocationRepository.findById(locCode))
+                .thenReturn(Optional.of(courtLocation));
 
-        when(jurorRepository.callDailyUtilStats(locCode, reportFromDate, reportToDate))
-            .thenReturn(List.of());
+            mockCurrentUser(locCode);
 
-        DailyUtilisationReportResponse response = utilisationReportService.viewDailyUtilisationReport(locCode,
-            reportFromDate,
-            reportToDate);
+            when(jurorRepository.callDailyUtilStats(locCode, reportFromDate, reportToDate))
+                .thenReturn(List.of());
 
-        assertThat(response.getHeadings()).isNotNull();
-        Map<String, AbstractReportResponse.DataTypeValue> headings = response.getHeadings();
+            DailyUtilisationReportResponse response = utilisationReportService.viewDailyUtilisationReport(locCode,
+                reportFromDate,
+                reportToDate);
 
-        Assertions.assertThat(headings.get("date_from")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
-            .displayName("Date from")
-            .dataType("LocalDate")
-            .value("2024-04-20")
-            .build());
-        assertThat(headings.get("date_to")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
-            .displayName("Date to")
-            .dataType("LocalDate")
-            .value("2024-05-13")
-            .build());
-        assertThat(headings.get("report_created")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
-            .displayName("Report created")
-            .dataType("LocalDate")
-            .value(LocalDate.now().toString())
-            .build());
-        assertThat(headings.get("court_name")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
-            .displayName("Court name")
-            .dataType("String")
-            .value("Test Court")
-            .build());
+            assertThat(response.getHeadings()).isNotNull();
+            Map<String, AbstractReportResponse.DataTypeValue> headings = response.getHeadings();
 
-        AbstractReportResponse.DataTypeValue timeCreated = headings.get("time_created");
-        assertThat(timeCreated.getDisplayName()).isEqualTo("Time created");
-        assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
-        LocalDateTime createdTime = LocalDateTime.parse((String) timeCreated.getValue(),
-            DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
+            Assertions.assertThat(headings.get("date_from")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Date from")
+                .dataType("LocalDate")
+                .value("2024-04-20")
+                .build());
+            assertThat(headings.get("date_to")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Date to")
+                .dataType("LocalDate")
+                .value("2024-05-13")
+                .build());
+            assertThat(headings.get("report_created")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Report created")
+                .dataType("LocalDate")
+                .value(LocalDate.now().toString())
+                .build());
+            assertThat(headings.get("court_name")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Court name")
+                .dataType("String")
+                .value("Test Court")
+                .build());
 
-        assertThat(response.getTableData()).isNotNull();
-        DailyUtilisationReportResponse.TableData tableData = response.getTableData();
-        assertThat(tableData.getHeadings()).isNotNull();
-        Assertions.assertThat(tableData.getHeadings()).hasSize(6);
+            AbstractReportResponse.DataTypeValue timeCreated = headings.get("time_created");
+            assertThat(timeCreated.getDisplayName()).isEqualTo("Time created");
+            assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
+            LocalDateTime createdTime = LocalDateTime.parse((String) timeCreated.getValue(),
+                DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
 
-        DailyUtilisationReportResponse.TableData.TableHeading[] expectedHeadingsArray =
-            DailyUtilisationReportResponse.TableData.TableHeading.values();
-        for (int i = 0;
-             i < expectedHeadingsArray.length;
-             i++) {
-            DailyUtilisationReportResponse.TableData.TableHeading expectedHeading = expectedHeadingsArray[i];
-            DailyUtilisationReportResponse.TableData.Heading actualHeading = tableData.getHeadings().get(i);
-            assertThat(actualHeading.getId()).isEqualTo(expectedHeading);
-            assertThat(actualHeading.getName()).isEqualTo(expectedHeading.getDisplayName());
-            assertThat(actualHeading.getDataType()).isEqualTo(expectedHeading.getDataType());
+            assertThat(response.getTableData()).isNotNull();
+            DailyUtilisationReportResponse.TableData tableData = response.getTableData();
+            assertThat(tableData.getHeadings()).isNotNull();
+            Assertions.assertThat(tableData.getHeadings()).hasSize(6);
+
+            DailyUtilisationReportResponse.TableData.TableHeading[] expectedHeadingsArray =
+                DailyUtilisationReportResponse.TableData.TableHeading.values();
+            for (int i = 0;
+                 i < expectedHeadingsArray.length;
+                 i++) {
+                DailyUtilisationReportResponse.TableData.TableHeading expectedHeading = expectedHeadingsArray[i];
+                DailyUtilisationReportResponse.TableData.Heading actualHeading = tableData.getHeadings().get(i);
+                assertThat(actualHeading.getId()).isEqualTo(expectedHeading);
+                assertThat(actualHeading.getName()).isEqualTo(expectedHeading.getDisplayName());
+                assertThat(actualHeading.getDataType()).isEqualTo(expectedHeading.getDataType());
+            }
+
+            Assertions.assertThat(tableData.getWeeks()).isEmpty();
+            assertThat(tableData.getOverallTotalJurorWorkingDays()).isZero();
+            assertThat(tableData.getOverallTotalSittingDays()).isZero();
+            assertThat(tableData.getOverallTotalAttendanceDays()).isZero();
+            assertThat(tableData.getOverallTotalNonAttendanceDays()).isZero();
+            assertThat(tableData.getOverallTotalUtilisation()).isZero();
+
+            verify(courtLocationRepository, times(1)).findById(locCode);
+            verify(jurorRepository, times(1)).callDailyUtilStats(locCode, reportFromDate, reportToDate);
+
         }
 
-        Assertions.assertThat(tableData.getWeeks()).isEmpty();
-        assertThat(tableData.getOverallTotalJurorWorkingDays()).isZero();
-        assertThat(tableData.getOverallTotalSittingDays()).isZero();
-        assertThat(tableData.getOverallTotalAttendanceDays()).isZero();
-        assertThat(tableData.getOverallTotalNonAttendanceDays()).isZero();
-        assertThat(tableData.getOverallTotalUtilisation()).isZero();
+        @Test
+        void viewDailyUtilisationReportInvalidCourtLocation() {
 
-        verify(courtLocationRepository, times(1)).findById(locCode);
-        verify(jurorRepository, times(1)).callDailyUtilStats(locCode, reportFromDate, reportToDate);
+            final String locCode = "416";
+            final LocalDate reportFromDate = LocalDate.of(2024, 4, 20);
+            final LocalDate reportToDate = LocalDate.of(2024, 5, 13);
 
-    }
+            CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setName("Test Court");
+            courtLocation.setLocCode(locCode);
+            courtLocation.setOwner("416");
+            when(courtLocationRepository.findById(locCode))
+                .thenReturn(Optional.of(courtLocation));
 
-    @Test
-    void viewDailyUtilisationReportInvalidCourtLocation() {
+            mockCurrentUser("415");
 
-        final String locCode = "416";
-        final LocalDate reportFromDate = LocalDate.of(2024, 4, 20);
-        final LocalDate reportToDate = LocalDate.of(2024, 5, 13);
+            assertThatExceptionOfType(MojException.Forbidden.class)
+                .isThrownBy(() -> utilisationReportService.viewDailyUtilisationReport(locCode, reportFromDate,
+                    reportToDate));
 
-        CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setName("Test Court");
-        courtLocation.setLocCode(locCode);
-        courtLocation.setOwner("416");
-        when(courtLocationRepository.findById(locCode))
-            .thenReturn(Optional.of(courtLocation));
+            verify(courtLocationRepository, times(1)).findById(locCode);
+            verifyNoInteractions(jurorRepository);
 
-        mockCurrentUser("415");
-
-        assertThatExceptionOfType(MojException.Forbidden.class)
-            .isThrownBy(() -> utilisationReportService.viewDailyUtilisationReport(locCode, reportFromDate,
-                reportToDate));
-
-        verify(courtLocationRepository, times(1)).findById(locCode);
-        verifyNoInteractions(jurorRepository);
-
+        }
     }
 
 
