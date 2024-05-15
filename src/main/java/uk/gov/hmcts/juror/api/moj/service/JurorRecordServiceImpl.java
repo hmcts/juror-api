@@ -27,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
@@ -1072,7 +1073,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
-    public void updatePncStatus(final String jurorNumber, final PoliceCheck policeCheck) {
+    public PoliceCheckStatusDto updatePncStatus(final String jurorNumber, final PoliceCheck policeCheck) {
         log.info("Attempting to update PNC check status for juror {} to be {}", jurorNumber, policeCheck);
         final JurorPool jurorPool = JurorPoolUtils.getLatestActiveJurorPoolRecord(jurorPoolRepository, jurorNumber);
         final Juror juror = jurorPool.getJuror();
@@ -1081,7 +1082,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         final PoliceCheck newPoliceCheckValue = PoliceCheck.getEffectiveValue(oldPoliceCheckValue, policeCheck);
         if (oldPoliceCheckValue == newPoliceCheckValue) {
             log.debug("Skipping PNC check update for juror {} as new value equals existing value", jurorNumber);
-            return;//If both are the same no point continuing
+            return new PoliceCheckStatusDto(policeCheck);//If both are the same no point continuing
         }
         juror.setPoliceCheck(newPoliceCheckValue);
 
@@ -1119,6 +1120,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
         jurorPoolRepository.save(jurorPool);
         jurorRepository.save(juror);
+        return new PoliceCheckStatusDto(newPoliceCheckValue);
     }
 
     @Override
