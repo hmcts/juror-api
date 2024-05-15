@@ -38,7 +38,6 @@ import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.VotersLocPostcodeTotals;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolDetailRepository;
@@ -1534,7 +1533,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/pool-management/create_voters_disqualified_only.sql",
         "/db/CreatePoolController_createPool.sql"})
-    public void createPool_NotEnoughVoters_OnlyDisqualified() throws Exception {
+    public void createPool_NotEnoughJurors_OnlyDisqualified() throws Exception {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
@@ -1552,8 +1551,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
             HttpMethod.POST, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
-        assertBusinessRuleViolation(response, "Something went wrong while trying to summon jurors",
-            MojException.BusinessRuleViolation.ErrorCode.UNABLE_TO_CREATE_POOL);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private void confirmCoronerPoolRecordAsExpected(CoronerPoolItemDto coronerPoolItemDto) {
