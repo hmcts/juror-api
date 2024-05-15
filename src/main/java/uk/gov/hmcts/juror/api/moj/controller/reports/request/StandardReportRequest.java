@@ -44,7 +44,7 @@ public class StandardReportRequest {
         "PersonAttendingSummaryReport",
         //Grouped
         "PostponedListByDateReport",
-        "ReasonableAdjustmentsReport"
+        "ReasonableAdjustmentsReport",
         "PersonAttendingDetailReport"
     })
     private String reportType;
