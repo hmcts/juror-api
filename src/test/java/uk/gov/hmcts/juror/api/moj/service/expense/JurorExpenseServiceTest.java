@@ -568,7 +568,7 @@ class JurorExpenseServiceTest {
 
 
             doReturn(List.of(appearanceToSubmit)).when(appearanceRepository)
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                     TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER,
                     attendanceDates);
@@ -579,7 +579,7 @@ class JurorExpenseServiceTest {
                 attendanceDates);
 
             verify(appearanceRepository, times(1))
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(TestConstants.VALID_COURT_LOCATION,
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
             ArgumentCaptor<List<Appearance>> appearanceArgumentCaptor = ArgumentCaptor.forClass(List.class);
 
@@ -630,7 +630,7 @@ class JurorExpenseServiceTest {
                 LocalDate.of(2024, 1, 2));
             doReturn(List.of(appearanceToSubmit1, appearanceToSubmit2))
                 .when(appearanceRepository)
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                     TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER,
                     attendanceDates);
 
@@ -641,7 +641,7 @@ class JurorExpenseServiceTest {
                 attendanceDates);
 
             verify(appearanceRepository, times(1))
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(TestConstants.VALID_COURT_LOCATION,
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
             verify(jurorExpenseService, times(1))
                 .updateExpenseRatesId(appearanceArgumentCaptor.capture());
@@ -667,7 +667,7 @@ class JurorExpenseServiceTest {
             List<LocalDate> attendanceDates = List.of(LocalDate.of(2024, 1, 1));
 
             doReturn(new ArrayList<Appearance>()).when(appearanceRepository)
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(TestConstants.VALID_COURT_LOCATION,
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
 
             assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
@@ -677,7 +677,7 @@ class JurorExpenseServiceTest {
                     attendanceDates));
 
             verify(appearanceRepository, times(1))
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(TestConstants.VALID_COURT_LOCATION,
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
             verify(appearanceRepository, never())
                 .save(Mockito.any());
@@ -3691,7 +3691,7 @@ class JurorExpenseServiceTest {
             List<LocalDate> localDates = List.of(mock(LocalDate.class), mock(LocalDate.class), mock(LocalDate.class));
 
             List<Appearance> appearances = List.of(mock(Appearance.class), mock(Appearance.class));
-            when(appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+            when(appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                 TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, localDates))
                 .thenReturn(appearances);
             CombinedExpenseDetailsDto<ExpenseDetailsDto> result = mock(CombinedExpenseDetailsDto.class);
@@ -3704,7 +3704,7 @@ class JurorExpenseServiceTest {
                 .isEqualTo(result);
 
             verify(appearanceRepository, times(1))
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                     TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, localDates);
             verify(jurorExpenseService, times(1)).getExpenses(appearances);
         }
@@ -3714,7 +3714,7 @@ class JurorExpenseServiceTest {
             List<LocalDate> localDates = List.of(mock(LocalDate.class), mock(LocalDate.class), mock(LocalDate.class));
 
             List<Appearance> appearances = List.of(mock(Appearance.class), mock(Appearance.class));
-            when(appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+            when(appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                 TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, localDates))
                 .thenReturn(appearances);
             CombinedExpenseDetailsDto<ExpenseDetailsDto> result = mock(CombinedExpenseDetailsDto.class);
@@ -5677,14 +5677,14 @@ class JurorExpenseServiceTest {
                 mockAppearance(LocalDate.of(2023, 1, 3))
             ));
             doReturn(appearances).when(appearanceRepository)
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                     TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates);
 
             assertThat(jurorExpenseService.getAppearances(TestConstants.VALID_COURT_LOCATION,
                 TestConstants.VALID_JUROR_NUMBER, attendanceDates))
                 .isEqualTo(appearances);
 
-            verify(appearanceRepository, times(1)).findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+            verify(appearanceRepository, times(1)).findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                 TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
             );
         }
@@ -5698,7 +5698,7 @@ class JurorExpenseServiceTest {
             );
 
             doReturn(List.of()).when(appearanceRepository)
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                     TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates);
 
 
@@ -5714,7 +5714,7 @@ class JurorExpenseServiceTest {
                     + "Dates provided");
 
 
-            verify(appearanceRepository, times(1)).findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+            verify(appearanceRepository, times(1)).findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                 TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
             );
         }
@@ -5729,7 +5729,7 @@ class JurorExpenseServiceTest {
             doReturn(new ArrayList<>(List.of(
                 mockAppearance(LocalDate.of(2023, 1, 1)),
                 mockAppearance(LocalDate.of(2023, 1, 2))
-            ))).when(appearanceRepository).findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+            ))).when(appearanceRepository).findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                 TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
             );
 
@@ -5747,7 +5747,7 @@ class JurorExpenseServiceTest {
 
 
             verify(appearanceRepository, times(1))
-                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+                .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                     TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER, attendanceDates
                 );
         }

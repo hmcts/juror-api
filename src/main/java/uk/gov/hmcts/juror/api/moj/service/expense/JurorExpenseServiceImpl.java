@@ -702,7 +702,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     public CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(String locCode, String jurorNumber,
                                                                     List<LocalDate> dates) {
         CombinedExpenseDetailsDto<ExpenseDetailsDto> result = getExpenses(appearanceRepository
-            .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(locCode, jurorNumber, dates));
+            .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(locCode, jurorNumber, dates));
 
         if (result.getExpenseDetails().size() != dates.size()) {
             throw new MojException.NotFound("Not all dates found", null);
@@ -924,7 +924,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     List<Appearance> getAppearances(String locCode, String jurorNumber, List<LocalDate> dates) {
         List<Appearance> appearances =
-            appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+            appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                 locCode, jurorNumber, dates);
         if (appearances.isEmpty() || appearances.size() != dates.size()) {
             throw new MojException.NotFound(

@@ -34,7 +34,7 @@ public class JurorExpenditureReportLowLevelReport extends AbstractJurorExpenditu
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         super.preProcessQuery(query, request);
         query.orderBy(
-            QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOn.asc(),
+            QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOnDate.asc(),
             QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.jurorNumber.asc(),
             QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.fAudit.asc()
         );
