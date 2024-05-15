@@ -519,5 +519,8 @@ public abstract class AbstractReport<T> {
         public interface RequireDate {
         }
 
+        public interface RequireIncludeSummoned {
+        }
+
     }
 }

@@ -4,6 +4,7 @@ import jakarta.servlet.ServletException;
 import lombok.SneakyThrows;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
@@ -83,6 +84,11 @@ public class LetterControllerTest {
 
     @MockBean
     private ExemptionCertificateService exemptionCertificateService;
+
+    @AfterEach
+    public void afterEach() {
+        TestUtils.afterAll();
+    }
 
     @Test
     public void test_post_requestInformation_bureauUser_happyPath() throws Exception {

@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.bureau.service;
 
 import jakarta.persistence.EntityManager;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -125,6 +126,11 @@ public class UserServiceImplTest {
         .assignTo(TARGET_LOGIN)
         .responseJurorNumber(JUROR_NUMBER)
         .build();
+
+    @AfterEach
+    public void afterEach() {
+        TestUtils.afterAll();
+    }
 
     @Test
     public void changeAssignment_happy() {

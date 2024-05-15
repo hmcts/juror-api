@@ -41,9 +41,11 @@ public class StandardReportRequest {
         "AbaccusReport",
         "JuryListReport",
         "PoolStatusReport",
+        "PersonAttendingSummaryReport",
         //Grouped
         "PostponedListByDateReport",
-        "ReasonableAdjustmentsReport"
+        "ReasonableAdjustmentsReport",
+        "PersonAttendingDetailReport"
     })
     private String reportType;
 
@@ -70,4 +72,7 @@ public class StandardReportRequest {
     @NotNull(groups = AbstractReport.Validators.RequireLocCode.class)
     @CourtLocationCode(groups = AbstractReport.Validators.RequireLocCode.class)
     private String locCode;
+
+    @NotNull(groups = AbstractReport.Validators.RequireIncludeSummoned.class)
+    private Boolean includeSummoned;
 }

@@ -126,7 +126,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_getPoolRequest_recordFound() {
+    void test_getPoolRequest_recordFound() {
         String poolNumber = "415220110";
         String owner = "415";
 
@@ -158,7 +158,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_getPoolRequest_noMatch() {
+    void test_getPoolRequest_noMatch() {
         String poolNumber = "415220111";
         String owner = "415";
 
@@ -171,7 +171,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void getCourtCatchmentItems_invalidLocationCode() {
+    void getCourtCatchmentItems_invalidLocationCode() {
         final String locationCode = "100";
         final boolean isCoronersPool = false;
         assertThatExceptionOfType(PoolCreateException.CourtLocationNotFound.class)
@@ -182,7 +182,7 @@ public class PoolCreateServiceTest {
 
 
     @Test
-    public void checkVoterUnlocked() {
+    void checkVoterUnlocked() {
         final String owner = "400";
         int citizensToSummon = 100;
         int noRequested = 100;
@@ -201,7 +201,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void createPool() throws SQLException {
+    void createPool() throws SQLException {
         String owner = "400";
         int citizensToSummon = 1;
         int noRequested = 1;
@@ -262,7 +262,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void checkYield_throw_error() {
+    void checkYield_throw_error() {
         final String owner = "400";
         int citizensToSummon = 199;
         int noRequested = 99;
@@ -280,7 +280,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_checkForDeferrals_withCourtLocNameOnly_happy() {
+    void test_checkForDeferrals_withCourtLocNameOnly_happy() {
         String owner = "415";
         CourtLocation courtLocation = createValidPoolRequest("415220110").getCourtLocation();
         NilPoolRequestDto nilPoolRequestDto = createValidNilPoolRequestDto();
@@ -299,7 +299,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_checkForDeferrals_withCourtLocCodeOnly_happy() {
+    void test_checkForDeferrals_withCourtLocCodeOnly_happy() {
         String owner = "415";
         CourtLocation courtLocation = createValidPoolRequest("415220110").getCourtLocation();
         NilPoolRequestDto nilPoolRequestDto = createValidNilPoolRequestDto();
@@ -318,7 +318,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_createNilPool_happy() {
+    void test_createNilPool_happy() {
 
         String owner = "415";
         CourtLocation courtLocation = createValidPoolRequest("415220110").getCourtLocation();
@@ -444,7 +444,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_createCoronerPool_happy() {
+    void test_createCoronerPool_happy() {
         String owner = "400";
         String locCode = "415";
         CoronerPoolRequestDto coronerPoolRequestDto = getCoronerPoolRequestDto(locCode);
@@ -464,7 +464,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_createCoronerPool_TooManyRequested() {
+    void test_createCoronerPool_TooManyRequested() {
         String owner = "400";
         String locCode = "415";
         CoronerPoolRequestDto coronerPoolRequestDto = getCoronerPoolRequestDto(locCode);
@@ -477,7 +477,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_createCoronerPool_TooFewRequested() {
+    void test_createCoronerPool_TooFewRequested() {
         String owner = "400";
         String locCode = "415";
         CoronerPoolRequestDto coronerPoolRequestDto = getCoronerPoolRequestDto(locCode);
@@ -490,7 +490,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    public void test_getCoronerPool_happy() {
+    void test_getCoronerPool_happy() {
 
         CoronerPool coronerPool = getCoronerPool();
 
