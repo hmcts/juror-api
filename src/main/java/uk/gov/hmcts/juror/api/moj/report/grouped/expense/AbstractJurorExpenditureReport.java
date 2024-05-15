@@ -30,8 +30,6 @@ public abstract class AbstractJurorExpenditureReport extends AbstractGroupedRepo
     private final CourtLocationService courtLocationService;
     private final IDataType expenseTotalPaidDataType;
     @Setter
-    private boolean includeTotalApprovedHeader;
-    @Setter
     private boolean includeHeaderTotals;
 
     public AbstractJurorExpenditureReport(
@@ -52,7 +50,6 @@ public abstract class AbstractJurorExpenditureReport extends AbstractGroupedRepo
         this.expenseTotalPaidDataType = expenseTotalPaidDataType;
         this.courtLocationService = courtLocationService;
         isCourtUserOnly();
-        this.includeTotalApprovedHeader = true;
         this.includeHeaderTotals = true;
     }
 
@@ -100,35 +97,34 @@ public abstract class AbstractJurorExpenditureReport extends AbstractGroupedRepo
 
             addTotalHeader(headings, cashTotal.add(bacsAndChequeTotal), "overall_total", "Overall total");
 
-            if (includeTotalApprovedHeader) {
-                long totalApprovals = tableData.getData()
-                    .getAllDataItems()
-                    .stream()
-                    .map(groupedTableData -> groupedTableData.get(ExpenseDataTypes.PAYMENT_AUDIT.getId()))
-                    .distinct()
-                    .count();
+            long totalApprovals = tableData.getData()
+                .getAllDataItems()
+                .stream()
+                .map(groupedTableData -> groupedTableData.get(ExpenseDataTypes.PAYMENT_AUDIT.getId()))
+                .distinct()
+                .count();
 
-                headings.put("total_approvals", GroupedReportResponse.DataTypeValue.builder()
-                    .displayName("Total approvals")
-                    .dataType(Long.class.getSimpleName())
-                    .value(totalApprovals)
-                    .build());
-            }
+            headings.put("total_approvals", GroupedReportResponse.DataTypeValue.builder()
+                .displayName("Total approvals")
+                .dataType(Long.class.getSimpleName())
+                .value(totalApprovals)
+                .build());
+
         }
         addCourtNameHeader(headings, courtLocationService.getCourtLocation(SecurityUtil.getLocCode()));
 
         return headings;
     }
 
-    protected BigDecimal addTotalHeader(Map<String, AbstractReportResponse.DataTypeValue> headings,
+    public BigDecimal addTotalHeader(Map<String, AbstractReportResponse.DataTypeValue> headings,
                                         AbstractReportResponse.TableData<GroupedTableData> tableData,
                                         String headingToSearchFor,
                                         String headerId, String headerText) {
 
-        List<GroupedTableData> cashDataItems = tableData.getData()
+        List<GroupedTableData> dataItems = tableData.getData()
             .getAllDataItemsIfExist(headingToSearchFor);
 
-        BigDecimal total = cashDataItems
+        BigDecimal total = dataItems
             .stream()
             .map(groupedTableData -> (BigDecimal) groupedTableData
                 .getOrDefault(expenseTotalPaidDataType.getId(),
@@ -137,7 +133,7 @@ public abstract class AbstractJurorExpenditureReport extends AbstractGroupedRepo
         return addTotalHeader(headings, total, headerId, headerText);
     }
 
-    protected BigDecimal addTotalHeader(Map<String, AbstractReportResponse.DataTypeValue> headings,
+    public BigDecimal addTotalHeader(Map<String, AbstractReportResponse.DataTypeValue> headings,
                                         BigDecimal total,
                                         String headerId, String headerText) {
         headings.put(headerId, GroupedReportResponse.DataTypeValue.builder()

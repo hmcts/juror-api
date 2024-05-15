@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.report.grouped.groupby;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupByResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.report.IDataType;
@@ -17,6 +18,7 @@ public class GroupByPaymentType implements IReportGroupBy {
 
     public static final String CASH_TEXT = "Cash";
     public static final String BACS_OR_CHECK_TEXT = "BACS and cheque approvals";
+    @Getter
     private final boolean includeNested;
 
 
@@ -27,7 +29,7 @@ public class GroupByPaymentType implements IReportGroupBy {
     @Override
     public String getGroupFunction(GroupedTableData groupedTableData) {
         Object isCash = groupedTableData.get(ExpenseDataTypes.IS_CASH.getId());
-        if (isCash != null && ((Boolean) isCash)) {
+        if (isCash == null || ((Boolean) isCash)) {
             return CASH_TEXT;
         }
         return BACS_OR_CHECK_TEXT;
@@ -35,14 +37,6 @@ public class GroupByPaymentType implements IReportGroupBy {
 
     @Override
     public IReportGroupBy getNested() {
-//        return includeNested ? ReportGroupByWithPreProcessor.builder()
-//            .groupByFunction(groupedTableData -> {
-//                String createdOn = groupedTableData.get(ExpenseDataTypes.CREATED_ON_DATE.getId()).toString();
-//                return createdOn.split("T")[0];
-//            })
-//            .dataType(ExpenseDataTypes.CREATED_ON_DATE)
-//            .removeGroupByFromResponse(true)
-//            .build() : null;
         return includeNested ? ReportGroupBy.builder()
             .dataType(ExpenseDataTypes.CREATED_ON_DATE)
             .removeGroupByFromResponse(true)
@@ -61,7 +55,7 @@ public class GroupByPaymentType implements IReportGroupBy {
     }
 
     @Override
-    public Collection<? extends IDataType> getRequiredDataTypes() {
+    public Collection<IDataType> getRequiredDataTypes() {
         return List.of(ExpenseDataTypes.IS_CASH);
     }
 

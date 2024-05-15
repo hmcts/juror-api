@@ -27,7 +27,7 @@ public interface IReportGroupBy {
         return keysToRemove;
     }
 
-    default Collection<? extends IDataType> getCombinedRequiredDataTypes() {
+    default Collection<IDataType> getCombinedRequiredDataTypes() {
         Set<IDataType> requiredDataTypes = new HashSet<>(getRequiredDataTypes());
         IReportGroupBy nestedGroupedBy = getNested();
         if (nestedGroupedBy != null) {

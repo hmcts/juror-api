@@ -116,6 +116,8 @@ public abstract class AbstractReportTestSupport<
             withSettings().defaultAnswer(RETURNS_SELF));
         StandardReportRequest request = getValidRequest();
         positivePreProcessQueryTypical(query, request);
+        verify(report, times(1))
+            .preProcessQuery(query, request);
         verifyNoMoreInteractions(query);
     }
 
@@ -142,6 +144,7 @@ public abstract class AbstractReportTestSupport<
             positiveGetHeadingsTypical(request, tableData, data);
         //Is set via getStandardReportResponse so should not be set here
         assertThat(headings).isNotNull().doesNotContainKey("report_created");
+        verify(report, times(1)).getHeadings(request, tableData);
     }
 
     protected abstract T createData();
@@ -194,7 +197,8 @@ public abstract class AbstractReportTestSupport<
         if (hasStandardPoolHeaders) {
             standardPoolMappings.putAll(getStandardPoolHeaders());
         }
-        assertThat(actualMap).isEqualTo(standardPoolMappings);
+        assertThat(actualMap).hasSize(expectedData.size());
+        assertThat(actualMap).containsExactlyInAnyOrderEntriesOf(standardPoolMappings);
         if (hasStandardPoolHeaders) {
             verify(report, times(1)).loadStandardPoolHeaders(request, true, true);
         }

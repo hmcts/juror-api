@@ -458,7 +458,7 @@ public abstract class AbstractReport<T> {
     }
 
 
-    protected void addCourtNameHeader(Map<String, AbstractReportResponse.DataTypeValue> headings,
+    public void addCourtNameHeader(Map<String, AbstractReportResponse.DataTypeValue> headings,
                                       CourtLocation courtLocation) {
         Map.Entry<String, GroupedReportResponse.DataTypeValue> entry = getCourtNameHeader(courtLocation);
         headings.put(entry.getKey(), entry.getValue());
