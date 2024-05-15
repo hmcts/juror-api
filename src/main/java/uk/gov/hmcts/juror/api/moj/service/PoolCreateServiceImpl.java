@@ -678,17 +678,17 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
     @Override
     public void createNilPool(String owner, NilPoolRequestDto nilPoolRequestDto) {
+        // validate court location
+        CourtLocation courtLocation = getLocation(nilPoolRequestDto);
+        if (courtLocation == null) {
+            throw new PoolCreateException.UnableToCreatePool();
+        }
 
         final String poolNumber = nilPoolRequestDto.getPoolNumber();
         final LocalDate attendanceDate = nilPoolRequestDto.getAttendanceDate();
         final LocalTime attendanceTime = nilPoolRequestDto.getAttendanceTime();
         final String poolTypeStr = nilPoolRequestDto.getPoolType();
 
-        // validate court location
-        CourtLocation courtLocation = getLocation(nilPoolRequestDto);
-        if (courtLocation == null) {
-            throw new PoolCreateException.UnableToCreatePool();
-        }
 
         String courtLocationCode = courtLocation.getLocCode();
 
