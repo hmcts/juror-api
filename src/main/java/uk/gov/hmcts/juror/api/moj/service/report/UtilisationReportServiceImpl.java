@@ -89,17 +89,18 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
                     DailyUtilisationReportResponse.TableData.Week.Day day =
                         DailyUtilisationReportResponse.TableData.Week.Day.builder()
-                        .date(date)
-                        .jurorWorkingDays(workingDays)
-                        .sittingDays(sittingDays)
-                        .attendanceDays(attendanceDays)
-                        .nonAttendanceDays(nonAttendanceDays)
-                        .utilisation(utilisation * 100)
-                        .build();
+                            .date(date)
+                            .jurorWorkingDays(workingDays)
+                            .sittingDays(sittingDays)
+                            .attendanceDays(attendanceDays)
+                            .nonAttendanceDays(nonAttendanceDays)
+                            .utilisation(utilisation * 100)
+                            .build();
 
                     updateWeek(week, workingDays, sittingDays, attendanceDays, nonAttendanceDays, day);
 
-                    updateDailyUtilOverallTotals(tableData, workingDays, sittingDays, attendanceDays, nonAttendanceDays);
+                    updateDailyUtilOverallTotals(tableData, workingDays, sittingDays, attendanceDays,
+                        nonAttendanceDays);
 
                 }
 
@@ -145,20 +146,22 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                     List<String> res = List.of(result.split(","));
                     DailyUtilisationReportJurorsResponse.TableData.Juror jurors =
                         DailyUtilisationReportJurorsResponse.TableData.Juror.builder()
-                        .juror(res.get(0))
-                        .jurorWorkingDay(Integer.parseInt(res.get(1)))
-                        .sittingDay(Integer.parseInt(res.get(2)))
-                        .attendanceDay(Integer.parseInt(res.get(3)))
-                        .nonAttendanceDay(Integer.parseInt(res.get(4)))
-                        .build();
+                            .juror(res.get(1))
+                            .jurorWorkingDay(Integer.parseInt(res.get(2)))
+                            .sittingDay(Integer.parseInt(res.get(3)))
+                            .attendanceDay(Integer.parseInt(res.get(4)))
+                            .nonAttendanceDay(Integer.parseInt(res.get(5)))
+                            .build();
 
                     tableData.getJurors().add(jurors);
 
                     //update the totals
-                    tableData.setTotalJurorWorkingDays(tableData.getTotalJurorWorkingDays() + jurors.getJurorWorkingDay());
+                    tableData.setTotalJurorWorkingDays(tableData.getTotalJurorWorkingDays()
+                        + jurors.getJurorWorkingDay());
                     tableData.setTotalSittingDays(tableData.getTotalSittingDays() + jurors.getSittingDay());
                     tableData.setTotalAttendanceDays(tableData.getTotalAttendanceDays() + jurors.getAttendanceDay());
-                    tableData.setTotalNonAttendanceDays(tableData.getTotalNonAttendanceDays() + jurors.getNonAttendanceDay());
+                    tableData.setTotalNonAttendanceDays(tableData.getTotalNonAttendanceDays()
+                        + jurors.getNonAttendanceDay());
 
                 }
 
@@ -174,7 +177,8 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
     }
 
-    private Map<String, AbstractReportResponse.DataTypeValue> getDailyUtilJurorsReportHeaders(LocalDate reportDate, String name) {
+    private Map<String, AbstractReportResponse.DataTypeValue>
+        getDailyUtilJurorsReportHeaders(LocalDate reportDate, String name) {
         return Map.of(
             "date", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(DailyUtilisationReportJurorsResponse.ReportHeading.REPORT_DATE.getDisplayName())
@@ -201,15 +205,16 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
 
     private void initialiseWeek(DailyUtilisationReportResponse.TableData tableData,
-                                  DailyUtilisationReportResponse.TableData.Week week) {
+                                DailyUtilisationReportResponse.TableData.Week week) {
         tableData.getWeeks().add(week);
         week.setDays(new ArrayList<>());
     }
 
     private void calculateDailyOverallUtilisation(DailyUtilisationReportResponse.TableData tableData) {
         Double overallUtilisation = tableData.getOverallTotalJurorWorkingDays() == 0
-            ? 0.0 : (double) tableData.getOverallTotalSittingDays()
-            / tableData.getOverallTotalJurorWorkingDays() * 100;
+            ? 0.0
+            : (double) tableData.getOverallTotalSittingDays()
+                / tableData.getOverallTotalJurorWorkingDays() * 100;
         tableData.setOverallTotalUtilisation(overallUtilisation);
     }
 
@@ -225,21 +230,23 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
     }
 
     private void updateWeek(DailyUtilisationReportResponse.TableData.Week week, int workingDays, int sittingDays,
-                                  int attendanceDays, int nonAttendanceDays,
-                                  DailyUtilisationReportResponse.TableData.Week.Day day) {
+                            int attendanceDays, int nonAttendanceDays,
+                            DailyUtilisationReportResponse.TableData.Week.Day day) {
         week.getDays().add(day);
         week.setWeeklyTotalJurorWorkingDays(week.getWeeklyTotalJurorWorkingDays() + workingDays);
         week.setWeeklyTotalSittingDays(week.getWeeklyTotalSittingDays() + sittingDays);
         week.setWeeklyTotalAttendanceDays(week.getWeeklyTotalAttendanceDays() + attendanceDays);
         week.setWeeklyTotalNonAttendanceDays(week.getWeeklyTotalNonAttendanceDays() + nonAttendanceDays);
 
-        Double weekUtilisation = week.getWeeklyTotalJurorWorkingDays() == 0 ? 0.0 :
-            (double) week.getWeeklyTotalSittingDays() / week.getWeeklyTotalJurorWorkingDays() * 100;
+        Double weekUtilisation = week.getWeeklyTotalJurorWorkingDays() == 0
+            ? 0.0
+            :
+                (double) week.getWeeklyTotalSittingDays() / week.getWeeklyTotalJurorWorkingDays() * 100;
         week.setWeeklyTotalUtilisation(weekUtilisation);
     }
 
     private Map<String, AbstractReportResponse.DataTypeValue>
-    getDailyUtilReportHeaders(LocalDate reportFromDate, LocalDate reportToDate, String courtName) {
+        getDailyUtilReportHeaders(LocalDate reportFromDate, LocalDate reportToDate, String courtName) {
         return Map.of(
             "date_from", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(DailyUtilisationReportResponse.ReportHeading.DATE_FROM.getDisplayName())
@@ -266,7 +273,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                 .dataType(DailyUtilisationReportResponse.ReportHeading.COURT_NAME.getDataType())
                 .value(courtName)
                 .build()
-            );
+        );
     }
 
 }
