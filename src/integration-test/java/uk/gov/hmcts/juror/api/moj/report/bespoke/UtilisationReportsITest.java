@@ -189,6 +189,25 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(tableData.getHeadings()).isNotNull();
             assertThat(tableData.getHeadings()).hasSize(5);
 
+            // validate the jurors
+            assertThat(tableData.getJurors()).isNotNull();
+            assertThat(tableData.getJurors()).hasSize(21);
+
+            // validate a juror
+            DailyUtilisationReportJurorsResponse.TableData.Juror juror = tableData.getJurors().get(0);
+            assertThat(juror).isNotNull();
+            assertThat(juror.getJuror()).isEqualTo("415000001");
+            assertThat(juror.getJurorWorkingDay()).isEqualTo(1);
+            assertThat(juror.getSittingDay()).isEqualTo(1);
+            assertThat(juror.getAttendanceDay()).isEqualTo(1);
+            assertThat(juror.getNonAttendanceDay()).isEqualTo(0);
+
+            // validate the totals
+            assertThat(tableData.getTotalJurorWorkingDays()).isEqualTo(21);
+            assertThat(tableData.getTotalSittingDays()).isEqualTo(12);
+            assertThat(tableData.getTotalAttendanceDays()).isEqualTo(13);
+            assertThat(tableData.getTotalNonAttendanceDays()).isEqualTo(8);
+
         }
 
         @Test
@@ -210,7 +229,6 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         }
 
     }
-
 
     private String createBureauJwt() {
         return createJwt(

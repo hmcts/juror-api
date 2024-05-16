@@ -12,6 +12,7 @@ import org.mockito.Mockito;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -34,12 +35,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse.TableData.TableHeading.JUROR;
 import static uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse.TableData.TableHeading.ATTENDANCE_DAYS;
 import static uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse.TableData.TableHeading.DATE;
 import static uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse.TableData.TableHeading.JUROR_WORKING_DAYS;
 import static uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse.TableData.TableHeading.NON_ATTENDANCE_DAYS;
 import static uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse.TableData.TableHeading.SITTING_DAYS;
 import static uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse.TableData.TableHeading.UTILISATION;
+
 
 @SuppressWarnings({
     "PMD.LawOfDemeter",
@@ -202,6 +205,136 @@ class UtilisationReportServiceImplTest {
             assertThatExceptionOfType(MojException.Forbidden.class)
                 .isThrownBy(() -> utilisationReportService.viewDailyUtilisationReport(locCode, reportFromDate,
                     reportToDate));
+
+            verify(courtLocationRepository, times(1)).findById(locCode);
+            verifyNoInteractions(jurorRepository);
+
+        }
+    }
+
+
+    @Nested
+    @DisplayName("Daily Utilisation Jurors tests")
+    class DailyUtilisationJurorsTests {
+
+        @Test
+        @SneakyThrows
+        void viewDailyUtilisationJurorsNoResultsAndValidHeadings() {
+
+            final String locCode = "415";
+            final LocalDate reportDate = LocalDate.of(2024, 4, 20);
+
+            CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setName("Test Court");
+            courtLocation.setLocCode(locCode);
+            courtLocation.setOwner("415");
+            when(courtLocationRepository.findById(locCode))
+                .thenReturn(Optional.of(courtLocation));
+
+            mockCurrentUser(locCode);
+
+            when(jurorRepository.callDailyUtilJurorsStats(locCode, reportDate))
+                .thenReturn(List.of());
+
+            DailyUtilisationReportJurorsResponse response = utilisationReportService.viewDailyUtilisationJurors(locCode,
+                reportDate);
+
+            assertThat(response.getHeadings()).isNotNull();
+            Map<String, AbstractReportResponse.DataTypeValue> headings = response.getHeadings();
+
+            validateReportHeadings(headings);
+
+            AbstractReportResponse.DataTypeValue timeCreated = headings.get("time_created");
+            assertThat(timeCreated.getDisplayName()).isEqualTo("Time created");
+            assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
+            LocalDateTime createdTime = LocalDateTime.parse((String) timeCreated.getValue(),
+                DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
+
+            assertThat(response.getTableData()).isNotNull();
+            DailyUtilisationReportJurorsResponse.TableData tableData = response.getTableData();
+            assertThat(tableData.getHeadings()).isNotNull();
+            Assertions.assertThat(tableData.getHeadings()).hasSize(5);
+
+            validateTableHeadings(tableData);
+
+            assertThat(tableData.getTotalJurorWorkingDays()).isZero();
+            assertThat(tableData.getTotalSittingDays()).isZero();
+            assertThat(tableData.getTotalAttendanceDays()).isZero();
+            assertThat(tableData.getTotalNonAttendanceDays()).isZero();
+
+            verify(courtLocationRepository, times(1)).findById(locCode);
+            verify(jurorRepository, times(1)).callDailyUtilJurorsStats(locCode, reportDate);
+
+        }
+
+        private void validateTableHeadings(DailyUtilisationReportJurorsResponse.TableData tableData) {
+            DailyUtilisationReportJurorsResponse.TableData.Heading tableHeading = tableData.getHeadings().get(0);
+            assertThat(tableHeading.getId()).isEqualTo(JUROR);
+            assertThat(tableHeading.getName()).isEqualTo("Juror");
+            assertThat(tableHeading.getDataType()).isEqualTo("String");
+
+            DailyUtilisationReportJurorsResponse.TableData.Heading tableHeading1 = tableData.getHeadings().get(1);
+            assertThat(tableHeading1.getId()).isEqualTo(
+                DailyUtilisationReportJurorsResponse.TableData.TableHeading.JUROR_WORKING_DAYS);
+            assertThat(tableHeading1.getName()).isEqualTo("Juror working day");
+            assertThat(tableHeading1.getDataType()).isEqualTo("Integer");
+
+            DailyUtilisationReportJurorsResponse.TableData.Heading tableHeading2 = tableData.getHeadings().get(2);
+            assertThat(tableHeading2.getId()).isEqualTo(
+                DailyUtilisationReportJurorsResponse.TableData.TableHeading.SITTING_DAYS);
+            assertThat(tableHeading2.getName()).isEqualTo("Sitting day");
+            assertThat(tableHeading2.getDataType()).isEqualTo("Integer");
+
+            DailyUtilisationReportJurorsResponse.TableData.Heading tableHeading3 = tableData.getHeadings().get(3);
+            assertThat(tableHeading3.getId()).isEqualTo(
+                DailyUtilisationReportJurorsResponse.TableData.TableHeading.ATTENDANCE_DAYS);
+            assertThat(tableHeading3.getName()).isEqualTo("Attendance day");
+            assertThat(tableHeading3.getDataType()).isEqualTo("Integer");
+
+            DailyUtilisationReportJurorsResponse.TableData.Heading tableHeading4 = tableData.getHeadings().get(4);
+            assertThat(tableHeading4.getId()).isEqualTo(
+                DailyUtilisationReportJurorsResponse.TableData.TableHeading.NON_ATTENDANCE_DAYS);
+            assertThat(tableHeading4.getName()).isEqualTo("Non-attendance day");
+            assertThat(tableHeading4.getDataType()).isEqualTo("Integer");
+
+        }
+
+        private void validateReportHeadings(Map<String, AbstractReportResponse.DataTypeValue> headings) {
+            Assertions.assertThat(headings.get("date")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Report date")
+                .dataType("LocalDate")
+                .value("2024-04-20")
+                .build());
+            assertThat(headings.get("report_created")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Report created")
+                .dataType("LocalDate")
+                .value(LocalDate.now().toString())
+                .build());
+            assertThat(headings.get("court_name")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Court name")
+                .dataType("String")
+                .value("Test Court")
+                .build());
+        }
+
+        @Test
+        void viewDailyUtilisationReportInvalidCourtLocation() {
+
+            final String locCode = "416";
+            final LocalDate reportDate = LocalDate.of(2024, 4, 20);
+
+            CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setName("Test Court");
+            courtLocation.setLocCode(locCode);
+            courtLocation.setOwner("416");
+            when(courtLocationRepository.findById(locCode))
+                .thenReturn(Optional.of(courtLocation));
+
+            mockCurrentUser("415");
+
+            assertThatExceptionOfType(MojException.Forbidden.class)
+                .isThrownBy(() -> utilisationReportService.viewDailyUtilisationJurors(locCode, reportDate));
 
             verify(courtLocationRepository, times(1)).findById(locCode);
             verifyNoInteractions(jurorRepository);
