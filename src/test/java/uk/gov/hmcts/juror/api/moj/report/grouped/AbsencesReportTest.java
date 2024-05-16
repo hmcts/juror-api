@@ -89,7 +89,9 @@ class AbsencesReportTest extends AbstractGroupedReportTestSupport<AbsencesReport
             .where(QAppearance.appearance.attendanceDate.before(request.getToDate()));
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locCode));
-        verify(query, times(1)).orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc());
+        verify(query, times(1)).orderBy(
+            QJurorPool.jurorPool.juror.jurorNumber.asc(),
+            QAppearance.appearance.attendanceDate.asc());
     }
 
     @Override
