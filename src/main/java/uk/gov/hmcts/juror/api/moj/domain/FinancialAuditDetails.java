@@ -94,8 +94,7 @@ public class FinancialAuditDetails implements Serializable {
         REAPPROVED_CASH(GenericType.APPROVED),
         REAPPROVED_BACS(GenericType.APPROVED),
         FOR_APPROVAL_EDIT(GenericType.EDIT),
-        APPROVED_EDIT(GenericType.EDIT),
-        REAPPROVED_EDIT(GenericType.EDIT);
+        APPROVED_EDIT(GenericType.EDIT);
 
         private final GenericType genericType;
 
