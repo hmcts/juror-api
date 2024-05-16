@@ -1,22 +1,23 @@
+
 -- Function to return daily utilisation stats for a court between two dates
 CREATE OR REPLACE FUNCTION juror_mod.util_report_daily_summary(p_loc_code text, p_start_date date, p_end_date date)
  RETURNS TABLE(
 	report_date date,
-	working bigint,
-	sitting bigint,
-	attended bigint,
-	non_attendance bigint,
+	working integer,
+	sitting integer,
+	attended integer,
+	non_attendance integer,
 	utilisation numeric)
  LANGUAGE plpgsql
 AS $function$
 begin
 
 return query select
-	report_main.report_date,
-	sum(report_main.working) as working_days,
-	sum(report_main.sitting) as sitting_days,
-	sum(report_main.attended) as attendance_days,
-	sum(report_main.non_attendance) as non_attendance_days,
+	report_main.report_date, -- row for each day being reported on
+	sum(report_main.working)::integer as working_days,
+	sum(report_main.sitting)::integer as sitting_days,
+	sum(report_main.attended)::integer as attendance_days,
+	sum(report_main.working - report_main.attended)::integer as non_attendance_days,
 	case when sum(report_main.working) = 0 then 0 else sum(report_main.sitting)::decimal/sum(report_main.working) end as utilisation
 	from (select * from juror_mod.util_report_main(p_loc_code, p_start_date, p_end_date)) as report_main
 	group by report_main.report_date
@@ -25,6 +26,7 @@ return query select
 END;
 $function$
 ;
+
 
 -- Function to return the main table for juror attendance
 -- Working = Within service and ((not holiday and not weekend) or attended))
@@ -49,12 +51,10 @@ CREATE OR REPLACE FUNCTION juror_mod.util_report_main(p_loc_code text, p_start_d
 	is_weekend boolean,
 	working integer,
 	sitting integer,
-	attended integer,
-	non_attendance integer)
+	attended integer)
  LANGUAGE plpgsql
 AS $function$
 begin
-
 
 return query select
 	pool_members.juror_number,
@@ -73,8 +73,7 @@ return query select
 	juror_mod.util_is_weekend(pool_members.report_date) as is_weekend,
 	case when pool_members.within_service and ((pool_members.holiday = false and juror_mod.util_is_weekend(pool_members.report_date) = false) or appearance.attendance) = true then 1 else 0 end  as working,
 	case when pool_members.within_service and panel_members.active_trial and ((appearance.attendance = false and pool_members.holiday = false and juror_mod.util_is_weekend(pool_members.report_date) = false) or appearance.attendance) = true then 1 else 0 end as sitting,
-	case when appearance.attendance or case when pool_members.within_service and panel_members.active_trial and ((appearance.attendance = false and pool_members.holiday = false and juror_mod.util_is_weekend(pool_members.report_date) = false) or appearance.attendance) = true then true else false end then 1 else 0 end as attended,
-	case when pool_members.within_service and ((pool_members.holiday = false and juror_mod.util_is_weekend(pool_members.report_date) = false) or appearance.attendance) = true then 1 else 0 end - case when appearance.attendance or case when pool_members.within_service and panel_members.active_trial and ((appearance.attendance = false and pool_members.holiday = false and juror_mod.util_is_weekend(pool_members.report_date) = false) or appearance.attendance) = true then true else false end then 1 else 0 end as non_attendance
+	case when appearance.attendance or case when pool_members.within_service and panel_members.active_trial and ((appearance.attendance = false and pool_members.holiday = false and juror_mod.util_is_weekend(pool_members.report_date) = false) or appearance.attendance) = true then true else false end then 1 else 0 end as attended
 
 	from
 	(select * from juror_mod.util_report_juror_service_list(p_loc_code, p_start_date, p_end_date)) as pool_members
@@ -109,13 +108,8 @@ CREATE OR REPLACE FUNCTION juror_mod.util_report_juror_service_list(p_loc_code t
 	report_to date,
 	service_from date,
 	service_to date,
-	trial character varying,
-	jury_from date,
-	jury_to date,
 	report_date date,
 	within_service boolean,
-	active_trial boolean,
-	attendance boolean,
 	holiday boolean)
  LANGUAGE plpgsql
 AS $function$
@@ -127,13 +121,8 @@ return query select
 	p_end_date as report_to,
  	pool_members.service_start_date as service_from,
  	pool_members.service_end_date as service_to,
- 	NULL::character varying,
- 	null::date,
- 	null::date,
  	report_days.report_date,
 	case when report_days.report_date between pool_members.service_start_date and pool_members.service_end_date then true else false end as within_service,
-	false,
-	false,
 	report_days.holiday
 	from (select * from juror_mod.util_report_report_days_list(p_loc_code, p_start_date, p_end_date)) as report_days
 	left join (select * from juror_mod.util_report_pool_members_list(p_loc_code, p_start_date, p_end_date)) as pool_members
@@ -187,16 +176,10 @@ CREATE OR REPLACE FUNCTION juror_mod.util_report_appearance_list(p_loc_code text
   	juror_number character varying,
 	report_from date,
 	report_to date,
-	service_from date,
-	service_to date,
-	trial character varying,
-	jury_from date,
-	jury_to date,
 	report_date date,
 	within_service boolean,
 	active_trial boolean,
-	attendance boolean,
-	holiday boolean)
+	attendance boolean)
  LANGUAGE plpgsql
 AS $function$
 begin
@@ -205,16 +188,10 @@ return query select
 	a.juror_number,
 	p_start_date as report_from,
 	p_end_date as report_to,
-	null::date,
-	null::date,
-	null::character varying,
-	null::date,
-	null::date,
 	a.attendance_date,
-	true,
+	true, -- within service if attended
 	a.sat_on_jury,
-	true,
-	null::boolean
+	true -- attendance is true
 	from juror_mod.appearance a
 	where a.attendance_date between p_start_date and p_end_date
 	and (a.non_attendance is null or a.non_attendance = false)
@@ -233,16 +210,12 @@ CREATE OR REPLACE FUNCTION juror_mod.util_trial_participation_list(p_loc_code te
    	juror_number character varying,
 	report_from date,
 	report_to date,
-	service_from date,
-	service_to date,
 	trial character varying,
 	jury_from date,
 	jury_to date,
 	report_date date,
 	within_service boolean,
-	active_trial boolean,
-	attendance boolean,
-	holiday boolean)
+	active_trial boolean)
  LANGUAGE plpgsql
 AS $function$
 begin
@@ -251,21 +224,19 @@ return query select
 	jt.juror_number,
 	p_start_date as report_from,
 	p_end_date as report_to,
-		null::date,
-	null::date,
 	jt.trial_number,
 	jt.empanelled_date as jury_from,
-	coalesce (jt.return_date, p_end_date) as jury_to,
+	coalesce (jt.return_date, p_end_date) as jury_to, -- if no return date then assume still on trial for now
 	report_dates.report_date,
-	true,
-	case when report_dates.report_date between jt.empanelled_date and coalesce (jt.return_date, p_end_date) then true else false end as active_date,
-	null::boolean,
-	null::boolean
+	true, -- defaulting within service to true if on a trial
+	case when report_dates.report_date between jt.empanelled_date and coalesce (jt.return_date, p_end_date) then true else false end as active_date
 	from juror_mod.juror_trial jt
-	left join (select * from juror_mod.util_report_report_days_list(p_loc_code, p_start_date, p_end_date)) as report_dates
+	join (select * from juror_mod.util_report_report_days_list(p_loc_code, p_start_date, p_end_date)) as report_dates
 	on report_dates.report_date between jt.empanelled_date and coalesce (jt.return_date, p_end_date) -- if no return date then assume still on trial for now
 	where jt.loc_code  = p_loc_code
 	and trim(jt.result) in ('J','R')
+	and jt.empanelled_date <= p_end_date
+	and (jt.return_date is null or (jt.return_date >= p_start_date))
 	group by jt.juror_number, jt.trial_number, jt.empanelled_date, jt.return_date, report_dates.report_date
 	order by jt.juror_number, report_dates.report_date;
 
@@ -281,12 +252,18 @@ CREATE OR REPLACE FUNCTION juror_mod.util_report_report_days_list(p_loc_code tex
 AS $function$
 begin
 
-return query select date(report_day.report_day) as report_date, case when h.holiday is not null then true else false end as holiday
-	from generate_series(p_start_date::date, p_end_date::date, '1 day'::interval) report_day
+return query
+
+with report_days as (
+select generate_series(p_start_date::date, p_end_date::date, '1 day'::interval)::date as report_day)
+
+select report_days.report_day as report_date,
+case when h.holiday is not null then true else false end as holiday
+from report_days
 	left join juror_mod.holiday h
-	on report_day.date = h.holiday
+	on report_days.report_day = h.holiday
 	where h.loc_code is null or h.loc_code = p_loc_code
-	order by report_day.report_day;
+	order by report_days.report_day;
 
 END;
 $function$
