@@ -101,7 +101,7 @@ class AbstractReportTest {
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QPanel.panel)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QJuror.juror)).hasSize(4);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QJurorPool.jurorPool)).hasSize(1);
-            assertThat(AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest)).hasSize(1);
+            assertThat(AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest)).hasSize(2);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QAppearance.appearance)).hasSize(2);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QReasonableAdjustments.reasonableAdjustments))
                 .hasSize(2);
