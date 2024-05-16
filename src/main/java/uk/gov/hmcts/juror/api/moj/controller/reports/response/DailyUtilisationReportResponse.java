@@ -108,10 +108,10 @@ public class DailyUtilisationReportResponse {
 
         public enum TableHeading {
             DATE("Date", LocalDate.class.getSimpleName()),
-            JUROR_WORKING_DAYS("Juror Working Days", Integer.class.getSimpleName()),
-            SITTING_DAYS("Sitting Days", Integer.class.getSimpleName()),
-            ATTENDANCE_DAYS("Attendance Days", Integer.class.getSimpleName()),
-            NON_ATTENDANCE_DAYS("Non-Attendance Days",  Integer.class.getSimpleName()),
+            JUROR_WORKING_DAYS("Juror working days", Integer.class.getSimpleName()),
+            SITTING_DAYS("Sitting days", Integer.class.getSimpleName()),
+            ATTENDANCE_DAYS("Attendance days", Integer.class.getSimpleName()),
+            NON_ATTENDANCE_DAYS("Non-attendance days",  Integer.class.getSimpleName()),
             UTILISATION("Utilisation", Double.class.getSimpleName());
 
             private String displayName;

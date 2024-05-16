@@ -34,6 +34,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse.TableData.TableHeading.ATTENDANCE_DAYS;
+import static uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse.TableData.TableHeading.DATE;
+import static uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse.TableData.TableHeading.JUROR_WORKING_DAYS;
+import static uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse.TableData.TableHeading.NON_ATTENDANCE_DAYS;
+import static uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse.TableData.TableHeading.SITTING_DAYS;
+import static uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse.TableData.TableHeading.UTILISATION;
 
 @SuppressWarnings({
     "PMD.LawOfDemeter",
@@ -94,6 +100,67 @@ class UtilisationReportServiceImplTest {
             assertThat(response.getHeadings()).isNotNull();
             Map<String, AbstractReportResponse.DataTypeValue> headings = response.getHeadings();
 
+            validateReportHeadings(headings);
+
+            AbstractReportResponse.DataTypeValue timeCreated = headings.get("time_created");
+            assertThat(timeCreated.getDisplayName()).isEqualTo("Time created");
+            assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
+            LocalDateTime createdTime = LocalDateTime.parse((String) timeCreated.getValue(),
+                DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
+
+            assertThat(response.getTableData()).isNotNull();
+            DailyUtilisationReportResponse.TableData tableData = response.getTableData();
+            assertThat(tableData.getHeadings()).isNotNull();
+            Assertions.assertThat(tableData.getHeadings()).hasSize(6);
+
+            validateTableHeadings(tableData);
+
+            Assertions.assertThat(tableData.getWeeks()).isEmpty();
+            assertThat(tableData.getOverallTotalJurorWorkingDays()).isZero();
+            assertThat(tableData.getOverallTotalSittingDays()).isZero();
+            assertThat(tableData.getOverallTotalAttendanceDays()).isZero();
+            assertThat(tableData.getOverallTotalNonAttendanceDays()).isZero();
+            assertThat(tableData.getOverallTotalUtilisation()).isZero();
+
+            verify(courtLocationRepository, times(1)).findById(locCode);
+            verify(jurorRepository, times(1)).callDailyUtilStats(locCode, reportFromDate, reportToDate);
+
+        }
+
+        private void validateTableHeadings(DailyUtilisationReportResponse.TableData tableData) {
+            DailyUtilisationReportResponse.TableData.Heading tablHeading = tableData.getHeadings().get(0);
+            assertThat(tablHeading.getId()).isEqualTo(DATE);
+            assertThat(tablHeading.getName()).isEqualTo("Date");
+            assertThat(tablHeading.getDataType()).isEqualTo("LocalDate");
+
+            DailyUtilisationReportResponse.TableData.Heading tablHeading1 = tableData.getHeadings().get(1);
+            assertThat(tablHeading1.getId()).isEqualTo(JUROR_WORKING_DAYS);
+            assertThat(tablHeading1.getName()).isEqualTo("Juror working days");
+            assertThat(tablHeading1.getDataType()).isEqualTo("Integer");
+
+            DailyUtilisationReportResponse.TableData.Heading tablHeading2 = tableData.getHeadings().get(2);
+            assertThat(tablHeading2.getId()).isEqualTo(SITTING_DAYS);
+            assertThat(tablHeading2.getName()).isEqualTo("Sitting days");
+            assertThat(tablHeading2.getDataType()).isEqualTo("Integer");
+
+            DailyUtilisationReportResponse.TableData.Heading tablHeading3 = tableData.getHeadings().get(3);
+            assertThat(tablHeading3.getId()).isEqualTo(ATTENDANCE_DAYS);
+            assertThat(tablHeading3.getName()).isEqualTo("Attendance days");
+            assertThat(tablHeading3.getDataType()).isEqualTo("Integer");
+
+            DailyUtilisationReportResponse.TableData.Heading tablHeading4 = tableData.getHeadings().get(4);
+            assertThat(tablHeading4.getId()).isEqualTo(NON_ATTENDANCE_DAYS);
+            assertThat(tablHeading4.getName()).isEqualTo("Non-attendance days");
+            assertThat(tablHeading4.getDataType()).isEqualTo("Integer");
+
+            DailyUtilisationReportResponse.TableData.Heading tablHeading5 = tableData.getHeadings().get(5);
+            assertThat(tablHeading5.getId()).isEqualTo(UTILISATION);
+            assertThat(tablHeading5.getName()).isEqualTo("Utilisation");
+            assertThat(tablHeading5.getDataType()).isEqualTo("Double");
+        }
+
+        private void validateReportHeadings(Map<String, AbstractReportResponse.DataTypeValue> headings) {
             Assertions.assertThat(headings.get("date_from")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Date from")
                 .dataType("LocalDate")
@@ -114,41 +181,6 @@ class UtilisationReportServiceImplTest {
                 .dataType("String")
                 .value("Test Court")
                 .build());
-
-            AbstractReportResponse.DataTypeValue timeCreated = headings.get("time_created");
-            assertThat(timeCreated.getDisplayName()).isEqualTo("Time created");
-            assertThat(timeCreated.getDataType()).isEqualTo("LocalDateTime");
-            LocalDateTime createdTime = LocalDateTime.parse((String) timeCreated.getValue(),
-                DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            assertThat(createdTime).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
-
-            assertThat(response.getTableData()).isNotNull();
-            DailyUtilisationReportResponse.TableData tableData = response.getTableData();
-            assertThat(tableData.getHeadings()).isNotNull();
-            Assertions.assertThat(tableData.getHeadings()).hasSize(6);
-
-            DailyUtilisationReportResponse.TableData.TableHeading[] expectedHeadingsArray =
-                DailyUtilisationReportResponse.TableData.TableHeading.values();
-            for (int i = 0;
-                 i < expectedHeadingsArray.length;
-                 i++) {
-                DailyUtilisationReportResponse.TableData.TableHeading expectedHeading = expectedHeadingsArray[i];
-                DailyUtilisationReportResponse.TableData.Heading actualHeading = tableData.getHeadings().get(i);
-                assertThat(actualHeading.getId()).isEqualTo(expectedHeading);
-                assertThat(actualHeading.getName()).isEqualTo(expectedHeading.getDisplayName());
-                assertThat(actualHeading.getDataType()).isEqualTo(expectedHeading.getDataType());
-            }
-
-            Assertions.assertThat(tableData.getWeeks()).isEmpty();
-            assertThat(tableData.getOverallTotalJurorWorkingDays()).isZero();
-            assertThat(tableData.getOverallTotalSittingDays()).isZero();
-            assertThat(tableData.getOverallTotalAttendanceDays()).isZero();
-            assertThat(tableData.getOverallTotalNonAttendanceDays()).isZero();
-            assertThat(tableData.getOverallTotalUtilisation()).isZero();
-
-            verify(courtLocationRepository, times(1)).findById(locCode);
-            verify(jurorRepository, times(1)).callDailyUtilStats(locCode, reportFromDate, reportToDate);
-
         }
 
         @Test
