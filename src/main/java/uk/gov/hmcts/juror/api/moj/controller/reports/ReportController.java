@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.FinancialAuditReportResponse;
 import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
@@ -78,6 +79,18 @@ public class ReportController {
 
         return ResponseEntity.ok(utilisationReportService.viewDailyUtilisationReport(locCode, reportFromDate,
             reportToDate));
+    }
+
+    @GetMapping("/daily-utilisation-jurors/{locCode}")
+    @Operation(summary = "View daily utilisation report jurors for a given date")
+    @ResponseStatus(HttpStatus.OK)
+    @IsCourtUser
+    public ResponseEntity<DailyUtilisationReportJurorsResponse> viewDailyUtilisationJurors(
+        @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode,
+        @RequestParam(value = "reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate
+    ) {
+
+        return ResponseEntity.ok(utilisationReportService.viewDailyUtilisationJurors(locCode, reportDate));
     }
 
 }

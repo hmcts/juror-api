@@ -27,6 +27,35 @@ END;
 $function$
 ;
 
+-- Function to return daily utilisation stats per juror for a court on a specific date
+CREATE OR REPLACE FUNCTION juror_mod.util_report_jurors(p_loc_code text, p_date date)
+ RETURNS TABLE(
+ 	report_date date,
+ 	juror_number character varying,
+	working integer,
+	sitting integer,
+	attended integer,
+	non_attendance integer)
+ LANGUAGE plpgsql
+AS $function$
+begin
+
+return query select
+	report_main.report_date, -- day being reported on
+	report_main.juror_number,
+	report_main.working,
+	report_main.sitting,
+	report_main.attended,
+	(report_main.working - report_main.attended) as non_attendance
+	from (select * from juror_mod.util_report_main(p_loc_code, p_date, p_date)) as report_main
+	where report_main.report_date = p_date
+	order by report_main.juror_number;
+
+END;
+$function$
+;
+
+
 
 -- Function to return the main table for juror attendance
 -- Working = Within service and ((not holiday and not weekend) or attended))

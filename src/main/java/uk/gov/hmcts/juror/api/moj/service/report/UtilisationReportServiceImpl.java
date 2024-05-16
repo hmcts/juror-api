@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
@@ -49,7 +50,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
             courtLocationRepository);
 
         Map<String, AbstractReportResponse.DataTypeValue> reportHeadings
-            = getReportHeaders(reportFromDate, reportToDate, courtLocation.getName());
+            = getDailyUtilReportHeaders(reportFromDate, reportToDate, courtLocation.getName());
 
         DailyUtilisationReportResponse response = new DailyUtilisationReportResponse(reportHeadings);
 
@@ -98,11 +99,11 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
                     updateWeek(week, workingDays, sittingDays, attendanceDays, nonAttendanceDays, day);
 
-                    updateOverallTotals(tableData, workingDays, sittingDays, attendanceDays, nonAttendanceDays);
+                    updateDailyUtilOverallTotals(tableData, workingDays, sittingDays, attendanceDays, nonAttendanceDays);
 
                 }
 
-                calculateOverallUtilisation(tableData);
+                calculateDailyOverallUtilisation(tableData);
 
             }
         } catch (SQLException exc) {
@@ -116,21 +117,104 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         return response;
     }
 
-    private static void initialiseWeek(DailyUtilisationReportResponse.TableData tableData,
+
+    @Override
+    @Transactional(readOnly = true)
+    public DailyUtilisationReportJurorsResponse viewDailyUtilisationJurors(String locCode, LocalDate reportDate) {
+        log.info("Fetching daily utilisation jurors stats for location: {} on: {}", locCode, reportDate);
+
+        // check the user has permission to view the location
+        CourtLocation courtLocation = CourtLocationUtils.validateAccessToCourtLocation(locCode,
+            SecurityUtil.getActiveOwner(),
+            courtLocationRepository);
+
+        Map<String, AbstractReportResponse.DataTypeValue> reportHeadings
+            = getDailyUtilJurorsReportHeaders(reportDate, courtLocation.getName());
+
+        DailyUtilisationReportJurorsResponse response = new DailyUtilisationReportJurorsResponse(reportHeadings);
+
+        try {
+            List<String> results = jurorRepository.callDailyUtilJurorsStats(locCode, reportDate);
+
+            if (results != null && !results.isEmpty()) {
+
+                DailyUtilisationReportJurorsResponse.TableData tableData = response.getTableData();
+
+                for (String result : results) {
+
+                    List<String> res = List.of(result.split(","));
+                    DailyUtilisationReportJurorsResponse.TableData.Juror jurors =
+                        DailyUtilisationReportJurorsResponse.TableData.Juror.builder()
+                        .juror(res.get(0))
+                        .jurorWorkingDay(Integer.parseInt(res.get(1)))
+                        .sittingDay(Integer.parseInt(res.get(2)))
+                        .attendanceDay(Integer.parseInt(res.get(3)))
+                        .nonAttendanceDay(Integer.parseInt(res.get(4)))
+                        .build();
+
+                    tableData.getJurors().add(jurors);
+
+                    //update the totals
+                    tableData.setTotalJurorWorkingDays(tableData.getTotalJurorWorkingDays() + jurors.getJurorWorkingDay());
+                    tableData.setTotalSittingDays(tableData.getTotalSittingDays() + jurors.getSittingDay());
+                    tableData.setTotalAttendanceDays(tableData.getTotalAttendanceDays() + jurors.getAttendanceDay());
+                    tableData.setTotalNonAttendanceDays(tableData.getTotalNonAttendanceDays() + jurors.getNonAttendanceDay());
+
+                }
+
+            }
+        } catch (SQLException exc) {
+            log.error("Error while fetching daily utilisation jurors stats", exc.getMessage());
+            throw new MojException.InternalServerError("Error while fetching daily utilisation jurors stats", exc);
+        }
+
+        log.info("Fetched daily utilisation jurors stats for location: {} on: {}", locCode, reportDate);
+
+        return response;
+
+    }
+
+    private Map<String, AbstractReportResponse.DataTypeValue> getDailyUtilJurorsReportHeaders(LocalDate reportDate, String name) {
+        return Map.of(
+            "date", AbstractReportResponse.DataTypeValue.builder()
+                .displayName(DailyUtilisationReportJurorsResponse.ReportHeading.REPORT_DATE.getDisplayName())
+                .dataType(DailyUtilisationReportJurorsResponse.ReportHeading.REPORT_DATE.getDataType())
+                .value(reportDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .build(),
+            "report_created", AbstractReportResponse.DataTypeValue.builder()
+                .displayName(DailyUtilisationReportJurorsResponse.ReportHeading.REPORT_CREATED.getDisplayName())
+                .dataType(DailyUtilisationReportJurorsResponse.ReportHeading.REPORT_CREATED.getDataType())
+                .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .build(),
+            "time_created", AbstractReportResponse.DataTypeValue.builder()
+                .displayName(DailyUtilisationReportJurorsResponse.ReportHeading.TIME_CREATED.getDisplayName())
+                .dataType(DailyUtilisationReportJurorsResponse.ReportHeading.TIME_CREATED.getDataType())
+                .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                .build(),
+            "court_name", AbstractReportResponse.DataTypeValue.builder()
+                .displayName(DailyUtilisationReportJurorsResponse.ReportHeading.COURT_NAME.getDisplayName())
+                .dataType(DailyUtilisationReportJurorsResponse.ReportHeading.COURT_NAME.getDataType())
+                .value(name)
+                .build()
+        );
+    }
+
+
+    private void initialiseWeek(DailyUtilisationReportResponse.TableData tableData,
                                   DailyUtilisationReportResponse.TableData.Week week) {
         tableData.getWeeks().add(week);
         week.setDays(new ArrayList<>());
     }
 
-    private void calculateOverallUtilisation(DailyUtilisationReportResponse.TableData tableData) {
+    private void calculateDailyOverallUtilisation(DailyUtilisationReportResponse.TableData tableData) {
         Double overallUtilisation = tableData.getOverallTotalJurorWorkingDays() == 0
             ? 0.0 : (double) tableData.getOverallTotalSittingDays()
             / tableData.getOverallTotalJurorWorkingDays() * 100;
         tableData.setOverallTotalUtilisation(overallUtilisation);
     }
 
-    private void updateOverallTotals(DailyUtilisationReportResponse.TableData tableData, int workingDays,
-                                     int sittingDays, int attendanceDays, int nonAttendanceDays) {
+    private void updateDailyUtilOverallTotals(DailyUtilisationReportResponse.TableData tableData, int workingDays,
+                                              int sittingDays, int attendanceDays, int nonAttendanceDays) {
         tableData.setOverallTotalJurorWorkingDays(tableData.getOverallTotalJurorWorkingDays()
             + workingDays);
         tableData.setOverallTotalSittingDays(tableData.getOverallTotalSittingDays() + sittingDays);
@@ -155,7 +239,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
     }
 
     private Map<String, AbstractReportResponse.DataTypeValue>
-        getReportHeaders(LocalDate reportFromDate, LocalDate reportToDate, String courtName) {
+    getDailyUtilReportHeaders(LocalDate reportFromDate, LocalDate reportToDate, String courtName) {
         return Map.of(
             "date_from", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(DailyUtilisationReportResponse.ReportHeading.DATE_FROM.getDisplayName())

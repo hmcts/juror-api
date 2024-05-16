@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
@@ -39,6 +40,8 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
     public static final String URL_BASE = "/api/v1/moj/reports";
 
     public static final String DAILY_UTILISATION_REPORT_URL = URL_BASE + "/daily-utilisation";
+
+    public static final String DAILY_UTILISATION_JURORS_URL = URL_BASE + "/daily-utilisation-jurors";
 
     private HttpHeaders httpHeaders;
 
@@ -156,6 +159,58 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
                 .isEqualTo(HttpStatus.FORBIDDEN);
         }
     }
+
+
+    @Nested
+    @DisplayName("Daily Utilisation Jurors Integration Tests")
+    @Sql({
+        "/db/truncate.sql",
+        "/db/mod/truncate.sql",
+        "/db/mod/reports/DailyUtilisationReportsITest_typical.sql"
+    })
+    class DailyUtilisationJurorsTests {
+
+        @Test
+        void viewDailyUtilisationJurorsHappy() {
+
+            ResponseEntity<DailyUtilisationReportJurorsResponse> responseEntity =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create(DAILY_UTILISATION_JURORS_URL
+                            + "/415?reportDate=2024-05-09")),
+                    DailyUtilisationReportJurorsResponse.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+            DailyUtilisationReportJurorsResponse responseBody = responseEntity.getBody();
+            assertThat(responseBody).isNotNull();
+
+            // validate the table data
+            DailyUtilisationReportJurorsResponse.TableData tableData = responseBody.getTableData();
+            assertThat(tableData).isNotNull();
+            assertThat(tableData.getHeadings()).isNotNull();
+            assertThat(tableData.getHeadings()).hasSize(5);
+
+        }
+
+        @Test
+        void viewDailyUtilisationJurorsInvalidUserType() {
+
+            final String bureauJwt = createBureauJwt();
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ResponseEntity<DailyUtilisationReportJurorsResponse> responseEntity =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create(DAILY_UTILISATION_JURORS_URL
+                            + "/415?reportDate=2024-05-09")),
+                    DailyUtilisationReportJurorsResponse.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP FORBIDDEN response")
+                .isEqualTo(HttpStatus.FORBIDDEN);
+
+        }
+
+    }
+
 
     private String createBureauJwt() {
         final String bureauJwt = createJwt(
