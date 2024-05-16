@@ -9,7 +9,6 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResp
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
-import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -61,7 +60,7 @@ public class UnconfirmedAttendanceReport extends AbstractGroupedReport {
                     AppearanceStage.CHECKED_OUT
                 )));
         query.where(QAppearance.appearance.locCode.eq(SecurityUtil.getActiveOwner()));
-        query.orderBy(QJuror.juror.jurorNumber.asc());
+        query.orderBy(QAppearance.appearance.attendanceDate.desc());
         addGroupBy(query,
             DataType.ATTENDANCE_DATE,
             DataType.JUROR_NUMBER,
