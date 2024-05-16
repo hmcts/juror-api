@@ -51,7 +51,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         initHeaders();
     }
 
-    private void initHeaders(Role... roles) {
+    private void initHeaders() {
         final String bureauJwt = createJwt(
             "test_court_standard",
             "415",
@@ -84,12 +84,13 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
                     DailyUtilisationReportResponse.class);
 
             assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+
+            assertThat(responseEntity.getBody()).isNotNull();
             DailyUtilisationReportResponse responseBody = responseEntity.getBody();
-            assertThat(responseBody).isNotNull();
 
             // validate the table data
+            assertThat(responseBody.getTableData()).isNotNull();
             DailyUtilisationReportResponse.TableData tableData = responseBody.getTableData();
-            assertThat(tableData).isNotNull();
             assertThat(tableData.getHeadings()).isNotNull();
             assertThat(tableData.getHeadings()).hasSize(6);
 
@@ -213,14 +214,13 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
 
 
     private String createBureauJwt() {
-        final String bureauJwt = createJwt(
+        return createJwt(
             "test_Bureau_standard",
             "400",
             UserType.BUREAU,
             Set.of(),
             "400"
         );
-        return bureauJwt;
     }
 
 }
