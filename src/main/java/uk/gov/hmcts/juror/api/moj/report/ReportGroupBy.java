@@ -20,8 +20,6 @@ public class ReportGroupBy implements IReportGroupBy {
     private IReportGroupBy nested;
 
     public String getGroupFunction(GroupedTableData groupedTableData) {
-        System.out.println(dataType.getId());
-        System.out.println(groupedTableData);
         return groupedTableData.get(dataType.getId()).toString();
     }
 

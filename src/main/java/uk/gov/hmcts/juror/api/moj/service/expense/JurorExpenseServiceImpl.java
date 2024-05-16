@@ -905,9 +905,10 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     SimplifiedExpenseDetailDto mapCombinedSimplifiedExpenseDetailDto(Appearance appearance) {
+        FinancialAuditDetails financialAuditDetails = financialAuditService.findFromAppearance(appearance);
         return SimplifiedExpenseDetailDto.builder()
             .attendanceDate(appearance.getAttendanceDate())
-            .financialAuditNumber(appearance.getFinancialAuditDetails().getFinancialAuditNumber())
+            .financialAuditNumber(financialAuditDetails.getFinancialAuditNumber())
             .attendanceType(appearance.getAttendanceType())
             .financialLoss(appearance.getTotalFinancialLossDue())
             .travel(appearance.getTotalTravelDue())
@@ -916,7 +917,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .totalDue(appearance.getTotalDue())
             .totalPaid(appearance.getTotalPaid())
             .balanceToPay(appearance.getBalanceToPay())
-            .auditCreatedOn(appearance.getFinancialAuditDetails().getCreatedOn())
+            .auditCreatedOn(financialAuditDetails.getCreatedOn())
             .build();
     }
 
@@ -1252,8 +1253,11 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             return false;
         }
         Map<LocalDate, Long> dateToRevisionMap =
-            dateToRevision.stream().collect(Collectors.toMap(ApproveExpenseDto.DateToRevision::getAttendanceDate,
-                ApproveExpenseDto.DateToRevision::getVersion));
+            dateToRevision.stream()
+                .collect(Collectors.toMap(
+                    ApproveExpenseDto.DateToRevision::getAttendanceDate,
+                    ApproveExpenseDto.DateToRevision::getVersion
+                ));
 
         return appearances.stream().noneMatch(appearance -> {
             Long revisionNumber = dateToRevisionMap.get(appearance.getAttendanceDate());

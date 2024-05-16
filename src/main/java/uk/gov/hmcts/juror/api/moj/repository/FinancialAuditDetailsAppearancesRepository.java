@@ -7,6 +7,6 @@ import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetailsAppearances;
 
 @Repository
 public interface FinancialAuditDetailsAppearancesRepository
-    extends CrudRepository<FinancialAuditDetailsAppearances, FinancialAuditDetailsAppearances>,
+    extends CrudRepository<FinancialAuditDetailsAppearances, FinancialAuditDetailsAppearances.IdClass>,
     IFinancialAuditDetailsAppearancesRepository {
 }

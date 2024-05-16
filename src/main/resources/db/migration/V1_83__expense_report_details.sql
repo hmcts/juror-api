@@ -1,6 +1,18 @@
 --Depends on migration 1_78
+ALTER table juror_mod.financial_audit_details
+    add CONSTRAINT financial_audit_details_id_loc_code_unique UNIQUE (id, loc_code)
+;
+
+
+ALTER TABLE juror_mod.financial_audit_details_appearances
+    add column  last_approved_faudit bigint,
+    add CONSTRAINT financial_audit_details_appearances_last_fAudit_fk
+        FOREIGN KEY (last_approved_faudit, loc_code) REFERENCES juror_mod.financial_audit_details (id, loc_code)
+;
 
 CREATE INDEX appearance_audit_loc_code_idx ON juror_mod.appearance_audit (loc_code, juror_number, attendance_date,
+                                                                          attendance_audit_number, "version");
+CREATE INDEX appearance_audit_f_audit_loc_code_idx ON juror_mod.appearance_audit (f_audit_loc_code, juror_number, attendance_date,
                                                                           attendance_audit_number, "version");
 
 CREATE OR REPLACE VIEW juror_mod.low_level_financial_audit_details

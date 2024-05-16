@@ -33,6 +33,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -57,8 +58,9 @@ public class FinancialAuditServiceImplTest {
         revisionService = mock(RevisionService.class);
         clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
         financialAuditService =
-            new FinancialAuditServiceImpl(financialAuditDetailsRepository, financialAuditDetailsAppearancesRepository,
-                appearanceRepository, userRepository, revisionService, clock);
+            spy(new FinancialAuditServiceImpl(financialAuditDetailsRepository,
+                financialAuditDetailsAppearancesRepository,
+                appearanceRepository, userRepository, revisionService, clock));
     }
 
     @Nested
@@ -119,18 +121,24 @@ public class FinancialAuditServiceImplTest {
             when(appearance1.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 1));
             when(appearance1.getCourtLocation()).thenReturn(courtLocation);
             when(appearance1.getVersion()).thenReturn(1L);
+            when(appearance1.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
+
+
             Appearance appearance2 = mock(Appearance.class);
             when(appearance2.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
             when(appearance2.getJurorNumber()).thenReturn(TestConstants.VALID_JUROR_NUMBER);
             when(appearance2.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 2));
             when(appearance2.getCourtLocation()).thenReturn(courtLocation);
             when(appearance2.getVersion()).thenReturn(12L);
+            when(appearance2.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
+
             Appearance appearance3 = mock(Appearance.class);
             when(appearance3.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
             when(appearance3.getJurorNumber()).thenReturn(TestConstants.VALID_JUROR_NUMBER);
             when(appearance3.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 3));
             when(appearance3.getCourtLocation()).thenReturn(courtLocation);
             when(appearance3.getVersion()).thenReturn(123L);
+            when(appearance3.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
 
             doAnswer(invocation -> invocation.<Appearance>getArgument(0))
@@ -147,19 +155,158 @@ public class FinancialAuditServiceImplTest {
             verify(financialAuditDetailsAppearancesRepository, times(1)).saveAll(
                 List.of(
                     new FinancialAuditDetailsAppearances(
-                       321L,
+                        321L,
                         LocalDate.of(2023, 1, 1),
-                        1L
+                        1L,
+                        TestConstants.VALID_COURT_LOCATION,
+                        null
                     ),
                     new FinancialAuditDetailsAppearances(
                         321L,
                         LocalDate.of(2023, 1, 2),
-                        12L
+                        12L,
+                        TestConstants.VALID_COURT_LOCATION,
+                        null
                     ),
                     new FinancialAuditDetailsAppearances(
                         321L,
                         LocalDate.of(2023, 1, 3),
-                        123L
+                        123L,
+                        TestConstants.VALID_COURT_LOCATION,
+                        null
+                    )
+                )
+            );
+            verify(appearanceRepository, times(1)).saveAll(List.of(appearance1, appearance2, appearance3));
+        }
+
+        @Test
+        void positiveTypicalReApproval() {
+            FinancialAuditDetails.Type type = FinancialAuditDetails.Type.REAPPROVED_BACS;
+            Revision<Long, Juror> jurorRevision = mock(Revision.class);
+            doReturn(jurorRevision).when(revisionService)
+                .getLatestJurorRevision(TestConstants.VALID_JUROR_NUMBER);
+            doReturn(1L).when(jurorRevision).getRequiredRevisionNumber();
+
+            Revision<Long, CourtLocation> courtRevision = mock(Revision.class);
+            doReturn(courtRevision).when(revisionService)
+                .getLatestCourtRevision(TestConstants.VALID_COURT_LOCATION);
+            doReturn(12L).when(courtRevision).getRequiredRevisionNumber();
+
+            User user = mock(User.class);
+            doReturn(user).when(userRepository).findByUsername(USER_NAME);
+            FinancialAuditDetails auditDetails = FinancialAuditDetails.builder()
+                .id(321L)
+                .createdBy(user)
+                .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                .locCode(TestConstants.VALID_COURT_LOCATION)
+                .createdOn(LocalDateTime.now(clock))
+                .type(type)
+                .jurorRevision(1L)
+                .courtLocationRevision(12L)
+                .build();
+            doReturn(auditDetails).when(financialAuditDetailsRepository).save(any());
+
+            CourtLocation courtLocation = mock(CourtLocation.class);
+
+            Appearance appearance1 = mock(Appearance.class);
+            when(appearance1.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
+            when(appearance1.getJurorNumber()).thenReturn(TestConstants.VALID_JUROR_NUMBER);
+            when(appearance1.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 1));
+            when(appearance1.getCourtLocation()).thenReturn(courtLocation);
+            when(appearance1.getVersion()).thenReturn(1L);
+            when(appearance1.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
+
+            FinancialAuditDetails currentFinancialAuditDetails1 = mock(FinancialAuditDetails.class);
+            doReturn(currentFinancialAuditDetails1).when(financialAuditService).findFromAppearance(appearance1);
+
+            Appearance lastApprovedAppearances1 =
+                mock(Appearance.class);
+            when(lastApprovedAppearances1.getFAudit()).thenReturn(321L);
+
+            doReturn(lastApprovedAppearances1).when(financialAuditService)
+                .getPreviousApprovedValue(
+                    currentFinancialAuditDetails1,
+                    appearance1
+                );
+
+
+            Appearance appearance2 = mock(Appearance.class);
+            when(appearance2.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
+            when(appearance2.getJurorNumber()).thenReturn(TestConstants.VALID_JUROR_NUMBER);
+            when(appearance2.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 2));
+            when(appearance2.getCourtLocation()).thenReturn(courtLocation);
+            when(appearance2.getVersion()).thenReturn(12L);
+            when(appearance2.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
+
+            FinancialAuditDetails currentFinancialAuditDetails2 = mock(FinancialAuditDetails.class);
+            doReturn(currentFinancialAuditDetails2).when(financialAuditService).findFromAppearance(appearance2);
+
+            Appearance lastApprovedAppearances2 =
+                mock(Appearance.class);
+            when(lastApprovedAppearances2.getFAudit()).thenReturn(4321L);
+
+            doReturn(lastApprovedAppearances2).when(financialAuditService)
+                .getPreviousApprovedValue(
+                    currentFinancialAuditDetails2,
+                    appearance2
+                );
+
+            Appearance appearance3 = mock(Appearance.class);
+            when(appearance3.getPoolNumber()).thenReturn(TestConstants.VALID_POOL_NUMBER);
+            when(appearance3.getJurorNumber()).thenReturn(TestConstants.VALID_JUROR_NUMBER);
+            when(appearance3.getAttendanceDate()).thenReturn(LocalDate.of(2023, 1, 3));
+            when(appearance3.getCourtLocation()).thenReturn(courtLocation);
+            when(appearance3.getVersion()).thenReturn(123L);
+            when(appearance3.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
+
+            FinancialAuditDetails currentFinancialAuditDetails3 = mock(FinancialAuditDetails.class);
+            doReturn(currentFinancialAuditDetails3).when(financialAuditService).findFromAppearance(appearance3);
+
+            Appearance lastApprovedAppearances3 =
+                mock(Appearance.class);
+            when(lastApprovedAppearances3.getFAudit()).thenReturn(321L);
+
+            doReturn(lastApprovedAppearances3).when(financialAuditService)
+                .getPreviousApprovedValue(
+                    currentFinancialAuditDetails3,
+                    appearance3
+                );
+
+
+            doAnswer(invocation -> invocation.<Appearance>getArgument(0))
+                .when(appearanceRepository).saveAndFlush(any());
+
+
+            FinancialAuditDetails response = financialAuditService.createFinancialAuditDetail(
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_COURT_LOCATION, type,
+                List.of(appearance1, appearance2,appearance3));
+
+            assertThat(response).isEqualTo(auditDetails);
+            auditDetails.setId(null);//ID is null when first save gets called
+            verify(financialAuditDetailsRepository, times(1)).save(auditDetails);
+            verify(financialAuditDetailsAppearancesRepository, times(1)).saveAll(
+                List.of(
+                    new FinancialAuditDetailsAppearances(
+                        321L,
+                        LocalDate.of(2023, 1, 1),
+                        1L,
+                        TestConstants.VALID_COURT_LOCATION,
+                        321L
+                    ),
+                    new FinancialAuditDetailsAppearances(
+                        321L,
+                        LocalDate.of(2023, 1, 2),
+                        12L,
+                        TestConstants.VALID_COURT_LOCATION,
+                        4321L
+                    ),
+                    new FinancialAuditDetailsAppearances(
+                        321L,
+                        LocalDate.of(2023, 1, 3),
+                        123L,
+                        TestConstants.VALID_COURT_LOCATION,
+                        321L
                     )
                 )
             );

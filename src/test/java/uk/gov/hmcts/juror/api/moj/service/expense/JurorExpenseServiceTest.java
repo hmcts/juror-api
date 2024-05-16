@@ -3651,7 +3651,8 @@ class JurorExpenseServiceTest {
             financialAuditDetails.setId(123L);
             financialAuditDetails.setCreatedOn(LocalDateTime.now());
             Appearance appearance = mock(Appearance.class);
-            when(appearance.getFinancialAuditDetails()).thenReturn(financialAuditDetails);
+
+            doReturn(financialAuditDetails).when(financialAuditService).findFromAppearance(appearance);
             when(appearance.getAttendanceDate()).thenReturn(LocalDate.now());
             when(appearance.getAttendanceType()).thenReturn(AttendanceType.FULL_DAY);
             when(appearance.getTotalFinancialLossDue()).thenReturn(new BigDecimal("12.2"));
