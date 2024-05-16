@@ -1,0 +1,2 @@
+CREATE INDEX juror_reasonable_adjustment_juror_number_idx ON juror_mod.juror_reasonable_adjustment (juror_number,reasonable_adjustment);
+CREATE INDEX juror_response_cjs_employment_cjs_employer_idx ON juror_mod.juror_response_cjs_employment USING btree (cjs_employer, juror_number);
