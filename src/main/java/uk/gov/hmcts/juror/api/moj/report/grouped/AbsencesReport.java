@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.report.grouped;
 
-import com.querydsl.core.JoinType;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,6 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -49,20 +47,13 @@ public class AbsencesReport extends AbstractGroupedReport {
             DataType.DATE_OF_ABSENCE);
 
         isCourtUserOnly();
-
-        addJoinOverride(JoinOverrideDetails.builder()
-                            .from(QJurorPool.jurorPool)
-                            .joinType(JoinType.LEFTJOIN)
-                            .to(QAppearance.appearance)
-                            .predicatesToAdd(List.of(QAppearance.appearance.attendanceType.eq(AttendanceType.ABSENT)))
-                            .build());
         this.courtLocationRepository = courtLocationRepository;
     }
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        query.where(QAppearance.appearance.attendanceDate.after(request.getFromDate()));
-        query.where(QAppearance.appearance.attendanceDate.before(request.getToDate()));
+        query.where(QAppearance.appearance.attendanceType.eq(AttendanceType.ABSENT));
+        query.where(QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate()));
 
         query.where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
         query.orderBy(QJurorPool.jurorPool.juror.jurorNumber.asc(), QAppearance.appearance.attendanceDate.asc());
