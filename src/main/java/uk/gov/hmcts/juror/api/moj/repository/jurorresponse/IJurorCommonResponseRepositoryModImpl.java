@@ -39,8 +39,7 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
 
             .join(QJurorPool.jurorPool).on(QJurorPool.jurorPool.juror.eq(QJuror.juror))
             .join(QPoolRequest.poolRequest).on(QPoolRequest.poolRequest.eq(QJurorPool.jurorPool.pool))
-
-            .where(QCombinedJurorResponse.combinedJurorResponse.staff.username.equalsIgnoreCase(staffLogin))
+            .where(QCombinedJurorResponse.combinedJurorResponse.staff.username.eq(staffLogin))
             .where(QCombinedJurorResponse.combinedJurorResponse.processingStatus.in(processingStatus))
             .where(QJurorPool.jurorPool.isActive.isTrue())
             .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER));
@@ -77,7 +76,6 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
                 tuple -> tuple.get(QCombinedJurorResponse.combinedJurorResponse.count())
             ));
     }
-
     JPAQueryFactory getJpaQueryFactory() {
         return new JPAQueryFactory(entityManager);
     }
