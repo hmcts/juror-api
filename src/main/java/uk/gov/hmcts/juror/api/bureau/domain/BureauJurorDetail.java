@@ -34,6 +34,7 @@ import java.util.Set;
 @Entity
 @Table(name = "BUREAU_JUROR_DETAIL", schema = "JUROR_DIGITAL_USER")
 @Schema(description = "All Details available on a juror in the system ")
+@SuppressWarnings("PMD.TooManyFields")
 @EqualsAndHashCode(exclude = "changeLogs")
 public class BureauJurorDetail implements Serializable {
     @Id
