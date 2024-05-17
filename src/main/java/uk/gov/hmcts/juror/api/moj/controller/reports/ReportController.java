@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResp
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.FinancialAuditReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
@@ -91,6 +92,19 @@ public class ReportController {
     ) {
 
         return ResponseEntity.ok(utilisationReportService.viewDailyUtilisationJurors(locCode, reportDate));
+    }
+
+    @GetMapping("/monthly-utilisation/{locCode}")
+    @Operation(summary = "View monthly utilisation report")
+    @ResponseStatus(HttpStatus.OK)
+    @IsCourtUser
+    public ResponseEntity<MonthlyUtilisationReportResponse> viewMonthlyUtilisationReport(
+        @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode,
+        @RequestParam(value = "reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate,
+        @RequestParam(value = "previousMonths") @Valid boolean previousMonths
+    ) {
+
+        return ResponseEntity.ok(utilisationReportService.viewMonthlyUtilisationReport(locCode, reportDate, previousMonths));
     }
 
 }

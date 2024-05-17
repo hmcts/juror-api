@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,17 +18,14 @@ import java.util.Map;
 @NoArgsConstructor
 @SuppressWarnings("PMD.ShortClassName")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class DailyUtilisationReportResponse {
+public class MonthlyUtilisationReportResponse {
 
     private Map<String, AbstractReportResponse.DataTypeValue> headings;
     private TableData tableData;
 
-    public DailyUtilisationReportResponse(Map<String, AbstractReportResponse.DataTypeValue> reportHeadings) {
+    public MonthlyUtilisationReportResponse(Map<String, AbstractReportResponse.DataTypeValue> reportHeadings) {
         this.headings = reportHeadings;
         this.tableData = new TableData(List.of(
-            TableData.Heading.builder().id(TableData.TableHeading.DATE)
-                .name(TableData.TableHeading.DATE.getDisplayName())
-                .dataType(TableData.TableHeading.DATE.getDataType()).build(),
             TableData.Heading.builder().id(TableData.TableHeading.JUROR_WORKING_DAYS)
                 .name(TableData.TableHeading.JUROR_WORKING_DAYS.getDisplayName())
                 .dataType(TableData.TableHeading.JUROR_WORKING_DAYS.getDataType()).build(),
@@ -39,26 +37,24 @@ public class DailyUtilisationReportResponse {
                 .dataType(TableData.TableHeading.ATTENDANCE_DAYS.getDataType()).build(),
             TableData.Heading.builder().id(TableData.TableHeading.NON_ATTENDANCE_DAYS)
                 .name(TableData.TableHeading.NON_ATTENDANCE_DAYS.getDisplayName())
-                .dataType(TableData.TableHeading.NON_ATTENDANCE_DAYS.getDataType()).build(),
-            TableData.Heading.builder().id(TableData.TableHeading.UTILISATION)
-                .name(TableData.TableHeading.UTILISATION.getDisplayName())
-                .dataType(TableData.TableHeading.UTILISATION.getDataType()).build()
+                .dataType(TableData.TableHeading.NON_ATTENDANCE_DAYS.getDataType()).build()
         ));
-        this.tableData.setWeeks(new ArrayList<>());
+        this.tableData.setMonths(new ArrayList<>());
     }
 
     @Data
     @NoArgsConstructor
     @ToString
-    @AllArgsConstructor
     public static class TableData {
         private List<Heading> headings;
-        private List<Week> weeks;
-        private int overallTotalJurorWorkingDays;
-        private int overallTotalSittingDays;
-        private int overallTotalAttendanceDays;
-        private int overallTotalNonAttendanceDays;
-        private double overallTotalUtilisation;
+
+        private List<Month> months;
+
+        private int totalJurorWorkingDays;
+        private int totalSittingDays;
+        private int totalAttendanceDays;
+        private int totalNonAttendanceDays;
+        private double totalUtilisation;
 
         public TableData(List<Heading> headings) {
             this.headings = headings;
@@ -76,37 +72,22 @@ public class DailyUtilisationReportResponse {
         }
 
         @Data
+        @Builder
         @NoArgsConstructor
         @ToString
         @AllArgsConstructor
-        public static class Week {
-            /**
-             * A week is usually from Monday to Friday but could include weekends as well.
-             * */
-            private List<Day> days;
-            private int weeklyTotalJurorWorkingDays;
-            private int weeklyTotalSittingDays;
-            private int weeklyTotalAttendanceDays;
-            private int weeklyTotalNonAttendanceDays;
-            private double weeklyTotalUtilisation;
+        public static class Month {
+            private String month;
+            private int jurorWorkingDays;
+            private int sittingDays;
+            private int attendanceDays;
+            private int nonAttendanceDays;
+            private double utilisation;
 
-            @Data
-            @Builder
-            @NoArgsConstructor
-            @ToString
-            @AllArgsConstructor
-            public static class Day {
-                private LocalDate date;
-                private int jurorWorkingDays;
-                private int sittingDays;
-                private int attendanceDays;
-                private int nonAttendanceDays;
-                private double utilisation;
-            }
         }
 
         public enum TableHeading {
-            DATE("Date", LocalDate.class.getSimpleName()),
+            MONTH("Month", String.class.getSimpleName()),
             JUROR_WORKING_DAYS("Juror working days", Integer.class.getSimpleName()),
             SITTING_DAYS("Sitting days", Integer.class.getSimpleName()),
             ATTENDANCE_DAYS("Attendance days", Integer.class.getSimpleName()),
@@ -122,12 +103,15 @@ public class DailyUtilisationReportResponse {
             }
 
             public String getDisplayName() {
+
                 return displayName;
             }
 
             public String getDataType() {
+
                 return dataType;
             }
         }
     }
+
 }

@@ -8,8 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +87,6 @@ public class DailyUtilisationReportJurorsResponse {
 
         }
 
-
         public enum TableHeading {
             JUROR("Juror", String.class.getSimpleName()),
             JUROR_WORKING_DAYS("Juror working day", Integer.class.getSimpleName()),
@@ -112,30 +109,6 @@ public class DailyUtilisationReportJurorsResponse {
             public String getDataType() {
                 return dataType;
             }
-        }
-    }
-
-    public enum ReportHeading {
-        REPORT_DATE("Report date", LocalDate.class.getSimpleName()),
-        REPORT_CREATED("Report created", LocalDate.class.getSimpleName()),
-        TIME_CREATED("Time created", LocalDateTime.class.getSimpleName()),
-        COURT_NAME("Court name", String.class.getSimpleName());
-
-        private String displayName;
-
-        private String dataType;
-
-        ReportHeading(String displayName, String dataType) {
-            this.displayName = displayName;
-            this.dataType = dataType;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public String getDataType() {
-            return dataType;
         }
     }
 
