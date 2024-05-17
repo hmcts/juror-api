@@ -76,6 +76,7 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
                 tuple -> tuple.get(QCombinedJurorResponse.combinedJurorResponse.count())
             ));
     }
+
     JPAQueryFactory getJpaQueryFactory() {
         return new JPAQueryFactory(entityManager);
     }
