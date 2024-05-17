@@ -55,11 +55,13 @@ public class UnpaidAttendanceSummaryReport extends AbstractGroupedReport {
 
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
-        query.where(
-            QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate())
-                .and(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_ENTERED))
-                .or(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_EDITED)
-                    .and(QAppearance.appearance.isDraftExpense.isFalse())));
+        query.where(QAppearance.appearance.appearanceStage.in(
+            AppearanceStage.EXPENSE_ENTERED,
+            AppearanceStage.EXPENSE_EDITED
+        ));
+        query.where(QAppearance.appearance.locCode.eq(SecurityUtil.getLocCode()));
+        query.where(QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate()));
+
         query.where(QAppearance.appearance.locCode.in(SecurityUtil.getCourts()));
         query.orderBy(QAppearance.appearance.poolNumber.asc(), QJuror.juror.jurorNumber.asc());
         addGroupBy(query, DataType.JUROR_NUMBER, DataType.POOL_NUMBER_BY_APPEARANCE);
