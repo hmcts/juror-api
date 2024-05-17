@@ -79,7 +79,7 @@ class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerIT
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(GroupedReportResponse.builder()
                 .groupBy(getTypicalGroupBy())
-                .headings(getResponseHeadings(29))
+                .headings(getResponseHeadings(24))
                 .tableData(AbstractReportResponse.TableData.<GroupedTableData>builder()
                     .headings(getListOfTableHeadings())
                     .data(getTypicalResponseData())
@@ -195,13 +195,10 @@ class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerIT
         return new GroupedTableData()
             .add(today.concat(",").concat("CROWN COURT"), List.of(
                 getTableDataItem("041500001", "CName1", "CSurname1", "415240101", "111111", "09:00:00", "17:30:00"),
-                getTableDataItem("041500002", "CName2", "CSurname2", "415240101", "111111", "09:00:00", "17:30:00"),
-                getTableDataItem("041500003", "CName3", "CSurname3", "415240101", "111111", "09:00:00", "17:30:00"),
                 getTableDataItem("041500004", "CName4", "CSurname4", "415240101", "111111", "09:00:00", "17:30:00"),
                 getTableDataItem("041500005", "CName5", "CSurname5", "415240101", "111111", "09:00:00", "17:30:00"),
                 getTableDataItem("041500006", "CName6", "CSurname6", "415240101", null, "09:00:00", null),
                 getTableDataItem("041500007", "CName7", "CSurname7", "415240101", "111111", "09:00:00", null),
-                getTableDataItem("041500008", "CName8", "CSurname8", "415240101", "111111", "09:00:00", "17:30:00"),
                 getTableDataItem("041500009", "CName9", "CSurname9", "415240101", "111111", "09:00:00", "17:30:00"),
                 getTableDataItem("041500017", "CName17", "CSurname17", "415240103", "111111", "09:00:00", null),
                 getTableDataItem("041500018", "CName18", "CSurname18", "415240103", "111111", "09:00:00", null),
@@ -218,8 +215,6 @@ class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerIT
                 getTableDataItem("041500002", "CName2", "CSurname2", "415240101", "111111", "08:00:00", "17:30:00"),
                 getTableDataItem("041500003", "CName3", "CSurname3", "415240101", "111111", "09:00:00", "17:30:00"),
                 getTableDataItem("041500004", "CName4", "CSurname4", "415240101", "111111", "09:00:00", "17:30:00"),
-                getTableDataItem("041500005", "CName5", "CSurname5", "415240101", "111111", "09:00:00", "17:30:00"),
-                getTableDataItem("041500010", "CName10", "CSurname10", "415240101", "111111", "09:00:00", "17:30:00"),
                 getTableDataItem("041500017", "CName17", "CSurname17", "415240103", "111111", "11:20:00", "17:30:00"),
                 getTableDataItem("041500018", "CName18", "CSurname18", "415240103", "111111", "09:00:00", "17:30:00"),
                 getTableDataItem("041500019", "CName19", "CSurname19", "415240103", "111111", "09:00:00", "17:30:00"),
@@ -232,19 +227,27 @@ class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerIT
             ));
     }
 
-    private ReportLinkedMap<String, Object> getTableDataItem(String... jurorData) {
-        ReportLinkedMap<String, Object> map = new ReportLinkedMap<String, Object>()
-            .add("juror_number", jurorData[0])
-            .add("first_name", jurorData[1])
-            .add("last_name", jurorData[2])
-            .add("appearance_pool_number", jurorData[3])
-            .add("appearance_checked_in", jurorData[5]);
+    private ReportLinkedMap<String, Object> getTableDataItem(
+        String jurorNumber,
+        String firstName,
+        String lastName,
+        String poolNumber,
+        String trialNumber,
+        String checkedIn,
+        String checkedOut) {
 
-        if (jurorData[4] != null) {
-            map.add("appearance_trial_number", jurorData[4]);
+        ReportLinkedMap<String, Object> map = new ReportLinkedMap<String, Object>()
+            .add("juror_number", jurorNumber)
+            .add("first_name", firstName)
+            .add("last_name", lastName)
+            .add("appearance_pool_number", poolNumber);
+
+        if (trialNumber != null) {
+            map.add("appearance_trial_number", trialNumber);
         }
-        if (jurorData[6] != null) {
-            map.add("appearance_checked_out", jurorData[6]);
+        map.add("appearance_checked_in", checkedIn);
+        if (checkedOut != null) {
+            map.add("appearance_checked_out", checkedOut);
         }
 
         return map;

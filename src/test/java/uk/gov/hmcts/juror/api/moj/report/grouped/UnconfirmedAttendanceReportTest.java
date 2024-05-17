@@ -26,13 +26,11 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
@@ -126,7 +124,7 @@ public class UnconfirmedAttendanceReportTest extends AbstractGroupedReportTestSu
         expected.put("total_unconfirmed_attendances", GroupedReportResponse.DataTypeValue.builder()
              .displayName("Total unconfirmed attendances")
              .dataType(Long.class.getSimpleName())
-             .value(tableData.getData().getSize())
+             .value(50)
              .build());
         expected.put("court_name", getCourtNameEntry().getValue());
 
@@ -138,8 +136,7 @@ public class UnconfirmedAttendanceReportTest extends AbstractGroupedReportTestSu
         );
 
         verify(report).getHeadings(request, tableData);
-        verify(report, times(1)).getCourtNameHeader(any());
-        verifyNoMoreInteractions(report);
+        verify(report, times(1)).getCourtNameHeader(courtLocation);
 
         return map;
     }

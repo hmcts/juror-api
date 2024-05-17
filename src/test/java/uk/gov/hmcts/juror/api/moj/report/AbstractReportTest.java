@@ -174,6 +174,17 @@ class AbstractReportTest {
         }
 
         @Test
+        void poolRequestToAppearance() {
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QPoolRequest.poolRequest)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest);
+
+            assertThat(map.containsKey(QAppearance.appearance)).isTrue();
+            assertThat(map.get(QAppearance.appearance)).isEqualTo(
+                new Predicate[]{QPoolRequest.poolRequest.poolNumber.eq(QAppearance.appearance.poolNumber)}
+            );
+        }
+
+        @Test
         void appearanceToJuror() {
             assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QAppearance.appearance)).isTrue();
             Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QAppearance.appearance);
