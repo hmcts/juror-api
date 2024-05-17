@@ -10,9 +10,11 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResp
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
+import uk.gov.hmcts.juror.api.moj.domain.UtilisationStats;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
 import uk.gov.hmcts.juror.api.moj.utils.CourtLocationUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -21,8 +23,10 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @Service
@@ -32,6 +36,8 @@ import java.util.Map;
 public class UtilisationReportServiceImpl implements UtilisationReportService {
     private final CourtLocationRepository courtLocationRepository;
     private final JurorRepository jurorRepository;
+
+    private final UtilisationStatsRepository utilisationStatsRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -174,8 +180,8 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
     }
 
     @Override
-    public MonthlyUtilisationReportResponse viewMonthlyUtilisationReport(String locCode, LocalDate reportDate,
-                                                                         boolean previousMonths) {
+    @Transactional
+    public MonthlyUtilisationReportResponse generateMonthlyUtilisationReport(String locCode, LocalDate reportDate) {
 
         // extract the month and year from the report date
         int month = reportDate.getMonthValue();
@@ -220,22 +226,18 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                     nonAttendanceDays = nonAttendanceDays + Integer.parseInt(res.get(4));
                 }
 
+                Double utilisation = workingDays == 0 ? 0.0 : (double) sittingDays / workingDays * 100;
+
                 MonthlyUtilisationReportResponse.TableData.Month monthData =
                     MonthlyUtilisationReportResponse.TableData.Month.builder()
+                        .month(reportDate.getMonth().getDisplayName(TextStyle.FULL, Locale.UK) + " "
+                            + reportDate.getYear())
                         .jurorWorkingDays(workingDays)
                         .sittingDays(sittingDays)
                         .attendanceDays(attendanceDays)
                         .nonAttendanceDays(nonAttendanceDays)
+                        .utilisation(utilisation)
                         .build();
-
-                monthData.setMonth(reportDate.getMonth().name() + " " + reportDate.getYear());
-
-                Double utilisation = tableData.getTotalJurorWorkingDays() == 0
-                    ? 0.0
-                    : (double) tableData.getTotalSittingDays()
-                        / tableData.getTotalJurorWorkingDays() * 100;
-
-                monthData.setUtilisation(utilisation);
 
                 tableData.getMonths().add(monthData);
 
@@ -244,9 +246,21 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                 tableData.setTotalSittingDays(sittingDays);
                 tableData.setTotalAttendanceDays(attendanceDays);
                 tableData.setTotalNonAttendanceDays(nonAttendanceDays);
-
                 tableData.setTotalUtilisation(utilisation);
 
+                // save the monthly utilisation report to the database
+                UtilisationStats saved = utilisationStatsRepository.save(new UtilisationStats(reportFromDate,
+                    courtLocation.getLocCode(),
+                    workingDays,
+                    attendanceDays, sittingDays, LocalDateTime.now()));
+
+                if (saved != null) {
+                    log.info("Saved monthly utilisation report for location: {} month: {} year: {}", locCode, month,
+                        year);
+                } else {
+                    log.error("Error while saving monthly utilisation report for location: {} month: {} year: {}",
+                        locCode, month, year);
+                }
             }
         } catch (SQLException exc) {
             log.error("Error while fetching monthly utilisation jurors stats", exc.getMessage());
@@ -256,9 +270,14 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         log.info("Fetched monthly utilisation jurors stats for location: {} month: {} year: {}",
             locCode, month, year);
 
-        // save the monthly utilisation report to the database
-
         return response;
+    }
+
+    @Override
+    public MonthlyUtilisationReportResponse viewMonthlyUtilisationReport(String locCode, LocalDate reportDate,
+                                                                         boolean previousMonths) {
+        // extract the month and year from the report date
+        return null;
     }
 
     private static void updateJurorTotals(DailyUtilisationReportJurorsResponse.TableData tableData,
@@ -341,7 +360,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
     }
 
     private Map<String, AbstractReportResponse.DataTypeValue>
-    getUtilReportHeaders(LocalDate reportFromDate, LocalDate reportToDate, String courtName) {
+        getUtilReportHeaders(LocalDate reportFromDate, LocalDate reportToDate, String courtName) {
         return Map.of(
             "date_from", AbstractReportResponse.DataTypeValue.builder()
                 .displayName(ReportHeading.DATE_FROM.getDisplayName())

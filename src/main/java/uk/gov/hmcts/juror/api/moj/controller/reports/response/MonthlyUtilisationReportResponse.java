@@ -8,8 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +24,9 @@ public class MonthlyUtilisationReportResponse {
     public MonthlyUtilisationReportResponse(Map<String, AbstractReportResponse.DataTypeValue> reportHeadings) {
         this.headings = reportHeadings;
         this.tableData = new TableData(List.of(
+            TableData.Heading.builder().id(TableData.TableHeading.MONTH)
+                .name(TableData.TableHeading.MONTH.getDisplayName())
+                .dataType(TableData.TableHeading.MONTH.getDataType()).build(),
             TableData.Heading.builder().id(TableData.TableHeading.JUROR_WORKING_DAYS)
                 .name(TableData.TableHeading.JUROR_WORKING_DAYS.getDisplayName())
                 .dataType(TableData.TableHeading.JUROR_WORKING_DAYS.getDataType()).build(),
@@ -37,7 +38,10 @@ public class MonthlyUtilisationReportResponse {
                 .dataType(TableData.TableHeading.ATTENDANCE_DAYS.getDataType()).build(),
             TableData.Heading.builder().id(TableData.TableHeading.NON_ATTENDANCE_DAYS)
                 .name(TableData.TableHeading.NON_ATTENDANCE_DAYS.getDisplayName())
-                .dataType(TableData.TableHeading.NON_ATTENDANCE_DAYS.getDataType()).build()
+                .dataType(TableData.TableHeading.NON_ATTENDANCE_DAYS.getDataType()).build(),
+            TableData.Heading.builder().id(TableData.TableHeading.UTILISATION)
+                .name(TableData.TableHeading.UTILISATION.getDisplayName())
+                .dataType(TableData.TableHeading.UTILISATION.getDataType()).build()
         ));
         this.tableData.setMonths(new ArrayList<>());
     }

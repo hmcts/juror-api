@@ -12,6 +12,8 @@ public interface UtilisationReportService {
 
     DailyUtilisationReportJurorsResponse viewDailyUtilisationJurors(String locCode, LocalDate reportDate);
 
+    MonthlyUtilisationReportResponse generateMonthlyUtilisationReport(String locCode, LocalDate reportDate);
+
     MonthlyUtilisationReportResponse viewMonthlyUtilisationReport(String locCode, LocalDate reportDate,
                                                                  boolean previousMonths);
 }

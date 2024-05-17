@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationRe
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.UtilisationStatsRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -51,13 +52,16 @@ import static uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilis
 class UtilisationReportServiceImplTest {
     private final CourtLocationRepository courtLocationRepository;
     private final JurorRepository jurorRepository;
+    private final UtilisationStatsRepository utilisationStatsRepository;
     private final UtilisationReportService utilisationReportService;
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     public UtilisationReportServiceImplTest() {
         this.courtLocationRepository = mock(CourtLocationRepository.class);
         this.jurorRepository = mock(JurorRepository.class);
-        this.utilisationReportService = new UtilisationReportServiceImpl(courtLocationRepository, jurorRepository);
+        this.utilisationStatsRepository = mock(UtilisationStatsRepository.class);
+        this.utilisationReportService = new UtilisationReportServiceImpl(courtLocationRepository, jurorRepository,
+            utilisationStatsRepository);
     }
 
     @BeforeEach

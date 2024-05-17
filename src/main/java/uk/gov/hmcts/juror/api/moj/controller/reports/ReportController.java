@@ -94,7 +94,19 @@ public class ReportController {
         return ResponseEntity.ok(utilisationReportService.viewDailyUtilisationJurors(locCode, reportDate));
     }
 
-    @GetMapping("/monthly-utilisation/{locCode}")
+    @GetMapping("/generate-monthly-utilisation/{locCode}")
+    @Operation(summary = "Generate monthly utilisation report for a given month")
+    @ResponseStatus(HttpStatus.OK)
+    @IsCourtUser
+    public ResponseEntity<MonthlyUtilisationReportResponse> generateMonthlyUtilisationReport(
+        @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode,
+        @RequestParam(value = "reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate
+    ) {
+
+        return ResponseEntity.ok(utilisationReportService.generateMonthlyUtilisationReport(locCode, reportDate));
+    }
+
+    @GetMapping("/view-monthly-utilisation/{locCode}")
     @Operation(summary = "View monthly utilisation report")
     @ResponseStatus(HttpStatus.OK)
     @IsCourtUser
@@ -104,7 +116,8 @@ public class ReportController {
         @RequestParam(value = "previousMonths") @Valid boolean previousMonths
     ) {
 
-        return ResponseEntity.ok(utilisationReportService.viewMonthlyUtilisationReport(locCode, reportDate, previousMonths));
+        return ResponseEntity.ok(utilisationReportService.viewMonthlyUtilisationReport(locCode, reportDate,
+            previousMonths));
     }
 
 }

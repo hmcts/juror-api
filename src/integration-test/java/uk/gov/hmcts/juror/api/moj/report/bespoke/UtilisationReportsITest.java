@@ -19,6 +19,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
@@ -41,6 +42,8 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
     public static final String DAILY_UTILISATION_REPORT_URL = URL_BASE + "/daily-utilisation";
 
     public static final String DAILY_UTILISATION_JURORS_URL = URL_BASE + "/daily-utilisation-jurors";
+
+    public static final String GENERATE_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/generate-monthly-utilisation";
 
     private HttpHeaders httpHeaders;
 
@@ -222,6 +225,76 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
                         URI.create(DAILY_UTILISATION_JURORS_URL
                             + "/415?reportDate=2024-05-09")),
                     DailyUtilisationReportJurorsResponse.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP FORBIDDEN response")
+                .isEqualTo(HttpStatus.FORBIDDEN);
+
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Generate Monthly Utilisation Report Integration Tests")
+    @Sql({
+        "/db/truncate.sql",
+        "/db/mod/truncate.sql",
+        "/db/mod/reports/DailyUtilisationReportsITest_typical.sql"
+    })
+    class GenerateMonthlyUtilisationReportTests {
+
+        @Test
+        void generateMonthlyUtilisationReportHappy() {
+
+            ResponseEntity<MonthlyUtilisationReportResponse> responseEntity =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create(GENERATE_MONTHLY_UTILISATION_REPORT_URL
+                            + "/415?reportDate=2024-05-01")),
+                    MonthlyUtilisationReportResponse.class);
+
+            assertThat(responseEntity.getStatusCode()).as("Expect HTTP OK response").isEqualTo(HttpStatus.OK);
+            MonthlyUtilisationReportResponse responseBody = responseEntity.getBody();
+            assertThat(responseBody).isNotNull();
+
+            // validate the table data
+            MonthlyUtilisationReportResponse.TableData tableData = responseBody.getTableData();
+            assertThat(tableData).isNotNull();
+            assertThat(tableData.getHeadings()).isNotNull();
+            assertThat(tableData.getHeadings()).hasSize(6);
+
+            // validate the month data
+            assertThat(tableData.getMonths()).isNotNull();
+
+            assertThat(tableData.getMonths().size()).isEqualTo(1);
+
+            MonthlyUtilisationReportResponse.TableData.Month month = tableData.getMonths().get(0);
+            assertThat(month.getMonth()).isEqualTo("May 2024");
+            assertThat(month.getJurorWorkingDays()).isEqualTo(457);
+            assertThat(month.getSittingDays()).isEqualTo(52);
+            assertThat(month.getAttendanceDays()).isEqualTo(56);
+            assertThat(month.getNonAttendanceDays()).isEqualTo(401);
+            assertThat(Math.round(month.getUtilisation())).isEqualTo(Math.round(11.38));
+
+            // validate the totals - should be as per the month
+            assertThat(tableData.getTotalJurorWorkingDays()).isEqualTo(457);
+            assertThat(tableData.getTotalSittingDays()).isEqualTo(52);
+            assertThat(tableData.getTotalAttendanceDays()).isEqualTo(56);
+            assertThat(tableData.getTotalNonAttendanceDays()).isEqualTo(401);
+            assertThat(Math.round(tableData.getTotalUtilisation())).isEqualTo(Math.round(11.38));
+
+        }
+
+        @Test
+        void generateMonthlyUtilisationJurorsInvalidUserType() {
+
+            final String bureauJwt = createBureauJwt();
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+            ResponseEntity<MonthlyUtilisationReportResponse> responseEntity =
+                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                        URI.create(GENERATE_MONTHLY_UTILISATION_REPORT_URL
+                            + "/415?reportDate=2024-05-01")),
+                    MonthlyUtilisationReportResponse.class);
 
             assertThat(responseEntity.getStatusCode()).as("Expect HTTP FORBIDDEN response")
                 .isEqualTo(HttpStatus.FORBIDDEN);
