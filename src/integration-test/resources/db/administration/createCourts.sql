@@ -1,3 +1,8 @@
+DELETE from juror_mod.welsh_court_location
+where loc_code in ('002');
+DELETE from juror_mod.court_location
+    where loc_code in ('001','002','003','004','005');
+
 INSERT INTO juror_mod.court_location
 (owner, loc_code, loc_name, loc_address1, loc_address2, loc_address3, loc_address4, loc_address5, loc_address6,
  loc_zip, loc_attend_time, cost_centre, loc_signature, loc_phone)

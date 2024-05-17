@@ -10,6 +10,7 @@ import jakarta.validation.ValidatorFactory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Setter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestConstants;
@@ -51,15 +52,12 @@ public abstract class AbstractReportTestSupport<
     private final Class<?> validatorClass;
     protected R report;
     private PoolRequestRepository poolRequestRepository;
-    public boolean hasPoolRepository = true;
+    @Setter
+    private boolean hasPoolRepository = true;
 
     private final Validator validator;
 
     public abstract R createReport(PoolRequestRepository poolRequestRepository);
-
-    public void setHasPoolRepository(boolean hasPoolRepository) {
-        this.hasPoolRepository = hasPoolRepository;
-    }
 
     public AbstractReportTestSupport(EntityPath<?> from,
                                      Class<?> validatorClass, IDataType... dataTypes) {
