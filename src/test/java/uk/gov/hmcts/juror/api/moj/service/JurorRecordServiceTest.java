@@ -581,8 +581,12 @@ class JurorRecordServiceTest {
     void testCheckJurorRecordNotFound() {
 
         String jurorNumber = "641500094";
-        doReturn(new ArrayList<>()).when(jurorPoolRepository)
+        doReturn(null).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(any(), anyBoolean());
+
+        CourtLocation courtLocation = mock(CourtLocation.class);
+        doReturn(TestConstants.VALID_COURT_LOCATION).when(courtLocation).getOwner();
+        doReturn(courtLocation).when(courtLocationService).getCourtLocation(any());
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("415"),
             jurorNumber, LOC_CODE);
@@ -598,7 +602,7 @@ class JurorRecordServiceTest {
     void testJurorOverviewResponseDtoContainsWelshFlag(Boolean welshFlag) {
         final String jurorNumber = "111111111";
         CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setLocCode(LOC_CODE);
+        courtLocation.setOwner(LOC_CODE);
         final List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
 
         List<JurorHistory> jurorHistoryList = new ArrayList<>();
@@ -613,7 +617,7 @@ class JurorRecordServiceTest {
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(LOC_CODE);
         doReturn(jurorPools.get(0)).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, LOC_CODE);
 
         JurorOverviewResponseDto expectedResponse = new JurorOverviewResponseDto();
         expectedResponse.setWelshLanguageRequired(welshFlag);
@@ -622,7 +626,7 @@ class JurorRecordServiceTest {
             jurorRecordService.getJurorOverview(buildPayload("400"), jurorNumber, LOC_CODE);
 
         verify(jurorPoolRepository, times(1))
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, LOC_CODE);
         verify(jurorHistoryRepository, times(1))
             .findByJurorNumberAndDateCreatedGreaterThanEqual(anyString(), any(LocalDate.class));
         assertEquals(expectedResponse.getWelshLanguageRequired(), actualResponse.getWelshLanguageRequired(),
@@ -633,8 +637,8 @@ class JurorRecordServiceTest {
     void testCheckJurorRecordOverviewCourtUserDifferentCourt() {
         String jurorNumber = "416111111";
         String locCode = "416";
-        when(jurorPoolRepository.findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(),
-            any())).thenReturn(createValidJurorPool(jurorNumber, "416"));
+        when(jurorPoolRepository.findActivePolByJurorNumberAndPoolOwner(any(), any()))
+            .thenReturn(createValidJurorPool(jurorNumber, "416"));
 
         when(courtLocationService.getCourtLocation(any())).thenReturn(getCourtLocation());
 
@@ -642,7 +646,7 @@ class JurorRecordServiceTest {
             .isThrownBy(() -> jurorRecordService.getJurorOverview(buildPayload("415"), jurorNumber, locCode));
 
         verify(jurorPoolRepository, times(1))
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, getCourtLocation());
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, "416");
     }
 
     @Test
@@ -1156,6 +1160,7 @@ class JurorRecordServiceTest {
         courtLocation.setLocCourtName("TEST COURT");
         courtLocation.setName("TEST NAME");
         courtLocation.setLocCode("416");
+        courtLocation.setOwner("416");
         return courtLocation;
     }
 
@@ -1480,7 +1485,7 @@ class JurorRecordServiceTest {
         final String jurorNumber = "111111111";
         final String locCode = "415";
         CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setLocCode(locCode);
+        courtLocation.setOwner(locCode);
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
 
@@ -1488,13 +1493,13 @@ class JurorRecordServiceTest {
         Juror juror = jurorPools.get(0).getJuror();
         juror.setPoliceCheck(policeCheck);
         doReturn(jurorPools.get(0)).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, locCode);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
             jurorNumber, locCode);
 
         verify(jurorPoolRepository, times(1))
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, locCode);
         assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Excepted status to be 'Not "
             + "Checked'").isEqualTo(policeCheck);
     }
@@ -1505,7 +1510,7 @@ class JurorRecordServiceTest {
         final String locCode = "415";
 
         CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setLocCode(locCode);
+        courtLocation.setOwner(locCode);
 
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
         JurorPool jurorPool = jurorPools.get(0);
@@ -1516,13 +1521,13 @@ class JurorRecordServiceTest {
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
         doReturn(jurorPools.get(0)).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, locCode);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
             jurorNumber, locCode);
 
         verify(jurorPoolRepository, times(1))
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, locCode);
         assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Police check status")
             .isEqualTo(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED);
     }
@@ -1535,7 +1540,7 @@ class JurorRecordServiceTest {
         final String locCode = "415";
 
         CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setLocCode(locCode);
+        courtLocation.setOwner(locCode);
 
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
         JurorPool jurorPool = jurorPools.get(0);
@@ -1546,13 +1551,13 @@ class JurorRecordServiceTest {
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
         doReturn(jurorPools.get(0)).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, locCode);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
             jurorNumber, locCode);
 
         verify(jurorPoolRepository, times(1))
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, locCode);
         assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Excepted status to be 'In "
             + "Progress'").isEqualTo(PoliceCheck.IN_PROGRESS);
     }
@@ -1563,7 +1568,7 @@ class JurorRecordServiceTest {
         final String locCode = "415";
 
         CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setLocCode(locCode);
+        courtLocation.setOwner(locCode);
 
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
 
@@ -1575,13 +1580,13 @@ class JurorRecordServiceTest {
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
         doReturn(jurorPools.get(0)).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, locCode);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
             jurorNumber, locCode);
 
         verify(jurorPoolRepository, times(1))
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, locCode);
         assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Police Check status")
             .isEqualTo(PoliceCheck.ELIGIBLE);
     }
@@ -1592,7 +1597,7 @@ class JurorRecordServiceTest {
         final String locCode = "415";
 
         CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setLocCode(locCode);
+        courtLocation.setOwner(locCode);
 
         JurorStatus status = new JurorStatus();
         status.setStatus(IJurorStatus.RESPONDED);
@@ -1609,13 +1614,13 @@ class JurorRecordServiceTest {
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
         doReturn(jurorPools.get(0)).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, locCode);
 
         jurorRecordService.getJurorOverview(buildPayload("400"),
             jurorNumber, locCode);
 
         verify(jurorPoolRepository, times(1))
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, locCode);
         verify(jurorResponseRepository, times(1)).findByJurorNumber(any(String.class));
     }
 
@@ -1624,7 +1629,7 @@ class JurorRecordServiceTest {
         final String jurorNumber = "111111111";
         final String locCode = "415";
         CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setLocCode(locCode);
+        courtLocation.setOwner(locCode);
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
 
         Juror juror = jurorPools.get(0).getJuror();
@@ -1632,13 +1637,13 @@ class JurorRecordServiceTest {
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
         doReturn(jurorPools.get(0)).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, locCode);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
             jurorNumber, locCode);
 
         verify(jurorPoolRepository, times(1))
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, locCode);
         assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Police check status")
             .isEqualTo(PoliceCheck.INELIGIBLE);
     }
@@ -1648,7 +1653,7 @@ class JurorRecordServiceTest {
         final String jurorNumber = "111111111";
         final String locCode = "415";
         CourtLocation courtLocation = new CourtLocation();
-        courtLocation.setLocCode(locCode);
+        courtLocation.setOwner(locCode);
         final List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
 
         List<JurorHistory> jurorHistoryList = new ArrayList<>();
@@ -1669,12 +1674,12 @@ class JurorRecordServiceTest {
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
         doReturn(jurorPools.get(0)).when(jurorPoolRepository)
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, locCode);
 
         jurorRecordService.getJurorOverview(buildPayload("400"), jurorNumber, locCode);
 
         verify(jurorPoolRepository, times(1))
-            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            .findActivePolByJurorNumberAndPoolOwner(jurorNumber, locCode);
         verify(jurorHistoryRepository, times(1))
             .findByJurorNumberAndDateCreatedGreaterThanEqual(anyString(), any(LocalDate.class));
     }
@@ -3807,7 +3812,7 @@ class JurorRecordServiceTest {
             jurorStatus.setStatus(IJurorStatus.RESPONDED);
 
             when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true))
-                    .thenReturn(List.of(jurorPool));
+                .thenReturn(List.of(jurorPool));
             when(jurorStatusRepository.findById(IJurorStatus.RESPONDED)).thenReturn(Optional.of(jurorStatus));
 
             jurorRecordService.markResponded(jurorNumber);

@@ -29,6 +29,8 @@ public interface IJurorPoolRepository {
 
     JurorPool findByJurorNumberAndIsActiveAndCourt(String jurorNumber, Boolean isActive, CourtLocation locCode);
 
+    JurorPool findActivePolByJurorNumberAndPoolOwner(String jurorNumber, String owner);
+
     List<JurorPool> findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(List<String> jurorNumbers,
                                                                                    boolean isActive,
                                                                                    String poolNumber,

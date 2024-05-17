@@ -317,7 +317,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         // should be only one active and editable record
         JurorPool jurorPool =
-            jurorPoolRepository.findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+            jurorPoolRepository.findActivePolByJurorNumberAndPoolOwner(jurorNumber, courtLocation.getOwner());
 
         //check if juror pool exists
         if (jurorPool == null) {

@@ -82,6 +82,18 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
     }
 
     @Override
+    public JurorPool findActivePolByJurorNumberAndPoolOwner(String jurorNumber, String owner) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        JPQLQuery<JurorPool> query = queryFactory.selectFrom(JUROR_POOL)
+            .where(JUROR_POOL.juror.jurorNumber.eq(jurorNumber))
+            .where(JUROR_POOL.isActive.isTrue())
+            //There can only be one active pool per juror per court group
+            .where(JUROR_POOL.pool.owner.eq(owner));
+        return query.fetchOne();
+    }
+
+    @Override
     public List<JurorPool> findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(List<String> jurorNumbers,
                                                                                           boolean isActive,
                                                                                           String poolNumber,
