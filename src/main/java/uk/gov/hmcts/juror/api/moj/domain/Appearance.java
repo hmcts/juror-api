@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
@@ -18,6 +19,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JoinColumnOrFormula;
+import org.hibernate.annotations.JoinColumnsOrFormulas;
+import org.hibernate.annotations.JoinFormula;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import org.hibernate.validator.constraints.Length;
@@ -78,7 +82,10 @@ public class Appearance implements Serializable {
     private String locCode;
 
     @ManyToOne
-    @JoinColumn(name = "f_audit", referencedColumnName = "id")
+    @JoinColumns({
+        @JoinColumn(name = "f_audit", referencedColumnName = "id"),
+        @JoinColumn(name = "f_audit_loc_code", referencedColumnName = "loc_code")
+    })
     @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private FinancialAuditDetails financialAuditDetails;
 
@@ -183,7 +190,8 @@ public class Appearance implements Serializable {
     private BigDecimal subsistencePaid;
 
     /**
-     * Amount spent on a smart card (credit), usually on food and drink in a canteen (to be deducted from expenses due).
+     * Amount spent on a smart card (credit), usually on food and drink in a canteen (to be deducted from
+     * expenses due).
      */
     @Column(name = "smart_card_due")
     private BigDecimal smartCardAmountDue;
@@ -224,7 +232,8 @@ public class Appearance implements Serializable {
     private FoodDrinkClaimType foodAndDrinkClaimType;
 
     /**
-     * Flag indicating whether the expense is being "saved for later" in a draft state (true) or if it is ready to be
+     * Flag indicating whether the expense is being "saved for later" in a draft state (true) or if it is
+     * ready to be
      * authorised (false).
      */
     @Column(name = "is_draft_expense")
@@ -232,7 +241,8 @@ public class Appearance implements Serializable {
     private boolean isDraftExpense = true;
 
     /**
-     * flag indicating whether the juror has not attended court on a day they were due to be present (unauthorised
+     * flag indicating whether the juror has not attended court on a day they were due to be present
+     * (unauthorised
      * absence).
      */
     @Column(name = "no_show")
@@ -294,7 +304,9 @@ public class Appearance implements Serializable {
         if (timeOut == null || timeIn == null) {
             return LocalTime.of(0, 0);
         }
-        return this.timeOut.minusNanos(this.timeIn.toNanoOfDay());
+        return this.timeOut.
+
+            minusNanos(this.timeIn.toNanoOfDay());
     }
 
     public Boolean isLongTrialDay() {

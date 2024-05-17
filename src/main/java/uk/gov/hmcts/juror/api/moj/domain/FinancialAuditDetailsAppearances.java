@@ -30,6 +30,10 @@ public class FinancialAuditDetailsAppearances implements Serializable {
     @Id
     private Long financialAuditId;
 
+    @Column(name = "loc_code")
+    @Id
+    private String locCode;
+
     @Id
     @NotNull
     @Column(name = "attendance_date")

@@ -74,6 +74,12 @@ class FinancialAuditReportsITest extends AbstractControllerIntegrationTest<Void,
 
     @Test
     void viewForApproval() {
+
+        testBuilder()
+            .addQueryParam("audit-number", "F91")
+                .triggerInvalid()
+                    .printResponse();
+
         testBuilder()
             .addQueryParam("audit-number", "F91")
             .triggerValid()

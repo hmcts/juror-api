@@ -28,8 +28,8 @@ public class IFinancialAuditDetailsRepositoryImpl implements IFinancialAuditDeta
         JPAQuery<FinancialAuditDetails> query = queryFactory.select(QFinancialAuditDetails.financialAuditDetails)
             .from(QFinancialAuditDetails.financialAuditDetails)
             .join(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances)
-            .on(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances.financialAuditId
-                .eq(financialAuditDetails.getId()))
+            .on(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances.financialAuditId.eq(financialAuditDetails.getId())
+                .and(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances.locCode.eq(financialAuditDetails.getLocCode())))
             .where(QFinancialAuditDetails.financialAuditDetails.type.in(genericType.getTypes()))
             //If more then one type is passed, then get the very first one
             .orderBy(sortMethod.from(QFinancialAuditDetails.financialAuditDetails.createdOn));

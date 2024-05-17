@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetailsAppearances;
+import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetailsId;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -64,6 +65,7 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
             financialAuditDetailsAppearances.add(
                 new FinancialAuditDetailsAppearances(
                     financialAuditDetails.getId(),
+                    courtLocationCode,
                     savedAppearance.getAttendanceDate(),
                     savedAppearance.getVersion()
                 )
@@ -81,7 +83,11 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
 
     @Override
     public FinancialAuditDetails getFinancialAuditDetails(long financialAuditNumber) {
-        return financialAuditDetailsRepository.findById(financialAuditNumber)
+        return financialAuditDetailsRepository.findById(
+                new FinancialAuditDetailsId(
+                    financialAuditNumber, SecurityUtil.getLocCode()
+                )
+            )
             .orElseThrow(() -> new MojException.NotFound("Financial Audit Details not found: "
                 + financialAuditNumber, null));
     }

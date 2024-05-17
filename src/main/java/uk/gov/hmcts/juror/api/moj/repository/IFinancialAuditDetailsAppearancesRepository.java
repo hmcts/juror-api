@@ -12,6 +12,9 @@ public interface IFinancialAuditDetailsAppearancesRepository {
         FinancialAuditDetails financialAuditDetails,
         Appearance appearance);
 
-    Optional<FinancialAuditDetailsAppearances> findPreviousFinancialAuditDetailsAppearancesWithGenericTypeExcludingProvidedAuditDetails(
-        FinancialAuditDetails.Type.GenericType genericType, FinancialAuditDetails financialAuditDetails, Appearance appearance);
+    Optional<FinancialAuditDetailsAppearances>
+    findPreviousFinancialAuditDetailsAppearancesWithGenericTypeExcludingProvidedAuditDetails(
+        FinancialAuditDetails.Type.GenericType genericType,
+        FinancialAuditDetails financialAuditDetails,
+        Appearance appearance);
 }

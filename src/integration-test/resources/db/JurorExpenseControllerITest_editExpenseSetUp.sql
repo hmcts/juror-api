@@ -71,38 +71,38 @@ INSERT INTO juror_mod.appearance
  parking_total_due, parking_total_paid, childcare_total_due, childcare_total_paid,
  misc_total_due, misc_total_paid, loss_of_earnings_due, loss_of_earnings_paid,
  subsistence_due, subsistence_paid, smart_card_due, smart_card_paid, attendance_type,
- is_draft_expense, f_audit,
+ is_draft_expense, f_audit,f_audit_loc_code,
  appearance_stage)
 values
 
     --3 For Approval
     ('2023-01-08', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      false, 13.97, 0, 23, 0, 33, 0, 43, 0, 53, 0, 63, 0, 73, 0, 83, 0, 93, 0, 103, 0, 28, 0, 'FULL_DAY',
-     false, '123', 'EXPENSE_ENTERED'),
+     false, '123','415', 'EXPENSE_ENTERED'),
     ('2023-01-09', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      false, 14.01, 0, 24, 0, 34, 0, 44, 0, 54, 0, 64, 0, 74, 0, 84, 0, 94, 0, 104, 0, 29, 0, 'FULL_DAY',
-     false, '123', 'EXPENSE_ENTERED'),
+     false, '123','415', 'EXPENSE_ENTERED'),
     ('2023-01-10', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      false, 15, 0, 25, 0, 35, 0, 45, 0, 55, 0, 65, 0, 75, 0, 85, 0, 95, 0, 105, 0, 30, 0, 'FULL_DAY',  false,
-     '123', 'EXPENSE_ENTERED'),
+     '123','415', 'EXPENSE_ENTERED'),
     -- 3 Approved
     ('2023-01-11', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      false, 1, 1, 5, 5, 0, 0, 1, 1, 0, 0, 12, 12, 4, 4, 5, 5, 6, 6, 3, 3, 29, 29, 'FULL_DAY',
-     false, '321', 'EXPENSE_AUTHORISED'),
+     false, '321','415', 'EXPENSE_AUTHORISED'),
     ('2023-01-12', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      false, 104, 104, 5, 5, 84, 84, 1, 1, 64, 64, 12, 12, 4, 4, 5, 5, 6, 6, 3, 3, 29, 29, 'FULL_DAY',
-     false, '321', 'EXPENSE_AUTHORISED'),
+     false, '321','415', 'EXPENSE_AUTHORISED'),
     ('2023-01-13', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      false, 105, 105, 95, 95, 85, 85, 75, 75, 65, 65, 55, 55, 45, 45, 35, 35, 25, 25, 15, 15, 30, 30, 'FULL_DAY',
-     false, '321', 'EXPENSE_AUTHORISED'),
+     false, '321','415', 'EXPENSE_AUTHORISED'),
     -- 2 Approved - 1 edited
     ('2023-01-14', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      false, 103, 103, 93, 93, 83, 83, 73, 73, 63, 63, 53, 53, 43, 43, 33, 33, 23, 23, 13, 13, 28, 28, 'FULL_DAY',
-     false, '12345', 'EXPENSE_AUTHORISED'),
+     false, '12345','415', 'EXPENSE_AUTHORISED'),
     ('2023-01-15', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      false, 1, 1, 5, 5, 0, 0, 1, 1, 0, 0, 12, 12, 4, 4, 5, 5, 6, 6, 3, 3, 29, 29, 'FULL_DAY',
-     false, '12345', 'EXPENSE_EDITED'),
+     false, '12345','415', 'EXPENSE_EDITED'),
     ('2023-01-16', '641500020', '415', '09:30', '16:00', false, '00:40', true, '415230101',
      false, 105, 105, 95, 95, 85, 85, 75, 75, 65, 65, 55, 55, 45, 45, 35, 35, 25, 25, 15, 15, 30, 30, 'FULL_DAY',
-     false, '12345', 'EXPENSE_AUTHORISED')
+     false, '12345','415', 'EXPENSE_AUTHORISED')
 ;

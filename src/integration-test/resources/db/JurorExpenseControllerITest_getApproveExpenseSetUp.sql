@@ -97,8 +97,8 @@ VALUES (1234, 1, 1, 'FOR_APPROVAL', 'COURT_USER2', '2023-01-11 09:31:01.000','64
        (3, 1, 1, 'APPROVED_BACS', 'smcintyre', '2023-01-13 09:33:03.000','641500021','415'),
        (12345, 1, 1, 'APPROVED_EDIT', 'smcintyre', '2023-01-14 09:34:04.000','641500021','415');
 
-INSERT INTO juror_mod.financial_audit_details_appearances (financial_audit_id, attendance_date,  appearance_version)
-VALUES (1234, '2023-01-08',  1);
+INSERT INTO juror_mod.financial_audit_details_appearances (financial_audit_id,loc_code, attendance_date,  appearance_version)
+VALUES (1234,'415', '2023-01-08',  1);
 --Approved edited
 
 INSERT INTO juror_mod.appearance

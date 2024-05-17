@@ -7,7 +7,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
@@ -15,6 +17,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -33,6 +36,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Builder
 @ToString
+@IdClass(FinancialAuditDetailsId.class)
 public class FinancialAuditDetails implements Serializable {
     private static final String F_AUDIT_GENERATOR_NAME = "appearance_f_audit_gen";
     public static final String F_AUDIT_PREFIX = "F";
@@ -44,6 +48,9 @@ public class FinancialAuditDetails implements Serializable {
         allocationSize = 1)
     private Long id;
 
+    @Column(name = "loc_code")
+    @Id
+    private String locCode;
 
     @Column(name = "created_on")
     private LocalDateTime createdOn;
@@ -58,8 +65,6 @@ public class FinancialAuditDetails implements Serializable {
     @Column(name = "juror_revision")
     private Long jurorRevision;
 
-    @Column(name = "loc_code")
-    private String locCode;
 
     @Column(name = "court_location_revision")
     private Long courtLocationRevision;
@@ -70,7 +75,10 @@ public class FinancialAuditDetails implements Serializable {
 
 
     @OneToMany
-    @JoinColumn(name = "financial_audit_id", referencedColumnName = "id")
+    @JoinColumns({
+        @JoinColumn(name = "financial_audit_id", referencedColumnName = "id"),
+        @JoinColumn(name = "loc_code", referencedColumnName = "loc_code")}
+    )
     private List<FinancialAuditDetailsAppearances> financialAuditDetailsAppearances;
 
 
