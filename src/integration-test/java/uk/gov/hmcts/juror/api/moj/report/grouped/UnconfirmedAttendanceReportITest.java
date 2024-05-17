@@ -13,8 +13,10 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResp
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
+import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Sql({
@@ -77,12 +79,42 @@ class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerIT
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(GroupedReportResponse.builder()
                 .groupBy(getTypicalGroupBy())
-                .headings(getResponseHeadings(20))
+                .headings(getResponseHeadings(29))
                 .tableData(AbstractReportResponse.TableData.<GroupedTableData>builder()
                     .headings(getListOfTableHeadings())
-                    .data(new GroupedTableData())
+                    .data(getTypicalResponseData())
                     .build())
-                .build());
+            .build());
+    }
+
+    @Test
+    void negativeUnauthorisedBureau() {
+        testBuilder()
+            .jwt(getBureauJwt())
+            .triggerInvalid()
+            .assertMojForbiddenResponse("User not allowed to access this report");
+    }
+
+    @Test
+    void negativeInvalidPayloadFromDateMissing() {
+        StandardReportRequest request = getValidPayload();
+        request.setFromDate(null);
+
+        testBuilder()
+            .payload(request)
+            .triggerInvalid()
+            .assertInvalidPathParam("fromDate: must not be null");
+    }
+
+    @Test
+    void negativeInvalidPayloadToDateMissing() {
+        StandardReportRequest request = getValidPayload();
+        request.setToDate(null);
+
+        testBuilder()
+            .payload(request)
+            .triggerInvalid()
+            .assertInvalidPathParam("toDate: must not be null");
     }
 
     public GroupByResponse getTypicalGroupBy() {
@@ -101,7 +133,7 @@ class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerIT
             .value(attendances)
             .build());
         headingsMap.add("court_name", StandardReportResponse.DataTypeValue.builder()
-            .displayName("Court name")
+            .displayName("Court Name")
             .dataType("String")
             .value("CHESTER (415)")
             .build());
@@ -130,35 +162,91 @@ class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerIT
                 .headings(null)
                 .build(),
             StandardReportResponse.TableData.Heading.builder()
-                .id("pool_number")
+                .id("appearance_pool_number")
                 .name("Pool Number")
                 .dataType("String")
                 .headings(null)
                 .build(),
             StandardReportResponse.TableData.Heading.builder()
-                .id("trial_number")
+                .id("appearance_trial_number")
                 .name("Trial Number")
                 .dataType("String")
                 .headings(null)
                 .build(),
             StandardReportResponse.TableData.Heading.builder()
-                .id("checked_in")
-                .name("Checked in")
+                .id("appearance_checked_in")
+                .name("Checked In")
                 .dataType("LocalTime")
                 .headings(null)
                 .build(),
             StandardReportResponse.TableData.Heading.builder()
-                .id("checked_out")
-                .name("Checked out")
+                .id("appearance_checked_out")
+                .name("Checked Out")
                 .dataType("LocalTime")
                 .headings(null)
                 .build()
         );
     }
 
-//    private GroupedReportResponse getTypicalResponse() {
-//        return GroupedReportResponse.builder()
-//                   .groupBy(getTypicalGroupByResponse())
-//                   .headings(getResponseHeadings(1, "CHESTER (415)"))
-//    }
+    private GroupedTableData getTypicalResponseData() {
+        String today = DateTimeFormatter.ISO_DATE.format(LocalDate.now());
+        String yesterday = DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(1));
+
+        return new GroupedTableData()
+            .add(today.concat(",").concat("CROWN COURT"), List.of(
+                getTableDataItem("041500001", "CName1", "CSurname1", "415240101", "111111", "09:00:00", "17:30:00"),
+                getTableDataItem("041500002", "CName2", "CSurname2", "415240101", "111111", "09:00:00", "17:30:00"),
+                getTableDataItem("041500003", "CName3", "CSurname3", "415240101", "111111", "09:00:00", "17:30:00"),
+                getTableDataItem("041500004", "CName4", "CSurname4", "415240101", "111111", "09:00:00", "17:30:00"),
+                getTableDataItem("041500005", "CName5", "CSurname5", "415240101", "111111", "09:00:00", "17:30:00"),
+                getTableDataItem("041500006", "CName6", "CSurname6", "415240101", null, "09:00:00", null),
+                getTableDataItem("041500007", "CName7", "CSurname7", "415240101", "111111", "09:00:00", null),
+                getTableDataItem("041500008", "CName8", "CSurname8", "415240101", "111111", "09:00:00", "17:30:00"),
+                getTableDataItem("041500009", "CName9", "CSurname9", "415240101", "111111", "09:00:00", "17:30:00"),
+                getTableDataItem("041500017", "CName17", "CSurname17", "415240103", "111111", "09:00:00", null),
+                getTableDataItem("041500018", "CName18", "CSurname18", "415240103", "111111", "09:00:00", null),
+                getTableDataItem("041500019", "CName19", "CSurname19", "415240103", "111111", "09:00:00", null),
+                getTableDataItem("041500020", "CName20", "CSurname20", "415240103", "111111", "09:00:00", null)
+            ))
+            .add(today.concat(",").concat("CIVIL COURT"), List.of(
+                getTableDataItem("041500011", "CName11", "CSurname11", "415240102", "111111", "09:00:00", "17:30:00"),
+                getTableDataItem("041500013", "CName13", "CSurname13", "415240102", "111111", "09:00:00", null),
+                getTableDataItem("041500014", "CName14", "CSurname14", "415240102", "111111", "09:00:00", null)
+            ))
+            .add(yesterday.concat(",").concat("CROWN COURT"), List.of(
+                getTableDataItem("041500001", "CName1", "CSurname1", "415240101", "111111", "09:30:00", "17:30:00"),
+                getTableDataItem("041500002", "CName2", "CSurname2", "415240101", "111111", "08:00:00", "17:30:00"),
+                getTableDataItem("041500003", "CName3", "CSurname3", "415240101", "111111", "09:00:00", "17:30:00"),
+                getTableDataItem("041500004", "CName4", "CSurname4", "415240101", "111111", "09:00:00", "17:30:00"),
+                getTableDataItem("041500005", "CName5", "CSurname5", "415240101", "111111", "09:00:00", "17:30:00"),
+                getTableDataItem("041500010", "CName10", "CSurname10", "415240101", "111111", "09:00:00", "17:30:00"),
+                getTableDataItem("041500017", "CName17", "CSurname17", "415240103", "111111", "11:20:00", "17:30:00"),
+                getTableDataItem("041500018", "CName18", "CSurname18", "415240103", "111111", "09:00:00", "17:30:00"),
+                getTableDataItem("041500019", "CName19", "CSurname19", "415240103", "111111", "09:00:00", "17:30:00"),
+                getTableDataItem("041500020", "CName20", "CSurname20", "415240103", "111111", "09:00:00", "17:30:00")
+            ))
+            .add(yesterday.concat(",").concat("CIVIL COURT"), List.of(
+                getTableDataItem("041500011", "CName11", "CSurname11", "415240102", "111111", "09:30:00", "17:30:00"),
+                getTableDataItem("041500012", "CName12", "CSurname12", "415240102", "111111", "09:30:00", "17:30:00"),
+                getTableDataItem("041500013", "CName13", "CSurname13", "415240102", "111111", "06:30:00", "17:30:00")
+            ));
+    }
+
+    private ReportLinkedMap<String, Object> getTableDataItem(String... jurorData) {
+        ReportLinkedMap<String, Object> map = new ReportLinkedMap<String, Object>()
+            .add("juror_number", jurorData[0])
+            .add("first_name", jurorData[1])
+            .add("last_name", jurorData[2])
+            .add("appearance_pool_number", jurorData[3])
+            .add("appearance_checked_in", jurorData[5]);
+
+        if (jurorData[4] != null) {
+            map.add("appearance_trial_number", jurorData[4]);
+        }
+        if (jurorData[6] != null) {
+            map.add("appearance_checked_out", jurorData[6]);
+        }
+
+        return map;
+    }
 }

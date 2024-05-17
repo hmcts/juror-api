@@ -103,7 +103,7 @@ public class UnconfirmedAttendanceReportTest extends AbstractGroupedReportTestSu
                 AppearanceStage.CHECKED_OUT
             )));
         verify(query).where(QAppearance.appearance.locCode.eq(SecurityUtil.getLocCode()));
-        verify(query).orderBy(QAppearance.appearance.attendanceDate.desc());
+        verify(query).orderBy(QAppearance.appearance.attendanceDate.desc(), QAppearance.appearance.jurorNumber.asc());
     }
 
     @Override

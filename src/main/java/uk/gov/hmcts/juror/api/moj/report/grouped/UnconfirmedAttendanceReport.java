@@ -59,7 +59,7 @@ public class UnconfirmedAttendanceReport extends AbstractGroupedReport {
                     AppearanceStage.CHECKED_OUT
                 )));
         query.where(QAppearance.appearance.locCode.eq(SecurityUtil.getLocCode()));
-        query.orderBy(QAppearance.appearance.attendanceDate.desc());
+        query.orderBy(QAppearance.appearance.attendanceDate.desc(), QAppearance.appearance.jurorNumber.asc());
     }
 
     @Override
