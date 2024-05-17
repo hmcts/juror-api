@@ -71,6 +71,18 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
     }
 
     @Test
+    void positiveTypicalNoData() {
+        StandardReportRequest request = getValidPayload();
+        request.setFromDate(LocalDate.of(2024, 12, 9));
+        request.setToDate(LocalDate.of(2024, 12, 16));
+        testBuilder()
+            .payload(request)
+            .triggerValid()
+            .responseConsumer(this::verifyAndRemoveReportCreated)
+            .assertEquals(getTypicalResponseNoData());
+    }
+
+    @Test
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -212,6 +224,56 @@ class UnpaidAttendanceSummaryReportITest extends AbstractGroupedReportController
                                 .add("juror_number", "641500026")
                                 .add("first_name", "John6")
                                 .add("last_name", "Smith6"))))
+                    .build())
+            .build();
+    }
+
+    private GroupedReportResponse getTypicalResponseNoData() {
+        return GroupedReportResponse.builder()
+            .groupBy(GroupByResponse.builder().name(DataType.POOL_NUMBER_BY_APPEARANCE.name()).build())
+            .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
+                .add("total_unpaid_attendances", StandardReportResponse.DataTypeValue.builder()
+                    .displayName("Total Unpaid Attendances")
+                    .dataType("Long")
+                    .value(0)
+                    .build())
+                .add("date_to", StandardReportResponse.DataTypeValue.builder()
+                    .displayName("Date To")
+                    .dataType("LocalDate")
+                    .value("2024-12-16")
+                    .build())
+                .add("date_from", StandardReportResponse.DataTypeValue.builder()
+                    .displayName("Date From")
+                    .dataType("LocalDate")
+                    .value("2024-12-09")
+                    .build())
+                .add("court_name", StandardReportResponse.DataTypeValue.builder()
+                    .displayName("Court Name")
+                    .dataType("String")
+                    .value("CHESTER (415)")
+                    .build()))
+            .tableData(
+                AbstractReportResponse.TableData.<GroupedTableData>builder()
+                    .headings(List.of(
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("juror_number")
+                            .name("Juror Number")
+                            .dataType("String")
+                            .headings(null)
+                            .build(),
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("first_name")
+                            .name("First Name")
+                            .dataType("String")
+                            .headings(null)
+                            .build(),
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("last_name")
+                            .name("Last Name")
+                            .dataType("String")
+                            .headings(null)
+                            .build()))
+                    .data(new GroupedTableData())
                     .build())
             .build();
     }
