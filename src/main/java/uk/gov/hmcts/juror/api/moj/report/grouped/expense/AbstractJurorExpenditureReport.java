@@ -51,6 +51,7 @@ public abstract class AbstractJurorExpenditureReport extends AbstractGroupedRepo
         this.courtLocationService = courtLocationService;
         isCourtUserOnly();
         this.includeTotalApprovedHeader = true;
+        this.includeHeaderTotals = true;
     }
 
 
