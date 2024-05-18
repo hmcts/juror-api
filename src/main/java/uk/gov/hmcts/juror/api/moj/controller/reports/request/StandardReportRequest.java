@@ -48,7 +48,8 @@ public class StandardReportRequest {
         "PersonAttendingDetailReport",
         "UnpaidAttendanceReportDetailedReport",
         "JurorExpenditureReportLowLevelReport",
-        "JurorExpenditureReportMidLevelReport"
+        "JurorExpenditureReportMidLevelReport",
+        "JurorExpenditureReportHighLevelReport"
     })
     private String reportType;
 
