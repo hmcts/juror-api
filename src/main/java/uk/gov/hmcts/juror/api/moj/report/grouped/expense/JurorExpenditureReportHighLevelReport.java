@@ -16,15 +16,15 @@ public class JurorExpenditureReportHighLevelReport extends AbstractJurorExpendit
     @Autowired
     public JurorExpenditureReportHighLevelReport(CourtLocationService courtLocationService) {
         super(courtLocationService,
-            ExpenseDataTypes.TOTAL_LOSS_OF_EARNINGS_PAID_SUM,
-            ExpenseDataTypes.TOTAL_LOSS_OF_EARNINGS_PAID_COUNT,
-            ExpenseDataTypes.TOTAL_SUBSISTENCE_PAID_SUM,
-            ExpenseDataTypes.TOTAL_SUBSISTENCE_PAID_COUNT,
-            ExpenseDataTypes.TOTAL_SMARTCARD_PAID_SUM,
-            ExpenseDataTypes.TOTAL_SMARTCARD_PAID_COUNT,
-            ExpenseDataTypes.TOTAL_TRAVEL_PAID_SUM,
-            ExpenseDataTypes.TOTAL_TRAVEL_PAID_COUNT,
-            ExpenseDataTypes.TOTAL_PAID_SUM
+            ExpenseDataTypes.TOTAL_LOSS_OF_EARNINGS_APPROVED_SUM,
+            ExpenseDataTypes.TOTAL_LOSS_OF_EARNINGS_APPROVED_COUNT,
+            ExpenseDataTypes.TOTAL_SUBSISTENCE_APPROVED_SUM,
+            ExpenseDataTypes.TOTAL_SUBSISTENCE_APPROVED_COUNT,
+            ExpenseDataTypes.TOTAL_SMARTCARD_APPROVED_SUM,
+            ExpenseDataTypes.TOTAL_SMARTCARD_APPROVED_COUNT,
+            ExpenseDataTypes.TOTAL_TRAVEL_APPROVED_SUM,
+            ExpenseDataTypes.TOTAL_TRAVEL_APPROVED_COUNT,
+            ExpenseDataTypes.TOTAL_APPROVED_SUM
         );
     }
 

@@ -9,8 +9,8 @@ import java.time.LocalDate;
 
 public abstract class AbstractJurorExpenditureReportReportITest extends AbstractGroupedReportControllerITest {
 
-    protected static final LocalDate DEFAULT_FROM_DATE = LocalDate.of(2024, 4, 21);
-    protected static final LocalDate DEFAULT_TO_DATE = LocalDate.of(2024, 4, 27);
+    protected static final LocalDate DEFAULT_FROM_DATE = LocalDate.of(2024, 5, 1);
+    protected static final LocalDate DEFAULT_TO_DATE = LocalDate.of(2024, 5, 27);
 
 
     public AbstractJurorExpenditureReportReportITest(

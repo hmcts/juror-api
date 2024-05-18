@@ -2,13 +2,18 @@ package uk.gov.hmcts.juror.api.moj.report.datatypes;
 
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetails;
+import uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 import uk.gov.hmcts.juror.api.moj.report.IDataType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -16,90 +21,104 @@ import java.util.Locale;
 @SuppressWarnings("PMD.ArrayIsStoredDirectly")
 public enum ExpenseDataTypes implements IDataType {
 
-    JUROR_NUMBER("Juror Number", String.class, QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.jurorNumber,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+    JUROR_NUMBER("Juror Number", String.class,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.jurorNumber,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
+
+    PAYMENT_AUDIT_RAW("Payment Audit", String.class,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.fAudit,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
+
     PAYMENT_AUDIT("Payment Audit", String.class,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.fAudit.prepend("F"),
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.fAudit.prepend(
+            "F"),
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 
     ATTENDANCE_DATE("Attendance Date", LocalDate.class,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.attendanceDate,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.attendanceDate,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 
-    TOTAL_LOSS_OF_EARNINGS_PAID("Loss of earnings", BigDecimal.class,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalFinancialLossPaid,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
-    TOTAL_SUBSISTENCE_PAID("Food and drink", BigDecimal.class,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalSubsistencePaid,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
-    TOTAL_SMARTCARD_PAID("Smartcard", BigDecimal.class,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalSmartCardPaid,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
-    TOTAL_TRAVEL_PAID("Travel", BigDecimal.class,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalTravelPaid,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
-    TOTAL_PAID("Total", BigDecimal.class,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalPaid,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
 
-    FIRST_NAME("First name", String.class,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.firstName,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
-    LAST_NAME("Last name", String.class,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.lastName,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+    CREATED_ON_DATETIME("Created On", LocalDate.class,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOn,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
+
+    CREATED_ON_DATE("Created On", LocalDate.class,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.createdOnDate,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
+
+
+    TOTAL_LOSS_OF_EARNINGS_APPROVED("Loss of earnings", BigDecimal.class,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.totalFinancialLossApproved,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
+    TOTAL_SUBSISTENCE_APPROVED("Food and drink", BigDecimal.class,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.totalSubsistenceApproved,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
+    TOTAL_SMARTCARD_APPROVED("Smartcard", BigDecimal.class,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.totalSmartCardApproved,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
+    TOTAL_TRAVEL_APPROVED("Travel", BigDecimal.class,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.totalTravelApproved,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
+    TOTAL_APPROVED("Total", BigDecimal.class,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.totalApproved,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 
     IS_CASH("Is Cash", Boolean.class,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.payCash,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.payCash,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 
 
-    TOTAL_LOSS_OF_EARNINGS_PAID_SUM("Loss of earnings", BigDecimal.class,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalFinancialLossPaid.sum(),
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+    TOTAL_LOSS_OF_EARNINGS_APPROVED_SUM("Loss of earnings", BigDecimal.class,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.totalFinancialLossApproved.sum(),
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 
-    TOTAL_LOSS_OF_EARNINGS_PAID_COUNT("Loss of earnings Count", Long.class,
+    TOTAL_LOSS_OF_EARNINGS_APPROVED_COUNT("Loss of earnings Count", Long.class,
         new CaseBuilder().when(
-                QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalFinancialLossPaid.eq(BigDecimal.ZERO))
+                QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.totalFinancialLossApproved.eq(
+                    BigDecimal.ZERO))
             .then(0).otherwise(1).sum(),
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 
 
-    TOTAL_SUBSISTENCE_PAID_SUM("Food and drink", BigDecimal.class,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalSubsistencePaid.sum(),
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+    TOTAL_SUBSISTENCE_APPROVED_SUM("Food and drink", BigDecimal.class,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.totalSubsistenceApproved.sum(),
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 
-    TOTAL_SUBSISTENCE_PAID_COUNT("Food and drink Count", Long.class,
+    TOTAL_SUBSISTENCE_APPROVED_COUNT("Food and drink Count", Long.class,
         new CaseBuilder().when(
-                QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalSubsistencePaid.eq(BigDecimal.ZERO))
+                QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.totalSubsistenceApproved.eq(
+                    BigDecimal.ZERO))
             .then(0).otherwise(1).sum(),
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 
-    TOTAL_SMARTCARD_PAID_SUM("Smartcard", BigDecimal.class,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalSmartCardPaid.sum(),
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+    TOTAL_SMARTCARD_APPROVED_SUM("Smartcard", BigDecimal.class,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.totalSmartCardApproved.sum(),
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 
-    TOTAL_SMARTCARD_PAID_COUNT("Smartcard Count", Long.class,
+    TOTAL_SMARTCARD_APPROVED_COUNT("Smartcard Count", Long.class,
         new CaseBuilder().when(
-                QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalSmartCardPaid.eq(BigDecimal.ZERO)).then(0)
+                QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.totalSmartCardApproved.eq(
+                    BigDecimal.ZERO)).then(0)
             .otherwise(1).sum(),
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 
 
-    TOTAL_TRAVEL_PAID_SUM("Travel", BigDecimal.class,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalTravelPaid.sum(),
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+    TOTAL_TRAVEL_APPROVED_SUM("Travel", BigDecimal.class,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.totalTravelApproved.sum(),
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 
-    TOTAL_TRAVEL_PAID_COUNT("Travel Count", Long.class,
+    TOTAL_TRAVEL_APPROVED_COUNT("Travel Count", Long.class,
         new CaseBuilder().when(
-                QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalTravelPaid.eq(BigDecimal.ZERO)).then(0)
+                QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.totalTravelApproved.eq(
+                    BigDecimal.ZERO)).then(0)
             .otherwise(1).sum(),
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 
 
-    TOTAL_PAID_SUM("Total", BigDecimal.class,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalPaid.sum(),
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+    TOTAL_APPROVED_SUM("Total", BigDecimal.class,
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts.totalApproved.sum(),
+        QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts),
 
     ;
 

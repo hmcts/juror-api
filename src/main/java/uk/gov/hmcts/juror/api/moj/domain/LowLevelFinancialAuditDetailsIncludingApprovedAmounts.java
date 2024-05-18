@@ -18,13 +18,28 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "low_level_financial_audit_details", schema = "juror_mod")
+@Table(name = "low_level_financial_audit_details_including_approved_amounts", schema = "juror_mod")
 @IdClass(LowLevelFinancialAuditDetails.IdClass.class)
 @Getter
 @Setter(AccessLevel.NONE)
 //Read only view
-public class LowLevelFinancialAuditDetails {
+public class LowLevelFinancialAuditDetailsIncludingApprovedAmounts {
 
+
+    @Column(name = "total_travel_approved")
+    private BigDecimal totalTravelApproved;
+
+    @Column(name = "total_financial_loss_approved")
+    private BigDecimal totalFinancialLossApproved;
+
+    @Column(name = "total_subsistence_approved")
+    private BigDecimal totalSubsistenceApproved;
+
+    @Column(name = "total_smartcard_approved")
+    private BigDecimal totalSmartCardApproved;
+
+    @Column(name = "total_approved")
+    private BigDecimal totalApproved;
     @Column(name = "id")
     @Id
     private Long id;
@@ -44,6 +59,10 @@ public class LowLevelFinancialAuditDetails {
 
     @Column(name = "created_on")
     private LocalDateTime createdOn;
+
+
+    @Column(name = "created_on_date")
+    private LocalDate createdOnDate;
 
     @Column(name = "juror_number")
     @Id

@@ -11,10 +11,12 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
+import uk.gov.hmcts.juror.api.moj.report.TmpSupport;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings({
     "PMD.JUnitTestsShouldIncludeAssert"//False positive
@@ -33,116 +35,29 @@ class JurorExpenditureReportMidLevelReportITest extends AbstractJurorExpenditure
         "/db/truncate.sql",
         "/db/mod/truncate.sql",
         "/db/administration/createUsers.sql",
-        "/db/mod/reports/FinancialAuditReportsITest_typical.sql"
+        "/db/JurorExpenseControllerITest_expenseRates.sql",
+        "/db/mod/reports/AbstractJurorExpenditureReportReportITestITest_typical.sql"
     })
     void positiveTypical() {
         testBuilder()
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(createResponse(
-                "£0.00", "£434.28", "£434.28",
+                "£5.00", "£122.65", "£127.65",
                 DEFAULT_FROM_DATE, DEFAULT_TO_DATE, "CHESTER (415)",
                 new GroupedTableData()
-                    .add("BACS and cheque approvals",
+                    .add("BACS and cheque approvals", List.of(
                         new ReportLinkedMap<String, Object>()
-                            .add("2024-03-25", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 74.58)))
-                            .add("2024-03-26", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 87.5)))
-                            .add("2024-03-27", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 61.16)))
-                            .add("2024-03-28", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38)))
-                            .add("2024-03-29", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38)))
-                            .add("2024-04-01", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38)))
-                            .add("2024-04-02", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38)))
-                            .add("2024-04-03", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38)))
-                            .add("2024-04-04", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38)))
-                            .add("2024-04-05", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38)))
-                            .add("2024-04-08", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38))))
+                            .add("created_on_date", "2024-05-14")
+                            .add("total_approved_sum", 83.0),
+                        new ReportLinkedMap<String, Object>()
+                            .add("created_on_date", "2024-05-15")
+                            .add("total_approved_sum", 39.65)))
+                    .add("Cash", List.of(
+                        new ReportLinkedMap<String, Object>()
+                            .add("created_on_date", "2024-05-15")
+                            .add("total_approved_sum", 5.0)))
             ));
-    }
-
-    @Test
-    @Sql({
-        "/db/truncate.sql",
-        "/db/mod/truncate.sql",
-        "/db/administration/createUsers.sql",
-        "/db/mod/reports/FinancialAuditReportsITest_typicalCash.sql"
-    })
-    void positiveCashAndBacs() {
-        testBuilder()
-            .triggerValid()
-            .responseConsumer(this::verifyAndRemoveReportCreated)
-            .assertEquals(createResponse(
-                "£127.22", "£307.06", "£434.28",
-                DEFAULT_FROM_DATE, DEFAULT_TO_DATE, "CHESTER (415)",
-                new GroupedTableData()
-                    .add("BACS and cheque approvals",
-                        new ReportLinkedMap<String, Object>()
-                            .add("2024-03-25", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 32.09)))
-                            .add("2024-03-26", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 38.55)))
-                            .add("2024-03-27", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 25.38)))
-                            .add("2024-03-28", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38)))
-                            .add("2024-03-29", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38)))
-                            .add("2024-04-01", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38)))
-                            .add("2024-04-02", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38)))
-                            .add("2024-04-03", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38)))
-                            .add("2024-04-04", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38)))
-                            .add("2024-04-05", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38)))
-                            .add("2024-04-08", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 26.38))))
-                    .add("Cash",
-                        new ReportLinkedMap<String, Object>()
-                            .add("2024-03-25", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 42.49)))
-                            .add("2024-03-26", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 48.95)))
-                            .add("2024-03-27", List.of(
-                                new ReportLinkedMap<String, Object>()
-                                    .add("total_paid_sum", 35.78)))))
-            );
     }
 
     @Test
@@ -166,12 +81,7 @@ class JurorExpenditureReportMidLevelReportITest extends AbstractJurorExpenditure
         LocalDate from, LocalDate to, String court,
         GroupedTableData groupedTableData) {
         return GroupedReportResponse.builder()
-            .groupBy(GroupByResponse.builder().name("IS_CASH")
-                .nested(GroupByResponse.builder()
-                    .name("ATTENDANCE_DATE")
-                    .nested(null)
-                    .build())
-                .build())
+            .groupBy(GroupByResponse.builder().name("IS_CASH").build())
             .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
                 .add("total_cash", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Total Cash")
@@ -202,13 +112,18 @@ class JurorExpenditureReportMidLevelReportITest extends AbstractJurorExpenditure
                     .displayName("Court Name")
                     .dataType("String")
                     .value(court)
-                    .build())
-            )
+                    .build()))
             .tableData(
                 AbstractReportResponse.TableData.<GroupedTableData>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("total_paid_sum")
+                            .id("created_on_date")
+                            .name("Created On")
+                            .dataType("LocalDate")
+                            .headings(null)
+                            .build(),
+                        StandardReportResponse.TableData.Heading.builder()
+                            .id("total_approved_sum")
                             .name("Total")
                             .dataType("BigDecimal")
                             .headings(null)

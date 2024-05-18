@@ -16,12 +16,12 @@ import uk.gov.hmcts.juror.api.moj.report.TmpSupport;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings({
     "PMD.JUnitTestsShouldIncludeAssert"//False positive
 })
 class JurorExpenditureReportHighLevelReportITest extends AbstractJurorExpenditureReportReportITest {
-
 
     @Autowired
     public JurorExpenditureReportHighLevelReportITest(TestRestTemplate template) {
@@ -34,7 +34,8 @@ class JurorExpenditureReportHighLevelReportITest extends AbstractJurorExpenditur
         "/db/truncate.sql",
         "/db/mod/truncate.sql",
         "/db/administration/createUsers.sql",
-        "/db/mod/reports/FinancialAuditReportsITest_typical.sql"
+        "/db/JurorExpenseControllerITest_expenseRates.sql",
+        "/db/mod/reports/AbstractJurorExpenditureReportReportITestITest_typical.sql"
     })
     void positiveTypical() {
         testBuilder()
@@ -45,56 +46,29 @@ class JurorExpenditureReportHighLevelReportITest extends AbstractJurorExpenditur
                 new GroupedTableData()
                     .add("BACS and cheque approvals", List.of(
                         new ReportLinkedMap<String, Object>()
-                            .add("total_loss_of_earnings_paid_sum", 338.0)
-                            .add("total_loss_of_earnings_paid_count", 14)
-                            .add("total_subsistence_paid_sum", 35.76)
-                            .add("total_subsistence_paid_count", 4)
-                            .add("total_smartcard_paid_sum", 2.0)
-                            .add("total_smartcard_paid_count", 2)
-                            .add("total_travel_paid_sum", 62.52)
-                            .add("total_travel_paid_count", 14)
-                            .add("total_paid_sum", 434.28)))
-            ));
-    }
-
-    @Test
-    @Sql({
-        "/db/truncate.sql",
-        "/db/mod/truncate.sql",
-        "/db/administration/createUsers.sql",
-        "/db/mod/reports/FinancialAuditReportsITest_typicalCash.sql"
-    })
-    void positiveCashAndBacs() {
-        testBuilder()
-            .triggerValid()
-            .responseConsumer(this::verifyAndRemoveReportCreated)
-            .assertEquals(createResponse(
-                DEFAULT_FROM_DATE, DEFAULT_TO_DATE, "CHESTER (415)",
-                new GroupedTableData()
-                    .add("BACS and cheque approvals", List.of(
-                        new ReportLinkedMap<String, Object>()
-                            .add("total_loss_of_earnings_paid_sum", 242.0)
-                            .add("total_loss_of_earnings_paid_count", 11)
-                            .add("total_subsistence_paid_sum", 17.88)
-                            .add("total_subsistence_paid_count", 2)
-                            .add("total_smartcard_paid_sum", 1.0)
-                            .add("total_smartcard_paid_count", 1)
-                            .add("total_travel_paid_sum", 48.18)
-                            .add("total_travel_paid_count", 11)
-                            .add("total_paid_sum", 307.06)))
+                            .add("total_loss_of_earnings_approved_sum", 84.0)
+                            .add("total_loss_of_earnings_approved_count", 10)
+                            .add("total_subsistence_approved_sum", 17.13)
+                            .add("total_subsistence_approved_count", 3)
+                            .add("total_smartcard_approved_sum", 5.89)
+                            .add("total_smartcard_approved_count", 3)
+                            .add("total_travel_approved_sum", 15.63)
+                            .add("total_travel_approved_count", 5)
+                            .add("total_approved_sum", 122.65)))
                     .add("Cash", List.of(
                         new ReportLinkedMap<String, Object>()
-                            .add("total_loss_of_earnings_paid_sum", 96.0)
-                            .add("total_loss_of_earnings_paid_count", 3)
-                            .add("total_subsistence_paid_sum", 17.88)
-                            .add("total_subsistence_paid_count", 2)
-                            .add("total_smartcard_paid_sum", 1.0)
-                            .add("total_smartcard_paid_count", 1)
-                            .add("total_travel_paid_sum", 14.34)
-                            .add("total_travel_paid_count", 3)
-                            .add("total_paid_sum", 127.22)))
-            ));
+                            .add("total_loss_of_earnings_approved_sum", 2.0)
+                            .add("total_loss_of_earnings_approved_count", 1)
+                            .add("total_subsistence_approved_sum", 0.0)
+                            .add("total_subsistence_approved_count", 0)
+                            .add("total_smartcard_approved_sum", 0)
+                            .add("total_smartcard_approved_count", 0)
+                            .add("total_travel_approved_sum", 3.0)
+                            .add("total_travel_approved_count", 1)
+                            .add("total_approved_sum", 5.0))))
+            );
     }
+
 
     @Test
     @Sql({
@@ -115,10 +89,13 @@ class JurorExpenditureReportHighLevelReportITest extends AbstractJurorExpenditur
         LocalDate from, LocalDate to, String court,
         GroupedTableData groupedTableData) {
         return GroupedReportResponse.builder()
-            .groupBy(GroupByResponse.builder().name("IS_CASH")
-                .nested(null)
-                .build())
+            .groupBy(GroupByResponse.builder().name("IS_CASH").build())
             .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
+                .add("court_name", StandardReportResponse.DataTypeValue.builder()
+                    .displayName("Court Name")
+                    .dataType("String")
+                    .value(court)
+                    .build())
                 .add("approved_from", StandardReportResponse.DataTypeValue.builder()
                     .displayName("Approved From")
                     .dataType("LocalDate")
@@ -129,65 +106,60 @@ class JurorExpenditureReportHighLevelReportITest extends AbstractJurorExpenditur
                     .dataType("LocalDate")
                     .value(DateTimeFormatter.ISO_DATE.format(to))
                     .build())
-                .add("court_name", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Court Name")
-                    .dataType("String")
-                    .value(court)
-                    .build())
             )
             .tableData(
                 AbstractReportResponse.TableData.<GroupedTableData>builder()
                     .headings(List.of(
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("total_loss_of_earnings_paid_sum")
+                            .id("total_loss_of_earnings_approved_sum")
                             .name("Loss of earnings")
                             .dataType("BigDecimal")
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("total_loss_of_earnings_paid_count")
+                            .id("total_loss_of_earnings_approved_count")
                             .name("Loss of earnings Count")
                             .dataType("Long")
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("total_subsistence_paid_sum")
+                            .id("total_subsistence_approved_sum")
                             .name("Food and drink")
                             .dataType("BigDecimal")
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("total_subsistence_paid_count")
+                            .id("total_subsistence_approved_count")
                             .name("Food and drink Count")
                             .dataType("Long")
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("total_smartcard_paid_sum")
+                            .id("total_smartcard_approved_sum")
                             .name("Smartcard")
                             .dataType("BigDecimal")
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("total_smartcard_paid_count")
+                            .id("total_smartcard_approved_count")
                             .name("Smartcard Count")
                             .dataType("Long")
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("total_travel_paid_sum")
+                            .id("total_travel_approved_sum")
                             .name("Travel")
                             .dataType("BigDecimal")
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("total_travel_paid_count")
+                            .id("total_travel_approved_count")
                             .name("Travel Count")
                             .dataType("Long")
                             .headings(null)
                             .build(),
                         StandardReportResponse.TableData.Heading.builder()
-                            .id("total_paid_sum")
+                            .id("total_approved_sum")
                             .name("Total")
                             .dataType("BigDecimal")
                             .headings(null)

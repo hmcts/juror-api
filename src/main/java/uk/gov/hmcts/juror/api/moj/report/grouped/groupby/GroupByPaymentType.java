@@ -35,8 +35,16 @@ public class GroupByPaymentType implements IReportGroupBy {
 
     @Override
     public IReportGroupBy getNested() {
+//        return includeNested ? ReportGroupByWithPreProcessor.builder()
+//            .groupByFunction(groupedTableData -> {
+//                String createdOn = groupedTableData.get(ExpenseDataTypes.CREATED_ON_DATE.getId()).toString();
+//                return createdOn.split("T")[0];
+//            })
+//            .dataType(ExpenseDataTypes.CREATED_ON_DATE)
+//            .removeGroupByFromResponse(true)
+//            .build() : null;
         return includeNested ? ReportGroupBy.builder()
-            .dataType(ExpenseDataTypes.ATTENDANCE_DATE)
+            .dataType(ExpenseDataTypes.CREATED_ON_DATE)
             .removeGroupByFromResponse(true)
             .build() : null;
     }
@@ -47,7 +55,7 @@ public class GroupByPaymentType implements IReportGroupBy {
             .name(ExpenseDataTypes.IS_CASH.name())
             .nested(includeNested ?
                 GroupByResponse.builder()
-                    .name(ExpenseDataTypes.ATTENDANCE_DATE.name())
+                    .name(ExpenseDataTypes.CREATED_ON_DATE.name())
                     .build() : null)
             .build();
     }
