@@ -10,7 +10,6 @@ ALTER TABLE juror_mod.financial_audit_details_appearances
         FOREIGN KEY (last_approved_faudit, loc_code) REFERENCES juror_mod.financial_audit_details (id, loc_code)
 ;
 
---TODO add mapping logic for last approved
 
 CREATE INDEX appearance_audit_loc_code_idx ON juror_mod.appearance_audit (loc_code, juror_number, attendance_date,
                                                                           attendance_audit_number, "version");
@@ -19,6 +18,8 @@ CREATE INDEX appearance_audit_f_audit_loc_code_idx ON juror_mod.appearance_audit
                                                                                   attendance_audit_number, "version");
 
 CREATE INDEX appearance_loc_code_idx ON juror_mod.appearance (loc_code, appearance_stage, is_draft_expense, juror_number);
+CREATE INDEX financial_audit_details_loc_code_idx ON juror_mod.financial_audit_details (loc_code,juror_number,"type");
+CREATE INDEX financial_audit_details_appearances_loc_code_idx ON juror_mod.financial_audit_details_appearances (loc_code,attendance_date,financial_audit_id);
 
 
 CREATE OR REPLACE VIEW juror_mod.low_level_financial_audit_details
