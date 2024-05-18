@@ -15,7 +15,7 @@ import java.util.List;
 @Data
 public class ReportGroupBy implements IReportGroupBy {
 
-    private DataType dataType;
+    private IDataType dataType;
     private boolean removeGroupByFromResponse;
     private IReportGroupBy nested;
 

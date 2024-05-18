@@ -14,6 +14,7 @@ import lombok.Getter;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
@@ -362,6 +363,7 @@ public abstract class AbstractReport<T> {
         }
     }
 
+
     public Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameHeader(CourtLocation courtLocation) {
         return new AbstractMap.SimpleEntry<>("court_name", AbstractReportResponse.DataTypeValue.builder()
             .displayName("Court Name")
@@ -451,6 +453,12 @@ public abstract class AbstractReport<T> {
         return trialHeaders;
     }
 
+
+    protected void addCourtNameHeader(Map<String, AbstractReportResponse.DataTypeValue> headings,
+                                      CourtLocation courtLocation) {
+        Map.Entry<String, GroupedReportResponse.DataTypeValue> entry = getCourtNameHeader(courtLocation);
+        headings.put(entry.getKey(), entry.getValue());
+    }
 
     protected String getCourtNameString(CourtLocationRepository courtLocationRepository, String locCode) {
         Optional<CourtLocation> courtLocation = courtLocationRepository.findByLocCode(locCode);

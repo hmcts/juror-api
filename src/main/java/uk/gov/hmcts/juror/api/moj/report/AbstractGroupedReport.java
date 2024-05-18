@@ -55,7 +55,9 @@ public abstract class AbstractGroupedReport extends AbstractReport<GroupedTableD
     private GroupedTableData subGroup(IReportGroupBy groupBy, List<GroupedTableData> data) {
         Map<String, List<GroupedTableData>> groupedData = data
             .stream()
-            .collect(Collectors.groupingBy(groupBy::getGroupFunction));
+            .collect(Collectors.groupingBy(groupBy::getGroupFunction,
+                LinkedHashMap::new,
+                Collectors.toList()));
 
         GroupedTableData response = new GroupedTableData();
         response.putAll(groupedData);
@@ -85,7 +87,7 @@ public abstract class AbstractGroupedReport extends AbstractReport<GroupedTableD
 
         IReportGroupBy tmpGroupBy = groupBy;
         while (tmpGroupBy != null) {
-            tmpGroupBy.getKeysToRemove().forEach(key -> {
+            tmpGroupBy.getCombinedKeysToRemove().forEach(key -> {
                 response.getTableData().getHeadings().removeIf(heading -> key.equals(heading.getId()));
                 response.getTableData().getData().removeDataKey(key);
             });
@@ -95,10 +97,9 @@ public abstract class AbstractGroupedReport extends AbstractReport<GroupedTableD
     }
 
 
-
     static IDataType[] combine(IReportGroupBy groupBy, IDataType... dataType) {
         List<IDataType> list = new ArrayList<>();
-        list.addAll(groupBy.getRequiredDataTypes());
+        list.addAll(groupBy.getCombinedRequiredDataTypes());
         list.addAll(Arrays.asList(dataType));
         return list.toArray(new IDataType[0]);
     }
