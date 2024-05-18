@@ -50,7 +50,15 @@ public enum ExpenseDataTypes implements IDataType {
 
     IS_CASH("Is Cash", Boolean.class,
         QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.payCash,
-        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails);
+        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+
+
+    TOTAL_PAID_SUM("Total", BigDecimal.class,
+        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalPaid.sum(),
+        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+
+    ;
+
 
     private final List<EntityPath<?>> requiredTables;
     private final String displayName;

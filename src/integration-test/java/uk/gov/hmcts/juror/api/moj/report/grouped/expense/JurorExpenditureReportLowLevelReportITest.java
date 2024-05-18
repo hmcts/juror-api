@@ -1,46 +1,29 @@
-package uk.gov.hmcts.juror.api.moj.report.grouped;
+package uk.gov.hmcts.juror.api.moj.report.grouped.expense;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
-import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupByResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportControllerITest;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
-import uk.gov.hmcts.juror.api.moj.report.grouped.expense.JurorExpenditureReportLowLevelReport;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-class JurorExpenditureReportLowLevelReportITest extends AbstractGroupedReportControllerITest {
+class JurorExpenditureReportLowLevelReportITest extends AbstractJurorExpenditureReportReportITest {
 
-    private static final LocalDate DEFAULT_FROM_DATE = LocalDate.of(2024, 4, 21);
-    private static final LocalDate DEFAULT_TO_DATE = LocalDate.of(2024, 4, 27);
 
     @Autowired
     public JurorExpenditureReportLowLevelReportITest(TestRestTemplate template) {
         super(template, JurorExpenditureReportLowLevelReport.class);
     }
 
-    @Override
-    protected String getValidJwt() {
-        return getCourtJwt("415");
-    }
-
-    @Override
-    protected StandardReportRequest getValidPayload() {
-        return addReportType(StandardReportRequest.builder()
-            .fromDate(DEFAULT_FROM_DATE)
-            .toDate(DEFAULT_TO_DATE)
-            .build());
-    }
 
     @Test
     @Sql({
@@ -389,6 +372,7 @@ class JurorExpenditureReportLowLevelReportITest extends AbstractGroupedReportCon
             ));
     }
 
+
     @Test
     @Sql({
         "/db/truncate.sql",
@@ -405,14 +389,6 @@ class JurorExpenditureReportLowLevelReportITest extends AbstractGroupedReportCon
             .assertEquals(createResponse(
                 "£0.00", "£0.00", "£0.00", 0,
                 DEFAULT_FROM_DATE, DEFAULT_TO_DATE, "CHESTER (415)", new GroupedTableData()));
-    }
-
-    @Test
-    void negativeTypicalIsBureau() {
-        testBuilder()
-            .jwt(getBureauJwt())
-            .triggerInvalid()
-            .assertMojForbiddenResponse("User not allowed to access this report");
     }
 
     private GroupedReportResponse createResponse(
