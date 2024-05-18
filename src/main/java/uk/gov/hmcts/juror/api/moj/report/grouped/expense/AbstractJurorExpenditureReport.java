@@ -31,13 +31,22 @@ public abstract class AbstractJurorExpenditureReport extends AbstractGroupedRepo
     private final IDataType expenseTotalPaidDataType;
     @Setter
     private boolean includeTotalApprovedHeader;
+    @Setter
+    private boolean includeHeaderTotals;
+
+    public AbstractJurorExpenditureReport(
+        CourtLocationService courtLocationService,
+        IDataType... dataType) {
+        this(null, courtLocationService, dataType);
+        this.includeHeaderTotals = false;
+    }
 
     public AbstractJurorExpenditureReport(
         IDataType expenseTotalPaidDataType,
         CourtLocationService courtLocationService,
         IDataType... dataType) {
         super(QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails,
-            new GroupByPaymentType(), dataType);
+            new GroupByPaymentType(expenseTotalPaidDataType != null), dataType);
         this.expenseTotalPaidDataType = expenseTotalPaidDataType;
         this.courtLocationService = courtLocationService;
         isCourtUserOnly();
@@ -75,29 +84,30 @@ public abstract class AbstractJurorExpenditureReport extends AbstractGroupedRepo
             .value(DateTimeFormatter.ISO_DATE.format(request.getToDate()))
             .build());
 
+        if (includeHeaderTotals) {
 
-        BigDecimal cashTotal = addTotalHeader(headings, tableData, GroupByPaymentType.CASH_TEXT,
-            "total_cash", "Total Cash");
-        BigDecimal bacsAndChequeTotal = addTotalHeader(headings, tableData, GroupByPaymentType.BACS_OR_CHECK_TEXT,
-            "total_bacs_and_cheque", "Total BACS and cheque");
+            BigDecimal cashTotal = addTotalHeader(headings, tableData, GroupByPaymentType.CASH_TEXT,
+                "total_cash", "Total Cash");
+            BigDecimal bacsAndChequeTotal = addTotalHeader(headings, tableData, GroupByPaymentType.BACS_OR_CHECK_TEXT,
+                "total_bacs_and_cheque", "Total BACS and cheque");
 
-        addTotalHeader(headings, cashTotal.add(bacsAndChequeTotal), "overall_total", "Overall total");
+            addTotalHeader(headings, cashTotal.add(bacsAndChequeTotal), "overall_total", "Overall total");
 
-        if (includeTotalApprovedHeader) {
-            long totalApprovals = tableData.getData()
-                .getAllDataItems()
-                .stream()
-                .map(groupedTableData -> groupedTableData.get(ExpenseDataTypes.PAYMENT_AUDIT.getId()))
-                .distinct()
-                .count();
+            if (includeTotalApprovedHeader) {
+                long totalApprovals = tableData.getData()
+                    .getAllDataItems()
+                    .stream()
+                    .map(groupedTableData -> groupedTableData.get(ExpenseDataTypes.PAYMENT_AUDIT.getId()))
+                    .distinct()
+                    .count();
 
-            headings.put("total_approvals", GroupedReportResponse.DataTypeValue.builder()
-                .displayName("Total approvals")
-                .dataType(Long.class.getSimpleName())
-                .value(totalApprovals)
-                .build());
+                headings.put("total_approvals", GroupedReportResponse.DataTypeValue.builder()
+                    .displayName("Total approvals")
+                    .dataType(Long.class.getSimpleName())
+                    .value(totalApprovals)
+                    .build());
+            }
         }
-
         addCourtNameHeader(headings, courtLocationService.getCourtLocation(SecurityUtil.getLocCode()));
 
         return headings;

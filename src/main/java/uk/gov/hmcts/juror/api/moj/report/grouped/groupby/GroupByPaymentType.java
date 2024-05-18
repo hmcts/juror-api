@@ -17,6 +17,12 @@ public class GroupByPaymentType implements IReportGroupBy {
 
     public static final String CASH_TEXT = "Cash";
     public static final String BACS_OR_CHECK_TEXT = "BACS and cheque approvals";
+    private final boolean includeNested;
+
+
+    public GroupByPaymentType(boolean includeNested) {
+        this.includeNested = includeNested;
+    }
 
     @Override
     public String getGroupFunction(GroupedTableData groupedTableData) {
@@ -29,19 +35,20 @@ public class GroupByPaymentType implements IReportGroupBy {
 
     @Override
     public IReportGroupBy getNested() {
-        return ReportGroupBy.builder()
+        return includeNested ? ReportGroupBy.builder()
             .dataType(ExpenseDataTypes.ATTENDANCE_DATE)
             .removeGroupByFromResponse(true)
-            .build();
+            .build() : null;
     }
 
     @Override
     public GroupByResponse getGroupedByResponse() {
         return GroupByResponse.builder()
             .name(ExpenseDataTypes.IS_CASH.name())
-            .nested(GroupByResponse.builder()
-                .name(ExpenseDataTypes.ATTENDANCE_DATE.name())
-                .build())
+            .nested(includeNested ?
+                GroupByResponse.builder()
+                    .name(ExpenseDataTypes.ATTENDANCE_DATE.name())
+                    .build() : null)
             .build();
     }
 

@@ -16,6 +16,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@SuppressWarnings({
+    "PMD.JUnitTestsShouldIncludeAssert"//False positive
+})
 class JurorExpenditureReportLowLevelReportITest extends AbstractJurorExpenditureReportReportITest {
 
 
@@ -377,9 +380,6 @@ class JurorExpenditureReportLowLevelReportITest extends AbstractJurorExpenditure
     @Sql({
         "/db/truncate.sql",
         "/db/mod/truncate.sql"
-    })
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
     })
     void positiveNotFound() {
         testBuilder()

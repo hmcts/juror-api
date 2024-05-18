@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.report.datatypes;
 
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.report.IDataType;
@@ -50,6 +51,49 @@ public enum ExpenseDataTypes implements IDataType {
 
     IS_CASH("Is Cash", Boolean.class,
         QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.payCash,
+        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+
+
+    TOTAL_LOSS_OF_EARNINGS_PAID_SUM("Loss of earnings", BigDecimal.class,
+        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalFinancialLossPaid.sum(),
+        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+
+    TOTAL_LOSS_OF_EARNINGS_PAID_COUNT("Loss of earnings Count", Long.class,
+        new CaseBuilder().when(
+                QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalFinancialLossPaid.eq(BigDecimal.ZERO))
+            .then(0).otherwise(1).sum(),
+        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+
+
+    TOTAL_SUBSISTENCE_PAID_SUM("Food and drink", BigDecimal.class,
+        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalSubsistencePaid.sum(),
+        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+
+    TOTAL_SUBSISTENCE_PAID_COUNT("Food and drink Count", Long.class,
+        new CaseBuilder().when(
+                QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalSubsistencePaid.eq(BigDecimal.ZERO))
+            .then(0).otherwise(1).sum(),
+        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+
+    TOTAL_SMARTCARD_PAID_SUM("Smartcard", BigDecimal.class,
+        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalSmartCardPaid.sum(),
+        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+
+    TOTAL_SMARTCARD_PAID_COUNT("Smartcard Count", Long.class,
+        new CaseBuilder().when(
+                QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalSmartCardPaid.eq(BigDecimal.ZERO)).then(0)
+            .otherwise(1).sum(),
+        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+
+
+    TOTAL_TRAVEL_PAID_SUM("Travel", BigDecimal.class,
+        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalTravelPaid.sum(),
+        QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
+
+    TOTAL_TRAVEL_PAID_COUNT("Travel Count", Long.class,
+        new CaseBuilder().when(
+                QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails.totalTravelPaid.eq(BigDecimal.ZERO)).then(0)
+            .otherwise(1).sum(),
         QLowLevelFinancialAuditDetails.lowLevelFinancialAuditDetails),
 
 
