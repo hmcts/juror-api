@@ -8,7 +8,6 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportReque
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
-import uk.gov.hmcts.juror.api.moj.report.TmpSupport;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
