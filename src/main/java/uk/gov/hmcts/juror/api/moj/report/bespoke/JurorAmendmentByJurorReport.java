@@ -33,9 +33,9 @@ public class JurorAmendmentByJurorReport extends AbstractJurorAmendmentReport {
 
     @Override
     @Transactional(readOnly = true)
-    public AbstractReportResponse<List<JurorAmendmentReportRow>> getStandardReportResponse(
+    public JurorAmendmentReportResponse getStandardReportResponse(
         StandardReportRequest request) {
-        AbstractReportResponse<List<JurorAmendmentReportRow>> response = new AbstractReportResponse<>();
+        JurorAmendmentReportResponse response = new JurorAmendmentReportResponse();
 
         SecurityUtil.validateCanAccessRole(Role.SENIOR_JUROR_OFFICER);
         Juror juror = jurorService.getJurorFromJurorNumber(request.getJurorNumber());
@@ -43,7 +43,13 @@ public class JurorAmendmentByJurorReport extends AbstractJurorAmendmentReport {
         AbstractReportResponse.TableData<List<JurorAmendmentReportRow>> tableData =
             getTableData(List.of(request.getJurorNumber()));
 
-        tableData.getData().forEach(jurorAmendmentReportRow -> jurorAmendmentReportRow.setFrom(null));
+        tableData.getData().forEach(jurorAmendmentReportRow -> {
+            jurorAmendmentReportRow.setFrom(null);
+            jurorAmendmentReportRow.setJurorNumber(null);
+        });
+        tableData.getHeadings().removeIf(heading ->
+            heading.getId().equalsIgnoreCase("juror_number")
+                || heading.getId().equalsIgnoreCase("from"));
         response.setTableData(tableData);
         response.setHeadings(getHeadings(request, juror.getName()));
         return response;

@@ -17,7 +17,6 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -37,9 +36,9 @@ public class JurorAmendmentByPoolReport extends AbstractJurorAmendmentReport {
 
     @Override
     @Transactional(readOnly = true)
-    public AbstractReportResponse<List<JurorAmendmentReportRow>> getStandardReportResponse(
+    public JurorAmendmentReportResponse getStandardReportResponse(
         StandardReportRequest request) {
-        AbstractReportResponse<List<JurorAmendmentReportRow>> response = new AbstractReportResponse<>();
+        JurorAmendmentReportResponse response = new JurorAmendmentReportResponse();
 
         SecurityUtil.validateCanAccessRole(Role.SENIOR_JUROR_OFFICER);
         PoolRequest poolRequest = jurorPoolService.getPoolRequest(request.getPoolNumber());

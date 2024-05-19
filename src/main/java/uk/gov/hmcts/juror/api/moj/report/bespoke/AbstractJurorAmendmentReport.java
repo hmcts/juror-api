@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
@@ -38,7 +39,7 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
         LAST_NAME(Juror::getLastName),
         DATE_OF_BIRTH(Juror::getDateOfBirth),
         ADDRESS(Juror::getCombinedAddressExcludingPostcode),
-        BANK_ACCOUNT_HOLDER_NAME(Juror::getBankAccountNumber),
+        BANK_ACCOUNT_HOLDER_NAME(Juror::getBankAccountName),
         SORT_CODE(Juror::getSortCode),
         BANK_ACCOUNT_NUMBER(Juror::getBankAccountNumber),
         FIRST_NAME(Juror::getFirstName),
@@ -52,33 +53,27 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
         }
 
 
-        public static void updateCurrentValues(Map<Changed, Object> currentChangedValueLog, Juror currentJurorValue) {
-            for (Changed changed : Changed.values()) {
-                currentChangedValueLog.put(changed, changed.getValue(currentJurorValue));
-            }
-        }
 
-        public static Collection<? extends JurorAmendmentReportRow> getChanges(
+        public static Collection<JurorAmendmentReportRow> getChanges(
             UserService userService,
-            Map<Changed, Object> currentChangedValueLog, Juror juror) {
+            Juror afterChangeJuror, Juror beforeChangeJuror) {
             List<JurorAmendmentReportRow> changes = new ArrayList<>();
             for (Changed changed : Changed.values()) {
-                Object currentValue = currentChangedValueLog.get(changed);
-                Object newValue = changed.getValue(juror);
-                if (currentValue == null && newValue == null) {
+                Object afterChangeValue = changed.getValue(afterChangeJuror);
+                Object beforeChangeValue = changed.getValue(beforeChangeJuror);
+                if (afterChangeValue == null && beforeChangeValue == null) {
                     continue;
                 }
-                if (currentValue == null || !currentValue.equals(newValue)) {
+                if (afterChangeValue == null || !afterChangeValue.equals(beforeChangeValue)) {
                     changes.add(
                         new JurorAmendmentReportRow(
-                            juror.getJurorNumber(),
+                            afterChangeJuror.getJurorNumber(),
                             changed,
-                            formatObject(newValue),
-                            formatObject(currentValue),
-                            juror.getLastUpdate(),
-                            userService.findUserByUsername(juror.getLastModifiedBy()).getName()
+                            formatObject(beforeChangeValue),
+                            formatObject(afterChangeValue),
+                            afterChangeJuror.getLastUpdate(),
+                            userService.findUserByUsername(afterChangeJuror.getLastModifiedBy()).getName()
                         ));
-                    currentChangedValueLog.put(changed, newValue);
                 }
             }
             return changes;
@@ -107,8 +102,6 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
 
     protected AbstractReportResponse.TableData<List<JurorAmendmentReportRow>>
     getTableDataAudits(List<Juror> jurorAudits) {
-
-
         Map<String, List<Juror>> jurorNumberToJurorMap = jurorAudits
             .stream()
             .collect(Collectors.groupingBy(Juror::getJurorNumber));
@@ -158,15 +151,15 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
     }
 
     private Collection<JurorAmendmentReportRow> getChangesFromJurorAudits(String jurorNumber, List<Juror> jurors) {
-        jurors.sort(Comparator.comparing(Juror::getLastUpdate));
+        jurors.sort(Comparator.comparing(Juror::getLastUpdate).reversed());
 
         Juror currentJurorValue = jurorService.getJurorFromJurorNumber(jurorNumber);
-        Map<Changed, Object> currentChangedValueLog = new HashMap<>();
-        Changed.updateCurrentValues(currentChangedValueLog, currentJurorValue);
-
 
         List<JurorAmendmentReportRow> changes = new ArrayList<>();
-        jurors.forEach(juror -> changes.addAll(Changed.getChanges(userService, currentChangedValueLog, juror)));
+        for (Juror juror : jurors) {
+            changes.addAll(Changed.getChanges(userService, currentJurorValue, juror));
+            currentJurorValue = juror;
+        }
 
         return changes;
     }
@@ -175,6 +168,7 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
     @Data
     @AllArgsConstructor
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    @Builder
     public static class JurorAmendmentReportRow {
         private String jurorNumber;
         private Changed changed;

@@ -30,6 +30,7 @@ public class JurorAuditServiceImpl implements JurorAuditService {
             .createQuery()
             .forRevisionsOfEntity(Juror.class, true, true)
             .add(AuditEntity.property("jurorNumber").in(jurorNumbers))
+            .addOrder(AuditEntity.property("lastUpdate").desc())
             .getResultList();
     }
 

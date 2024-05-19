@@ -10,6 +10,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractControllerIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.service.report.IReport;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -21,12 +22,12 @@ import static org.assertj.core.api.BDDAssertions.within;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AbstractReportControllerITest.BASE_URL)
-abstract class AbstractReportControllerITest<R extends AbstractReportResponse<?>>
+public abstract class AbstractReportControllerITest<R extends AbstractReportResponse<?>>
     extends AbstractControllerIntegrationTest<StandardReportRequest, R> {
     public static final String BASE_URL = "/api/v1/moj/reports/standard";
     private final String reportType;
 
-    public AbstractReportControllerITest(TestRestTemplate template, Class<? extends AbstractReport<?>> reportClass,
+    public AbstractReportControllerITest(TestRestTemplate template, Class<? extends IReport> reportClass,
                                          Class<R> resposneClass) {
         super(HttpMethod.POST, template, HttpStatus.OK, resposneClass);
         this.reportType = reportClass.getSimpleName();

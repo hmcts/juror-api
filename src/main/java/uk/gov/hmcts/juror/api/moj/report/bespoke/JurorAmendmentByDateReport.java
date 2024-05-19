@@ -32,9 +32,9 @@ public class JurorAmendmentByDateReport extends AbstractJurorAmendmentReport {
 
     @Override
     @Transactional(readOnly = true)
-    public AbstractReportResponse<List<JurorAmendmentReportRow>> getStandardReportResponse(
+    public JurorAmendmentReportResponse getStandardReportResponse(
         StandardReportRequest request) {
-        AbstractReportResponse<List<JurorAmendmentReportRow>> response = new AbstractReportResponse<>();
+        JurorAmendmentReportResponse response = new JurorAmendmentReportResponse();
 
         SecurityUtil.validateCanAccessRole(Role.SENIOR_JUROR_OFFICER);
 
