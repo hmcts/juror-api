@@ -51,7 +51,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @AllArgsConstructor
 @SuperBuilder
 @AuditOverride(forClass = Address.class)
-@EqualsAndHashCode(callSuper = true, exclude = {"associatedPools", "lastUpdateUser"})
+@EqualsAndHashCode(callSuper = true, exclude = {"associatedPools"})
 public class Juror extends Address implements Serializable {
 
     @Id
