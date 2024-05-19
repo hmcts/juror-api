@@ -7,7 +7,10 @@ VALUES (7344729, 1715794422606),
        (7344734, 1715794318531),
        (7344735, 1715794313449),
        (7344736, 1715794313449),
-       (7344737, 1715794313449);
+       (7344737, 1715794313449),
+       (7344738, 1715794313449),
+       (7344739, 1715794313449),
+       (7344740, 1715794313449);
 
 INSERT INTO juror_mod.users (username, "name", active, last_logged_in, "version", team_id, approval_limit,
                              user_type, email, created_by, updated_by)
@@ -20,6 +23,8 @@ INSERT INTO juror_mod.pool (pool_no, "owner", return_date, no_requested, pool_ty
                             additional_summons, attend_time, nil_pool, total_no_required, date_created)
 VALUES ('469240419', '469', '2024-04-22', 60, 'CRO', '469', 'N', '2024-05-03 19:39:26.000', NULL,
         '2024-04-22 08:30:00.000', false, 60, '2024-05-03 19:39:24.527');
+
+
 
 INSERT INTO juror_mod.juror (juror_number, poll_number, title, last_name, first_name, dob, address_line_1,
                              address_line_2, address_line_3, address_line_4, address_line_5, postcode, h_phone, w_phone,
@@ -35,7 +40,13 @@ VALUES ('200160029', NULL, 'Ms', 'Adeniran', 'Norma3', '1996-08-26 00:00:00.000'
         'Swansea', 'Special post town 2', '', 'BD2 7BN', '011111111111', NULL, NULL, true, NULL, NULL, NULL, NULL, NULL,
         'COURT.469', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '123456', 'Test Name 2', '12345678', NULL, NULL,
         'ELIGIBLE', '2024-05-19 17:20:03.000', NULL, NULL, 'Norma.Adeniran@email.coam', NULL, 0,
-        '2024-05-03 19:39:25.130', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 0, false, 'COURT.469');
+        '2024-05-03 19:39:25.130', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 0, false, 'COURT.469'),
+       ('200169805', NULL, 'Miss', 'Deane', 'Tyson', '1955-03-10 00:00:00.000', '75 HSDC Gardens', 'Room Number 15',
+        'Portsmouth 123 3', 'Redcar and Cleveland1', '', 'BD4 9BU', NULL, NULL, NULL, true, NULL, NULL, NULL, NULL,
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ELIGIBLE',
+        '2024-05-19 18:11:13.000', NULL, NULL, '', NULL, 0, '2024-05-03 19:39:24.913', NULL, NULL, NULL, NULL, NULL,
+        NULL, NULL, NULL, false, NULL, 0, false, 'COURT.469');
+
 
 INSERT INTO juror_mod.juror_pool (juror_number, pool_number, "owner", user_edtq, is_active, status, times_sel, def_date,
                                   "location", no_attendances, no_attended, no_fta, no_awol, pool_seq, edit_tag,
@@ -43,7 +54,10 @@ INSERT INTO juror_mod.juror_pool (juror_number, pool_number, "owner", user_edtq,
                                   paid_cash, scan_code, last_update, reminder_sent, transfer_date, date_created)
 VALUES ('200160029', '469240419', '469', 'BURAU.USER2', true, 2, 1, NULL, '469 8', NULL, NULL, NULL, NULL, '0040', NULL,
         '2024-05-13', false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-05-12 04:42:43.078', NULL, NULL,
-        '2024-05-03 19:39:25.133');
+        '2024-05-03 19:39:25.133'),
+       ('200169805', '469240419', '469', 'BURAU.USER81', true, 2, 1, NULL, '469 8', NULL, NULL, NULL, NULL, '0023',
+        NULL, '2024-05-13', false, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2024-05-12 12:52:19.631', NULL, NULL,
+        '2024-05-03 19:39:24.915');
 
 INSERT INTO juror_mod.juror_audit (revision, juror_number, rev_type, title, first_name, last_name, dob, address_line_1,
                                    address_line_2, address_line_3, address_line_4, address_line_5, address6, postcode,
@@ -77,4 +91,13 @@ VALUES (7344736, '200160029', 1, 'Ms', 'Norma3', 'Adeniran', '1996-08-26', ' AIR
         NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 'COURT.469', '2024-05-18 14:09:38.457'),
        (7344735, '200160029', 1, 'Ms', 'Norma3', 'Adeniran', '1996-08-26', ' AIRLL Nook 3', 'Box Number 74', 'Swansea',
         'Special post town 2', '', NULL, 'BD2 7BN', 'Norma.Adeniran@email.coam', '011111111111', NULL, NULL, NULL, NULL,
-        NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 'COURT.469', '2024-05-18 14:09:45.443');
+        NULL, NULL, NULL, NULL, NULL, NULL, false, NULL, 'COURT.469', '2024-05-18 14:09:45.443'),
+       (7344738, '200169805', 1, 'Miss', 'Tyson', 'Deane', '1954-03-10', '75 HSDC Gardens', 'Room Number 15',
+        'Portsmouth 123', 'Redcar and Cleveland', '', NULL, 'BD3 9BU', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        NULL, NULL, NULL, NULL, false, NULL, 'COURT.469', '2024-05-19 18:01:38.740'),
+       (7344739, '200169805', 1, 'Miss', 'Tyson', 'Deane', '1954-03-10', '75 HSDC Gardens', 'Room Number 15',
+        'Portsmouth 123', 'Redcar and Cleveland1', '', NULL, 'BD3 9BU', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        NULL, NULL, NULL, NULL, false, NULL, 'COURT.469', '2024-05-19 18:01:52.114'),
+       (7344740, '200169805', 1, 'Miss', 'Tyson', 'Deane', '1955-03-10', '75 HSDC Gardens', 'Room Number 15',
+        'Portsmouth 123 3', 'Redcar and Cleveland1', '', NULL, 'BD4 9BU', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        NULL, NULL, NULL, NULL, false, NULL, 'COURT.469', '2024-05-19 18:11:12.886');

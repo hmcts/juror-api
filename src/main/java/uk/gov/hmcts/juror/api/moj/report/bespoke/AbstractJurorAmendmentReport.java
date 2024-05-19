@@ -53,7 +53,6 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
         }
 
 
-
         public static Collection<JurorAmendmentReportRow> getChanges(
             UserService userService,
             Juror afterChangeJuror, Juror beforeChangeJuror) {
@@ -110,6 +109,7 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
         jurorNumberToJurorMap.forEach((jurorNumber, jurors) -> {
             changedData.addAll(getChangesFromJurorAudits(jurorNumber, jurors));
         });
+        changedData.sort(Comparator.comparing(JurorAmendmentReportRow::getChangedOn).reversed());
         StandardReportResponse.TableData<List<JurorAmendmentReportRow>> tableData =
             new StandardReportResponse.TableData<>();
 

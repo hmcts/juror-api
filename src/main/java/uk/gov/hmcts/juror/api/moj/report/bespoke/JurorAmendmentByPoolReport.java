@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.report.bespoke;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
@@ -20,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Component
 public class JurorAmendmentByPoolReport extends AbstractJurorAmendmentReport {
 
     private final JurorPoolService jurorPoolService;
@@ -77,7 +79,7 @@ public class JurorAmendmentByPoolReport extends AbstractJurorAmendmentReport {
 
         headings.put("service_start_date", AbstractReportResponse.DataTypeValue.builder()
             .displayName("Service Start Date")
-            .value(DateTimeFormatter.ISO_DATE_TIME.format(poolRequest.getReturnDate()))
+            .value(DateTimeFormatter.ISO_DATE.format(poolRequest.getReturnDate()))
             .dataType(LocalDate.class.getSimpleName())
             .build());
 
