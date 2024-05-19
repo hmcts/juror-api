@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.domain;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -26,7 +27,9 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -40,14 +43,15 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 
 @Entity
 @Table(name = "juror", schema = "juror_mod")
+@EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @Getter
 @Setter
 @Audited
 @AllArgsConstructor
 @SuperBuilder
-@AuditOverride(forClass = Address.class, isAudited = true)
-@EqualsAndHashCode(callSuper = true, exclude = {"associatedPools"})
+@AuditOverride(forClass = Address.class)
+@EqualsAndHashCode(callSuper = true, exclude = {"associatedPools","lastUpdateUser"})
 public class Juror extends Address implements Serializable {
 
     @Id
@@ -205,7 +209,10 @@ public class Juror extends Address implements Serializable {
     @Column(name = "notifications")
     private int notifications;
 
-    @NotAudited
+    @LastModifiedBy
+    @Column(name = "last_modified_by")
+    private String lastModifiedBy;
+
     @LastModifiedDate
     @Column(name = "last_update")
     private LocalDateTime lastUpdate;
@@ -289,5 +296,4 @@ public class Juror extends Address implements Serializable {
         }
         return buildName + firstName + " " + lastName;
     }
-
 }

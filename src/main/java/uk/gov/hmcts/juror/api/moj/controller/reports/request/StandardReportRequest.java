@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
+import uk.gov.hmcts.juror.api.validation.JurorNumber;
 import uk.gov.hmcts.juror.api.validation.PoolNumber;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
@@ -53,6 +54,11 @@ public class StandardReportRequest {
     @PoolNumber(groups = AbstractReport.Validators.RequirePoolNumber.class)
     @NotNull(groups = AbstractReport.Validators.RequirePoolNumber.class)
     private String poolNumber;
+
+    @JurorNumber(groups = AbstractReport.Validators.RequiredJurorNumber.class)
+    @NotNull(groups = AbstractReport.Validators.RequiredJurorNumber.class)
+    private String jurorNumber;
+
 
     @NotBlank(groups = AbstractReport.Validators.RequireTrialNumber.class)
     @Length(max = 16, groups = AbstractReport.Validators.RequireTrialNumber.class)

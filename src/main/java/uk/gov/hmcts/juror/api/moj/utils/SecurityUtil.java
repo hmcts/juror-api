@@ -39,6 +39,16 @@ public final class SecurityUtil {
         throw new IllegalStateException("Utility class");
     }
 
+
+    public static boolean hasBureauJwtPayload() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        if (securityContext != null) {
+            Authentication authentication = securityContext.getAuthentication();
+            return authentication instanceof BureauJwtAuthentication;
+        }
+        return false;
+    }
+
     public static BureauJwtAuthentication getActiveUsersBureauJwtAuthentication() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         Authentication authentication = securityContext.getAuthentication();
@@ -47,6 +57,7 @@ public final class SecurityUtil {
         }
         throw new MojException.Forbidden("User must be authorised with BureauJwtAuthentication", null);
     }
+
 
     public static BureauJwtPayload getActiveUsersBureauPayload() {
         Object principal = getActiveUsersBureauJwtAuthentication().getPrincipal();
@@ -90,7 +101,11 @@ public final class SecurityUtil {
             throw new MojException.Forbidden("User does not have access", null);
         }
     }
-
+    public static void validateCanAccessRole(Role role) {
+        if (!hasRole(role)) {
+            throw new MojException.Forbidden("User does not have access", null);
+        }
+    }
     public static List<String> getCourts() {
         return getActiveUsersBureauPayload().getStaff().getCourts();
     }
@@ -123,4 +138,5 @@ public final class SecurityUtil {
     public static boolean hasRole(Role role) {
         return getActiveUsersBureauPayload().getRoles().contains(role);
     }
+
 }
