@@ -13,7 +13,7 @@ public class AuditorResolver implements AuditorAware<String> {
 
     @Override
     public Optional<String> getCurrentAuditor() {
-        if(SecurityUtil.hasBureauJwtPayload()) {
+        if (SecurityUtil.hasBureauJwtPayload()) {
             return Optional.of(SecurityUtil.getUsername());
         }
         return Optional.empty();

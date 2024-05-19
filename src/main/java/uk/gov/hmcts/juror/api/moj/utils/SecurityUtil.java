@@ -101,11 +101,13 @@ public final class SecurityUtil {
             throw new MojException.Forbidden("User does not have access", null);
         }
     }
+
     public static void validateCanAccessRole(Role role) {
         if (!hasRole(role)) {
             throw new MojException.Forbidden("User does not have access", null);
         }
     }
+
     public static List<String> getCourts() {
         return getActiveUsersBureauPayload().getStaff().getCourts();
     }

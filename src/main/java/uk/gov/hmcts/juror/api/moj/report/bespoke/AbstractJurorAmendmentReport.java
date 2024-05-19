@@ -99,12 +99,12 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
     }
 
     protected AbstractReportResponse.TableData<List<JurorAmendmentReportRow>>
-    getTableDataAudits(List<Juror> jurorAudits) {
+        getTableDataAudits(List<Juror> jurorAudits) {
         return getTableDataAudits(false, jurorAudits);
     }
 
     protected AbstractReportResponse.TableData<List<JurorAmendmentReportRow>>
-    getTableDataAudits(boolean includeOneAuditEitherSide, List<Juror> jurorAudits) {
+        getTableDataAudits(boolean includeOneAuditEitherSide, List<Juror> jurorAudits) {
         Map<String, List<Juror>> jurorNumberToJurorMap = jurorAudits
             .stream()
             .collect(Collectors.groupingBy(Juror::getJurorNumber));
@@ -113,8 +113,7 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
         jurorNumberToJurorMap.forEach((jurorNumber, jurors) -> changedData.addAll(
             getChangesFromJurorAudits(includeOneAuditEitherSide, jurorNumber, jurors)));
         changedData.sort(Comparator.comparing(JurorAmendmentReportRow::getChangedOn).reversed());
-        StandardReportResponse.TableData<List<JurorAmendmentReportRow>> tableData =
-            new StandardReportResponse.TableData<>();
+
 
         List<AbstractReportResponse.TableData.Heading> headings = new ArrayList<>();
         headings.add(AbstractReportResponse.TableData.Heading.builder()
@@ -148,6 +147,8 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
             .name("Changed By")
             .dataType(String.class.getSimpleName())
             .build());
+        StandardReportResponse.TableData<List<JurorAmendmentReportRow>> tableData =
+            new StandardReportResponse.TableData<>();
         tableData.setHeadings(headings);
         tableData.setData(changedData);
         return tableData;

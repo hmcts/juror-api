@@ -10,7 +10,8 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class JurorAmendmentByDateReportTest extends AbstractJurorAmendmentReportTestSupport<JurorAmendmentByDateReport> {
+public class JurorAmendmentByDateReportTest
+    extends AbstractJurorAmendmentReportTestSupport<JurorAmendmentByDateReport> {
 
 
     public JurorAmendmentByDateReportTest() {
@@ -45,10 +46,10 @@ public class JurorAmendmentByDateReportTest extends AbstractJurorAmendmentReport
         assertThat(headings).hasSize(2);
         assertThat(headings).containsExactlyInAnyOrderEntriesOf(
             Map.of("date_from", AbstractReportResponse.DataTypeValue.builder()
-                .displayName("Date from")
+                    .displayName("Date from")
                     .value("2024-01-01")
                     .dataType("LocalDate")
-                .build(),
+                    .build(),
                 "date_to", AbstractReportResponse.DataTypeValue.builder()
                     .displayName("Date to")
                     .value("2024-01-30")

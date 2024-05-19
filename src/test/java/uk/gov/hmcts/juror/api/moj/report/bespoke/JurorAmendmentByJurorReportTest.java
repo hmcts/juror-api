@@ -40,7 +40,7 @@ class JurorAmendmentByJurorReportTest extends AbstractJurorAmendmentReportTestSu
         Map<String, AbstractReportResponse.DataTypeValue> headings = report
             .getHeadings(request, jurorName);
 
-       validateReportCreated(headings);
+        validateReportCreated(headings);
 
         assertThat(headings).hasSize(2);
         assertThat(headings).containsExactlyInAnyOrderEntriesOf(

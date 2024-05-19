@@ -30,7 +30,7 @@ public abstract class AbstractJurorAmendmentReportITest
     }
 
     @Test
-    void negativeNotSJO() {
+    void negativeNotSjo() {
         testBuilder()
             .jwt(createJwt("test_court_standard",
                 "469",

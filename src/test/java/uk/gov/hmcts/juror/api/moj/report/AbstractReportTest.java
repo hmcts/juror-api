@@ -300,8 +300,7 @@ class AbstractReportTest {
 
             CourtLocation courtLocation = mock(CourtLocation.class);
 
-            when(courtLocation.getName()).thenReturn("CHESTER");
-            when(courtLocation.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
+            when(courtLocation.getNameWithLocCode()).thenReturn("CHESTER (415)");
 
             assertThat(report.getCourtNameHeader(courtLocation))
                 .isEqualTo(Map.entry("court_name",
@@ -311,8 +310,7 @@ class AbstractReportTest {
                         "CHESTER (" + TestConstants.VALID_COURT_LOCATION + ")")
                 ));
 
-            verify(courtLocation).getName();
-            verify(courtLocation).getLocCode();
+            verify(courtLocation).getNameWithLocCode();
             verifyNoMoreInteractions(courtLocation);
         }
     }

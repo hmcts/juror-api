@@ -255,7 +255,7 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
     @Override
     public boolean hasPoolWithLocCode(String jurorNumber, List<String> locCode) {
         JPAQueryFactory queryFactory = getQueryFactory();
-       return queryFactory.from(JUROR_POOL)
+        return queryFactory.from(JUROR_POOL)
             .where(JUROR_POOL.juror.jurorNumber.eq(jurorNumber))
             .where(JUROR_POOL.pool.courtLocation.locCode.in(locCode))
             .fetchFirst() != null;
