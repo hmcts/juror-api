@@ -37,7 +37,7 @@ public class AbsencesReport extends AbstractGroupedReport {
         super(poolRequestRepository,
             QJurorPool.jurorPool,
             ReportGroupBy.builder()
-                .dataType(DataType.POOL_NUMBER)
+                .dataType(DataType.POOL_NUMBER_AND_COURT_TYPE)
                 .removeGroupByFromResponse(true)
                 .build(),
             DataType.JUROR_NUMBER,

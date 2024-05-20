@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
+import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
@@ -41,7 +42,7 @@ class AbsencesReportTest extends AbstractGroupedReportTestSupport<AbsencesReport
         super(QJurorPool.jurorPool,
               AbsencesReport.RequestValidator.class,
               ReportGroupBy.builder()
-                  .dataType(DataType.POOL_NUMBER)
+                  .dataType(DataType.POOL_NUMBER_AND_COURT_TYPE)
                   .removeGroupByFromResponse(true)
                   .build(),
               DataType.JUROR_NUMBER,
@@ -83,10 +84,9 @@ class AbsencesReportTest extends AbstractGroupedReportTestSupport<AbsencesReport
         TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
 
         report.preProcessQuery(query, request);
+        verify(query, times(1)).where(QAppearance.appearance.attendanceType.eq(AttendanceType.ABSENT));
         verify(query, times(1))
-            .where(QAppearance.appearance.attendanceDate.after(request.getFromDate()));
-        verify(query, times(1))
-            .where(QAppearance.appearance.attendanceDate.before(request.getToDate()));
+            .where(QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate()));
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.courtLocation.locCode.eq(locCode));
         verify(query, times(1)).orderBy(

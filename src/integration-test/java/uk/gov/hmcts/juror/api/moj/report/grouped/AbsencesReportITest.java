@@ -94,7 +94,7 @@ class AbsencesReportITest extends AbstractGroupedReportControllerITest {
     private GroupedReportResponse buildResponse(GroupedTableData data, Integer minusDays) {
         return GroupedReportResponse.builder()
             .groupBy(GroupByResponse.builder()
-                         .name("POOL_NUMBER")
+                         .name("POOL_NUMBER_AND_COURT_TYPE")
                          .build())
             .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
                           .add("date_from", StandardReportResponse.DataTypeValue.builder()
@@ -193,7 +193,7 @@ class AbsencesReportITest extends AbstractGroupedReportControllerITest {
 
     private GroupedReportResponse getTypicalResponse() {
         return buildResponse(new GroupedTableData()
-                                 .add("415240601", List.of(
+                                 .add("415240601,CROWN COURT", List.of(
                                      new ReportLinkedMap<String, Object>()
                                          .add("juror_number", "641500021")
                                          .add("first_name", "FNAMETWOONE")
@@ -214,7 +214,21 @@ class AbsencesReportITest extends AbstractGroupedReportControllerITest {
                                              .add("juror_postcode", "CH1 2AN"))
                                          .add("date_of_absence",
                                               DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(4)))
-                                     )), 10);
+                                     )).add("415240602,HIGH COURT", List.of(
+                                         new ReportLinkedMap<String, Object>()
+                                             .add("juror_number", "641500009")
+                                             .add("first_name", "FNAMENINE")
+                                             .add("last_name", "LNAMENINE")
+                                             .add("juror_postal_address", new ReportLinkedMap<String, Object>()
+                                                 .add("juror_address_line_1", "9 STREET NAME")
+                                                 .add("juror_address_line_2", "ANYTOWN")
+                                                 .add("juror_address_line_3", "")
+                                                 .add("juror_address_line_4", "TOWN")
+                                                 .add("juror_address_line_5", "")
+                                                 .add("juror_postcode", "CH1 2AN"))
+                                             .add("date_of_absence",
+                                                  DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(4)))
+                )), 10);
     }
 
     private GroupedReportResponse getNoRecordsResponse() {

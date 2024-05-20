@@ -78,6 +78,10 @@ public enum DataType implements IDataType {
     SERVICE_START_DATE("Service Start Date", LocalDate.class, QPoolRequest.poolRequest.returnDate,
         QPoolRequest.poolRequest),
     POOL_NUMBER("Pool Number", String.class, QPoolRequest.poolRequest.poolNumber, QPoolRequest.poolRequest),
+    POOL_NUMBER_AND_COURT_TYPE("Pool Number and Type",
+                               String.class, QPoolRequest.poolRequest.poolNumber.stringValue()
+                                   .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
+                               QPoolRequest.poolRequest, QPoolRequest.poolRequest),
     POOL_NUMBER_BY_JP("Pool Number", String.class, QJurorPool.jurorPool.pool.poolNumber,
         QJurorPool.jurorPool),
     NEXT_ATTENDANCE_DATE("Next attendance date", LocalDate.class, QJurorPool.jurorPool.nextDate, QJurorPool.jurorPool),
