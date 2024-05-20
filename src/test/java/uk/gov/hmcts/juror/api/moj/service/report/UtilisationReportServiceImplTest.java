@@ -39,13 +39,12 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService.TableHeading.ATTENDANCE_DAYS;
 import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService.TableHeading.DATE;
+import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService.TableHeading.JUROR;
 import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService.TableHeading.JUROR_WORKING_DAYS;
+import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService.TableHeading.MONTH;
 import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService.TableHeading.NON_ATTENDANCE_DAYS;
 import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService.TableHeading.SITTING_DAYS;
 import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService.TableHeading.UTILISATION;
-import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService.TableHeading.MONTH;
-import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService.TableHeading.JUROR;
-
 
 @SuppressWarnings({
     "PMD.LawOfDemeter",
