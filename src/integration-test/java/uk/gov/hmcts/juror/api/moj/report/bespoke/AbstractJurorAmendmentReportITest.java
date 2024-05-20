@@ -13,7 +13,8 @@ import java.util.Set;
     "/db/mod/truncate.sql",
     "/db/mod/reports/JurorAmendmentReportITest.sql"
 })
-public abstract class AbstractJurorAmendmentReportITest
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+abstract class AbstractJurorAmendmentReportITest
     extends AbstractReportControllerITest<JurorAmendmentReportResponse> {
 
     public AbstractJurorAmendmentReportITest(TestRestTemplate template,

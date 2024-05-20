@@ -47,8 +47,8 @@ public class JurorAmendmentByJurorReport extends AbstractJurorAmendmentReport {
             jurorAmendmentReportRow.setJurorNumber(null);
         });
         tableData.getHeadings().removeIf(heading ->
-            heading.getId().equalsIgnoreCase("juror_number")
-                || heading.getId().equalsIgnoreCase("from"));
+            "juror_number".equalsIgnoreCase(heading.getId())
+                || "from".equalsIgnoreCase(heading.getId()));
 
         JurorAmendmentReportResponse response = new JurorAmendmentReportResponse();
         response.setTableData(tableData);

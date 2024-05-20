@@ -12,7 +12,9 @@ import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest {
+
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest {
     @Autowired
     public JurorAmendmentByPoolReportITest(TestRestTemplate template) {
         super(template, JurorAmendmentByPoolReport.class);

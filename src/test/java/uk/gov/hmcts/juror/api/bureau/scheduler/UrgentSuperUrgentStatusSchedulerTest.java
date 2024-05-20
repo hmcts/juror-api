@@ -18,7 +18,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -62,8 +61,6 @@ public class UrgentSuperUrgentStatusSchedulerTest {
         responseReceived = LocalDateTime.now();
 
         //set up some known static dates relative to a start point
-        final LocalDateTime hearingDateValid = LocalDateTime.now().plus(35, ChronoUnit.DAYS);
-
         jurorBureauDetail = new ModJurorDetail();
         jurorBureauDetail.setProcessingStatus(NON_CLOSED_STATUS);
         jurorBureauDetail.setDateReceived(responseReceived.toLocalDate());

@@ -29,6 +29,7 @@ public class JurorAmendmentByPoolReportTest
 
 
     @BeforeEach
+    @Override
     void beforeEach() {
         super.beforeEach();
         this.jurorPoolService = mock(JurorPoolService.class);

@@ -13,8 +13,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
-public class JurorAmendmentByDateReportITest extends AbstractJurorAmendmentReportITest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class JurorAmendmentByDateReportITest extends AbstractJurorAmendmentReportITest {
     @Autowired
     public JurorAmendmentByDateReportITest(TestRestTemplate template) {
         super(template, JurorAmendmentByDateReport.class);
@@ -23,8 +23,8 @@ public class JurorAmendmentByDateReportITest extends AbstractJurorAmendmentRepor
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
-            .fromDate(LocalDate.of(2024,5,19))
-            .toDate(LocalDate.of(2024,5,21))
+            .fromDate(LocalDate.of(2024, 5, 19))
+            .toDate(LocalDate.of(2024, 5, 21))
             .build());
     }
 
