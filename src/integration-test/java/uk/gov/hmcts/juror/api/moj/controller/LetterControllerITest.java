@@ -5035,6 +5035,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             private TrialExemptionList() {
 
             }
+
             @Nested
             @DisplayName("Positive")
             class Positive {
