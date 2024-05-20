@@ -37,7 +37,6 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
     "unchecked",
-    "PMD.LawOfDemeter",
     "PMD.ExcessiveImports"
 })
 public class ReasonableAdjustmentsReportTest extends AbstractGroupedReportTestSupport<ReasonableAdjustmentsReport> {

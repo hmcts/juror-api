@@ -19,7 +19,6 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/CurrentPoolStatusReportControllerITest_typical.sql"
 })
-@SuppressWarnings("PMD.LawOfDemeter")
 class CurrentPoolStatusReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired

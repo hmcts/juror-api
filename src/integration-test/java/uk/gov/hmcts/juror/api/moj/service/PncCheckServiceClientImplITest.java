@@ -40,7 +40,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @DisplayName("Police National Computer Manual Check")
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
 
     @Autowired

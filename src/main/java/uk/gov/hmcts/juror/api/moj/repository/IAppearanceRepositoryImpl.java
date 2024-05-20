@@ -42,7 +42,7 @@ import java.util.Optional;
  * Custom Repository implementation for the Appearance entity.
  */
 @Slf4j
-@SuppressWarnings({"PMD.LawOfDemeter", "PMD.TooManyMethods"})
+@SuppressWarnings("PMD.TooManyMethods")
 public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     @PersistenceContext
     EntityManager entityManager;

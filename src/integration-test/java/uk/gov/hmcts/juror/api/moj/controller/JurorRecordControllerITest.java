@@ -141,7 +141,6 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
     "PMD.ExcessiveImports",
     "PMD.CouplingBetweenObjects",
     "PMD.ExcessivePublicCount",
-    "PMD.LawOfDemeter",
     "PMD.LinguisticNaming",
     "PMD.NcssCount",
     "PMD.CyclomaticComplexity",
@@ -3666,7 +3665,6 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @DisplayName("PATCH " + UpdateJurorToFailedToAttend.URL)
     @Sql({"/db/mod/truncate.sql",
         "/db/JurorRecordControllerITest_failedToAttend_typical.sql"})
-    @SuppressWarnings("PMD.LawOfDemeter")
     class UpdateJurorToFailedToAttend {
 
         private static final String URL = BASE_URL + "/failed-to-attend";
@@ -3838,7 +3836,6 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @DisplayName("PATCH " + UndoUpdateJurorToFailedToAttend.URL)
     @Sql({"/db/mod/truncate.sql",
         "/db/JurorRecordControllerITest_failedToAttend_undo_typical.sql"})
-    @SuppressWarnings("PMD.LawOfDemeter")
     class UndoUpdateJurorToFailedToAttend {
 
         private static final String URL = BASE_URL + "/failed-to-attend/undo";

@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.juror.api.TestUtils.buildStringToLength;
 
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.ExcessivePublicCount",
     "PMD.TooManyMethods"
 })

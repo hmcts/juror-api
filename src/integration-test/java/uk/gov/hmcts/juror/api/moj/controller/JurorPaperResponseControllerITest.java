@@ -68,7 +68,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * Integration tests for the API endpoints defined in {@link JurorPaperResponseController}.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {

@@ -20,9 +20,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(callSuper = true)
-@SuppressWarnings({
-    "PMD.LawOfDemeter"
-})
 public class ExpenseDetailsDto extends ExpenseValuesDto {
 
     @JsonProperty("attendance_date")

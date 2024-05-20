@@ -54,7 +54,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings("PMD.LawOfDemeter")
 public class BureauStaffControllerTest extends AbstractIntegrationTest {
 
     private static final TeamDto TEAM_1 = TeamDto.builder().id(1L).name("London & Wales").version(0).build();

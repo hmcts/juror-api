@@ -77,7 +77,6 @@ public class CourtLetterListRequestDto {
     @NotNull
     private CourtLetterType letterType;
 
-    @SuppressWarnings("PMD.LawOfDemeter")
     public boolean isIncludePrinted() {
         return Boolean.TRUE.equals(this.includePrinted);
     }

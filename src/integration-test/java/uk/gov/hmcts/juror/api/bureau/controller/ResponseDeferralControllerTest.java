@@ -44,7 +44,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings("PMD.LawOfDemeter")
 public class ResponseDeferralControllerTest extends AbstractIntegrationTest {
     private static final String WORK_RELATED_EXCUSAL_CODE = "W";
 

@@ -19,7 +19,6 @@ import java.util.Map;
 
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class NonRespondedReport extends AbstractStandardReport {
     @Autowired
     public NonRespondedReport(PoolRequestRepository poolRequestRepository) {

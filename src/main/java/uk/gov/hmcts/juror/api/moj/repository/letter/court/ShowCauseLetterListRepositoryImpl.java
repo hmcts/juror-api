@@ -14,7 +14,6 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.court.ShowCauseLetterList;
 import java.util.List;
 
 @Repository
-@SuppressWarnings("PMD.LawOfDemeter")
 public class ShowCauseLetterListRepositoryImpl implements ShowCauseLetterListRepository {
 
     @PersistenceContext
