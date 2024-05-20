@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
@@ -159,6 +160,8 @@ public enum DataType implements IDataType {
         QAppearance.appearance, QPoolRequest.poolRequest),
 
     DATE_OF_ABSENCE("Date of absence", LocalDate.class, QAppearance.appearance.attendanceDate, QAppearance.appearance),
+
+    PANEL_STATUS("Panel Status", String.class, QPanel.panel.result, QPanel.panel),
 
     COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
                                  QCourtLocation.courtLocation.name.concat(" (")
