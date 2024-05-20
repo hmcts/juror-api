@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Immutable;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
@@ -23,8 +24,14 @@ import java.time.LocalDateTime;
 @Getter
 @Setter(AccessLevel.NONE)
 //Read only view
+@Immutable
 public class LowLevelFinancialAuditDetailsIncludingApprovedAmounts {
+    @Column(name = "id")
+    @Id
+    private Long id;
 
+    @Column(name = "total_approved")
+    private BigDecimal totalApproved;
 
     @Column(name = "total_travel_approved")
     private BigDecimal totalTravelApproved;
@@ -37,12 +44,6 @@ public class LowLevelFinancialAuditDetailsIncludingApprovedAmounts {
 
     @Column(name = "total_smartcard_approved")
     private BigDecimal totalSmartCardApproved;
-
-    @Column(name = "total_approved")
-    private BigDecimal totalApproved;
-    @Column(name = "id")
-    @Id
-    private Long id;
 
     @Column(name = "juror_revision")
     private Long jurorRevision;

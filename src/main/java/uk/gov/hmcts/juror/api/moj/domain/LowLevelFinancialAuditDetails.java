@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Immutable;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter(AccessLevel.NONE)
 //Read only view
+@Immutable
 public class LowLevelFinancialAuditDetails {
 
     @Column(name = "id")
