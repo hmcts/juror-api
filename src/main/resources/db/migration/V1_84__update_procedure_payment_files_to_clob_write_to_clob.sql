@@ -19,7 +19,7 @@ BEGIN
 	SELECT 	NEXTVAL('juror_mod.content_store_seq')
  	INTO v_revision;
 
-	SELECT  TO_CHAR(p_creation_date, 'FMDDMONTHYYYY') || LPAD(v_revision::VARCHAR(20), 9, '0') || '.dat',
+    SELECT  TO_CHAR(p_creation_date, 'FMDDMONYYYY') || LPAD(v_revision::VARCHAR(20), 9, '0') || '.dat',
    			'HEADER' || '|' || LPAD(v_revision::VARCHAR(20), 9, '0') || '|' || LPAD(TO_CHAR(p_total, '9999990.90'), 11)
    	INTO p_file_name, v_header;
 
@@ -43,7 +43,7 @@ BEGIN
                 coalesce(REPLACE(REPLACE(REPLACE(pd.postcode, '|', ' '), chr(10), ' '), chr(13), ' '), '') postcode,
                 pd.auth_code,
                 coalesce(REPLACE(REPLACE(REPLACE(pd.juror_name, '|', ' '), chr(10), ' '), chr(13), ' '), '') name,
-                pd.loc_cost_centre,
+                rpad(coalesce(pd.loc_cost_centre, ''), 5) loc_cost_centre,
                 pd.travel_total,
                 pd.subsistence_total as sub_total,
                 pd.financial_loss_total as floss_total,
