@@ -13,13 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -112,7 +111,7 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
         assertThat(templateUuid).as("UUID value present")
             .isNotBlank().containsPattern(UUID_REGEX);
 
-        Map<String, String> payLoad = new HashMap<>();
+        Map<String, String> payLoad = new ConcurrentHashMap<>();
         payLoad.put("jurror number", "value1");
         payLoad.put("court", "value2");
         payLoad.put("SERVICESTARTDATE", "value2");
@@ -128,11 +127,4 @@ public class JurorCommsNotificationServiceImplIntegrationTest extends ContainerT
             .as("Correct Notify template selected")
             .isEqualTo(templateUuid);
     }
-
-    private DigitalResponse loadJurorResponse(final String jurorNumber) {
-        final DigitalResponse response = jurorResponseRepository.findByJurorNumber(jurorNumber);
-        return response;
-    }
-
 }
-

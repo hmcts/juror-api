@@ -275,9 +275,6 @@ checkstyle {
     getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
-pmdIntegrationTest {
-    maxFailures = 270
-}
 pmdTest {
     maxFailures = 358
 }

@@ -71,7 +71,7 @@ public class ResponseUpdateController {
         description = "Retrieve notes of a single juror response by their juror number")
     public ResponseEntity<JurorNoteDto> jurorNoteByJurorNumber(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId) {
-        validateJurorNumberPathVariable(jurorId);
+        assertJurorNumberPathVariable(jurorId);
 
         final JurorNoteDto notesDto = responseUpdateService.notesByJurorNumber(jurorId);
         return ResponseEntity.ok().body(notesDto);
@@ -84,7 +84,7 @@ public class ResponseUpdateController {
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
         @Parameter(hidden = true) BureauJwtAuthentication jwt,
         @Validated @RequestBody JurorNoteDto noteDto) {
-        validateJurorNumberPathVariable(jurorId);
+        assertJurorNumberPathVariable(jurorId);
 
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         responseUpdateService.updateNote(noteDto, jurorId, jwtPayload.getLogin());
@@ -99,7 +99,7 @@ public class ResponseUpdateController {
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @Validated @RequestBody JurorPhoneLogDto phoneLogDto) {
-        validateJurorNumberPathVariable(jurorId);
+        assertJurorNumberPathVariable(jurorId);
         responseUpdateService.updatePhoneLog(phoneLogDto, jurorId, payload.getLogin());
         log.info("Updated phone log for juror {}", jurorId);
         return ResponseEntity.noContent().build();
@@ -124,7 +124,7 @@ public class ResponseUpdateController {
         @Parameter(hidden = true) BureauJwtAuthentication jwt,
         @Validated @RequestBody FirstPersonJurorDetailsDto firstPersonJurorDetailsDto)
         throws ResponseAlreadyMergedException {
-        validateJurorNumberPathVariable(jurorId);
+        assertJurorNumberPathVariable(jurorId);
 
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         responseUpdateService.updateJurorDetailsFirstPerson(firstPersonJurorDetailsDto, jurorId, jwtPayload
@@ -152,7 +152,7 @@ public class ResponseUpdateController {
         @Parameter(hidden = true) BureauJwtAuthentication jwt,
         @Validated @RequestBody ThirdPartyJurorDetailsDto thirdPartyJurorDetailsDto)
         throws ResponseAlreadyMergedException {
-        validateJurorNumberPathVariable(jurorId);
+        assertJurorNumberPathVariable(jurorId);
 
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         responseUpdateService.updateJurorDetailsThirdParty(thirdPartyJurorDetailsDto, jurorId, jwtPayload.getLogin());
@@ -178,7 +178,7 @@ public class ResponseUpdateController {
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
         @Parameter(hidden = true) BureauJwtAuthentication jwt,
         @Validated @RequestBody JurorEligibilityDto jurorEligibilityDto) {
-        validateJurorNumberPathVariable(jurorId);
+        assertJurorNumberPathVariable(jurorId);
 
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         responseUpdateService.updateJurorEligibility(jurorEligibilityDto, jurorId, jwtPayload.getLogin());
@@ -194,7 +194,7 @@ public class ResponseUpdateController {
         @Parameter(hidden = true) BureauJwtAuthentication jwt,
         @Validated @RequestBody DeferralExcusalDto deferralExcusalDto)
         throws ResponseAlreadyMergedException {
-        validateJurorNumberPathVariable(jurorId);
+        assertJurorNumberPathVariable(jurorId);
 
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         responseUpdateService.updateExcusalDeferral(deferralExcusalDto, jurorId, jwtPayload.getLogin());
@@ -211,7 +211,7 @@ public class ResponseUpdateController {
         @Parameter(hidden = true) BureauJwtAuthentication jwt,
         @Validated @RequestBody ReasonableAdjustmentsDto reasonableAdjustmentsDto)
         throws ResponseAlreadyMergedException {
-        validateJurorNumberPathVariable(jurorId);
+        assertJurorNumberPathVariable(jurorId);
 
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         responseUpdateService.updateSpecialNeeds(reasonableAdjustmentsDto, jurorId, jwtPayload.getLogin());
@@ -228,7 +228,7 @@ public class ResponseUpdateController {
         @Parameter(hidden = true) BureauJwtAuthentication jwt,
         @Validated @RequestBody CjsEmploymentDetailsDto cjsEmploymentDetailsDto)
         throws ResponseAlreadyMergedException {
-        validateJurorNumberPathVariable(jurorId);
+        assertJurorNumberPathVariable(jurorId);
 
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         responseUpdateService.updateCjs(cjsEmploymentDetailsDto, jurorId, jwtPayload.getLogin());
@@ -277,7 +277,7 @@ public class ResponseUpdateController {
      *
      * @param jurorNumber Path variable supplied juror number
      */
-    static void validateJurorNumberPathVariable(final String jurorNumber) {
+    static void assertJurorNumberPathVariable(final String jurorNumber) {
         if (!jurorNumber.matches(ValidationConstants.JUROR_NUMBER)) {
             log.warn("Juror number {} in path invalid", jurorNumber);
             throw new ValidationException("Juror number must be exactly 9 digits");

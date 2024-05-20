@@ -50,7 +50,7 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getNotifyTemplateKeyComms() {
+    public void testGNotifyTemplateKeyComms() {
         final JurorCommsNotifyTemplateType type = COMMS;
 
         final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod"
@@ -86,7 +86,7 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getNotifyTemplateKeySentToCourt() {
+    public void testGNotifyTemplateKeySentToCourt() {
         final JurorCommsNotifyTemplateType type = SENT_TO_COURT;
 
         final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod"
@@ -114,7 +114,7 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getNotifyTemplateKeySuSentToCourt() {
+    public void testGNotifyTemplateKeySuSentToCourt() {
         final JurorCommsNotifyTemplateType type = SU_SENT_TO_COURT;
 
         final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod"
@@ -143,7 +143,7 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getNotifyTemplateKeyCommsWelshLanguage() {
+    public void testGNotifyTemplateKeyCommsWelshLanguage() {
         final JurorCommsNotifyTemplateType type = COMMS;
 
         final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod"
@@ -179,7 +179,7 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getNotifyTemplateKeySentToCourtWelshLanguage() {
+    public void testGNotifyTemplateKeySentToCourtWelshLanguage() {
         final JurorCommsNotifyTemplateType type = SENT_TO_COURT;
 
         final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod"
@@ -207,7 +207,7 @@ public class JurorCommsNotifyTemplateTypeIntegrationTest extends ContainerTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/notify_template_mapping.sql")
     @Sql("/db/welsh_enabled.sql")
-    public void getNotifyTemplateKeySuSentToCourtWelshLanguage() {
+    public void testGNotifyTemplateKeySuSentToCourtWelshLanguage() {
         final JurorCommsNotifyTemplateType type = SU_SENT_TO_COURT;
 
         final Set<Object> notifyTemplateSettings = jdbcTemplate.queryForList("SELECT TEMPLATE_NAME FROM juror_mod"

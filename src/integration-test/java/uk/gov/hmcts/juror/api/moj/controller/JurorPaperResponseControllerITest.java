@@ -68,6 +68,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * Integration tests for the API endpoints defined in {@link JurorPaperResponseController}.
  */
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.ExcessivePublicCount", "PMD.TooManyMethods",
+    "PMD.CyclomaticComplexity"})
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
@@ -382,8 +384,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
 
-        verifyRequestDtoMapping_personalDetails(jurorPaperResponse, requestDto);
-        verifyRequestDtoMapping_contactDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingPersonalDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingContactDetails(jurorPaperResponse, requestDto);
 
         Optional<JurorPool> jurorPoolOpt =
             jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_415220502, true);
@@ -420,8 +422,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         assertThat(responseDto.isStraightThroughAcceptance()).isFalse();
 
         PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
-        verifyRequestDtoMapping_personalDetails(jurorPaperResponse, requestDto);
-        verifyRequestDtoMapping_contactDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingPersonalDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingContactDetails(jurorPaperResponse, requestDto);
 
         Optional<JurorPool> jurorPoolOpt =
             jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber,
@@ -466,7 +468,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         assertThat(jurorPool.isPresent()).isTrue();
 
-        verifyStraightThrough_ageDisqualification_notProcessed(jurorPaperResponse, jurorPool.get(),
+        verifyStraightThroughAgeDisqualificationNotProcessed(jurorPaperResponse, jurorPool.get(),
             IJurorStatus.DEFERRED);
     }
 
@@ -501,7 +503,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_415220502, true);
 
         assertThat(jurorPool.isPresent()).isTrue();
-        verifyStraightThrough_ageDisqualification_notProcessed(jurorPaperResponse, jurorPool.get(),
+        verifyStraightThroughAgeDisqualificationNotProcessed(jurorPaperResponse, jurorPool.get(),
             IJurorStatus.SUMMONED);
     }
 
@@ -533,8 +535,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         PaperResponse jurorPaperResponse = getJurorPaperResponse(jurorNumber);
 
-        verifyRequestDtoMapping_personalDetails(jurorPaperResponse, requestDto);
-        verifyRequestDtoMapping_contactDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingPersonalDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingContactDetails(jurorPaperResponse, requestDto);
 
         Optional<JurorPool> jurorPoolOpt =
             jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, POOL_411220502, true);
@@ -1213,8 +1215,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(reasonableAdjustments.size()).isEqualTo(0);  // we need a record to be present
-        assertNull(juror.getReasonableAdjustmentCode());
-        assertNull(juror.getReasonableAdjustmentMessage());
+        assertNull(juror.getReasonableAdjustmentCode(), "Reasonable Adjustment code should be null");
+        assertNull(juror.getReasonableAdjustmentMessage(), "Reasonable Adjustment Message should be null");
     }
 
 
@@ -1845,6 +1847,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         assertThat(juror.getEmail()).isNull();
     }
 
+    @SuppressWarnings({"PMD.NcssCount", "PMD.NPathComplexity"})
     private void verifyResponseDtoMapping(JurorPaperResponseDetailDto responseDetailDto, String owner) {
         PaperResponse jurorPaperResponse =
             jurorPaperResponseRepository.findByJurorNumber(responseDetailDto.getJurorNumber());
@@ -1967,19 +1970,24 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         return jurorPaperResponse;
     }
 
-    private void verifyRequestDtoMapping_personalDetails(PaperResponse jurorPaperResponse,
-                                                         JurorPaperResponseDto requestDto) {
-        assertThat(jurorPaperResponse.getJurorNumber()).isEqualTo(requestDto.getJurorNumber());
-        assertThat(jurorPaperResponse.getDateReceived()).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False Positive
+    private void verifyRequestDtoMappingPersonalDetails(PaperResponse jurorPaperResponse,
+                                                        JurorPaperResponseDto requestDto) {
+        assertThat(jurorPaperResponse.getJurorNumber())
+            .as("Juror Number")
+            .isEqualTo(requestDto.getJurorNumber());
+        assertThat(jurorPaperResponse.getDateReceived())
+            .as("Date Received")
+            .isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
 
-        assertThat(jurorPaperResponse.getTitle()).isEqualTo(requestDto.getTitle());
-        assertThat(jurorPaperResponse.getFirstName()).isEqualTo(requestDto.getFirstName());
-        assertThat(jurorPaperResponse.getLastName()).isEqualTo(requestDto.getLastName());
-        assertThat(jurorPaperResponse.getDateOfBirth()).isEqualTo(requestDto.getDateOfBirth());
+        assertThat(jurorPaperResponse.getTitle()).as("Title").isEqualTo(requestDto.getTitle());
+        assertThat(jurorPaperResponse.getFirstName()).as("First Name").isEqualTo(requestDto.getFirstName());
+        assertThat(jurorPaperResponse.getLastName()).as("Last Name").isEqualTo(requestDto.getLastName());
+        assertThat(jurorPaperResponse.getDateOfBirth()).as("Date Of Birth").isEqualTo(requestDto.getDateOfBirth());
     }
 
-    private void verifyRequestDtoMapping_contactDetails(PaperResponse jurorPaperResponse,
-                                                        JurorPaperResponseDto requestDto) {
+    private void verifyRequestDtoMappingContactDetails(PaperResponse jurorPaperResponse,
+                                                       JurorPaperResponseDto requestDto) {
         assertThat(jurorPaperResponse.getAddressLine1()).isEqualTo(requestDto.getAddressLineOne());
         assertThat(jurorPaperResponse.getAddressLine2()).isEqualTo(requestDto.getAddressLineTwo());
         assertThat(jurorPaperResponse.getAddressLine3()).isEqualTo(requestDto.getAddressLineThree());
@@ -1995,8 +2003,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
     private void verifyRequestDtoMapping(JurorPaperResponseDto requestDto) {
         PaperResponse jurorPaperResponse = getJurorPaperResponse(requestDto.getJurorNumber());
 
-        verifyRequestDtoMapping_personalDetails(jurorPaperResponse, requestDto);
-        verifyRequestDtoMapping_contactDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingPersonalDetails(jurorPaperResponse, requestDto);
+        verifyRequestDtoMappingContactDetails(jurorPaperResponse, requestDto);
 
         JurorPaperResponseDto.ThirdParty thirdParty = requestDto.getThirdParty();
         if (requestDto.getThirdParty() != null) {
@@ -2178,7 +2186,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             jurorHistoryList.stream().anyMatch(ph -> ph.getHistoryCode().equals(HistoryCodeMod.WITHDRAWAL_LETTER)))
             .as("Expect history record to be created for disqualification letter")
             .isTrue();
-        
+
         // TODO Need to revisit the Letter verification as a separate task as this is now using the bulk print service
         //        Iterable<DisqualificationLetterMod> disqualifyLetterIterator = disqualifyLetterRepository.findAll();
         //        List<DisqualificationLetterMod> disqualificationLetters = new ArrayList<>();
@@ -2189,8 +2197,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         //            .isEqualTo(1);
     }
 
-    private void verifyStraightThrough_ageDisqualification_notProcessed(PaperResponse jurorPaperResponse,
-                                                                        JurorPool jurorPool, int statusCode) {
+    private void verifyStraightThroughAgeDisqualificationNotProcessed(PaperResponse jurorPaperResponse,
+                                                                      JurorPool jurorPool, int statusCode) {
         final Juror juror = jurorPool.getJuror();
         assertThat(jurorPaperResponse.getProcessingComplete())
             .as("No automatic processing, so processing complete flag remains unset")

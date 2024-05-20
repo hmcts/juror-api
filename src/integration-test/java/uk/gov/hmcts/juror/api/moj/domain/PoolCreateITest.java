@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 @RunWith(SpringRunner.class)
 @Slf4j
@@ -27,40 +27,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 public class PoolCreateITest extends ContainerTest {
 
-
     @Autowired
     VotersRepository votersRepository;
-
-
-    @BeforeClass
-    public static void setUp() {
-    }
 
     /*
      * This test will invoke the Get_Voters function in the database to randomly
      * select a number of voters.
      */
     @Test
-    @Sql({"/db/mod/truncate.sql","/db/CreatePoolController_loadVoters.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql"})
     public void test_poolCreate_getVoters_success() {
         try {
             // load voters from the database
             List<String> resultSet = votersRepository.callGetVoters(5,
                 LocalDate.now().minusYears(75),
                 LocalDate.now().minusYears(18),
-                    "415",
-                    "CH1,CH2,CH3",
-                    "N");
+                "415",
+                "CH1,CH2,CH3",
+                "N");
             assertThat(resultSet).isNotEmpty();
             assertThat(resultSet.size()).isEqualTo(6); // should be 5 * 1.2 = 6
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("Unexpected error", e);
+            fail("Unexpected error", e);
         }
     }
 
     @Test
     @Ignore("This test is manually run to show the randomness of the voters selection function")
-    @Sql({"/db/mod/truncate.sql","/db/CreatePoolController_loadVoters.sql"})
+    @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql"})
     public void test_poolCreate_getVoters_distribution() {
         //update the loop count to select voters a number of times
         int loopCount = 100;
@@ -73,11 +68,11 @@ public class PoolCreateITest extends ContainerTest {
             try {
                 // load voters from the database
                 List<String> resultSet = votersRepository.callGetVoters(5,
-                        LocalDate.now().minusYears(75),
-                        LocalDate.now().minusYears(18),
-                        "415",
-                        "CH1,CH2,CH3",
-                        "N");
+                    LocalDate.now().minusYears(75),
+                    LocalDate.now().minusYears(18),
+                    "415",
+                    "CH1,CH2,CH3",
+                    "N");
                 assertThat(resultSet).isNotEmpty();
 
                 resultSet.forEach(row -> {

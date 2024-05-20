@@ -42,6 +42,7 @@ import static org.junit.Assert.fail;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SuppressWarnings("PMD.TooManyMethods")
 public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate template;

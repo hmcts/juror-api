@@ -32,9 +32,7 @@ public class TestUtilTest {
     private static final String[] TEST_ROLES = {"juror", "test"};
     private static final Instant HUNDRED_YEARS = Instant.now().plusSeconds(60L * 60L * 24L * 365L * 100L);
     private static final String TEST_BUREAU_LOGIN = "testuser";
-    private static final Integer TEST_BUREAU_DAYS_TO_EXPIRE = 888;
     private static final String TEST_BUREAU_OWNER = JurorDigitalApplication.JUROR_OWNER;
-    private static final Boolean TEST_BUREAU_PASSWORD_WARNING = Boolean.FALSE;
     private static final String TEST_BUREAU_USER_LEVEL = "3";
 
     @Test
