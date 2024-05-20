@@ -87,12 +87,13 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
         report.preProcessQuery(query, request);
 
-        verify(query, times(1)).where(
-            QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate())
-                .and(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_ENTERED))
-                .or(QAppearance.appearance.appearanceStage.eq(AppearanceStage.EXPENSE_EDITED)
-                    .and(QAppearance.appearance.isDraftExpense.isFalse())));
+        verify(query, times(1)).where(QAppearance.appearance.appearanceStage.in(
+            AppearanceStage.EXPENSE_ENTERED,
+            AppearanceStage.EXPENSE_EDITED
+        ));
         verify(query, times(1)).where(QAppearance.appearance.locCode.in(SecurityUtil.getCourts()));
+        verify(query, times(1)).where(
+            QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate()));
 
         verify(report, times(1)).addGroupBy(query,
             DataType.JUROR_NUMBER,
