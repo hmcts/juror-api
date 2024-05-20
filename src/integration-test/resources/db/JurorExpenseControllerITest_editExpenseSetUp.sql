@@ -1,5 +1,5 @@
 INSERT INTO juror_mod.rev_info
-    (revision_number, revision_timestamp)
+(revision_number, revision_timestamp)
 VALUES (0, EXTRACT(EPOCH FROM current_date)),
        (1, EXTRACT(EPOCH FROM current_date)),
        (2, EXTRACT(EPOCH FROM current_date)),

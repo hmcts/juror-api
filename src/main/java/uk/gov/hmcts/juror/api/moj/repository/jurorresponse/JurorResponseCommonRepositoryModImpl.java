@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.JurorResponseRetrieveRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCommon;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QJurorResponseCommon;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QPaperResponse;
@@ -58,6 +59,14 @@ public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommon
                 .fetchOne();
         }
         return response;
+    }
+
+    @Override
+    public List<JurorResponseCommon> findByJurorNumberIn(List<String> jurorNumbers) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        return queryFactory.select(JUROR_RESPONSE_COMMON).from(JUROR_RESPONSE_COMMON)
+            .where(JUROR_RESPONSE_COMMON.jurorNumber.in(jurorNumbers))
+            .fetch();
     }
 
     private List<Tuple> fetchQueryResults(JPAQuery<Tuple> query, int resultsLimit) {

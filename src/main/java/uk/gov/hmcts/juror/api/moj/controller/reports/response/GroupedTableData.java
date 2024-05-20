@@ -7,8 +7,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Getter
@@ -58,6 +60,35 @@ public class GroupedTableData extends LinkedHashMap<String, Object> {
         });
     }
 
+    public List<GroupedTableData> getAllDataItems() {
+        List<GroupedTableData> dataItems = new ArrayList<>();
+        return addAllDataItemsInternal(dataItems, this.values());
+    }
+
+    private List<GroupedTableData> addAllDataItemsInternal(List<GroupedTableData> dataItems,
+                                                           Collection<?> data) {
+        data.forEach(o -> {
+            if (o instanceof Collection<?> collection) {
+                addAllDataItemsInternal(dataItems, collection);
+            } else if (o instanceof GroupedTableData groupedTableData) {
+                if (Type.DATA.equals(groupedTableData.getType())) {
+                    dataItems.add(groupedTableData);
+                } else {
+                    addAllDataItemsInternal(dataItems, groupedTableData.values());
+                }
+            }
+        });
+        return dataItems;
+    }
+
+    public List<GroupedTableData> getAllDataItemsIfExist(String key) {
+        Object data = this.get(key);
+        if (data instanceof GroupedTableData groupedTableData) {
+            return groupedTableData.getAllDataItems();
+        }
+        return new ArrayList<>();
+    }
+
     public enum Type {
         GROUPED,
         DATA
@@ -72,4 +103,5 @@ public class GroupedTableData extends LinkedHashMap<String, Object> {
         this.type = type;
         return this;
     }
+
 }

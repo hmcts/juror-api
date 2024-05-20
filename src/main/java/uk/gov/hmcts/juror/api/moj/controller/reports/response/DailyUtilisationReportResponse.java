@@ -7,9 +7,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,24 +26,24 @@ public class DailyUtilisationReportResponse {
     public DailyUtilisationReportResponse(Map<String, AbstractReportResponse.DataTypeValue> reportHeadings) {
         this.headings = reportHeadings;
         this.tableData = new TableData(List.of(
-            TableData.Heading.builder().id(TableData.TableHeading.DATE)
-                .name(TableData.TableHeading.DATE.getDisplayName())
-                .dataType(TableData.TableHeading.DATE.getDataType()).build(),
-            TableData.Heading.builder().id(TableData.TableHeading.JUROR_WORKING_DAYS)
-                .name(TableData.TableHeading.JUROR_WORKING_DAYS.getDisplayName())
-                .dataType(TableData.TableHeading.JUROR_WORKING_DAYS.getDataType()).build(),
-            TableData.Heading.builder().id(TableData.TableHeading.SITTING_DAYS)
-                .name(TableData.TableHeading.SITTING_DAYS.getDisplayName())
-                .dataType(TableData.TableHeading.SITTING_DAYS.getDataType()).build(),
-            TableData.Heading.builder().id(TableData.TableHeading.ATTENDANCE_DAYS)
-                .name(TableData.TableHeading.ATTENDANCE_DAYS.getDisplayName())
-                .dataType(TableData.TableHeading.ATTENDANCE_DAYS.getDataType()).build(),
-            TableData.Heading.builder().id(TableData.TableHeading.NON_ATTENDANCE_DAYS)
-                .name(TableData.TableHeading.NON_ATTENDANCE_DAYS.getDisplayName())
-                .dataType(TableData.TableHeading.NON_ATTENDANCE_DAYS.getDataType()).build(),
-            TableData.Heading.builder().id(TableData.TableHeading.UTILISATION)
-                .name(TableData.TableHeading.UTILISATION.getDisplayName())
-                .dataType(TableData.TableHeading.UTILISATION.getDataType()).build()
+            TableData.Heading.builder().id(UtilisationReportService.TableHeading.DATE)
+                .name(UtilisationReportService.TableHeading.DATE.getDisplayName())
+                .dataType(UtilisationReportService.TableHeading.DATE.getDataType()).build(),
+            TableData.Heading.builder().id(UtilisationReportService.TableHeading.JUROR_WORKING_DAYS)
+                .name(UtilisationReportService.TableHeading.JUROR_WORKING_DAYS.getDisplayName())
+                .dataType(UtilisationReportService.TableHeading.JUROR_WORKING_DAYS.getDataType()).build(),
+            TableData.Heading.builder().id(UtilisationReportService.TableHeading.SITTING_DAYS)
+                .name(UtilisationReportService.TableHeading.SITTING_DAYS.getDisplayName())
+                .dataType(UtilisationReportService.TableHeading.SITTING_DAYS.getDataType()).build(),
+            TableData.Heading.builder().id(UtilisationReportService.TableHeading.ATTENDANCE_DAYS)
+                .name(UtilisationReportService.TableHeading.ATTENDANCE_DAYS.getDisplayName())
+                .dataType(UtilisationReportService.TableHeading.ATTENDANCE_DAYS.getDataType()).build(),
+            TableData.Heading.builder().id(UtilisationReportService.TableHeading.NON_ATTENDANCE_DAYS)
+                .name(UtilisationReportService.TableHeading.NON_ATTENDANCE_DAYS.getDisplayName())
+                .dataType(UtilisationReportService.TableHeading.NON_ATTENDANCE_DAYS.getDataType()).build(),
+            TableData.Heading.builder().id(UtilisationReportService.TableHeading.UTILISATION)
+                .name(UtilisationReportService.TableHeading.UTILISATION.getDisplayName())
+                .dataType(UtilisationReportService.TableHeading.UTILISATION.getDataType()).build()
         ));
         this.tableData.setWeeks(new ArrayList<>());
     }
@@ -71,7 +71,7 @@ public class DailyUtilisationReportResponse {
         @ToString
         @AllArgsConstructor
         public static class Heading {
-            private TableHeading id;
+            private UtilisationReportService.TableHeading id;
             private String name;
             private String dataType;
         }
@@ -104,56 +104,6 @@ public class DailyUtilisationReportResponse {
                 private int nonAttendanceDays;
                 private double utilisation;
             }
-        }
-
-        public enum TableHeading {
-            DATE("Date", LocalDate.class.getSimpleName()),
-            JUROR_WORKING_DAYS("Juror working days", Integer.class.getSimpleName()),
-            SITTING_DAYS("Sitting days", Integer.class.getSimpleName()),
-            ATTENDANCE_DAYS("Attendance days", Integer.class.getSimpleName()),
-            NON_ATTENDANCE_DAYS("Non-attendance days",  Integer.class.getSimpleName()),
-            UTILISATION("Utilisation", Double.class.getSimpleName());
-
-            private String displayName;
-            private String dataType;
-
-            TableHeading(String displayName, String dataType) {
-                this.displayName = displayName;
-                this.dataType = dataType;
-            }
-
-            public String getDisplayName() {
-                return displayName;
-            }
-
-            public String getDataType() {
-                return dataType;
-            }
-        }
-    }
-
-    public enum ReportHeading {
-        DATE_FROM("Date from", LocalDate.class.getSimpleName()),
-        DATE_TO("Date to", LocalDate.class.getSimpleName()),
-        REPORT_CREATED("Report created", LocalDate.class.getSimpleName()),
-        TIME_CREATED("Time created", LocalDateTime.class.getSimpleName()),
-        COURT_NAME("Court name", String.class.getSimpleName());
-
-        private String displayName;
-
-        private String dataType;
-
-        ReportHeading(String displayName, String dataType) {
-            this.displayName = displayName;
-            this.dataType = dataType;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public String getDataType() {
-            return dataType;
         }
     }
 }

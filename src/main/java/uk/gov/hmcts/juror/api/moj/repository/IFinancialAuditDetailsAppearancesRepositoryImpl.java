@@ -46,6 +46,8 @@ public class IFinancialAuditDetailsAppearancesRepositoryImpl
 
         BooleanExpression financialAuditDetailsJoinCondition = QFinancialAuditDetails.financialAuditDetails.id
             .eq(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances.financialAuditId)
+            .and(QFinancialAuditDetailsAppearances.financialAuditDetailsAppearances
+                .locCode.eq(financialAuditDetails.getLocCode()))
             .and(QFinancialAuditDetails.financialAuditDetails.jurorNumber.eq(financialAuditDetails.getJurorNumber()))
             .and(QFinancialAuditDetails.financialAuditDetails.locCode.eq(financialAuditDetails.getLocCode()));
 

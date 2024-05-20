@@ -47,7 +47,10 @@ public class StandardReportRequest {
         "PostponedListByDateReport",
         "ReasonableAdjustmentsReport",
         "PersonAttendingDetailReport",
-        "UnpaidAttendanceReportDetailedReport"
+        "UnpaidAttendanceReportDetailedReport",
+        "JurorExpenditureReportLowLevelReport",
+        "JurorExpenditureReportMidLevelReport",
+        "JurorExpenditureReportHighLevelReport"
     })
     private String reportType;
 
