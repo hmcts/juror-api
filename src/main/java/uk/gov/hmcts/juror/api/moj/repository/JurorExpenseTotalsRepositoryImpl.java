@@ -18,7 +18,6 @@ import java.util.List;
 /**
  * Custom Repository implementation for the Juror Expense Totals entity.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 public class JurorExpenseTotalsRepositoryImpl implements IJurorExpenseTotalsRepository {
 
 

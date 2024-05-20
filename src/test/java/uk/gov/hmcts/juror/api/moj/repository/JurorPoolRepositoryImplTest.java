@@ -34,10 +34,7 @@ import static uk.gov.hmcts.juror.api.moj.repository.IJurorPoolRepository.ATTENDA
 import static uk.gov.hmcts.juror.api.moj.repository.IJurorPoolRepository.CHECKED_IN_TODAY;
 
 
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.TooManyMethods"
-})
+@SuppressWarnings("PMD.TooManyMethods")
 @ExtendWith(MockitoExtension.class)
 class JurorPoolRepositoryImplTest {
 

@@ -107,7 +107,7 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.LawOfDemeter", "PMD.NcssCount"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.NcssCount"})
 class LetterControllerITest extends AbstractIntegrationTest {
     private static final String GET_LETTER_LIST_URI = "/api/v1/moj/letter/court-letter-list";
 

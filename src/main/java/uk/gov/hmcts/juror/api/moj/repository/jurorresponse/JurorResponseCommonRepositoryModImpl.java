@@ -25,7 +25,6 @@ import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.isNotEmptyOrNull;
  * */
 
 @Repository
-@SuppressWarnings("PMD.LawOfDemeter")
 public class JurorResponseCommonRepositoryModImpl implements JurorResponseCommonRepositoryMod {
 
     private static final QJurorResponseCommon JUROR_RESPONSE_COMMON = QJurorResponseCommon.jurorResponseCommon;

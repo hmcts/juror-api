@@ -25,10 +25,7 @@ import java.util.List;
     "/db/administration/createCourts.sql",
     "/db/mod/reports/UnpaidAttendanceReportDetailedITest_typical.sql"
 })
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive
-})
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class UnpaidAttendanceReportDetailedReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired

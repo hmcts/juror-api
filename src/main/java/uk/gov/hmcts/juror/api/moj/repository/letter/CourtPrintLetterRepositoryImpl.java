@@ -30,7 +30,6 @@ import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.POST
 import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.SHOW_CAUSE;
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepository {
 
     @PersistenceContext

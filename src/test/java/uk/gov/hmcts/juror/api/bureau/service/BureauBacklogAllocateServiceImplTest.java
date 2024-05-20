@@ -35,7 +35,6 @@ import static org.mockito.Mockito.verify;
  * Unit tests for {@link BureauBacklogAllocateServiceImpl}.
  */
 @RunWith(MockitoJUnitRunner.class)
-@SuppressWarnings("PMD.LawOfDemeter")
 public class BureauBacklogAllocateServiceImplTest {
 
     private static final Comparator<DigitalResponse> ascendingDateOrder =

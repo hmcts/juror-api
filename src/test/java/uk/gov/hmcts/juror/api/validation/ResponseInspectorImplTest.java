@@ -213,7 +213,7 @@ public class ResponseInspectorImplTest {
         assertThat(inspector.isJurorAgeDisqualified(tooYoungJuror)).isTrue();
 
         verify(mockSystemParameterRepository, atLeastOnce()).findById(AGE_LOWER_SP_ID);
-        verify(mockSystemParameterRepository, times(0)).findById(ResponseInspectorImpl.AGE_UPPER_SP_ID);
+        verify(mockSystemParameterRepository, times(0)).findById(AGE_UPPER_SP_ID);
     }
 
     @Test
@@ -234,7 +234,7 @@ public class ResponseInspectorImplTest {
         assertThat(inspector.isJurorAgeDisqualified(tooYoungJuror)).isFalse();
 
         verify(mockSystemParameterRepository, atLeastOnce()).findById(AGE_LOWER_SP_ID);
-        verify(mockSystemParameterRepository, atLeastOnce()).findById(ResponseInspectorImpl.AGE_UPPER_SP_ID);
+        verify(mockSystemParameterRepository, atLeastOnce()).findById(AGE_UPPER_SP_ID);
     }
 
     @Test
@@ -253,7 +253,7 @@ public class ResponseInspectorImplTest {
         assertThat(inspector.isJurorAgeDisqualified(tooYoungJuror)).isFalse();
 
         verify(mockSystemParameterRepository, atLeastOnce()).findById(AGE_LOWER_SP_ID);
-        verify(mockSystemParameterRepository, atLeastOnce()).findById(ResponseInspectorImpl.AGE_UPPER_SP_ID);
+        verify(mockSystemParameterRepository, atLeastOnce()).findById(AGE_UPPER_SP_ID);
     }
 
     @Test
@@ -273,7 +273,7 @@ public class ResponseInspectorImplTest {
         assertThat(inspector.isJurorAgeDisqualified(tooYoungJuror)).isTrue();
 
         verify(mockSystemParameterRepository, atLeastOnce()).findById(AGE_LOWER_SP_ID);
-        verify(mockSystemParameterRepository, atLeastOnce()).findById(ResponseInspectorImpl.AGE_UPPER_SP_ID);
+        verify(mockSystemParameterRepository, atLeastOnce()).findById(AGE_UPPER_SP_ID);
     }
 
     @Test
@@ -296,7 +296,7 @@ public class ResponseInspectorImplTest {
         assertThat(inspector.isJurorAgeDisqualified(tooYoungJuror)).isFalse();
 
         verify(mockSystemParameterRepository, atLeastOnce()).findById(AGE_LOWER_SP_ID);
-        verify(mockSystemParameterRepository, atLeastOnce()).findById(ResponseInspectorImpl.AGE_UPPER_SP_ID);
+        verify(mockSystemParameterRepository, atLeastOnce()).findById(AGE_UPPER_SP_ID);
     }
 
     @Test

@@ -45,8 +45,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SuppressWarnings({
     "PMD.AbstractClassWithoutAbstractMethod",
     "PMD.TooManyMethods",
-    "PMD.LawOfDemeter",
-    "PMD.ExcessiveImports",
+    "PMD.ExcessiveImports"
 })
 public abstract class AbstractIntegrationTest extends ContainerTest {
 

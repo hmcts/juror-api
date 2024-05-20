@@ -55,7 +55,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = "notify.disabled=false"
 )
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PublicEndpointControllerIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate template;

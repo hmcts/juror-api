@@ -60,7 +60,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration tests for the API endpoints defined in CreatePoolController.
  */
 @RunWith(SpringRunner.class)
-@SuppressWarnings({"PMD.LawOfDemeter", "PMD.TooManyMethods", "PMD.LinguisticNaming"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.LinguisticNaming"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CreatePoolControllerITest extends AbstractIntegrationTest {
 

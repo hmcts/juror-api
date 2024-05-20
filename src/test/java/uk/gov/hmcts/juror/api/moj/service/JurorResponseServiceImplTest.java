@@ -39,7 +39,7 @@ import java.util.Set;
 import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(SpringRunner.class)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.LawOfDemeter"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class JurorResponseServiceImplTest extends TestCase {
 
     @Mock

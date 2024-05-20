@@ -40,7 +40,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.withSettings;
 
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.TooManyMethods",
     "PMD.ExcessiveImports",
 })

@@ -47,7 +47,6 @@ import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService
 import static uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService.TableHeading.UTILISATION;
 
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.AssertionsShouldIncludeMessage",
     "PMD.UnnecessaryFullyQualifiedName"
 })

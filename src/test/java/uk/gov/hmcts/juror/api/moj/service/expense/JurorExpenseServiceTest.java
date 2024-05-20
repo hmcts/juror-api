@@ -116,7 +116,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.EXPENSES_CANNOT_BE_LESS_THAN_ZERO;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LawOfDemeter", "PMD.CouplingBetweenObjects", "PMD.NcssCount",
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects", "PMD.NcssCount",
     "PMD.TooManyMethods", "unchecked"})
 class JurorExpenseServiceTest {
 

@@ -37,7 +37,6 @@ import static org.springframework.http.HttpMethod.GET;
 /**
  * Integration tests for the API endpoints defined in {@link CourtLocationController}.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CourtLocationControllerITest extends AbstractIntegrationTest {

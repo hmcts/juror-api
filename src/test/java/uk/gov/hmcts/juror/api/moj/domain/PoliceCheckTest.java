@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @DisplayName("PoliceCheck")
-@SuppressWarnings("PMD.LawOfDemeter")
 class PoliceCheckTest {
 
 

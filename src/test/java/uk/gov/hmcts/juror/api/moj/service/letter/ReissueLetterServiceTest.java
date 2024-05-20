@@ -50,7 +50,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LawOfDemeter"})
+@SuppressWarnings("PMD.ExcessiveImports")
 public class ReissueLetterServiceTest {
 
     @Mock
@@ -76,7 +76,6 @@ public class ReissueLetterServiceTest {
     class ReissueLetterListTests {
 
         @Test
-        @SuppressWarnings("PMD.LawOfDemeter")
         void reissueDeferralLetterListHappyPath() {
             String owner = "400";
             String jurorNumber = "123456789";
@@ -146,7 +145,6 @@ public class ReissueLetterServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.LawOfDemeter")
         void reissueConfirmationLetterListHappyPath() {
             String owner = "400";
             String jurorNumber = "123456789";
@@ -190,7 +188,6 @@ public class ReissueLetterServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.LawOfDemeter")
         void reissueDeferralDeniedLetterListHappyPath() {
             String owner = "400";
             String jurorNumber = "123456789";
@@ -255,7 +252,6 @@ public class ReissueLetterServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.LawOfDemeter")
         void reissueWithdrawalLetterListHappyPath() {
             String owner = "400";
             String jurorNumber = "123456789";
@@ -339,7 +335,6 @@ public class ReissueLetterServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.LawOfDemeter")
         void reissueInitialSummonsLetterListHappyPath() {
             String owner = "400";
             String jurorNumber = "123456789";

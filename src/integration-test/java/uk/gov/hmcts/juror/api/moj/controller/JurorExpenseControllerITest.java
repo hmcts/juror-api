@@ -101,7 +101,7 @@ import static org.springframework.http.HttpMethod.PUT;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + JurorExpenseControllerITest.BASE_URL)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings({"PMD.LawOfDemeter", "PMD.ExcessiveImports"})
+@SuppressWarnings("PMD.ExcessiveImports")
 class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     public static final String JUROR_NUMBER = "641500020";

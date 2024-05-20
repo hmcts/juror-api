@@ -62,7 +62,6 @@ import static org.springframework.http.HttpStatus.OK;
  * Integration tests for the API endpoints defined in {@link RequestPoolController}.
  */
 @RunWith(SpringRunner.class)
-@SuppressWarnings("PMD.LawOfDemeter")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RequestPoolControllerITest extends AbstractIntegrationTest {
 

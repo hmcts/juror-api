@@ -79,8 +79,7 @@ import static org.springframework.http.HttpStatus.OK;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @SuppressWarnings({
     "java:S2259",
-    "java:S5960",
-    "PMD.LawOfDemeter"
+    "java:S5960"
 })
 class JurorResponseControllerITest extends AbstractIntegrationTest {
     private HttpHeaders httpHeaders;

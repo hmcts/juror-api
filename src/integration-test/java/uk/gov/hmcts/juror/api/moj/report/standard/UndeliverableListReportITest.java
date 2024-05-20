@@ -19,7 +19,6 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/UndeliverableListReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.LawOfDemeter")
 public class UndeliverableListReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired

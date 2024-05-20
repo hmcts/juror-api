@@ -39,7 +39,6 @@ import java.util.function.Function;
 /**
  * Custom Repository implementation for the JurorPool entity.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
 
     @PersistenceContext

@@ -71,7 +71,6 @@ import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIn
 
 @SuppressWarnings({
     "unchecked",
-    "PMD.LawOfDemeter",
     "PMD.ExcessiveImports",
     "PMD.CouplingBetweenObjects"
 })

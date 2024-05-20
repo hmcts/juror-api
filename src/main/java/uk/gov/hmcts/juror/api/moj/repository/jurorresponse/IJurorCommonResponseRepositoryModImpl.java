@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonResponseRepositoryMod {
     @PersistenceContext
     EntityManager entityManager;

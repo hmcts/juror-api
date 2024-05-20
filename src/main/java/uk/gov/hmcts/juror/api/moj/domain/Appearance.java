@@ -51,7 +51,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 @Setter
 @Audited
 @ToString
-@SuppressWarnings({"PMD.TooManyFields", "PMD.LawOfDemeter", "PMD.TooManyImports"})
+@SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyImports"})
 public class Appearance implements Serializable {
 
     @Version

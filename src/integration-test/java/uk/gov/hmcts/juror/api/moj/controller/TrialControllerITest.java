@@ -70,7 +70,6 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql({"/db/mod/truncate.sql", "/db/trial/Trial.sql"})
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods"
 })

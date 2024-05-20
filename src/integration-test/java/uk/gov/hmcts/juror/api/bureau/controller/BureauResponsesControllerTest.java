@@ -40,7 +40,6 @@ import static uk.gov.hmcts.juror.api.bureau.service.JurorResponseSearchServiceIm
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings("PMD.LawOfDemeter")
 public class BureauResponsesControllerTest extends AbstractIntegrationTest {
 
     @Autowired

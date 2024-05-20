@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 
 
-@SuppressWarnings("PMD.LawOfDemeter")
 public class ITrialRepositoryImpl implements ITrialRepository {
 
     @PersistenceContext

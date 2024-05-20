@@ -35,7 +35,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings("PMD.LawOfDemeter")
 public class BureauBacklogAllocateControllerTest extends AbstractIntegrationTest {
 
     //@Rule

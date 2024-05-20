@@ -19,10 +19,7 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/PersonAttendingSummaryReportITest_typical.sql"
 })
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive
-})
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class PersonAttendingSummaryReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public PersonAttendingSummaryReportITest(TestRestTemplate template) {
