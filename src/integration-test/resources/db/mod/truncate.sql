@@ -43,7 +43,7 @@ DELETE FROM juror_mod.users;
 
 DELETE FROM juror_mod.rev_info;
 
---DELETE FROM juror_mod.utilisation_stats;
+DELETE FROM juror_mod.utilisation_stats;
 
 DELETE FROM juror_mod.juror_trial;
 DELETE FROM juror_mod.trial;
