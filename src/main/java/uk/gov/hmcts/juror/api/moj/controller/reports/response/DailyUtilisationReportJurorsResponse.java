@@ -7,9 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,21 +25,21 @@ public class DailyUtilisationReportJurorsResponse {
     public DailyUtilisationReportJurorsResponse(Map<String, AbstractReportResponse.DataTypeValue> reportHeadings) {
         this.headings = reportHeadings;
         this.tableData = new TableData(List.of(
-            TableData.Heading.builder().id(TableData.TableHeading.JUROR)
-                .name(TableData.TableHeading.JUROR.getDisplayName())
-                .dataType(TableData.TableHeading.JUROR.getDataType()).build(),
-            TableData.Heading.builder().id(TableData.TableHeading.JUROR_WORKING_DAYS)
-                .name(TableData.TableHeading.JUROR_WORKING_DAYS.getDisplayName())
-                .dataType(TableData.TableHeading.JUROR_WORKING_DAYS.getDataType()).build(),
-            TableData.Heading.builder().id(TableData.TableHeading.SITTING_DAYS)
-                .name(TableData.TableHeading.SITTING_DAYS.getDisplayName())
-                .dataType(TableData.TableHeading.SITTING_DAYS.getDataType()).build(),
-            TableData.Heading.builder().id(TableData.TableHeading.ATTENDANCE_DAYS)
-                .name(TableData.TableHeading.ATTENDANCE_DAYS.getDisplayName())
-                .dataType(TableData.TableHeading.ATTENDANCE_DAYS.getDataType()).build(),
-            TableData.Heading.builder().id(TableData.TableHeading.NON_ATTENDANCE_DAYS)
-                .name(TableData.TableHeading.NON_ATTENDANCE_DAYS.getDisplayName())
-                .dataType(TableData.TableHeading.NON_ATTENDANCE_DAYS.getDataType()).build()
+            TableData.Heading.builder().id(UtilisationReportService.TableHeading.JUROR)
+                .name(UtilisationReportService.TableHeading.JUROR.getDisplayName())
+                .dataType(UtilisationReportService.TableHeading.JUROR.getDataType()).build(),
+            TableData.Heading.builder().id(UtilisationReportService.TableHeading.JUROR_WORKING_DAYS)
+                .name(UtilisationReportService.TableHeading.JUROR_WORKING_DAYS.getDisplayName())
+                .dataType(UtilisationReportService.TableHeading.JUROR_WORKING_DAYS.getDataType()).build(),
+            TableData.Heading.builder().id(UtilisationReportService.TableHeading.SITTING_DAYS)
+                .name(UtilisationReportService.TableHeading.SITTING_DAYS.getDisplayName())
+                .dataType(UtilisationReportService.TableHeading.SITTING_DAYS.getDataType()).build(),
+            TableData.Heading.builder().id(UtilisationReportService.TableHeading.ATTENDANCE_DAYS)
+                .name(UtilisationReportService.TableHeading.ATTENDANCE_DAYS.getDisplayName())
+                .dataType(UtilisationReportService.TableHeading.ATTENDANCE_DAYS.getDataType()).build(),
+            TableData.Heading.builder().id(UtilisationReportService.TableHeading.NON_ATTENDANCE_DAYS)
+                .name(UtilisationReportService.TableHeading.NON_ATTENDANCE_DAYS.getDisplayName())
+                .dataType(UtilisationReportService.TableHeading.NON_ATTENDANCE_DAYS.getDataType()).build()
         ));
         this.tableData.setJurors(new ArrayList<>());
     }
@@ -62,14 +61,13 @@ public class DailyUtilisationReportJurorsResponse {
             this.headings = headings;
         }
 
-
         @Data
         @Builder
         @NoArgsConstructor
         @ToString
         @AllArgsConstructor
         public static class Heading {
-            private TableHeading id;
+            private UtilisationReportService.TableHeading id;
             private String name;
             private String dataType;
         }
@@ -87,55 +85,6 @@ public class DailyUtilisationReportJurorsResponse {
             private int attendanceDay;
             private int nonAttendanceDay;
 
-        }
-
-
-        public enum TableHeading {
-            JUROR("Juror", String.class.getSimpleName()),
-            JUROR_WORKING_DAYS("Juror working day", Integer.class.getSimpleName()),
-            SITTING_DAYS("Sitting day", Integer.class.getSimpleName()),
-            ATTENDANCE_DAYS("Attendance day", Integer.class.getSimpleName()),
-            NON_ATTENDANCE_DAYS("Non-attendance day",  Integer.class.getSimpleName());
-
-            private String displayName;
-            private String dataType;
-
-            TableHeading(String displayName, String dataType) {
-                this.displayName = displayName;
-                this.dataType = dataType;
-            }
-
-            public String getDisplayName() {
-                return displayName;
-            }
-
-            public String getDataType() {
-                return dataType;
-            }
-        }
-    }
-
-    public enum ReportHeading {
-        REPORT_DATE("Report date", LocalDate.class.getSimpleName()),
-        REPORT_CREATED("Report created", LocalDate.class.getSimpleName()),
-        TIME_CREATED("Time created", LocalDateTime.class.getSimpleName()),
-        COURT_NAME("Court name", String.class.getSimpleName());
-
-        private String displayName;
-
-        private String dataType;
-
-        ReportHeading(String displayName, String dataType) {
-            this.displayName = displayName;
-            this.dataType = dataType;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public String getDataType() {
-            return dataType;
         }
     }
 
