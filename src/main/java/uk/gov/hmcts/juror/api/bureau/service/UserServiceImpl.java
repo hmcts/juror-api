@@ -417,9 +417,9 @@ public class UserServiceImpl implements UserService {
             String jurorFirstName = jurorResponse.getFirstName();
             String jurorLastName = jurorResponse.getLastName();
 
-            jurorDisplayName.append((jurorTitle != null) ? jurorTitle : "");
-            jurorDisplayName.append((jurorFirstName != null) ? " " + jurorFirstName : "");
-            jurorDisplayName.append((jurorLastName != null) ? " " + jurorLastName : "");
+            jurorDisplayName.append(jurorTitle != null ? jurorTitle : "");
+            jurorDisplayName.append(jurorFirstName != null ? " " + jurorFirstName : "");
+            jurorDisplayName.append(jurorLastName != null ? " " + jurorLastName : "");
 
             AssignmentListDataDto assignmentListDataDto = new AssignmentListDataDto(
                 jurorResponse.getJurorNumber(),
