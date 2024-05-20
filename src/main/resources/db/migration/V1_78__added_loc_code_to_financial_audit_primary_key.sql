@@ -12,5 +12,6 @@ where fad.id = fada.financial_audit_id
 ALTER table juror_mod.financial_audit_details_appearances
     add CONSTRAINT financial_audit_details_appearances_app_loc_code_fk
         FOREIGN KEY (loc_code) REFERENCES juror_mod.court_location (loc_code),
-    add CONSTRAINT financial_audit_details_appearances_id_loc_code_unique UNIQUE (financial_audit_id, loc_code, attendance_date, appearance_version)
+    DROP CONSTRAINT financial_audit_details_appearances_pkey,
+    ADD CONSTRAINT financial_audit_details_appearances_pkey PRIMARY KEY (financial_audit_id, loc_code, attendance_date)
 ;

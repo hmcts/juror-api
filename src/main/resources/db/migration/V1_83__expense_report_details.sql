@@ -1,8 +1,19 @@
---Depends on migration 1_78
+ALTER table juror_mod.appearance_audit
+    DROP CONSTRAINT fk_f_audit;
+
+ALTER TABLE juror_mod.financial_audit_details_appearances
+    DROP CONSTRAINT financial_audit_details_appearances_financial_audit_id_fk;
+
 ALTER table juror_mod.financial_audit_details
-    add CONSTRAINT financial_audit_details_id_loc_code_unique UNIQUE (id, loc_code)
+    DROP CONSTRAINT financial_audit_details_pkey,
+    add CONSTRAINT financial_audit_details_pkey PRIMARY KEY (id, loc_code)
 ;
 
+ALTER table juror_mod.financial_audit_details_appearances
+    ADD CONSTRAINT financial_audit_details_appearances_financial_audit_id_fk
+        FOREIGN KEY (financial_audit_id, loc_code) REFERENCES juror_mod.financial_audit_details (id, loc_code);
+ALTER table juror_mod.appearance_audit
+    ADD CONSTRAINT fk_f_audit FOREIGN KEY (f_audit, loc_code) REFERENCES juror_mod.financial_audit_details (id, loc_code);
 
 ALTER TABLE juror_mod.financial_audit_details_appearances
     add column last_approved_faudit bigint,
@@ -15,8 +26,8 @@ CREATE INDEX appearance_audit_loc_code_idx ON juror_mod.appearance_audit (loc_co
                                                                           attendance_audit_number, "version");
 
 CREATE INDEX appearance_loc_code_idx ON juror_mod.appearance (loc_code, appearance_stage, is_draft_expense, juror_number);
-CREATE INDEX financial_audit_details_loc_code_idx ON juror_mod.financial_audit_details (loc_code,juror_number,"type");
-CREATE INDEX financial_audit_details_appearances_loc_code_idx ON juror_mod.financial_audit_details_appearances (loc_code,attendance_date,financial_audit_id);
+CREATE INDEX financial_audit_details_loc_code_idx ON juror_mod.financial_audit_details (loc_code, juror_number, "type");
+CREATE INDEX financial_audit_details_appearances_loc_code_idx ON juror_mod.financial_audit_details_appearances (loc_code, attendance_date, financial_audit_id);
 
 
 CREATE OR REPLACE VIEW juror_mod.low_level_financial_audit_details
@@ -66,7 +77,7 @@ from (select a3.*,
                    a2.smart_card_paid    AS total_smart_card_paid
 
             from (select fad.*,
-                         fad.created_on::timestamp::date as created_on_date,
+                         fad.created_on::timestamp::date                      as created_on_date,
                          fada.last_approved_faudit,
                          aa.attendance_date,
                          aa.pool_number,
