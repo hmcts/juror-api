@@ -215,11 +215,7 @@ public class UserServiceImpl implements UserService {
 
         // 4. persist
         log.trace("Updating assignment on {}", jurorResponse);
-        if (jurorResponse.getReplyType().getType().equals(ReplyMethod.DIGITAL.getDescription())) {
-            jurorResponseRepository.save((DigitalResponse) jurorResponse);
-        } else {
-            jurorPaperResponseRepository.save((PaperResponse) jurorResponse);
-        }
+        saveResponse(jurorResponse);
 
         log.trace("Auditing assignment {}", userJurorResponseAudit);
         userJurorResponseAuditRepository.save(userJurorResponseAudit);
@@ -243,6 +239,14 @@ public class UserServiceImpl implements UserService {
             .jurorResponse(jurorResponse.getJurorNumber())
             .assignmentDate(jurorResponse.getStaffAssignmentDate())
             .build();
+    }
+
+    private void saveResponse(AbstractJurorResponse jurorResponse) {
+        if (jurorResponse.getReplyType().getType().equals(ReplyMethod.DIGITAL.getDescription())) {
+            jurorResponseRepository.save((DigitalResponse) jurorResponse);
+        } else {
+            jurorPaperResponseRepository.save((PaperResponse) jurorResponse);
+        }
     }
 
     @Override
@@ -330,11 +334,7 @@ public class UserServiceImpl implements UserService {
             updateResponse.setStaffAssignmentDate(now.toLocalDate());
 
             log.trace("Assigning juror response {}", urgentJurorResponse);
-            if (updateResponse.getReplyType().getType().equals(ReplyMethod.DIGITAL.getDescription())) {
-                jurorResponseRepository.save((DigitalResponse) updateResponse);
-            } else {
-                jurorPaperResponseRepository.save((PaperResponse) updateResponse);
-            }
+            saveResponse(updateResponse);
 
             final User assignedBy = userRepository.findByUsername(AUTO_USER);
             if (ObjectUtils.isEmpty(userRepository)) {
@@ -417,21 +417,9 @@ public class UserServiceImpl implements UserService {
             String jurorFirstName = jurorResponse.getFirstName();
             String jurorLastName = jurorResponse.getLastName();
 
-            jurorDisplayName.append((jurorTitle != null)
-                ?
-                jurorTitle
-                :
-                    "");
-            jurorDisplayName.append((jurorFirstName != null)
-                ?
-                " " + jurorFirstName
-                :
-                    "");
-            jurorDisplayName.append((jurorLastName != null)
-                ?
-                " " + jurorLastName
-                :
-                    "");
+            jurorDisplayName.append((jurorTitle != null) ? jurorTitle : "");
+            jurorDisplayName.append((jurorFirstName != null) ? " " + jurorFirstName : "");
+            jurorDisplayName.append((jurorLastName != null) ? " " + jurorLastName : "");
 
             AssignmentListDataDto assignmentListDataDto = new AssignmentListDataDto(
                 jurorResponse.getJurorNumber(),
@@ -478,7 +466,6 @@ public class UserServiceImpl implements UserService {
                 }
             } catch (StaffAssignmentException.StatusUrgent | StaffAssignmentException.StatusSuperUrgent
                      | StaffAssignmentException.StatusClosed e) {
-                e.printStackTrace();
                 log.debug("StaffAssignment Status-related exception caught during multiple assignment", e);
                 OperationFailureDto failureReason = new OperationFailureDto(
                     responseMetadata.getResponseJurorNumber(),
@@ -486,7 +473,6 @@ public class UserServiceImpl implements UserService {
                 );
                 failuresList.add(failureReason);
             } catch (StaffAssignmentException e) {
-                e.printStackTrace();
                 log.debug("StaffAssignment exception caught during multiple assignment", e);
                 OperationFailureDto failureReason = new OperationFailureDto(
                     responseMetadata.getResponseJurorNumber(),

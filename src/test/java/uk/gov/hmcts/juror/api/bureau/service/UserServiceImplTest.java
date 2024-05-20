@@ -51,6 +51,7 @@ import static uk.gov.hmcts.juror.api.bureau.domain.UserQueries.owner;
 /**
  * Test for {@link UserServiceImpl}.
  */
+@SuppressWarnings("PMD.LawOfDemeter")
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceImplTest {
     @Mock
@@ -207,9 +208,10 @@ public class UserServiceImplTest {
     public void changeAssignment_unhappy_throwsExceptionOnNoAssignmentTargetStaffRecord() {
         given(mockuserRepository.findByUsername(anyString()))
             .willReturn(ASSIGNER_STAFF_ENTITY)  // 1st call
-            .willReturn(null)                   // 2nd call
+            .willReturn(null)             // 2nd call
         ;
-        given(jurorResponseCommonRepositoryMod.findByJurorNumber(JUROR_NUMBER)).willReturn(JUROR_RESPONSE_INVALID_CLOSED);
+        given(jurorResponseCommonRepositoryMod.findByJurorNumber(JUROR_NUMBER))
+            .willReturn(JUROR_RESPONSE_INVALID_CLOSED);
 
         userService.changeAssignment(DTO, ASSIGNING_LOGIN);
     }
