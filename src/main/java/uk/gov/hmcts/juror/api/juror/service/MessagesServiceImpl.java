@@ -212,14 +212,14 @@ public class MessagesServiceImpl implements BureauProcessService {
                         log.error(LOG_ERROR_MESSAGE_TEMPLATE_ID);
                         throw new IllegalStateException("smsTemplateId null or empty");
                     }
-                    UUID notificationId;
-                    Object response;
+                    UUID notificationId = null;
+                    Object response = null;
                     if (isEmail) {
                         SendEmailResponse emailResponse = notifyClient.sendEmail(
                             smsTemplateId, email, personalisation, reference);
                         response = emailResponse;
                         notificationId = emailResponse.getNotificationId();
-                    } else {
+                    } else if (isPhone) {
                         SendSmsResponse smsResponse =
                             notifyClient.sendSms(smsTemplateId, phoneNumber, personalisation, reference);
                         response = smsResponse;
