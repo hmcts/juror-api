@@ -124,7 +124,7 @@ class AbsencesReportTest extends AbstractGroupedReportTestSupport<AbsencesReport
                 .dataType("LocalDate")
                 .value(DateTimeFormatter.ISO_DATE.format(LocalDate.now().minusDays(5)))
                 .build(),
-            "total_due", GroupedReportResponse.DataTypeValue.builder()
+            "total_absences", GroupedReportResponse.DataTypeValue.builder()
                 .displayName("Total absences")
                 .dataType("Integer")
                 .value(0)

@@ -65,7 +65,7 @@ public class AbsencesReport extends AbstractGroupedReport {
         GroupedReportResponse.TableData<GroupedTableData> tableData) {
 
         Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
-        map.put("total_due", StandardReportResponse.DataTypeValue.builder()
+        map.put("total_absences", StandardReportResponse.DataTypeValue.builder()
             .displayName("Total absences")
             .dataType(Integer.class.getSimpleName())
             .value(tableData.getData().getSize())

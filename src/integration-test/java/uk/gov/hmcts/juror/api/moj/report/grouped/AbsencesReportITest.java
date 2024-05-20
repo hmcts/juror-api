@@ -107,7 +107,7 @@ class AbsencesReportITest extends AbstractGroupedReportControllerITest {
                               .dataType("LocalDate")
                               .value(DateTimeFormatter.ISO_DATE.format(LocalDate.now()))
                               .build())
-                          .add("total_due", StandardReportResponse.DataTypeValue.builder()
+                          .add("total_absences", StandardReportResponse.DataTypeValue.builder()
                               .displayName("Total absences")
                               .dataType("Integer")
                               .value(data.getSize())
