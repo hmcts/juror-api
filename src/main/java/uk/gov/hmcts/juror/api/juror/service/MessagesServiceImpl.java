@@ -2,7 +2,7 @@ package uk.gov.hmcts.juror.api.juror.service;
 
 import com.google.common.collect.Lists;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import io.jsonwebtoken.lang.Assert;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,9 +35,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class MessagesServiceImpl implements BureauProcessService {
     private static final String MESSAGE_PLACEHOLDER_MESSAGE = "MESSAGETEXT";
     private static final String MESSAGE_PLACEHOLDER_JUROR = "JURORNUMBER";
@@ -55,30 +57,6 @@ public class MessagesServiceImpl implements BureauProcessService {
     private final NotifyConfigurationProperties notifyConfigurationProperties;
     private final NotifyRegionsConfigurationProperties notifyRegionsConfigurationProperties;
     private Proxy proxy;
-
-
-    @Autowired
-    public MessagesServiceImpl(
-
-        final AppSettingService appSetting,
-        final MessageRepository messageRepository,
-        final CourtRegionModRepository courtRegionModRepository,
-        final NotifyConfigurationProperties notifyConfigurationProperties,
-        final NotifyRegionsConfigurationProperties notifyRegionsConfigurationProperties,
-        final RegionNotifyTemplateRepositoryMod regionNotifyTemplateRepositoryMod) {
-        Assert.notNull(appSetting, "AppSettingService cannot be null.");
-        Assert.notNull(messageRepository, "MessageRepository can not be null.");
-        Assert.notNull(courtRegionModRepository, "CourtRegionModRepository can not be null.");
-        Assert.notNull(notifyConfigurationProperties, "NotifyConfigurationProperties can not be null.");
-        Assert.notNull(notifyRegionsConfigurationProperties, "NotifyRegionsConfigurationProperties can not be null.");
-        Assert.notNull(regionNotifyTemplateRepositoryMod, "RegionNotifyTemplateRepositoryMod can not be null.");
-        this.appSetting = appSetting;
-        this.messageRepository = messageRepository;
-        this.courtRegionModRepository = courtRegionModRepository;
-        this.notifyConfigurationProperties = notifyConfigurationProperties;
-        this.notifyRegionsConfigurationProperties = notifyRegionsConfigurationProperties;
-        this.regionNotifyTemplateRepositoryMod = regionNotifyTemplateRepositoryMod;
-    }
 
     /**
      * Implements a specific job execution.
@@ -203,138 +181,58 @@ public class MessagesServiceImpl implements BureauProcessService {
                 personalisation.put(MESSAGE_PLACEHOLDER_JUROR, jurorNumber);
 
 
-                //  Send sms to notify
-                if (messagesDetail.getEmail() == null) {
+                final boolean isEmail = messagesDetail.getEmail() != null;
+                final boolean isPhone = messagesDetail.getPhone() != null;
 
-                    // for Welsh Region Notify Template Sms
-                    if (Objects.equals(welshTempComparisonText, welshSubjectText)) {
-
-                        NotificationClient clientSendSms = new NotificationClient(regionApikey, gotProxy);
-                        for (RegionNotifyTemplateMod regionNotifyTemplateSmsListWelsh :
-                            regionNotifyTemplateListSmsWelsh) {
-                            String smsTemplateIdWelsh = (regionNotifyTemplateSmsListWelsh != null
-                                ? regionNotifyTemplateSmsListWelsh.getNotifyTemplateId()
-                                : null);
-
-                            if (smsTemplateIdWelsh == null || smsTemplateIdWelsh.isEmpty()) {
-                                messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
-                                updateMessageFlag(messagesDetail);
-
-
-                                log.error(LOG_ERROR_MESSAGE_TEMPLATE_ID);
-                                throw new IllegalStateException("smsTemplateId null or empty");
-
-                            }
-                            SendSmsResponse smsResponse = clientSendSms.sendSms(
-                                smsTemplateIdWelsh, phoneNumber, personalisation, reference);
-                            if (smsResponse.getNotificationId() != null) {
-                                messagesDetail.setMessageRead(MESSAGE_READ);
-                                updateMessageFlag(messagesDetail);
-                            }
-
-                            log.trace("Court Comms  sms messaging  Service :  response {}", smsResponse);
-                        }
-
-
-                    } // if Welsh end if
-
-                    NotificationClient clientSendSms = new NotificationClient(regionApikey, gotProxy);
-
-                    for (RegionNotifyTemplateMod regionNotifyTemplateSmsList : regionNotifyTemplateListSms) {
-
-                        String smsTemplateId = (regionNotifyTemplateSmsList != null
-                            ? regionNotifyTemplateSmsList.getNotifyTemplateId()
-                            : null);
-
-                        if (smsTemplateId == null || smsTemplateId.isEmpty()) {
-
-                            messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
-
-                            updateMessageFlag(messagesDetail);
-
-                            log.error(LOG_ERROR_MESSAGE_TEMPLATE_ID);
-                            throw new IllegalStateException("smsTemplateId null or empty");
-
-                        }
-
-
-                        SendSmsResponse smsResponse = clientSendSms.sendSms(
-                            smsTemplateId, phoneNumber, personalisation, reference);
-                        if (smsResponse.getNotificationId() != null) {
-                            messagesDetail.setMessageRead(MESSAGE_READ);
-                            updateMessageFlag(messagesDetail);
-                        }
-
-                        log.trace("Court Comms  sms messaging  Service :  response {}", smsResponse);
-                    }
-
-                }  // send sms
-
-                // Send email to notify
-
-                if (messagesDetail.getPhone() == null) {
-
-                    // for Welsh Region Notify Template Email
-                    if (Objects.equals(welshTempComparisonText, welshSubjectText)) {
-
-                        NotificationClient clientSendEmail = new NotificationClient(regionApikey, gotProxy);
-
-                        for (RegionNotifyTemplateMod regionNotifyTemplateEmailListWelsh :
-                            regionNotifyTemplateListEmailWelsh) {
-                            String emailTemplateIdWelsh = (regionNotifyTemplateEmailListWelsh != null
-                                ? regionNotifyTemplateEmailListWelsh.getNotifyTemplateId()
-                                : null);
-
-                            if (emailTemplateIdWelsh == null || emailTemplateIdWelsh.isEmpty()) {
-                                messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
-                                updateMessageFlag(messagesDetail);
-
-                                log.error(LOG_ERROR_MESSAGE_TEMPLATE_ID);
-                                throw new IllegalStateException("smsTemplateId null or empty");
-
-                            }
-                            SendEmailResponse emailResponse = clientSendEmail.sendEmail(
-                                emailTemplateIdWelsh, email, personalisation, reference);
-                            if (emailResponse.getNotificationId() != null) {
-                                messagesDetail.setMessageRead(MESSAGE_READ);
-                                updateMessageFlag(messagesDetail);
-                            }
-
-                            log.trace("Court Comms  email messaging  Service :  response {}", emailResponse);
-                        }
-
-                    } // send Welsh email end if statement
-
-                    NotificationClient clientSendEmail = new NotificationClient(regionApikey, gotProxy);
-
-
-                    for (RegionNotifyTemplateMod regionNotifyTemplateEmailList : regionNotifyTemplateListEmail) {
-                        String emailTemplateId = (regionNotifyTemplateEmailList != null
-                            ? regionNotifyTemplateEmailList.getNotifyTemplateId()
-                            : null);
-
-                        if (emailTemplateId == null || emailTemplateId.isEmpty()) {
-                            messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
-                            updateMessageFlag(messagesDetail);
-                            log.error(LOG_ERROR_MESSAGE_TEMPLATE_ID);
-                            throw new IllegalStateException("emailTemplateId null or empty");
-                        }
-
-                        SendEmailResponse emailResponse = clientSendEmail.sendEmail(
-                            emailTemplateId, email, personalisation, reference);
-                        if (emailResponse.getNotificationId() != null) {
-                            messagesDetail.setMessageRead(MESSAGE_READ);
-                            updateMessageFlag(messagesDetail);
-                        }
-                        log.trace("Court Comms  email messaging  Service :  response {}", emailResponse);
-
-                    }  // send email end of if statement
-
+                if (!isEmail && !isPhone) {
+                    continue;
                 }
 
+                List<RegionNotifyTemplateMod> regionNotifyTemplateMods;
+                if (Objects.equals(welshTempComparisonText, welshSubjectText)) {
+                    regionNotifyTemplateMods = isEmail
+                        ? regionNotifyTemplateListEmailWelsh
+                        : regionNotifyTemplateListSmsWelsh;
+                } else {
+                    regionNotifyTemplateMods = isEmail
+                        ? regionNotifyTemplateListEmail
+                        : regionNotifyTemplateListSms;
+                }
 
+                NotificationClient notifyClient = new NotificationClient(regionApikey, gotProxy);
+                for (RegionNotifyTemplateMod regionNotifyTemplateSms : regionNotifyTemplateMods) {
+
+                    String smsTemplateId = regionNotifyTemplateSms != null
+                        ? regionNotifyTemplateSms.getNotifyTemplateId()
+                        : null;
+
+                    if (smsTemplateId == null || smsTemplateId.isEmpty()) {
+                        messagesDetail.setMessageRead(MESSAGE_READ_APP_ERROR);
+                        updateMessageFlag(messagesDetail);
+                        log.error(LOG_ERROR_MESSAGE_TEMPLATE_ID);
+                        throw new IllegalStateException("smsTemplateId null or empty");
+                    }
+                    UUID notificationId = null;
+                    Object response = null;
+                    if (isEmail) {
+                        SendEmailResponse emailResponse = notifyClient.sendEmail(
+                            smsTemplateId, email, personalisation, reference);
+                        response = emailResponse;
+                        notificationId = emailResponse.getNotificationId();
+                    } else if (isPhone) {
+                        SendSmsResponse smsResponse =
+                            notifyClient.sendSms(smsTemplateId, phoneNumber, personalisation, reference);
+                        response = smsResponse;
+                        notificationId = smsResponse.getNotificationId();
+                    }
+
+                    if (notificationId != null) {
+                        messagesDetail.setMessageRead(MESSAGE_READ);
+                        updateMessageFlag(messagesDetail);
+                    }
+                    log.trace("Court Comms  sms messaging  Service :  response {}", response);
+                }
             } catch (NotificationClientException e) {
-
                 log.error("Failed to send via Notify: {}", e);
                 log.trace("Unable to send notify: {}", e.getHttpResult());
                 log.info("Unable to send notify: {}", e.getHttpResult());
@@ -343,7 +241,6 @@ public class MessagesServiceImpl implements BureauProcessService {
             } catch (Exception e) {
                 log.info("Unexpected exception: {}", e);
             }
-
         }
 
         log.info("Court Comms Processing : Finished - {}", dateFormat.format(new Date()));
