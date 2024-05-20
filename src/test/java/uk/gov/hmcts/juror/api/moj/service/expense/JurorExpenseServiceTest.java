@@ -5787,7 +5787,6 @@ class JurorExpenseServiceTest {
         assertThat(expenseRates.getLimitFinancialLossFullDayLongTrial()).isEqualTo(new BigDecimal("1.10"));
         assertThat(expenseRates.getSubsistenceRateStandard()).isEqualTo(new BigDecimal("1.11"));
         assertThat(expenseRates.getSubsistenceRateLongDay()).isEqualTo(new BigDecimal("1.12"));
-        assertThat(expenseRates.getRatesEffectiveFrom()).isNotNull();
 
     }
 

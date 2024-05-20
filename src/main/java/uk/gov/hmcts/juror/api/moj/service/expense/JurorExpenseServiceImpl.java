@@ -1326,7 +1326,6 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     @Transactional()
     public void updateExpenseRates(ExpenseRatesDto expenseRatesDto) {
         ExpenseRates expenseRates = expenseRatesDto.toEntity();
-        expenseRates.setRatesEffectiveFrom(LocalDate.now());
         expenseRatesRepository.save(expenseRates);
     }
 }
