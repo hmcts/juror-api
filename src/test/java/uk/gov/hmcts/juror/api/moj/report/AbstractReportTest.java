@@ -67,6 +67,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
+import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 
 @SuppressWarnings({
     "unchecked",
@@ -99,7 +100,7 @@ class AbstractReportTest {
         void sizeCheck() {
             assertThat(AbstractReport.CLASS_TO_JOIN).hasSize(6);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QPanel.panel)).hasSize(1);
-            assertThat(AbstractReport.CLASS_TO_JOIN.get(QJuror.juror)).hasSize(3);
+            assertThat(AbstractReport.CLASS_TO_JOIN.get(QJuror.juror)).hasSize(4);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QJurorPool.jurorPool)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QPoolRequest.poolRequest)).hasSize(1);
             assertThat(AbstractReport.CLASS_TO_JOIN.get(QAppearance.appearance)).hasSize(2);
@@ -132,6 +133,25 @@ class AbstractReportTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+        void jurorToLowLevelFinancialAuditDetailsIncludingApprovedAmounts() {
+            assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJuror.juror)).isTrue();
+            Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN
+                .get(QJuror.juror);
+
+            assertThat(map.containsKey(
+                lowLevelFinancialAuditDetailsIncludingApprovedAmounts
+            )).isTrue();
+            assertThat(map.get(
+                lowLevelFinancialAuditDetailsIncludingApprovedAmounts))
+                .isEqualTo(
+                    new Predicate[]{
+                        lowLevelFinancialAuditDetailsIncludingApprovedAmounts.jurorNumber
+                            .eq(QJuror.juror.jurorNumber)}
+                );
+        }
+
+        @Test
         void jurorPoolToJuror() {
             assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJurorPool.jurorPool)).isTrue();
             Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QJurorPool.jurorPool);
@@ -141,6 +161,7 @@ class AbstractReportTest {
                 new Predicate[]{QJurorPool.jurorPool.juror.eq(QJuror.juror)}
             );
         }
+
 
         @Test
         void poolRequestToJurorPool() {
@@ -1079,7 +1100,7 @@ class AbstractReportTest {
         void negativeNotFound() {
             TrialRepository trialRepository = mock(TrialRepository.class);
             when(trialRepository.findByTrialNumberAndCourtLocationLocCode(TestConstants.VALID_TRIAL_NUMBER,
-                                                                          "415"))
+                "415"))
                 .thenReturn(null);
 
             MojException.NotFound notFoundException =

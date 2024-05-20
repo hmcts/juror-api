@@ -15,13 +15,11 @@ import java.util.List;
 @Data
 public class ReportGroupBy implements IReportGroupBy {
 
-    private DataType dataType;
+    private IDataType dataType;
     private boolean removeGroupByFromResponse;
     private IReportGroupBy nested;
 
     public String getGroupFunction(GroupedTableData groupedTableData) {
-        System.out.println(dataType.getId());
-        System.out.println(groupedTableData);
         return groupedTableData.get(dataType.getId()).toString();
     }
 

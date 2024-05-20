@@ -98,6 +98,5 @@ public class PersonAttendingDetailReport extends AbstractGroupedReport {
         Validators.AbstractRequestValidator,
         Validators.RequireDate,
         Validators.RequireIncludeSummoned {
-
     }
 }

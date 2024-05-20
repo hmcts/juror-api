@@ -14,7 +14,7 @@ public interface FinancialAuditService {
 
     List<FinancialAuditDetails> getFinancialAuditDetails(Appearance appearance);
 
-    FinancialAuditDetails getFinancialAuditDetails(long financialAuditNumber);
+    FinancialAuditDetails getFinancialAuditDetails(long financialAuditNumber, String locCode);
 
     List<Appearance> getAppearances(FinancialAuditDetails financialAuditDetails);
 
@@ -24,4 +24,6 @@ public interface FinancialAuditService {
     Appearance getPreviousAppearance(FinancialAuditDetails financialAuditDetails, Appearance appearance);
 
     Appearance getPreviousApprovedValue(FinancialAuditDetails financialAuditDetails, Appearance appearance);
+
+    FinancialAuditDetails findFromAppearance(Appearance appearance);
 }
