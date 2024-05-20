@@ -27,7 +27,6 @@ import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -209,12 +208,9 @@ public class Juror extends Address implements Serializable {
     @Column(name = "notifications")
     private int notifications;
 
-    @LastModifiedBy
-    @Column(name = "last_modified_by")
-    private String lastModifiedBy;
-
     @LastModifiedDate
     @Column(name = "last_update")
+    @NotAudited
     private LocalDateTime lastUpdate;
 
     @NotAudited

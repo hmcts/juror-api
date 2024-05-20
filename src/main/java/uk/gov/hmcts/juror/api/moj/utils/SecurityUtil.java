@@ -5,6 +5,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
+import uk.gov.hmcts.juror.api.config.public1.PublicJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -45,6 +46,15 @@ public final class SecurityUtil {
         if (securityContext != null) {
             Authentication authentication = securityContext.getAuthentication();
             return authentication instanceof BureauJwtAuthentication;
+        }
+        return false;
+    }
+
+    public static boolean hasPublicJwtPayload() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        if (securityContext != null) {
+            Authentication authentication = securityContext.getAuthentication();
+            return authentication instanceof PublicJwtAuthentication;
         }
         return false;
     }

@@ -1,21 +1,21 @@
 package uk.gov.hmcts.juror.api.moj.service.audit;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.envers.AuditReaderFactory;
-import org.hibernate.envers.query.AuditEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.audit.dto.JurorAudit;
+import uk.gov.hmcts.juror.api.moj.audit.dto.QJurorAudit;
 import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
+import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
 @Service
-@SuppressWarnings("unchecked")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class JurorAuditServiceImpl implements JurorAuditService {
 
@@ -24,69 +24,57 @@ public class JurorAuditServiceImpl implements JurorAuditService {
 
     private final JurorPoolService jurorPoolService;
 
-    @Override
-    public List<Juror> getAllAuditsFor(List<String> jurorNumbers) {
-        return (List<Juror>) AuditReaderFactory.get(entityManager)
-            .createQuery()
-            .forRevisionsOfEntity(Juror.class, true, true)
-            .add(AuditEntity.property("jurorNumber").in(jurorNumbers))
-            .addOrder(AuditEntity.property("lastUpdate").desc())
-            .getResultList();
+
+    JPAQueryFactory getQueryFactory() {
+        return new JPAQueryFactory(entityManager);
     }
 
     @Override
-    public List<Juror> getAllAuditsChangedBetweenAndHasCourt(LocalDate fromDate, LocalDate toDate,
-                                                             List<String> locCodes) {
-        List<Juror> jurors = (List<Juror>) AuditReaderFactory.get(entityManager)
-            .createQuery()
-            .forRevisionsOfEntity(Juror.class, true, true)
-            .add(AuditEntity.property("lastUpdate").between(
-                fromDate.atTime(LocalTime.MIN),
-                toDate.atTime(LocalTime.MAX)))
-            .getResultList();
+    public List<JurorAudit> getAllAuditsFor(List<String> jurorNumbers) {
+        return getQueryFactory()
+            .selectFrom(QJurorAudit.jurorAudit)
+            .where(QJurorAudit.jurorAudit.jurorNumber.in(jurorNumbers))
+            .orderBy(QJurorAudit.jurorAudit.revisionInfo.timestamp.asc())
+            .fetch();
+    }
 
-        List<String> allowedJurorNumbers = jurors
+    @Override
+    public List<JurorAudit> getAllAuditsChangedBetweenAndHasCourt(LocalDate fromDate, LocalDate toDate,
+                                                                  List<String> locCodes) {
+        List<JurorAudit> data = getQueryFactory()
+            .selectFrom(QJurorAudit.jurorAudit)
+            .where(QJurorAudit.jurorAudit.revisionInfo.timestamp.between(
+                DateUtils.toEpochMilli(fromDate.atTime(LocalTime.MIN)),
+                DateUtils.toEpochMilli(toDate.atTime(LocalTime.MAX))))
+            .orderBy(QJurorAudit.jurorAudit.revisionInfo.timestamp.asc())
+            .fetch();
+
+        List<String> allowedJurorNumbers = data
             .stream()
-            .map(Juror::getJurorNumber)
+            .map(JurorAudit::getJurorNumber)
             .distinct()
             .filter(juror -> jurorPoolService.hasPoolWithLocCode(juror, locCodes))
             .toList();
 
-        return jurors
+        return data
             .stream()
             .filter(juror -> allowedJurorNumbers.contains(juror.getJurorNumber()))
             .toList();
     }
 
-    @Override
-    public Juror getNextJurorAudit(Juror juror) {
-        List<Juror> jurors = (List<Juror>) AuditReaderFactory.get(entityManager)
-            .createQuery()
-            .forRevisionsOfEntity(Juror.class, true, true)
-            .add(AuditEntity.property("jurorNumber").eq(juror.getJurorNumber()))
-            .add(AuditEntity.property("lastUpdate").gt(juror.getLastUpdate()))
-            .addOrder(AuditEntity.property("lastUpdate").asc())
-            .setMaxResults(1)
-            .getResultList();
-        if (jurors.isEmpty()) {
-            return null;
-        }
-        return jurors.get(0);
-    }
 
     @Override
-    public Juror getPreviousJurorAudit(Juror juror) {
-        List<Juror> jurors = (List<Juror>) AuditReaderFactory.get(entityManager)
-            .createQuery()
-            .forRevisionsOfEntity(Juror.class, true, true)
-            .add(AuditEntity.property("jurorNumber").eq(juror.getJurorNumber()))
-            .add(AuditEntity.property("lastUpdate").lt(juror.getLastUpdate()))
-            .addOrder(AuditEntity.property("lastUpdate").desc())
-            .setMaxResults(1)
-            .getResultList();
-        if (jurors.isEmpty()) {
+    public JurorAudit getPreviousJurorAudit(JurorAudit juror) {
+
+        List<JurorAudit> data = getQueryFactory()
+            .selectFrom(QJurorAudit.jurorAudit)
+            .where(QJurorAudit.jurorAudit.jurorNumber.eq(juror.getJurorNumber()))
+            .where(QJurorAudit.jurorAudit.revisionInfo.timestamp.lt(juror.getRevisionInfo().getTimestamp()))
+            .orderBy(QJurorAudit.jurorAudit.revisionInfo.timestamp.desc())
+            .fetch();
+        if (data.isEmpty()) {
             return null;
         }
-        return jurors.get(0);
+        return data.get(0);
     }
 }

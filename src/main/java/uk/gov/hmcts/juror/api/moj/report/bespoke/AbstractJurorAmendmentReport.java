@@ -7,9 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import uk.gov.hmcts.juror.api.moj.audit.dto.JurorAudit;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
-import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.service.JurorServiceMod;
 import uk.gov.hmcts.juror.api.moj.service.UserService;
 import uk.gov.hmcts.juror.api.moj.service.audit.JurorAuditService;
@@ -35,26 +35,26 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
     protected final UserService userService;
 
     public enum Changed {
-        LAST_NAME(Juror::getLastName),
-        DATE_OF_BIRTH(Juror::getDateOfBirth),
-        ADDRESS(Juror::getCombinedAddressExcludingPostcode),
-        BANK_ACCOUNT_HOLDER_NAME(Juror::getBankAccountName),
-        SORT_CODE(Juror::getSortCode),
-        BANK_ACCOUNT_NUMBER(Juror::getBankAccountNumber),
-        FIRST_NAME(Juror::getFirstName),
-        POSTCODE(Juror::getPostcode);
+        LAST_NAME(JurorAudit::getLastName),
+        DATE_OF_BIRTH(JurorAudit::getDateOfBirth),
+        ADDRESS(JurorAudit::getCombinedAddressExcludingPostcode),
+        BANK_ACCOUNT_HOLDER_NAME(JurorAudit::getBankAccountName),
+        SORT_CODE(JurorAudit::getSortCode),
+        BANK_ACCOUNT_NUMBER(JurorAudit::getBankAccountNumber),
+        FIRST_NAME(JurorAudit::getFirstName),
+        POSTCODE(JurorAudit::getPostcode);
 
-        private final Function<Juror, Object> getValueFunction;
+        private final Function<JurorAudit, Object> getValueFunction;
 
 
-        Changed(Function<Juror, Object> getValueFunction) {
+        Changed(Function<JurorAudit, Object> getValueFunction) {
             this.getValueFunction = getValueFunction;
         }
 
 
         public static Collection<JurorAmendmentReportRow> getChanges(
             UserService userService,
-            Juror afterChangeJuror, Juror beforeChangeJuror) {
+            JurorAudit afterChangeJuror, JurorAudit beforeChangeJuror) {
             List<JurorAmendmentReportRow> changes = new ArrayList<>();
             for (Changed changed : Changed.values()) {
                 Object afterChangeValue = changed.getValue(afterChangeJuror);
@@ -69,8 +69,8 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
                             changed,
                             formatObject(beforeChangeValue),
                             formatObject(afterChangeValue),
-                            afterChangeJuror.getLastUpdate(),
-                            userService.findUserByUsername(afterChangeJuror.getLastModifiedBy()).getName()
+                            afterChangeJuror.getRevisionInfo().getRevisionDate(),
+                            userService.findUserByUsername(afterChangeJuror.getRevisionInfo().getChangedBy()).getName()
                         ));
                 }
             }
@@ -87,7 +87,7 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
             return value;
         }
 
-        private Object getValue(Juror currentJurorValue) {
+        private Object getValue(JurorAudit currentJurorValue) {
             return getValueFunction.apply(currentJurorValue);
         }
     }
@@ -99,19 +99,20 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
     }
 
     protected AbstractReportResponse.TableData<List<JurorAmendmentReportRow>>
-        getTableDataAudits(List<Juror> jurorAudits) {
+        getTableDataAudits(List<JurorAudit> jurorAudits) {
         return getTableDataAudits(false, jurorAudits);
     }
 
     protected AbstractReportResponse.TableData<List<JurorAmendmentReportRow>>
-        getTableDataAudits(boolean includeOneAuditEitherSide, List<Juror> jurorAudits) {
-        Map<String, List<Juror>> jurorNumberToJurorMap = jurorAudits
+        getTableDataAudits(boolean includeOneAuditEitherSide, List<JurorAudit> jurorAudits) {
+        Map<String, List<JurorAudit>> jurorNumberToJurorMap = jurorAudits
             .stream()
-            .collect(Collectors.groupingBy(Juror::getJurorNumber));
+            .collect(Collectors.groupingBy(JurorAudit::getJurorNumber));
 
         List<JurorAmendmentReportRow> changedData = new ArrayList<>();
         jurorNumberToJurorMap.forEach((jurorNumber, jurors) -> changedData.addAll(
             getChangesFromJurorAudits(includeOneAuditEitherSide, jurorNumber, jurors)));
+
         changedData.sort(Comparator.comparing(JurorAmendmentReportRow::getChangedOn).reversed());
 
 
@@ -156,30 +157,32 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
 
     private Collection<JurorAmendmentReportRow> getChangesFromJurorAudits(boolean includeOneAuditEitherSide,
                                                                           String jurorNumber,
-                                                                          List<Juror> jurors) {
-        jurors.sort(Comparator.comparing(Juror::getLastUpdate).reversed());
+                                                                          List<JurorAudit> jurors) {
+
+        Comparator<JurorAudit> comparator = Comparator.comparing(o -> o.getRevisionInfo().getRevisionDate());
+        jurors.sort(comparator.reversed());
+
         if (jurors.isEmpty()) {
             return List.of();
         }
 
-        Juror currentJurorValue = null;
+        JurorAudit afterChangeJuror = null;
         if (includeOneAuditEitherSide) {
-            Juror previousJurorAudit = jurorAuditService.getPreviousJurorAudit(jurors.get(jurors.size() - 1));
+            JurorAudit previousJurorAudit =
+                jurorAuditService.getPreviousJurorAudit(jurors.get(jurors.size() - 1));
             if (previousJurorAudit != null) {
                 jurors.add(previousJurorAudit);
             }
-        } else {
-            currentJurorValue = jurorService.getJurorFromJurorNumber(jurorNumber);
         }
 
         List<JurorAmendmentReportRow> changes = new ArrayList<>();
-        for (Juror juror : jurors) {
-            if (currentJurorValue == null) {
-                currentJurorValue = juror;
+        for (JurorAudit beforeChangeValue : jurors) {
+            if (afterChangeJuror == null) {
+                afterChangeJuror = beforeChangeValue;
                 continue;
             }
-            changes.addAll(Changed.getChanges(userService, currentJurorValue, juror));
-            currentJurorValue = juror;
+            changes.addAll(Changed.getChanges(userService, afterChangeJuror, beforeChangeValue));
+            afterChangeJuror = beforeChangeValue;
         }
         return changes;
     }
