@@ -102,7 +102,6 @@ public class ReportController {
         @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode,
         @RequestParam(value = "reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate
     ) {
-
         return ResponseEntity.ok(utilisationReportService.generateMonthlyUtilisationReport(locCode, reportDate));
     }
 
@@ -113,9 +112,8 @@ public class ReportController {
     public ResponseEntity<MonthlyUtilisationReportResponse> viewMonthlyUtilisationReport(
         @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode,
         @RequestParam(value = "reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate,
-        @RequestParam(value = "previousMonths") @Valid boolean previousMonths
+        @RequestParam(value = "previousMonths", required = false) @Valid boolean previousMonths
     ) {
-
         return ResponseEntity.ok(utilisationReportService.viewMonthlyUtilisationReport(locCode, reportDate,
             previousMonths));
     }

@@ -47,9 +47,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         log.info("Fetching daily utilisation stats for location: {} from: {} to: {}", locCode, reportFromDate,
             reportToDate);
 
-        if (reportFromDate.isAfter(reportToDate)) {
-            throw new MojException.BadRequest("Report from date cannot be after report to date", null);
-        }
+        validateDates(reportFromDate, reportToDate);
 
         // check the user has permission to view the location
         CourtLocation courtLocation = CourtLocationUtils.validateAccessToCourtLocation(locCode,
@@ -123,6 +121,17 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
             reportToDate);
 
         return response;
+    }
+
+    private void validateDates(LocalDate reportFromDate, LocalDate reportToDate) {
+        if (reportFromDate.isAfter(reportToDate)) {
+            throw new MojException.BadRequest("Report from date cannot be after report to date", null);
+        }
+
+        // check the difference between the report from and report to dates is less than or equal to 31 days
+        if (reportFromDate.plusDays(32).isBefore(reportToDate)) {
+            throw new MojException.BadRequest("Report date range cannot be more than 31 days", null);
+        }
     }
 
 
@@ -249,18 +258,9 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                 tableData.setTotalUtilisation(utilisation);
 
                 // save the monthly utilisation report to the database
-                UtilisationStats saved = utilisationStatsRepository.save(new UtilisationStats(reportFromDate,
-                    courtLocation.getLocCode(),
-                    workingDays,
-                    attendanceDays, sittingDays, LocalDateTime.now()));
+                utilisationStatsRepository.save(new UtilisationStats(reportFromDate,
+                    courtLocation.getLocCode(), workingDays, attendanceDays, sittingDays, LocalDateTime.now()));
 
-                if (saved != null) {
-                    log.info("Saved monthly utilisation report for location: {} month: {} year: {}", locCode, month,
-                        year);
-                } else {
-                    log.error("Error while saving monthly utilisation report for location: {} month: {} year: {}",
-                        locCode, month, year);
-                }
             }
         } catch (SQLException exc) {
             log.error("Error while fetching monthly utilisation jurors stats", exc.getMessage());
@@ -277,10 +277,78 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
     public MonthlyUtilisationReportResponse viewMonthlyUtilisationReport(String locCode, LocalDate reportDate,
                                                                          boolean previousMonths) {
         // extract the month and year from the report date
-        return null;
+        int month = reportDate.getMonthValue();
+        int year = reportDate.getYear();
+
+        log.info("Fetching monthly utilisation jurors stats for location: {} month: {} year: {}",
+            locCode, month, year);
+
+        // check the user has permission to view the location
+        CourtLocation courtLocation = CourtLocationUtils.validateAccessToCourtLocation(locCode,
+            SecurityUtil.getActiveOwner(),
+            courtLocationRepository);
+
+        LocalDate reportToDate = LocalDate.of(year, month, 1);
+        LocalDate reportFromDate = reportToDate;
+
+        if (previousMonths) {
+            reportFromDate = reportFromDate.minusMonths(2);
+        }
+
+        // read the monthly utilisation report from the database for given date range
+        List<UtilisationStats> utilisationStats = utilisationStatsRepository
+            .findByMonthStartBetweenAndLocCode(reportFromDate, reportToDate, locCode);
+
+        // The monthly utilisation report uses the exact same headers as the daily utilisation report
+        Map<String, AbstractReportResponse.DataTypeValue> reportHeadings
+            = getViewMonthlyUtilReportHeaders(courtLocation.getName());
+
+        MonthlyUtilisationReportResponse response = new MonthlyUtilisationReportResponse(reportHeadings);
+
+        if (utilisationStats != null && !utilisationStats.isEmpty()) {
+            MonthlyUtilisationReportResponse.TableData tableData = response.getTableData();
+
+            for (UtilisationStats stats : utilisationStats) {
+                Double utilisation = stats.getAvailableDays() == 0 ? 0.0
+                    : (double) stats.getSittingDays() / stats.getAvailableDays() * 100;
+
+                MonthlyUtilisationReportResponse.TableData.Month monthData =
+                    MonthlyUtilisationReportResponse.TableData.Month.builder()
+                        .month(stats.getMonthStart().getMonth().getDisplayName(TextStyle.FULL, Locale.UK) + " "
+                            + stats.getMonthStart().getYear())
+                        .jurorWorkingDays(stats.getAvailableDays())
+                        .sittingDays(stats.getSittingDays())
+                        .attendanceDays(stats.getAttendanceDays())
+                        .nonAttendanceDays(stats.getAvailableDays() - stats.getAttendanceDays())
+                        .utilisation(utilisation)
+                        .build();
+
+                tableData.getMonths().add(monthData);
+
+                //update the totals
+                updateTotalStats(tableData, stats);
+            }
+
+            // calculate the overall utilisation
+            Double overallUtilisation = tableData.getTotalJurorWorkingDays() == 0
+                ? 0.0
+                : (double) tableData.getTotalSittingDays() / tableData.getTotalJurorWorkingDays() * 100;
+
+            tableData.setTotalUtilisation(overallUtilisation);
+        }
+
+        return response;
     }
 
-    private static void updateJurorTotals(DailyUtilisationReportJurorsResponse.TableData tableData,
+    private void updateTotalStats(MonthlyUtilisationReportResponse.TableData tableData, UtilisationStats stats) {
+        tableData.setTotalJurorWorkingDays(tableData.getTotalJurorWorkingDays() + stats.getAvailableDays());
+        tableData.setTotalSittingDays(tableData.getTotalSittingDays() + stats.getSittingDays());
+        tableData.setTotalAttendanceDays(tableData.getTotalAttendanceDays() + stats.getAttendanceDays());
+        tableData.setTotalNonAttendanceDays(tableData.getTotalNonAttendanceDays()
+            + (stats.getAvailableDays() - stats.getAttendanceDays()));
+    }
+
+    private void updateJurorTotals(DailyUtilisationReportJurorsResponse.TableData tableData,
                                   DailyUtilisationReportJurorsResponse.TableData.Juror jurors) {
         tableData.setTotalJurorWorkingDays(tableData.getTotalJurorWorkingDays()
             + jurors.getJurorWorkingDay());
@@ -390,6 +458,27 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         );
     }
 
+
+    private Map<String, AbstractReportResponse.DataTypeValue>
+        getViewMonthlyUtilReportHeaders(String courtName) {
+        return Map.of(
+            "report_created", AbstractReportResponse.DataTypeValue.builder()
+                .displayName(ReportHeading.REPORT_CREATED.getDisplayName())
+                .dataType(ReportHeading.REPORT_CREATED.getDataType())
+                .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .build(),
+            "time_created", AbstractReportResponse.DataTypeValue.builder()
+                .displayName(ReportHeading.TIME_CREATED.getDisplayName())
+                .dataType(ReportHeading.TIME_CREATED.getDataType())
+                .value(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                .build(),
+            "court_name", AbstractReportResponse.DataTypeValue.builder()
+                .displayName(ReportHeading.COURT_NAME.getDisplayName())
+                .dataType(ReportHeading.COURT_NAME.getDataType())
+                .value(courtName)
+                .build()
+        );
+    }
 
     public enum ReportHeading {
         REPORT_DATE("Report date", LocalDate.class.getSimpleName()),
