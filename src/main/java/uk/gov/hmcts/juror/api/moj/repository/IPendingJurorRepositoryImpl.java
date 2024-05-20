@@ -25,7 +25,6 @@ public class IPendingJurorRepositoryImpl implements IPendingJurorRepository {
     private static final QPendingJuror PENDING_JUROR = QPendingJuror.pendingJuror;
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
 
-    @SuppressWarnings("PMD.LawOfDemeter")
     @Override
     public List<PendingJurorsResponseDto.PendingJurorsResponseData> findPendingJurorsForCourt(
         String locCode,

@@ -70,7 +70,6 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @DisplayName("MessagingControllerI: /api/v1/moj/messages")
 @SuppressWarnings({
     "LineLength",
-    "PMD.LawOfDemeter",
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods"
 })

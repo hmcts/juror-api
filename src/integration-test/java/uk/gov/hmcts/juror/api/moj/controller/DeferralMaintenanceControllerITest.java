@@ -60,7 +60,6 @@ import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.SURPLUS;
 import static uk.gov.hmcts.juror.api.testvalidation.DeferralMaintenanceValidation.validateDeferralMaintenanceOptions;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: /api/v1/moj/deferral-maintenance/")

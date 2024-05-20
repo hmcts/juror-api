@@ -51,7 +51,6 @@ import static uk.gov.hmcts.juror.api.bureau.domain.UserQueries.owner;
 /**
  * Test for {@link UserServiceImpl}.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceImplTest {
     @Mock

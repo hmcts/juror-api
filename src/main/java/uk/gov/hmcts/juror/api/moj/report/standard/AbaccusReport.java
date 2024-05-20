@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import static uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse.DataTypeValue;
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class AbaccusReport extends AbstractStandardReport {
 
     @Autowired

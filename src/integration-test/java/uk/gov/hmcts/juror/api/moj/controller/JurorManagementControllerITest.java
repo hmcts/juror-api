@@ -122,7 +122,6 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         initHeaders();
     }
 
-    @SuppressWarnings("PMD.LawOfDemeter")
     private void initHeaders() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .login("COURT_USER")

@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PoolStatusReport extends AbstractStandardReport {
     private final JurorPoolRepository jurorPoolRepository;
 

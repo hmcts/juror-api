@@ -12,7 +12,6 @@ import java.util.Collection;
 import java.util.List;
 
 @EqualsAndHashCode
-@SuppressWarnings("PMD.LawOfDemeter")
 public class GroupByAppearanceTrialNumberOrPoolNumber implements IReportGroupBy {
     @Override
     public String getGroupFunction(GroupedTableData groupedTableData) {

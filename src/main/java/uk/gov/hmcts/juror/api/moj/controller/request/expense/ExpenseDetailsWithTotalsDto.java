@@ -20,9 +20,6 @@ import java.util.Optional;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(callSuper = true)
-@SuppressWarnings({
-    "PMD.LawOfDemeter"
-})
 public class ExpenseDetailsWithTotalsDto extends ExpenseDetailsDto implements HasTotals {
 
     @NotNull

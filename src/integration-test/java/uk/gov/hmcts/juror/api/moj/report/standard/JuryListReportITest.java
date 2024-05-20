@@ -21,7 +21,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/JuryListITest_typical.sql"
 })
-@SuppressWarnings({"PMD.LawOfDemeter", "PMD.JUnitTestsShouldIncludeAssert"})
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class JuryListReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public JuryListReportITest(TestRestTemplate template) {

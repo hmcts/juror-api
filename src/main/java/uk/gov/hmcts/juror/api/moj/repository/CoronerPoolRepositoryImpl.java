@@ -13,7 +13,6 @@ import uk.gov.hmcts.juror.api.moj.domain.QCoronerPool;
  * Custom Repository implementation for extracting data related to coroner pools.
  */
 @Slf4j
-@SuppressWarnings("PMD.LawOfDemeter")
 public class CoronerPoolRepositoryImpl implements ICoronerPoolRepository {
 
     private static final QCoronerPool CORONER_POOL = QCoronerPool.coronerPool;

@@ -20,7 +20,6 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/reports/poolstatus.sql"
 })
-@SuppressWarnings({"PMD.LawOfDemeter"})
 class PoolStatusReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     PoolStatusReportITest(TestRestTemplate template) {

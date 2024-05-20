@@ -13,7 +13,6 @@ import java.util.Collection;
 import java.util.List;
 
 @EqualsAndHashCode
-@SuppressWarnings("PMD.LawOfDemeter")
 public class GroupByPaymentType implements IReportGroupBy {
 
     public static final String CASH_TEXT = "Cash";

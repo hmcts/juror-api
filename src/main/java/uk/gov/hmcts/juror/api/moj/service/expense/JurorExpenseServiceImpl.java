@@ -106,7 +106,6 @@ import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
     "PMD.ExcessiveImports",
     "PMD.GodClass",
     "PMD.TooManyMethods",
-    "PMD.LawOfDemeter",
     "PMD.CyclomaticComplexity"
 })
 public class JurorExpenseServiceImpl implements JurorExpenseService {

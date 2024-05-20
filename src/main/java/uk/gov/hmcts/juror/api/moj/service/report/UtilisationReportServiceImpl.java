@@ -32,7 +32,6 @@ import java.util.Map;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings("PMD.LawOfDemeter")
 public class UtilisationReportServiceImpl implements UtilisationReportService {
     private final CourtLocationRepository courtLocationRepository;
     private final JurorRepository jurorRepository;

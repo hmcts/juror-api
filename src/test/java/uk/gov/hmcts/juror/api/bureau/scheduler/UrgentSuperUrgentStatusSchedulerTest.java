@@ -30,14 +30,11 @@ public class UrgentSuperUrgentStatusSchedulerTest {
 
     private static final String NON_CLOSED_STATUS = ProcessingStatus.TODO.name();
 
-    private ModJurorDetail jurorBureauDetail;
-    private DigitalResponse jurorResponse;
     private JurorPool poolDetails;
 
     private Juror juror;
 
 
-    private LocalDateTime responseReceived;
     @Mock
     private JurorDigitalResponseRepositoryMod jurorResponseRepo;
 
@@ -58,16 +55,16 @@ public class UrgentSuperUrgentStatusSchedulerTest {
 
     @Before
     public void setUp() {
-        responseReceived = LocalDateTime.now();
+        LocalDateTime responseReceived = LocalDateTime.now();
 
         //set up some known static dates relative to a start point
-        jurorBureauDetail = new ModJurorDetail();
+        ModJurorDetail jurorBureauDetail = new ModJurorDetail();
         jurorBureauDetail.setProcessingStatus(NON_CLOSED_STATUS);
         jurorBureauDetail.setDateReceived(responseReceived.toLocalDate());
 
         jurorBureauDetail.setHearingDate(responseReceived.toLocalDate());
 
-        jurorResponse = new DigitalResponse();
+        DigitalResponse jurorResponse = new DigitalResponse();
         jurorResponse.setProcessingStatus(uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus.TODO);
         jurorResponse.setDateReceived(responseReceived);
 

@@ -19,10 +19,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.TooManyMethods"
-})
+@SuppressWarnings("PMD.TooManyMethods")
 class DataTypeTest {
 
     @Test

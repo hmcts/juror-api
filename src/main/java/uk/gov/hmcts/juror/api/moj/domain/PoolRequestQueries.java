@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 public abstract class PoolRequestQueries {
 
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;

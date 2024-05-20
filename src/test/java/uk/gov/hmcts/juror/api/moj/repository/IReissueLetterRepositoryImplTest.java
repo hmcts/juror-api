@@ -36,9 +36,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings({
-    "PMD.LawOfDemeter"
-})
 class IReissueLetterRepositoryImplTest {
 
     private static final String JUROR_NUMBER = "123456789";

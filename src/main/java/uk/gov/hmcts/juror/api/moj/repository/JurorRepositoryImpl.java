@@ -18,7 +18,6 @@ import java.util.List;
 /**
  * Custom Repository implementation for the Juror entity.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 public class JurorRepositoryImpl implements IJurorRepository {
 
     @PersistenceContext

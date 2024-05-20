@@ -46,7 +46,7 @@ import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.LawOfDemeter"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 @RunWith(SpringRunner.class)
 public class ExcusalResponseServiceImplTest {
 

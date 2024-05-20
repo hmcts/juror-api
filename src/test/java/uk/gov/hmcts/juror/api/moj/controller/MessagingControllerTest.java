@@ -54,8 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("Controller: " + MessagingControllerTest.BASE_URL)
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods",
-    "PMD.LawOfDemeter"
+    "PMD.TooManyMethods"
 })
 class MessagingControllerTest {
     protected static final String BASE_URL = "/api/v1/moj/messages";

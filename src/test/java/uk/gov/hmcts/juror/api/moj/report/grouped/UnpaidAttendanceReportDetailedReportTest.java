@@ -30,9 +30,6 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings({
-    "PMD.LawOfDemeter"
-})
 class UnpaidAttendanceReportDetailedReportTest
     extends AbstractGroupedReportTestSupport<UnpaidAttendanceReportDetailedReport> {
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
