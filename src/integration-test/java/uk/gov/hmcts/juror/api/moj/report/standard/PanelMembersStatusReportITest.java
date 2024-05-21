@@ -15,6 +15,8 @@ import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @Sql({
     "/db/truncate.sql",
     "/db/mod/truncate.sql",
@@ -67,6 +69,41 @@ public class PanelMembersStatusReportITest extends AbstractStandardReportControl
             .jwt(getValidJwt())
             .triggerInvalid()
             .assertInvalidPathParam("trialNumber: must not be blank");
+    }
+
+    @Test
+    void assertTotals() {
+        StandardReportResponse report = testBuilder()
+            .triggerValid()
+            .responseConsumer(this::verifyAndRemoveReportCreated).body();
+
+        long expectedPanelled = report.getTableData().getData().size();
+        long expectedEmpanelled = report.getTableData().getData().stream()
+            .filter(juror -> juror.get("panel_status").equals("Juror")).count();
+        long expectedReturned = report.getTableData().getData().stream()
+            .filter(juror -> juror.get("panel_status").equals("Returned")).count();
+        long expectedNotUsed = report.getTableData().getData().stream()
+            .filter(juror -> juror.get("panel_status").equals("Not Used")).count() + expectedReturned;
+        long expectedChallenged = report.getTableData().getData().stream()
+            .filter(juror -> juror.get("panel_status").equals("Challenged")).count();
+
+        StandardReportResponse otherReport = getTypicalResponse();
+
+        long actualPanelled = otherReport.getTableData().getData().size();
+        long actualEmpanelled = otherReport.getTableData().getData().stream()
+            .filter(juror -> juror.get("panel_status").equals("Juror")).count();
+        long actualReturned = otherReport.getTableData().getData().stream()
+            .filter(juror -> juror.get("panel_status").equals("Returned")).count();
+        long actualNotUsed = otherReport.getTableData().getData().stream()
+            .filter(juror -> juror.get("panel_status").equals("Not Used")).count() + actualReturned;
+        long actualChallenged = otherReport.getTableData().getData().stream()
+            .filter(juror -> juror.get("panel_status").equals("Challenged")).count();
+
+        assertEquals(expectedPanelled, actualPanelled);
+        assertEquals(expectedEmpanelled, actualEmpanelled);
+        assertEquals(expectedReturned, actualReturned);
+        assertEquals(expectedNotUsed, actualNotUsed);
+        assertEquals(expectedChallenged, actualChallenged);
     }
 
     @Test
