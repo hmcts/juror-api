@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Data
 @Entity
@@ -29,9 +28,6 @@ public class ExpenseRates {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
-    @Column(name = "rates_effective_from")
-    private LocalDate ratesEffectiveFrom;
 
     @Column(name = "rate_per_mile_car_0_passengers")
     private BigDecimal carMileageRatePerMile0Passengers;
