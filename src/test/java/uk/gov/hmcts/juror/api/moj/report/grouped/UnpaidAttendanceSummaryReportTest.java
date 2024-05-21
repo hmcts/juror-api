@@ -9,11 +9,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.juror.domain.QPool;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.GroupedTableData;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
+import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReportTestSupport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
@@ -93,9 +95,11 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
             AppearanceStage.EXPENSE_ENTERED,
             AppearanceStage.EXPENSE_EDITED
         ));
-        verify(query, times(1)).where(QAppearance.appearance.locCode.in(SecurityUtil.getLocCode()));
+        verify(query, times(1)).where(QAppearance.appearance.locCode.eq(SecurityUtil.getLocCode()));
         verify(query, times(1)).where(
             QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate()));
+        verify(query)
+            .orderBy(QAppearance.appearance.poolNumber.asc(), QJuror.juror.jurorNumber.asc());
 
         verify(report, times(1)).addGroupBy(query,
             DataType.JUROR_NUMBER,
