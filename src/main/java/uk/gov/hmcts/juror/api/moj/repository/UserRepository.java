@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@SuppressWarnings("PMD.LawOfDemeter")
 public interface UserRepository extends CrudRepository<User, String>, QuerydslPredicateExecutor<User>, IUserRepository {
 
     List<User> findAllByUsernameIn(List<String> username);

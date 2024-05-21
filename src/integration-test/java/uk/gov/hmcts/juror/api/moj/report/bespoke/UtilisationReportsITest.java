@@ -48,6 +48,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
     private HttpHeaders httpHeaders;
 
     @BeforeEach
+    @Override
     public void setUp() throws Exception {
         super.setUp();
         initHeaders();
@@ -297,7 +298,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
 
             // verify the report has been saved
             assertThat(utilisationStatsRepository.findByMonthStartBetweenAndLocCode(may2024,
-                may2024,"415").size()).isEqualTo(1);
+                may2024, "415").size()).isEqualTo(1);
 
         }
 

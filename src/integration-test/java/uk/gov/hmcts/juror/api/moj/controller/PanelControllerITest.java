@@ -52,7 +52,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class PanelControllerITest extends AbstractIntegrationTest {
+class PanelControllerITest extends AbstractIntegrationTest {
 
     static final String COURT_USER_NAME = "court_user";
     static final String CHESTER_LOC_CODE = "415";

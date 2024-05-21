@@ -87,8 +87,7 @@ import static uk.gov.hmcts.juror.api.JurorDigitalApplication.PAGE_SIZE;
 @ContextConfiguration(classes = {JurorExpenseController.class, RestResponseEntityExceptionHandler.class,
     BulkServiceImpl.class})
 @DisplayName("Controller: " + JurorExpenseControllerTest.BASE_URL)
-@SuppressWarnings({"PMD.ExcessiveImports",
-    "PMD.LawOfDemeter"})
+@SuppressWarnings("PMD.ExcessiveImports")
 class JurorExpenseControllerTest {
     public static final String BASE_URL = "/api/v1/moj/expenses/{loc_code}";
 

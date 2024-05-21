@@ -19,7 +19,6 @@ import java.util.Map;
 
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class JuryListReport extends AbstractStandardReport {
     private final TrialRepository trialRepository;
 

@@ -19,7 +19,6 @@ import java.util.Map;
 
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PostponedListByPoolReport extends AbstractStandardReport {
     @Autowired
     public PostponedListByPoolReport(PoolRequestRepository poolRequestRepository) {

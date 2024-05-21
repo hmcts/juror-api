@@ -59,7 +59,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.ExcessiveImports",
     "PMD.CouplingBetweenObjects",
     "PMD.ExcessivePublicCount",

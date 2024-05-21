@@ -1,7 +1,7 @@
 buildscript {
     ext {
         springBootVersion = '3.2.5'
-        notifyVersion = '5.0.1-RELEASE'
+        notifyVersion = '5.1.0-RELEASE'
         springDocVersion = '2.5.0'
         queryDslVersion = '5.1.0'
         flywayVersion = '10.13.0'
@@ -144,7 +144,7 @@ dependencies {
     testImplementation('org.projectlombok:lombok')
     testAnnotationProcessor('org.projectlombok:lombok')
 
-    testImplementation('net.bytebuddy:byte-buddy:1.14.14')
+    testImplementation('net.bytebuddy:byte-buddy:1.14.15')
     testImplementation('junit:junit:4.13.2')
     testImplementation "org.testcontainers:testcontainers:1.19.8"
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
@@ -275,14 +275,11 @@ checkstyle {
     getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
-pmdIntegrationTest {
-    maxFailures = 366
-}
 pmdTest {
-    maxFailures = 374
+    maxFailures = 358
 }
 pmdMain {
-    maxFailures = 1109
+    maxFailures = 923
 }
 pmd {
     maxFailures = 0

@@ -33,7 +33,7 @@ import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
 import java.util.List;
 import java.util.Objects;
 
-import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.validateJurorNumberPathVariable;
+import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.assertJurorNumberPathVariable;
 
 @Slf4j
 @RestController
@@ -69,7 +69,7 @@ public class ResponseDisqualifyController {
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
         BureauJwtAuthentication jwt,
         @Validated @RequestBody DisqualifyCodeDto disqualifyCodeDto) throws DisqualifyException {
-        validateJurorNumberPathVariable(jurorId);
+        assertJurorNumberPathVariable(jurorId);
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         if (null == disqualifyCodeDto.getDisqualifyCode() || null == disqualifyCodeDto.getVersion()) {
             // there is either no body or no version present in the request

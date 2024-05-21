@@ -41,7 +41,6 @@ import java.util.Objects;
 
 @Slf4j
 @Service
-@SuppressWarnings("PMD.LawOfDemeter")
 public class StraightThroughProcessorServiceImpl implements StraightThroughProcessorService {
 
     private static final String COPY_RESPONSE_TO_GENERIC_JUROR_RESPONSE_POJO = "Juror: {}. Copying properties from {}"

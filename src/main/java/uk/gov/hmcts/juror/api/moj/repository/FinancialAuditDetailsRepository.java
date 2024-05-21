@@ -12,12 +12,13 @@ import java.util.List;
 
 @Repository
 public interface FinancialAuditDetailsRepository
-    extends CrudRepository<FinancialAuditDetails, Long>,
+    extends CrudRepository<FinancialAuditDetails, FinancialAuditDetails.IdClass>,
     IFinancialAuditDetailsRepository {
 
     @Query("SELECT fad FROM FinancialAuditDetails fad "
         + "JOIN FinancialAuditDetailsAppearances fada on "
         + "fad.id = fada .financialAuditId "
+        + "and fad.locCode = fada.locCode "
         + "WHERE fad.jurorNumber=?1 "
         + "AND fada.attendanceDate=?2 "
         + "AND fad.locCode=?3 "

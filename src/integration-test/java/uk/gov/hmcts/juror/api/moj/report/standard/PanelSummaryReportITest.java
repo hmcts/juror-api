@@ -20,7 +20,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PanelSummaryReportITest_typical.sql"
 })
-@SuppressWarnings({"PMD.LawOfDemeter", "PMD.JUnitTestsShouldIncludeAssert"})
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public PanelSummaryReportITest(TestRestTemplate template) {

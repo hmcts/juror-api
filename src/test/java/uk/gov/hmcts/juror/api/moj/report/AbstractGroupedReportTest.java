@@ -25,7 +25,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 class AbstractGroupedReportTest {
 
     private PoolRequestRepository poolRequestRepository;

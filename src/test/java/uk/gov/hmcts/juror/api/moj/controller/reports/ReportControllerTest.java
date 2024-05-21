@@ -43,7 +43,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     }
 )
 @DisplayName("Controller: " + ReportControllerTest.BASE_URL)
-@SuppressWarnings("PMD.LawOfDemeter")
 class ReportControllerTest {
     public static final String BASE_URL = "/api/v1/moj/reports";
     @Autowired

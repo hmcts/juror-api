@@ -6,10 +6,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.TooManyMethods"
-})
+@SuppressWarnings("PMD.TooManyMethods")
 class DataTypeTest {
 
 

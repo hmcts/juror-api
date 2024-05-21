@@ -2,9 +2,9 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
-import org.mockito.Mock;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReportTestSupport;
@@ -17,18 +17,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PoolStatusReportTest extends AbstractStandardReportTestSupport<PoolStatusReport> {
 
-    @Mock
-    private JurorPoolRepository jurorPoolRepository;
+
+    private final JurorPoolRepository jurorPoolRepository;
 
     public PoolStatusReportTest() {
         super(QJurorPool.jurorPool,
@@ -43,7 +41,7 @@ public class PoolStatusReportTest extends AbstractStandardReportTestSupport<Pool
             DataType.REASSIGNED_TOTAL,
             DataType.UNDELIVERABLE_TOTAL,
             DataType.TRANSFERRED_TOTAL);
-
+        this.jurorPoolRepository = mock(JurorPoolRepository.class);
     }
 
     @Override
@@ -65,38 +63,42 @@ public class PoolStatusReportTest extends AbstractStandardReportTestSupport<Pool
     }
 
     @Override
-    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(StandardReportRequest request,
-                                        AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
-                                                                                        List<LinkedHashMap<String,
-                                                                                            Object>> data) {
-        PoolRequestRepository repository = mock(PoolRequestRepository.class);
-        PoolRequest poolRequest = createPoolRequest();
-        when(repository.findByPoolNumber(request.getPoolNumber())).thenReturn(Optional.of(poolRequest));
+    public Map<String, AbstractReportResponse.DataTypeValue> positiveGetHeadingsTypical(
+        StandardReportRequest request,
+        AbstractReportResponse.TableData<List<LinkedHashMap<String, Object>>> tableData,
+        List<LinkedHashMap<String, Object>> data) {
+        final String poolNumber = "41500001";
+        PoolRequest poolRequest = createPoolRequest(poolNumber);
         doReturn("41500001").when(request).getPoolNumber();
+        when(report.getPoolRequestRepository().findByPoolNumber(poolNumber)).thenReturn(Optional.of(poolRequest));
 
-        Map<String, AbstractReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
-        map.put("pool_number", AbstractReportResponse.DataTypeValue.builder()
-            .value(request.getPoolNumber())
-            .dataType("String")
-            .displayName("Pool number")
-            .build());
-        map.put("total_pool_members", AbstractReportResponse.DataTypeValue.builder()
-            .displayName("Total pool members")
-            .dataType("Long")
-            .value(0)
-            .build());
-        map.put("total_requested_by_court", AbstractReportResponse.DataTypeValue.builder()
-            .dataType("Long")
-            .value(poolRequest.getTotalNoRequired())
-            .displayName("Originally requested by court")
-            .build());
+        when(this.jurorPoolRepository.count(QJurorPool.jurorPool.pool.poolNumber.eq("41500001")))
+            .thenReturn(2L);
 
+        Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);
+        assertHeadingContains(map, request, false, Map.of(
+            "pool_number", AbstractReportResponse.DataTypeValue.builder()
+                .value(request.getPoolNumber())
+                .dataType("String")
+                .displayName("Pool number")
+                .build(),
+            "total_pool_members", AbstractReportResponse.DataTypeValue.builder()
+                .displayName("Total pool members")
+                .dataType("Long")
+                .value(2L)
+                .build(),
+            "total_requested_by_court", AbstractReportResponse.DataTypeValue.builder()
+                .dataType("Long")
+                .value(20)
+                .displayName("Originally requested by court")
+                .build()
+        ));
         return map;
     }
 
-    private PoolRequest createPoolRequest() {
+    private PoolRequest createPoolRequest(String poolNumber) {
         return PoolRequest.builder()
-            .poolNumber("415000001")
+            .poolNumber(poolNumber)
             .totalNoRequired(20)
             .dateCreated(LocalDateTime.now())
             .owner("415")

@@ -54,10 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: /api/v1/moj/complete-service")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.ExcessiveImports"
-})
+@SuppressWarnings("PMD.ExcessiveImports")
 class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
     private final TestRestTemplate template;

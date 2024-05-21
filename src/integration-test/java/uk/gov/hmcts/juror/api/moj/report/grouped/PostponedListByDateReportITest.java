@@ -24,7 +24,6 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PostponedListByDateReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.LawOfDemeter")
 class PostponedListByDateReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired

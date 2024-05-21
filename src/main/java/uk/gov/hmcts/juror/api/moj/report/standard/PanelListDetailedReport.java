@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PanelListDetailedReport extends AbstractStandardReport {
 
     private final TrialRepository trialRepository;

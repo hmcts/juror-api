@@ -56,7 +56,8 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
     @Sql("/db/truncate.sql")
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
-    public void getDisqualifyReasons_happy() throws Exception {
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
+    public void testGDisqualifyReasons_happy() {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
@@ -77,6 +78,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
 
         // JDB-1458: unable to assert actual list of reasons as they may change, but we know 'E' shouldn't be in it
         assertThat(data)
+            .as("Ensure Disqualify code is not E")
             .filteredOn("disqualifyCode", DisCode.ELECTRONIC_POLICE_CHECK_FAILURE)
             .isEmpty();
     }

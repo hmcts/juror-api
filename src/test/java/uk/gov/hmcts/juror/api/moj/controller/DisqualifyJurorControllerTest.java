@@ -53,8 +53,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods",
-    "PMD.LawOfDemeter"
+    "PMD.TooManyMethods"
 })
 class DisqualifyJurorControllerTest {
 

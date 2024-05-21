@@ -54,7 +54,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings("PMD.LawOfDemeter")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class BureauStaffControllerTest extends AbstractIntegrationTest {
 
     private static final TeamDto TEAM_1 = TeamDto.builder().id(1L).name("London & Wales").version(0).build();
@@ -140,7 +140,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/StaffRepositoryTest_findByActiveOrderByNameAsc.sql")
-    public void getAll_happyPath() throws Exception {
+    public void testGAll_happyPath() throws Exception {
         final String bureauJwt = mintBureauJwt(
             BureauJwtPayload.builder()
                 .userType(UserType.BUREAU)
@@ -169,7 +169,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/StaffRepositoryTest_findByActiveOrderByNameAsc.sql")
-    public void getAll_unhappyPath_notATeamLeader() throws Exception {
+    public void testGAll_unhappyPath_notATeamLeader() throws Exception {
         final String bureauJwt = mintBureauJwt(
             BureauJwtPayload.builder()
                 .userType(UserType.BUREAU)
@@ -190,7 +190,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/StaffRepositoryTest_findByActiveOrderByNameAsc.sql")
-    public void getOne_happyPath() throws Exception {
+    public void testGOne_happyPath() throws Exception {
         final String bureauJwt = mintBureauJwt(
             BureauJwtPayload.builder()
                 .userType(UserType.BUREAU)
@@ -214,7 +214,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/StaffRepositoryTest_findByActiveOrderByNameAsc.sql")
-    public void getOne_errorPath_noResult() throws Exception {
+    public void testGOne_errorPath_noResult() throws Exception {
         final String bureauJwt = mintBureauJwt(
             BureauJwtPayload.builder()
                 .userType(UserType.BUREAU)
@@ -236,7 +236,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/StaffRepositoryTest_findByActiveOrderByNameAsc.sql")
-    public void getOne_errorPath_notATeamLeader() throws Exception {
+    public void testGOne_errorPath_notATeamLeader() throws Exception {
         final String bureauJwt = mintBureauJwt(
             BureauJwtPayload.builder().userLevel("99").login("jpowers")
                 .staff(BureauJwtPayload.Staff.builder().name("Joanna Powers").active(1).rank(0).build())
@@ -760,6 +760,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     @Sql("/db/StaffRepositoryTest.staffRepository_happy_findActiveStaffMembers.sql")
     @Test
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
     public void activeStaffRoster_happy() throws Exception {
         final String description = "Active staff roster happy path";
 
@@ -800,7 +801,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauStaffControllerTest_getStaffAssignments.sql")
     @Test
-    public void getStaffAssignments_happy() throws Exception {
+    public void testGStaffAssignments_happy() throws Exception {
         final String description = "Get multiple staff assignments, happy path";
 
         final URI uri = URI.create("/api/v1/bureau/staff/assignments-multi");

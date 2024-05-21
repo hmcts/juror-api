@@ -28,7 +28,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.TooManyMethods",
     "unchecked"
 })

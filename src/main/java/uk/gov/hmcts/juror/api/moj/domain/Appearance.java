@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.RelationTargetAuditMode;
 import org.hibernate.validator.constraints.Length;
@@ -49,7 +50,8 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 @Getter
 @Setter
 @Audited
-@SuppressWarnings({"PMD.TooManyFields", "PMD.LawOfDemeter", "PMD.TooManyImports"})
+@ToString
+@SuppressWarnings({"PMD.TooManyFields", "PMD.TooManyImports"})
 public class Appearance implements Serializable {
 
     @Version
@@ -77,10 +79,8 @@ public class Appearance implements Serializable {
     @Column(name = "loc_code", nullable = false, insertable = false, updatable = false)
     private String locCode;
 
-    @ManyToOne
-    @JoinColumn(name = "f_audit", referencedColumnName = "id")
-    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-    private FinancialAuditDetails financialAuditDetails;
+    @Column(name = "f_audit")
+    private Long financialAudit;
 
     @Length(max = 9)
     @Column(name = "pool_number")
