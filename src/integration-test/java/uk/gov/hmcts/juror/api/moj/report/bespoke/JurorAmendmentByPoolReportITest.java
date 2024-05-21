@@ -101,7 +101,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.BANK_ACCOUNT_HOLDER_NAME)
                                     .from("Test Name")
                                     .to("Test Name 2")
-                                    .changedOn(LocalDateTime.parse("2024-05-22T17:20:02.677"))
+                                    .changedOn(LocalDateTime.parse("2024-05-22T16:20:02.677"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -109,7 +109,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.SORT_CODE)
                                     .from("608407")
                                     .to("123456")
-                                    .changedOn(LocalDateTime.parse("2024-05-22T17:20:02.677"))
+                                    .changedOn(LocalDateTime.parse("2024-05-22T16:20:02.677"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -117,7 +117,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.BANK_ACCOUNT_NUMBER)
                                     .from("30459873")
                                     .to("12345678")
-                                    .changedOn(LocalDateTime.parse("2024-05-22T17:20:02.677"))
+                                    .changedOn(LocalDateTime.parse("2024-05-22T16:20:02.677"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -125,7 +125,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.DATE_OF_BIRTH)
                                     .from("1997-08-17")
                                     .to("1996-08-26")
-                                    .changedOn(LocalDateTime.parse("2024-05-22T17:19:52.587"))
+                                    .changedOn(LocalDateTime.parse("2024-05-22T16:19:52.587"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -133,28 +133,28 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.ADDRESS)
                                     .from(" AIRLL Nook,Box Number 74,Swansea,Special post town,")
                                     .to(" AIRLL Nook 3,Box Number 74,Swansea,Special post town 2,")
-                                    .changedOn(LocalDateTime.parse("2024-05-22T17:19:52.587"))
+                                    .changedOn(LocalDateTime.parse("2024-05-22T16:19:52.587"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
                                     .jurorNumber("200160029")
                                     .changed(AbstractJurorAmendmentReport.Changed.BANK_ACCOUNT_HOLDER_NAME)
                                     .to("Test Name")
-                                    .changedOn(LocalDateTime.parse("2024-05-22T17:19:52.587"))
+                                    .changedOn(LocalDateTime.parse("2024-05-22T16:19:52.587"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
                                     .jurorNumber("200160029")
                                     .changed(AbstractJurorAmendmentReport.Changed.SORT_CODE)
                                     .to("608407")
-                                    .changedOn(LocalDateTime.parse("2024-05-22T17:19:52.587"))
+                                    .changedOn(LocalDateTime.parse("2024-05-22T16:19:52.587"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
                                     .jurorNumber("200160029")
                                     .changed(AbstractJurorAmendmentReport.Changed.BANK_ACCOUNT_NUMBER)
                                     .to("30459873")
-                                    .changedOn(LocalDateTime.parse("2024-05-22T17:19:52.587"))
+                                    .changedOn(LocalDateTime.parse("2024-05-22T16:19:52.587"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -162,7 +162,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.FIRST_NAME)
                                     .from("Norma")
                                     .to("Norma3")
-                                    .changedOn(LocalDateTime.parse("2024-05-22T17:19:52.587"))
+                                    .changedOn(LocalDateTime.parse("2024-05-22T16:19:52.587"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -170,7 +170,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.POSTCODE)
                                     .from("BD2 9BN")
                                     .to("BD2 7BN")
-                                    .changedOn(LocalDateTime.parse("2024-05-22T17:19:52.587"))
+                                    .changedOn(LocalDateTime.parse("2024-05-22T16:19:52.587"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -178,7 +178,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.DATE_OF_BIRTH)
                                     .from("1997-08-26")
                                     .to("1997-08-17")
-                                    .changedOn(LocalDateTime.parse("2024-05-21T13:56:53.630"))
+                                    .changedOn(LocalDateTime.parse("2024-05-21T12:56:53.630"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -186,7 +186,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.FIRST_NAME)
                                     .from("Norma2")
                                     .to("Norma")
-                                    .changedOn(LocalDateTime.parse("2024-05-21T13:56:53.630"))
+                                    .changedOn(LocalDateTime.parse("2024-05-21T12:56:53.630"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -194,7 +194,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.FIRST_NAME)
                                     .from("Norma")
                                     .to("Norma2")
-                                    .changedOn(LocalDateTime.parse("2024-05-20T14:09:16.638"))
+                                    .changedOn(LocalDateTime.parse("2024-05-20T13:09:16.638"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -202,7 +202,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.ADDRESS)
                                     .from(" AIRLL Nook 3,Box Number 74,Swansea,Special post town 2,")
                                     .to(" AIRLL Nook,Box Number 74,Swansea,Special post town,")
-                                    .changedOn(LocalDateTime.parse("2024-05-20T14:07:38.620"))
+                                    .changedOn(LocalDateTime.parse("2024-05-20T13:07:38.620"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -210,7 +210,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.FIRST_NAME)
                                     .from("Norma2")
                                     .to("Norma")
-                                    .changedOn(LocalDateTime.parse("2024-05-20T14:07:38.620"))
+                                    .changedOn(LocalDateTime.parse("2024-05-20T13:07:38.620"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -218,7 +218,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.POSTCODE)
                                     .from("BD2 7BN")
                                     .to("BD2 9BN")
-                                    .changedOn(LocalDateTime.parse("2024-05-20T14:07:38.620"))
+                                    .changedOn(LocalDateTime.parse("2024-05-20T13:07:38.620"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -226,7 +226,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.DATE_OF_BIRTH)
                                     .from("1954-03-10")
                                     .to("1955-03-10")
-                                    .changedOn(LocalDateTime.parse("2024-05-19T18:11:12.886"))
+                                    .changedOn(LocalDateTime.parse("2024-05-19T17:11:12.886"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -234,7 +234,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.ADDRESS)
                                     .from("75 HSDC Gardens,Room Number 15,Portsmouth 123,Redcar and Cleveland1,")
                                     .to("75 HSDC Gardens,Room Number 15,Portsmouth 123 3,Redcar and Cleveland1,")
-                                    .changedOn(LocalDateTime.parse("2024-05-19T18:11:12.886"))
+                                    .changedOn(LocalDateTime.parse("2024-05-19T17:11:12.886"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -242,7 +242,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.POSTCODE)
                                     .from("BD3 9BU")
                                     .to("BD4 9BU")
-                                    .changedOn(LocalDateTime.parse("2024-05-19T18:11:12.886"))
+                                    .changedOn(LocalDateTime.parse("2024-05-19T17:11:12.886"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -250,7 +250,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.ADDRESS)
                                     .from("75 HSDC Gardens,Room Number 15,Portsmouth 123,Redcar and Cleveland,")
                                     .to("75 HSDC Gardens,Room Number 15,Portsmouth 123,Redcar and Cleveland1,")
-                                    .changedOn(LocalDateTime.parse("2024-05-19T18:01:52.114"))
+                                    .changedOn(LocalDateTime.parse("2024-05-19T17:01:52.114"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -258,7 +258,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.ADDRESS)
                                     .from(" AIRLL Nook,Box Number 74,Swansea,Special post town 2,")
                                     .to(" AIRLL Nook 3,Box Number 74,Swansea,Special post town 2,")
-                                    .changedOn(LocalDateTime.parse("2024-05-19T14:09:31.692"))
+                                    .changedOn(LocalDateTime.parse("2024-05-19T13:09:31.692"))
                                     .changedBy("COURT 469")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -266,7 +266,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.DATE_OF_BIRTH)
                                     .from("1996-08-26")
                                     .to("1997-08-26")
-                                    .changedOn(LocalDateTime.parse("2024-05-19T14:09:16.695"))
+                                    .changedOn(LocalDateTime.parse("2024-05-19T13:09:16.695"))
                                     .changedBy("COURT 469 2")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -274,7 +274,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.ADDRESS)
                                     .from(" AIRLL Nook 3,Box Number 74,Swansea,Special post town 2,")
                                     .to(" AIRLL Nook,Box Number 74,Swansea,Special post town 2,")
-                                    .changedOn(LocalDateTime.parse("2024-05-19T14:09:16.695"))
+                                    .changedOn(LocalDateTime.parse("2024-05-19T13:09:16.695"))
                                     .changedBy("COURT 469 2")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -282,7 +282,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.FIRST_NAME)
                                     .from("Norma3")
                                     .to("Norma2")
-                                    .changedOn(LocalDateTime.parse("2024-05-19T14:09:16.695"))
+                                    .changedOn(LocalDateTime.parse("2024-05-19T13:09:16.695"))
                                     .changedBy("COURT 469 2")
                                     .build(),
                                 AbstractJurorAmendmentReport.JurorAmendmentReportRow.builder()
@@ -290,7 +290,7 @@ class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest 
                                     .changed(AbstractJurorAmendmentReport.Changed.DATE_OF_BIRTH)
                                     .from("1997-08-26")
                                     .to("1996-08-26")
-                                    .changedOn(LocalDateTime.parse("2024-05-18T14:09:45.443"))
+                                    .changedOn(LocalDateTime.parse("2024-05-18T13:09:45.443"))
                                     .changedBy("COURT 469")
                                     .build()))
                             .build())

@@ -16,11 +16,10 @@ import org.hibernate.envers.RevisionEntity;
 import org.hibernate.envers.RevisionNumber;
 import org.hibernate.envers.RevisionTimestamp;
 import uk.gov.hmcts.juror.api.moj.audit.AuditorRevisionListener;
+import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 
 import java.io.Serializable;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 @Entity
 @Table(name = "rev_info", schema = "juror_mod")
@@ -51,7 +50,7 @@ public class RevisionInfo implements Serializable {
 
     @Transient
     public LocalDateTime getRevisionDate() {
-        return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault());
+        return DateUtils.fromEpochMilli(timestamp);
     }
 
 }

@@ -86,4 +86,7 @@ public class DateUtils {
     public static long toEpochMilli(LocalDateTime localDateTime) {
         return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
+    public static LocalDateTime fromEpochMilli(long timestamp) {
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault());
+    }
 }
