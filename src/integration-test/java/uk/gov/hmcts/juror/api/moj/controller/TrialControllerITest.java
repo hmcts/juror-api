@@ -680,6 +680,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnJuryPanel.sql"})
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     void testReturnJuryConfirmAttendance() {
         final String url = "/api/v1/moj/trial/return-jury?"
             + "trial_number=T10000001&"
@@ -734,6 +735,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnJuryPanel.sql"})
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     void testReturnJuryNoConfirmAttendance() {
         final String url = "/api/v1/moj/trial/return-jury?"
             + "trial_number=T10000001&"
@@ -781,6 +783,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnJuryPanel.sql"})
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     void testReturnJuryConfirmAttendanceAndCompleteService() {
         final String url = "/api/v1/moj/trial/return-jury?"
             + "trial_number=T10000001&"
@@ -974,7 +977,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
     private void initialiseHeader(List<String> courts, String owner, String loginUserType) {
         BureauJwtPayload.Staff staff = createStaff(courts, "MsCourt");
         httpHeaders = initialiseHeaders(loginUserType,
-            (owner.equals("400") ? UserType.BUREAU : UserType.COURT), null, owner, staff);
+            "400".equals(owner) ? UserType.BUREAU : UserType.COURT, null, owner, staff);
     }
 
     private BureauJwtPayload.Staff createStaff(List<String> courts, String staffName) {

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.domain;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@Sql({"/db/mod/truncate.sql","/db/PoolRequest_initPoolTypes.sql"})
 public class PoolRequestITest extends ContainerTest {
 
     @Autowired
@@ -32,10 +32,6 @@ public class PoolRequestITest extends ContainerTest {
     @Autowired
     PoolTypeRepository poolTypeRepository;
 
-    @BeforeClass
-    @Sql({"/db/mod/truncate.sql","/db/PoolRequest_initPoolTypes.sql"})
-    public static void setUp() {
-    }
 
     @Test
     @Sql(statements = "DELETE FROM JUROR_MOD.POOL_HISTORY")

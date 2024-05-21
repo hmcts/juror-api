@@ -43,6 +43,7 @@ import static org.springframework.http.HttpMethod.POST;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AdministrationHolidaysControllerITest.BASE_URL)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings("PMD.ExcessiveImports")
 public class AdministrationHolidaysControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/moj/administration";
 
@@ -116,21 +117,6 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
                 assertValid(UserType.ADMINISTRATOR, Set.of());
             }
 
-        }
-
-        @Nested
-        @DisplayName("Negative")
-        class Negative {
-
-
-            private ResponseEntity<String> triggerInvalid(String owner, UserType userType, Set<Role> roles) {
-                final String jwt = createJwt(COURT_USER, owner, userType, roles, owner);
-                httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
-                return template.exchange(
-                    new RequestEntity<>(httpHeaders, GET,
-                        URI.create(URL)),
-                    String.class);
-            }
         }
     }
 

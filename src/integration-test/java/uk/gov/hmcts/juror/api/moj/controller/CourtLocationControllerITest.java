@@ -148,6 +148,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//Assertion done in nested method
     void testGetAllCourtLocationsByPostcodeBadRequestException() {
         //Invoke service.
         templateExchangeAllCourtLocationsByPostcode("SE1236LA", BUREAU_USER, "400", HttpStatus.BAD_REQUEST);

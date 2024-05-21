@@ -23,7 +23,6 @@ import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -58,7 +57,7 @@ public class BureauTeamControllerTest extends AbstractIntegrationTest {
     @Test
     @Sql("/db/truncate.sql")
     @Sql("/db/BureauTeamServicesTest_findAllTeams.sql")
-    public void getAllTeams_happyPath() throws Exception {
+    public void testGAllTeams_happyPath() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
             .roles(Set.of(Role.MANAGER))
@@ -78,7 +77,7 @@ public class BureauTeamControllerTest extends AbstractIntegrationTest {
         ResponseEntity<List<TeamDto>> response = template.exchange(requestEntity, typeRef);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        assertThat(response.getBody()).isInstanceOf(ArrayList.class);
+        assertThat(response.getBody()).isInstanceOf(List.class);
         assertThat(response.getBody().get(0).getId()).isEqualTo(1);
         assertThat(response.getBody().get(0).getName()).isEqualTo("LONDON & WALES");
         assertThat(response.getBody().get(1).getId()).isEqualTo(2);
