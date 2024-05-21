@@ -1170,7 +1170,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
         }
 
 
-        @Nested
         class Positive {
 
             private final boolean isSimple;
