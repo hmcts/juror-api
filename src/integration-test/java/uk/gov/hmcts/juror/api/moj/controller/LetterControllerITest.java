@@ -7128,7 +7128,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(JUROR_NUMBER + jurorPostfix);
             assertThat(response.getAttendanceDataList()).isNotNull().hasSize(4);
             assertThat(response.getAttendanceDataList().get(0).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(0).getChildCare()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(0).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(0).getLossOfEarnings()).isEqualTo(new BigDecimal("40.00"));
@@ -7137,7 +7137,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
 
             assertThat(response.getAttendanceDataList().get(1).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(1).getChildCare()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(1).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(1).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
@@ -7146,7 +7146,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
 
             assertThat(response.getAttendanceDataList().get(2).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(2).getChildCare()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(2).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(2).getLossOfEarnings()).isEqualTo(new BigDecimal("45.00"));
@@ -7155,7 +7155,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
 
             assertThat(response.getAttendanceDataList().get(3).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(3).getChildCare()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(3).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(3).getLossOfEarnings()).isEqualTo(new BigDecimal("38.00"));
@@ -7213,7 +7213,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertThat(response.getAttendanceDataList()).isNotNull().hasSize(4);
             assertThat(response.getAttendanceDataList().get(0).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(0).getChildCare()).isEqualTo(new BigDecimal("30.00"));
             assertThat(response.getAttendanceDataList().get(0).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(0).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
@@ -7221,7 +7221,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 LocalDate.now().plusDays(10));
 
             assertThat(response.getAttendanceDataList().get(1).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(1).getChildCare()).isEqualTo(new BigDecimal("30.00"));
             assertThat(response.getAttendanceDataList().get(1).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(1).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
@@ -7229,7 +7229,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 LocalDate.now().plusDays(11));
 
             assertThat(response.getAttendanceDataList().get(2).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(2).getChildCare()).isEqualTo(new BigDecimal("30.00"));
             assertThat(response.getAttendanceDataList().get(2).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(2).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
@@ -7237,7 +7237,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 LocalDate.now().plusDays(12));
 
             assertThat(response.getAttendanceDataList().get(3).getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isEqualTo("false");
+                + "false").isFalse();
             assertThat(response.getAttendanceDataList().get(3).getChildCare()).isEqualTo(new BigDecimal("30.00"));
             assertThat(response.getAttendanceDataList().get(3).getMisc()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().get(3).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
