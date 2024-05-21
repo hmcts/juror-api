@@ -169,7 +169,7 @@ public enum DataType implements IDataType {
             .when(QPanel.panel.result.eq(PanelResult.JUROR)).then("Juror")
             .when(QPanel.panel.result.eq(PanelResult.RETURNED)).then("Returned")
             .otherwise(""),
-    QPanel.panel),
+        QPanel.panel),
 
     COURT_LOCATION_NAME_AND_CODE("Court Location Name And Code", String.class,
                                  QCourtLocation.courtLocation.name.concat(" (")

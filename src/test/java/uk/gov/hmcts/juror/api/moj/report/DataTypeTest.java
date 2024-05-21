@@ -11,7 +11,9 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -270,6 +272,17 @@ class DataTypeTest {
             QAppearance.appearance.attendanceDate.stringValue()
                 .concat(",").concat(QPoolRequest.poolRequest.poolType.description),
             QAppearance.appearance, QPoolRequest.poolRequest);
+    }
+
+    void panelStatus() {
+        assertMatchesStandard(DataType.PANEL_STATUS, "panel_status", "Panel Status", String.class,
+            new CaseBuilder()
+                .when(QPanel.panel.result.eq(PanelResult.NOT_USED)).then("Not Used")
+                .when(QPanel.panel.result.eq(PanelResult.CHALLENGED)).then("Challenged")
+                .when(QPanel.panel.result.eq(PanelResult.JUROR)).then("Juror")
+                .when(QPanel.panel.result.eq(PanelResult.RETURNED)).then("Returned")
+                .otherwise(""),
+            QPanel.panel);
     }
 
     void assertMatchesStandard(DataType dataType,
