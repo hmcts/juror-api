@@ -25,7 +25,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class JurorExpenditureReportHighLevelReportTest
+class JurorExpenditureReportHighLevelReportTest
     extends AbstractJurorExpenditureReportTestSupport<JurorExpenditureReportHighLevelReport> {
 
     public JurorExpenditureReportHighLevelReportTest() {

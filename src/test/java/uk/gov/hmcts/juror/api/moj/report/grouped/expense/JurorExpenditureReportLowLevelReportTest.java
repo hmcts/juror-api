@@ -31,7 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIncludingApprovedAmounts.lowLevelFinancialAuditDetailsIncludingApprovedAmounts;
 
-public class JurorExpenditureReportLowLevelReportTest
+class JurorExpenditureReportLowLevelReportTest
     extends AbstractJurorExpenditureReportTestSupport<JurorExpenditureReportLowLevelReport> {
 
     public JurorExpenditureReportLowLevelReportTest() {

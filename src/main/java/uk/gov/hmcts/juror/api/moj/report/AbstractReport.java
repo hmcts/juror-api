@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
+import uk.gov.hmcts.juror.api.moj.service.report.IReport;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -54,7 +55,7 @@ import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIn
     "PMD.TooManyMethods",
     "PMD.ExcessiveImports"
 })
-public abstract class AbstractReport<T> {
+public abstract class AbstractReport<T> implements IReport {
     static final Map<EntityPath<?>, Map<EntityPath<?>, Predicate[]>> CLASS_TO_JOIN;
 
 
@@ -170,9 +171,6 @@ public abstract class AbstractReport<T> {
 
     public abstract Class<? extends Validators.AbstractRequestValidator> getRequestValidatorClass();
 
-    public final String getName() {
-        return getClass().getSimpleName();
-    }
 
     public AbstractReportResponse<T> getStandardReportResponse(StandardReportRequest request) {
         authenticationConsumers.forEach(consumer -> consumer.accept(request));
@@ -374,8 +372,7 @@ public abstract class AbstractReport<T> {
         return new AbstractMap.SimpleEntry<>("court_name", AbstractReportResponse.DataTypeValue.builder()
             .displayName("Court Name")
             .dataType(String.class.getSimpleName())
-            .value(
-                courtLocation.getName() + " (" + courtLocation.getLocCode() + ")")
+            .value(courtLocation.getNameWithLocCode())
             .build());
     }
 
@@ -536,5 +533,7 @@ public abstract class AbstractReport<T> {
         public interface RequireIncludeSummoned {
         }
 
+        public interface RequiredJurorNumber {
+        }
     }
 }

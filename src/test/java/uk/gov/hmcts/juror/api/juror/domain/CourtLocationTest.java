@@ -26,4 +26,13 @@ public class CourtLocationTest {
             .build();
         assertThat(courtLocation.getType()).isEqualTo(CourtType.SATELLITE);
     }
+
+    @Test
+    void positiveGetNameWithLocCode() {
+        CourtLocation courtLocation = CourtLocation.builder()
+            .name("Some name")
+            .locCode("416")
+            .build();
+        assertThat(courtLocation.getNameWithLocCode()).isEqualTo("Some name (416)");
+    }
 }
