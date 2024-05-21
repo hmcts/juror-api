@@ -32,7 +32,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class PanelMembersStatusReportTest extends AbstractStandardReportTestSupport<PanelMembersStatusReport> {
+class PanelMembersStatusReportTest extends AbstractStandardReportTestSupport<PanelMembersStatusReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private TrialRepository trialRepository;
@@ -75,11 +75,11 @@ public class PanelMembersStatusReportTest extends AbstractStandardReportTestSupp
     public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         request.setTrialNumber("111111");
 
-        securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
+        securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);
         report.preProcessQuery(query, request);
 
         verify(query).where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
-        verify(query).where(QPanel.panel.trial.courtLocation.owner.eq(SecurityUtil.getActiveOwner()));
+        verify(query).where(QPanel.panel.trial.courtLocation.owner.eq(SecurityUtil.getLocCode()));
         verify(query).orderBy(QPanel.panel.juror.jurorNumber.asc());
     }
 
