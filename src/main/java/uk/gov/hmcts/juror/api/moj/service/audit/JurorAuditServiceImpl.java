@@ -8,8 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.moj.audit.dto.JurorAudit;
 import uk.gov.hmcts.juror.api.moj.audit.dto.QJurorAudit;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
+import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -41,25 +44,16 @@ public class JurorAuditServiceImpl implements JurorAuditService {
     @Override
     public List<JurorAudit> getAllAuditsChangedBetweenAndHasCourt(LocalDate fromDate, LocalDate toDate,
                                                                   List<String> locCodes) {
-        List<JurorAudit> data = getQueryFactory()
+        return getQueryFactory()
             .selectFrom(QJurorAudit.jurorAudit)
             .where(QJurorAudit.jurorAudit.revisionInfo.timestamp.between(
                 DateUtils.toEpochMilli(fromDate.atTime(LocalTime.MIN)),
                 DateUtils.toEpochMilli(toDate.atTime(LocalTime.MAX))))
+            .join(QJurorPool.jurorPool)
+            .on(QJurorPool.jurorPool.juror.jurorNumber.eq(QJurorAudit.jurorAudit.jurorNumber))
+            .where(QJurorPool.jurorPool.pool.courtLocation.owner.eq(SecurityUtil.getActiveOwner()))
             .orderBy(QJurorAudit.jurorAudit.revisionInfo.timestamp.asc())
             .fetch();
-
-        List<String> allowedJurorNumbers = data
-            .stream()
-            .map(JurorAudit::getJurorNumber)
-            .distinct()
-            .filter(juror -> jurorPoolService.hasPoolWithLocCode(juror, locCodes))
-            .toList();
-
-        return data
-            .stream()
-            .filter(juror -> allowedJurorNumbers.contains(juror.getJurorNumber()))
-            .toList();
     }
 
 

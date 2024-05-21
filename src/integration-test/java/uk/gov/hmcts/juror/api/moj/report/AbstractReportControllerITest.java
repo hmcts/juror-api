@@ -28,8 +28,8 @@ public abstract class AbstractReportControllerITest<R extends AbstractReportResp
     private final String reportType;
 
     public AbstractReportControllerITest(TestRestTemplate template, Class<? extends IReport> reportClass,
-                                         Class<R> resposneClass) {
-        super(HttpMethod.POST, template, HttpStatus.OK, resposneClass);
+                                         Class<R> responseClass) {
+        super(HttpMethod.POST, template, HttpStatus.OK, responseClass);
         this.reportType = reportClass.getSimpleName();
     }
 
