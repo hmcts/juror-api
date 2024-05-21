@@ -21,7 +21,6 @@ import java.util.Optional;
 @ToString
 @EqualsAndHashCode
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-@SuppressWarnings("PMD.LawOfDemeter")
 public class ExpenseValuesDto {
 
     protected BigDecimal lossOfEarnings;

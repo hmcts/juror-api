@@ -9,7 +9,6 @@ import uk.gov.hmcts.juror.api.moj.domain.UserType;
 /**
  * QueryDSL queries for {@link uk.gov.hmcts.juror.api.moj.domain.User}.
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 public class UserQueries {
 
     private static final QUser USER = QUser.user;

@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SuppressWarnings("PMD.TooManyMethods")
 public class BureauServiceImplTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -47,7 +48,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauRepository_findByJurorNumber.sql")
-    public void getDetailsByJurorNumber_WithValidJurorNumber_ReturnsJustJurorDetailsNotEnriched() {
+    public void testGDetailsByJurorNumber_WithValidJurorNumber_ReturnsJustJurorDetailsNotEnriched() {
         BureauJurorDetailDto actualDetails = bureauService.getDetailsByJurorNumber(bureauJurorDetail.getJurorNumber());
         assertThat(actualDetails).extracting("jurorNumber", "title", "firstName", "lastName", "processingStatus",
                 "courtName")
@@ -64,7 +65,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
     @Sql("/db/BureauLogRepository_findByLogKey.sql")
     @Sql("/db/BureauJurorSpecialNeedsRepository_findByJurorNumber.sql")
     @Sql("/db/BureauJurorCJSRepository_findByCjsKey.sql")
-    public void getDetailsByJurorNumber_WithValidJurorNumber_ReturnsEnrichedDetails() {
+    public void testGDetailsByJurorNumber_WithValidJurorNumber_ReturnsEnrichedDetails() {
         BureauJurorDetailDto actualDetails = bureauService.getDetailsByJurorNumber(bureauJurorDetail.getJurorNumber());
         assertThat(actualDetails.getPhoneLogs()).hasSize(2);
         assertThat(actualDetails.getPhoneLogs().get(0)).extracting("jurorNumber")
@@ -82,7 +83,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauRepository_findByJurorNumber.sql")
-    public void getDetailsByProcessingStatus_WithValidCategory_ReturnsDetailsWithStatusPlusCount() {
+    public void testGDetailsByProcessingStatus_WithValidCategory_ReturnsDetailsWithStatusPlusCount() {
 
         BureauResponseSummaryWrapper wrapper = bureauService.getDetailsByProcessingStatus("todo");
         assertThat(wrapper.getResponses()).hasSize(3);
@@ -97,7 +98,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauRepository_findByJurorNumber.sql")
-    public void getDetailsByProcessingStatus_WithInValidCategory_ReturnsAllResults() {
+    public void testGDetailsByProcessingStatus_WithInValidCategory_ReturnsAllResults() {
 
         BureauResponseSummaryWrapper wrapper = bureauService.getDetailsByProcessingStatus("bogus");
         assertThat(wrapper.getResponses()).hasSize(8);
@@ -114,7 +115,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
-    public void getTodo_returnsCorrectResults() {
+    public void testGTodo_returnsCorrectResults() {
         BureauResponseSummaryWrapper wrapper = bureauService.getTodo("ncrawford");
         assertThat(wrapper.getResponses()).isNotNull().hasSize(3);
         assertThat(wrapper.getTodoCount()).isEqualTo(3);
@@ -134,7 +135,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
-    public void getTodo_returnsEmptyListWhenNoResults() {
+    public void testGTodo_returnsEmptyListWhenNoResults() {
         final BureauResponseSummaryWrapper wrapper = bureauService.getTodo("kfry");
         assertThat(wrapper).isNotNull();
         assertThat(wrapper.getResponses()).isNotNull().isEmpty();
@@ -147,7 +148,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
-    public void getRepliesPending_returnsCorrectResults() {
+    public void testGRepliesPending_returnsCorrectResults() {
         BureauResponseSummaryWrapper wrapper = bureauService.getPending("ncrawford");
         assertThat(wrapper.getResponses()).isNotNull().hasSize(4);
         assertThat(wrapper.getTodoCount()).isEqualTo(3);
@@ -169,7 +170,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/BureauServiceImpl_getByProcessingStatus.sql"
     })
-    public void getRepliesPending_returnsEmptyListWhenNoResults() {
+    public void testGRepliesPending_returnsEmptyListWhenNoResults() {
         final BureauResponseSummaryWrapper wrapper = bureauService.getPending("kfry");
         assertThat(wrapper).isNotNull();
         assertThat(wrapper.getResponses()).isNotNull().isEmpty();
@@ -180,7 +181,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauServiceImplTest_completedToday.sql")
-    public void getCompletedToday_returnsCorrectResults() {
+    public void testGCompletedToday_returnsCorrectResults() {
         BureauResponseSummaryWrapper wrapper = bureauService.getCompletedToday("ncrawford");
         assertThat(wrapper.getResponses()).isNotNull().hasSize(1);
         assertThat(wrapper.getTodoCount()).isEqualTo(3);
@@ -198,7 +199,7 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/BureauServiceImplTest_completedToday.sql")
-    public void getCompletedToday_returnsEmptyListWhenNoResults() {
+    public void testGCompletedToday_returnsEmptyListWhenNoResults() {
         final BureauResponseSummaryWrapper wrapper = bureauService.getCompletedToday("kfry");
         assertThat(wrapper).isNotNull();
         assertThat(wrapper.getResponses()).isNotNull().isEmpty();

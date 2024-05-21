@@ -50,8 +50,7 @@ public class StaffServiceImpl implements StaffService {
     @Transactional
     @SuppressWarnings({"PMD.NcssCount",
         "PMD.CognitiveComplexity",
-        "PMD.NPathComplexity",
-        "PMD.LawOfDemeter"})
+        "PMD.NPathComplexity"})
     public StaffAssignmentResponseDto changeAssignment(final StaffAssignmentRequestDto staffAssignmentRequestDto,
                                                        final String currentUser) {
         log.trace("enter changeAssignment");

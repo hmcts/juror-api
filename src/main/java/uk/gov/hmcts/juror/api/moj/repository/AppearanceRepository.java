@@ -57,12 +57,9 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
         AppearanceStage appearanceStage,
         boolean payCash);
 
-    List<Appearance> findAllByJurorNumberAndPoolNumberAndAttendanceDateIn(String jurorNumber, String poolNumber,
-                                                                          List<LocalDate> dates);
-
-    List<Appearance> findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(String locCode,
-                                                                                    String jurorNumber,
-                                                                                    List<LocalDate> dates);
+    List<Appearance> findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(String locCode,
+                                                                                                         String jurorNumber,
+                                                                                                         List<LocalDate> dates);
 
 
     @Query(value = "select nextval('juror_mod.attendance_audit_seq')", nativeQuery = true)

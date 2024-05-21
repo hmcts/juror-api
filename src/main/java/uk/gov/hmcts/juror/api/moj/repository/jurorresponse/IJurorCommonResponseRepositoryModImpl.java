@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonResponseRepositoryMod {
     @PersistenceContext
     EntityManager entityManager;
@@ -39,8 +38,7 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
 
             .join(QJurorPool.jurorPool).on(QJurorPool.jurorPool.juror.eq(QJuror.juror))
             .join(QPoolRequest.poolRequest).on(QPoolRequest.poolRequest.eq(QJurorPool.jurorPool.pool))
-
-            .where(QCombinedJurorResponse.combinedJurorResponse.staff.username.equalsIgnoreCase(staffLogin))
+            .where(QCombinedJurorResponse.combinedJurorResponse.staff.username.eq(staffLogin))
             .where(QCombinedJurorResponse.combinedJurorResponse.processingStatus.in(processingStatus))
             .where(QJurorPool.jurorPool.isActive.isTrue())
             .where(QJurorPool.jurorPool.owner.eq(SecurityUtil.BUREAU_OWNER));

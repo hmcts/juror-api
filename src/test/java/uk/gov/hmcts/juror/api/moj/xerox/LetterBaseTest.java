@@ -22,7 +22,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mockStatic;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings("PMD.LawOfDemeter")
 class LetterBaseTest {
     private MockedStatic<Calendar> mockStaticCalendar;
     @Mock

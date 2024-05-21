@@ -31,13 +31,19 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCommon;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QDigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.UserJurorResponseAudit;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseCommonRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.staff.UserJurorResponseAuditRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -67,12 +73,14 @@ import static uk.gov.hmcts.juror.api.bureau.domain.UserQueries.sortNameAsc;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
+
     private final UserJurorResponseAuditRepository userJurorResponseAuditRepository;
     private final JurorPoolRepository poolRepository;
     private final EntityManager entityManager;
     private final BureauTransformsService bureauTransformsService;
-
+    private final JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
+    private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
+    private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
 
     @Transactional
     @Override
@@ -86,8 +94,9 @@ public class UserServiceImpl implements UserService {
             log.warn("Assigning user '{}' Staff record does not exist!", currentUser);
             throw new StaffAssignmentException("Assigning staff record does not exist!");
         }
-        final DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(
+        AbstractJurorResponse jurorResponse = jurorResponseCommonRepositoryMod.findByJurorNumber(
             staffAssignmentRequestDto.getResponseJurorNumber());
+
         if (ObjectUtils.isEmpty(jurorResponse)) {
             log.warn("Response '{}' record does not exist!", staffAssignmentRequestDto.getResponseJurorNumber());
             throw new StaffAssignmentException("Juror response record does not exist!");
@@ -206,7 +215,7 @@ public class UserServiceImpl implements UserService {
 
         // 4. persist
         log.trace("Updating assignment on {}", jurorResponse);
-        jurorResponseRepository.save(jurorResponse);
+        saveResponse(jurorResponse);
 
         log.trace("Auditing assignment {}", userJurorResponseAudit);
         userJurorResponseAuditRepository.save(userJurorResponseAudit);
@@ -230,6 +239,14 @@ public class UserServiceImpl implements UserService {
             .jurorResponse(jurorResponse.getJurorNumber())
             .assignmentDate(jurorResponse.getStaffAssignmentDate())
             .build();
+    }
+
+    private void saveResponse(AbstractJurorResponse jurorResponse) {
+        if (jurorResponse.getReplyType().getType().equals(ReplyMethod.DIGITAL.getDescription())) {
+            jurorResponseRepository.save((DigitalResponse) jurorResponse);
+        } else {
+            jurorPaperResponseRepository.save((PaperResponse) jurorResponse);
+        }
     }
 
     @Override
@@ -296,8 +313,8 @@ public class UserServiceImpl implements UserService {
         }
 
         // get an attached version of the response from the DB
-        final DigitalResponse updateResponse =
-            jurorResponseRepository.findByJurorNumber(urgentJurorResponse.getJurorNumber());
+        AbstractJurorResponse updateResponse = jurorResponseCommonRepositoryMod.findByJurorNumber(
+            urgentJurorResponse.getJurorNumber());
 
         //for want of a unified DTO for JUROR.POOL
 
@@ -317,7 +334,7 @@ public class UserServiceImpl implements UserService {
             updateResponse.setStaffAssignmentDate(now.toLocalDate());
 
             log.trace("Assigning juror response {}", urgentJurorResponse);
-            jurorResponseRepository.save(updateResponse);
+            saveResponse(updateResponse);
 
             final User assignedBy = userRepository.findByUsername(AUTO_USER);
             if (ObjectUtils.isEmpty(userRepository)) {
@@ -368,8 +385,8 @@ public class UserServiceImpl implements UserService {
         List<AssignmentListDataDto> assignmentListDataDtos = new ArrayList<>();
 
         final QDigitalResponse query = QDigitalResponse.digitalResponse;
-        Iterable<DigitalResponse> jurorResponses =
-            jurorResponseRepository.findAll(query.jurorNumber.in(responseListDto.getJurorNumbers()));
+        List<JurorResponseCommon> jurorResponses =
+            jurorResponseCommonRepositoryMod.findByJurorNumberIn(responseListDto.getJurorNumbers());
 
         Set<String> jurorResponseSet = new HashSet<>();
         jurorResponses.forEach(jurorResponse -> jurorResponseSet.add(jurorResponse.getJurorNumber()));
@@ -388,7 +405,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // process list of responses
-        for (DigitalResponse jurorResponse : jurorResponses) {
+        for (JurorResponseCommon jurorResponse : jurorResponses) {
 
             String assignedTo = null;
             if (null != jurorResponse.getStaff()) {
@@ -400,21 +417,9 @@ public class UserServiceImpl implements UserService {
             String jurorFirstName = jurorResponse.getFirstName();
             String jurorLastName = jurorResponse.getLastName();
 
-            jurorDisplayName.append((jurorTitle != null)
-                ?
-                jurorTitle
-                :
-                    "");
-            jurorDisplayName.append((jurorFirstName != null)
-                ?
-                " " + jurorFirstName
-                :
-                    "");
-            jurorDisplayName.append((jurorLastName != null)
-                ?
-                " " + jurorLastName
-                :
-                    "");
+            jurorDisplayName.append(jurorTitle != null ? jurorTitle : "");
+            jurorDisplayName.append(jurorFirstName != null ? " " + jurorFirstName : "");
+            jurorDisplayName.append(jurorLastName != null ? " " + jurorLastName : "");
 
             AssignmentListDataDto assignmentListDataDto = new AssignmentListDataDto(
                 jurorResponse.getJurorNumber(),
@@ -461,7 +466,6 @@ public class UserServiceImpl implements UserService {
                 }
             } catch (StaffAssignmentException.StatusUrgent | StaffAssignmentException.StatusSuperUrgent
                      | StaffAssignmentException.StatusClosed e) {
-                e.printStackTrace();
                 log.debug("StaffAssignment Status-related exception caught during multiple assignment", e);
                 OperationFailureDto failureReason = new OperationFailureDto(
                     responseMetadata.getResponseJurorNumber(),
@@ -469,7 +473,6 @@ public class UserServiceImpl implements UserService {
                 );
                 failuresList.add(failureReason);
             } catch (StaffAssignmentException e) {
-                e.printStackTrace();
                 log.debug("StaffAssignment exception caught during multiple assignment", e);
                 OperationFailureDto failureReason = new OperationFailureDto(
                     responseMetadata.getResponseJurorNumber(),

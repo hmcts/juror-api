@@ -43,7 +43,6 @@ public class JwtAuthenticationInterceptor implements ClientHttpRequestIntercepto
             this.config.getClaims());
     }
 
-    @SuppressWarnings("PMD.LawOfDemeter")
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(this.config.getSecret()));
     }

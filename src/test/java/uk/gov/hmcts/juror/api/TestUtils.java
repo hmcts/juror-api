@@ -78,7 +78,6 @@ public final class TestUtils {
             .build();
     }
 
-    @SuppressWarnings("PMD.LawOfDemeter")
     public static BureauJwtPayload.Staff staffBuilder(String staffName, Integer rank, List<String> courts) {
         return BureauJwtPayload.Staff.builder()
             .name(staffName)

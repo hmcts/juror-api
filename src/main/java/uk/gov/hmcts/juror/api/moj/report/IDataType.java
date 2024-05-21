@@ -8,6 +8,8 @@ import java.util.List;
 public interface IDataType {
     String getId();
 
+    String name();
+
     List<EntityPath<?>> getRequiredTables();
 
     String getDisplayName();

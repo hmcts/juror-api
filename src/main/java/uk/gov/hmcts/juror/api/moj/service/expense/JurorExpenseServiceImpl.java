@@ -106,7 +106,6 @@ import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
     "PMD.ExcessiveImports",
     "PMD.GodClass",
     "PMD.TooManyMethods",
-    "PMD.LawOfDemeter",
     "PMD.CyclomaticComplexity"
 })
 public class JurorExpenseServiceImpl implements JurorExpenseService {
@@ -699,10 +698,11 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     @Override
     @Transactional(readOnly = true)
+    @SuppressWarnings("LineLength")
     public CombinedExpenseDetailsDto<ExpenseDetailsDto> getExpenses(String locCode, String jurorNumber,
                                                                     List<LocalDate> dates) {
         CombinedExpenseDetailsDto<ExpenseDetailsDto> result = getExpenses(appearanceRepository
-            .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(locCode, jurorNumber, dates));
+            .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(locCode, jurorNumber, dates));
 
         if (result.getExpenseDetails().size() != dates.size()) {
             throw new MojException.NotFound("Not all dates found", null);
@@ -905,9 +905,10 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     SimplifiedExpenseDetailDto mapCombinedSimplifiedExpenseDetailDto(Appearance appearance) {
+        FinancialAuditDetails financialAuditDetails = financialAuditService.findFromAppearance(appearance);
         return SimplifiedExpenseDetailDto.builder()
             .attendanceDate(appearance.getAttendanceDate())
-            .financialAuditNumber(appearance.getFinancialAuditDetails().getFinancialAuditNumber())
+            .financialAuditNumber(financialAuditDetails.getFinancialAuditNumber())
             .attendanceType(appearance.getAttendanceType())
             .financialLoss(appearance.getTotalFinancialLossDue())
             .travel(appearance.getTotalTravelDue())
@@ -916,14 +917,14 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             .totalDue(appearance.getTotalDue())
             .totalPaid(appearance.getTotalPaid())
             .balanceToPay(appearance.getBalanceToPay())
-            .auditCreatedOn(appearance.getFinancialAuditDetails().getCreatedOn())
+            .auditCreatedOn(financialAuditDetails.getCreatedOn())
             .build();
     }
 
 
     List<Appearance> getAppearances(String locCode, String jurorNumber, List<LocalDate> dates) {
         List<Appearance> appearances =
-            appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateIn(
+            appearanceRepository.findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                 locCode, jurorNumber, dates);
         if (appearances.isEmpty() || appearances.size() != dates.size()) {
             throw new MojException.NotFound(
@@ -1252,8 +1253,11 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             return false;
         }
         Map<LocalDate, Long> dateToRevisionMap =
-            dateToRevision.stream().collect(Collectors.toMap(ApproveExpenseDto.DateToRevision::getAttendanceDate,
-                ApproveExpenseDto.DateToRevision::getVersion));
+            dateToRevision.stream()
+                .collect(Collectors.toMap(
+                    ApproveExpenseDto.DateToRevision::getAttendanceDate,
+                    ApproveExpenseDto.DateToRevision::getVersion
+                ));
 
         return appearances.stream().noneMatch(appearance -> {
             Long revisionNumber = dateToRevisionMap.get(appearance.getAttendanceDate());

@@ -31,7 +31,6 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 @NoArgsConstructor
 public class MessageTemplateRepositoryImpl implements IMessageTemplateRepository {
 

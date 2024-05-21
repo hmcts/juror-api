@@ -49,7 +49,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.ExcessiveImports",
     "unchecked"
 })

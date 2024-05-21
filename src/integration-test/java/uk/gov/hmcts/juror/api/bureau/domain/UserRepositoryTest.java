@@ -49,6 +49,7 @@ public class UserRepositoryTest extends AbstractIntegrationTest {
     @Sql("/db/UserRepositoryTest.userRepository_happy_findStaffMember.sql")
     @Test
     @Transactional
+    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
     public void userRepository_happy_findStaffMember() {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.users", Integer.class)).isEqualTo(4);
 

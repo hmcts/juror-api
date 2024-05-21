@@ -22,8 +22,7 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/letter/LetterController_initSummonsReminderLetter.sql"
 })
-@SuppressWarnings("PMD.LawOfDemeter")
-public class AbaccusReportITest extends AbstractStandardReportControllerITest {
+class AbaccusReportITest extends AbstractStandardReportControllerITest {
     @Autowired
     public AbaccusReportITest(TestRestTemplate template) {
         super(template, AbaccusReport.class);

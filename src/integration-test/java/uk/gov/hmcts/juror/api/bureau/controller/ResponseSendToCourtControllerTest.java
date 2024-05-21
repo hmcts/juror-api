@@ -103,7 +103,7 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
         "/db/juror-comms-notify.sql"
     })
     public void processJurorToCourt_Email_Null() throws Exception {
-        getDto();
+        assertGetDto();
 
         // assert db state before.
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.juror", Integer.class)).isEqualTo(34);
@@ -152,7 +152,7 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
     @Sql("/db/juror-comms-notify.sql")
     @Test
     public void processJurorToCourtSmsNull() throws Exception {
-        getDto();
+        assertGetDto();
         assertJurorCommsEmailNotification(JUROR_NUMBER_2, TEMPLATE_NAME_1,
             JurorCommsNotifyTemplateType.SU_SENT_TO_COURT);
 
@@ -172,7 +172,7 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
     @Sql("/db/juror-comms-notify.sql")
     @Test
     public void processJurorToCourtSmsAndEmailNull() throws Exception {
-        getDto();
+        assertGetDto();
 
         assertJurorCommsEmailNotification(JUROR_NUMBER_3, TEMPLATE_NAME_1,
             JurorCommsNotifyTemplateType.SU_SENT_TO_COURT);
@@ -192,7 +192,7 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
     @Sql("/db/juror-comms-notify.sql")
     @Test
     public void sendSuSendToCourtSmsAndEmailEngComms() throws Exception {
-        getDto();
+        assertGetDto();
 
         assertJurorCommsEmailNotification(JUROR_NUMBER_4, TEMPLATE_NAME_1,
             JurorCommsNotifyTemplateType.SU_SENT_TO_COURT);
@@ -249,7 +249,7 @@ public class ResponseSendToCourtControllerTest extends AbstractIntegrationTest {
 
     }
 
-    private void getDto() throws Exception {
+    private void assertGetDto() throws Exception {
         final Integer validVersion = 555;
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()

@@ -27,7 +27,6 @@ import java.util.function.Function;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings("PMD.LawOfDemeter")
 public class FinancialAuditReportServiceImpl implements FinancialAuditReportService {
     private final FinancialAuditService financialAuditService;
     private final JurorRecordService jurorRecordService;
@@ -38,7 +37,7 @@ public class FinancialAuditReportServiceImpl implements FinancialAuditReportServ
         long financialAuditNumber =
             Long.parseLong(financialAuditNumberString.substring(FinancialAuditDetails.F_AUDIT_PREFIX.length()));
         FinancialAuditDetails financialAuditDetails = financialAuditService
-            .getFinancialAuditDetails(financialAuditNumber);
+            .getFinancialAuditDetails(financialAuditNumber, SecurityUtil.getLocCode());
 
         SecurityUtil.validateCourtLocationPermitted(financialAuditDetails.getLocCode());
 

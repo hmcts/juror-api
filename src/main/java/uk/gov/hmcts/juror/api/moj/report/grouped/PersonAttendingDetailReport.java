@@ -25,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PersonAttendingDetailReport extends AbstractGroupedReport {
     private final CourtLocationRepository courtLocationRepository;
 
@@ -98,6 +97,5 @@ public class PersonAttendingDetailReport extends AbstractGroupedReport {
         Validators.AbstractRequestValidator,
         Validators.RequireDate,
         Validators.RequireIncludeSummoned {
-
     }
 }

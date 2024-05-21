@@ -20,7 +20,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 public class FilterableJurorDetailsRequestDtoTest extends AbstractValidatorTest<FilterableJurorDetailsRequestDto> {
 
     @Override

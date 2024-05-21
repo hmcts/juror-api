@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResp
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
+import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 
 import java.util.Map;
 
@@ -42,7 +43,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     }
 )
 @DisplayName("Controller: " + ReportControllerTest.BASE_URL)
-@SuppressWarnings("PMD.LawOfDemeter")
 class ReportControllerTest {
     public static final String BASE_URL = "/api/v1/moj/reports";
     @Autowired
@@ -54,6 +54,8 @@ class ReportControllerTest {
     @MockBean
     private FinancialAuditReportService financialAuditReportService;
 
+    @MockBean
+    private UtilisationReportService utilisationReportService;
 
     @Nested
     @DisplayName("POST (GET) " + ViewReportStandard.URL)

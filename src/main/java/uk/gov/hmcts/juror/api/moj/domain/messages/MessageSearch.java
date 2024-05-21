@@ -28,7 +28,6 @@ import java.util.List;
 
 @Data
 @Builder
-@SuppressWarnings("PMD.LawOfDemeter")
 public class MessageSearch implements IsPageable {
 
     @JsonProperty("filters")

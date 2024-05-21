@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.bureau.controller.response.CourtCatchmentStatusDto;
 import uk.gov.hmcts.juror.api.bureau.service.CourtCatchmentService;
 
-import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.validateJurorNumberPathVariable;
+import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.assertJurorNumberPathVariable;
 
 @Slf4j
 @RestController
@@ -37,7 +37,7 @@ public class CourtCatchmentController {
         description = "by juror number")
     public ResponseEntity<CourtCatchmentStatusDto> courtCatchment(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId) {
-        validateJurorNumberPathVariable(jurorId);
+        assertJurorNumberPathVariable(jurorId);
 
         log.info("Attempting to check court catchment details, by juror {}", jurorId);
         try {

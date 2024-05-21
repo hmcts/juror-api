@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-@SuppressWarnings("PMD.LawOfDemeter")
 public class CurrentPoolStatusReport extends AbstractStandardReport {
 
     @Autowired

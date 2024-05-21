@@ -62,7 +62,6 @@ import java.util.Objects;
  *     <li>High Court</li>
  * </ul>
  */
-@SuppressWarnings("PMD.LawOfDemeter")
 public class PoolRequestSearchQueries implements IPoolRequestSearchQueries {
 
     @PersistenceContext

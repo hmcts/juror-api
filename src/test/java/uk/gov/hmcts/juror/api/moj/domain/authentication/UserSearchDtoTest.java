@@ -8,7 +8,6 @@ import uk.gov.hmcts.juror.api.moj.domain.QUser;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 class UserSearchDtoTest extends AbstractValidatorTest<UserSearchDto> {
 
 

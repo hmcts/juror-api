@@ -15,9 +15,6 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(callSuper = true)
-@SuppressWarnings({
-    "PMD.LawOfDemeter"
-})
 @JsonIgnoreProperties(value = {"total_due", "total_paid", "total_outstanding"})
 public class ExpenseDetailsWithOriginalDto extends ExpenseDetailsWithTotalsDto {
 

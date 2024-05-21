@@ -12,10 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings({
-    "PMD.LinguisticNaming",
-    "PMD.LawOfDemeter"
-})
 class TravelMethodTest {
 
     @Test

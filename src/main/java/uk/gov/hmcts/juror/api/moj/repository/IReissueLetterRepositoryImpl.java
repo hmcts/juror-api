@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
 
     @PersistenceContext

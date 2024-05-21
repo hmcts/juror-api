@@ -12,7 +12,6 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.court.QExcusalRefusedLetterList;
 
 import java.util.List;
 
-@SuppressWarnings("PMD.LawOfDemeter")
 public class ExcusalRefusalLetterListRepositoryImpl implements IExcusalRefusalLetterListRepository {
 
     @PersistenceContext

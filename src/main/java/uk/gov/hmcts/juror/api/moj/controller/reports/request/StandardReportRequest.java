@@ -43,10 +43,15 @@ public class StandardReportRequest {
         "PoolStatusReport",
         "PersonAttendingSummaryReport",
         //Grouped
+        "AbsencesReport",
         "PostponedListByDateReport",
         "UnpaidAttendanceSummaryReport",
         "ReasonableAdjustmentsReport",
-        "PersonAttendingDetailReport"
+        "PersonAttendingDetailReport",
+        "UnpaidAttendanceReportDetailedReport",
+        "JurorExpenditureReportLowLevelReport",
+        "JurorExpenditureReportMidLevelReport",
+        "JurorExpenditureReportHighLevelReport"
     })
     private String reportType;
 
